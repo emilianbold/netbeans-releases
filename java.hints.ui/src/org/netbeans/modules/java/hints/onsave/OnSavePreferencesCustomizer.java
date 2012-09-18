@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.hints.onsave;
 
-package org.netbeans.libs.git.jgit;
-
-import org.netbeans.libs.git.GitException;
-import java.io.File;
-import java.io.IOException;
-import org.eclipse.jgit.JGitText;
-import org.eclipse.jgit.lib.Repository;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.openide.util.HelpCtx;
 
 /**
  *
- * @author ondra
+ * @author lahvac
  */
-public final class JGitRepository {
-    private final Repository repository;
-    private boolean closed;
+public class OnSavePreferencesCustomizer implements PreferencesCustomizer {
 
-    public JGitRepository (File location) throws GitException {
-        this.repository = getRepository(location);
-    }
+    private final Preferences preferences;
 
-    private Repository getRepository (File workDir) throws GitException {
-        try {
-            return Utils.getRepositoryForWorkingDir(workDir);
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        } catch (IllegalArgumentException ex) {
-            if (ex.getMessage().matches(JGitText.get().repositoryConfigFileInvalid.replaceAll("\\{[0-9]?}", "\\(\\.\\*)"))) { //NOI18N
-                throw new GitException("It seems the config file for the repository at [" + workDir.getAbsolutePath() + "] is corrupted.\nEnsure it ends with empty line.", ex); //NOI18N
-            } else {
-                throw new GitException(ex);
-            }
-        }
-    }
-
-    public Repository getRepository () {
-        return repository;
+    public OnSavePreferencesCustomizer(Preferences preferences) {
+        this.preferences = preferences;
     }
     
-    public synchronized void close () {
-        if (repository != null) {
-            if (!closed) {
-                repository.close();
-                closed = true;
-            }
-        }
+    @Override
+    public String getId() {
+        return "java-hints-on-save";
     }
 
     @Override
-    protected void finalize () throws Throwable {
-        close();
-        super.finalize();
+    public String getDisplayName() {
+        return "Java";
     }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return new OnSaveCustomizer(preferences);
+    }
+    
+    public static final class FactoryImpl implements Factory {
+
+        @Override
+        public PreferencesCustomizer create(Preferences preferences) {
+            return new OnSavePreferencesCustomizer(preferences);
+        }
+        
+    }
+    
 }

@@ -697,7 +697,7 @@ class ModeParser {
             String name = (String) en.getKey();
             int index = ((Integer) en.getValue()).intValue();
             tcRefParser = (TCRefParser) localMap.remove(name);
-            assert tcRefParser != null : "No parser for " + name + " in " + tcRefParser;
+            assert tcRefParser != null : "No parser for " + name + " in " + tcRefParser + " when adding " +tcRefName;
             //Put instances to array according to defined order
             //Order should be defined from 0 to N-1
             //log("-- -- ADD [" + index + "]: " + tcRefParser.getName());

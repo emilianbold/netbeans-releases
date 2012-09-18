@@ -630,12 +630,11 @@ private void bypassRefactoringCheckBoxItemStateChanged(java.awt.event.ItemEvent 
     }
 
     public TreePathHandle getTargetClass() {
-        if(typeCheckBox.isSelected()) {
-            
-            return ((ClassItem)typeCombobox.getSelectedItem()).getHandle();
-        } else {
-            return null;
+        final Object selectedItem = typeCombobox.getSelectedItem();
+        if(typeCheckBox.isSelected() && selectedItem != null && selectedItem instanceof ClassItem) {
+            return ((ClassItem)selectedItem).getHandle();
         }
+        return null;
     }
     
     private abstract static class BaseCellRenderer extends JLabel implements ListCellRenderer, UIResource {

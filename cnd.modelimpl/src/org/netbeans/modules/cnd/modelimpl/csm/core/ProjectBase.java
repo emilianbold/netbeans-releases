@@ -966,7 +966,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 switch (item.getLanguage()) {
                     case C:
                     case CPP:
-                    case C_HEADER:
                     case FORTRAN:
                         excluded.add(item);
                         break;
