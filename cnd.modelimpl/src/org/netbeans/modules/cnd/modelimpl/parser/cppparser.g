@@ -3218,10 +3218,11 @@ protected template_template_parameter
  */
 assigned_type_name
 	{/*TypeSpecifier*/int ts;
-         TypeQualifier tq;}
+         TypeQualifier tq;
+         DeclSpecifier ds = dsInvalid;}
 	:
             (options {greedy=true;}: tq=cv_qualifier)? (LITERAL_typename)?
-            ts = simple_type_specifier[false] (postfix_cv_qualifier)?
+            ts = type_specifier[ds, false] (postfix_cv_qualifier)?
             abstract_declarator
 	;
 
