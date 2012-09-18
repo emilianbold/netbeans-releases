@@ -230,8 +230,11 @@ public abstract class SanitizingParser extends Parser {
                             break;
                         }
                     }
-                    if (start >= 0 && ts.moveNext()) {
-                        int end = ts.offset();
+                    if (start >= 0) {
+                        int end = offset;
+                        if (ts.moveNext()) {
+                            end = ts.offset();
+                        }
                         StringBuilder builder = new StringBuilder(context.getOriginalSource());
                         erase(builder, start, end);
                         context.setSanitizedSource(builder.toString());
