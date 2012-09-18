@@ -101,7 +101,7 @@ public class JsStructureScannerTest extends JsTestBase {
 //    }
     
     public void testArrays() throws Exception {
-        checkStructure("testfiles/completion/arrays/arrays.js");
+        checkStructure("testfiles/completion/arrays/arrays1.js");
     }
     
     public void testLiteralObject01() throws Exception {

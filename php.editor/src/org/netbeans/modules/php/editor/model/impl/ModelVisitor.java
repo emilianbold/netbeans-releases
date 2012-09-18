@@ -130,7 +130,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (elements.size() > 0) {
             for (PhpBaseElement element : elements) {
                 if (element instanceof PhpVariable) {
-                    assert element != null;
                     PhpVariable phpVariable = (PhpVariable) element;
                     Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
                     for (NamespaceScope namespace : declaredNamespaces) {

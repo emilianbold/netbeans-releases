@@ -498,6 +498,7 @@ public final class FormatToken {
 
         // no parenthesis but we should handle that
         AFTER_VAR_KEYWORD,
+        AFTER_NEW_KEYWORD,
 
         // keywords with possible space before
         BEFORE_WHILE_KEYWORD,

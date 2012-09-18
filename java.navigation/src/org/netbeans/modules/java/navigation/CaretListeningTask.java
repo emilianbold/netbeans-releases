@@ -90,7 +90,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         lastEh = null;
     }
     
-    public void run(CompilationInfo compilationInfo) {
+    public void run(CompilationInfo compilationInfo) throws Exception {
         // System.out.println("running " + fileObject);
         resume();
         
@@ -250,31 +250,30 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         setJavadoc(ElementJavadoc.create(compilationInfo, element));
     }
     
-    private void updateNavigatorSelection(CompilationInfo ci, TreePath tp) {
-        
+    private void updateNavigatorSelection(CompilationInfo ci, TreePath tp) throws Exception {
+        final ClassMemberPanel cmp = ClassMemberPanel.getInstance();
+        if (cmp == null) {
+            return;
+        }
+        final ClassMemberPanelUI cmpUi = cmp.getClassMemberPanelUI();
+        if (!cmpUi.isAuto()) {
+            cmpUi.getTask().runImpl(ci, false);
+            lastEhForNavigator = null;
+        }
         // Try to find the declaration we are in
-        Element e = outerElement(ci, tp);
-                
+        final Element e = outerElement(ci, tp);
         if ( e != null ) {
             final ElementHandle<Element> eh = ElementHandle.create(e);
-            
             if ( lastEhForNavigator != null && eh.signatureEquals(lastEhForNavigator)) {
                 return;
             }
-            
             lastEhForNavigator = eh;
-            
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
-                    final ClassMemberPanel cmp = ClassMemberPanel.getInstance();
-                    if (cmp != null) {
-                        cmp.selectElement(eh);
-                    }                    
-                }                
+                    cmp.selectElement(eh);
+                }
             });
-        }
-        
+        }        
     }
        
     private static Element outerElement( CompilationInfo ci, TreePath tp ) {

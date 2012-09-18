@@ -112,6 +112,12 @@ public class HtmlElementProperties {
             }
 
             final DataObject dobj = DataObject.find(file);
+            org.openide.nodes.Node dataObjectNode = dobj.getNodeDelegate();
+            if(!(dataObjectNode instanceof HtmlDataNode)) {
+                return ;
+            }
+            final HtmlDataNode htmlNode =  (HtmlDataNode) dataObjectNode;
+            
             final int caretOffset;
             if (event == null) {
                 LOGGER.log(LEVEL, "run() - NULL SchedulerEvent?!?!?!");
@@ -128,7 +134,7 @@ public class HtmlElementProperties {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    runInEDT(result, dobj, caretOffset);
+                    runInEDT(result, htmlNode, dobj, caretOffset);
                 }
             });
 
@@ -139,9 +145,9 @@ public class HtmlElementProperties {
 
     }
 
-    private static void runInEDT(HtmlParserResult result, DataObject dobj, int caretOffset) {
+    private static void runInEDT(HtmlParserResult result, HtmlDataNode htmlNode, DataObject dobj, int caretOffset) {
+        //dirty workaround
         if (caretOffset == -1) {
-            //dirty workaround
             EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
             if (ec != null) {
                 JEditorPane[] panes = ec.getOpenedPanes(); //needs EDT
@@ -153,12 +159,6 @@ public class HtmlElementProperties {
             LOGGER.log(LEVEL, "workarounded caret offset: {0}", caretOffset);
         }
 
-
-        org.openide.nodes.Node dataObjectNode = dobj.getNodeDelegate();
-        HtmlDataNode htmlNode = dataObjectNode instanceof HtmlDataNode ? (HtmlDataNode) dataObjectNode : null;
-
-
-        //filter out embedded html cases
         Node node = result.findBySemanticRange(caretOffset, true);
         if (node != null) {
             if (node.type() == ElementType.OPEN_TAG) { //may be root node!

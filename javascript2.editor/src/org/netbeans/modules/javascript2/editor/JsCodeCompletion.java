@@ -441,16 +441,19 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     && startsWith(object.getName(), request.prefix)) {
                 JsElement fobject = foundObjects.get(object.getName());
                 if(fobject == null) {
-                    foundObjects.put(object.getName(), object);
+                    if (!(object.getName().equals(request.prefix)
+                            && object.getDeclarationName().getOffsetRange().getStart() == request.anchor)) {
+                        foundObjects.put(object.getName(), object);
+                    }
                 } else {
                     if (object.isDeclared()) {
-                        if (fobject.isDeclared()) {
+//                        if (fobject.isDeclared()) {
                             // put to the cc result both
-                            resultList.add(JsCompletionItem.Factory.create(object, request));
-                        } else {
+//                            resultList.add(JsCompletionItem.Factory.create(object, request));
+//                        } else {
                             // replace with the one, which is declared
                             foundObjects.put(object.getName(), object);
-                        }
+//                        }
                     }
                 }
             }
