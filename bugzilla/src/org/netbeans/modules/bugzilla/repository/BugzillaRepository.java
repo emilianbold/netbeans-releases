@@ -224,13 +224,6 @@ public class BugzillaRepository {
         }
     }
 
-    
-    synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean localUserEnabled) {
-        setTaskRepository(name, url, user, password, httpUser, httpPassword, localUserEnabled);
-        String id = info != null ? info.getId() : name + System.currentTimeMillis();
-        info = new RepositoryInfo(id, BugzillaConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
-    }
-    
     public String getDisplayName() {
         return info.getDisplayName();
     }
@@ -422,6 +415,12 @@ public class BugzillaRepository {
         return queries;
     }
 
+    synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean localUserEnabled) {
+        setTaskRepository(name, url, user, password, httpUser, httpPassword, localUserEnabled);
+        String id = info != null ? info.getId() : name + System.currentTimeMillis();
+        info = new RepositoryInfo(id, BugzillaConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+    }
+    
     public void ensureCredentials() {
         setCredentials(info.getUsername(), info.getPassword(), info.getHttpUsername(), info.getHttpPassword(), true);
     }
@@ -430,7 +429,12 @@ public class BugzillaRepository {
         setCredentials(user, password, httpUser, httpPassword, false);
     }
     
-    private void setCredentials(String user, char[] password, String httpUser, char[] httpPassword, boolean keepConfiguration) {
+    private synchronized void setCredentials(String user, char[] password, String httpUser, char[] httpPassword, boolean keepConfiguration) {
+        info = new RepositoryInfo(
+                        info.getId(), info.getConnectorId(), 
+                        info.getUrl(), info.getDisplayName(), info.getTooltip(), 
+                        user, httpUser, 
+                        password, httpPassword);
         MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
         resetRepository(keepConfiguration);
     }
