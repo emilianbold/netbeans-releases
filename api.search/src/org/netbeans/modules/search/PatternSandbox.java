@@ -60,6 +60,8 @@ import javax.swing.text.Highlighter;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
 import org.netbeans.modules.search.ui.FormLayoutHelper;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -71,6 +73,9 @@ import org.openide.util.NbBundle;
  */
 public abstract class PatternSandbox extends JPanel
         implements HierarchyListener {
+
+    private static final Logger LOG = Logger.getLogger(
+            PatternSandbox.class.getName());
 
     protected JComboBox cboxPattern;
     private JLabel lblPattern;
@@ -148,7 +153,9 @@ public abstract class PatternSandbox extends JPanel
 
                     @Override
                     public void keyReleased(KeyEvent e) {
-                        highlightMatchesLater();
+                        if (!e.isActionKey()) {
+                            highlightMatchesLater();
+                        }
                     }
                 });
         cboxPattern.addActionListener(new ActionListener() {
@@ -308,6 +315,8 @@ public abstract class PatternSandbox extends JPanel
     /**
      * Highlight matches in the text pane.
      */
+    @NbBundle.Messages({
+        "MSG_PatternSansboxTimout=Pattern Matching took too long and was cancelled."})
     protected void highlightMatches() {
 
         highlighter.removeAllHighlights();
@@ -330,7 +339,15 @@ public abstract class PatternSandbox extends JPanel
                     setForeground(Color.red);
             return;
         }
-        highlightIndividualMatches(p);
+        try {
+            highlightIndividualMatches(p);
+        } catch (TimeoutExeption e) {
+            DialogDisplayer.getDefault().notifyLater(
+                    new NotifyDescriptor.Message(
+                    Bundle.MSG_PatternSansboxTimout(),
+                    NotifyDescriptor.Message.ERROR_MESSAGE));
+            LOG.log(Level.INFO, e.getMessage(), e);
+        }
     }
 
     /**
@@ -535,7 +552,7 @@ public abstract class PatternSandbox extends JPanel
         @Override
         protected void highlightIndividualMatches(Pattern p) {
             String text = textPane.getText().replaceAll("\r\n", "\n");  //NOI18N
-            Matcher m = p.matcher(text);
+            Matcher m = p.matcher(new TimeLimitedCharSequence(text));
             while (m.find()) {
                 try {
                     highlighter.addHighlight(m.start(), m.end(), painter);
@@ -630,7 +647,7 @@ public abstract class PatternSandbox extends JPanel
             String text = textPane.getText().replaceAll("\r\n", "\n");  //NOI18N
 
             Pattern sep = Pattern.compile("\n");                        //NOI18N
-            Matcher m = sep.matcher(text);
+            Matcher m = sep.matcher(new TimeLimitedCharSequence(text));
             int lastStart = 0;
             while (m.find()) {
                 matchLine(text, p, lastStart, m.start());
@@ -799,5 +816,44 @@ public abstract class PatternSandbox extends JPanel
         jd.setLocationRelativeTo(baseComponent);
         jd.pack();
         jd.setVisible(true);
+    }
+
+    private static class TimeLimitedCharSequence implements CharSequence {
+
+        private final CharSequence content;
+        private final long dateCreated;
+        int counter = 0;
+
+        public TimeLimitedCharSequence(CharSequence content) {
+            this(content, System.currentTimeMillis());
+        }
+
+        public TimeLimitedCharSequence(CharSequence content, long dateCreated) {
+            this.content = content == null ? "" : content;              //NOI18N
+            this.dateCreated = dateCreated;
+        }
+
+        @Override
+        public int length() {
+            return content.length();
+        }
+
+        @Override
+        public char charAt(int index) {
+            if (counter++ % 1024 == 0
+                    && System.currentTimeMillis() - dateCreated > 1000) {
+                throw new TimeoutExeption();
+            }
+            return content.charAt(index);
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return new TimeLimitedCharSequence(
+                    content.subSequence(start, end), dateCreated);
+        }
+    }
+
+    private static class TimeoutExeption extends RuntimeException {
     }
 }
