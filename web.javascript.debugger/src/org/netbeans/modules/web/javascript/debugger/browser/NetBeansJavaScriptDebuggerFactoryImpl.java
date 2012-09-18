@@ -63,15 +63,15 @@ public class NetBeansJavaScriptDebuggerFactoryImpl implements NetBeansJavaScript
     @Override
     public Session createDebuggingSession(WebKitDebugging webkit, Lookup projectContext) {
         Debugger debugger = webkit.getDebugger();
-        Project project = projectContext.lookup(Project.class);
+        ProjectContext pc = new ProjectContext(projectContext);
         EngineDestructorProvider edp = new EngineDestructorProvider();
         
         // show browser console log in the IDE:
-        BrowserConsoleLogger logger = new BrowserConsoleLogger(project);
+        BrowserConsoleLogger logger = new BrowserConsoleLogger(pc);
         webkit.getConsole().addListener(logger);
         
         DebuggerInfo di = DebuggerInfo.create(DebuggerConstants.DEBUGGER_INFO,
-                new Object[]{webkit, debugger, project, edp, logger});
+                new Object[]{webkit, debugger, pc, edp, logger});
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().startDebugging(di)[0];
         Session session = engine.lookupFirst(null, Session.class);
         return session;
@@ -90,5 +90,5 @@ public class NetBeansJavaScriptDebuggerFactoryImpl implements NetBeansJavaScript
         session.kill();
         engine.lookupFirst(null, EngineDestructorProvider.class).getDestructor().killEngine();
     }
-    
+
 }

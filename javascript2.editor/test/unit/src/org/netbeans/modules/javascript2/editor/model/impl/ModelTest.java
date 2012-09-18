@@ -478,10 +478,16 @@ public class ModelTest extends JsTestBase {
         assertEquals(2, function.getReturnTypes().size());
         iterator = function.getReturnTypes().iterator();
         type = iterator.next();
-        assertEquals(Type.STRING, type.getType());
-        type = iterator.next();
         assertEquals(Type.NUMBER, type.getType());
-        
+        type = iterator.next();
+        assertEquals(Type.STRING, type.getType());
+
+        function = (JsFunction)object.getProperty("getRegExp");
+        assertEquals(1, function.getReturnTypes().size());
+        iterator = function.getReturnTypes().iterator();
+        type = iterator.next();
+        assertEquals(Type.REGEXP, type.getType());
+
         JsObject property = object.getProperty("isGreat");
         assertEquals(JsElement.Kind.PROPERTY, property.getJSKind());
         Collection<? extends TypeUsage> types = property.getAssignmentForOffset(property.getDeclarationName().getOffsetRange().getEnd());
@@ -491,7 +497,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(Type.BOOLEAN, type.getType());
     }
     
-    
+
     public void testReturnTypes02() throws Exception {
         Model model = getModel("testfiles/model/returnTypes02.js");
         assertNotNull(model);
@@ -510,7 +516,7 @@ public class ModelTest extends JsTestBase {
         assertEquals("Man.Address", type.getType());
         
     }
-    
+
     public void testPropertyWithNew() throws Exception {
         Model model = getModel("testfiles/model/propertyWithNew.js");
         assertNotNull(model);
@@ -710,6 +716,22 @@ public class ModelTest extends JsTestBase {
         assertEquals(JsElement.Kind.METHOD, method.getJSKind());
         assertTrue(method.getModifiers().contains(Modifier.PROTECTED));
         assertEquals(0, method.getParameters().size());
+     }
+
+     public void testIssue217679() throws Exception {
+        Model model = getModel("testfiles/model/testIssue217679.js");
+        assertNotNull(model);
+        JsObject  global = model.getGlobalObject();
+        assertEquals(3, global.getProperties().size());
+
+        JsObject ridic = global.getProperty("Ridic");
+        assertEquals(JsElement.Kind.CONSTRUCTOR, ridic.getJSKind());
+
+        JsObject aloha = global.getProperty("Aloha");
+        assertEquals(JsElement.Kind.CONSTRUCTOR, ridic.getJSKind());
+
+        JsObject dog = global.getProperty("Dog");
+        assertEquals(JsElement.Kind.CONSTRUCTOR, ridic.getJSKind());
      }
      
 //    public void testPrivateMethod01() throws Exception {

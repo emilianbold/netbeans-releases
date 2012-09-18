@@ -45,6 +45,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLEditorController;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -81,7 +82,9 @@ public class JPQLEditorAction extends NodeAction {
                     FileObject pXml = data.getPrimaryFile();
                     Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
                     PersistenceEnvironment pe = project!=null ? project.getLookup().lookup(PersistenceEnvironment.class) : null;
-                    return pe != null;
+                    if( pe != null ) {
+                        return !Util.isSupportedJavaEEVersion(project);//so far support only non-container managed projects
+                    }
                 }
             }
         }

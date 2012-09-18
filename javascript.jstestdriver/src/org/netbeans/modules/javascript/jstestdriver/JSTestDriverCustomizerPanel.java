@@ -55,21 +55,25 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
  *
  */
-public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements DocumentListener {
+public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements DocumentListener, HelpCtx.Provider  {
 
     private static final String LOCATION = "location";
     private static final String USE_BROWSER = "use.browser.";
-    private static final String PORT = "port";
+    private static final String SERVER_URL = "server.url";
     private static final String STRICT_MODE = "strict.mode";
 
     private DialogDescriptor descriptor;
@@ -82,9 +86,13 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         String l = getPersistedLocation();
         jLocationTextField.setText(l != null ? l : "");
         jLocationTextField.getDocument().addDocumentListener(this);
+        jStrictCheckBox.setSelected(isStricModel());
+        jServerURLTextField.setText(getServerURL());
+        jServerURLTextField.getDocument().addDocumentListener(this);
         jBrowsersTable.setModel(new BrowsersTableModel());
         jBrowsersTable.setDefaultRenderer(TableRow.class, new TableRowCellRenderer());
         initTableVisualProperties(jBrowsersTable);
+        jRestartNeededLabel.setVisible(JSTestDriverSupport.getDefault().isRunning());
     }
     
     private void initTableVisualProperties(JTable table) {
@@ -112,6 +120,11 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     
     private void updateValidity() {
         descriptor.setValid(isValidJSTestDriverJar(jLocationTextField.getText()));
+        boolean externalServer = (getPort(jServerURLTextField.getText()) == -1);
+        jBrowsersTable.setEnabled(!externalServer);
+        jStrictCheckBox.setEnabled(!externalServer);
+        jRestartNeededLabel.setVisible(JSTestDriverSupport.getDefault().isRunning() && !externalServer);
+        jRemoteServerLabel.setVisible(externalServer);
     }
 
     private static boolean isValidJSTestDriverJar(String s) {
@@ -139,21 +152,19 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
             Preferences prefs = NbPreferences.forModule(JSTestDriverCustomizerPanel.class);
             prefs.put(LOCATION, panel.jLocationTextField.getText());
-            int port = 42442;
-            try {
-                port = Integer.parseInt(panel.jPortTextField.getText());
-            } catch (NumberFormatException ex) {
-                // ignore
-            }
-            prefs.putInt(PORT, port);
+            prefs.put(SERVER_URL, panel.jServerURLTextField.getText());
             prefs.putBoolean(STRICT_MODE, panel.jStrictCheckBox.isSelected());
             for (TableRow row : ((BrowsersTableModel)panel.jBrowsersTable.getModel()).model) {
-                prefs.putBoolean(USE_BROWSER+row.getBrowser().getId(), row.isSelected());
+                prefs.putBoolean(getBrowserPropertyName(row.getBrowser(), row.hasNbIntegration()), row.isSelected());
             }
             return true;
         } else {
             return false;
         }
+    }
+    
+    private static String getBrowserPropertyName(WebBrowser browser, boolean nbIntegration) {
+        return PropertyUtils.getUsablePropertyName(USE_BROWSER+browser.getId()+(nbIntegration ? ".nbint" : "")); //NOI18N
     }
     
     public static boolean isConfiguredProperly() {
@@ -166,39 +177,68 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     }
 
     public static String getServerURL() {
-        return "http://localhost:" + getPort();
+        return NbPreferences.forModule(JSTestDriverCustomizerPanel.class).get(SERVER_URL, "http://localhost:42442");
     }
 
     public static boolean isStricModel() {
         return NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(STRICT_MODE, false);
     }
 
-    public static int getPort() {
-        return NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getInt(PORT, 42442);
+    static int getPort(String s) {
+        if (s.endsWith("/")) {
+            s = s.substring(0, s.length()-1);
+        }
+        if (s.startsWith("http://localhost:")) {
+            try {
+                return Integer.parseInt(s.substring(17));
+            } catch (NumberFormatException e) {
+                return -1;
+            }
+        }
+        return -1;
     }
 
+    public static int getPort() {
+        return getPort(getServerURL());
+    }
+    
     private static List<TableRow> createModel() {
         List<TableRow> model = new ArrayList<TableRow>();
         for (WebBrowser browser : WebBrowsers.getInstance().getAll(false)) {
             if (browser.isEmbedded()) {
                 continue;
             }
+            if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM) {
+                model.add(new TableRow(browser, 
+                    NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, true), true), true));
+            }
             model.add(new TableRow(browser, 
-                NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(USE_BROWSER+browser.getId(), true)));
+                NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, false), true), false));
         }
         return model;
     }
     
-    public static List<WebBrowser> getBrowsers() {
+    public static List<WebBrowserDesc> getBrowsers() {
         List<TableRow> model = createModel();
-        List<WebBrowser> res = new ArrayList<WebBrowser>();
+        List<WebBrowserDesc> res = new ArrayList<WebBrowserDesc>();
         for (TableRow row : model) {
             if (row.isSelected()) {
-                res.add(row.getBrowser());
+                res.add(new WebBrowserDesc(row.getBrowser(), row.hasNbIntegration()));
             }
         }
         return res;
     }
+    
+    public static class WebBrowserDesc {
+        public WebBrowser browser;
+        public boolean nbIntegration;
+
+        public WebBrowserDesc(WebBrowser browser, boolean nbIntegration) {
+            this.browser = browser;
+            this.nbIntegration = nbIntegration;
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -216,7 +256,9 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         jBrowsersTable = new javax.swing.JTable();
         jStrictCheckBox = new javax.swing.JCheckBox();
         jLabel3 = new javax.swing.JLabel();
-        jPortTextField = new javax.swing.JTextField();
+        jServerURLTextField = new javax.swing.JTextField();
+        jRestartNeededLabel = new javax.swing.JLabel();
+        jRemoteServerLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(JSTestDriverCustomizerPanel.class, "JSTestDriverCustomizerPanel.jLabel1.text")); // NOI18N
 
@@ -237,7 +279,11 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(JSTestDriverCustomizerPanel.class, "JSTestDriverCustomizerPanel.jLabel3.text")); // NOI18N
 
-        jPortTextField.setText(org.openide.util.NbBundle.getMessage(JSTestDriverCustomizerPanel.class, "JSTestDriverCustomizerPanel.jPortTextField.text")); // NOI18N
+        jServerURLTextField.setText("http://localhost:42442");
+
+        org.openide.awt.Mnemonics.setLocalizedText(jRestartNeededLabel, org.openide.util.NbBundle.getMessage(JSTestDriverCustomizerPanel.class, "JSTestDriverCustomizerPanel.jRestartNeededLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jRemoteServerLabel, org.openide.util.NbBundle.getMessage(JSTestDriverCustomizerPanel.class, "JSTestDriverCustomizerPanel.jRemoteServerLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -247,21 +293,20 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLocationTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jBrowseButton))
+                    .addComponent(jLabel2)
+                    .addComponent(jStrictCheckBox)
+                    .addComponent(jRestartNeededLabel)
+                    .addComponent(jRemoteServerLabel)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jStrictCheckBox)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3)
-                                .addGap(50, 50, 50)
-                                .addComponent(jPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLocationTextField)
+                            .addComponent(jServerURLTextField))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jBrowseButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -275,14 +320,18 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(jPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(jServerURLTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jStrictCheckBox)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jRestartNeededLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jRemoteServerLabel)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -317,8 +366,10 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JTextField jLocationTextField;
-    private javax.swing.JTextField jPortTextField;
+    private javax.swing.JLabel jRemoteServerLabel;
+    private javax.swing.JLabel jRestartNeededLabel;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField jServerURLTextField;
     private javax.swing.JCheckBox jStrictCheckBox;
     // End of variables declaration//GEN-END:variables
 
@@ -337,12 +388,22 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         updateValidity();
     }
 
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.javascript.jstestdriver.JSTestDriverCustomizerPanel");
+    }
+
     private static class TableRowCellRenderer extends DefaultTableCellRenderer {
         
+        @NbBundle.Messages({"# {0} - browser name", "IntegratedBrowserName={0} with NetBeans JS Debugger"})
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
             if (value instanceof TableRow) {
                 TableRow item = (TableRow) value;
-                return super.getTableCellRendererComponent(table, item.getBrowser().getName(), isSelected, false, row, column);
+                String s = item.getBrowser().getName();
+                if (item.hasNbIntegration()) {
+                    s = Bundle.IntegratedBrowserName(s);
+                }
+                return super.getTableCellRendererComponent(table, s, isSelected, false, row, column);
             }
             return super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
         }
@@ -409,14 +470,20 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     private static final class TableRow {
         private WebBrowser browser;
         private boolean selected;
+        private boolean nbIntegration;
 
-        public TableRow(WebBrowser browser, boolean selected) {
+        public TableRow(WebBrowser browser, boolean selected, boolean nbIntegration) {
             this.browser = browser;
             this.selected = selected;
+            this.nbIntegration = nbIntegration;
         }
 
         public boolean isSelected() {
             return selected;
+        }
+
+        public boolean hasNbIntegration() {
+            return nbIntegration;
         }
 
         public void setSelected(boolean selected) {
@@ -426,7 +493,6 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         public WebBrowser getBrowser() {
             return browser;
         }
-        
         
     }
     

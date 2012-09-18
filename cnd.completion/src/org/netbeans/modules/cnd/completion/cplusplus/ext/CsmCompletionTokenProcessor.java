@@ -740,6 +740,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 //                        break;
 
                     case PREPROCESSOR_START:
+                    case PREPROCESSOR_START_ALT:
                         pushExp(createTokenExp(PREPROC_DIRECTIVE_OPEN));
                         break;
 

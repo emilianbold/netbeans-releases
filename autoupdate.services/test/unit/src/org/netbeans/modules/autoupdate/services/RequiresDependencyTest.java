@@ -61,6 +61,7 @@ import org.netbeans.spi.autoupdate.UpdateItem;
  *
  * @author Jiri Rechtacek
  */
+@RandomlyFails
 public class RequiresDependencyTest extends NbmAdvancedTestCase {
     
     public RequiresDependencyTest (String testName) {
@@ -69,17 +70,14 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
     
     private static String TOKEN = "org.netbeans.modules.autoupdate.test.token";
 
-    @RandomlyFails
     public void testInstallModuleWhichRequires () throws IOException {
         testInstallModuleWhichWants ("Requires");
     }
     
-    @RandomlyFails
     public void testInstallModuleWhichNeeds () throws IOException {
         testInstallModuleWhichWants ("Needs");
     }
     
-    @RandomlyFails
     public void testInstallModuleWhichRecommends () throws IOException {
         testInstallModuleWhichWants ("Recommends");
     }
@@ -88,7 +86,6 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
         testBrokenDepsOfModuleWhichWants ("Requires", true);
     }
 
-    @RandomlyFails
     public void testBrokenDepsOfModuleWhichNeeds () throws IOException {
         testBrokenDepsOfModuleWhichWants ("Needs", true);
     }
@@ -97,13 +94,28 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
         testBrokenDepsOfModuleWhichWants ("Recommends", false);
     }
     
-    @SuppressWarnings("unchecked")
+    public void testInstallModuleWhichRecommendsCNB () throws IOException {
+        testInstallModuleWhichWants("Recommends", "cnb.org.yourorghere.provider.testtoken");
+    }
+    
+    public void testInstallModuleWhichRequiresCNB () throws IOException {
+        testInstallModuleWhichWants("Requires", "cnb.org.yourorghere.provider.testtoken");
+    }
+    
+    public void testInstallModuleWhichNeedsCNB () throws IOException {
+        testInstallModuleWhichWants("Needs", "cnb.org.yourorghere.provider.testtoken");
+    }
+    
     private void testInstallModuleWhichWants (String type) throws IOException {
+        testInstallModuleWhichWants(type, TOKEN);
+    }
+    
+    private void testInstallModuleWhichWants (String type, String token) throws IOException {
         String providerModule = "org.yourorghere.provider.testtoken";
         String wantsModule = "org.yourorghere." + type + ".testtoken";
         String catalog = generateCatalog (
-                generateModuleElementWithProviders (providerModule, "1.0", TOKEN),
-                generateModuleElement (wantsModule, "1.0", "OpenIDE-Module-" + type, TOKEN, false, false)
+                generateModuleElementWithProviders (providerModule, "1.0", token.startsWith("cnb.") ? "" : token),
+                generateModuleElement (wantsModule, "1.0", "OpenIDE-Module-" + type, token, false, false)
                 );
 
         AutoupdateCatalogProvider p = createUpdateProvider (catalog);
@@ -149,16 +161,15 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
         
         // install wants module
         installUpdateUnit (wantsUU);
-        providerUU = UpdateManagerImpl.getInstance ().getUpdateUnit (providerModule);
 
         // check states installed units, should be both wants and provides are installed
         assertNotNull (wantsModule + " is installed.", wantsUU.getInstalled ());
-        assertNotNull (providerModule + " is installed.", providerUU.getInstalled ());
+        assertNotNull (providerModule + " is installed.", UpdateManagerImpl.getInstance ().getUpdateUnit (providerModule).getInstalled ());
     }
     
     @SuppressWarnings("unchecked")
     private void testBrokenDepsOfModuleWhichWants (String type, boolean forceThisDependency) throws IOException {
-        String wantsModule = "org.yourorghere." + type + ".testtoken";
+       String wantsModule = "org.yourorghere." + type + ".testtoken";
         String catalog = generateCatalog (
                 generateModuleElement (wantsModule, "1.0", "OpenIDE-Module-" + type, TOKEN, false, false)
                 );
@@ -206,13 +217,20 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
         }
     }
     
-    @SuppressWarnings("unchecked")
     public void testInstallModuleWhichRecommendsBrokenModule() throws IOException {
+        installModuleWhichRecommendsBrokenModule(TOKEN);
+    }
+    
+    public void testinstallModuleWhichRecommendsCNBOfBrokenModule() throws IOException {
+        installModuleWhichRecommendsBrokenModule("cnb.org.yourorghere.provider.testtoken");
+    }
+
+    private void installModuleWhichRecommendsBrokenModule(String wantsToken) throws IOException {
         String providerModule = "org.yourorghere.provider.testtoken";
         String wantsModule = "org.yourorghere.recommends.testtoken";
         String catalog = generateCatalog(
                 generateModuleElementWithProviders(providerModule, "1.0", TOKEN, "org.yourorghere.nothere"),
-                generateModuleElement(wantsModule, "1.0", "OpenIDE-Module-Recommends", TOKEN, false, false));
+                generateModuleElement(wantsModule, "1.0", "OpenIDE-Module-Recommends", wantsToken, false, false));
 
         AutoupdateCatalogProvider p = createUpdateProvider(catalog);
         p.refresh(true);

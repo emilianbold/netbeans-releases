@@ -48,6 +48,7 @@ import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -66,23 +67,33 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
     }
 
     @Override
+    @NbBundle.Messages("MSG_Warning_RenamedFiles=Some files were renamed only by changing the case in their names. "
+            + "You should use a commandline client to commit this state, the NetBeans IDE cannot handle it properly.")
     public boolean containsCommitable() {
         List<GitFileNode> list = getCommitFiles();
         boolean ret = false;        
-        errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_ERROR_NO_FILES"); // NOI18N
+        errroMessage = null;
+        boolean isEmpty = true;
         for(GitFileNode fileNode : list) {                        
             
             VCSCommitOptions co = fileNode.getCommitOptions();
             if(co == VCSCommitOptions.EXCLUDE) {
                 continue;
             }
+            isEmpty = false;
             FileInformation info = fileNode.getInformation();
             if(info.containsStatus(FileInformation.Status.IN_CONFLICT)) {
                 errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_CommitForm_ErrorConflicts"); // NOI18N
                 return false;
-            }            
+            } else if (info.isRenamed() && info.getOldFile() != null
+                    && (Utilities.isMac() || Utilities.isWindows())
+                    && info.getOldFile().getAbsolutePath().equalsIgnoreCase(fileNode.getFile().getAbsolutePath())) {
+                errroMessage = Bundle.MSG_Warning_RenamedFiles();
+            }
             ret = true;
-            errroMessage = null;            
+        }
+        if (isEmpty) {
+            errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_ERROR_NO_FILES"); //NOI18N
         }
         return ret;
     }

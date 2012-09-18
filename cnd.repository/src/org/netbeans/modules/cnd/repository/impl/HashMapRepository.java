@@ -48,17 +48,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 
 /**
  * hash map based Repository
  * @author Vladimir Voskresensky
  */
-public class HashMapRepository implements Repository {
+public class HashMapRepository extends BaseRepository {
 
     @Override
     public void debugDistribution() {
@@ -109,7 +109,8 @@ public class HashMapRepository implements Repository {
      *  HashMapRepository creates from META-INF/services;
      *  no need for public constructor
      */
-    public HashMapRepository() {
+    public HashMapRepository(int id, CacheLocation cacheLocation) {
+        super(id, cacheLocation);
         units = new ConcurrentHashMap<Integer, Unit>();
     }
 

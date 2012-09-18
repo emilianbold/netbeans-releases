@@ -181,22 +181,26 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
                     case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
                     {
-                        ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                                        ClassImplSpecialization.create(token, null, getContainingFile(), getFileContent(), !isRenderingLocalContext(), null) :
-                                        ClassImpl.create(token, null, getContainingFile(), getFileContent(), !isRenderingLocalContext(), null);
-                        declarators.add(cls);
-                        Pair typedefs = renderTypedef(token, cls, currentNamespace);
-                        if (!typedefs.getTypesefs().isEmpty()) {
-                            addTypedefs(typedefs.getTypesefs(), currentNamespace, container, cls);
-                            for (CsmTypedef typedef : typedefs.getTypesefs()) {
-                                declarators.add(typedef);
-                                //FIXME: class do not allow register enclosing typedef that does not in repository
-                                //if (cls != null) {
-                                //   cls.addEnclosingTypedef(typedefs[i]);
-                                //}
+                        try {
+                            ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
+                                            ClassImplSpecialization.create(token, null, getContainingFile(), getFileContent(), !isRenderingLocalContext(), null) :
+                                            ClassImpl.create(token, null, getContainingFile(), getFileContent(), !isRenderingLocalContext(), null);
+                            declarators.add(cls);
+                            Pair typedefs = renderTypedef(token, cls, currentNamespace);
+                            if (!typedefs.getTypesefs().isEmpty()) {
+                                addTypedefs(typedefs.getTypesefs(), currentNamespace, container, cls);
+                                for (CsmTypedef typedef : typedefs.getTypesefs()) {
+                                    declarators.add(typedef);
+                                    //FIXME: class do not allow register enclosing typedef that does not in repository
+                                    //if (cls != null) {
+                                    //   cls.addEnclosingTypedef(typedefs[i]);
+                                    //}
+                                }
                             }
+                            renderVariableInClassifier(token, cls, currentNamespace, container);
+                        } catch (AstRendererException e) {
+                            DiagnosticExceptoins.register(e);
                         }
-                        renderVariableInClassifier(token, cls, currentNamespace, container);
                         break;
                     }
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:

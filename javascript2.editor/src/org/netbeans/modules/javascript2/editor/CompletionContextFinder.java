@@ -116,7 +116,8 @@ public class CompletionContextFinder {
             ts.movePrevious();
             token = LexUtilities.findPrevious(ts, WHITESPACES_TOKENS);
         }
-        if (CHANGE_CONTEXT_TOKENS.contains(token.id())) {
+        if (CHANGE_CONTEXT_TOKENS.contains(token.id())
+                || (WHITESPACES_TOKENS.contains(token.id()) && !ts.movePrevious())) {
             return CompletionContext.GLOBAL;
         }
         if (tokenId == JsTokenId.DOC_COMMENT) {

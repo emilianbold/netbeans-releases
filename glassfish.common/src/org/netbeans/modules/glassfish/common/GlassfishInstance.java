@@ -268,7 +268,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     public static GlassfishInstance create(String displayName,
             String installRoot, String glassfishRoot, String domainsDir,
             String domainName, int httpPort, int adminPort,
-            String userName, String password, String url,
+            String userName, String password, String target, String url,
             GlassfishInstanceProvider gip) {
         Map<String, String> ip = new HashMap<String, String>();
         ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
@@ -278,6 +278,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
         ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
         ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
+        ip.put(GlassfishModule.TARGET_ATTR, target);
         ip.put(GlassfishModule.USERNAME_ATTR,
                 userName != null
                 ? userName : DEFAULT_ADMIN_NAME);

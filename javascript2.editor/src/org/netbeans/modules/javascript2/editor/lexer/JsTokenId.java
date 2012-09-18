@@ -58,7 +58,19 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum JsTokenId implements TokenId {
 
-    UNKNOWN(null, "error"), // NOI18N
+    ERROR(null, "error") { // NOI18N
+        @Override
+        public boolean isError() {
+            return true;
+        }
+    },
+
+    UNKNOWN(null, "unknown") { // NOI18N
+        @Override
+        public boolean isError() {
+            return true;
+        }
+    },
 
     NUMBER(null, "constant"), // NOI18N
 
@@ -202,6 +214,10 @@ public enum JsTokenId implements TokenId {
 
     public boolean isKeyword() {
         return "keyword".equals(primaryCategory); //NOI18N
+    }
+
+    public boolean isError() {
+        return false;
     }
 
     private static final Language<JsTokenId> JAVASCRIPT_LANGUAGE =

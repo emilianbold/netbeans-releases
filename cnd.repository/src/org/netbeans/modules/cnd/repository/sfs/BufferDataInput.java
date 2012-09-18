@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.repository.sfs;
 import java.io.*;
 import java.nio.*;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
-import org.netbeans.modules.cnd.repository.translator.UnitsUtil;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 
 /**
  * ByteBuffer based DataInput implementation
@@ -55,10 +55,12 @@ import org.netbeans.modules.cnd.repository.translator.UnitsUtil;
  */
 public class BufferDataInput implements RepositoryDataInput, SharedStringBuffer {
     
-    private ByteBuffer buffer;
+    private final ByteBuffer buffer;
+    private final UnitCodec unitCodec;
     
-    public BufferDataInput(ByteBuffer buffer) {
+    public BufferDataInput(ByteBuffer buffer, UnitCodec unitCodec) {
         this.buffer = buffer;
+        this.unitCodec = unitCodec;
     }
 
     @Override
@@ -167,7 +169,7 @@ public class BufferDataInput implements RepositoryDataInput, SharedStringBuffer 
 
     @Override
     public int readUnitId() throws IOException {
-        return UnitsUtil.readUnitId(this);
+        return unitCodec.addRepositoryID(readInt());
     }
 
     private static final int sharedArrySize = 1024;

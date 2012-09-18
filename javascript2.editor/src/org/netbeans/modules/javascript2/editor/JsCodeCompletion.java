@@ -107,7 +107,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
         CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
         
         LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
-        CodeCompletionResult result = CodeCompletionResult.NONE;
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
             request.context = context;
@@ -227,7 +226,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     JsDocumentationCodeCompletion.complete(request, resultList);
                     break;
                 default:
-                    result = CodeCompletionResult.NONE;
+                    break;
             }
         }
         
@@ -304,17 +303,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
     @Override
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
         String prefix = "";
+
         BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
             return null;
         }
 
-
-        TokenHierarchy<Document> th = TokenHierarchy.get((Document) doc);
-
-
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, caretOffset);
-
+        caretOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot(), caretOffset);
         if (ts == null) {
             return null;
         }
@@ -349,7 +345,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
             if (id == JsTokenId.DOC_COMMENT) {
-                TokenSequence<? extends JsDocumentationTokenId> docTokenSeq = LexUtilities.getJsDocumentationTokenSequence(th, caretOffset);
+                TokenSequence<? extends JsDocumentationTokenId> docTokenSeq =
+                        LexUtilities.getJsDocumentationTokenSequence(info.getSnapshot(), caretOffset);
                 if (docTokenSeq == null) {
                     return null;
                 }
@@ -372,7 +369,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     prefix = docTokenSeq.token().text().toString();
                 }
             }
-            if (id == JsTokenId.UNKNOWN) {
+            if (id.isError()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
                     prefix = prefix.substring(0, caretOffset - ts.offset());
@@ -489,8 +486,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
                     && token.id() != JsTokenId.BRACKET_LEFT_PAREN
                     && token.id() != JsTokenId.BLOCK_COMMENT
-                    && token.id() != JsTokenId.LINE_COMMENT) {
-                
+                    && token.id() != JsTokenId.LINE_COMMENT
+                    && token.id() != JsTokenId.OPERATOR_ASSIGNMENT
+                    && token.id() != JsTokenId.OPERATOR_PLUS) {
+
                 if (token.id() != JsTokenId.EOL) {
                     if (token.id() != JsTokenId.OPERATOR_DOT) {
                         if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {

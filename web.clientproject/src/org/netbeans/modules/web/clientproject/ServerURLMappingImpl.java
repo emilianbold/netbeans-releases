@@ -42,10 +42,14 @@
 
 package org.netbeans.modules.web.clientproject;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
+import org.netbeans.modules.javascript.jstestdriver.api.JsTestDriver;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
 import org.netbeans.modules.web.clientproject.spi.webserver.WebServer;
 import org.openide.filesystems.FileObject;
@@ -64,28 +68,33 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
     }
 
     @Override
-    public URL toServer(FileObject projectFile) {
-        if (project.isUsingEmbeddedServer()) {
-            return WebServer.getWebserver().toServer(projectFile);
+    public URL toServer(int projectContext, FileObject projectFile) {
+        if (projectContext == ServerURLMapping.CONTEXT_PROJECT_SOURCES) {
+            if (project.isUsingEmbeddedServer()) {
+                return WebServer.getWebserver().toServer(projectFile);
+            } else {
+                String relPath = FileUtil.getRelativePath(project.getSiteRootFolder(), projectFile);
+                String root = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL);
+                if (!root.endsWith("/")) { //NOI18N
+                    root += "/"; //NOI18N
+                }
+                try {
+                    return new URL(root + relPath);
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return null;
+                }
+            }
         } else {
-            String relPath = FileUtil.getRelativePath(project.getSiteRootFolder(), projectFile);
-            String root = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL);
-            if (!root.endsWith("/")) { //NOI18N
-                root += "/"; //NOI18N
-            }
-            try {
-                return new URL(root + relPath);
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
+            return toJsTestDriverServer(projectFile);
         }
     }
 
     @Override
-    public FileObject fromServer(URL serverURL) {
+    public FileObject fromServer(int projectContext, URL serverURL) {
+        FileObject fo = null;
         if (project.isUsingEmbeddedServer()) {
-            return WebServer.getWebserver().fromServer(serverURL);
+            fo = WebServer.getWebserver().fromServer(serverURL);
         } else {
             String root = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL);
             String u = serverURL.toExternalForm();
@@ -94,10 +103,52 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
                 if (u.startsWith("/")) { //NOI18N
                     u = u.substring(1);
                 }
-                return project.getSiteRootFolder().getFileObject(u);
+                fo = project.getSiteRootFolder().getFileObject(u);
             }
+        }
+        if (fo == null) {
+            fo = fromJsTestDriverServer(serverURL);
+        }
+        return fo;
+    }
+
+    private URL toJsTestDriverServer(FileObject projectFile) {
+        String prefix = JsTestDriver.getServerURL();
+        if (!prefix.endsWith("/")) {
+            prefix += "/";
+        }
+        prefix += "test/";
+        String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), projectFile);
+        if (relativePath != null) {
+            try {
+                return new URL(prefix+relativePath);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
+    }
+    
+    private FileObject fromJsTestDriverServer(URL serverURL) {
+        String serverU = serverURL.toExternalForm();
+        String prefix = JsTestDriver.getServerURL();
+        if (!prefix.endsWith("/")) {
+            prefix += "/";
+        }
+        prefix += "test/";
+        if (!serverU.startsWith(prefix)) {
             return null;
         }
+        String projectRelativePath = serverU.substring(prefix.length());
+        try {
+            projectRelativePath = URLDecoder.decode(projectRelativePath, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (projectRelativePath.length() > 0) {
+            return project.getProjectDirectory().getFileObject(projectRelativePath);
+        }
+        return null;
     }
 
 }

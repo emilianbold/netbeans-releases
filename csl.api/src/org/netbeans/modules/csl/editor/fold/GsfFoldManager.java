@@ -109,6 +109,7 @@ public class GsfFoldManager implements FoldManager {
     public static final FoldType IMPORTS_FOLD_TYPE = new FoldType("imports"); // NOI18N
     public static final FoldType JAVADOC_FOLD_TYPE = new FoldType("javadoc"); // NOI18N
     public static final FoldType TAG_FOLD_TYPE = new FoldType("tag"); // NOI18N
+    public static final FoldType INNER_CLASS_FOLD_TYPE = new FoldType("inner-class"); // NOI18N
 
     
     private static final String IMPORTS_FOLD_DESCRIPTION = "..."; // NOI18N
@@ -137,6 +138,11 @@ public class GsfFoldManager implements FoldManager {
     public static final FoldTemplate TAG_FOLD_TEMPLATE
         = new FoldTemplate(TAG_FOLD_TYPE, TAG_FOLD_DESCRIPTION, 0, 0);
 
+    public static final FoldTemplate INNER_CLASS_FOLD_TEMPLATE
+        = new FoldTemplate(INNER_CLASS_FOLD_TYPE, CODE_BLOCK_FOLD_DESCRIPTION, 0, 0);
+
+    
+    public static final String CODE_FOLDING_ENABLE = "code-folding-enable"; //NOI18N
     
     /** Collapse methods by default
      * NOTE: This must be kept in sync with string literal in editor/options
@@ -166,7 +172,7 @@ public class GsfFoldManager implements FoldManager {
      * NOTE: This must be kept in sync with string literal in editor/options
      */
     public static final String CODE_FOLDING_COLLAPSE_INITIAL_COMMENT = "code-folding-collapse-initial-comment"; //NOI18N
-
+    
      /**
      * Collapse tags by default
      * NOTE: This must be kept in sync with string literal in editor/options
@@ -502,78 +508,61 @@ public class GsfFoldManager implements FoldManager {
             });
         }
         
+        private void addFoldsOfType(
+                    GsfFoldManager manager, 
+                    StructureScanner scanner,
+                    String type, Map<String,List<OffsetRange>> folds,
+                    TreeSet<FoldInfo> result,
+                    Document doc, 
+                    String collapsedOptionName,
+                    FoldTemplate template) {
+            
+            List<OffsetRange> ranges = folds.get(type); //NOI18N
+            if (ranges != null) {
+                boolean collapseByDefault = manager.getSetting(collapsedOptionName);
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.log(Level.FINEST, "Creating folds {0}, collapsed: {1}", new Object[] {
+                        type, collapseByDefault
+                    });
+                }
+                for (OffsetRange range : ranges) {
+                    try {
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.log(Level.FINEST, "Fold: {0}", range);
+                        }
+                        addFold(range, result, doc, collapseByDefault, template);
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
+                    }
+                }
+            } else {
+                LOG.log(Level.FINEST, "No folds of type {0}", type);
+            }
+        }
+        
         private void addTree(GsfFoldManager manager, TreeSet<FoldInfo> result, ParserResult info, Document doc, StructureScanner scanner) {
+            // #217322, disabled folding -> no folds will be created
+            if (!manager.getSetting(CODE_FOLDING_ENABLE)) {
+                return;
+            }
             Map<String,List<OffsetRange>> folds = scanner.folds(info);
             if (cancelled.get()) {
                 return;
             }
-            List<OffsetRange> ranges = folds.get("codeblocks"); //NOI18N
-            if (ranges != null) {
-                boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_METHOD);
-                for (OffsetRange range : ranges) {
-                    try {
-                        addFold(range, result, doc, collapseByDefault,CODE_BLOCK_FOLD_TEMPLATE); //foldCodeBlocksPreset
-                    } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
-                    }
-                }
-            }
-            ranges = folds.get("comments"); //NOI18N
-            if (ranges != null) {
-                boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_JAVADOC);
-                for (OffsetRange range : ranges) {
-                    try {
-                        addFold(range, result, doc, collapseByDefault,JAVADOC_FOLD_TEMPLATE);
-                    } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
-                    }
-                }
-            }
-            ranges = folds.get("initial-comment"); //NOI18N
-            if (ranges != null) {
-                for (OffsetRange range : ranges) {
-                    try {
-                        boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_INITIAL_COMMENT);
-                        addFold(range, result, doc, collapseByDefault,INITIAL_COMMENT_FOLD_TEMPLATE); //foldInitialCommentsPreset
-                    } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
-                    }
-                }
-            }
-            ranges = folds.get("imports"); //NOI18N
-            if (ranges != null) {
-                for (OffsetRange range : ranges) {
-                    try {
-                        boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_IMPORT);
-                        addFold(range, result, doc, collapseByDefault,IMPORTS_FOLD_TEMPLATE);
-                    } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
-                    }
-                }
-            }
-            ranges = folds.get("tags"); //NOI18N
-            if (ranges != null) {
-                for (OffsetRange range : ranges) {
-                    try {
-                        boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_TAGS);
-                        addFold(range, result, doc, collapseByDefault, TAG_FOLD_TEMPLATE);
-                    } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
-                    }
-                }
-            }
-            
-            ranges = folds.get("othercodeblocks"); //NOI18N
-            if (ranges != null) {
-                for (OffsetRange range : ranges) {
-                    try {
-                        boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_TAGS);
-                        addFold(range, result, doc, collapseByDefault, CODE_BLOCK_FOLD_TEMPLATE);
-                    } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
-                    }
-                }
-            }
+            addFoldsOfType(manager, scanner, "codeblocks", folds, result, doc, 
+                    CODE_FOLDING_COLLAPSE_METHOD, CODE_BLOCK_FOLD_TEMPLATE);
+            addFoldsOfType(manager, scanner, "comments", folds, result, doc, 
+                    CODE_FOLDING_COLLAPSE_JAVADOC, JAVADOC_FOLD_TEMPLATE);
+            addFoldsOfType(manager, scanner, "initial-comment", folds, result, doc, 
+                    CODE_FOLDING_COLLAPSE_INITIAL_COMMENT, INITIAL_COMMENT_FOLD_TEMPLATE);
+            addFoldsOfType(manager, scanner, "imports", folds, result, doc, 
+                    CODE_FOLDING_COLLAPSE_IMPORT, IMPORTS_FOLD_TEMPLATE);
+            addFoldsOfType(manager, scanner, "tags", folds, result, doc, 
+                    CODE_FOLDING_COLLAPSE_TAGS, TAG_FOLD_TEMPLATE);
+            addFoldsOfType(manager, scanner, "othercodeblocks", folds, result, doc, 
+                    CODE_FOLDING_COLLAPSE_TAGS, CODE_BLOCK_FOLD_TEMPLATE);
+            addFoldsOfType(manager, scanner, "inner-classes", folds, result, doc, 
+                    CODE_FOLDING_COLLAPSE_INNERCLASS, INNER_CLASS_FOLD_TEMPLATE);
         }
         
         private void addFold(OffsetRange range, TreeSet<FoldInfo> folds, Document doc, boolean collapseByDefault, FoldTemplate template) throws BadLocationException {

@@ -64,12 +64,35 @@ public class JsCodeCompletionGeneralTest extends JsTestBase {
         checkCompletion("testfiles/completion/general/issue215353.js", "f.^call({msg:\"Ahoj\"});", false);
     }
     
-    
+
     public void testIssue217029_01() throws Exception {
         checkCompletion("testfiles/completion/issue217029.js", "element.ch^arAt(10);", false);
     }
-    
-    
+
+    public void testIssue215861_01() throws Exception {
+        checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser \"+navigator.^);", false);
+    }
+
+    public void testIssue215861_02() throws Exception {
+        checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser2 \"+navigator.^);", false);
+    }
+
+    public void testIssue215777_01() throws Exception {
+        checkCompletion("testfiles/completion/issue215777.js", "var x= Math.^", false);
+    }
+
+    public void testIssue215777_02() throws Exception {
+        checkCompletion("testfiles/completion/issue215777.js", "var x=Math.^", false);
+    }
+
+    public void testIssue217100_01() throws Exception {
+        checkCompletion("testfiles/completion/issue217100_1.js", "v^", false);
+    }
+
+    public void testIssue217100_02() throws Exception {
+        checkCompletion("testfiles/completion/issue217100_2.js", "v^", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

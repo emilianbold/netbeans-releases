@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.*;
+import com.oracle.nashorn.parser.Lexer;
 import com.oracle.nashorn.parser.TokenType;
 import java.util.*;
 import org.netbeans.api.lexer.Token;
@@ -694,16 +695,17 @@ public class ModelUtils {
         public Node enter(LiteralNode lNode) {
             Object value = lNode.getObject();
             if (value instanceof Boolean) {
-                result.add(new TypeUsageImpl(Type.BOOLEAN, lNode.getStart(), true));
+                result.add(new TypeUsageImpl(Type.BOOLEAN, -1, true));
             } else if (value instanceof String) {
-                result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
+                result.add(new TypeUsageImpl(Type.STRING, -1, true));
             } else if (value instanceof Integer
                     || value instanceof Float
                     || value instanceof Double) {
-                result.add(new TypeUsageImpl(Type.NUMBER, lNode.getStart(), true));
+                result.add(new TypeUsageImpl(Type.NUMBER, -1, true));
             } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
-                // offset is set to -1, to prevent coloring, etc
-                result.add(new TypeUsageImpl("Array", -1, true));
+                result.add(new TypeUsageImpl(Type.ARRAY, -1, true));
+            } else if (value instanceof Lexer.RegexToken) {
+                result.add(new TypeUsageImpl(Type.REGEXP, -1, true));
             }
             return null;
         }

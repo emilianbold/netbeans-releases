@@ -60,6 +60,6 @@ public class ExamplesSuite {
                 addTest(OverallTest.class, OverallTest.tests).
                 addTest(PropertiesTest.class).
                 addTest(WizardsTest.class);
-        return NbModuleSuite.create(conf.clusters(".*").enableModules(".*"));
+        return conf.clusters(".*").enableModules(".*").honorAutoloadEager(true).suite();
     }
 }

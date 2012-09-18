@@ -1,0 +1,7 @@
+Code completion result for source line:
+v|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+VARIABLE   v                               [PUBLIC]   issue217100_1.js
+KEYWORD    var                                        null
+KEYWORD    void                                       null

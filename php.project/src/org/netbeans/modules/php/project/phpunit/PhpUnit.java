@@ -219,6 +219,7 @@ public final class PhpUnit extends PhpProgram {
         }
         if (!generatedFile.isFile()) {
             LOGGER.log(Level.WARNING, "Generated PHPUnit test file {0} was not found.", generatedFile.getName());
+            return null;
         }
         return moveAndAdjustGeneratedFile(generatedFile, testFile, sourceFile);
     }

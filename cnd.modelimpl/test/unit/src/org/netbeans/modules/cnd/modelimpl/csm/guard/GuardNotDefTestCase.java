@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.guard;
 
-import java.io.File;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**

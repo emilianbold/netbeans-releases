@@ -1682,5 +1682,4 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             }
         }
     }
-    
 }

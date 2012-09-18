@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript2.editor.parser;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.editor.JsonTestBase;
 import org.netbeans.modules.javascript2.editor.parser.SanitizingParser.Context;
 import org.netbeans.modules.parsing.api.Source;
 
@@ -52,7 +52,7 @@ import org.netbeans.modules.parsing.api.Source;
  *
  * @author Petr Hejl
  */
-public class JsonParserTest extends JsTestBase {
+public class JsonParserTest extends JsonTestBase {
 
     public JsonParserTest(String testName) {
         super(testName);

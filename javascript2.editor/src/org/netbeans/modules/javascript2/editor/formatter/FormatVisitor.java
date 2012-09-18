@@ -65,13 +65,13 @@ import com.oracle.nashorn.ir.WithNode;
 import com.oracle.nashorn.ir.visitor.NodeVisitor;
 import com.oracle.nashorn.parser.TokenType;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -174,7 +174,17 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node enter(DoWhileNode doWhileNode) {
         // within parens spaces
-        markSpacesWithinParentheses(doWhileNode, getFinish(doWhileNode.getBody()), getFinish(doWhileNode),
+        int leftStart;
+        Block body = doWhileNode.getBody();
+        if (body.getStart() == body.getFinish()) {
+            // unfortunately due to condition at the end of do-while
+            // we have to care about virtual block
+            List<Node> statements = body.getStatements();
+            leftStart = getFinish(statements.get(statements.size() - 1));
+        } else {
+            leftStart = getFinish(doWhileNode.getBody());
+        }
+        markSpacesWithinParentheses(doWhileNode, leftStart, getFinish(doWhileNode),
                 FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
 
         // mark space before left brace
@@ -557,7 +567,7 @@ public class FormatVisitor extends NodeVisitor {
                     // remove around binary operator tokens added during token
                     // stream creation
                     if (TokenType.ADD.equals(type) || TokenType.SUB.equals(type)) {
-                        assert formatToken != null && formatToken.getText() != null
+                        assert formatToken != null
                                 && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
                                     || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText())) : formatToken;
                         // we remove blindly inserted binary op markers
@@ -1235,9 +1245,15 @@ public class FormatVisitor extends NodeVisitor {
     private static void appendTokenAfterLastVirtual(FormatToken previous,
             FormatToken token, boolean checkDuplicity) {
 
+        assert previous != null;
+
+        @NonNull
         FormatToken current = previous;
-        while (current.next() != null && current.next().isVirtual()) {
-            current = current.next();
+        FormatToken next = current.next();
+
+        while (next != null && next.isVirtual()) {
+            current = next;
+            next = next.next();
         }
         if (!checkDuplicity || !current.isVirtual() || !token.isVirtual()
                 || current.getKind() != token.getKind()) {

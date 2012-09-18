@@ -698,6 +698,10 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.FALSE);
             highlightCanceled = true;
         }
+        searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
+        searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
+        searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
+        EditorFindSupport.getInstance().putFindProperties(searchProps.getProperties());
     }
 
     private void incrementalSearch() {

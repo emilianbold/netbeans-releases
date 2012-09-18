@@ -43,23 +43,15 @@
 package org.netbeans.modules.bugtracking.util;
 
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.io.File;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -78,7 +70,6 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -96,7 +87,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.*;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 
 /**
@@ -349,27 +339,6 @@ public class BugtrackingUtil {
         file.delete();
     }
 
-    public static void openPluginManager() {
-        try {
-            ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
-            Class<CallableSystemAction> clz = (Class<CallableSystemAction>) cl.loadClass("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
-            final CallableSystemAction a = CallableSystemAction.findObject(clz, true);
-            a.putValue("InitialTab", "available"); // NOI18N
-            Runnable inAWT = new Runnable() {
-                public void run() {
-                    a.performAction ();
-                }
-            };
-            if (EventQueue.isDispatchThread()) {
-                inAWT.run();
-            } else {
-                EventQueue.invokeLater(inAWT);
-            }
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
     private static Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
     /**
      * Determines wheter the given {@link RepositoryProvider} is the

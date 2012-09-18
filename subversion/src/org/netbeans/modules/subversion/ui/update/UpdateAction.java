@@ -133,12 +133,18 @@ public class UpdateAction extends ContextAction {
         if (revision == null) {
             return;
         }
-        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
+        final ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
+            @Override
             public void perform() {
                 update(ctx, this, getContextDisplayName(nodes), revision);
             }
         };                    
-        support.start(createRequestProcessor(ctx));
+        Utils.post(new Runnable() {
+            @Override
+            public void run () {
+                support.start(createRequestProcessor(ctx));
+            }
+        });
     }
 
     protected SVNRevision getRevision (Context ctx) {

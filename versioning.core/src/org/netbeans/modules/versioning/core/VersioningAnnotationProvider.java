@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.versioning.core;
 
-import java.util.Map.Entry;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.openide.filesystems.*;
@@ -62,6 +61,7 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.logging.Logger;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
@@ -101,18 +101,18 @@ public class VersioningAnnotationProvider {
             // at first annotate the empty icon and cache this merge icon.
             // otherwise the cached value would be the final merged icon and there might be problems when acquiring the cached value
             // in another annotate round - if the caller decides to annotate a different icon than the one earlier
-            annotatedIcon = iconCache.getValue(iconCache.new ItemKey<Image, String>(files, "", EMPTY_ICON)); //NOI18N
+            annotatedIcon = iconCache.getValue(iconCache.new ItemKey<Image, String>(files, "", files instanceof NonRecursiveFolder, EMPTY_ICON)); //NOI18N
             // and finally merge the cached value with the original icon
             annotatedIcon = annotatedIcon == null ? icon : ImageUtilities.mergeImages(icon, annotatedIcon, 0, 0);
         } else {
             // fallback to the old implementation
-            annotatedIcon = iconCache.getValue(iconCache.new ItemKey<Image, String>(files, "", icon)); //NOI18N
+            annotatedIcon = iconCache.getValue(iconCache.new ItemKey<Image, String>(files, "", files instanceof NonRecursiveFolder, icon)); //NOI18N
         }
         return annotatedIcon;
     }
 
     public String annotateNameHtml(String name, Set<? extends FileObject> files) {
-        String annotatedName = labelCache.getValue(labelCache.new ItemKey<String, String>(files, name, name));
+        String annotatedName = labelCache.getValue(labelCache.new ItemKey<String, String>(files, name, files instanceof NonRecursiveFolder, name));
         return annotatedName == null ? htmlEncode(name) : annotatedName;
     }
 
@@ -756,8 +756,9 @@ public class VersioningAnnotationProvider {
                     assert files != null;
                     clearEvents();
                     T newValue = annotate(initialValue, files);
+                    boolean isNonRecursive = files instanceof NonRecursiveFolder;
                     files = new HashSet<FileObject>(files);
-                    boolean fireEvent = setValue(new ItemKey<T, KEY>(files, refreshCandidate.keyPart, initialValue), newValue);
+                    boolean fireEvent = setValue(new ItemKey<T, KEY>(files, refreshCandidate.keyPart, isNonRecursive, initialValue), newValue);
                     if (fireEvent) {
                         Set<VCSFileProxy> filesToRefresh = new HashSet<VCSFileProxy>(files.size());
                         for (FileObject fo : files) {
@@ -806,12 +807,14 @@ public class VersioningAnnotationProvider {
             private final KEY keyPart;
             private final Set<? extends FileObject> files;
             private Integer hashCode;
+            private final boolean nonRecursiveFolders;
 
-            public ItemKey(Set<? extends FileObject> files, KEY keyPart, T initialValue) {
+            public ItemKey(Set<? extends FileObject> files, KEY keyPart, boolean nonRecursiveFolders, T initialValue) {
                 assert keyPart != null;
                 this.initialValue = initialValue;
                 this.keyPart = keyPart;
                 this.files = files;
+                this.nonRecursiveFolders = nonRecursiveFolders;
             }
 
             public T getInitialValue () {
@@ -826,7 +829,8 @@ public class VersioningAnnotationProvider {
             public boolean equals(Object obj) {
                 if (obj instanceof ItemKey) {
                     ItemKey other = (ItemKey) obj;
-                    return files.equals(other.files) && (keyPart.equals(other.keyPart));
+                    return nonRecursiveFolders == other.nonRecursiveFolders
+                            && files.equals(other.files) && (keyPart.equals(other.keyPart));
                 }
                 return super.equals(obj);
             }

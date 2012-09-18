@@ -83,10 +83,10 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         super(ast, name, file, getStartOffset(ast), getEndOffset(ast));
     }
 
-    public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, FileContent fileContent, boolean register, DeclarationsContainer container) {
+    public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
         NameHolder nameHolder = NameHolder.createName(getClassName(ast));
         ClassImplFunctionSpecialization impl = new ClassImplFunctionSpecialization(ast, nameHolder, file);
-        impl.initQualifiedName(ast, scope, false);
+        impl.initQualifiedName(ast, scope, false, file);
         ClassImplFunctionSpecialization clsImpl = findExistingClassImplClassImplFunctionSpecializationInProject(file, impl);
         if (clsImpl != null) {
             impl = clsImpl;

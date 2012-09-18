@@ -57,6 +57,7 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.libs.jstestdriver.api.BrowserInfo;
 import org.netbeans.libs.jstestdriver.api.ServerListener;
 import org.netbeans.libs.jstestdriver.api.TestListener;
@@ -150,20 +151,26 @@ public class JsTestDriverImpl implements JsTestDriverImplementation {
     }
 
     @Override
-    public void runTests(File jsTestDriverJar, int port, boolean strictMode, File baseFolder, File configFile, 
-            String testsToRun, final TestListener listener) {
+    public void runTests(File jsTestDriverJar, String serverURL, boolean strictMode, File baseFolder, File configFile, 
+            String testsToRun, final TestListener listener, final LineConvertor lineConvertor) {
         ExecutionDescriptor descriptor = new ExecutionDescriptor().
                 controllable(false).
 //                outLineBased(true).
 //                errLineBased(true).
                 outProcessorFactory(new TestRunInputProcessorFactory(listener)).
+                outConvertorFactory(new ExecutionDescriptor.LineConvertorFactory() {
+                    @Override
+                    public LineConvertor newLineConvertor() {
+                        return lineConvertor;
+                    }
+                }).
                 frontWindowOnError(true);
         File extjar = InstalledFileLocator.getDefault().locate("modules/ext/libs.jstestdriver-ext.jar", "org.netbeans.libs.jstestdriver", false); // NOI18N
         ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(getJavaBinary()).
             addArgument("-cp").
             addArgument(jsTestDriverJar.getAbsolutePath()+File.pathSeparatorChar+extjar.getAbsolutePath()).
             addArgument("org.netbeans.libs.jstestdriver.ext.RunTests").
-            addArgument("http://localhost:"+port).
+            addArgument(serverURL).
             addArgument(baseFolder.getAbsolutePath()).
             addArgument(configFile.getAbsolutePath()).
             addArgument(testsToRun).

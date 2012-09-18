@@ -448,7 +448,6 @@ public class QuickSearch {
     
     private void removeSearchField() {
         if (isAlwaysShown()) {
-            searchTextField.setText("");
             return;
         }
         if (searchPanel == null) {
@@ -814,7 +813,7 @@ public class QuickSearch {
             if (searchPanel != null) {
                 removeSearchField();
                 //fireQuickSearchConfirmed();
-                callback.quickSearchConfirmed();
+                callback.quickSearchCanceled();
             }
         }
     }

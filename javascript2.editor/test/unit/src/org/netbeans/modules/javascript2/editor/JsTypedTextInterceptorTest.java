@@ -85,8 +85,8 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
     }
 
     public void testNoMatchInComments() throws Exception {
-        insertChar("// Hello^", '\'', "// Hello'^'");
-        insertChar("// Hello^", '"', "// Hello\"^\"");
+        insertChar("// Hello^", '\'', "// Hello'^");
+        insertChar("// Hello^", '"', "// Hello\"^");
         insertChar("// Hello^", '[', "// Hello[^");
         insertChar("// Hello^", '(', "// Hello(^");
         insertChar("/* Hello^*/", '\'', "/* Hello'^*/");
@@ -211,9 +211,10 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("x = ((^)", ')', "x = (()^)");
     }
 
-    public void testRegexp1() throws Exception {
-        insertChar("x = ^", '/', "x = /^/");
-    }
+    // see issue #217134 - the feature is more confusing than helpful
+//    public void testRegexp1() throws Exception {
+//        insertChar("x = ^", '/', "x = /^/");
+//    }
 
     public void testRegexp2() throws Exception {
         insertChar("x = /^/", '/', "x = //^");
@@ -237,9 +238,9 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
                 "    regexp = /fofo/^\n");
     }
 
-    public void testRegexp7() throws Exception {
-        insertChar("x = ^\n", '/', "x = /^/\n");
-    }
+//    public void testRegexp7() throws Exception {
+//        insertChar("x = ^\n", '/', "x = /^/\n");
+//    }
 
     public void testRegexp8() throws Exception {
         insertChar("x = /^/\n", '/', "x = //^\n");

@@ -45,15 +45,19 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.translator.UnitsUtil;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 
 /**
  *
  * @author Alexander Simon 
  */
 public class RepositoryDataOutputStream extends DataOutputStream implements RepositoryDataOutput, SharedStringBuffer {
-    public RepositoryDataOutputStream(OutputStream out) {
+    
+    private final UnitCodec unitCodec;
+    
+    public RepositoryDataOutputStream(OutputStream out, UnitCodec unitCodec) {
         super(out);
+        this.unitCodec = unitCodec;
     }
 
     @Override
@@ -63,7 +67,7 @@ public class RepositoryDataOutputStream extends DataOutputStream implements Repo
 
     @Override
     public void writeUnitId(int unitId) throws IOException {
-        UnitsUtil.writeUnitId(unitId, this);
+        writeInt(unitCodec.removeRepositoryID(unitId));
     }
 
     private static final int sharedArrySize = 1024;
