@@ -67,7 +67,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="selectedLibrariesScrollPane" pref="0" max="32767" attributes="0"/>
+                  <Component id="selectedLibrariesScrollPane" pref="160" max="32767" attributes="0"/>
                   <Component id="librariesScrollPane" pref="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="selectAllButton" min="-2" max="-2" attributes="0"/>
