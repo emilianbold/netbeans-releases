@@ -46,6 +46,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -413,6 +414,7 @@ public class NFABasedBulkSearch extends BulkSearch {
             case CLASS: name = ((ClassTree)t).getSimpleName().toString(); break;
             case VARIABLE: name = ((VariableTree)t).getName().toString(); break;
             case METHOD: name = ((MethodTree)t).getName().toString(); break;
+            case BOOLEAN_LITERAL: name = ((LiteralTree) t).getValue().toString(); break;
             default: name = null;
         }
 

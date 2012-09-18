@@ -124,6 +124,10 @@ public class BatchUtilities {
     }
     
     public static Collection<ModificationResult> applyFixes(BatchResult candidates, @NonNull final ProgressHandleWrapper progress, AtomicBoolean cancel, final Collection<? super RefactoringElementImplementation> fileChanges, final Map<JavaFix, ModificationResult> changesPerFix, final Collection<? super MessageImpl> problems) {
+        return applyFixes(candidates, progress, cancel, fileChanges, changesPerFix, false, problems);
+    }
+    
+    public static Collection<ModificationResult> applyFixes(BatchResult candidates, @NonNull final ProgressHandleWrapper progress, AtomicBoolean cancel, final Collection<? super RefactoringElementImplementation> fileChanges, final Map<JavaFix, ModificationResult> changesPerFix, boolean doNotRegisterClassPath, final Collection<? super MessageImpl> problems) {
         final Map<Project, Set<String>> processedDependencyChanges = new IdentityHashMap<Project, Set<String>>();
         final Map<FileObject, List<ModificationResult.Difference>> result = new LinkedHashMap<FileObject, List<ModificationResult.Difference>>();
         final Map<FileObject, byte[]> resourceContentChanges = new HashMap<FileObject, byte[]>();
@@ -175,7 +179,7 @@ public class BatchUtilities {
             }
         };
 
-        BatchSearch.getVerifiedSpans(candidates, progress, callback, problems, cancel);
+        BatchSearch.getVerifiedSpans(candidates, progress, callback, doNotRegisterClassPath, problems, cancel);
         
         addResourceContentChanges(resourceContentChanges, result);
 

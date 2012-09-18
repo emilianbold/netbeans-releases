@@ -979,6 +979,17 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 new File("t/A.java", "package t; import java.util.List; public class A { public static void main(String[] args) { SingleList<String> lijst = new SingleList<String>(); SingleList<String> cloned = lijst.clone(); } }"));
         performIntroduceLocalExtension("MyList", true, true, "...", IntroduceLocalExtensionRefactoring.Equality.DELEGATE, new Problem(true, "ERR_InvalidPackage"));
     }
+    
+    public void testInterface() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A implements Inter { public void method() { } }"),
+                new File("t/Inter.java", "package t; public interface Inter { void method(); }"));
+        performIntroduceLocalExtensionInterface("t/Inter.java", "InterWrapper", false, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A implements InterWrapper { public void method() { } }"),
+                new File("t/Inter.java", "package t; public interface Inter { void method(); }"),
+                new File("t/InterWrapper.java", "/* * Refactoring License */ package t; /** * * @author junit */ public interface InterWrapper extends Inter { } "));
+    }
 
     public void testWrapper() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -1415,6 +1426,47 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         verifyContent(src,
                 new File("t/A.java", "package t; import java.util.*; public class A { public static void main(String[] args) { List<String> lijst = new t.ArrayList<String>(); } }"),
                 new File("t/ArrayList.java", sb1.toString()));
+    }
+    
+    private void performIntroduceLocalExtensionInterface(final String source, final String name, final boolean wrap, final boolean replace, final String packageName, final IntroduceLocalExtensionRefactoring.Equality equality, Problem... expectedProblems) throws Exception {
+        final IntroduceLocalExtensionRefactoring[] r = new IntroduceLocalExtensionRefactoring[1];
+
+        JavaSource.forFileObject(src.getFileObject(source)).runUserActionTask(new Task<CompilationController>() {
+
+            @Override
+            public void run(org.netbeans.api.java.source.CompilationController parameter) throws Exception {
+                parameter.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = parameter.getCompilationUnit();
+
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+
+                TreePath tp = TreePath.getPath(cut, clazz);
+                r[0] = new IntroduceLocalExtensionRefactoring(TreePathHandle.create(tp, parameter));
+                r[0].setNewName(name);
+                r[0].setPackageName(packageName);
+                r[0].setSourceRoot(src);
+                r[0].setWrap(wrap);
+                r[0].setReplace(replace);
+                r[0].setEquality(equality);
+                r[0].getContext().add(new Integer(1));
+            }
+        }, true);
+
+        RefactoringSession rs = RefactoringSession.create("Session");
+        List<Problem> problems = new LinkedList<Problem>();
+
+        addAllProblems(problems, r[0].preCheck());
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, r[0].checkParameters());
+        }
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, r[0].prepare(rs));
+        }
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, rs.doRefactoring(true));
+        }
+
+        assertProblems(Arrays.asList(expectedProblems), problems);
     }
 
     private void performIntroduceLocalExtension(final String name, final boolean wrap, final boolean replace, final String packageName, final IntroduceLocalExtensionRefactoring.Equality equality, Problem... expectedProblems) throws Exception {
