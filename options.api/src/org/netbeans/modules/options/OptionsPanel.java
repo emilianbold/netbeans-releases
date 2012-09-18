@@ -76,6 +76,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -107,6 +108,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.options.CategoryModel.Category;
 import org.netbeans.modules.options.advanced.AdvancedPanel;
 import org.netbeans.modules.options.ui.VariableBorder;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -130,17 +132,14 @@ public class OptionsPanel extends JPanel {
     private String hintText;
     private JTextComponent searchTC;
     private String text2search = "";
-    boolean clearSearch = false;
+    private boolean clearSearch = false;
     private CardLayout cLayout;
     
     private int selectedTabIndex = -1;
     private HashMap<String, JTabbedPane> categoryid2tabbedpane = new HashMap<String, JTabbedPane>();
     private HashMap<String, ArrayList<String>> categoryid2words = new HashMap<String, ArrayList<String>>();
-    private HashMap<String, CategoryInfo> categoryid2jcomponents = new HashMap<String, CategoryInfo>();
-    private HashMap<JTabbedPane, HashMap<Integer, TabInfo>> tabbedpane2tabs = new HashMap<JTabbedPane, HashMap<Integer, TabInfo>>();
-    private HashMap<JTabbedPane, HashMap<Integer, TabInfo>> tabbedpane2removedtabs = new HashMap<JTabbedPane, HashMap<Integer, TabInfo>>();
-    private ArrayList<String> removedCategories = new ArrayList<String>();
-    private static ArrayList<JComponent> componentsShowing = new ArrayList<JComponent>();
+    private HashMap<String, HashMap<Integer, TabInfo>> categoryid2tabs = new HashMap<String, HashMap<Integer, TabInfo>>();
+    private ArrayList<String> disabledCategories = new ArrayList<String>();
     private JTextField keymapsSearch = null;
 
     private Map<String, CategoryButton> buttons = new LinkedHashMap<String, CategoryButton>();    
@@ -329,7 +328,7 @@ public class OptionsPanel extends JPanel {
         
         JComponent searchPanel = (JComponent) quickSearch.getComponent(0);
         searchPanel.setToolTipText(Bundle.Filter_Textfield_Tooltip());
-        searchTC = (JTextComponent) searchPanel.getComponent(1);
+        searchTC = (JTextComponent) searchPanel.getComponent(searchPanel.getComponentCount() - 1);
         searchTC.setToolTipText(Bundle.Filter_Textfield_Tooltip());
         searchTC.addFocusListener(new FocusListener() {
 
@@ -401,6 +400,7 @@ public class OptionsPanel extends JPanel {
         
     private void computeOptionsWords() {
         Set<Map.Entry<String, CategoryModel.Category>> categories = CategoryModel.getInstance().getCategories();
+        categoryid2tabs = new HashMap<String, HashMap<Integer, TabInfo>>();
         for (Map.Entry<String, CategoryModel.Category> set : categories) {
             JComponent jcomp = set.getValue().getComponent();
             String id = set.getValue().getID();
@@ -428,16 +428,24 @@ public class OptionsPanel extends JPanel {
     private void handleJTabbedPane(JTabbedPane pane, String categoryID) {
         int tabsNum = pane.getTabCount();
         selectedTabIndex = pane.getSelectedIndex();
+
+        if (!categoryid2tabs.containsKey(categoryID)) {
+            categoryid2tabs.put(categoryID, new HashMap<Integer, TabInfo>());
+        }
+        HashMap<Integer, TabInfo> categoryTabs = categoryid2tabs.get(categoryID);
+        TabInfo tabInfo;
+
         for (int i = 0; i < tabsNum; i++) {
             pane.setSelectedIndex(i);
             Component tab = pane.getComponentAt(i);
             
-            HashMap<Integer, TabInfo> hash = tabbedpane2tabs.get(pane);
-            if(hash == null) {
-                hash = new HashMap<Integer, TabInfo>();
+            if (!categoryTabs.containsKey(i)) {
+                tabInfo = new TabInfo(pane.getTitleAt(i), CategoryModel.getInstance().getCategory(categoryID).getCategoryName(), tab);
+            } else {
+                tabInfo = categoryTabs.get(i);
             }
-            hash.put(i, new TabInfo(pane.getTitleAt(i), CategoryModel.getInstance().getCategory(categoryID).getCategoryName(), tab));
-            tabbedpane2tabs.put(pane, hash);
+            categoryTabs.put(i, tabInfo);
+            categoryid2tabs.put(categoryID, categoryTabs);
             
             ArrayList<String> strings = categoryid2words.get(categoryID);
             if (strings == null) {
@@ -463,10 +471,6 @@ public class OptionsPanel extends JPanel {
             strings = new ArrayList<String>();
         }
 
-        CategoryInfo categoryInfo = categoryid2jcomponents.get(categoryID);
-        if (categoryInfo == null) {
-            categoryInfo = new CategoryInfo();
-        }
         for (int i = 0; i < components.length; i++) {
             component = components[i];
             String text = "";
@@ -480,7 +484,6 @@ public class OptionsPanel extends JPanel {
                         strings.add(text.toUpperCase());
                     }
                 }
-                categoryInfo.addComponent(text, (JComponent)component);
             }
             
             if (component instanceof JLabel) {
@@ -570,18 +573,13 @@ public class OptionsPanel extends JPanel {
                 text = sb.toString().trim();
             }
 
-            if (component instanceof JComponent) {
-                categoryInfo.addComponent(text, (JComponent) component);
-            }
-            
-            categoryid2jcomponents.put(categoryID, categoryInfo);
             categoryid2words.put(categoryID, strings);
             
             if (tabbedPane != null && index > -1) {
-                TabInfo tabInfo = tabbedpane2tabs.get(tabbedPane).get(index);
+                TabInfo tabInfo = categoryid2tabs.get(categoryID).get(index);
                 if (text != null && !text.isEmpty() && !tabInfo.getWords().contains(text.toUpperCase())) {
                     tabInfo.addWord(text.toUpperCase());
-                    tabbedpane2tabs.get(tabbedPane).put(index, tabInfo);
+                    categoryid2tabs.get(categoryID).put(index, tabInfo);
                 }
             }
             if(component instanceof JTabbedPane) {
@@ -594,34 +592,6 @@ public class OptionsPanel extends JPanel {
             }
         }
         
-    }
-    
-    private class CategoryInfo {
-
-        private HashMap<String, ArrayList<JComponent>> map;
-
-        public CategoryInfo() {
-            map = new HashMap<String, ArrayList<JComponent>>();
-        }
-
-        public void addComponent(String text, JComponent component) {
-            if (text != null && !text.isEmpty() && component != null) {
-                ArrayList<JComponent> components = map.get(text);
-                if (components == null) {
-                    components = new ArrayList<JComponent>();
-                }
-                components.add(component);
-                map.put(text.toUpperCase(), components);
-            }
-        }
-
-        public ArrayList<JComponent> getComponents(String text) {
-            return map.get(text);
-        }
-
-        public Set<String> getKeys() {
-            return map.keySet();
-        }
     }
     
     private class TabInfo {
@@ -693,6 +663,20 @@ public class OptionsPanel extends JPanel {
                 }
             });
         }
+
+        private int getNextEnabledTabIndex(JTabbedPane pane, int currentIndex) {
+            for (int i = currentIndex + 1; i < pane.getTabCount(); i++) {
+                if(pane.isEnabledAt(i)) {
+                    return i;
+                }
+            }
+            for (int i = 0; i < currentIndex; i++) {
+                if(pane.isEnabledAt(i)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
         
         private void handleSearch(String searchText) {
             String visibleCategory = null;
@@ -710,14 +694,14 @@ public class OptionsPanel extends JPanel {
                         break;
                     }
                 }
-                
+
                 if (found) {
                     visibleCategory = id;
-                    removedCategories.remove(id);
-                    buttons.get(id).setVisible(true);
+                    disabledCategories.remove(id);
+                    buttons.get(id).setEnabled(true);
                     JTabbedPane pane = categoryid2tabbedpane.get(id);
-                    if (pane != null) {
-                        HashMap<Integer, TabInfo> tabsInfo = tabbedpane2tabs.get(pane);
+                    if (categoryid2tabs.get(id) != null) {
+                        HashMap<Integer, TabInfo> tabsInfo = categoryid2tabs.get(id);
                         for (Integer tabIndex : tabsInfo.keySet()) {
                             ArrayList<String> tabWords = tabsInfo.get(tabIndex).getWords();
                             boolean foundInTab = false;
@@ -737,77 +721,41 @@ public class OptionsPanel extends JPanel {
                                     break;
                                 }
                             }
-                            HashMap<Integer, TabInfo> removedTabsInfo = tabbedpane2removedtabs.get(pane);
-                            if (removedTabsInfo == null) {
-                                removedTabsInfo = new HashMap<Integer, TabInfo>();
-                            }
                             if (foundInTab) {
-                                int removedTabsBefore = 0;
-                                for (Integer removedTabIndex : removedTabsInfo.keySet()) {
-                                    if (removedTabIndex < tabIndex) {
-                                        removedTabsBefore++;
-                                    }
-                                }
-                                if (removedTabsInfo.get(tabIndex) != null) {
-                                    pane.insertTab(removedTabsInfo.get(tabIndex).getTabTitle(), null, removedTabsInfo.get(tabIndex).getTab(), null, tabIndex - removedTabsBefore);
-                                    removedTabsInfo.remove(tabIndex);
-                                    tabbedpane2removedtabs.put(pane, removedTabsInfo);
-                                }
+                                pane.setEnabledAt(tabIndex, true);
                                 if (exactTabIndex == tabIndex) {
-                                    pane.setSelectedIndex(tabIndex - removedTabsBefore);
+                                    pane.setSelectedIndex(tabIndex);
                                 }
                             } else {
-                                int removedTabs = tabbedpane2removedtabs.get(pane) == null ? 0 : tabbedpane2removedtabs.get(pane).size();
-                                if (removedTabs != tabbedpane2tabs.get(pane).size()) {
-                                    if (!removedTabsInfo.containsKey(tabIndex)) {
-                                        int removedTabsBefore = 0;
-                                        for (Integer removedTabIndex : removedTabsInfo.keySet()) {
-                                            if (removedTabIndex < tabIndex) {
-                                                removedTabsBefore++;
-                            }
-                        }
-                                        removedTabsInfo.put(tabIndex, tabsInfo.get(tabIndex));
-                                        tabbedpane2removedtabs.put(pane, removedTabsInfo);
-                                        pane.removeTabAt(tabIndex - removedTabsBefore);
-                                    }
-                                }
+                                pane.setEnabledAt(tabIndex, false);
+                                pane.setSelectedIndex(getNextEnabledTabIndex(pane, tabIndex));
                             }
                         }
                     } else {
                         setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
                     }
                 } else {
-                    if (!removedCategories.contains(id)) {
-                        removedCategories.add(id);
+                    if (!disabledCategories.contains(id)) {
+                        disabledCategories.add(id);
                     }
-                    buttons.get(id).setVisible(false);
-                    if(removedCategories.size() == buttons.size()) {
+                    JTabbedPane pane = categoryid2tabbedpane.get(id);
+                    if (categoryid2tabs.get(id) != null) {
+                        HashMap<Integer, TabInfo> tabsInfo = categoryid2tabs.get(id);
+                        for (Integer tabIndex : tabsInfo.keySet()) {
+                            pane.setEnabledAt(tabIndex, false);
+                        }
+                        pane.setSelectedIndex(-1);
+                    }
+                    buttons.get(id).setEnabled(false);
+                    if(disabledCategories.size() == buttons.size()) {
                         setCurrentCategory(null, null);
                         visibleCategory = null;
                     } else {
                         for (String id3 : CategoryModel.getInstance().getCategoryIDs()) {
-                            if (buttons.get(id3).isVisible() && exactCategory == null) {
+                            if (buttons.get(id3).isEnabled() && exactCategory == null) {
                                 setCurrentCategory(CategoryModel.getInstance().getCategory(id3), null);
                                 visibleCategory = id3;
                                 break;
-                            }
-                        }
-                    }
-                }
-            }
-            if(visibleCategory != null) {
-                componentsShowing.clear();
-                CategoryInfo catInfo = categoryid2jcomponents.get(visibleCategory);
-                if (catInfo != null) {
-                    for (String key : catInfo.getKeys()) {
-                        if (key.contains(searchText.toUpperCase())) {
-                            ArrayList<JComponent> comps = catInfo.getComponents(key);
-                            if (comps != null) {
-                                for (JComponent comp : comps) {
-                                    if(comp.isShowing()) {
-                                        componentsShowing.add(comp);
-                                    }
-                                }
                             }
                         }
                     }
@@ -864,20 +812,18 @@ public class OptionsPanel extends JPanel {
 
         private void clearAll() {
             clearSearch = true;
-            for (String category : removedCategories) {
-                buttons.get(category).setVisible(true);
+            for (String id : CategoryModel.getInstance().getCategoryIDs()) {
+                JTabbedPane pane = categoryid2tabbedpane.get(id);
+                if (categoryid2tabs.get(id) != null) {
+                    HashMap<Integer, TabInfo> tabsInfo = categoryid2tabs.get(id);
+                    for (Integer tabIndex : tabsInfo.keySet()) {
+                        pane.setEnabledAt(tabIndex, true);
                     }
-
-            for (JTabbedPane pane : tabbedpane2removedtabs.keySet()) {
-                HashMap<Integer, TabInfo> stuff = tabbedpane2removedtabs.get(pane);
-                for (Integer index : stuff.keySet()) {
-                    TabInfo stuff2 = stuff.get(index);
-                    pane.insertTab(stuff2.getTabTitle(), null, stuff2.getTab(), null, index);
                 }
+                buttons.get(id).setEnabled(true);
             }
             setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
-            removedCategories.clear();
-            tabbedpane2removedtabs.clear();
+            disabledCategories.clear();
             if(keymapsSearch != null) {
                 keymapsSearch.setText("");
             }
@@ -1045,14 +991,63 @@ public class OptionsPanel extends JPanel {
     
     private class PreviousAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {
-            setCurrentCategory (CategoryModel.getInstance().getPreviousCategory(), null);
+            Category previous = CategoryModel.getInstance().getPreviousCategory();
+            if(buttons.get(previous.getID()).isEnabled()) {
+                setCurrentCategory (previous, null);
+            } else {
+                String currentID = CategoryModel.getInstance().getCurrentCategoryID();
+                String[] ids = CategoryModel.getInstance().getCategoryIDs();
+                int idx = Arrays.asList(ids).indexOf(currentID);
+                if(idx - 1 > -1) {
+                    if (doPreviousNextAction(ids, idx - 1, -1, false)) {
+                        doPreviousNextAction(ids, ids.length - 1, idx, false);
+                    }
+                } else {
+                    doPreviousNextAction(ids, ids.length - 1, idx, false);
+                }
+            }
         }
     }
     
     private class NextAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {            
-            setCurrentCategory (CategoryModel.getInstance().getNextCategory(), null);
+            Category next = CategoryModel.getInstance().getNextCategory();
+            if(buttons.get(next.getID()).isEnabled()) {
+                setCurrentCategory (next, null);
+            } else {
+                String currentID = CategoryModel.getInstance().getCurrentCategoryID();
+                String[] ids = CategoryModel.getInstance().getCategoryIDs();
+                int idx = Arrays.asList(ids).indexOf(currentID);
+                if(idx + 1 < ids.length) {
+                    if(doPreviousNextAction(ids, idx + 1, ids.length, true)) {
+                        doPreviousNextAction(ids, 0, idx, true);
+                    }
+                } else {
+                    doPreviousNextAction(ids, 0, idx, true);
+                }
+            }
         }
+    }
+
+    private boolean doPreviousNextAction(String[] ids, int start, int end, boolean nextAction) {
+        if (nextAction) {
+            for (int i = start; i < end; i++) {
+                String id = ids[i];
+                if (buttons.get(id).isEnabled()) {
+                    setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+                    return false;
+                }
+            }
+        } else {
+            for (int i = start; i > end; i--) {
+                String id = ids[i];
+                if (buttons.get(id).isEnabled()) {
+                    setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     
     class ControllerListener implements PropertyChangeListener {
@@ -1139,19 +1134,19 @@ public class OptionsPanel extends JPanel {
         }
 
         public void mousePressed (MouseEvent e) {
-            if (!isMac && CategoryModel.getInstance().getCurrent() != null) {
+            if (buttons.get(category.getID()).isEnabled() && !isMac && CategoryModel.getInstance().getCurrent() != null) {
                 setSelected ();
             }
         }
 
         public void mouseReleased (MouseEvent e) {
-            if (!category.isCurrent() && category.isHighlited() && CategoryModel.getInstance().getCurrent() != null) {
+            if (buttons.get(category.getID()).isEnabled() && !category.isCurrent() && category.isHighlited() && CategoryModel.getInstance().getCurrent() != null) {
                 setCurrentCategory(category, null);
             }
         }
 
         public void mouseEntered (MouseEvent e) {
-            if (!category.isCurrent() && CategoryModel.getInstance().getCurrent() != null) {
+            if (buttons.get(category.getID()).isEnabled() && !category.isCurrent() && CategoryModel.getInstance().getCurrent() != null) {
                 setHighlighted ();
             } else {
                 CategoryModel.getInstance().setHighlited(CategoryModel.getInstance().getCategory(CategoryModel.getInstance().getHighlitedCategoryID()),false);

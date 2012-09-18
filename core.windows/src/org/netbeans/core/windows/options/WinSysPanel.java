@@ -48,6 +48,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.prefs.Preferences;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 import org.netbeans.core.windows.FloatingWindowTransparencyManager;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.openide.util.NbBundle;
@@ -59,6 +60,8 @@ final class WinSysPanel extends javax.swing.JPanel {
     private final WinSysOptionsPanelController controller;
     
     private final Preferences prefs = NbPreferences.forModule(WinSysPanel.class);
+    
+    private final boolean isAquaLaF = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
 
     private boolean defMultiRow;
     private int defTabPlacement;
@@ -375,6 +378,16 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         
         checkMaximizeNativeLaF.setSelected(prefs.getBoolean(WinSysPrefs.MAXIMIZE_NATIVE_LAF, false));
+        
+        if( isAquaLaF ) {
+            checkMultiRow.setSelected(false);
+            checkMultiRow.setEnabled(false);
+            radioLeft.setEnabled(false);
+            radioRight.setEnabled(false);
+            if( radioLeft.isSelected() || radioRight.isSelected() ) {
+                radioTop.setSelected(true);
+            }
+        }
     }
 
     boolean store() {
