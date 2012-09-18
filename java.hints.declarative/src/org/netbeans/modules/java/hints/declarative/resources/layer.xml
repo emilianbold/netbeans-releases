@@ -193,16 +193,6 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    <folder name="Menu">
-        <folder name="Window">
-            <folder name="Debug">
-                <file name="DebugAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-java-hints-declarative-debugging-DebugAction.instance"/>
-                    <attr name="position" intvalue="1034"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
 <!--    <folder name="Templates">
         <folder name="Other">
             <file name="DeclarativeHintsTestTemplate.test" url="DeclarativeHintsTestTemplate.test">
@@ -263,6 +253,22 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
+                <folder name="Actions">
+                    <file name="toggle-debugging-action.instance">
+                        <attr name="instanceCreate" newvalue="org.netbeans.modules.java.hints.declarative.debugging.ToggleDebuggingAction"/>
+                    </file>
+                </folder>
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="Separator-before-toggle-debugging.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="25000"/>
+                        </file>
+                         <file name="toggle-debugging-action">
+                            <attr name="position" intvalue="26000"/>
+                         </file>
+                    </folder>
+                </folder>
             </folder>
 
             <folder name="x-javahintstest">
@@ -274,16 +280,4 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    <folder name="Windows2">
-        <folder name="Components">
-            <file name="DebugTopComponent.settings" url="DebugTopComponentSettings.xml"/>
-        </folder>
-        <folder name="Modes">
-            <folder name="output">
-                <file name="DebugTopComponent.wstcref" url="DebugTopComponentWstcref.xml">
-                    <attr name="position" intvalue="15000" />
-                </file>
-            </folder>
-        </folder>
-    </folder>
 </filesystem>
