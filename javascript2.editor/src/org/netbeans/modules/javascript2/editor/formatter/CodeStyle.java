@@ -333,14 +333,6 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAroundKeyValueOps, getDefaultAsBoolean(spaceAroundKeyValueOps));
     }
 
-    public boolean spaceBeforePropertyOps() {
-        return preferences.getBoolean(spaceBeforePropertyOps, getDefaultAsBoolean(spaceBeforePropertyOps));
-    }
-
-    public boolean spaceAfterPropertyOps() {
-        return preferences.getBoolean(spaceAfterPropertyOps, getDefaultAsBoolean(spaceAfterPropertyOps));
-    }
-
     public boolean spaceAroundAssignOps() {
         return preferences.getBoolean(spaceAroundAssignOps, getDefaultAsBoolean(spaceAroundAssignOps));
     }
@@ -485,13 +477,13 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAfterSemi, getDefaultAsBoolean(spaceAfterSemi));
     }
 
-//    public boolean spaceBeforeColon() {
-//        return preferences.getBoolean(spaceBeforeColon, getDefaultAsBoolean(spaceBeforeColon));
-//    }
-//
-//    public boolean spaceAfterColon() {
-//        return preferences.getBoolean(spaceAfterColon, getDefaultAsBoolean(spaceAfterColon));
-//    }
+    public boolean spaceBeforeColon() {
+        return preferences.getBoolean(spaceBeforeColon, getDefaultAsBoolean(spaceBeforeColon));
+    }
+
+    public boolean spaceAfterColon() {
+        return preferences.getBoolean(spaceAfterColon, getDefaultAsBoolean(spaceAfterColon));
+    }
 
     // alignment
     public boolean alignMultilineMethodParams() {
