@@ -832,7 +832,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public void contAt(String src, int line) {
         src = localToRemote("contAt", src); // NOI18N
-        sendResumptive("-exec-jump " + src + ':' + line); // NOI18N
+        sendResumptive("-exec-jump \"" + src + ':' + line + '"'); // NOI18N
     }
     
     @Override
@@ -843,7 +843,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public void runToCursor(String src, int line) {
 	src = localToRemote("runToCursor", src); // NOI18N
-        sendResumptive("-exec-until " + src + ':' + line); // NOI18N
+        sendResumptive("-exec-until \"" + src + ':' + line + '"'); // NOI18N
     }
     
     // interface NativeDebugger

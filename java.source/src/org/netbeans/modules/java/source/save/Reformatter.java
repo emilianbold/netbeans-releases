@@ -829,6 +829,7 @@ public class Reformatter implements ReformatTask {
                 }
                 if (lastBlankLinesTokenIndex < 0)
                     newline();
+                blankLines(node.getSimpleName().length() == 0 ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
             }
             indent = halfIndent;
             Diff diff = diffs.isEmpty() ? null : diffs.getFirst();

@@ -550,7 +550,7 @@ public class BatchSearch {
             super(src);
         }
         public void validateResource(Collection<? extends Resource> resources, ProgressHandleWrapper progress, VerifiedSpansCallBack callback, boolean doNotRegisterClassPath, Collection<? super MessageImpl> problems, AtomicBoolean cancel) {
-            getLocalVerifiedSpans(resources, progress, callback, false/*XXX*/, problems, cancel);
+            getLocalVerifiedSpans(resources, progress, callback, doNotRegisterClassPath, problems, cancel);
         }
     }
 

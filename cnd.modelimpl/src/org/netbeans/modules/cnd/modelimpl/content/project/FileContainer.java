@@ -209,7 +209,16 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         CsmUID<CsmFile> fileUID = f.fileNew;
         FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(f.fileNew);
         if( impl == null ) {
-            DiagnosticExceptoins.register(new IllegalStateException("no file for UID " + fileUID)); // NOI18N
+            String postfix = ""; // NOI18N
+            if (CndUtils.isDebugMode() || CndUtils.isUnitTestMode()) {
+                FileImpl impl2 = (FileImpl) UIDCsmConverter.UIDtoFile(f.fileNew);
+                if (impl2 == null) {
+                    postfix = " TWICE"; // NOI18N
+                } else {
+                    postfix = " second attempt OK"; // NOI18N
+                }
+            }
+            DiagnosticExceptoins.register(new IllegalStateException("no file for UID " + fileUID + postfix)); // NOI18N
         }
         return impl;
     }
