@@ -1353,6 +1353,14 @@ public class JsFormatterTest extends JsTestBase {
         reindentFileContents("testfiles/formatter/arrays2.js", null);
     }
 
+    public void testArrays3() throws Exception {
+        reformatFileContents("testfiles/formatter/arrays3.js",new IndentPrefs(4, 4));
+    }
+
+    public void testArrays3Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/arrays3.js");
+    }
+
     public void testPartialFormat1() throws Exception {
         reformatFileContents("testfiles/formatter/partialFormat1.js", Collections.<String, Object>emptyMap());
     }

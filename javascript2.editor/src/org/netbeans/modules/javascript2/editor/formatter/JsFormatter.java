@@ -1070,6 +1070,9 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(formatContext).spaceWithinArrayBrackets();
             case BEFORE_ARRAY_LITERAL_BRACKET:
                 return CodeStyle.get(formatContext).spaceWithinArrayBrackets();
+            case AFTER_NEW_KEYWORD:
+                // no option as false (removing space) would brake the code
+                return true;
             case AFTER_VAR_KEYWORD:
                 // no option as false (removing space) would brake the code
                 return true;
