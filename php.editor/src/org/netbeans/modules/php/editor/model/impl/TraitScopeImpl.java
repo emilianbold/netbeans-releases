@@ -44,6 +44,8 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
@@ -57,6 +59,8 @@ import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
  */
 public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
     private final Collection<QualifiedName> usedTraits;
+    private Set<? super TypeScope> superRecursionDetection = new HashSet<TypeScope>();
+    private Set<? super TypeScope> subRecursionDetection = new HashSet<TypeScope>();
 
     TraitScopeImpl(Scope inScope, TraitElement indexedTrait) {
         super(inScope, indexedTrait);
@@ -151,20 +155,22 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
     @Override
     public boolean isSuperTypeOf(final TypeScope subType) {
         boolean result = false;
-        if (subType.isTraited()) {
-            assert (subType instanceof TraitedScope);
-            for (TraitScope traitScope : ((TraitedScope) subType).getTraits()) {
-                if (traitScope.equals(this)) {
-                    result = true;
-                } else {
-                    result = isSuperTypeOf(traitScope);
+        if (superRecursionDetection.add(subType)) {
+            if (subType.isTraited()) {
+                assert (subType instanceof TraitedScope);
+                for (TraitScope traitScope : ((TraitedScope) subType).getTraits()) {
+                    if (traitScope.equals(this)) {
+                        result = true;
+                    } else {
+                        result = isSuperTypeOf(traitScope);
+                    }
+                    if (result == true) {
+                        break;
+                    }
                 }
-                if (result == true) {
-                    break;
+                if (result == false && subType.isClass()) {
+                    result = subType.isSubTypeOf(this);
                 }
-            }
-            if (result == false && subType.isClass()) {
-                result = subType.isSubTypeOf(this);
             }
         }
         return result;
@@ -173,15 +179,17 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
     @Override
     public boolean isSubTypeOf(final TypeScope superType) {
         boolean result = false;
-        if (superType.isTrait()) {
-            for (TraitScope traitScope : getTraits()) {
-                if (traitScope.equals(superType)) {
-                    result = true;
-                } else {
-                    result = traitScope.isSubTypeOf(superType);
-                }
-                if (result == true) {
-                    break;
+        if (subRecursionDetection.add(superType)) {
+            if (superType.isTrait()) {
+                for (TraitScope traitScope : getTraits()) {
+                    if (traitScope.equals(superType)) {
+                        result = true;
+                    } else {
+                        result = traitScope.isSubTypeOf(superType);
+                    }
+                    if (result == true) {
+                        break;
+                    }
                 }
             }
         }
