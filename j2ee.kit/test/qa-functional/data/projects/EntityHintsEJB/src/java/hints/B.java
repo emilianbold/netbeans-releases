@@ -58,7 +58,7 @@ public class B implements Serializable {
             return false;
         }
         B other = (B)object;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) { return false; }
+        if (other != null && this.id != other.id && (this.id == null || !this.id.equals(other.id))) { return false; }
         return true;
     }
 
