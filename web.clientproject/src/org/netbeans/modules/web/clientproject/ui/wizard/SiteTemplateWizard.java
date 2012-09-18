@@ -148,6 +148,11 @@ public class SiteTemplateWizard extends JPanel {
     }
 
     final void updateSiteTemplate() {
+        enableTemplates();
+        fireChange();
+    }
+
+    private void enableTemplates() {
         if (noTemplateRadioButton.isSelected()) {
             setSiteTemplate(NO_SITE_TEMPLATE);
             setArchiveTemplateEnabled(false);
@@ -163,7 +168,6 @@ public class SiteTemplateWizard extends JPanel {
         } else {
             throw new IllegalStateException("No template radio button selected?!"); // NOI18N
         }
-        fireChange();
     }
 
     void updateOnlineTemplateDescription() {
@@ -246,7 +250,7 @@ public class SiteTemplateWizard extends JPanel {
 
     public void unlockPanel() {
         enablePanel(true);
-        updateSiteTemplate();
+        enableTemplates();
     }
 
     private void enablePanel(boolean enable) {

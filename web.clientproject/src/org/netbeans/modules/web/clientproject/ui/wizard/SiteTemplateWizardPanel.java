@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.awt.EventQueue;
+import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -50,15 +52,25 @@ import org.openide.util.HelpCtx;
 public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
+    static final Logger LOGGER = Logger.getLogger(SiteTemplateWizardPanel.class.getName());
+
     // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
     private volatile SiteTemplateWizard siteTemplateWizard;
     private volatile WizardDescriptor wizardDescriptor;
+    // #202796
+    static volatile String asynchError = null;
 
 
     @Override
     public SiteTemplateWizard getComponent() {
         if (siteTemplateWizard == null) {
             siteTemplateWizard = new SiteTemplateWizard();
+            siteTemplateWizard.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    asynchError = null;
+                }
+            });
         }
         return siteTemplateWizard;
     }
@@ -71,6 +83,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
+        asynchError = null;
     }
 
     @Override
@@ -85,9 +98,8 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
 
     @Override
     public void validate() throws WizardValidationException {
-        String error;
         try {
-            error = getComponent().prepareTemplate();
+            asynchError = getComponent().prepareTemplate();
         } finally {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -96,13 +108,17 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
                 }
             });
         }
-        if (error != null) {
-            throw new WizardValidationException(getComponent(), "ERROR_PREPARE", error); // NOI18N
+        if (asynchError != null) {
+            throw new WizardValidationException(getComponent(), "ERROR_PREPARE", asynchError); // NOI18N
         }
     }
 
     @Override
     public boolean isValid() {
+        // grrr
+        if (asynchError != null) {
+            return true;
+        }
         // error
         String error = getComponent().getErrorMessage();
         if (error != null && !error.isEmpty()) {
