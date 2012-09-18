@@ -47,6 +47,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,6 +78,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -85,11 +88,17 @@ import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
 
@@ -115,6 +124,8 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     WebKitPageModel pageModel;
     /** Lookup of this panel. */
     private CSSStylesLookup lookup = new CSSStylesLookup();
+    /** Node lookup of this panel. */
+    private CSSStylesNodeLookup nodeLookup = new CSSStylesNodeLookup();
     /** Lookup result with rules selected in the panel. */
     Lookup.Result<Rule> ruleLookupResult;
 
@@ -202,12 +213,15 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /**
      * Updates the panel to match the currently inspected page.
      */
-    final void updatePageModel() {
+    public final void updatePageModel() {
+        PageModel page = PageInspectorImpl.getDefault().getPage();
+        if (pageModel == page) {
+            return;
+        }
         if (pageModel != null) {
             pageModel.removePropertyChangeListener(getListener());
             pageModel.getWebKit().getCSS().removeListener(getListener());
         }
-        PageModel page = PageInspectorImpl.getDefault().getPage();
         if (page instanceof WebKitPageModel) {
             pageModel = (WebKitPageModel)page;
         } else {
@@ -252,6 +266,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     void updateContent(boolean keepSelection) {
         try {
             contentUpdateInProgress = keepSelection;
+            nodeLookup.setPageModel(pageModel);
             documentPanel.updateContent(pageModel, keepSelection);
             selectionPanel.updateContent(pageModel, keepSelection);
         } finally {
@@ -316,7 +331,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
 
     @Override
     public Lookup getLookup() {
-        return (pageModel == null) ? Lookup.EMPTY : pageModel.getPageContext();
+        return nodeLookup;
     }
 
     @Override
@@ -512,6 +527,47 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
             return (c == '_' || c == '*');
         }
 
+    }
+
+    /**
+     * Node lookup of this panel.
+     */
+    static class CSSStylesNodeLookup extends ProxyLookup {
+
+        /**
+         * Updates the lookup.
+         * 
+         * @param pageModel current page model.
+         */
+        void setPageModel(WebKitPageModel pageModel) {
+            URL url = null;
+            FileObject fob = null;
+            Project project = null;
+            DataObject dob = null;
+            if (pageModel != null) {
+                try {
+                    project = pageModel.getProject();
+                    if (project != null) {
+                        String documentURL = pageModel.getDocumentURL();
+                        url = new URL(documentURL);
+                        fob = ServerURLMapping.fromServer(project, url);
+                        if (fob != null) {
+                            dob = DataObject.find(fob);
+                        }
+                    }
+                } catch (MalformedURLException ex) {
+                } catch (DataObjectNotFoundException dnfex) {}
+            }
+            Lookup lkp;
+            if (dob == null) {
+                lkp = Lookup.EMPTY;
+            } else {
+                lkp = Lookups.fixed(url, fob, project, dob);
+            }
+            Node node = new AbstractNode(Children.LEAF, lkp);
+            setLookups(Lookups.singleton(node));
+        }
+        
     }
 
 }

@@ -566,7 +566,9 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public CSSStylesView getCSSStylesView() {
-        return CSSStylesPanel.getDefault();
+        CSSStylesPanel view = CSSStylesPanel.getDefault();
+        view.updatePageModel();
+        return view;
     }
 
     class WebPaneSynchronizer implements PropertyChangeListener {

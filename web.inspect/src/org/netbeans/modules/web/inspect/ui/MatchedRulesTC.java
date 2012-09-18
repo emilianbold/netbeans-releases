@@ -136,11 +136,11 @@ public final class MatchedRulesTC extends TopComponent {
                 currentView = null;
             } else {
                 PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
-                lookup.setView(stylesView);
                 add(stylesView.getView(), BorderLayout.CENTER);
                 currentView = stylesView;
             }
         }
+        lookup.setView(currentView);
         revalidate();
         repaint();
     }
