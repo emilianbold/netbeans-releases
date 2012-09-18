@@ -102,8 +102,8 @@ public final class WeakContainer<T> {
 //                System.err.printf("OK %s\n", storageKey);
             }
             if (TraceFlags.USE_WEAK_MEMORY_CACHE && container != null && weakContainer != null) {
-                WeakReference<T> weak = new WeakReference<T>(container);
-                // assign only when object is completely created
+//                WeakReference<T> weak = new WeakReference<T>(container);
+//                // assign only when object is completely created
                 weakContainer = new WeakReference<T>(container);
             }
             return container;
