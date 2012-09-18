@@ -76,6 +76,7 @@ import org.openide.util.WeakListeners;
 public class SideBarFactoryImpl implements SideBarFactory {
 
     public static final String KEY_BREADCRUMBS = "enable.breadcrumbs";
+    public static final boolean DEF_BREADCRUMBS = true;
     
     @Override
     public JComponent createSideBar(JTextComponent target) {
@@ -103,7 +104,7 @@ public class SideBarFactoryImpl implements SideBarFactory {
             
             closeButton.addActionListener(new ActionListener() {
                 @Override public void actionPerformed(ActionEvent e) {
-                    prefs.putBoolean(KEY_BREADCRUMBS, false);
+                    prefs.putBoolean(KEY_BREADCRUMBS, DEF_BREADCRUMBS);
                 }
             });
             
@@ -118,7 +119,7 @@ public class SideBarFactoryImpl implements SideBarFactory {
         @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             if (evt == null || KEY_BREADCRUMBS.equals(evt.getKey())) {
-                enabled = prefs.getBoolean(KEY_BREADCRUMBS, false);
+                enabled = prefs.getBoolean(KEY_BREADCRUMBS, DEF_BREADCRUMBS);
                 updatePreferredSize();
             }
         }
