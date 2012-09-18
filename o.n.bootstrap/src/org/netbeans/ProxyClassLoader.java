@@ -97,8 +97,6 @@ public class ProxyClassLoader extends ClassLoader {
     
     private Set<ProxyClassLoader> parentSet = new HashSet<ProxyClassLoader>(); 
      
-    private static Map<String,Boolean> sclPackages = Collections.synchronizedMap(new HashMap<String,Boolean>());  
-   
     /** Create a multi-parented classloader.
      * @param parents all direct parents of this classloader, except system one.
      * @param transitive whether other PCLs depending on this one will
@@ -185,11 +183,11 @@ public class ProxyClassLoader extends ClassLoader {
 
         Set<ProxyClassLoader> del = ProxyClassPackages.findCoveredPkg(pkg);
  
-        Boolean boo = sclPackages.get(pkg);
+        Boolean boo = isSystemPackage(pkg);
         if ((boo == null || boo.booleanValue()) && shouldDelegateResource(path, null)) {
             try {
                 cls = systemCL.loadClass(name);
-                if (boo == null) sclPackages.put(pkg, true);
+                if (boo == null) registerSystemPackage(pkg, true);
                 return cls; // try SCL first
             } catch (ClassNotFoundException e) {
                 // No dissaster, try other loaders
@@ -204,7 +202,7 @@ public class ProxyClassLoader extends ClassLoader {
             ProxyClassLoader pcl = del.iterator().next();
             if (pcl == this || (parentSet.contains(pcl) && shouldDelegateResource(path, pcl))) {
                 cls = pcl.selfLoadClass(pkg, name);
-                if (cls != null) sclPackages.put(pkg, false);
+                if (cls != null) registerSystemPackage(pkg, false);
             }/* else { // maybe it is also covered by SCL
                 if (shouldDelegateResource(path, null)) cls = systemCL.loadClass(name);
             }*/
@@ -234,7 +232,7 @@ public class ProxyClassLoader extends ClassLoader {
                 }
             }
             if (cls == null && del.contains(this)) cls = selfLoadClass(pkg, name); 
-            if (cls != null) sclPackages.put(pkg, false); 
+            if (cls != null) registerSystemPackage(pkg, false); 
         }
         if (cls == null && shouldDelegateResource(path, null)) {
             try {
@@ -339,12 +337,12 @@ public class ProxyClassLoader extends ClassLoader {
         }
         String path = name.substring(0, last+1);
         
-        Boolean systemPackage = sclPackages.get(pkg);
+        Boolean systemPackage = isSystemPackage(pkg);
         if ((systemPackage == null || systemPackage) && shouldDelegateResource(path, null)) {
             URL u = systemCL.getResource(name);
             if (u != null) {
                 if (systemPackage == null) {
-                    sclPackages.put(pkg, true);
+                    registerSystemPackage(pkg, true);
                 }
                 return u;
             }
@@ -666,4 +664,15 @@ public class ProxyClassLoader extends ClassLoader {
         return parents[0];
     }
 
+    //
+    // System Class Loader Packages Support
+    //
+    
+    private static Map<String,Boolean> sclPackages = Collections.synchronizedMap(new HashMap<String,Boolean>());  
+    private static Boolean isSystemPackage(String pkg) {
+        return sclPackages.get(pkg);
+    }
+    private static void registerSystemPackage(String pkg, boolean isSystemPkg) {
+        sclPackages.put(pkg, isSystemPkg);
+    }
 }
