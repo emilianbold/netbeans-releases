@@ -83,7 +83,9 @@ public class ProxyClassLoader extends ClassLoader {
         LOG_LOADING = prop1 || LOGGER.isLoggable(Level.FINE);
     }
 
-    /** All known packages */
+    /** All known packages 
+     * @GuardedBy("packages")
+     */
     private final Map<String, Package> packages = new HashMap<String, Package>();
 
     /** keeps information about parent classloaders, system classloader, etc.*/
@@ -496,12 +498,12 @@ public class ProxyClassLoader extends ClassLoader {
                 String specVersion, String specVendor, String implTitle,
 		String implVersion, String implVendor, URL sealBase )
 		throws IllegalArgumentException {
-	synchronized (packages) {
+        synchronized (packages) {
             Package pkg = super.definePackage(name, specTitle, specVersion, specVendor, implTitle,
-                    implVersion, implVendor, sealBase);
+                implVersion, implVendor, sealBase);
             packages.put(name, pkg);
             return pkg;
-	}
+        }
     }
 
     /**
@@ -522,7 +524,7 @@ public class ProxyClassLoader extends ClassLoader {
      * @return the array of <code>Package</code> objects defined by this
      * <code>ClassLoader</code>
      */
-    private synchronized Package[] getPackages(Set<ClassLoader> addedParents) {
+    private Package[] getPackages(Set<ClassLoader> addedParents) {
         Map<String,Package> all = new HashMap<String, Package>();
         // XXX call shouldDelegateResource on each?
         addPackages(all, super.getPackages());
@@ -535,8 +537,8 @@ public class ProxyClassLoader extends ClassLoader {
         synchronized (packages) {
             all.keySet().removeAll(packages.keySet());
             packages.putAll(all);
+            return packages.values().toArray(new Package[packages.size()]);
         }
-        return packages.values().toArray(new Package[packages.size()]);
     }
     
     private void addPackages(Map<String,Package> all, Package[] pkgs) {
