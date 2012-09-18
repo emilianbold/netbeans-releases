@@ -61,6 +61,7 @@ import org.openide.filesystems.URLMapper;
 public class DOMBreakpoint extends AbstractBreakpoint {
     
     public static final String PROP_URL = "url";            // NOI18N
+    public static final String PROP_NODE = "node";          // NOI18N
     public static final String PROP_TYPES = "types";        // NOI18N
 
     public enum Type {
@@ -85,7 +86,7 @@ public class DOMBreakpoint extends AbstractBreakpoint {
     private boolean onNodeRemoval;
     private Set<Type> types;
     private URL url;
-    private final DOMNode node;
+    private DOMNode node;
     
     public DOMBreakpoint(URL url, DOMNode node) {
         this.url = url;
@@ -110,6 +111,12 @@ public class DOMBreakpoint extends AbstractBreakpoint {
 
     public DOMNode getNode() {
         return node;
+    }
+    
+    public void setNode(DOMNode node) {
+        DOMNode oldNode = this.node;
+        this.node = node;
+        firePropertyChange(PROP_NODE, oldNode, node);
     }
 
     public synchronized boolean isOnSubtreeModification() {

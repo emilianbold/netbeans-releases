@@ -347,6 +347,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         // Bug 215225 - Infinite loop in TemplateUtils.checkTemplateType
         performStaticTest("bug215225.cpp");
     }      
+
+    public void testBug215225_2() throws Exception {
+        // Bug 215225 - Infinite loop in TemplateUtils.checkTemplateType
+        performStaticTest("bug215225_2.cpp");
+    }      
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

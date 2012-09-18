@@ -268,11 +268,6 @@ public class EditorModule extends ModuleInstall {
              return;
          }
          
-        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-        
-        if (prefs.get("enable.breadcrumbs", null) == null)
-            prefs.putBoolean("enable.breadcrumbs", true);
-        
         final ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
         if (clipboard != null) {
             clipboard.addClipboardListener(ClipboardHistory.getInstance());

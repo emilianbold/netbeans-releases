@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -60,7 +59,6 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -247,7 +245,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         public static final String SITE_TEMPLATE = "SITE_TEMPLATE"; // NOI18N
         public static final String LIBRARIES_FOLDER = "LIBRARIES_FOLDER"; // NOI18N
-        public static final String SELECTED_LIBRARIES = "SELECTED_LIBRARIES"; // NOI18N
 
 
         @Override
@@ -294,11 +291,13 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
              }
 
             // js libs
-            @SuppressWarnings("unchecked")
-            List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries = (List<JavaScriptLibrarySelection.SelectedLibrary>) wizardDescriptor.getProperty(SELECTED_LIBRARIES);
-            if (selectedLibraries != null) {
-                // any libraries selected
-                ClientSideProjectUtilities.applyJsLibraries(selectedLibraries, (String) wizardDescriptor.getProperty(LIBRARIES_FOLDER), siteRootDir, handle);
+            FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
+            if (jsLibs != null) {
+                // move all downloaded libraries
+                for (FileObject child : jsLibs.getChildren()) {
+                    FileUtil.moveFile(child, siteRootDir, child.getName());
+                }
+                jsLibs.delete();
             }
 
             // index file (#216293)
@@ -320,7 +319,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public void uninitialize(WizardDescriptor wizardDescriptor) {
             wizardDescriptor.putProperty(SITE_TEMPLATE, null);
             wizardDescriptor.putProperty(LIBRARIES_FOLDER, null);
-            wizardDescriptor.putProperty(SELECTED_LIBRARIES, null);
         }
 
         @NbBundle.Messages({

@@ -44,7 +44,9 @@
 
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
+import java.util.List;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode.NodeId;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -113,6 +115,13 @@ public class BreakpointModel extends ViewModelSupport
         if (node instanceof DOMBreakpoint) {
             DOMBreakpoint breakpoint = (DOMBreakpoint) node;
             String nodeName = breakpoint.getNode().getNodeName();
+            List<? extends NodeId> nodePath = breakpoint.getNode().getPath();
+            if (!nodePath.isEmpty()) {
+                int chn = nodePath.get(nodePath.size() - 1).getChildNumber();
+                if (chn >= 0) {
+                    nodeName = nodeName + '[' + chn + ']';
+                }
+            }
             StringBuilder modifications = new StringBuilder();
             if (breakpoint.isOnSubtreeModification()) {
                 modifications.append(Bundle.LBL_DOM_Subtree());
