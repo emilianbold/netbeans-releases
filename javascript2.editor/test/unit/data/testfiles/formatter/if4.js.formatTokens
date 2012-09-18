@@ -30,6 +30,7 @@ FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=36, text= }
 FormattingToken{kind=TEXT, offset=37, text=new}
+FormattingToken{kind=AFTER_NEW_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=40, text= }
 FormattingToken{kind=TEXT, offset=41, text=Object}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}

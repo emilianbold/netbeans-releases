@@ -75,6 +75,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     private Union2<String, List<ClassScopeImpl>> superClass;
     private Collection<QualifiedName> possibleFQSuperClassNames;
     private Collection<QualifiedName> usedTraits;
+    private Set<? super TypeScope> superRecursionDetection = new HashSet<TypeScope>();
+    private Set<? super TypeScope> subRecursionDetection = new HashSet<TypeScope>();
 
     @Override
     void addElement(ModelElementImpl element) {
@@ -511,22 +513,24 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @Override
     public boolean isSuperTypeOf(final TypeScope subType) {
         boolean result = false;
-        if (subType.isClass()) {
-            assert (subType instanceof ClassScope);
-            for (ClassScope classScope : ((ClassScope) subType).getSuperClasses()) {
-                if (classScope.equals(this)) {
-                    result = true;
-                } else {
-                    result = isSuperTypeOf(classScope);
+        if (superRecursionDetection.add(subType)) {
+            if (subType.isClass()) {
+                assert (subType instanceof ClassScope);
+                for (ClassScope classScope : ((ClassScope) subType).getSuperClasses()) {
+                    if (classScope.equals(this)) {
+                        result = true;
+                    } else {
+                        result = isSuperTypeOf(classScope);
+                    }
+                    if (result == true) {
+                        break;
+                    }
                 }
-                if (result == true) {
-                    break;
-                }
+            } else if (subType.isTrait()) {
+                result = false;
+            } else {
+                result = super.isSuperTypeOf(subType);
             }
-        } else if (subType.isTrait()) {
-            result = false;
-        } else {
-            result = super.isSuperTypeOf(subType);
         }
         return result;
     }
@@ -534,41 +538,43 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @Override
     public boolean isSubTypeOf(final TypeScope superType) {
         boolean result = false;
-        if (superType.isClass()) {
-            for (ClassScope classScope : getSuperClasses()) {
-                if (classScope.equals(superType)) {
-                    result = true;
-                } else {
-                    result = classScope.isSubTypeOf(superType);
+        if (subRecursionDetection.add(superType)) {
+            if (superType.isClass()) {
+                for (ClassScope classScope : getSuperClasses()) {
+                    if (classScope.equals(superType)) {
+                        result = true;
+                    } else {
+                        result = classScope.isSubTypeOf(superType);
+                    }
+                    if (result == true) {
+                        break;
+                    }
                 }
-                if (result == true) {
-                    break;
-                }
-            }
-        } else if (superType.isTrait()) {
-            for (ClassScope classScope : getSuperClasses()) {
-                result = classScope.isSubTypeOf(superType);
-                if (result == true) {
-                    break;
-                }
-            }
-            for (TraitScope traitScope : getTraits()) {
-                if (traitScope.equals(superType)) {
-                    result = true;
-                } else {
-                    result = traitScope.isSubTypeOf(superType);
-                }
-                if (result == true) {
-                    break;
-                }
-            }
-        } else {
-            result = super.isSubTypeOf(superType);
-            if (result == false) {
+            } else if (superType.isTrait()) {
                 for (ClassScope classScope : getSuperClasses()) {
                     result = classScope.isSubTypeOf(superType);
                     if (result == true) {
                         break;
+                    }
+                }
+                for (TraitScope traitScope : getTraits()) {
+                    if (traitScope.equals(superType)) {
+                        result = true;
+                    } else {
+                        result = traitScope.isSubTypeOf(superType);
+                    }
+                    if (result == true) {
+                        break;
+                    }
+                }
+            } else {
+                result = super.isSubTypeOf(superType);
+                if (result == false) {
+                    for (ClassScope classScope : getSuperClasses()) {
+                        result = classScope.isSubTypeOf(superType);
+                        if (result == true) {
+                            break;
+                        }
                     }
                 }
             }
