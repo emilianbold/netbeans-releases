@@ -346,6 +346,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     removeBreakpoints();
                     addTo(theNode);
                 }
+            } else if (DOMBreakpoint.PROP_NODE.equals(propertyName)) {
+                DOMNode oldNode = (DOMNode) event.getOldValue();
+                oldNode.unbind();
+                oldNode.removePropertyChangeListener(this);
+                removeBreakpoints();
+                add();
             } else {
                 super.propertyChange(event);
             }
