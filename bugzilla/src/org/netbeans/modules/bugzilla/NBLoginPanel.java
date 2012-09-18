@@ -196,7 +196,7 @@ public class NBLoginPanel extends javax.swing.JPanel implements DocumentListener
         panel.validateFields();
         panel.updateErrorMessage(errorMsg);
         if(panel.showLogin()) {   // NOI18N
-            repo.setCredentials(panel.usernameTextField.getText(), panel.passwordField.getPassword(), null, null );
+            repo.setInfoValues(panel.usernameTextField.getText(), panel.passwordField.getPassword(), null, null );
             return true;
         }
         return false;
