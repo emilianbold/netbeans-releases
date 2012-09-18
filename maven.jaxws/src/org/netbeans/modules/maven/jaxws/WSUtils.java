@@ -68,6 +68,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
@@ -78,6 +79,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoints;
 import org.netbeans.modules.websvc.api.jaxws.project.config.EndpointsProvider;
@@ -98,11 +100,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.openide.util.Lookup.Result;
 
 /**
  *
@@ -510,9 +508,33 @@ public class WSUtils {
     private static FileObject getDeploymentDescriptor(Project prj) {
         J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
         if (provider != null) {
-            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml");
+            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile(
+                    "WEB-INF/web.xml");                                // NOI18N
             if (dd != null && dd.exists()) {
                 return FileUtil.toFileObject(dd);
+            }
+            else {
+                WebModule wm = WebModule.getWebModule(prj.getProjectDirectory());
+                if ( wm ==null ){
+                    return null;
+                }
+                FileObject webInf = wm.getWebInf();
+                try {
+                    if (webInf == null) {
+                        FileObject docBase = wm.getDocumentBase();
+                        if (docBase != null) {
+                            webInf = docBase.createFolder("WEB-INF"); // NOI18N
+                        }
+                    }
+                    if (webInf == null) {
+                        return null;
+                    }
+                    return DDHelper.createWebXml(wm.getJ2eeProfile(), webInf);
+                }
+                catch (IOException e) {
+                    Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, null, e );
+                    return null;
+                }
             }
         }
         return null;
