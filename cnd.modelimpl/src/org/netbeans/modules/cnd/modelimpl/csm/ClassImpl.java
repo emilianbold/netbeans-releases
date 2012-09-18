@@ -217,11 +217,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             impl = new ClassImpl(nameHolder, ast, file);
         }
         // fix for Bug 215225 - Infinite loop in TemplateUtils.checkTemplateType
-        if(scope != null && ClassImpl.class.equals(scope.getClass())) {
+        if(scope != null && scope instanceof ClassImpl) {
             ClassImpl scopeCls = (ClassImpl)scope;
             if(impl.getStartOffset() == scopeCls.getStartOffset() &&
                     impl.getEndOffset() == scopeCls.getEndOffset() &&
-                    impl.getName().toString().equals(scopeCls.getName().toString())) {
+                    impl.getName().toString().equals(scopeCls.getName().toString()) &&
+                    impl.getKind().equals(scopeCls.getKind())) {
                 return null;
             }
         }
