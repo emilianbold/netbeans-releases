@@ -69,7 +69,7 @@ import org.openide.util.Exceptions;
 
 @ActionID(id = "org.netbeans.modules.ods.ui.NewProjectAction", category = "Team")
 @ActionRegistration(displayName = "#CTL_NewProjectAction.name")
-@ActionReference(path = "Menu/Versioning/Team/ODS", position = 200)
+@ActionReference(path = "Menu/Versioning/Team/ODCS", position = 200)
 @Messages({"CTL_NewProjectAction.name=New Team Project...",
     "NewProjectAction.dialogTitle=New Team Project"
 })

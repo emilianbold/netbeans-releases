@@ -65,7 +65,7 @@ import org.openide.util.NbBundle.Messages;
 id = "org.netbeans.modules.ods.ui.OpenProjectAction")
 @ActionRegistration(
     displayName = "#CTL_OpenProjectAction")
-@ActionReference(path = "Menu/Versioning/Team/ODS", position = 300)
+@ActionReference(path = "Menu/Versioning/Team/ODCS", position = 300)
 @Messages("CTL_OpenProjectAction=&Open Project...")
 public final class OpenProjectAction implements ActionListener {
 

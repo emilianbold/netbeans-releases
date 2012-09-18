@@ -64,7 +64,7 @@ import org.openide.util.RequestProcessor;
 
 @ActionID(id = "org.netbeans.modules.ods.versioning.GetSourcesFromCloudAction", category = "Team")
 @ActionRegistration(displayName = "#Actions/Team/org-netbeans-modules-ods-versioning-GetSourcesFromCloudAction.instance")
-@ActionReference(path="Menu/Versioning/Team/ODS", position=400)
+@ActionReference(path="Menu/Versioning/Team/ODCS", position=400)
 @Messages("Actions/Team/org-netbeans-modules-ods-versioning-GetSourcesFromCloudAction.instance=&Get Sources...")
 public final class GetSourcesFromCloudAction extends AbstractAction {
 
