@@ -177,9 +177,11 @@ public class IndexedElement extends JsElementImpl {
             for (StringTokenizer st = new StringTokenizer(sAssignments, "|"); st.hasMoreTokens();) {
                 String token = st.nextToken();
                 int index = token.indexOf(':');
-                String type = token.substring(0, index);
-                String offset = token.substring(index + 1);
-                result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
+                if (index > -1) {
+                    String type = token.substring(0, index);
+                    String offset = token.substring(index + 1);
+                    result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
+                }
             }
         }
         return result;
@@ -192,9 +194,11 @@ public class IndexedElement extends JsElementImpl {
             for (StringTokenizer st = new StringTokenizer(text, "|"); st.hasMoreTokens();) {
                 String token = st.nextToken();
                 int index = token.indexOf(',');
-                String type = token.substring(0, index);
-                String offset = token.substring(index + 1);
-                result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
+                if(index > -1) {
+                    String type = token.substring(0, index);
+                    String offset = token.substring(index + 1);
+                    result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
+                }
             }
         }
         return result;

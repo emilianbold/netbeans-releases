@@ -152,6 +152,7 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
     public boolean isSuperTypeOf(final TypeScope subType) {
         boolean result = false;
         if (subType.isTraited()) {
+            assert (subType instanceof TraitedScope);
             for (TraitScope traitScope : ((TraitedScope) subType).getTraits()) {
                 if (traitScope.equals(this)) {
                     result = true;
