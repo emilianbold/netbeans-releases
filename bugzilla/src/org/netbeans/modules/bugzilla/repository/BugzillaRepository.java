@@ -418,6 +418,15 @@ public class BugzillaRepository {
         return queries;
     }
 
+    public synchronized void setInfoValues(String user, char[] password, String httpUser, char[] httpPassword) {
+        setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, httpUser, httpPassword, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
+        info = new RepositoryInfo(
+                        info.getId(), info.getConnectorId(), 
+                        info.getUrl(), info.getDisplayName(), info.getTooltip(), 
+                        user, httpUser, 
+                        password, httpPassword);
+    }
+    
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean localUserEnabled) {
         setTaskRepository(name, url, user, password, httpUser, httpPassword, localUserEnabled);
         String id = info != null ? info.getId() : name + System.currentTimeMillis();
@@ -433,11 +442,6 @@ public class BugzillaRepository {
     }
     
     private synchronized void setCredentials(String user, char[] password, String httpUser, char[] httpPassword, boolean keepConfiguration) {
-        info = new RepositoryInfo(
-                        info.getId(), info.getConnectorId(), 
-                        info.getUrl(), info.getDisplayName(), info.getTooltip(), 
-                        user, httpUser, 
-                        password, httpPassword);
         MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
         resetRepository(keepConfiguration);
     }
