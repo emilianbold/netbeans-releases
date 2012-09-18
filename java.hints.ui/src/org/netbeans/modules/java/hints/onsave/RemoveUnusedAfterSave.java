@@ -131,7 +131,7 @@ public class RemoveUnusedAfterSave implements OnSaveTask {
         return false;
     }
     
-    @MimeRegistration(mimeType="text/x-java", service=Factory.class)
+    @MimeRegistration(mimeType="text/x-java", service=Factory.class, position=250)
     public static class TaskFactory implements Factory {
         @Override public OnSaveTask createTask(Context context) {
             JavaSource javaSource = JavaSource.forDocument(context.getDocument());
