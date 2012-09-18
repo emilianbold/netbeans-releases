@@ -45,12 +45,17 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URISyntaxException;
 import java.net.URL;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMBreakpoint;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -62,6 +67,7 @@ import org.openide.util.Utilities;
 public class DOMBreakpointCustomizer extends javax.swing.JPanel implements ControllerProvider, HelpCtx.Provider {
 
     private final DOMBreakpoint db;
+    private final String origNodePathNames;
     private boolean createBreakpoint;
     private final CustomizerController controller;
     
@@ -74,7 +80,16 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
             url = DOMNode.findURL(node);
         } else {
             dn = DOMNode.create("[\u0003-1,]"); // root
-            url = null;
+            FileObject fo = Utilities.actionsGlobalContext().lookup(FileObject.class);
+            if (fo == null) {
+                fo = EditorContextDispatcher.getDefault().getMostRecentFile();
+            }
+            if (fo != null) {
+                url = fo.toURL();
+            } else {
+                
+                url = null;
+            }
         }
         DOMBreakpoint b = new DOMBreakpoint(url, dn);
         return b;
@@ -94,9 +109,24 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
     public DOMBreakpointCustomizer(DOMBreakpoint db) {
         this.db = db;
         initComponents();
+        nodeTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                controller.checkValid();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                controller.checkValid();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                controller.checkValid();
+            }
+        });
         controller = new CustomizerController();
         DOMNode node = db.getNode();
-        nodeTextField.setText((node != null) ? node.getNodePathNames() : "");
+        origNodePathNames = (node != null) ? node.getNodePathNames() : "";
+        nodeTextField.setText(origNodePathNames);
         URL url = db.getURL();
         String urlStr;
         if (url != null) {
@@ -139,8 +169,8 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(DOMBreakpointCustomizer.class, "DOMBreakpointCustomizer.jLabel2.text")); // NOI18N
 
-        nodeTextField.setEditable(false);
         nodeTextField.setText(org.openide.util.NbBundle.getMessage(DOMBreakpointCustomizer.class, "DOMBreakpointCustomizer.nodeTextField.text")); // NOI18N
+        nodeTextField.setToolTipText(org.openide.util.NbBundle.getMessage(DOMBreakpointCustomizer.class, "DOMBreakpointCustomizer.nodeTextField.toolTipText")); // NOI18N
 
         onSubtreeModifCheckBox.setText(org.openide.util.NbBundle.getMessage(DOMBreakpointCustomizer.class, "DOMBreakpointCustomizer.onSubtreeModifCheckBox.text")); // NOI18N
         onSubtreeModifCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -165,8 +195,8 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
 
         fileLabel.setText(org.openide.util.NbBundle.getMessage(DOMBreakpointCustomizer.class, "DOMBreakpointCustomizer.fileLabel.text")); // NOI18N
 
-        fileTextField.setEditable(false);
         fileTextField.setText(org.openide.util.NbBundle.getMessage(DOMBreakpointCustomizer.class, "DOMBreakpointCustomizer.fileTextField.text")); // NOI18N
+        fileTextField.setToolTipText(org.openide.util.NbBundle.getMessage(DOMBreakpointCustomizer.class, "DOMBreakpointCustomizer.fileTextField.toolTipText")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -244,6 +274,11 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
 
         @Override
         public boolean ok() {
+            String nodePathNames = nodeTextField.getText().trim();
+            if (!origNodePathNames.equals(nodePathNames)) {
+                DOMNode node = DOMNode.create(nodePathNames);
+                db.setNode(node);
+            }
             db.setOnSubtreeModification(onSubtreeModifCheckBox.isSelected());
             db.setOnAttributeModification(onAttrModifCheckBox.isSelected());
             db.setOnNodeRemoval(onNodeRemoveCheckBox.isSelected());
@@ -260,7 +295,7 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
 
         @Override
         public boolean isValid() {
-            if (db.getNode() == null) {
+            if (db.getNode() == null || nodeTextField.getText().trim().isEmpty()) {
                 return false;
             }
             if (onAttrModifCheckBox.isSelected() ||
@@ -282,6 +317,11 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
                 firePropertyChange(NotifyDescriptor.PROP_ERROR_NOTIFICATION, null, Bundle.Warning_NoDOMNode());
                 firePropertyChange(Controller.PROP_VALID, null, Boolean.FALSE);
                 return;
+            }
+            if (nodeTextField.getText().trim().isEmpty()) {
+                firePropertyChange(NotifyDescriptor.PROP_ERROR_NOTIFICATION, null, Bundle.Warning_NoDOMNode());
+                firePropertyChange(Controller.PROP_VALID, null, Boolean.FALSE);
+                return ;
             }
             if (onAttrModifCheckBox.isSelected() ||
                 onSubtreeModifCheckBox.isSelected() ||

@@ -43,7 +43,11 @@
             }
             $this->url = $this->encodeUrl($this->url, $params);
             $this->date = gmdate("D, d M Y H:i:s T");
-            $this->req =& new HTTP_Request($this->url);
+            <#if deprecated??>
+            $this->req = new HTTP_Request($this->url);
+            <#else>
+            $this->req = & new HTTP_Request($this->url);
+            </#if>
         }
         
         public function setAuthentication($username, $password) {
