@@ -490,14 +490,14 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         if (!"text/html".equals(FileUtil.getMIMEType(fo))) {
             return;
         }
-        
+
         setPageModel(PageInspectorImpl.getDefault().getPage());
 
         Source source = Source.create(fo);
-        if (source == null) {
+        if (source == null || !"text/html".equals(source.getMimeType())) {
             return;
         }
-        
+
         //TODO: uncomment when working again
         //showWaitNode();
         

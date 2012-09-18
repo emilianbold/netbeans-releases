@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.util;
 
+import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -74,6 +75,17 @@ public final class FileUtilities {
      */
     public static boolean isCssFile(FileObject file) {
         return CSS_MIME_TYPE.equals(FileUtil.getMIMEType(file, CSS_MIME_TYPE));
+    }
+
+    /**
+     * Cleanup the given folder. The folder itself is not removed.
+     * @param fileObject folder to be cleaned up
+     * @throws IOException if any error occurs
+     */
+    public static void cleanupFolder(FileObject fileObject) throws IOException {
+        for (FileObject child : fileObject.getChildren()) {
+            child.delete();
+        }
     }
 
 }

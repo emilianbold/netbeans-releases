@@ -477,13 +477,13 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAfterSemi, getDefaultAsBoolean(spaceAfterSemi));
     }
 
-//    public boolean spaceBeforeColon() {
-//        return preferences.getBoolean(spaceBeforeColon, getDefaultAsBoolean(spaceBeforeColon));
-//    }
-//
-//    public boolean spaceAfterColon() {
-//        return preferences.getBoolean(spaceAfterColon, getDefaultAsBoolean(spaceAfterColon));
-//    }
+    public boolean spaceBeforeColon() {
+        return preferences.getBoolean(spaceBeforeColon, getDefaultAsBoolean(spaceBeforeColon));
+    }
+
+    public boolean spaceAfterColon() {
+        return preferences.getBoolean(spaceAfterColon, getDefaultAsBoolean(spaceAfterColon));
+    }
 
     // alignment
     public boolean alignMultilineMethodParams() {
