@@ -500,16 +500,17 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/objects6.js",new IndentPrefs(4, 4));
     }
 
-    public void testOperators7Default() throws Exception {
+    public void testObjects7Default() throws Exception {
         reformatFileContents("testfiles/formatter/objects7.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
     }
 
-//    public void testOperators7Inverted() throws Exception {
-//        HashMap<String, Object> options = new HashMap<String, Object>();
-//        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_NEVER);
-//        reformatFileContents("testfiles/formatter/object7.js", options, ".inverted.formatted");
-//    }
+    public void testObjects7Inverted() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforePropertyOps, true);
+        options.put(FmtOptions.spaceAfterPropertyOps, false);
+        reformatFileContents("testfiles/formatter/objects7.js", options, ".inverted.formatted");
+    }
 
     public void testSwitch1() throws Exception {
         reformatFileContents("testfiles/formatter/switch1.js",new IndentPrefs(4, 4));

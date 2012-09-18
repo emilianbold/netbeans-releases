@@ -333,6 +333,14 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAroundKeyValueOps, getDefaultAsBoolean(spaceAroundKeyValueOps));
     }
 
+    public boolean spaceBeforePropertyOps() {
+        return preferences.getBoolean(spaceBeforePropertyOps, getDefaultAsBoolean(spaceBeforePropertyOps));
+    }
+
+    public boolean spaceAfterPropertyOps() {
+        return preferences.getBoolean(spaceAfterPropertyOps, getDefaultAsBoolean(spaceAfterPropertyOps));
+    }
+
     public boolean spaceAroundAssignOps() {
         return preferences.getBoolean(spaceAroundAssignOps, getDefaultAsBoolean(spaceAroundAssignOps));
     }
