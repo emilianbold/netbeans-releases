@@ -50,6 +50,19 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="Actions.checkbox.default">
+        <api name="awt"/>
+        <summary>The value in Preferences for Actions.checkbox can have a default</summary>
+        <version major="7" minor="53"/>
+        <date day="18" month="9" year="2012"/>
+        <author login="jlahoda"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            A default value can be specified for a preference value for Actions.checkbox.
+        </description>
+        <class package="org.openide.awt" name="Actions"/>
+        <issue number="217978"/>
+    </change>
     <change id="BrowserExtensions">
       <api name="awt"/>
       <summary>Minor API extensions to allow better integration of embedded browsers.</summary>
