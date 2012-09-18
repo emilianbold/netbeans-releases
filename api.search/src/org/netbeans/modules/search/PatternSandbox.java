@@ -97,6 +97,7 @@ public abstract class PatternSandbox extends JPanel
 
         cboxPattern = new JComboBox();
         cboxPattern.setEditable(true);
+        cboxPattern.setRenderer(new ShorteningCellRenderer());
         lblPattern = new JLabel();
         lblPattern.setLabelFor(cboxPattern);
         lblHint = new JLabel();
@@ -855,5 +856,24 @@ public abstract class PatternSandbox extends JPanel
     }
 
     private static class TimeoutExeption extends RuntimeException {
+    }
+
+    private class ShorteningCellRenderer extends DefaultListCellRenderer {
+
+        private static final int MAX_LENGTH = 50;
+        private static final String THREE_DOTS = "...";                 //NOI18N
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
+            Component component = super.getListCellRendererComponent(list,
+                    value, index, isSelected, cellHasFocus);
+            if (value instanceof String && component instanceof JLabel
+                    && value.toString().length() > MAX_LENGTH) {
+                ((JLabel) component).setText(value.toString().substring(
+                        0, MAX_LENGTH - THREE_DOTS.length()) + THREE_DOTS);
+            }
+            return component;
+        }
     }
 }
