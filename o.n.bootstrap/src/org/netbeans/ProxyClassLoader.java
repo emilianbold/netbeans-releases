@@ -94,12 +94,6 @@ public class ProxyClassLoader extends ClassLoader {
 
     /** The base class loader that is before all ProxyClassLoaders. */
     private ClassLoader systemCL = TOP_CL;
- 
-    /** A shared map of all packages known by all classloaders. Also covers META-INF based resources.
-     * It contains two kinds of keys: dot-separated package names and slash-separated
-     * META-INF resource names, e.g. {"org.foobar", "/services/org.foobar.Foo"} 
-     */
-    private static final Map<String,Set<ProxyClassLoader>> packageCoverage = new HashMap<String,Set<ProxyClassLoader>>();
     
     private Set<ProxyClassLoader> parentSet = new HashSet<ProxyClassLoader>(); 
      
@@ -119,22 +113,7 @@ public class ProxyClassLoader extends ClassLoader {
     }
     
     protected final void addCoveredPackages(Iterable<String> coveredPackages) {
-        synchronized(packageCoverage) {
-            for (String pkg : coveredPackages) {
-                Set<ProxyClassLoader> delegates = packageCoverage.get(pkg); 
-                if (delegates == null) { 
-                    delegates = Collections.<ProxyClassLoader>singleton(this);
-                    packageCoverage.put(pkg, delegates); 
-                } else if (delegates.size() == 1) {
-                    delegates = new HashSet<ProxyClassLoader>(delegates);
-                    packageCoverage.put(pkg, delegates);
-                    delegates.add(this); 
-                } else {
-                    delegates.add(this);
-                }
-            }
-        }
-        
+        ProxyClassPackages.addCoveredPackages(this, coveredPackages);
     }
     
     // this is used only by system classloader, maybe we can redesign it a bit
@@ -204,7 +183,7 @@ public class ProxyClassLoader extends ClassLoader {
 
         final String path = pkg.replace('.', '/') + "/";
 
-        Set<ProxyClassLoader> del = packageCoverage.get(pkg);
+        Set<ProxyClassLoader> del = ProxyClassPackages.findCoveredPkg(pkg);
  
         Boolean boo = sclPackages.get(pkg);
         if ((boo == null || boo.booleanValue()) && shouldDelegateResource(path, null)) {
@@ -372,9 +351,9 @@ public class ProxyClassLoader extends ClassLoader {
             // else try other loaders
         }
 
-        Set<ProxyClassLoader> del = packageCoverage.get(cover);
+        Set<ProxyClassLoader> del = ProxyClassPackages.findCoveredPkg(cover);
         if (pkg.length() == 0) {
-            Set<ProxyClassLoader> snd = packageCoverage.get(pkg);
+            Set<ProxyClassLoader> snd = ProxyClassPackages.findCoveredPkg(pkg);
             if (snd != null) {
                 if (del != null) {
                     del = new HashSet<ProxyClassLoader>(del);
@@ -448,9 +427,9 @@ public class ProxyClassLoader extends ClassLoader {
         // always consult SCL first
         if (shouldDelegateResource(path, null)) sub.add(systemCL.getResources(name));
         
-        Set<ProxyClassLoader> del = packageCoverage.get(pkg);
+        Set<ProxyClassLoader> del = ProxyClassPackages.findCoveredPkg(pkg);
         if (fallDef != null) {
-            Set<ProxyClassLoader> snd = packageCoverage.get(fallDef);
+            Set<ProxyClassLoader> snd = ProxyClassPackages.findCoveredPkg(fallDef);
             if (snd != null) {
                 if (del != null) {
                     del = new HashSet<ProxyClassLoader>(del);
@@ -677,17 +656,7 @@ public class ProxyClassLoader extends ClassLoader {
     /** Called before releasing the classloader so it can itself unregister
      * from the global ClassLoader pool */
     public void destroy() {
-        synchronized(packageCoverage) {
-            for (Iterator<String> it = packageCoverage.keySet().iterator(); it.hasNext(); ) {
-                String pkg = it.next();
-                Set<ProxyClassLoader> set = packageCoverage.get(pkg);
-                if (set.contains(this) && set.size() == 1 ) {
-                    it.remove();
-                } else {
-                    set.remove(this);
-                }
-            }
-        }
+        ProxyClassPackages.removeCoveredPakcages(this);
     }
 
     final ClassLoader firstParent() {
