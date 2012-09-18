@@ -126,7 +126,7 @@ import org.openide.windows.WindowManager;
 autostore = false)
 @TopComponent.Description(
     preferredID = "JavaHierarchyTopComponent",
-iconBase="org/netbeans/modules/java/navigation/resources/supertypehierarchy.gif", 
+iconBase="org/netbeans/modules/java/navigation/resources/hierarchy_window.png",
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "properties", openAtStartup = false)
 @Messages({
