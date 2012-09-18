@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -208,6 +209,7 @@ public final class ClientSideProjectUtilities {
         "# {0} - library name",
         "ClientSideProjectUtilities.msg.downloadingJsLib=Downloading {0}"
     })
+    @CheckReturnValue
     public static List<JavaScriptLibrarySelection.SelectedLibrary> applyJsLibraries(List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries,
             String jsLibFolder, FileObject siteRootDir, @NullAllowed ProgressHandle handle) throws IOException {
         assert !EventQueue.isDispatchThread();
