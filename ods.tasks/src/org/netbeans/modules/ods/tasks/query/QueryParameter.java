@@ -58,7 +58,17 @@ import javax.swing.ListModel;
  */
 public abstract class QueryParameter {
     
-
+    public static String CRITERIA_SUMMARY = "summary";
+    public static String CRITERIA_DESCRIPTION = "description";
+    public static String CRITERIA_COMMENT = "comment";
+    public static String CRITERIA_SEVERITY = "severity";
+    public static String CRITERIA_PRODUCT = "productName"; 
+    public static String CRITERIA_COMPONENT = "componentName";
+    public static String CRITERIA_RELEASE = "release";
+    public static String CRITERIA_PRIORITY = "priority";
+    public static String CRITERIA_TASK_TYPE = "tasktype";
+    public static String CRITERIA_ITERATION = "iteration"; 
+            
     protected boolean alwaysDisabled = false;
     private final String attribute;
     
