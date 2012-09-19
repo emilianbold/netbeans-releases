@@ -134,13 +134,14 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 setState((LexerState)info.state());
             } else {
                 //initial state
+                stack.pushStack(YYINITIAL);
                 if (inPHP) {
+                    stack.pushStack(ST_PHP_IN_SCRIPTING);
                     zzState = zzLexicalState = ST_PHP_IN_SCRIPTING;
                 }
                 else {
                     zzState = zzLexicalState = YYINITIAL;
                 }
-                stack.clear();
             }
 
         }

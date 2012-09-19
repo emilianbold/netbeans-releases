@@ -491,13 +491,48 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
     }
 
+    /**
+     * Fix attributes being imported from old NetBeans.
+     * <p/>
+     * Password for local server is changed from <code>"adminadmin"</code>
+     * to <code>""</code>.
+     * Fixed attributes are marked with new property to avoid multiple fixes
+     * in the future.
+     * <p/>
+     * Argument <code>ip</code> shall not be <code>null</code>.
+     * <p/>
+     * @param ip Instance properties <code>Map</code>.
+     * @param fo Instance file object.
+     */
+    private void fixImportedAttributes(Map<String, String> ip,
+            FileObject fo) {
+        if (!ip.containsKey(GlassfishModule.NB73_IMPORT_FIXED)) {
+            String password = ip.get(GlassfishModule.PASSWORD_ATTR);
+            if (password != null) {
+                boolean local
+                        = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) != null;
+                if (local && GlassfishInstance.OLD_DEFAULT_ADMIN_PASSWORD
+                        .equals(password)) {
+                    ip.put(GlassfishModule.PASSWORD_ATTR,
+                            GlassfishInstance.DEFAULT_ADMIN_PASSWORD);
+                    setStringAttribute(fo, GlassfishModule.PASSWORD_ATTR,
+                            GlassfishInstance.DEFAULT_ADMIN_PASSWORD);
+                }
+            }
+            ip.put(GlassfishModule.NB73_IMPORT_FIXED, Boolean.toString(true));
+        }
+    }
+
     // Password from keyring (GlassfishModule.PASSWORD_ATTR) is read on demand
     // using code in GlassfishInstance.Props class.
-    private GlassfishInstance readInstanceFromFile(FileObject instanceFO, String uriFragment) throws IOException {
+    private GlassfishInstance readInstanceFromFile(FileObject instanceFO,
+            String uriFragment) throws IOException {
         GlassfishInstance instance = null;
 
-        String installRoot = getStringAttribute(instanceFO, GlassfishModule.INSTALL_FOLDER_ATTR);
-        String glassfishRoot = getStringAttribute(instanceFO, GlassfishModule.GLASSFISH_FOLDER_ATTR);
+        String installRoot = getStringAttribute(instanceFO,
+                GlassfishModule.INSTALL_FOLDER_ATTR);
+        String glassfishRoot = getStringAttribute(instanceFO,
+                GlassfishModule.GLASSFISH_FOLDER_ATTR);
         
         // Existing installs may lack "installRoot", but glassfishRoot and 
         // installRoot are the same in that case.
@@ -505,7 +540,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             installRoot = glassfishRoot;
         }
 
-        if(isValidHomeFolder(installRoot) && isValidGlassfishFolder(glassfishRoot)) {
+        if(isValidHomeFolder(installRoot)
+                && isValidGlassfishFolder(glassfishRoot)) {
             // collect attributes and pass to create()
             Map<String, String> ip = new HashMap<String, String>();
             Enumeration<String> iter = instanceFO.getAttributes();
@@ -515,9 +551,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 ip.put(name, value);
             }
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
+            fixImportedAttributes(ip, instanceFO);
             instance = GlassfishInstance.create(ip,this,false);
         } else {
-            getLogger().log(Level.FINER, "GlassFish folder {0} is not a valid install.", instanceFO.getPath()); // NOI18N
+            getLogger().log(Level.FINER,
+                    "GlassFish folder {0} is not a valid install.",
+                    instanceFO.getPath()); // NOI18N
             instanceFO.delete();
         }
 
@@ -656,6 +695,23 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             result = (String) attr;
         }
         return result;
+    }
+
+    /**
+     * Set file attribute of given file object.
+     * @param fo File object.
+     * @param key Attribute key.
+     * @param value Attribute value.
+     */
+    private static void setStringAttribute(FileObject fo, String key,
+            String value) {
+        try {
+            fo.setAttribute(key, value);
+        } catch (IOException ioe) {
+            getLogger().log(Level.WARNING,
+                    "Cannot update file object value: {0} -> {1} in {2}",
+                    new Object[]{key, value, fo.getPath()});
+        }
     }
         
     String[] getNoPasswordCreatDomainCommand(String startScript, String jarLocation, 

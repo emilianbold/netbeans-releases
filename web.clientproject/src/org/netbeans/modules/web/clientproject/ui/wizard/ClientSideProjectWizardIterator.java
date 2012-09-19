@@ -317,6 +317,15 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public void uninitialize(WizardDescriptor wizardDescriptor) {
+            // cleanup js libs
+            FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
+            if (jsLibs != null) {
+                try {
+                    jsLibs.delete();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+            }
             wizardDescriptor.putProperty(SITE_TEMPLATE, null);
             wizardDescriptor.putProperty(LIBRARIES_FOLDER, null);
         }
