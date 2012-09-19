@@ -105,14 +105,27 @@ public class JsIndex {
     }
     
     public Collection <IndexedElement> getGlobalVar(String prefix) {
-        Collection<? extends IndexResult> results = query(
+        Collection<IndexedElement> allGlobalItems = new ArrayList<IndexedElement>();
+        prefix = prefix == null ? "" : prefix; //NOI18N
+
+        Collection<? extends IndexResult> globalObjects = query(
                 JsIndex.FIELD_IS_GLOBAL, "1", QuerySupport.Kind.EXACT, TERMS_BASIC_INFO); //NOI18N
-        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
-        prefix = prefix == null ? "" : prefix;
-        for (IndexResult indexResult : results) {
+        for (IndexResult indexResult : globalObjects) {
             IndexedElement indexedElement = IndexedElement.create(indexResult);
+            allGlobalItems.add(indexedElement);
+        }
+
+        // enhance results for all window properties - see issue #218412, #215863, #218122, ...
+        allGlobalItems.addAll(getProperties("window")); //NOI18N
+
+        return getElementsByPrefix(prefix, allGlobalItems);
+    }
+
+    private static Collection<IndexedElement> getElementsByPrefix(String prefix, Collection<IndexedElement> items) {
+        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
+        for (IndexedElement indexedElement : items) {
             if (indexedElement.getName().startsWith(prefix)) {
-                result.add(IndexedElement.create(indexResult));
+                result.add(indexedElement);
             }
         }
         return result;
