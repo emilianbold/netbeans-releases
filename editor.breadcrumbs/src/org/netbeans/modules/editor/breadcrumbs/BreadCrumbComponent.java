@@ -73,6 +73,7 @@ import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.editor.JumpList;
+import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
 import org.openide.awt.HtmlRenderer;
 import org.openide.awt.HtmlRenderer.Renderer;
 import org.openide.explorer.ExplorerManager;
@@ -351,7 +352,7 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
         renderer.reset();
         
         Image nodeIcon = node.getIcon(BeanInfo.ICON_COLOR_16x16);
-        Icon icon = nodeIcon != null ? ImageUtilities.image2Icon(nodeIcon) : null;
+        Icon icon = nodeIcon != null && nodeIcon != BreadcrumbsController.NO_ICON ? ImageUtilities.image2Icon(nodeIcon) : null;
         int width = icon != null ? icon.getIconWidth() : 0;
         if (width > 0) {
             renderer.setIcon(icon);
