@@ -94,6 +94,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     protected String preferredID() {
         //return this.getClass().getName();
         // Return the ID of the old classes view:
@@ -119,6 +120,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             hfw = null;
             clc = null;
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     remove(tempContent);
                 }
@@ -144,10 +146,12 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
                 rp = defaultRP;
             }
             rp.post(new Runnable() {
+                @Override
                 public void run() {
                     Heap heap = new HeapImpl(fDebugger);
                     final HeapFragmentWalker hfw = new DebuggerHeapFragmentWalker(heap);
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             ClassesController cc;
                             synchronized (ClassesCountsView.this) {
@@ -181,11 +185,13 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         return hfw;
     }
     
+    @Override
     protected void componentShowing () {
         super.componentShowing ();
             setUp();
     }
     
+    @Override
     protected void componentHidden () {
         super.componentHidden ();
     }
@@ -202,26 +208,33 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
     
     // <RAVE>
     // Implement getHelpCtx() with the correct helpID
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
             return new org.openide.util.HelpCtx("NetbeansDebuggerInstancesNode"); // NOI18N
     }
     // </RAVE>
     
+    @Override
     public int getPersistenceType () {
         return PERSISTENCE_ALWAYS;
     }
         
+    @Override
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow ();
-            if (content == null) return false;
-            return content.requestFocusInWindow ();
+        if (content == null) {
+            return false;
+        }
+        return content.requestFocusInWindow ();
     }
     
+    @Override
     public String getName () {
         //return "Class Counts";
         return NbBundle.getMessage (ClassesCountsView.class, "CTL_Classes_view");
     }
     
+    @Override
     public String getToolTipText () {
         //return "Class Counts";
         return NbBundle.getMessage (ClassesCountsView.class, "CTL_Classes_tooltip");// NOI18N
@@ -251,9 +264,13 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         
         private synchronized void attachToStateChange(DebuggerEngine engine) {
             detachFromStateChange();
-            if (engine == null) return ;
+            if (engine == null) {
+                return ;
+            }
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-            if (debugger == null) return ;
+            if (debugger == null) {
+                return ;
+            }
             debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, this);
             lastDebugger = new WeakReference<JPDADebugger>(debugger);
         }
@@ -283,6 +300,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             DebuggerEngine engine = (DebuggerEngine) e.getNewValue();
             attachToStateChange(engine);
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     setContent();
                 }
@@ -292,6 +310,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         private synchronized Task getRefreshContentTask() {
             if (refreshTask == null) {
                 refreshTask = defaultRP.create(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                         HeapFragmentWalker fragmentWalker = ClassesCountsView.this.hfw;
@@ -301,6 +320,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
                         }
 
                         javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
+                            @Override
                             public void run() {
                                 refreshContent();
                             }
