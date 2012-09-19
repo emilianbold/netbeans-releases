@@ -89,6 +89,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 public class JavaScriptLibrarySelection extends JPanel {
@@ -101,7 +102,6 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    // selected items are accessed outside of EDT thread
     final List<SelectedLibrary> selectedLibraries = Collections.synchronizedList(new ArrayList<SelectedLibrary>());
     final Set<SelectedLibrary> failedLibraries = Collections.synchronizedSet(new HashSet<SelectedLibrary>());
     // @GuardedBy("EDT")
@@ -197,26 +197,10 @@ public class JavaScriptLibrarySelection extends JPanel {
         assert EventQueue.isDispatchThread();
         selectedLibrariesList.setModel(selectedLibrariesListModel);
         selectedLibrariesList.setCellRenderer(new SelectedLibraryRenderer(selectedLibrariesList.getCellRenderer()));
-        selectedLibrariesListModel.addListDataListener(new ListDataListener() {
-            @Override
-            public void intervalAdded(ListDataEvent e) {
-                dataChanged();
-            }
-            @Override
-            public void intervalRemoved(ListDataEvent e) {
-                dataChanged();
-            }
-            @Override
-            public void contentsChanged(ListDataEvent e) {
-                dataChanged();
-            }
-            private void dataChanged() {
-                fireChangeEvent();
-            }
-        });
     }
 
     private void initLibrariesButtons() {
+        assert EventQueue.isDispatchThread();
         // listen on table and list
         ListSelectionListener selectionListener = new ListSelectionListener() {
             @Override
@@ -359,6 +343,7 @@ public class JavaScriptLibrarySelection extends JPanel {
     }
 
     void enableLibraryButtons() {
+        assert EventQueue.isDispatchThread();
         // select
         selectAllButton.setEnabled(librariesTableModel.getRowCount() > 0);
         selectSelectedButton.setEnabled(librariesTable.getSelectedRows().length > 0);
@@ -429,6 +414,7 @@ public class JavaScriptLibrarySelection extends JPanel {
     }
 
     private void selectLibrary(int libraryIndex) {
+        assert EventQueue.isDispatchThread();
         ModelItem modelItem = librariesTableModel.getItems().get(libraryIndex);
         LibraryVersion libraryVersion = modelItem.getSelectedVersion();
         selectedLibraries.add(new SelectedLibrary(libraryVersion));
@@ -476,7 +462,6 @@ public class JavaScriptLibrarySelection extends JPanel {
     }
 
     public void updateDefaults(Collection<String> defaultLibs) {
-        assert EventQueue.isDispatchThread();
         // remove default libraries
         Iterator<SelectedLibrary> iterator = selectedLibraries.iterator();
         while (iterator.hasNext()) {
@@ -488,13 +473,23 @@ public class JavaScriptLibrarySelection extends JPanel {
         for (String lib : defaultLibs) {
             selectedLibraries.add(new SelectedLibrary(lib));
         }
-        selectedLibrariesListModel.fireContentsChanged();
+        fireSelectedLibrariesChangeInEDT();
     }
 
     public void updateFailed(List<SelectedLibrary> failedLibs) {
         failedLibraries.clear();
         failedLibraries.addAll(failedLibs);
-        selectedLibrariesListModel.fireContentsChanged();
+        fireSelectedLibrariesChangeInEDT();
+    }
+
+    private void fireSelectedLibrariesChangeInEDT() {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                assert EventQueue.isDispatchThread();
+                selectedLibrariesListModel.fireContentsChanged();
+            }
+        });
     }
 
     /**
