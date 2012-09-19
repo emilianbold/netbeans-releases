@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.utils.filters.AllSourceFileFilter;
 import org.netbeans.modules.cnd.utils.filters.CCSourceFileFilter;
 import org.netbeans.modules.cnd.utils.filters.CSourceFileFilter;
 import org.netbeans.modules.cnd.utils.filters.ConfigureFileFilter;
+import org.netbeans.modules.cnd.utils.filters.CoreFileFilter;
 import org.netbeans.modules.cnd.utils.filters.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.utils.filters.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.utils.filters.ElfStaticLibraryFileFilter;
@@ -196,5 +197,8 @@ public final class FileFilterFactory {
     }
     public static AbstractFileAndFileObjectFilter getWorkshopProjectFilter(){
         return WorkshopProjectFilter.getInstance();
+    }
+    public static AbstractFileAndFileObjectFilter getCoreFileFilter(){
+        return CoreFileFilter.getInstance();
     }
 }
