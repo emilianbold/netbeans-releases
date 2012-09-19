@@ -74,7 +74,8 @@ public class GroovyReplaceTokenProvider implements ReplaceTokenProvider, ActionC
         this.project = project;
     }
 
-    @Override public Map<String,String> createReplacements(String action, Lookup lookup) {
+    @Override
+    public Map<String,String> createReplacements(String action, Lookup lookup) {
         FileObject f = lookup.lookup(FileObject.class);
         if (f == null) {
             SingleMethod m = lookup.lookup(SingleMethod.class);
@@ -103,11 +104,16 @@ public class GroovyReplaceTokenProvider implements ReplaceTokenProvider, ActionC
         return Collections.emptyMap();
     }
 
-    @Override public String convert(String action, Lookup lookup) {
+    @Override
+    public String convert(String action, Lookup lookup) {
         if (ActionProvider.COMMAND_RUN_SINGLE.equals(action) ||
             ActionProvider.COMMAND_DEBUG_SINGLE.equals(action)) {
-            FileObject f = lookup.lookup(FileObject.class);
-            if (f != null && "text/x-groovy".equals(f.getMIMEType())) {
+            FileObject fo = lookup.lookup(FileObject.class);
+            if (fo != null && "text/x-groovy".equals(fo.getMIMEType())) {
+                if (isInTestFolder(fo)) {
+                    return null;
+                }
+
                 //TODO this only applies to groovy files with main() method.
                 // we should have a way to execute any groovy script? how?
                 // running groovy tests is another specialized usecase.
@@ -117,4 +123,10 @@ public class GroovyReplaceTokenProvider implements ReplaceTokenProvider, ActionC
         return null;
     }
 
+    private boolean isInTestFolder(FileObject file) {
+        if (file.getPath().indexOf("/test/groovy") != -1) {
+            return true;
+        }
+        return false;
+    }
 }
