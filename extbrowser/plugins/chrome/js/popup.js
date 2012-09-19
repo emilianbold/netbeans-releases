@@ -79,7 +79,7 @@ NetBeans_PresetMenu.resizePage = function(preset) {
 NetBeans_PresetMenu.setAutoPresetActive = function() {
     document.getElementById('autoPresetMenu').setAttribute('class', 'active');
     document.getElementById('autoPresetRadio').setAttribute('checked', 'checked');
-}
+};
 /*** ~Private ***/
 // menu init
 NetBeans_PresetMenu._init = function() {
@@ -127,7 +127,7 @@ NetBeans_PresetMenu._putPresets = function() {
         // formitem
         var formItemDiv = document.createElement('div');
         formItemDiv.setAttribute('class', 'form-item');
-        var radio = document.createElement('input')
+        var radio = document.createElement('input');
         radio.setAttribute('type', 'radio');
         radio.setAttribute('tabindex', '-1');
         if (activePreset) {
