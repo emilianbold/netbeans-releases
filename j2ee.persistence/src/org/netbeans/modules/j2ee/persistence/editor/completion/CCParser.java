@@ -170,6 +170,7 @@ public class CCParser {
                         switch(id) {
                             case EQ:
                                 state = EQ;
+                                currAttrValue = "";
                                 eqOffset = ts.offset();
                                 break;
                             default:
@@ -183,10 +184,11 @@ public class CCParser {
                                 currAttrValue = Utils.unquote(titk.text().toString());
                                 attrs.add(new NNAttr(currAttrName, currAttrValue, ts.offset(), true));
                                 break;
+                            case DOT:
                             case IDENTIFIER:
-                                state = INNN;
-                                currAttrValue = titk.text().toString();
-                                attrs.add(new NNAttr(currAttrName, currAttrValue, ts.offset(), false));
+                                //need to collect data, do not switch to INNN here
+                                //multidot identifier can be expected
+                                currAttrValue += titk.text().toString();
                                 break;
                             case AT:
                                 //nested annotation
@@ -197,6 +199,13 @@ public class CCParser {
                                 if (ts.move(nestedNN.getEndOffset()) == 0)if(!ts.moveNext())ts.movePrevious();
                                 titk = ts.token();
                                 continue; //next loop
+                            case COMMA:
+                            case RPAREN:
+                                if(currAttrValue.length()>0){
+                                    state = INNN;
+                                    attrs.add(new NNAttr(currAttrName, currAttrValue, ts.offset(), false));
+                                    break;
+                                }
                             default:
                                 //ERROR => recover
                                 //set the start offset of the value to the offset of the equator + 1

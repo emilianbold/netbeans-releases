@@ -3,5 +3,9 @@
                      "http://java.sun.com/products/javahelp/map_2_0.dtd">
 
 <map version="1.0">
+    
+    <!-- CSH for Configure JS Test Driver dialog -->
+    <mapID target="org.netbeans.modules.javascript.jstestdriver.JSTestDriverCustomizerPanel" url="csh/csh-jstestdriver.html"/>
+    
 </map>
 

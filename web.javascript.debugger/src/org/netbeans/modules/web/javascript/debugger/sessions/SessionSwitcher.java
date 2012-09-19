@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,43 +34,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.javascript.debugger.sessions;
 
-package org.netbeans.modules.editor.completion;
-
-import java.awt.GraphicsConfiguration;
-import java.awt.Rectangle;
-import javax.swing.text.JTextComponent;
+import java.util.List;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.api.debugger.LazyDebuggerManagerListener;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.netbeans.spi.debugger.ContextProvider;
 
 /**
- * Provides screen bounds
- * @author Max Sauer
+ * Sets the current session when the debugger is paused.
+ * 
+ * @author Martin Entlicher
  */
-public class ScreenBoundsProvider {
+@LazyActionsManagerListener.Registration(path="javascript-debuggerengine")
+public class SessionSwitcher extends LazyActionsManagerListener implements Debugger.Listener {
     
-    /** Relative width of screen covered by CC */
-    static final double COMPL_COVERAGE = 0.4;
+    private Debugger d;
+    private Session s;
     
-    /** Relative maximum width of screen covered by CC */
-    static final double MAX_COMPL_COVERAGE = 0.9;
-    
-    private static Rectangle screenBounds;
-    
-    static Rectangle getScreenBounds(JTextComponent editorComponent) {
-        if (screenBounds == null) {
-            GraphicsConfiguration configuration = editorComponent != null
-                    ? editorComponent.getGraphicsConfiguration() : null;
-            screenBounds = configuration != null
-                    ? configuration.getBounds() : new Rectangle();
-        }
-        return screenBounds;
+    public SessionSwitcher(ContextProvider lookupProvider) {
+        d = lookupProvider.lookupFirst(null, Debugger.class);
+        s = lookupProvider.lookupFirst(null, Session.class);
+        d.addListener(this);
     }
-    
-    static void clear() {
-        screenBounds = null;
+
+    @Override
+    public void paused(List<CallFrame> callStack, String reason) {
+        DebuggerManager.getDebuggerManager().setCurrentSession(s);
     }
+
+    @Override
+    public void resumed() {}
+
+    @Override
+    public void reset() {}
+
+    @Override
+    protected void destroy() {
+        d.removeListener(this);
+        d = null;
+        s = null;
+    }
+
+    @Override
+    public String[] getProperties() {
+        return new String[] {};
+    }
+
 }

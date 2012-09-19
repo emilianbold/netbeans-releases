@@ -364,7 +364,7 @@ public final class LexerInput {
             if (index < 0 || index >= length) {
                 throw new IndexOutOfBoundsException("index=" + index + ", length=" + length); // NOI18N
             }
-            return operation.readExistingAtIndex(index);
+            return operation.readExistingAtIndex(start + index);
         }
         
     }

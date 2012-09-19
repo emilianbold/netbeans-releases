@@ -48,7 +48,6 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
@@ -101,7 +100,7 @@ public final class KenaiMenuAction extends AbstractAction implements DynamicMenu
         Actions.connect(item, action, false);
         kenaiMenu.add(item);
 
-        kenaiMenu.add(new JSeparator());
+        kenaiMenu.addSeparator();
 
         action = Actions.forID(CATEGORY_TEAM, ChatTopComponent.ACTION_ID);
         item = new JMenuItem();

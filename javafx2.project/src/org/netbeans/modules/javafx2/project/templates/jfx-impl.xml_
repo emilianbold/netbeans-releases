@@ -2838,6 +2838,8 @@
     </target>
     <target depends="init,compile,jar,-create-temp-run-dir" description="Run JavaFX project standalone." name="jfx-project-run">
         <echo message="Executing ${main.class} from ${temp.run.jar} using platform ${platform.java}"/>
+        <property name="run.jvmargs" value=""/>
+        <property name="run.jvmargs.ide" value=""/>        
         <java classname="${main.class}" dir="${work.dir}" fork="true" jvm="${platform.java}">
             <jvmarg line="${endorsed.classpath.cmd.line.arg}"/>
             <jvmarg value="-Dfile.encoding=${runtime.encoding}"/>
@@ -2962,6 +2964,7 @@
     </target>
     
     <target name="-profile-check-1">
+        <property name="run.jvmargs.ide" value=""/>        
         <condition property="profiler.configured">
             <or>
                 <contains casesensitive="true" string="${run.jvmargs.ide}" substring="-agentpath:"/>
@@ -2977,6 +2980,7 @@
     <target name="-do-jfxws-profile" depends="-mark-project-state-profiling,
             -check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime">
         <echo message="Executing ${jfx.deployment.jnlp} in profile mode using ${active.webstart.executable}"/>
+        <property name="run.jvmargs.ide" value=""/>        
         <exec executable="${active.webstart.executable}">
             <env key="JAVAWS_VM_ARGS" value="${run.jvmargs.ide}"/>
             <arg value="-wait"/>
@@ -3110,6 +3114,7 @@
             -check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime">
         <echo message="Executing ${jfx.deployment.html} in profile mode using ${javafx.run.inbrowser}"/>
         <echo message="(${javafx.run.inbrowser.path})"/>
+        <property name="run.jvmargs.ide" value=""/>        
         <exec executable="${javafx.run.inbrowser.path}">
             <env key="_JPI_VM_OPTIONS" value="${run.jvmargs.ide}"/>
             <arg file="${jfx.deployment.html}"/>

@@ -444,8 +444,8 @@ public final class DocumentViewOp
         }
 
         if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINE)) {
-            String msg = "NOTIFY-REPAINT [x0,y0][x1,y1]: [" + x0 + "," + y0 + "][" + x1 + "," + y1 + "] => [" // NOI18N
-                     + repaintX0 + "," + repaintY0 + "][" + repaintX1 + "," + repaintY1 + "]\n"; // NOI18N
+            String msg = "NOTIFY-REPAINT XYWH[" + x0 + ";" + y0 + ";" + (x1-x0) + ";" + (y1-y0) + "] => [" // NOI18N
+                     + repaintX0 + ";" + repaintY0 + ";" + (repaintX1-repaintX0) + ";" + (repaintY1-repaintY0) + "]\n"; // NOI18N
             ViewUtils.log(ViewHierarchyImpl.REPAINT_LOG, msg);
         }
     }
@@ -467,7 +467,7 @@ public final class DocumentViewOp
                 public void run() {
                     JTextComponent textComponent = docView.getTextComponent();
                     if (textComponent != null) {
-                        if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINER)) {
+                        if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINE)) {
                             ViewHierarchyImpl.REPAINT_LOG.finer("REPAINT [x0,y0][x1,y1]: [" +
                                     x0 + "," + y0 + "][" + x1 + "," + y1 + "]\n"); // NOI18N
                         }
@@ -498,7 +498,7 @@ public final class DocumentViewOp
         viewHierarchyImpl = ViewHierarchyImpl.get(textComponent);
         viewHierarchyImpl.setDocumentView(docView);
         updateVisibleDimension(false);
-        if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINE)) {
+        if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINER)) {
             DebugRepaintManager.register(textComponent);
         }
     }

@@ -500,16 +500,17 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/objects6.js",new IndentPrefs(4, 4));
     }
 
-    public void testOperators7Default() throws Exception {
+    public void testObjects7Default() throws Exception {
         reformatFileContents("testfiles/formatter/objects7.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
     }
 
-//    public void testOperators7Inverted() throws Exception {
-//        HashMap<String, Object> options = new HashMap<String, Object>();
-//        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_NEVER);
-//        reformatFileContents("testfiles/formatter/object7.js", options, ".inverted.formatted");
-//    }
+    public void testObjects7Inverted() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforeColon, true);
+        options.put(FmtOptions.spaceAfterColon, false);
+        reformatFileContents("testfiles/formatter/objects7.js", options, ".inverted.formatted");
+    }
 
     public void testSwitch1() throws Exception {
         reformatFileContents("testfiles/formatter/switch1.js",new IndentPrefs(4, 4));
@@ -1350,6 +1351,14 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testArrays2Indented() throws Exception {
         reindentFileContents("testfiles/formatter/arrays2.js", null);
+    }
+
+    public void testArrays3() throws Exception {
+        reformatFileContents("testfiles/formatter/arrays3.js",new IndentPrefs(4, 4));
+    }
+
+    public void testArrays3Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/arrays3.js");
     }
 
     public void testPartialFormat1() throws Exception {

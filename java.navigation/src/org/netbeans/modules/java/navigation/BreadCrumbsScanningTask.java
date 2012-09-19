@@ -102,7 +102,11 @@ public final class BreadCrumbsScanningTask extends JavaParserResultTask {
             return;
         }
 
-        TreePath path = info.getTreeUtilities().pathFor(caretPosition);
+        TreePath path = info.getTreeUtilities().pathFor(caretPosition + 1);
+        
+        if (info.getTrees().getSourcePositions().getStartPosition(path.getCompilationUnit(), path.getLeaf()) != caretPosition) {
+            path = info.getTreeUtilities().pathFor(caretPosition);
+        }
 
         if (cancel.get()) {
             return;

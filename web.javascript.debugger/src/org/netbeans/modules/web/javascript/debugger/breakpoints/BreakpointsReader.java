@@ -128,6 +128,7 @@ public class BreakpointsReader implements Properties.Reader {
                     eb.addEvent((String) event);
                 }
             }
+            readGeneralProperties(properties, eb);
             return eb;
         }
         else if (typeID.equals(XHRBreakpoint.class.getName())) {

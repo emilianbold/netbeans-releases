@@ -117,10 +117,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
                 public void run() {
                     try {
                         start.await();
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    try {
+
                         switch (x % 4) {
                             case 0:
                                 doTestListeners(getTestExecutionEnvironment(), true, true);
@@ -136,12 +133,15 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
                                 break;
 
                         }
+                    } catch (Throwable ex) {
+                        Exceptions.printStackTrace(ex);
                     } finally {
                         done.countDown();
                     }
                 }
             });
         }
+
         start.countDown();
         done.await();
     }

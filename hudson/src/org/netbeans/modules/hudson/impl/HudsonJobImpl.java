@@ -237,7 +237,11 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     }
     
     @Override public int compareTo(HudsonJob o) {
-        return getDisplayName().compareTo(o.getDisplayName());
+        if (this.isSalient() != o.isSalient()) {
+           return this.isSalient() ? -1 : 1;
+        } else {
+            return getDisplayName().compareTo(o.getDisplayName());
+        }
     }
 
     @Override
