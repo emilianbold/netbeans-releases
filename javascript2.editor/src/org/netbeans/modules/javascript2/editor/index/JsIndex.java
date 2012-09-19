@@ -115,9 +115,6 @@ public class JsIndex {
             allGlobalItems.add(indexedElement);
         }
 
-        // enhance results for all window properties - see issue #218412, #215863, #218122, ...
-        allGlobalItems.addAll(getProperties("window")); //NOI18N
-
         return getElementsByPrefix(prefix, allGlobalItems);
     }
 
@@ -130,7 +127,11 @@ public class JsIndex {
         }
         return result;
     }
-    
+
+    public Collection <IndexedElement> getPropertiesWithPrefix(String fqn, String prexif) {
+        return getElementsByPrefix(prexif, getProperties(fqn));
+    }
+
     public Collection <IndexedElement> getProperties(String fqn) {
         Collection<? extends IndexResult> results = query(
                 JsIndex.FIELD_FQ_NAME, fqn, QuerySupport.Kind.EXACT, TERMS_PROPERTIES); //NOI18N

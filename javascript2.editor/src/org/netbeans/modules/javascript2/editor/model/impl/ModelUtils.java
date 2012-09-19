@@ -215,6 +215,16 @@ public class ModelUtils {
     private static final Collection<JsTokenId> CTX_DELIMITERS = Arrays.asList(
             JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY,
             JsTokenId.OPERATOR_SEMICOLON);
+
+    private static TypeUsage tryResolveWindowProperty(JsIndex jsIndex, String name) {
+        // since issue #215863
+        for (IndexedElement indexedElement : jsIndex.getProperties("window")) { //NOI18N
+            if (indexedElement.getName().equals(name)) {
+                return new TypeUsageImpl("window." + indexedElement.getName(), -1, true); //NOI18N
+            }
+        }
+        return null;
+    }
     
     private enum State {
         INIT
@@ -388,6 +398,10 @@ public class ModelUtils {
                                 break;
                             }
                         }
+                    }
+                    TypeUsage windowProperty = tryResolveWindowProperty(jsIndex, name);
+                    if (windowProperty != null) {
+                        lastResolvedTypes.add(windowProperty);
                     }
                     if(localObject == null || (localObject.getJSKind() != JsElement.Kind.PARAMETER
                             && localObject.getJSKind() != JsElement.Kind.VARIABLE)) {
