@@ -417,4 +417,16 @@ public abstract class DbgpMessage {
         }
 
     }
+
+    public static final class NoneDbgpMessage extends DbgpMessage {
+
+        public NoneDbgpMessage(Node node) {
+            super(node);
+        }
+
+        @Override
+        public void process(DebugSession session, DbgpCommand command) {
+        }
+
+    }
 }
