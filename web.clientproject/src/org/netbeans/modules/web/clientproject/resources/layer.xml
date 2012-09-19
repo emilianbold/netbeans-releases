@@ -131,7 +131,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
     </folder> -->
 
     <folder name="Projects">
-        <folder name="org.netbeans.modules.web.clientproject">
+        <folder name="org-netbeans-modules-web-clientproject">
             <folder name="Actions">
                 <file name="org-netbeans-modules-project-ui-NewFile$WithSubMenu.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile$WithSubMenu.instance"/>
