@@ -3,4 +3,7 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
+    <tocitem text="HTML5 Application Development Documentation">
+        <tocitem text="About HTML5 Application Development Documentation" target="org.netbeans.modules.web.clientproject.helpset.about"/>
+    </tocitem>
 </toc>
