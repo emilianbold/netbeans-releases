@@ -167,8 +167,11 @@ public final class DocumentViewOp
     
     /**
      * Visible rectangle of the viewport or a text component if there is no viewport.
+     * Initial size should not be zero since when querying DocView for preferred horizontal span
+     * for a component that was not laid out yet (e.g. a FoldView)
+     * with linewrap set to "anywhere" the views would attempt to fit into zero width.
      */
-    private Rectangle visibleRect = new Rectangle();
+    private Rectangle visibleRect = new Rectangle(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
 
     private float availableWidth;
     
@@ -497,7 +500,6 @@ public final class DocumentViewOp
         textComponent.addPropertyChangeListener(this);
         viewHierarchyImpl = ViewHierarchyImpl.get(textComponent);
         viewHierarchyImpl.setDocumentView(docView);
-        updateVisibleDimension(false);
         if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINER)) {
             DebugRepaintManager.register(textComponent);
         }
@@ -686,7 +688,7 @@ public final class DocumentViewOp
                 boolean heightDiffers = (newVisibleRect.height != visibleRect.height);
                 if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
                     ViewUtils.log(ViewHierarchyImpl.SPAN_LOG, "DVOp.updateVisibleDimension: widthDiffers=" + widthDiffers + // NOI18N
-                            ", newVisibleRect=" + newVisibleRect + // NOI18N
+                            ", newVisibleRect=" + ViewUtils.toString(newVisibleRect) + // NOI18N
                             ", extraHeight=" + extraHeight + "\n"); // NOI18N
                 }
                 if (clearAllocationWidthChange) {
