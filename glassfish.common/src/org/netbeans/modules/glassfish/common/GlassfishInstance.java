@@ -152,6 +152,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     public static final String DEFAULT_HOST_NAME = "localhost"; // NOI18N
     public static final String DEFAULT_ADMIN_NAME = "admin"; // NOI18N
     public static final String DEFAULT_ADMIN_PASSWORD = ""; // NOI18N
+    /** Administrator's password being used in old NetBeans. */
+    public static final String OLD_DEFAULT_ADMIN_PASSWORD = "adminadmin"; // NOI18N
     public static final int DEFAULT_HTTP_PORT = 8080;
     public static final int DEFAULT_HTTPS_PORT = 8181;
     public static final int DEFAULT_ADMIN_PORT = 4848;
@@ -897,8 +899,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Build and update copy of GlassFish properties to be stored in <code>this</code>
-     * object.
+     * Build and update copy of GlassFish properties to be stored
+     * in <code>this</code> object.
      * <p/>
      * Constructor helper method.
      * <p/>
@@ -907,7 +909,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      */
     private Map<String, String> prepareProperties(
             Map<String, String> properties) {
-        boolean isRemote = properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
+        boolean isRemote
+                = properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
         String deployerUri = properties.get(GlassfishModule.URL_ATTR);
         updateString(properties, GlassfishModule.HOSTNAME_ATTR,
                 DEFAULT_HOST_NAME);
@@ -918,7 +921,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 "Bogus display name");
         updateInt(properties, GlassfishModule.ADMINPORT_ATTR,
                 DEFAULT_ADMIN_PORT);
-        updateString(properties, GlassfishModule.SESSION_PRESERVATION_FLAG, "true");
+        updateString(properties, GlassfishModule.SESSION_PRESERVATION_FLAG,
+                "true");
         updateString(properties, GlassfishModule.START_DERBY_FLAG,
                 isRemote ? "false" : "true");
         updateString(properties, GlassfishModule.USE_IDE_PROXY_FLAG, "true");
@@ -929,6 +933,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 ? GlassfishModule.DEBUG_MODE : GlassfishModule.NORMAL_MODE);
         updateString(properties, GlassfishModule.USERNAME_ATTR,
                 DEFAULT_ADMIN_NAME);
+        updateString(properties, GlassfishModule.NB73_IMPORT_FIXED,
+                Boolean.toString(true));
         Map<String, String> newProperties =  Collections.synchronizedMap(
                 new Props(properties));
         // Asume a local instance is in NORMAL_MODE

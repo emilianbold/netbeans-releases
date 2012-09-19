@@ -680,8 +680,12 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
                             = ServerAdmin.<ResultMap<String, String>>exec(
                             instance, commandLocation, new IdeContext());
                 }
+long t1 = System.currentTimeMillis();
                 ResultMap<String, String> resultLocation
-                        = futureLocation.get(timeout, units);
+//                        = futureLocation.get(timeout, units);
+                        = futureLocation.get();
+long t2 = System.currentTimeMillis();
+Logger.getLogger("glassfish").log(Level.INFO, "Location task was running " + (t2 - t1) + " ms");
                 if (resultLocation.getState() == TaskState.COMPLETED) {
                     long end = System.nanoTime();
                     Logger.getLogger("glassfish").log(Level.FINE,
@@ -743,17 +747,17 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
                             new Object[]{commandLocation.getCommand(),
                                 (end - start) / 1000000});
                 }
-            } catch(TimeoutException ex) {
-                Logger.getLogger("glassfish").log(Level.INFO,
-                        "Server {0} {1}:{2} user {3}",
-                        new Object[]{instance.getName(),
-                            instance.getHost(),
-                            instance.getHttpAdminPort(),
-                            instance.getAdminUser()});
-                Logger.getLogger("glassfish").log(Level.INFO,
-                        commandLocation.getCommand() + " timed out. "
-                        +tries+" of "+maxtries, ex);
-                isReady = false;
+//            } catch(TimeoutException ex) {
+//                Logger.getLogger("glassfish").log(Level.INFO,
+//                        "Server {0} {1}:{2} user {3}",
+//                        new Object[]{instance.getName(),
+//                            instance.getHost(),
+//                            instance.getHttpAdminPort(),
+//                            instance.getAdminUser()});
+//                Logger.getLogger("glassfish").log(Level.INFO,
+//                        commandLocation.getCommand() + " timed out. "
+//                        +tries+" of "+maxtries, ex);
+//                isReady = false;
             } catch (Exception ex) {
                 Logger.getLogger("glassfish").log(Level.INFO,
                         "Server {0} {1}:{2} user {3}",
@@ -791,23 +795,28 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    // Can block for up to a few seconds...
-                    boolean isRunning = isReallyRunning();
-                    if (isRunning && !Util.isDefaultOrServerTarget(
-                            instance.getProperties())) {
-                        isRunning = pingHttp(1);
-                    }
-                    ServerState currentState = getServerState();
-                    
-                    if((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
-                        setServerState(ServerState.RUNNING);
-                    } else if((currentState == ServerState.RUNNING || currentState == ServerState.UNKNOWN) && !isRunning) {
-                        setServerState(ServerState.STOPPED);
-                    } else if(currentState == ServerState.STOPPED_JVM_PROFILER && isRunning) {
-                        setServerState(ServerState.RUNNING);
-                    }
+                    try {
+                        // Can block for up to a few seconds...
+                        boolean isRunning = isReallyRunning();
+                        if (isRunning && !Util.isDefaultOrServerTarget(
+                                instance.getProperties())) {
+                            isRunning = pingHttp(1);
+                        }
+                        ServerState currentState = getServerState();
 
-                    refreshRunning.set(false);
+                        if ((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
+                            setServerState(ServerState.RUNNING);
+                        } else if ((currentState == ServerState.RUNNING || currentState == ServerState.UNKNOWN) && !isRunning) {
+                            setServerState(ServerState.STOPPED);
+                        } else if (currentState == ServerState.STOPPED_JVM_PROFILER && isRunning) {
+                            setServerState(ServerState.RUNNING);
+                        }
+                    } catch (Exception ex) {
+                         Logger.getLogger("glassfish").log(Level.WARNING,
+                                 ex.getMessage());
+                    } finally {
+                        refreshRunning.set(false);
+                    }
                 }
             });
         }
