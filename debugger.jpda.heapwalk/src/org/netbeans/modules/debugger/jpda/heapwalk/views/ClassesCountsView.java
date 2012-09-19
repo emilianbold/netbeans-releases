@@ -82,6 +82,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
     private transient JPanel content;
     private transient HeapFragmentWalker hfw;
     private transient ClassesListController clc;
+    private transient RequestProcessor defaultRP = new RequestProcessor(ClassesCountsView.class.getName());
 
     /**
      * Creates a new instance of ClassesCountsView
@@ -139,7 +140,9 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         if (debugger != null && debugger.canGetInstanceInfo()) {
             final JPDADebugger fDebugger = debugger;
             RequestProcessor rp = engine.lookupFirst(null, RequestProcessor.class);
-            if (rp == null) rp = RequestProcessor.getDefault();
+            if (rp == null) {
+                rp = defaultRP;
+            }
             rp.post(new Runnable() {
                 public void run() {
                     Heap heap = new HeapImpl(fDebugger);
@@ -288,7 +291,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         
         private synchronized Task getRefreshContentTask() {
             if (refreshTask == null) {
-                refreshTask = new RequestProcessor(EngineListener.class.getName()).create(new Runnable() {
+                refreshTask = defaultRP.create(new Runnable() {
                     public void run() {
                         try {
                         HeapFragmentWalker fragmentWalker = ClassesCountsView.this.hfw;
