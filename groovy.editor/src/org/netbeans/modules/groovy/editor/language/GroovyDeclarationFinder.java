@@ -119,11 +119,7 @@ import org.openide.util.Exceptions;
 public class GroovyDeclarationFinder implements DeclarationFinder {
 
     private static final Logger LOG = Logger.getLogger(GroovyDeclarationFinder.class.getName());
-    Token<? extends GroovyTokenId> tok;
 
-    Document lastDoc = null;
-    int lastOffset = -1;
-    OffsetRange lastRange = OffsetRange.NONE;
 
     public GroovyDeclarationFinder() {
         LOG.setLevel(Level.OFF);
