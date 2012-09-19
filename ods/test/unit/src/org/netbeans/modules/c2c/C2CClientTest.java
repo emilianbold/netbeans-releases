@@ -99,7 +99,7 @@ public class C2CClientTest extends NbTestCase  {
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         if (firstRun) {
             if (uname == null) {
-                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team2")));
+                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
                 uname = br.readLine();
                 passw = br.readLine();
                 proxy_host = br.readLine();
