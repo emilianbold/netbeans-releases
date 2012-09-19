@@ -99,8 +99,9 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
     }
 
     private static final int USABLE_HEIGHT = 19;
-    private static final int LEFT_SEPARATOR_INSET = 3;
-    private static final int RIGHT_SEPARATOR_INSET = 18;
+    private static final int LEFT_SEPARATOR_INSET = 2;
+    private static final int RIGHT_SEPARATOR_INSET = 10;
+    private static final int ICON_TEXT_SEPARATOR = 5;
     private static final int START_INSET = 8;
     private static final int MAX_ROWS_IN_POP_UP = 20;
     public static final int COMPONENT_HEIGHT = USABLE_HEIGHT;
@@ -354,7 +355,7 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
         int width = icon != null ? icon.getIconWidth() : 0;
         if (width > 0) {
             renderer.setIcon(icon);
-            renderer.setIconTextGap(24 - width);
+            renderer.setIconTextGap(ICON_TEXT_SEPARATOR);
         } else {
             renderer.setIcon(null);
             renderer.setIconTextGap(0);
