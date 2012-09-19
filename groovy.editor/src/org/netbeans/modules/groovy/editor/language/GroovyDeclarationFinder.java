@@ -277,7 +277,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                     VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path, doc, lexOffset);
                     scopeVisitor.collect();
                 }
-                if (type == null) {
+                if (type == null || call.isStatic()) {
                     String fqn = ASTUtils.getFqnName(path);
                     if (call == Call.LOCAL && fqn != null && fqn.length() == 0) {
                         fqn = "java.lang.Object"; // NOI18N
