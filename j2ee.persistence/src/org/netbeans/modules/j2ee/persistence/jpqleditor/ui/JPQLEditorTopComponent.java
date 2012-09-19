@@ -570,7 +570,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
     }
 
     private void createTableHeaders(Vector<String> tableHeaders, Object oneObject) {
-        if (oneObject == null || oneObject.getClass().getName().startsWith("java.lang")) {//NOI18N
+        if (oneObject == null || oneObject.getClass().getName().startsWith("java.lang") || oneObject.getClass().getName().startsWith("java.math")) {//NOI18N
             //case for Long, String etc
             tableHeaders.add(org.openide.util.NbBundle.getMessage(JPQLEditorTopComponent.class, "queryResultDefaultColumnName") + " " + (tableHeaders.size() + 1));//NOI18N
         } else {
@@ -588,7 +588,9 @@ public final class JPQLEditorTopComponent extends TopComponent {
     private void createTableData(Vector<Vector> tableData, Object... rowObject) {
         Vector<Object> oneRow = new Vector<Object>();
         for (Object oneObject : rowObject) {
-            if (oneObject == null || oneObject.getClass().getName().startsWith("java.lang")) {
+            if (oneObject == null) {
+                oneRow.add("NULL");//NOI18N
+            } else if(oneObject.getClass().getName().startsWith("java.lang") || oneObject.getClass().getName().startsWith("java.math")) {
                 //case for Long, String etc
                 oneRow.add(oneObject.toString());
             } else {
