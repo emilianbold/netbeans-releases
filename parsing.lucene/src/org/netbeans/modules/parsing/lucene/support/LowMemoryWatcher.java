@@ -45,6 +45,7 @@ package org.netbeans.modules.parsing.lucene.support;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A service providing information about
@@ -58,6 +59,7 @@ public final class LowMemoryWatcher {
     private static long absHeapLimit = 100<<20;
     private static LowMemoryWatcher instance;
     private final MemoryMXBean memBean;
+    private final AtomicBoolean testEnforcesLowMemory = new AtomicBoolean();
 
     private LowMemoryWatcher () {
         this.memBean = ManagementFactory.getMemoryMXBean();
@@ -70,6 +72,9 @@ public final class LowMemoryWatcher {
      * @return true if nearly whole memory is used
      */
     public boolean isLowMemory () {
+        if (testEnforcesLowMemory.get()) {
+            return true;
+        }
         if (this.memBean != null) {
             final MemoryUsage usage = this.memBean.getHeapMemoryUsage();
             if (usage != null) {
@@ -91,6 +96,10 @@ public final class LowMemoryWatcher {
         rt.runFinalization();
         rt.gc();
         rt.gc();
+    }
+
+    /*test*/ void setLowMemory(final boolean lowMemory) {
+        this.testEnforcesLowMemory.set(lowMemory);
     }
     
     /**
