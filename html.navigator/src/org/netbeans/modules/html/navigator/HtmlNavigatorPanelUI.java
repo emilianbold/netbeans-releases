@@ -864,6 +864,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      * Updates the set of highlighted nodes.
      */
     final void updateHighlight() {
+        if (pageModel==null) {
+            return;
+        }
         synchronized (highlightedTreeNodes) {
             highlightedTreeNodes.clear();
             //System.out.println("highlighted treenodes cleared");

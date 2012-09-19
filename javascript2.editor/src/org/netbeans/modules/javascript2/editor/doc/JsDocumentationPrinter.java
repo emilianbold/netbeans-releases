@@ -135,9 +135,10 @@ public class JsDocumentationPrinter {
             StringBuilder sb = new StringBuilder(renderHeader(WRAPPER_HEADER, "Parameters")); //NOI18N
             sb.append(TABLE_BEGIN); //NOI18N
             for (DocParameter docParam : parameters) {
+                String paramName = (docParam.getParamName() == null) ? "" : docParam.getParamName().getName(); //NOI18N
                 sb.append("<tr>\n"); //NOI18N
                 sb.append("<td valign=\"top\" style=\"margin-right:5px;\">").append(getStringFromTypes(docParam.getParamTypes())).append("</td>\n"); //NOI18N
-                sb.append("<td valign=\"top\" style=\"margin-right:5px;\"><b>").append(docParam.getParamName().getName()).append("</b></td>\n"); //NOI18N
+                sb.append("<td valign=\"top\" style=\"margin-right:5px;\"><b>").append(paramName).append("</b></td>\n"); //NOI18N
                 sb.append("<td>").append(docParam.getParamDescription()).append("</td>\n"); //NOI18N
                 sb.append("</tr>\n"); //NOI18N
             }

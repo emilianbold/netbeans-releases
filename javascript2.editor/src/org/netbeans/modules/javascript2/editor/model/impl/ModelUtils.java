@@ -48,6 +48,7 @@ import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
@@ -215,6 +216,16 @@ public class ModelUtils {
     private static final Collection<JsTokenId> CTX_DELIMITERS = Arrays.asList(
             JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY,
             JsTokenId.OPERATOR_SEMICOLON);
+
+    private static TypeUsage tryResolveWindowProperty(JsIndex jsIndex, String name) {
+        // since issue #215863
+        for (IndexedElement indexedElement : jsIndex.getProperties("window")) { //NOI18N
+            if (indexedElement.getName().equals(name)) {
+                return new TypeUsageImpl("window." + indexedElement.getName(), -1, true); //NOI18N
+            }
+        }
+        return null;
+    }
     
     private enum State {
         INIT
@@ -265,6 +276,8 @@ public class ModelUtils {
             } else {
                 result.add(new TypeUsageImpl(Type.UNDEFINED, type.getOffset(), true));
             }
+        } else if (JsEmbeddingProvider.containsGeneratedIdentifier(type.getType())) {
+            result.add(new TypeUsageImpl(Type.UNDEFINED, type.getOffset(), true));
         } else if ("@this".equals(type.getType())) { //NOI18N
             JsObject parent = null;
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
@@ -388,6 +401,10 @@ public class ModelUtils {
                                 break;
                             }
                         }
+                    }
+                    TypeUsage windowProperty = tryResolveWindowProperty(jsIndex, name);
+                    if (windowProperty != null) {
+                        lastResolvedTypes.add(windowProperty);
                     }
                     if(localObject == null || (localObject.getJSKind() != JsElement.Kind.PARAMETER
                             && localObject.getJSKind() != JsElement.Kind.VARIABLE)) {

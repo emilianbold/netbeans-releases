@@ -2,6 +2,11 @@ Code completion result for source line:
 f|ormatter.print("text");
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+METHOD     find(aString: String, aCaseSen  [PUBLIC]   stub_DOM_window.js
+METHOD     focus(): undefined              [PUBLIC]   stub_DOM_window.js
+METHOD     forward(): undefined            [PUBLIC]   stub_DOM_window.js
+FIELD      frames: Array                   [PUBLIC]   stub_DOM_window.js
+FIELD      fullScreen: Boolean             [PUBLIC]   stub_DOM_window.js
 VARIABLE   formatter                       [PUBLIC]   Formatter.js
 KEYWORD    finally                                    null
 KEYWORD    for                                        null
