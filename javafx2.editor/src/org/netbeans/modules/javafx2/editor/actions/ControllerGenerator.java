@@ -535,10 +535,13 @@ public class ControllerGenerator implements Task<WorkingCopy> {
         if (e == null) {
             throw new IllegalStateException();
         }
-        if (!wcopy.getTypes().isAssignable(declType.asType(), e.asType())) {
+        if (!wcopy.getTypes().isAssignable(
+                wcopy.getTypes().erasure(declType.asType()), 
+                wcopy.getTypes().erasure(e.asType()))) {
             // the field's type does not match. Consistency of FXML vs. controller is necessary, so 
             // we change field's type even though it may produce a compiler error.
-            wcopy.rewrite(vt.getType(), wcopy.getTreeMaker().Type(declType.asType()));
+            wcopy.rewrite(vt.getType(), wcopy.getTreeMaker().Type(
+                    eraseFieldTypeParameters(declType.asType(), wcopy)));
         }
         // annotation and visibility. If not public, add @FXML annotation
         if (!FxClassUtils.isFxmlAccessible(e)) {
