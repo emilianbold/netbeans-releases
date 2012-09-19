@@ -52,7 +52,6 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -466,7 +465,7 @@ public class PatternsTest extends RestTestBase {
      * testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(PatternsTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, PatternsTest.class,
                 "testSingletonDef", //NOI18N
                 "testContainerIDef", //NOI18N
                 "testCcContainerIDef", //NOI18N
@@ -482,7 +481,7 @@ public class PatternsTest extends RestTestBase {
                 "testNodes", //NOI18N
                 "testDeploy", //NOI18N
                 "testUndeploy" //NOI18N
-                ).enableModules(".*").clusters(".*")); //NOI18N
+                );
     }
 
     static class Pkg extends JComponentByLabelFinder {
