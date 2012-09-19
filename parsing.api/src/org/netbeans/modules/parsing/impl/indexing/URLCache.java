@@ -47,8 +47,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
@@ -83,7 +83,7 @@ public final class URLCache {
             if (ref != null) {
                 f = ref.get();
             }
-            if (f != null && f.isValid() && url.equals(f.toURL())) {
+            if (f != null && f.isValid()) {
                 return f;
             }
         }
@@ -101,7 +101,7 @@ public final class URLCache {
 
     private static URLCache instance = null;
     private final Map<URI, Reference<FileObject>> cache = Collections.synchronizedMap(
-            new WeakHashMap<URI, Reference<FileObject>>());
+            new HashMap<URI, Reference<FileObject>>());
 
     private URLCache() {
     }
