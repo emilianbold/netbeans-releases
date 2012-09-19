@@ -43,6 +43,7 @@ package org.netbeans.modules.html.editor.indexing;
 
 import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.html.editor.test.TestBase;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.common.api.FileReference;
@@ -81,6 +82,28 @@ public class HtmlFileModelTest extends TestBase {
         assertNotNull(ref);
         
         assertEquals("test1.html", ref.linkPath());
+        
+    }
+    
+    public void testEmbeddedCSSSections() throws Exception {
+        Document doc = getDocument(getTestFile("testfiles/model/test3.html"));
+        Source source = Source.create(doc);
+        HtmlFileModel model = new HtmlFileModel(source);
+
+        List<OffsetRange> entries = model.getEmbeddedCssSections();
+        assertEquals(2, entries.size());
+        OffsetRange entry = entries.get(0);
+        
+        //first section
+        assertNotNull(entry);
+        assertEquals(221, entry.getStart());
+        assertEquals(295, entry.getEnd());
+
+        //second section
+        entry = entries.get(1);
+        assertNotNull(entry);
+        assertEquals(335, entry.getStart());
+        assertEquals(411, entry.getEnd());
         
     }
 }
