@@ -54,6 +54,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -96,8 +97,7 @@ public class ClassPathProviderImpl implements ClassPathProvider {
             if (allstubs == null) {
                 // Probably inside unit test.
                 try {
-                    File moduleJar = new File(
-                            ClassPathProviderImpl.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                    File moduleJar = Utilities.toFile(ClassPathProviderImpl.class.getProtectionDomain().getCodeSource().getLocation().toURI());
                     allstubs = new File(moduleJar.getParentFile().getParentFile(), "jsstubs/allstubs.zip"); //NOI18N
                 } catch (URISyntaxException x) {
                     assert false : x;
