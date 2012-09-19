@@ -538,6 +538,17 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
     public SourceGroup getSourceGroup() {
         return (SourceGroup) locationComboBox.getSelectedItem();
     }
+    
+    public double getRenderedHeight(){
+        return selectClassButton.getLocation().getY()+
+                selectClassButton.getSize().getHeight()+getGap();
+    }
+    
+    private double getGap(){
+        double gap = contentClassTextField.getLocation().getY();
+        gap = gap - (medaTypeComboBox.getLocation().getY() +medaTypeComboBox.getHeight());
+        return gap;
+    }
 
     private void updateSourceGroupPackages() {
         SourceGroup sourceGroup = getSourceGroup();
