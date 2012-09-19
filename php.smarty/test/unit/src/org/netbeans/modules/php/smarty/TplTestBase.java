@@ -87,7 +87,7 @@ public abstract class TplTestBase extends CslTestBase {
         } catch (IllegalStateException ise) {
             // Ignore -- we've already registered this either via layers or other means
         }
-        
+        resetSmartyOptions();
         super.setUp();
     }
 
