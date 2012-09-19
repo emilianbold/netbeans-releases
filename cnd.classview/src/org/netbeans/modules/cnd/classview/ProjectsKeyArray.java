@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.classview.model.ProjectNode;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -86,20 +87,19 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     }
 
     private void resetKeys(){
+        CndUtils.assertFalse(Thread.holdsLock(lock), "resetKeys should never be caled under the lock"); //NOI18N
+        final List<CsmProject> res = new ArrayList<CsmProject>();
         synchronized(lock) {
             if (myProjects != null) {
                 List<java.util.Map.Entry<CsmProject, SortedName>> list = new ArrayList<java.util.Map.Entry<CsmProject, SortedName>>(myProjects.entrySet());
-                Collections.sort(list, COMARATOR);
-                final List<CsmProject> res = new ArrayList<CsmProject>();
+                Collections.sort(list, COMARATOR);                
                 for (java.util.Map.Entry<CsmProject, SortedName> entry : list) {
                     CsmProject key = entry.getKey();
                     res.add(key);
-                }
-                setKeys(res);
-            } else {
-                setKeys(Collections.<CsmProject>emptyList());
+                }                
             }
         }
+        setKeys(res);
     }
     
     public void dispose(){
@@ -269,7 +269,11 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     }
     
     void ensureAddNotify() {
-        if (myProjects == null){
+        boolean nullProjects;
+        synchronized (lock) {
+            nullProjects = (myProjects == null);
+        }
+        if (nullProjects){
             addNotify();
         }
     }
@@ -286,11 +290,11 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
         super.removeNotify();
         synchronized(lock) {
             if (myProjects != null) {
-                myProjects.clear();
-                resetKeys();
+                myProjects.clear();                
             }
             myProjects = null;
         }
+        resetKeys();
     }
     
     private static final class ProjectComparator implements Comparator<java.util.Map.Entry<CsmProject,SortedName>>, Serializable {
