@@ -163,9 +163,12 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
         // !PW FIXME hopefully temporary patch for JavaONE 2008 to make it easier
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
-        if (!isRemote) {
-            refresh();
-        }
+ 
+        // Bug# 218526 - Refresh (admin command call) on startup causes deadlock
+        //               because of Keryring access.
+        //if (!isRemote) {
+        //    refresh();
+        //}
     }
 
     /**
