@@ -47,49 +47,53 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Vladimir Riha
  */
-public class TestCC extends GeneralJavaScript {
+public class EmbeddedHTMLTest extends GeneralJavaScript {
 
-    public TestCC(String args) {
+    private static String originalContent;
+
+    public EmbeddedHTMLTest(String args) {
         super(args);
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(TestCC.class).addTest(
+                NbModuleSuite.createConfiguration(EmbeddedHTMLTest.class).addTest(
                 "createApplication",
-                "testSimplePrototype",
-                "testObjectFunction",
-                "testObjectLiteral",
-                "testPrototypeInheritance",
-                "testObjectLiteral",
-                "testIssue215394",
-                "testIssue215393",
-                "testAllCompletionSingleFile",
+//                "testSimplePrototype",
+//                "testObjectFunction",
+//                "testObjectLiteral",
+//                "testPrototypeInheritance",
+//                "testObjectLiteral",
                 "testAllCompletionMultipleFiles",
-                "testCallAndApply",
                 "testLearning",
-                "testSetterGetter").enableModules(".*").clusters(".*"));
+                "testSetterGetter"
+                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
     public void createApplication() {
         startTest();
         this.name_iterator++;
         createPhpApplication(TEST_BASE_NAME + name_iterator);
+
+        EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + name_iterator, "HTML File");
+        EmbeddedHTMLTest.currentFile = "cc.html";
+        eo.setCaretPosition("</body>", true);
+        type(eo, "\n <script>\n \n </script>");
+        EmbeddedHTMLTest.originalContent = eo.getText();
         endTest();
     }
 
     public void testSimplePrototype() {
         startTest();
-
-        TestCC.currentFile = "cc.js";
-        EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + name_iterator, "JavaScript File");
-        eo.setCaretPositionToLine(5);
+        
+        EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
+        
+        cleanFile(eo);
         type(eo, "function Foo(){\n this.x=1; \n var foo = 2;");
         eo.setCaretPosition("}", false);
         type(eo, "\n Foo.prototype.add = function(i){\n this.x+=y;");
@@ -115,17 +119,15 @@ public class TestCC extends GeneralJavaScript {
         checkCompletionDoesntContainItems(cjo, res2);
         completion.listItself.hideAll();
 
-        cleanFile(eo);
         endTest();
     }
 
     public void testPrototypeInheritance() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
 
-        eo.setCaretPositionToLine(1);
         type(eo, "var A = function(){\n this.value=1; ");
         eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
         type(eo, "\n A.prototype.constructor = A; \n A.prototype.test = function () {\n ");
@@ -150,37 +152,12 @@ public class TestCC extends GeneralJavaScript {
         endTest();
     }
 
-    public void testCallAndApply() {
-        startTest();
-
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
-        cleanFile(eo);
-
-        eo.setCaretPositionToLine(1);
-        type(eo, "function f(){\n alert(this.msg); \n");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
-        type(eo, "\n \n");
-        eo.setCaretPositionToLine(eo.getLineNumber() - 1);
-        type(eo, "f.");
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(100);
-
-        CompletionInfo completion = getCompletion();
-        String[] res = {"call", "apply"};
-        CompletionJListOperator cjo = completion.listItself;
-        checkCompletionItems(cjo, res);
-        completion.listItself.hideAll();
-
-        endTest();
-    }
-
     public void testLearning() {
         startTest();
-
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        System.out.println("------------  "+EmbeddedHTMLTest.currentFile);
+        EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
 
-        eo.setCaretPositionToLine(1);
         type(eo, "var person = {};\n person.learn = function(){}; \n");
         eo.setCaretPositionToEndOfLine(eo.getLineNumber());
         type(eo, "\n \n");
@@ -197,18 +174,17 @@ public class TestCC extends GeneralJavaScript {
 
         endTest();
     }
-    
-    public void testSetterGetter(){
+
+    public void testSetterGetter() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
 
-        eo.setCaretPositionToLine(1);
         type(eo, "var person = {\n \n get name(){return this.myname;");
         eo.setCaretPositionToEndOfLine(eo.getLineNumber());
         type(eo, ",\n set name(n){this.myname=n;");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber()+1);
+        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
         type(eo, ";\n person.");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
@@ -221,15 +197,13 @@ public class TestCC extends GeneralJavaScript {
 
         endTest();
     }
-   
 
     public void testDOMReferences() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
 
-        eo.setCaretPositionToLine(1);
         type(eo, " document.");
         type(eo, "\n"); // workaround for #215394
         eo.setCaretPosition("document.", false);
@@ -245,33 +219,10 @@ public class TestCC extends GeneralJavaScript {
         endTest();
     }
 
-    public void testIssue215394() {
-        try {
-            startTest();
-
-            EditorOperator eo = new EditorOperator(TestCC.currentFile);
-            cleanFile(eo);
-
-            eo.setCaretPositionToLine(1);
-            type(eo, " document.");
-            eo.typeKey(' ', InputEvent.CTRL_MASK);
-            evt.waitNoEvent(100);
-
-            CompletionInfo completion = getCompletion();
-            CompletionJListOperator cjo = completion.listItself;
-            assertTrue("", (cjo.getCompletionItems().size() > 2 ? true : false));
-            completion.listItself.hideAll();
-
-            endTest();
-        } catch (Exception ex) {
-            fail("Fail 215394 " + ex.getMessage());
-        }
-    }
-
     public void testObjectLiteral() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
         type(eo, "var foo = {\n value:0,\nincrement: function(inc){\nthis.value += typeof inc === 'number' ? inc : 1;");
         eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 2);
@@ -287,14 +238,13 @@ public class TestCC extends GeneralJavaScript {
         checkCompletionItems(cjo, res);
         completion.listItself.hideAll();
 
-
         endTest();
     }
 
     public void testObjectFunction() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
         type(eo, "function Foo(param1){\n this.name = ");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
@@ -365,95 +315,44 @@ public class TestCC extends GeneralJavaScript {
 
         endTest();
     }
-
-    public void testIssue215393() {
-        startTest();
-
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
-        cleanFile(eo);
-
-        eo.setCaretPositionToLine(1);
-        type(eo, "var panel = document.getElementById('panel'+course); \n");
-        type(eo, " panel.\n");
-        eo.setCaretPosition("panel.", false);// workaround for #215394
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(100);
-
-        CompletionInfo completion = getCompletion();
-        String[] res = {"insertBefore"};
-        CompletionJListOperator cjo = completion.listItself;
-        checkCompletionItems(cjo, res);
-        completion.listItself.hideAll();
-
-        endTest();
-    }
-
-    public void testAllCompletionSingleFile() {
-        startTest();
-
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
-        cleanFile(eo);
-
-        eo.setCaretPositionToLine(1);
-        type(eo, "var aa = 1; \nvar bb = 2;\n function A(){\n");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
-        type(eo, "\n\n");
-        eo.setCaretPositionToLine(eo.getLineNumber() - 1);
-        type(eo, "var c = new A(); \n c.");
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(100);
-
-        CompletionInfo completion = getCompletion();
-        String[] res = {"aa", "bb"};
-        CompletionJListOperator cjo = completion.listItself;
-        checkCompletionDoesntContainItems(cjo, res);
-
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(100);
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(100);
-
-        completion = getCompletion();
-        String[] res2 = {"aa", "bb"};
-        cjo = completion.listItself;
-        checkCompletionItems(cjo, res2);
-        completion.listItself.hideAll();
-        type(eo, "aa");
-        eo.save();
-
-        endTest();
-    }
-
+    
     public void testAllCompletionMultipleFiles() {
         startTest();
-        TestCC.currentFile = "other.js";
         EditorOperator eo = createWebFile("other", TEST_BASE_NAME + name_iterator, "JavaScript File");
-        cleanFile(eo);
+        eo.typeKey('a', InputEvent.CTRL_MASK);
+        eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
         eo.setCaretPositionToLine(1);
         type(eo, "var cc = 1; \nvar dd = 2;\n function AA(){\n");
         eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
         type(eo, "\n\n");
         eo.setCaretPositionToLine(eo.getLineNumber() - 1);
-        type(eo, "var ccc = new AA(); \n ccc.");
+        eo.save();
+        evt.waitNoEvent(100);
+
+        
+        eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
+        cleanFile(eo);
+
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        evt.waitNoEvent(100);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
         CompletionInfo completion = getCompletion();
-        String[] res = {"aa", "cc"};
+        String[] res2 = {"cc", "dd"};
         CompletionJListOperator cjo = completion.listItself;
-        checkCompletionDoesntContainItems(cjo, res);
-
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(100);
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(100);
-
-        completion = getCompletion();
-        String[] res2 = {"aa", "bb", "cc", "dd"};
-        cjo = completion.listItself;
         checkCompletionItems(cjo, res2);
         completion.listItself.hideAll();
 
         endTest();
+    }
+
+    @Override
+    protected void cleanFile(EditorOperator eo) {
+        eo.typeKey('a', InputEvent.CTRL_MASK);
+        eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
+        eo.insert(EmbeddedHTMLTest.originalContent);
+        eo.setCaretPosition("<script>", false);
+        type(eo, "\n ");
     }
 }

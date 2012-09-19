@@ -66,6 +66,7 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
@@ -308,7 +309,9 @@ public class ClientSideProject implements Project {
                configurationProvider,
                new PageInspectorCustomizerImpl(this),
                new ProjectWebRootProviderImpl(),
-               new ClientSideProjectSources(this, projectHelper, eval)
+               new ClientSideProjectSources(this, projectHelper, eval),
+               ProjectPropertiesProblemProvider.createForProject(this),
+               //UILookupMergerSupport.createProjectProblemsProviderMerger(),
        });
     }
 

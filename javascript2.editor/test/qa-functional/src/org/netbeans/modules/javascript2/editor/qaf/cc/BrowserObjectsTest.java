@@ -77,7 +77,7 @@ public class BrowserObjectsTest extends GeneralJavaScript {
         this.name_iterator++;
         createPhpApplication(TEST_BASE_NAME + "bo_" + name_iterator);
         EditorOperator eo = createWebFile("bocc", TEST_BASE_NAME + "bo_" + name_iterator, "JavaScript File");
-        this.currentFile = "bocc.js";
+        BrowserObjectsTest.currentFile = "bocc.js";
         try {
             waitScanFinished();
         } catch (Exception e) {
@@ -90,7 +90,7 @@ public class BrowserObjectsTest extends GeneralJavaScript {
 
     public void testObject(String[] lines, String[] result) {
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(BrowserObjectsTest.currentFile);
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
         for (String line : lines) {
@@ -136,7 +136,7 @@ public class BrowserObjectsTest extends GeneralJavaScript {
 
     public void testOverridenObject() {
         startTest();
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(BrowserObjectsTest.currentFile);
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
         type(eo, "var location={foo:1, bar:function(){}};\nlocation.");
