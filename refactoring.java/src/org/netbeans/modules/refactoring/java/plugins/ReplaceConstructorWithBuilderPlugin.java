@@ -45,16 +45,17 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring.Setter;
 import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import static org.netbeans.modules.refactoring.java.plugins.Bundle.*;
 import org.netbeans.api.java.source.matching.Occurrence;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
@@ -62,7 +63,6 @@ import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.spi.java.hints.support.TransformationSupport;
 import org.netbeans.spi.java.hints.support.TransformationSupport.Transformer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -71,18 +71,28 @@ import org.openide.util.NbBundle;
  * @author Jan Becicka
  */
 @NbBundle.Messages({"WRN_NODEFAULT=Parameter {0}'s setter is optional but has no default value."})
-public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
+public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
  
-    private final ReplaceConstructorWithBuilderRefactoring replaceConstructorWithBuilder;
+    private final ReplaceConstructorWithBuilderRefactoring refactoring;
     
     private final AtomicBoolean cancel = new AtomicBoolean();
+    private TreePathHandle treePathHandle;
 
     public ReplaceConstructorWithBuilderPlugin(ReplaceConstructorWithBuilderRefactoring refactoring) {
-        this.replaceConstructorWithBuilder = refactoring;
+        this.refactoring = refactoring;
+        this.treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
     }
 
     @Override
-    public Problem preCheck() {
+    protected Problem preCheck(CompilationController javac) throws IOException {
+        Element constr = treePathHandle.resolveElement(javac);
+        if(constr.getKind() != ElementKind.CONSTRUCTOR) {
+            return new Problem(true, ERR_ReplaceWrongType());
+        }
+        Element enclosingElement = constr.getEnclosingElement();
+        if(!enclosingElement.getModifiers().contains(Modifier.STATIC) && enclosingElement.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
+            return new Problem(true, ERR_ReplaceWrongInnerType());
+        }
         return null;
     }
 
@@ -93,22 +103,22 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
 
     @Override
     public Problem fastCheckParameters() {
-        String builderName = replaceConstructorWithBuilder.getBuilderName();
+        String builderName = refactoring.getBuilderName();
         if (builderName == null || builderName.length() == 0) {
             return new Problem(true, NbBundle.getMessage(ReplaceConstructorWithBuilderPlugin.class, "ERR_NoFactory"));
         }
         if (!SourceVersion.isName(builderName)) {
             return new Problem(true, NbBundle.getMessage(ReplaceConstructorWithBuilderPlugin.class, "ERR_NotIdentifier", builderName));
         }
-        final TreePathHandle constr = replaceConstructorWithBuilder.getRefactoringSource().lookup(TreePathHandle.class);
+        final TreePathHandle constr = treePathHandle;
         ClassPath classPath = ClassPath.getClassPath(constr.getFileObject(), ClassPath.SOURCE);
-        String name = replaceConstructorWithBuilder.getBuilderName().replace(".", "/") + ".java";
+        String name = refactoring.getBuilderName().replace(".", "/") + ".java";
         FileObject resource = classPath.findResource(name);
         if (resource !=null) {
             return new Problem(true, NbBundle.getMessage(ReplaceConstructorWithBuilderPlugin.class, "ERR_FileExists", name));
         }
         Problem problem = null;
-        for (Setter set : replaceConstructorWithBuilder.getSetters()) {
+        for (Setter set : refactoring.getSetters()) {
             if(set.isOptional() && set.getDefaultValue() == null) {
                 problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(ReplaceConstructorWithBuilderPlugin.class, "WRN_NODEFAULT", set.getVarName())));
             }
@@ -119,7 +129,7 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
     @Override
     public final Problem prepare(RefactoringElementsBag refactoringElements) {
         cancel.set(false);
-        final TreePathHandle constr = replaceConstructorWithBuilder.getRefactoringSource().lookup(TreePathHandle.class);
+        final TreePathHandle constr = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         final String[] ruleCode = new String[1];
         final String[] toCode = new String[1];
         final String[] parentSimpleName = new String[1];
@@ -129,7 +139,7 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
 
                 @Override
                 public void run(WorkingCopy workingCopy) throws Exception {
-                    workingCopy.toPhase(Phase.RESOLVED);
+                    workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                     TreePath constrPath = constr.resolve(workingCopy);
                     MethodTree constructor = (MethodTree) constrPath.getLeaf();
                     TypeElement parent = (TypeElement) workingCopy.getTrees().getElement(constrPath.getParentPath());
@@ -151,11 +161,11 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
                         count++;
                     }
                     List members = new ArrayList();
-                    final String simpleName = replaceConstructorWithBuilder.getBuilderName().substring(replaceConstructorWithBuilder.getBuilderName().lastIndexOf('.') + 1);
+                    final String simpleName = refactoring.getBuilderName().substring(refactoring.getBuilderName().lastIndexOf('.') + 1);
 
                     StringBuilder args = null;
 
-                    for (Setter set : replaceConstructorWithBuilder.getSetters()) {
+                    for (Setter set : refactoring.getSetters()) {
                         members.add(make.Variable(
                                 make.Modifiers(Collections.singleton(Modifier.PRIVATE)),
                                 set.getVarName(),
@@ -176,7 +186,7 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
                             Collections.<ExpressionTree>emptyList(),
                             "{}")); //NOI18N
 
-                    for (Setter set : replaceConstructorWithBuilder.getSetters()) {
+                    for (Setter set : refactoring.getSetters()) {
                         members.add(make.Method(
                                 make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
                                 set.getName(),
@@ -189,7 +199,7 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
                     }
 
 
-                    for (Setter set : replaceConstructorWithBuilder.getSetters()) {
+                    for (Setter set : refactoring.getSetters()) {
                     }
 
                     members.add(make.Method(
@@ -209,7 +219,7 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
                             Collections.EMPTY_LIST,
                             members);
                     FileObject root = ClassPath.getClassPath(constr.getFileObject(), ClassPath.SOURCE).findOwnerRoot(constr.getFileObject());
-                    CompilationUnitTree builderUnit = make.CompilationUnit(root, replaceConstructorWithBuilder.getBuilderName().replace('.', '/') + ".java", Collections.EMPTY_LIST, Collections.singletonList(builder));
+                    CompilationUnitTree builderUnit = make.CompilationUnit(root, refactoring.getBuilderName().replace('.', '/') + ".java", Collections.EMPTY_LIST, Collections.singletonList(builder));
                     workingCopy.rewrite(null, builderUnit);
                     StringBuilder rule = new StringBuilder();
                     rule.append("new ").append(parent.getQualifiedName()).append("(").append(parameters).append(")"); //NOI18N
@@ -230,10 +240,10 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
                 @Override
                 public void transform(WorkingCopy copy, Occurrence occurrence) {
                     final TreeMaker make = copy.getTreeMaker();
-                    ExpressionTree expression = make.NewClass(null, Collections.EMPTY_LIST, make.QualIdent(replaceConstructorWithBuilder.getBuilderName()), Collections.EMPTY_LIST, null);
+                    ExpressionTree expression = make.NewClass(null, Collections.EMPTY_LIST, make.QualIdent(refactoring.getBuilderName()), Collections.EMPTY_LIST, null);
 
                     int i = 0;
-                    for (Setter set : replaceConstructorWithBuilder.getSetters()) {
+                    for (Setter set : refactoring.getSetters()) {
                         i++;
                         final Tree value = occurrence.getVariables().get("$" + i).getLeaf(); //NOI18N
                         if (set.isOptional() && treeEquals(copy, value, set.getDefaultValue())) {
@@ -255,7 +265,7 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
                 }
             }).setCancel(cancel).processAllProjects());
 
-            createAndAddElements(replaceConstructorWithBuilder, refactoringElements, results);
+            createAndAddElements(refactoring, refactoringElements, results);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -293,5 +303,11 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
     @Override
     public void cancelRequest() {
         cancel.set(true);
+    }
+    
+    @Override
+    protected JavaSource getJavaSource(Phase p) {
+        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+        return JavaSource.create(cpInfo, treePathHandle.getFileObject());
     }
 }

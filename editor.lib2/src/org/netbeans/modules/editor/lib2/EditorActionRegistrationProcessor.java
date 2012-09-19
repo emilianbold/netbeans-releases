@@ -302,6 +302,7 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         if (preferencesKey.length() > 0) {
             file.stringvalue("preferencesKey", preferencesKey);
             file.methodvalue("preferencesNode", EditorActionUtilities.class.getName(), "getGlobalPreferences");
+            file.boolvalue("preferencesDefault", annotation.preferencesDefault());
         }
 
         // Deafult helpID is action's name

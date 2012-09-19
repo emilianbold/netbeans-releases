@@ -70,7 +70,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDeclaration;
 
 /**
  *
@@ -209,7 +208,7 @@ class ModelBuilder {
     /**
      * @param currentScope the currentScope to set
      */
-    void setCurrentScope(ScopeImpl scope) {
+    final void setCurrentScope(ScopeImpl scope) {
         if (scope instanceof NamespaceScopeImpl) {
             namespaceScope = (NamespaceScopeImpl) scope;
         }

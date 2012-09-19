@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -73,6 +74,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.ElementScanner6;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -113,7 +115,14 @@ import org.netbeans.modules.editor.java.ComputeOffAWT;
 import org.netbeans.modules.editor.java.ComputeOffAWT.Worker;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -122,8 +131,10 @@ import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -132,6 +143,7 @@ import org.openide.util.lookup.InstanceContent;
 public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     private static final Logger LOG = Logger.getLogger(InstantRenamePerformer.class.getName());
+    private static final Set<InstantRenamePerformer> registry = Collections.synchronizedSet(new WeakSet<InstantRenamePerformer>());
 
     private SyncDocumentRegion region;
     private int span;
@@ -199,6 +211,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         target.select(mainRegion.getStartOffset(), mainRegion.getEndOffset());
         
         span = region.getFirstRegionLength();
+        
+        registry.add(this);
     }
     
     public static void invokeInstantRename(JTextComponent target) {
@@ -544,7 +558,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	return region.getStartOffset() <= caretOffset && caretOffset <= region.getEndOffset();
     }
     
-    private boolean inSync;
+    private volatile boolean inSync;
     
     @Override
     public synchronized void insertUpdate(DocumentEvent e) {
@@ -679,7 +693,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     public void keyReleased(KeyEvent e) {
     }
 
-    private void release() {
+    private synchronized void release() {
         if (target == null) {
             //already released
             return ;
@@ -867,4 +881,53 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
     }
     
+    @ServiceProvider(service=RefactoringPluginFactory.class, position=95)
+    public static class AllRefactoringsPluginFactory implements RefactoringPluginFactory {
+
+        public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+            return new RefactoringPluginImpl();
+        }
+
+        private static final class RefactoringPluginImpl implements RefactoringPlugin {
+
+            public Problem preCheck() {
+                return null;
+            }
+
+            public Problem checkParameters() {
+                return null;
+            }
+
+            public Problem fastCheckParameters() {
+                return null;
+            }
+
+            public void cancelRequest() {}
+
+            public Problem prepare(RefactoringElementsBag refactoringElements) {
+                refactoringElements.getSession().addProgressListener(new ProgressListener() {
+                    public void start(ProgressEvent event) {
+                        final InstantRenamePerformer[] performers = registry.toArray(new InstantRenamePerformer[0]);
+                        for (InstantRenamePerformer p : performers) {
+                            p.inSync = true;
+                        }
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                for (InstantRenamePerformer p : performers) {
+                                    p.release();
+                                }
+                            }
+                        });
+                    }
+                    public void step(ProgressEvent event) {}
+                    public void stop(ProgressEvent event) {}
+                });
+
+                return null;
+            }
+
+        }
+
+    }
 }

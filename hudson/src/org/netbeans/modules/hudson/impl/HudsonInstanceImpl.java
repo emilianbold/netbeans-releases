@@ -120,11 +120,15 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         RP = new RequestProcessor(getUrl(), 1, true);
         final AtomicBoolean firstSynch = new AtomicBoolean(interactive); // #200643
         synchronization = RP.create(new Runnable() {
-            @Override public void run() {
+            private boolean firstRun = true;
+
+            @Override
+            public void run() {
                 String s = getProperties().get(INSTANCE_SYNC);
                 int pause = Integer.parseInt(s) * 60 * 1000;
                 if (pause > 0 || firstSynch.compareAndSet(true, false)) {
-                    doSynchronize(false);
+                    doSynchronize(false, firstRun);
+                    firstRun = false;
                 }
                 if (pause > 0) {
                     synchronization.schedule(pause);
@@ -311,33 +315,39 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         }
         RP.post(new Runnable() {
             @Override public void run() {
-                doSynchronize(authentication);
+                doSynchronize(authentication, true);
             }
         });
     }
 
     @Messages({"# {0} - server label", "MSG_Synchronizing=Synchronizing {0}"})
-    private void doSynchronize(final boolean authentication) {
-            final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
-            final AtomicReference<ProgressHandle> handle = new AtomicReference<ProgressHandle>();
-            handle.set(ProgressHandleFactory.createHandle(
-                    MSG_Synchronizing(getName()),
-                    new Cancellable() {
-                @Override public boolean cancel() {
-                    Thread t = synchThread.get();
-                    if (t != null) {
-                        LOG.log(Level.FINE, "Cancelling synchronization of {0}", getUrl());
-                        if (!isPersisted()) {
-                            properties.put(INSTANCE_SYNC, "0");
+    private void doSynchronize(final boolean authentication,
+            final boolean showProgress) {
+        final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
+        final AtomicReference<ProgressHandle> handle = new AtomicReference<ProgressHandle>();
+        ProgressHandle handleObject = ProgressHandleFactory.createHandle(
+                MSG_Synchronizing(getName()),
+                new Cancellable() {
+                    @Override
+                    public boolean cancel() {
+                        Thread t = synchThread.get();
+                        if (t != null) {
+                            LOG.log(Level.FINE,
+                                    "Cancelling synchronization of {0}",//NOI18N
+                                    getUrl());
+                            if (!isPersisted()) {
+                                properties.put(INSTANCE_SYNC, "0");     //NOI18N
+                            }
+                            t.interrupt();
+                            handle.get().finish();
+                            return true;
+                        } else {
+                            return false;
                         }
-                        t.interrupt();
-                        handle.get().finish();
-                        return true;
-                    } else {
-                        return false;
                     }
-                }
-            }));
+                });
+        handleObject.setInitialDelay(showProgress ? 100 : 30000);
+        handle.set(handleObject);
             
             handle.get().start();
             

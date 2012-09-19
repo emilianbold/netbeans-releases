@@ -54,11 +54,12 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
-import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
+import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.modules.groovy.editor.api.FindTypeUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,13 +78,18 @@ public class GroovyInstantRenamer implements InstantRenamer {
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         LOG.log(Level.FINEST, "isRenameAllowed()"); //NOI18N
 
-        AstPath path = getPathUnderCaret(ASTUtils.getParseResult(info), caretOffset);
+        final AstPath path = getPathUnderCaret(ASTUtils.getParseResult(info), caretOffset);
 
         if (path != null) {
             final ASTNode closest = path.leaf();
-
             if (closest instanceof Variable) {
-                return true;
+                final BaseDocument doc = LexUtilities.getDocument(ASTUtils.getParseResult(info), false);
+                if (!FindTypeUtils.isCaretOnClassNode(path, doc, caretOffset)) {
+                    return true;
+                } else {
+                    explanationRetValue[0] = NbBundle.getMessage(GroovyInstantRenamer.class, "NoInstantRenameOnClassNode");
+                    return false;
+                }
             } else {
                 explanationRetValue[0] = NbBundle.getMessage(GroovyInstantRenamer.class, "OnlyRenameLocalVars");
                 return false;
@@ -104,9 +110,7 @@ public class GroovyInstantRenamer implements InstantRenamer {
         }
 
         AstPath path = getPathUnderCaret(gpr, caretOffset);
-        Set<OffsetRange> regions = new HashSet<OffsetRange>();
-        markOccurences(path, regions, doc, caretOffset);
-        return regions;
+        return markOccurences(path, doc, caretOffset);
     }
 
     private AstPath getPathUnderCaret(GroovyParserResult info, int caretOffset) {
@@ -128,14 +132,17 @@ public class GroovyInstantRenamer implements InstantRenamer {
 
     }
 
-    private static void markOccurences(AstPath path, Set<OffsetRange> regions, BaseDocument document, int cursorOffset) {
-        ASTNode root = path.root();
+    private static Set<OffsetRange> markOccurences(AstPath path, BaseDocument document, int cursorOffset) {
+        final Set<OffsetRange> regions = new HashSet<OffsetRange>();
+        final ASTNode root = path.root();
         assert root instanceof ModuleNode;
-        ModuleNode moduleNode = (ModuleNode) root;
+        final ModuleNode moduleNode = (ModuleNode) root;
+
         VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path, document, cursorOffset);
         scopeVisitor.collect();
         for (ASTNode astNode : scopeVisitor.getOccurrences()) {
             regions.add(ASTUtils.getRange(astNode, document));
         }
+        return regions;
     }
 }

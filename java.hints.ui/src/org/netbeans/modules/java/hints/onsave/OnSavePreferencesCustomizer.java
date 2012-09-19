@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,43 +34,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.hints.onsave;
 
-package org.netbeans.modules.editor.completion;
-
-import java.awt.GraphicsConfiguration;
-import java.awt.Rectangle;
-import javax.swing.text.JTextComponent;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.openide.util.HelpCtx;
 
 /**
- * Provides screen bounds
- * @author Max Sauer
+ *
+ * @author lahvac
  */
-public class ScreenBoundsProvider {
+public class OnSavePreferencesCustomizer implements PreferencesCustomizer {
+
+    private final Preferences preferences;
+
+    public OnSavePreferencesCustomizer(Preferences preferences) {
+        this.preferences = preferences;
+    }
     
-    /** Relative width of screen covered by CC */
-    static final double COMPL_COVERAGE = 0.4;
+    @Override
+    public String getId() {
+        return "java-hints-on-save";
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Java";
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return new OnSaveCustomizer(preferences);
+    }
     
-    /** Relative maximum width of screen covered by CC */
-    static final double MAX_COMPL_COVERAGE = 0.9;
-    
-    private static Rectangle screenBounds;
-    
-    static Rectangle getScreenBounds(JTextComponent editorComponent) {
-        if (screenBounds == null) {
-            GraphicsConfiguration configuration = editorComponent != null
-                    ? editorComponent.getGraphicsConfiguration() : null;
-            screenBounds = configuration != null
-                    ? configuration.getBounds() : new Rectangle();
+    public static final class FactoryImpl implements Factory {
+
+        @Override
+        public PreferencesCustomizer create(Preferences preferences) {
+            return new OnSavePreferencesCustomizer(preferences);
         }
-        return screenBounds;
+        
     }
     
-    static void clear() {
-        screenBounds = null;
-    }
 }

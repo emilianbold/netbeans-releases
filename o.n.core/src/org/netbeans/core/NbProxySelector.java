@@ -191,6 +191,8 @@ public final class NbProxySelector extends ProxySelector {
                         // don't proxy PAC files
                         res.add(Proxy.NO_PROXY);
                     } else {
+                        LOG.log(Level.FINEST, "Identifying proxy for URI {0}---{1}, PAC URI: {2}---{3}", //NOI18N
+                                new Object[] { uri.toString(), uri.getHost(), pac.getPacURI().toString(), pac.getPacURI().getHost() });
                         res.addAll(pac.findProxyForURL(uri)); // NOI18N
                     }
                 }
@@ -214,6 +216,8 @@ public final class NbProxySelector extends ProxySelector {
                     // don't proxy PAC files
                     res.add(Proxy.NO_PROXY);
                 } else {
+                    LOG.log(Level.FINEST, "Identifying proxy for URI {0}---{1}, PAC URI: {2}---{3}", //NOI18N
+                            new Object[] { uri.toString(), uri.getHost(), pac.getPacURI().toString(), pac.getPacURI().getHost() });
                     res.addAll(pac.findProxyForURL(uri)); // NOI18N
                 }
                 res.add (Proxy.NO_PROXY);

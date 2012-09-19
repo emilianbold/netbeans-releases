@@ -386,6 +386,13 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
                 set0.put(standardProp);
             }
         }
+        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION || 
+            conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB || 
+           conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
+            if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
+                set0.put(standardProp);
+            }
+        }
         
         return sheet;
     }
