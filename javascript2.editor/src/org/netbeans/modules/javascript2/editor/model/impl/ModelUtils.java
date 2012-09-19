@@ -48,6 +48,7 @@ import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
@@ -265,6 +266,8 @@ public class ModelUtils {
             } else {
                 result.add(new TypeUsageImpl(Type.UNDEFINED, type.getOffset(), true));
             }
+        } else if (JsEmbeddingProvider.containsGeneratedIdentifier(type.getType())) {
+            result.add(new TypeUsageImpl(Type.UNDEFINED, type.getOffset(), true));
         } else if ("@this".equals(type.getType())) { //NOI18N
             JsObject parent = null;
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
