@@ -72,6 +72,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.editor.JumpList;
 import org.openide.awt.HtmlRenderer;
 import org.openide.awt.HtmlRenderer.Renderer;
 import org.openide.explorer.ExplorerManager;
@@ -259,6 +260,7 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
         Openable openable = node.getLookup().lookup(Openable.class);
 
         if (openable != null) {
+            JumpList.checkAddEntry();
             openable.open();
         }
     }
