@@ -44,6 +44,8 @@ package org.netbeans.modules.javascript2.editor.classpath;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -62,6 +64,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=ClassPathProvider.class)
 public class ClassPathProviderImpl implements ClassPathProvider {
 
+    private static final Logger LOG = Logger.getLogger(ClassPathProviderImpl.class.getName());
     public static final String BOOT_CP = "classpath/javascript-boot"; //NOI18N
     public static final AtomicBoolean JS_CLASSPATH_REGISTERED = new AtomicBoolean(false);
 
@@ -101,7 +104,10 @@ public class ClassPathProviderImpl implements ClassPathProvider {
                     return null;
                 }
             }
-            assert allstubs.isFile() : allstubs;
+            if (!allstubs.isFile() || !allstubs.exists()) {
+                LOG.log(Level.WARNING, "JavaScript signature files were not found: {0}", allstubs.getAbsolutePath());
+                return null;
+            }
             jsStubsFileObject = FileUtil.getArchiveRoot(FileUtil.toFileObject(allstubs));
         }
         return jsStubsFileObject;
