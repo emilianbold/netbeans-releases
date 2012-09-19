@@ -76,27 +76,27 @@ public class GroovyReplaceTokenProvider implements ReplaceTokenProvider, ActionC
 
     @Override
     public Map<String,String> createReplacements(String action, Lookup lookup) {
-        FileObject f = lookup.lookup(FileObject.class);
-        if (f == null) {
+        FileObject fo = lookup.lookup(FileObject.class);
+        if (fo == null) {
             SingleMethod m = lookup.lookup(SingleMethod.class);
             if (m != null) {
-                f = m.getFile();
+                fo = m.getFile();
             }
         }
-        if (f != null && "text/x-groovy".equals(f.getMIMEType())) { //NOI18N
-            for (SourceGroup g : ProjectUtils.getSources(project).getSourceGroups(GroovySourcesImpl.TYPE_GROOVY)) {
-                String relPath = FileUtil.getRelativePath(g.getRootFolder(), f);
+        if (isGroovyFile(fo)) {
+            for (SourceGroup group : ProjectUtils.getSources(project).getSourceGroups(GroovySourcesImpl.TYPE_GROOVY)) {
+                String relPath = FileUtil.getRelativePath(group.getRootFolder(), fo);
                 if (relPath != null) {
                     Map<String,String> replaceMap = new HashMap<String,String>();
-                    replaceMap.put(CLASSNAME_EXT, f.getNameExt());
-                    replaceMap.put(CLASSNAME, f.getName());
-                    String pack = FileUtil.getRelativePath(g.getRootFolder(), f.getParent());
+                    replaceMap.put(CLASSNAME_EXT, fo.getNameExt());
+                    replaceMap.put(CLASSNAME, fo.getName());
+                    String pack = FileUtil.getRelativePath(group.getRootFolder(), fo.getParent());
                     if (pack != null) { //#141175
-                        replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + f.getName()).replace('/', '.')); //NOI18N
+                        replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + fo.getName()).replace('/', '.')); //NOI18N
                     } else {
-                        replaceMap.put(PACK_CLASSNAME, f.getName());
+                        replaceMap.put(PACK_CLASSNAME, fo.getName());
                     }
-                    replaceMap.put(CLASSPATHSCOPE, g.getName().equals(GroovySourcesImpl.NAME_GROOVYTESTSOURCE) ? "test" : "runtime"); //NOI18N
+                    replaceMap.put(CLASSPATHSCOPE, group.getName().equals(GroovySourcesImpl.NAME_GROOVYTESTSOURCE) ? "test" : "runtime"); //NOI18N
                     return replaceMap;
                 }
             }
@@ -108,8 +108,9 @@ public class GroovyReplaceTokenProvider implements ReplaceTokenProvider, ActionC
     public String convert(String action, Lookup lookup) {
         if (ActionProvider.COMMAND_RUN_SINGLE.equals(action) ||
             ActionProvider.COMMAND_DEBUG_SINGLE.equals(action)) {
-            FileObject fo = lookup.lookup(FileObject.class);
-            if (fo != null && "text/x-groovy".equals(fo.getMIMEType())) { //NOI18N
+
+            final FileObject fo = lookup.lookup(FileObject.class);
+            if (isGroovyFile(fo)) {
                 if (isInTestFolder(fo)) {
                     return null;
                 }
@@ -125,6 +126,13 @@ public class GroovyReplaceTokenProvider implements ReplaceTokenProvider, ActionC
 
     private boolean isInTestFolder(FileObject file) {
         if (file.getPath().indexOf("/test/groovy") != -1) { //NOI18N
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isGroovyFile(FileObject file) {
+        if (file != null && "text/x-groovy".equals(file.getMIMEType())) { //NOI18N
             return true;
         }
         return false;
