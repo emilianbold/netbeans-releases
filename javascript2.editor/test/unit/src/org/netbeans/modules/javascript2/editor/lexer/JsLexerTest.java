@@ -461,7 +461,7 @@ public class JsLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.EOL, "\n");
     }
 
-    public void testStrings() {
+    public void testStrings1() {
         String[] strings =
             new String[] {
             "\"Hello\"",
@@ -476,6 +476,34 @@ public class JsLexerTest extends TestCase {
             assertTrue(ts.moveNext());
             assertEquals(JsTokenId.STRING_END, ts.token().id());
         }
+    }
+
+    public void testStrings2() {
+        String text = "\"\\\"\" + \"\\'\" + \"'test'\" + \"\\uabcd\";";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.javascriptLanguage());
+        TokenSequence ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING, "\\\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_END, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_PLUS, "+");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING, "\\'");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_END, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_PLUS, "+");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING, "'test'");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_END, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_PLUS, "+");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING, "\\uabcd");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_END, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_SEMICOLON, ";");
     }
 
     @SuppressWarnings("unchecked")

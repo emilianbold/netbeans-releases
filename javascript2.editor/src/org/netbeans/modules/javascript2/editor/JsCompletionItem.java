@@ -332,6 +332,10 @@ public class JsCompletionItem implements CompletionProposal {
                     builder.append(getName());
                     builder.append(" ${cursor}:"); //NOI18N
                     break;
+                case ENDS_WITH_DOT:
+                    builder.append(getName());
+                    builder.append(".${cursor}"); //NOI18N
+                    break;
                 default:
                     assert false : type.toString();
                     break;

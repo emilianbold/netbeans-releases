@@ -126,7 +126,7 @@ public final class PhpUnit extends PhpProgram {
 
     // suite file
     public static final String SUITE_NAME = "NetBeansSuite"; // NOI18N
-    public static final String SUITE_RUN = "run=%s"; // NOI18N
+    public static final String SUITE_RUN = "--run=%s"; // NOI18N
     private static final String SUITE_REL_PATH = "phpunit/" + SUITE_NAME + ".php"; // NOI18N
 
     // php props

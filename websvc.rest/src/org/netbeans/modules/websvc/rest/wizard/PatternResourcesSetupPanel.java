@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.websvc.rest.wizard;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -157,7 +158,7 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
                     assert false;
             }
             setLayout( new BoxLayout(this, BoxLayout.Y_AXIS));
-            add( panel );
+            add( panel);
             mainPanel = (AbstractPanel.Settings)panel;
             jerseyPanel = new JerseyPanel( this );
             mainPanel.addChangeListener(jerseyPanel );
@@ -175,7 +176,27 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
                             double height = 0;
                             Component[] components = getComponents();
                             for (Component component : components) {
-                                height+= component.getSize().getHeight();
+                                if ( component instanceof SingletonSetupPanelVisual ){
+                                    double renderedHeight = 
+                                            ((SingletonSetupPanelVisual)component).
+                                                getRenderedHeight();
+                                    height+=renderedHeight;
+                                    resize(component, renderedHeight);
+                                }
+                                else if (component instanceof ContainerItemSetupPanelVisual ){
+                                    double renderedHeight = 
+                                            ((ContainerItemSetupPanelVisual)component).
+                                                getRenderedHeight();
+                                    height+=renderedHeight;
+                                    resize(component, renderedHeight);
+                                } 
+                                else if ( component instanceof JerseyPanel ){
+                                    double renderedHeight = 
+                                            ((JerseyPanel)component).
+                                                getRenderedHeight();
+                                    height+=renderedHeight;
+                                    resize(component, renderedHeight);
+                                }
                             }
                             Dimension dim = getSize();
                             int newHeight = (int)height;
@@ -189,7 +210,7 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
                             }
                             removeHierarchyListener(listener);
                         }
-                        
+
                     });   
                      
               }
@@ -267,6 +288,15 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
             mainPanel.addChangeListener(l);
             if ( hasJerseyPanel() ){
                 jerseyPanel.addChangeListener(l);
+            }
+        }
+        
+        private void resize( Component component, double height )
+        {
+            Dimension size = component.getSize();
+            if ( size.height < height ){
+                component.setPreferredSize(
+                        new Dimension(size.width, (int)height));
             }
         }
         

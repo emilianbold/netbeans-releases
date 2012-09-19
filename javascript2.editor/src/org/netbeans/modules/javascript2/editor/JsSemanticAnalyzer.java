@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.sql.Types;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
