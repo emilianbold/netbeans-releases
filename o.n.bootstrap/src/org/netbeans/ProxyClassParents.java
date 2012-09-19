@@ -163,6 +163,10 @@ final class ProxyClassParents {
         assert assertOn = true;
         return assertOn ? Collections.unmodifiableSet(parentSet) :  parentSet;
     }
+    
+    int size() {
+        return parentSet.size();
+    }
 
     ProxyClassParents append(ClassLoader root, ClassLoader[] nueparents) {
         ClassLoader[] arr = { systemCL };

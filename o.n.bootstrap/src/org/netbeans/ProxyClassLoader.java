@@ -232,22 +232,22 @@ public class ProxyClassLoader extends ClassLoader {
     }
     private String diagnosticCNFEMessage(String base, Set<ProxyClassLoader> del) {
         String parentSetS;
+        int size = parents.size();
         // Too big to show in its entirety - overwhelms the log file.
         StringBuilder b = new StringBuilder();
+        b.append(base).append(" starting from ").append(this)
+            .append(" with possible defining loaders ").append(del)
+            .append(" and declared parents ");
         Iterator<ProxyClassLoader> parentSetI = parents.loaders().iterator();
         for (int i = 0; i < 10 && parentSetI.hasNext(); i++) {
             b.append(i == 0 ? "[" : ", ");
             b.append(parentSetI.next());
         }
-        int size = 0;
-        while (parentSetI.hasNext()) {
-            size++;
+        if (parentSetI.hasNext()) {
+            b.append(", ...").append(size - 10).append(" more");
         }
-        b.append(", ...").append(size).append(" more]");
-        parentSetS = b.toString();
-        return base + " starting from " + this +
-                " with possible defining loaders " + del +
-                " and declared parents " + parentSetS;
+        b.append(']');
+        return b.toString();
     }
     private static final Set<String> arbitraryLoadWarnings = Collections.synchronizedSet(new HashSet<String>());
 
