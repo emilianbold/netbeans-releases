@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.modules.groovy.editor.api.FindTypeUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
@@ -77,13 +78,18 @@ public class GroovyInstantRenamer implements InstantRenamer {
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         LOG.log(Level.FINEST, "isRenameAllowed()"); //NOI18N
 
-        AstPath path = getPathUnderCaret(ASTUtils.getParseResult(info), caretOffset);
+        final AstPath path = getPathUnderCaret(ASTUtils.getParseResult(info), caretOffset);
 
         if (path != null) {
             final ASTNode closest = path.leaf();
-
             if (closest instanceof Variable) {
-                return true;
+                final BaseDocument doc = LexUtilities.getDocument(ASTUtils.getParseResult(info), false);
+                if (!FindTypeUtils.isCaretOnClassNode(path, doc, caretOffset)) {
+                    return true;
+                } else {
+                    explanationRetValue[0] = NbBundle.getMessage(GroovyInstantRenamer.class, "NoInstantRenameOnClassNode");
+                    return false;
+                }
             } else {
                 explanationRetValue[0] = NbBundle.getMessage(GroovyInstantRenamer.class, "OnlyRenameLocalVars");
                 return false;
