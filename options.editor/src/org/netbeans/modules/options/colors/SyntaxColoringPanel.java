@@ -778,7 +778,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         } else {
             cbEffects.setSelectedIndex (0);
             cbEffectColor.setEnabled (false);
-            cbEffectColor.setSelectedItem (new ColorValue (null, null));
+            cbEffectColor.setSelectedIndex( -1 );
         }
         updatePreview ();
         listen = true;
@@ -1031,7 +1031,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
 
     @Override
     public void itemStateChanged( ItemEvent e ) {
-        if( e.getStateChange() == ItemEvent.DESELECTED )
+        if( e.getStateChange() == ItemEvent.DESELECTED || !listen )
             return;
         updateData();
     }

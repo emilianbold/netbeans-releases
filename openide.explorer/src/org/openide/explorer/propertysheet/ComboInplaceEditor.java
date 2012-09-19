@@ -50,6 +50,7 @@ import java.lang.reflect.Method;
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
 import javax.swing.plaf.ComboBoxUI;
+import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.text.JTextComponent;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
@@ -207,7 +208,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                 return;
             }
 
-            if( isAutoComplete && isPopupVisible() ) {
+            if( isAutoComplete() && isPopupVisible() ) {
                 return;
             }
 
@@ -578,7 +579,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         }
     }
 
-    private boolean isAutoComplete = false;
+    private boolean autoComplete = false;
     /**
      * Use reflection to check if SwingX library is on class path and add auto-complete.
      */
@@ -590,9 +591,13 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             Class c = cl.loadClass( "org.jdesktop.swingx.autocomplete.AutoCompleteDecorator" ); //NOI18N
             Method m = c.getMethod( "decorate", JComboBox.class );
             m.invoke( null, this );
-            isAutoComplete = true;
+            autoComplete = true;
         } catch( Exception e ) {
             //ignore, SwingX is either not available or unsupported version
         }
+    }
+
+    boolean isAutoComplete() {
+        return autoComplete;
     }
 }
