@@ -1809,7 +1809,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                 List<GdbThread> res = new ArrayList<GdbThread>();
                                 String msg = record2.command().getConsoleStream();
                                 System.out.println(msg);
-                                String currentThreadId = msg.substring(msg.indexOf(" ") + 1, msg.indexOf(" ", msg.indexOf(" ") + 1));
+                                String currentThreadId = msg.substring(msg.indexOf(" ") + 1, msg.indexOf(" ", msg.indexOf(" ") + 1));  // NOI18N
 
                                 MITList results = record.results();
                                 int i = 0;
@@ -3821,7 +3821,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    if (file != null && line != null && !line.isEmpty()) {
 		// request by line #
 
-		cmd += " -f \"" + file + '\"'; // NOI18N
+		cmd += " -f \"" + file + '"'; // NOI18N
 		cmd += " -l " + line; // NOI18N
 		cmd += " -- " + src; // NOI18N
 
@@ -3843,8 +3843,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
             int src = withSource ? 1 : 0;
 	    String cmd = "-data-disassemble"; // NOI18N
-	    cmd += " -s " + start; // NOI18N
-	    cmd += " -e \"" + start + '+' + count + "\""; // NOI18N
+	    cmd += " -s \"" + start + '"'; // NOI18N
+	    cmd += " -e \"" + start + '+' + count + '"'; // NOI18N
 	    cmd += " -- " + src; // NOI18N
 	    requestDisFromGdb(cmd);
         }

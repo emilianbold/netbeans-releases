@@ -104,7 +104,7 @@ public class SideBarFactoryImpl implements SideBarFactory {
             
             closeButton.addActionListener(new ActionListener() {
                 @Override public void actionPerformed(ActionEvent e) {
-                    prefs.putBoolean(KEY_BREADCRUMBS, DEF_BREADCRUMBS);
+                    prefs.putBoolean(KEY_BREADCRUMBS, false);
                 }
             });
             
