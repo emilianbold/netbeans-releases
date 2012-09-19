@@ -238,7 +238,7 @@ public final class ClientSideProjectUtilities {
             try {
                 WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
             } catch (MissingLibResourceException e) {
-                LOGGER.log(Level.INFO, null, e);
+                LOGGER.log(Level.FINE, null, e);
                 failed.add(selectedLibrary);
             }
         }

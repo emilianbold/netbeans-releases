@@ -197,23 +197,6 @@ public class JavaScriptLibrarySelection extends JPanel {
         assert EventQueue.isDispatchThread();
         selectedLibrariesList.setModel(selectedLibrariesListModel);
         selectedLibrariesList.setCellRenderer(new SelectedLibraryRenderer(selectedLibrariesList.getCellRenderer()));
-        selectedLibrariesListModel.addListDataListener(new ListDataListener() {
-            @Override
-            public void intervalAdded(ListDataEvent e) {
-                dataChanged();
-            }
-            @Override
-            public void intervalRemoved(ListDataEvent e) {
-                dataChanged();
-            }
-            @Override
-            public void contentsChanged(ListDataEvent e) {
-                dataChanged();
-            }
-            private void dataChanged() {
-                fireChangeEvent();
-            }
-        });
     }
 
     private void initLibrariesButtons() {
