@@ -86,7 +86,6 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     
     private ChangeParametersRefactoring refactoring;
     private TreePathHandle treePathHandle;
-    private RenameRefactoring[] renameDelegates;
     private boolean inited;
     
     /**
@@ -101,16 +100,8 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     
     @Override
     public Problem checkParameters() {
-        
-        initDelegates();
-        
         Problem p = null;
-        for (RenameRefactoring renameRefactoring : renameDelegates) {
-            p = JavaPluginUtils.chainProblems(p, renameRefactoring.fastCheckParameters());
-            if (p != null && p.isFatal()) {
-                return p;
-            }
-        }
+        // TODO: Rename checks
         return p;
     }
 
@@ -221,12 +212,12 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStart(AbstractRefactoring.PREPARE, (a.size() * 2) + 1);
         Problem problem = null;
         if (!a.isEmpty()) {
-            initDelegates();
             fireProgressListenerStep();
 
             ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(refactoring.getParameterInfo(),
                     refactoring.getModifiers(),
                     refactoring.getReturnType(),
+                    refactoring.getMethodName(),
                     refactoring.isOverloadMethod(),
                     refactoring.getContext().lookup(Javadoc.class),
                     allMethods,
@@ -239,13 +230,6 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                     allMethods,
                     treePathHandle);
 
-            for (RenameRefactoring renameRefactoring : renameDelegates) {
-                problem = JavaPluginUtils.chainProblems(problem, renameRefactoring.prepare(elements.getSession()));
-                if (problem != null && problem.isFatal()) {
-                    fireProgressListenerStop();
-                    return problem;
-                }
-            }
             TransformTask transformJavadoc = new TransformTask(changeJavaDocParamsTransformer, treePathHandle);
             problem = JavaPluginUtils.chainProblems(problem, createAndAddElements(a, transformJavadoc, elements, refactoring));
             TransformTask transform = new TransformTask(changeParamsTransformer, treePathHandle);
@@ -311,50 +295,49 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         return preCheckProblem;
     }
     
-    private void initDelegates() {
-        if (inited) {
-            return;
-        }
-        final LinkedList<RenameRefactoring> renameRefactoringsList = new LinkedList<RenameRefactoring>();
-
-        try {
-            getJavaSource(Phase.PREPARE).runUserActionTask(new Task<CompilationController>() {
-
-                @Override
-                public void run(CompilationController javac) throws Exception {
-                    javac.toPhase(JavaSource.Phase.RESOLVED);
-                    ExecutableElement method = (ExecutableElement) treePathHandle.resolveElement(javac);
-                    List<? extends VariableElement> parameters = method.getParameters();
-
-                    ParameterInfo paramTable[] = refactoring.getParameterInfo();
-                    for (int i = 0; i < paramTable.length; i++) {
-                        ParameterInfo param = paramTable[i];
-                        int origIndex = param.getOriginalIndex();
-                        if (origIndex != -1) {
-                            VariableElement variable = parameters.get(origIndex);
-                            if(!variable.getSimpleName().contentEquals(param.getName())) {
-                                TreePath path = javac.getTrees().getPath(variable);
-                                RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(path, javac)));
-                                renameRefactoring.setNewName(param.getName());
-                                renameRefactoring.setSearchInComments(true);
-                                renameRefactoringsList.add(renameRefactoring);
-                            }
-                        }
-                    }
-                    if(refactoring.getMethodName() != null && !method.getSimpleName().toString().equals(refactoring.getMethodName())) {
-                        RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(method, javac)));
-                        renameRefactoring.setNewName(refactoring.getMethodName());
-                        renameRefactoring.setSearchInComments(true);
-                        renameRefactoringsList.add(renameRefactoring);
-                    }
-                }
-            }, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        renameDelegates = renameRefactoringsList.toArray(new RenameRefactoring[0]);
-        inited = true;
-    }
+//    private void initDelegates() {
+//        if (inited) {
+//            return;
+//        }
+//        final LinkedList<RenameRefactoring> renameRefactoringsList = new LinkedList<RenameRefactoring>();
+//
+//        try {
+//            getJavaSource(Phase.PREPARE).runUserActionTask(new Task<CompilationController>() {
+//
+//                @Override
+//                public void run(CompilationController javac) throws Exception {
+//                    javac.toPhase(JavaSource.Phase.RESOLVED);
+//                    ExecutableElement method = (ExecutableElement) treePathHandle.resolveElement(javac);
+//                    List<? extends VariableElement> parameters = method.getParameters();
+//
+//                    ParameterInfo paramTable[] = refactoring.getParameterInfo();
+//                    for (int i = 0; i < paramTable.length; i++) {
+//                        ParameterInfo param = paramTable[i];
+//                        int origIndex = param.getOriginalIndex();
+//                        if (origIndex != -1) {
+//                            VariableElement variable = parameters.get(origIndex);
+//                            if(!variable.getSimpleName().contentEquals(param.getName())) {
+//                                TreePath path = javac.getTrees().getPath(variable);
+//                                RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(path, javac)));
+//                                renameRefactoring.setNewName(param.getName());
+//                                renameRefactoring.setSearchInComments(true);
+//                                renameRefactoringsList.add(renameRefactoring);
+//                            }
+//                        }
+//                    }
+//                    if(refactoring.getMethodName() != null && !method.getSimpleName().toString().equals(refactoring.getMethodName())) {
+//                        RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(method, javac)));
+//                        renameRefactoring.setNewName(refactoring.getMethodName());
+//                        renameRefactoring.setSearchInComments(true);
+//                        renameRefactoringsList.add(renameRefactoring);
+//                    }
+//                }
+//            }, true);
+//        } catch (IOException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//        inited = true;
+//    }
     
     static class Checks {
         protected CompilationController javac;
