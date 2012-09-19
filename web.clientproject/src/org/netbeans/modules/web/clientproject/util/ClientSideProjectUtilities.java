@@ -197,6 +197,8 @@ public final class ClientSideProjectUtilities {
     /**
      * Add JS libraries (<b>{@link JavaScriptLibrarySelection.SelectedLibrary#isDefault() non-default} only!</b>) to the given
      * site root, underneath the given JS libraries folder.
+     * <p>
+     * This method must be run in a background thread and stops if the current thread is interrupted.
      * @param selectedLibraries JS libraries to be added
      * @param jsLibFolder JS libraries folder
      * @param siteRootDir site root
@@ -212,10 +214,15 @@ public final class ClientSideProjectUtilities {
     @CheckReturnValue
     public static List<JavaScriptLibrarySelection.SelectedLibrary> applyJsLibraries(List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries,
             String jsLibFolder, FileObject siteRootDir, @NullAllowed ProgressHandle handle) throws IOException {
-        assert !EventQueue.isDispatchThread();
+        if (EventQueue.isDispatchThread()) {
+            throw new IllegalStateException("Must be run in a background thread");
+        }
         List<JavaScriptLibrarySelection.SelectedLibrary> failed = new ArrayList<JavaScriptLibrarySelection.SelectedLibrary>(selectedLibraries.size());
         FileObject librariesRoot = null;
         for (JavaScriptLibrarySelection.SelectedLibrary selectedLibrary : selectedLibraries) {
+            if (Thread.interrupted()) {
+                break;
+            }
             if (selectedLibrary.isDefault()) {
                 // ignore default js lib (they are already applied)
                 continue;
@@ -231,7 +238,7 @@ public final class ClientSideProjectUtilities {
             try {
                 WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
             } catch (MissingLibResourceException e) {
-                LOGGER.log(Level.INFO, null, e);
+                LOGGER.log(Level.FINE, null, e);
                 failed.add(selectedLibrary);
             }
         }
