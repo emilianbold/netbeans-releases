@@ -153,13 +153,14 @@ public class C2CQueryTest extends AbstractC2CTestCase {
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status is OK", status.getCode(), IStatus.OK);
         assertEquals(2, c.arr.size());
-        assertTrue(c.arr.get(0).getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue().contains(containsSummary));
+        for (TaskData td : c.arr) {
+            assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue().contains(containsSummary));
+        }
     }
     
     public void testQueryProduct() throws IOException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
-        String containsSummary = "test task";
         CriteriaBuilder cb = new CriteriaBuilder();
         cb.column(QueryParameter.CRITERIA_PRODUCT, Criteria.Operator.EQUALS, "Unit Test Product");
         
@@ -170,8 +171,70 @@ public class C2CQueryTest extends AbstractC2CTestCase {
         Collector c = new Collector();
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status is OK", status.getCode(), IStatus.OK);
+        assertFalse(c.arr.isEmpty());
+    }
+    
+    public void testC1AndC2() throws IOException {
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
+        
+        CriteriaBuilder cb = new CriteriaBuilder();
+        cb.column(QueryParameter.CRITERIA_PRODUCT, Criteria.Operator.EQUALS, "Unit Test Product");
+        cb.and(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, "Component2");
+        
+        query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
+        
+        System.out.println(" Query Criteria : " + cb.toCriteria().toQueryString());
+        
+        Collector c = new Collector();
+        IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
+        assertEquals("Status is OK", status.getCode(), IStatus.OK);
+        assertEquals(1, c.arr.size());
+        assertTrue(c.arr.get(0).getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals("Component2"));
+    }
+    
+    public void testC1OrC2() throws IOException {
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
+        
+        CriteriaBuilder cb = new CriteriaBuilder();
+        cb.column(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, "Component2");
+        cb.or(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, "Component3");
+        
+        query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
+        
+        System.out.println(" Query Criteria : " + cb.toCriteria().toQueryString());
+        
+        Collector c = new Collector();
+        IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
+        assertEquals("Status is OK", status.getCode(), IStatus.OK);
         assertEquals(2, c.arr.size());
-        assertTrue(c.arr.get(0).getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue().contains(containsSummary));
+        for (TaskData td : c.arr) {
+            assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals("Component2") ||
+                       td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals("Component3"));
+        }
+    }
+    
+    public void testC1And_C2OrC3() throws IOException {
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
+        
+        CriteriaBuilder cb = new CriteriaBuilder();
+        cb.column(QueryParameter.CRITERIA_PRODUCT, Criteria.Operator.EQUALS, "Unit Test Product");
+        cb.and(new CriteriaBuilder()
+                    .column(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, "Component2")
+                    .or(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, "Component3")
+               .toCriteria());
+        
+        query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
+        
+        System.out.println(" Query Criteria : " + cb.toCriteria().toQueryString());
+        
+        Collector c = new Collector();
+        IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
+        assertEquals("Status is OK", status.getCode(), IStatus.OK);
+        assertEquals(2, c.arr.size());
+        for (TaskData td : c.arr) {
+            assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals("Component2") ||
+                       td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals("Component3"));
+        }
     }
     
     private class Collector extends TaskDataCollector {

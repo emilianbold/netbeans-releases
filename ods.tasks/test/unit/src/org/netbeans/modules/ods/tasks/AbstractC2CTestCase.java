@@ -123,7 +123,7 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
         C2CExtender.assignTaskRepositoryLocationFactory(rc, trlf);
         
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-                                                                 //"https://q.tasktop.com/alm/s/anagramgame/tasks")
+//        taskRepository = new TaskRepository(rc.getConnectorKind(), "https://q.tasktop.com/alm/s/anagramgame/tasks");
         taskRepository = new TaskRepository(rc.getConnectorKind(), "http://qa-dev.developer.us.oracle.com/s/qa-dev_netbeans-test/tasks");
         
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(uname, passw);
@@ -131,17 +131,10 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
         
         if(proxyHost != null && !proxyHost.isEmpty()) {
             taskRepository.setProperty(TaskRepository.PROXY_HOSTNAME, proxyHost);
-        } else {
-//            taskRepository.setProperty(TaskRepository.PROXY_HOSTNAME, "");
-            
-        }
+        } 
         if(proxyPort != null && !proxyPort.isEmpty()) {
             taskRepository.setProperty(TaskRepository.PROXY_PORT, proxyPort);
-        } else {
-//            taskRepository.setProperty(TaskRepository.PROXY_PORT, "");
-        }
-            
-//        repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
+        } 
 
         trm.addRepository(taskRepository);
         trm.addRepositoryConnector(rc);
