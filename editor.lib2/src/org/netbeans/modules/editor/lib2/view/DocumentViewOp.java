@@ -933,6 +933,7 @@ public final class DocumentViewOp
             
             tabTextLayout = null;
             singleCharTabTextLayout = null;
+            newlineTextLayout = null;
             lineContinuationTextLayout = null;
 
             updateTextLimitLine(docView.getDocument());
