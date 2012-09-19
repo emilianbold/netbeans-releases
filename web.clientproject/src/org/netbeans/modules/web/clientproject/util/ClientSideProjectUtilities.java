@@ -220,7 +220,7 @@ public final class ClientSideProjectUtilities {
         List<JavaScriptLibrarySelection.SelectedLibrary> failed = new ArrayList<JavaScriptLibrarySelection.SelectedLibrary>(selectedLibraries.size());
         FileObject librariesRoot = null;
         for (JavaScriptLibrarySelection.SelectedLibrary selectedLibrary : selectedLibraries) {
-            if (Thread.interrupted()) {
+            if (Thread.currentThread().isInterrupted()) {
                 break;
             }
             if (selectedLibrary.isDefault()) {
