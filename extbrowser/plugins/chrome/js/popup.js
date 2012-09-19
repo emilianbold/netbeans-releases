@@ -103,11 +103,8 @@ NetBeans_PresetMenu._registerEvents = function() {
     document.getElementById('customizePresetsMenu').addEventListener('click', function() {
         that._showPresetCustomizer();
     }, false);
-    document.getElementById('selectionModeCheckBox').addEventListener('click', function() {
-        that._updateSelectionMode(false);
-    }, false);
-    document.getElementById('selectionModeMenu').addEventListener('click', function() {
-        that._updateSelectionMode(true);
+    document.getElementById('selectionModeMenu').addEventListener('click', function(event) {
+        that._updateSelectionMode(event.target.id !== 'selectionModeCheckBox');
     }, false);
 };
 // clean and put presets to the menu
