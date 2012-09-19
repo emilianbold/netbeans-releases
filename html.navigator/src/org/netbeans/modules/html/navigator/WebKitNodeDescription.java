@@ -228,7 +228,7 @@ public class WebKitNodeDescription extends DOMNodeDescription {
                 }
             }
         }
-        return children;
+        return children==null?Collections.EMPTY_LIST:children;
     }
 
     @Override
