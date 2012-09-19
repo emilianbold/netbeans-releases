@@ -119,11 +119,7 @@ import org.openide.util.Exceptions;
 public class GroovyDeclarationFinder implements DeclarationFinder {
 
     private static final Logger LOG = Logger.getLogger(GroovyDeclarationFinder.class.getName());
-    Token<? extends GroovyTokenId> tok;
 
-    Document lastDoc = null;
-    int lastOffset = -1;
-    OffsetRange lastRange = OffsetRange.NONE;
 
     public GroovyDeclarationFinder() {
         LOG.setLevel(Level.OFF);
@@ -131,12 +127,8 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
 
     @Override
     public OffsetRange getReferenceSpan(Document document, int lexOffset) {
-        TokenHierarchy<Document> th = TokenHierarchy.get(document);
-
-        //BaseDocument doc = (BaseDocument)document;
-
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(th, lexOffset);
-
+        final TokenHierarchy<Document> th = TokenHierarchy.get(document);
+        final TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(th, lexOffset);
         if (ts == null) {
             return OffsetRange.NONE;
         }
@@ -148,8 +140,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
         }
 
         // Determine whether the caret position is right between two tokens
-        boolean isBetween = (lexOffset == ts.offset());
-
+        final boolean isBetween = (lexOffset == ts.offset());
         OffsetRange range = getReferenceSpan(ts, th, lexOffset);
 
         if ((range == OffsetRange.NONE) && isBetween) {
@@ -159,39 +150,32 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                 range = getReferenceSpan(ts, th, lexOffset);
             }
         }
-
         return range;
     }
 
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int lexOffset) {
-        GroovyParserResult gpr = ASTUtils.getParseResult(info);
+        final GroovyParserResult parserResult = ASTUtils.getParseResult(info);
+        final Document document = LexUtilities.getDocument(parserResult, false);
+        if (document == null) {
+            return DeclarationLocation.NONE;
+        }
+
+        final TokenHierarchy<Document> th = TokenHierarchy.get(document);
+        final BaseDocument doc = (BaseDocument) document;
+        final int astOffset = ASTUtils.getAstOffset(info, lexOffset);
+        if (astOffset == -1) {
+            return DeclarationLocation.NONE;
+        }
+
+        final OffsetRange range = getReferenceSpan(doc, lexOffset);
+        if (range == OffsetRange.NONE) {
+            return DeclarationLocation.NONE;
+        }
+
+        final ASTNode root = ASTUtils.getRoot(info);
 
         try {
-            Document document = LexUtilities.getDocument(gpr, false);
-            if (document == null) {
-                return DeclarationLocation.NONE;
-            }
-            TokenHierarchy<Document> th = TokenHierarchy.get(document);
-            BaseDocument doc = (BaseDocument)document;
-
-            int astOffset = ASTUtils.getAstOffset(info, lexOffset);
-            if (astOffset == -1) {
-                return DeclarationLocation.NONE;
-            }
-
-            OffsetRange range = getReferenceSpan(doc, lexOffset);
-
-            if (range == OffsetRange.NONE) {
-                return DeclarationLocation.NONE;
-            }
-
-            // Determine the bias (if the caret is between two tokens, did we
-            // click on a link for the left or the right?
-            boolean leftSide = range.getEnd() <= lexOffset;
-
-            ASTNode root = ASTUtils.getRoot(info);
-
             // FIXME parsing API - source & binary IDs
             GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(info.getSnapshot().getSource().getFileObject(),
                     Collections.singleton(ClassPath.SOURCE), null, null));
@@ -214,7 +198,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                         return DeclarationLocation.NONE;
                     }
 
-                    DeclarationLocation l = getClassDeclaration(gpr, classes, null, null, index, doc);
+                    DeclarationLocation l = getClassDeclaration(parserResult, classes, null, null, index, doc);
                     if (l != null) {
                         return l;
                     }
@@ -223,7 +207,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                     Set<IndexedMethod> methods =
                         index.getMethods(text, null, QuerySupport.Kind.EXACT);
 
-                    DeclarationLocation l = getMethodDeclaration(gpr, text, methods,
+                    DeclarationLocation l = getMethodDeclaration(parserResult, text, methods,
                          null, null, index, astOffset, lexOffset);
 
                     if (l != null) {
@@ -236,6 +220,9 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
 
             int tokenOffset = lexOffset;
 
+            // Determine the bias (if the caret is between two tokens, did we
+            // click on a link for the left or the right?
+            final boolean leftSide = range.getEnd() <= lexOffset;
             if (leftSide && (tokenOffset > 0)) {
                 tokenOffset--;
             }
@@ -261,7 +248,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                     String typeName = objectExpression.getType().getName();
 
                     // try to find it in Java
-                    FileObject fo = gpr.getSnapshot().getSource().getFileObject();
+                    FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
                     if (fo != null) {
                         final ClasspathInfo cpInfo = ClasspathInfo.create(fo);
                         DeclarationLocation location = findJavaMethod(cpInfo, typeName, methodCall);
@@ -283,7 +270,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                         fqn = "java.lang.Object"; // NOI18N
                     }
 
-                    return findMethod(name, fqn, type, call, gpr, astOffset, lexOffset, path, closest, index);
+                    return findMethod(name, fqn, type, call, parserResult, astOffset, lexOffset, path, closest, index);
                 }
 
             } else if (closest instanceof VariableExpression) {
@@ -326,7 +313,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                         String fieldName = ((ConstantExpression) closest).getText();
 
                         // try to find it in Java
-                        FileObject fo = gpr.getSnapshot().getSource().getFileObject();
+                        FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
                         if (fo != null) {
                             final ClasspathInfo cpInfo = ClasspathInfo.create(fo);
                             DeclarationLocation location = findJavaField(cpInfo, typeName, fieldName);

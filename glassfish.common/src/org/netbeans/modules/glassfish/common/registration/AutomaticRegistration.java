@@ -101,13 +101,12 @@ public class AutomaticRegistration {
         File glassfishHome = new File(glassfishRoot);
         if (!glassfishHome.exists()) {
             LOGGER.log(Level.INFO, "Cannot register the default GlassFish server. " // NOI18N
-                    + "The GlassFish Root directory " + glassfishRoot // NOI18N
-                    + " does not exist."); // NOI18N
+                    + "The GlassFish Root directory {0} does not exist.", glassfishRoot); // NOI18N
             return 3;
         }
-        String config = null;
-        String deployer = null;
-        String defaultDisplayName = null;
+        String config;
+        String deployer;
+        String defaultDisplayName;
         if(new File(glassfishHome, "lib/dtds/glassfish-web-app_3_0-1.dtd").exists()) {
             // ee6wc
             config = "GlassFishEE6WC/Instances";
@@ -124,8 +123,7 @@ public class AutomaticRegistration {
             defaultDisplayName = "GlassFish v3 Prelude";
         } else {
             LOGGER.log(Level.INFO, "Cannot register the default GlassFish server. " // NOI18N
-                    + "The GlassFish Root directory " + glassfishRoot // NOI18N
-                    + " is of unknown version."); // NOI18N
+                    + "The GlassFish Root directory {0} is of unknown version.", glassfishRoot); // NOI18N
             return 4;
         }
         FileObject serverInstanceDir = FileUtil.getConfigFile(config); // NOI18N
@@ -133,7 +131,8 @@ public class AutomaticRegistration {
         if (serverInstanceDir == null) {
             serverInstanceDir = FileUtil.createFolder(FileUtil.getConfigRoot(), config);
             if (serverInstanceDir == null) {
-                LOGGER.log(Level.INFO, "Cannot register the default GlassFish server. The config/" + config + " folder cannot be created."); // NOI18N
+                LOGGER.log(Level.INFO, "Cannot register the default GlassFish"
+                        + " server. The config/{0} folder cannot be created.", config); // NOI18N
                 return 2;
             }
         }
@@ -143,7 +142,8 @@ public class AutomaticRegistration {
         glassfishRoot = new File(glassfishRoot).getAbsolutePath();
 
         final String url = "[" + glassfishRoot + File.pathSeparator + 
-                glassfishRoot + File.separator + "domains" + File.separator + "domain1]" + deployer + ":localhost:4848"; // NOI18N
+                glassfishRoot + File.separator + "domains" + File.separator
+                + "domain1]" + deployer + ":localhost:4848"; // NOI18N
 
         // make sure the server is not registered yet
         for (FileObject fo : serverInstanceDir.getChildren()) {

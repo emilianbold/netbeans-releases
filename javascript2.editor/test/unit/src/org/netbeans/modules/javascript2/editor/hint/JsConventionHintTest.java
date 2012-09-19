@@ -139,4 +139,8 @@ public class JsConventionHintTest extends HintTestBase {
     public void testDuplicateName03() throws Exception {
         checkHints(this, createDuplicatePropertyHint(), "testfiles/hints/duplicateName03.js", null);
     }
+
+    public void testIssue218590() throws Exception {
+        checkHints(this, createDuplicatePropertyHint(), "testfiles/hints/issue218590.js", null);
+    }
 }

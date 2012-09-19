@@ -63,10 +63,10 @@ import org.openide.util.Lookup;
 @ProjectServiceProvider(service={ReplaceTokenProvider.class, ActionConvertor.class}, projectType="org-netbeans-modules-maven")
 public class GroovyReplaceTokenProvider implements ReplaceTokenProvider, ActionConvertor {
 
-    private static final String CLASSNAME = "className";
-    private static final String CLASSNAME_EXT = "classNameWithExtension";
-    private static final String PACK_CLASSNAME = "packageClassName";
-    private static final String CLASSPATHSCOPE = "classPathScope";
+    private static final String CLASSNAME = "className";                    //NOI18N
+    private static final String CLASSNAME_EXT = "classNameWithExtension";   //NOI18N
+    private static final String PACK_CLASSNAME = "packageClassName";        //NOI18N
+    private static final String CLASSPATHSCOPE = "classPathScope";          //NOI18N
 
     private final Project project;
 
@@ -74,28 +74,29 @@ public class GroovyReplaceTokenProvider implements ReplaceTokenProvider, ActionC
         this.project = project;
     }
 
-    @Override public Map<String,String> createReplacements(String action, Lookup lookup) {
-        FileObject f = lookup.lookup(FileObject.class);
-        if (f == null) {
+    @Override
+    public Map<String,String> createReplacements(String action, Lookup lookup) {
+        FileObject fo = lookup.lookup(FileObject.class);
+        if (fo == null) {
             SingleMethod m = lookup.lookup(SingleMethod.class);
             if (m != null) {
-                f = m.getFile();
+                fo = m.getFile();
             }
         }
-        if (f != null && "text/x-groovy".equals(f.getMIMEType())) {
-            for (SourceGroup g : ProjectUtils.getSources(project).getSourceGroups(GroovySourcesImpl.TYPE_GROOVY)) {
-                String relPath = FileUtil.getRelativePath(g.getRootFolder(), f);
+        if (isGroovyFile(fo)) {
+            for (SourceGroup group : ProjectUtils.getSources(project).getSourceGroups(GroovySourcesImpl.TYPE_GROOVY)) {
+                String relPath = FileUtil.getRelativePath(group.getRootFolder(), fo);
                 if (relPath != null) {
                     Map<String,String> replaceMap = new HashMap<String,String>();
-                    replaceMap.put(CLASSNAME_EXT, f.getNameExt());
-                    replaceMap.put(CLASSNAME, f.getName());
-                    String pack = FileUtil.getRelativePath(g.getRootFolder(), f.getParent());
+                    replaceMap.put(CLASSNAME_EXT, fo.getNameExt());
+                    replaceMap.put(CLASSNAME, fo.getName());
+                    String pack = FileUtil.getRelativePath(group.getRootFolder(), fo.getParent());
                     if (pack != null) { //#141175
-                        replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + f.getName()).replace('/', '.'));
+                        replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + fo.getName()).replace('/', '.')); //NOI18N
                     } else {
-                        replaceMap.put(PACK_CLASSNAME, f.getName());
+                        replaceMap.put(PACK_CLASSNAME, fo.getName());
                     }
-                    replaceMap.put(CLASSPATHSCOPE, g.getName().equals(GroovySourcesImpl.NAME_GROOVYTESTSOURCE) ? "test" : "runtime");
+                    replaceMap.put(CLASSPATHSCOPE, group.getName().equals(GroovySourcesImpl.NAME_GROOVYTESTSOURCE) ? "test" : "runtime"); //NOI18N
                     return replaceMap;
                 }
             }
@@ -103,18 +104,37 @@ public class GroovyReplaceTokenProvider implements ReplaceTokenProvider, ActionC
         return Collections.emptyMap();
     }
 
-    @Override public String convert(String action, Lookup lookup) {
+    @Override
+    public String convert(String action, Lookup lookup) {
         if (ActionProvider.COMMAND_RUN_SINGLE.equals(action) ||
             ActionProvider.COMMAND_DEBUG_SINGLE.equals(action)) {
-            FileObject f = lookup.lookup(FileObject.class);
-            if (f != null && "text/x-groovy".equals(f.getMIMEType())) {
+
+            final FileObject fo = lookup.lookup(FileObject.class);
+            if (isGroovyFile(fo)) {
+                if (isInTestFolder(fo)) {
+                    return null;
+                }
+
                 //TODO this only applies to groovy files with main() method.
                 // we should have a way to execute any groovy script? how?
                 // running groovy tests is another specialized usecase.
-                return action + ".main";
+                return action + ".main"; //NOI18N
             }
         }
         return null;
     }
 
+    private boolean isInTestFolder(FileObject file) {
+        if (file.getPath().indexOf("/test/groovy") != -1) { //NOI18N
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isGroovyFile(FileObject file) {
+        if (file != null && "text/x-groovy".equals(file.getMIMEType())) { //NOI18N
+            return true;
+        }
+        return false;
+    }
 }

@@ -627,7 +627,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             } catch (DataObjectNotFoundException ex) {
                 return new Node[] {};
             }
-            return new Node[] { dobj.getNodeDelegate() };
+            return new Node[] { dobj.getNodeDelegate().cloneNode() };
         }
 
         @Override
