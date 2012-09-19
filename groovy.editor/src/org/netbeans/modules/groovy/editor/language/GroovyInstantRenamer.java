@@ -104,9 +104,7 @@ public class GroovyInstantRenamer implements InstantRenamer {
         }
 
         AstPath path = getPathUnderCaret(gpr, caretOffset);
-        Set<OffsetRange> regions = new HashSet<OffsetRange>();
-        markOccurences(path, regions, doc, caretOffset);
-        return regions;
+        return markOccurences(path, doc, caretOffset);
     }
 
     private AstPath getPathUnderCaret(GroovyParserResult info, int caretOffset) {
@@ -128,14 +126,17 @@ public class GroovyInstantRenamer implements InstantRenamer {
 
     }
 
-    private static void markOccurences(AstPath path, Set<OffsetRange> regions, BaseDocument document, int cursorOffset) {
-        ASTNode root = path.root();
+    private static Set<OffsetRange> markOccurences(AstPath path, BaseDocument document, int cursorOffset) {
+        final Set<OffsetRange> regions = new HashSet<OffsetRange>();
+        final ASTNode root = path.root();
         assert root instanceof ModuleNode;
-        ModuleNode moduleNode = (ModuleNode) root;
+        final ModuleNode moduleNode = (ModuleNode) root;
+
         VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path, document, cursorOffset);
         scopeVisitor.collect();
         for (ASTNode astNode : scopeVisitor.getOccurrences()) {
             regions.add(ASTUtils.getRange(astNode, document));
         }
+        return regions;
     }
 }
