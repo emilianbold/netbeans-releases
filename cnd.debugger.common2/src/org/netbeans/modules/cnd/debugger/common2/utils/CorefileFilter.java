@@ -65,7 +65,7 @@ import org.openide.filesystems.*;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-
+@Deprecated
 public class CorefileFilter extends javax.swing.filechooser.FileFilter {
     
     public CorefileFilter() {
