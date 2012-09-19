@@ -68,10 +68,11 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
 
     static final Logger LOGGER = Logger.getLogger(JavaScriptLibrarySelectionPanel.class.getName());
 
-    // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
-    private JavaScriptLibrarySelection javaScriptLibrarySelection;
-    private volatile WizardDescriptor wizardDescriptor;
     private final FileObject librariesFolder;
+
+    // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
+    private volatile JavaScriptLibrarySelection javaScriptLibrarySelection;
+    private volatile WizardDescriptor wizardDescriptor;
     // #202796
     volatile boolean asynchError = false;
 

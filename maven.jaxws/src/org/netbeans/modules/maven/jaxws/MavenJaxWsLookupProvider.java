@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.jaxws;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportFactory;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
@@ -60,7 +61,11 @@ import org.openide.util.lookup.Lookups;
  * @author mkuchtiak
  */
 
-@LookupProvider.Registration(projectType="org-netbeans-modules-maven")
+@LookupProvider.Registration(projectType={
+        "org-netbeans-modules-maven/"+NbMavenProject.TYPE_WAR,
+        "org-netbeans-modules-maven/"+NbMavenProject.TYPE_EJB,
+        "org-netbeans-modules-maven/"+NbMavenProject.TYPE_EAR,
+        "org-netbeans-modules-maven/"+NbMavenProject.TYPE_APPCLIENT})
 public class MavenJaxWsLookupProvider implements LookupProvider {
 
     private static final RequestProcessor rp = new RequestProcessor("MavenJaxWsLookupProvider-request-processor");

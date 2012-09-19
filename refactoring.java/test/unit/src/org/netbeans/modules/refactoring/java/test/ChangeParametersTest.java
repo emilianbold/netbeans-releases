@@ -67,6 +67,52 @@ public class ChangeParametersTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test218053() throws Exception { // #218053 - IllegalArgumentException after ChangeMethodParameters refactoring
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param x the value of x\n"
+                + "     * @param y the value of y\n"
+                + "     */\n"
+                + "    public void testMethod(int x, int y) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2, 1);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                + "    public void testMethod(int x, int y) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = new ParameterInfo[] {new ParameterInfo(1, "z", "int", null), new ParameterInfo(0, "w", "int", null)};
+        performChangeParameters(null, null, null, paramTable, Javadoc.UPDATE, 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * \n"
+                + "     * @param z the value of z\n"
+                + "     * @param w the value of w\n"
+                + "     */\n"
+                + "    public void testMethod(int z, int w) {\n"
+                + "         System.out.println(w);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(1, 2);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                + "    public void testMethod(int z, int w) {\n"
+                + "         System.out.println(w);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test208495() throws Exception { //[Bug 208495] [Change Method Parameter] Method is not renamed when generating javadoc and adding a parameter
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"

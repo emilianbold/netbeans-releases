@@ -113,6 +113,9 @@ public interface GlassfishModule {
     public static final String JAVAMAIL = "JAVAMAIL"; // NOI18N
     public static final String JAVAMAIL_RESOURCE = "javamail-resource"; // NOI18N
 
+    /** Key to mark properties already imported into NetBeans 7.3 and fixed. */
+    public static final String NB73_IMPORT_FIXED = "nb73ImportFixed";
+
     public CommandFactory getCommandFactory();
 
     public String getResourcesXmlName();
