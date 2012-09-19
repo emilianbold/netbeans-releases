@@ -1443,7 +1443,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
         private Difference[] computeDiff() {
             
-            if(editableDocument != null && "true".equals(System.getProperty("org.netbeans.modules.diff.forceFORefresh", "false"))) { // NOI18N
+            if(editableDocument != null) { 
                 // refresh fo before computing the diff, external changes might not have been recognized in some setups
                 // see also issue #210834
                 DataObject dao = (DataObject) editableDocument.getProperty(Document.StreamDescriptionProperty);
