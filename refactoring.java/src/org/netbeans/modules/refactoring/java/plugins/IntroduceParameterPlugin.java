@@ -218,7 +218,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
 
         initDelegate();
         Javadoc javadoc = refactoring.getContext().lookup(Javadoc.class);
-        final ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(paramTable, null, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods, methodHandle);
+        final ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(paramTable, null, null, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods, methodHandle);
         final ChangeParamsJavaDocTransformer changeParamsJavaDocTransformer = new ChangeParamsJavaDocTransformer(paramTable, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods, methodHandle);
         
         fireProgressListenerStart(AbstractRefactoring.PREPARE, a.size() * 2);
