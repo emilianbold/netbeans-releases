@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.netbinox;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbTestSuite;
+
 /** Demonstrates that when osgi.classloader.singleThreadLoads=false (e.g. Equinox default),
  * the deadlock between bundle loaders and NetBeans module loaders does not happen.
  *
@@ -50,6 +53,10 @@ public class SingleThreadLoadsDisabledOKTest extends SingleThreadLoadsDeadlockTe
 
     public SingleThreadLoadsDisabledOKTest(String name) {
         super(name);
+    }
+    
+    public static Test suite() {
+        return new NbTestSuite(SingleThreadLoadsDisabledOKTest.class);
     }
 
     @Override

@@ -46,11 +46,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import junit.framework.Test;
 import org.netbeans.MockEvents;
 import org.netbeans.MockModuleInstaller;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.junit.Log;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -73,6 +75,10 @@ public class SingleThreadLoadsDeadlockTest extends NetigsoHid {
     
     protected Boolean singleThreadLoads() {
         return true;
+    }
+    
+    public static Test suite() {
+        return new NbTestSuite();
     }
 
     @Override
