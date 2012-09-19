@@ -680,12 +680,8 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
                             = ServerAdmin.<ResultMap<String, String>>exec(
                             instance, commandLocation, new IdeContext());
                 }
-long t1 = System.currentTimeMillis();
                 ResultMap<String, String> resultLocation
-//                        = futureLocation.get(timeout, units);
-                        = futureLocation.get();
-long t2 = System.currentTimeMillis();
-Logger.getLogger("glassfish").log(Level.INFO, "Location task was running " + (t2 - t1) + " ms");
+                        = futureLocation.get(timeout, units);
                 if (resultLocation.getState() == TaskState.COMPLETED) {
                     long end = System.nanoTime();
                     Logger.getLogger("glassfish").log(Level.FINE,
@@ -747,17 +743,17 @@ Logger.getLogger("glassfish").log(Level.INFO, "Location task was running " + (t2
                             new Object[]{commandLocation.getCommand(),
                                 (end - start) / 1000000});
                 }
-//            } catch(TimeoutException ex) {
-//                Logger.getLogger("glassfish").log(Level.INFO,
-//                        "Server {0} {1}:{2} user {3}",
-//                        new Object[]{instance.getName(),
-//                            instance.getHost(),
-//                            instance.getHttpAdminPort(),
-//                            instance.getAdminUser()});
-//                Logger.getLogger("glassfish").log(Level.INFO,
-//                        commandLocation.getCommand() + " timed out. "
-//                        +tries+" of "+maxtries, ex);
-//                isReady = false;
+            } catch(TimeoutException ex) {
+                Logger.getLogger("glassfish").log(Level.INFO,
+                        "Server {0} {1}:{2} user {3}",
+                        new Object[]{instance.getName(),
+                            instance.getHost(),
+                            instance.getHttpAdminPort(),
+                            instance.getAdminUser()});
+                Logger.getLogger("glassfish").log(Level.INFO,
+                        commandLocation.getCommand() + " timed out. "
+                        +tries+" of "+maxtries, ex);
+                isReady = false;
             } catch (Exception ex) {
                 Logger.getLogger("glassfish").log(Level.INFO,
                         "Server {0} {1}:{2} user {3}",
