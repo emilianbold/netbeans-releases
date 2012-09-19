@@ -92,7 +92,9 @@ public class CorefileFilter extends javax.swing.filechooser.FileFilter {
 		    MIMENames.ELF_CORE_MIME_TYPE.equals(mime)) {
 		    return true;
 	    */
-	    return checkElfHeader(f);
+            if (f.isFile()) {
+                return checkElfHeader(f);
+            }
 	}
 	return false;
     }

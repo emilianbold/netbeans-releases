@@ -48,7 +48,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,14 +66,13 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser.Changes;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser.Result;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
-import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
+import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcherAccessor;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -196,7 +194,7 @@ public class BinaryAnalyserTest extends NbTestCase {
 
     @Override
     protected void tearDown() throws Exception {
-        setLowMemory(false);
+        LowMemoryWatcherAccessor.setLowMemory(false);
         super.tearDown();
     }
     
@@ -222,7 +220,7 @@ public class BinaryAnalyserTest extends NbTestCase {
             }, getWorkDir()
         );
 
-        setLowMemory(true);
+        LowMemoryWatcherAccessor.setLowMemory(true);
         assertEquals(Result.FINISHED, 
                 a.start(FileUtil.getArchiveRoot(Utilities.toURI(binaryAnalyzerDataDir).toURL()), new AtomicBoolean(), new AtomicBoolean()));
 
@@ -264,26 +262,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         
         flushCount++;
     }
-    
-    private void setLowMemory(boolean enable) {
-        try {
-            Field f = LowMemoryWatcher.class.getDeclaredField("heapLimit");
-            f.setAccessible(true);
-            if (enable) {
-                f.set(null, 0);
-            } else {
-                f.set(null, 0.8f);
-            }
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (NoSuchFieldException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
+        
     
     private static class IndexWriter implements ClassIndexImpl.Writer {
         Index index;

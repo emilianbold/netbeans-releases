@@ -636,9 +636,7 @@ import org.openide.util.Utilities;
                 if (dataSize(s, l) > treshold) {
                     return Pair.<Integer, Integer>of(s, l);
                 }
-                // move start, since nothing interesting has been found from the previous
-                // start up to 's' including.
-                start = s = inc(s);
+                s = inc(s);
             } while (l != limit);
             return null;
         }
@@ -656,6 +654,7 @@ import org.openide.util.Utilities;
             for (index = found.first; index != found.second; index = (index + 1) % times.length) {
                 contexts[index].log(false);
             }
+            LOG.log(Level.WARNING, "=== End excessive contexts");
             this.reportedEnd = index;
         }
     }

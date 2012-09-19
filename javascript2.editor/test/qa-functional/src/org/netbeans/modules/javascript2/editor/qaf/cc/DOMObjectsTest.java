@@ -81,7 +81,7 @@ public class DOMObjectsTest extends GeneralJavaScript {
         this.name_iterator++;
         createPhpApplication(TEST_BASE_NAME + "do_" + name_iterator);
         EditorOperator eo = createWebFile("docc", TEST_BASE_NAME + "do_" + name_iterator, "JavaScript File");
-        this.currentFile = "docc.js";
+        DOMObjectsTest.currentFile = "docc.js";
         try {
             waitScanFinished();
         } catch (Exception e) {
@@ -94,7 +94,7 @@ public class DOMObjectsTest extends GeneralJavaScript {
 
     public void testObject(String[] lines, String[] result) {
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(DOMObjectsTest.currentFile);
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
         for (String line : lines) {

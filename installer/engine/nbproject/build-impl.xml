@@ -938,7 +938,7 @@ is divided into following sections:
     <target if="has.persistence.xml" name="-copy-persistence-xml">
         <mkdir dir="${build.classes.dir}/META-INF"/>
         <copy todir="${build.classes.dir}/META-INF">
-            <fileset dir="${meta.inf.dir}" includes="persistence.xml"/>
+            <fileset dir="${meta.inf.dir}" includes="persistence.xml orm.xml"/>
         </copy>
     </target>
     <target name="-post-compile">

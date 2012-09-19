@@ -94,7 +94,12 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * Properties map used to store GlassFish server properties in GlassFish
      * server instance.
      */
-    public class Props extends HashMap<String, String> {
+    public class Props implements Map<String, String> {
+
+        private final Map<String, String> delegate;
+//        private transient Collection<String> values = null;
+//        private transient Set<String> keySet = null;
+//        private transient Set<Map.Entry<String, String>> entrySet = null;
 
         /**
          * Constructs a new properties map with the same mappings as the
@@ -104,14 +109,96 @@ public class GlassfishInstance implements ServerInstanceImplementation,
          * and an initial capacity sufficient to hold the mappings in the
          * specified <code>Map</code>.
          * <p/>
-         * @param m Properties <code>Map</code> whose mappings are to be placed
-         *          in this map.
+         * @param map Properties <code>Map</code> whose mappings are to be
+         *            placed in this map.
          * @throws NullPointerException if the specified map is null.
          */
-        public Props(Map<String, String> m) {
-            super(m);
+        public Props(Map<String, String> map) {
+            if (map == null) {
+                throw new NullPointerException("Source Map shall not be null.");
+            }
+            this.delegate = map;
         }
 
+        @Override
+        public Collection<String> values() {
+            synchronized(delegate) {
+               return Collections.<String>unmodifiableCollection(
+                       delegate.values());
+            }
+        }
+
+        @Override
+        public Set<String> keySet() {
+            synchronized(delegate) {
+                return Collections.<String>unmodifiableSet(delegate.keySet());
+            }
+        }
+
+        @Override
+        public Set<Entry<String, String>> entrySet() {
+            synchronized(delegate) {
+                return Collections.<Entry<String, String>>unmodifiableSet(
+                        delegate.entrySet());
+            }
+        }
+
+        @Override
+        public int size() {
+            synchronized(delegate) {return delegate.size();}
+        }
+
+        @Override
+        public String remove(Object key) {
+            synchronized(delegate) {return delegate.remove(key);}
+        }
+
+        @Override
+        public void putAll(Map<? extends String, ? extends String> m) {
+            synchronized(delegate) {delegate.putAll(m);}
+        }
+
+        @Override
+        public String put(String key, String value) {
+            synchronized(delegate) {return delegate.put(key, value);}
+        }
+
+
+        @Override
+        public boolean isEmpty() {
+            synchronized(delegate) {return delegate.isEmpty();}
+        }
+
+        @Override
+        public int hashCode() {
+            synchronized(delegate) {return delegate.hashCode();}
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this)
+	        return true;
+            if (o instanceof Map)
+                synchronized(delegate) {return delegate.equals(o);}
+            else
+                return false;
+        }
+
+        @Override
+        public boolean containsValue(Object value) {
+            synchronized(delegate) {return delegate.containsValue(value);}
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            synchronized(delegate) {return delegate.containsKey(key);}
+        }
+
+        @Override
+        public void clear() {
+            synchronized(delegate) {delegate.clear();}
+        }
+        
         /**
          * Returns the property value to which the specified property key
          * is mapped, or <code>null</code> if this map contains no mapping for
@@ -124,20 +211,25 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         @Override
         public String get(Object key) {
             if (GlassfishModule.PASSWORD_ATTR.equals(key)) {
-                String value = super.get(key);
+                String value;
+                synchronized(delegate) {
+                    value = delegate.get(key);
+                }
                 if (value == null) {
                     char[] passwordChars = Keyring.read(
                             GlassfishInstance.passwordKey(
-                            super.get(GlassfishModule.DISPLAY_NAME_ATTR),
-                            super.get(GlassfishModule.USERNAME_ATTR)));
+                            delegate.get(GlassfishModule.DISPLAY_NAME_ATTR),
+                            delegate.get(GlassfishModule.USERNAME_ATTR)));
                     value = passwordChars != null
                             ? new String(passwordChars)
                             : DEFAULT_ADMIN_PASSWORD;
-                    super.put((String)key, value);
+                    synchronized(delegate) {
+                        delegate.put((String)key, value);
+                    }
                 }
                 return value;
             } else {
-                return super.get(key);
+                synchronized(delegate) {return delegate.get(key);}
             }
         }
 
@@ -152,6 +244,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     public static final String DEFAULT_HOST_NAME = "localhost"; // NOI18N
     public static final String DEFAULT_ADMIN_NAME = "admin"; // NOI18N
     public static final String DEFAULT_ADMIN_PASSWORD = ""; // NOI18N
+    /** Administrator's password being used in old NetBeans. */
+    public static final String OLD_DEFAULT_ADMIN_PASSWORD = "adminadmin"; // NOI18N
     public static final int DEFAULT_HTTP_PORT = 8080;
     public static final int DEFAULT_HTTPS_PORT = 8181;
     public static final int DEFAULT_ADMIN_PORT = 4848;
@@ -292,6 +386,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             String[] urlParts = bigUrlParts[1].split(":"); // NOI18N
             if (null != urlParts && urlParts.length > 2) {
                 ip.put(GlassfishModule.HOSTNAME_ATTR, urlParts[2]);
+                ip.put(GlassfishModule.HTTPHOST_ATTR, urlParts[2]);
             }
         }
         return create(ip, gip, true);
@@ -896,8 +991,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Build and update copy of GlassFish properties to be stored in <code>this</code>
-     * object.
+     * Build and update copy of GlassFish properties to be stored
+     * in <code>this</code> object.
      * <p/>
      * Constructor helper method.
      * <p/>
@@ -906,7 +1001,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      */
     private Map<String, String> prepareProperties(
             Map<String, String> properties) {
-        boolean isRemote = properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
+        boolean isRemote
+                = properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
         String deployerUri = properties.get(GlassfishModule.URL_ATTR);
         updateString(properties, GlassfishModule.HOSTNAME_ATTR,
                 DEFAULT_HOST_NAME);
@@ -917,7 +1013,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 "Bogus display name");
         updateInt(properties, GlassfishModule.ADMINPORT_ATTR,
                 DEFAULT_ADMIN_PORT);
-        updateString(properties, GlassfishModule.SESSION_PRESERVATION_FLAG, "true");
+        updateString(properties, GlassfishModule.SESSION_PRESERVATION_FLAG,
+                "true");
         updateString(properties, GlassfishModule.START_DERBY_FLAG,
                 isRemote ? "false" : "true");
         updateString(properties, GlassfishModule.USE_IDE_PROXY_FLAG, "true");
@@ -928,8 +1025,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 ? GlassfishModule.DEBUG_MODE : GlassfishModule.NORMAL_MODE);
         updateString(properties, GlassfishModule.USERNAME_ATTR,
                 DEFAULT_ADMIN_NAME);
-        Map<String, String> newProperties =  Collections.synchronizedMap(
-                new Props(properties));
+        updateString(properties, GlassfishModule.NB73_IMPORT_FIXED,
+                Boolean.toString(true));
+        Map<String, String> newProperties = new Props(properties);
         // Asume a local instance is in NORMAL_MODE
         // Assume remote Prelude and 3.0 instances are in DEBUG (we cannot change them)
         // Assume a remote 3.1 instance is in NORMAL_MODE... we can restart it into debug mode

@@ -163,9 +163,12 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
         // !PW FIXME hopefully temporary patch for JavaONE 2008 to make it easier
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
-        if (!isRemote) {
-            refresh();
-        }
+ 
+        // Bug# 218526 - Refresh (admin command call) on startup causes deadlock
+        //               because of Keryring access.
+        //if (!isRemote) {
+        //    refresh();
+        //}
     }
 
     /**
@@ -745,10 +748,22 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
                 }
             } catch(TimeoutException ex) {
                 Logger.getLogger("glassfish").log(Level.INFO,
+                        "Server {0} {1}:{2} user {3}",
+                        new Object[]{instance.getName(),
+                            instance.getHost(),
+                            instance.getHttpAdminPort(),
+                            instance.getAdminUser()});
+                Logger.getLogger("glassfish").log(Level.INFO,
                         commandLocation.getCommand() + " timed out. "
                         +tries+" of "+maxtries, ex);
                 isReady = false;
             } catch (Exception ex) {
+                Logger.getLogger("glassfish").log(Level.INFO,
+                        "Server {0} {1}:{2} user {3}",
+                        new Object[]{instance.getName(),
+                            instance.getHost(),
+                            instance.getHttpAdminPort(),
+                            instance.getAdminUser()});
                 Logger.getLogger("glassfish").log(Level.INFO,
                         commandLocation.getCommand() + " failed at  "
                         +tries+" of "+maxtries, ex);
@@ -779,23 +794,28 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    // Can block for up to a few seconds...
-                    boolean isRunning = isReallyRunning();
-                    if (isRunning && !Util.isDefaultOrServerTarget(
-                            instance.getProperties())) {
-                        isRunning = pingHttp(1);
-                    }
-                    ServerState currentState = getServerState();
-                    
-                    if((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
-                        setServerState(ServerState.RUNNING);
-                    } else if((currentState == ServerState.RUNNING || currentState == ServerState.UNKNOWN) && !isRunning) {
-                        setServerState(ServerState.STOPPED);
-                    } else if(currentState == ServerState.STOPPED_JVM_PROFILER && isRunning) {
-                        setServerState(ServerState.RUNNING);
-                    }
+                    try {
+                        // Can block for up to a few seconds...
+                        boolean isRunning = isReallyRunning();
+                        if (isRunning && !Util.isDefaultOrServerTarget(
+                                instance.getProperties())) {
+                            isRunning = pingHttp(1);
+                        }
+                        ServerState currentState = getServerState();
 
-                    refreshRunning.set(false);
+                        if ((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
+                            setServerState(ServerState.RUNNING);
+                        } else if ((currentState == ServerState.RUNNING || currentState == ServerState.UNKNOWN) && !isRunning) {
+                            setServerState(ServerState.STOPPED);
+                        } else if (currentState == ServerState.STOPPED_JVM_PROFILER && isRunning) {
+                            setServerState(ServerState.RUNNING);
+                        }
+                    } catch (Exception ex) {
+                         Logger.getLogger("glassfish").log(Level.WARNING,
+                                 ex.getMessage());
+                    } finally {
+                        refreshRunning.set(false);
+                    }
                 }
             });
         }

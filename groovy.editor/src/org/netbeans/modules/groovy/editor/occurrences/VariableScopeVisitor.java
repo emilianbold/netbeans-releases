@@ -303,7 +303,9 @@ public final class VariableScopeVisitor extends TypeVisitor {
                 }
             } else if (leaf instanceof ConstructorCallExpression) {
                 if (Methods.isSameConstructor(constructor, (ConstructorCallExpression) leaf)) {
-                    occurrences.add(constructor);
+                    if (!constructor.hasNoRealSourcePosition()) {
+                        occurrences.add(constructor);
+                    }
                 }
             }
         }

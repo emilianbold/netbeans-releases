@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -530,11 +531,20 @@ public class IntroduceLocalExtensionPanel extends javax.swing.JPanel implements 
                     try {
                         info.toPhase(Phase.RESOLVED);
                         Element klass = tph.resolveElement(info);
-                        if(klass != null && klass.getModifiers().contains(Modifier.FINAL)) {
-                            btnWrap.setSelected(true);
+                        if(klass != null && (klass.getModifiers().contains(Modifier.FINAL)
+                                || klass.getKind() == ElementKind.INTERFACE)) {
+                            final boolean inter = klass.getKind() == ElementKind.INTERFACE;
+                            btnWrap.setSelected(!inter);
+                            btnSubtype.setSelected(inter);
                             Enumeration<AbstractButton> buttons = btngroupType.getElements();
                             while(buttons.hasMoreElements()) {
                                 buttons.nextElement().setEnabled(false);
+                            }
+                            if(inter) {
+                                  Enumeration<AbstractButton> elements = btngroupEquality.getElements();
+                                  while(elements.hasMoreElements()) {
+                                      elements.nextElement().setEnabled(false);
+                                  }
                             }
                         }
                     } catch (IOException ex) {

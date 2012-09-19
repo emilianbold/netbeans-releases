@@ -179,6 +179,16 @@ public @interface EditorActionRegistration {
     String preferencesKey() default "";
     
     /**
+     * Whether or not the action should be in checked state by default.
+     * <br/>
+     * If the preference should default to true or to false. Only valid in conjunction
+     * with {@link #preferencesKey() }.
+     * 
+     * @since 1.67
+     */
+    boolean preferencesDefault() default false;
+    
+    /**
      * Allows to make an override of an action by adding a "weight" attribute
      * into a generated file object in the system filesystem
      * - see {@link org.openide.filesystems.MultiFileSystem}.

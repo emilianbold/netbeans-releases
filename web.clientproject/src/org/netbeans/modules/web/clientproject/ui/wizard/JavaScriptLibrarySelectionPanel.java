@@ -41,33 +41,60 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
+import java.awt.EventQueue;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
+import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection.SelectedLibrary;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<WizardDescriptor>,
+public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-    private final Object javaScriptLibrarySelectionLock = new Object();
+    static final Logger LOGGER = Logger.getLogger(JavaScriptLibrarySelectionPanel.class.getName());
 
-    // @GuardedBy("javaScriptLibrarySelectionLock")
-    private JavaScriptLibrarySelection javaScriptLibrarySelection;
+    private final FileObject librariesFolder;
+
+    // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
+    private volatile JavaScriptLibrarySelection javaScriptLibrarySelection;
     private volatile WizardDescriptor wizardDescriptor;
+    // #202796
+    volatile boolean asynchError = false;
 
+
+    public JavaScriptLibrarySelectionPanel() {
+        librariesFolder = createLibrariesFolder();
+    }
 
     @NbBundle.Messages("JavaScriptLibrarySelectionPanel.jsLibs.info=Libraries added by your template are already selected.")
     @Override
     public JavaScriptLibrarySelection getComponent() {
-        synchronized (javaScriptLibrarySelectionLock) {
-            if (javaScriptLibrarySelection == null) {
-                javaScriptLibrarySelection = new JavaScriptLibrarySelection();
-                javaScriptLibrarySelection.setAdditionalInfo(Bundle.JavaScriptLibrarySelectionPanel_jsLibs_info());
-            }
-            return javaScriptLibrarySelection;
+        if (javaScriptLibrarySelection == null) {
+            javaScriptLibrarySelection = new JavaScriptLibrarySelection();
+            javaScriptLibrarySelection.setAdditionalInfo(Bundle.JavaScriptLibrarySelectionPanel_jsLibs_info());
+            javaScriptLibrarySelection.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    asynchError = false;
+                }
+            });
         }
+        return javaScriptLibrarySelection;
     }
 
     @Override
@@ -78,36 +105,72 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
+        asynchError = false;
         SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE);
-        synchronized (javaScriptLibrarySelectionLock) {
-            getComponent().updateDefaults(siteTemplate.supportedLibraries());
-        }
+        getComponent().updateDefaults(siteTemplate.supportedLibraries());
     }
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
-        synchronized (javaScriptLibrarySelectionLock) {
-            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARIES_FOLDER, getComponent().getLibrariesFolder());
-            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.SELECTED_LIBRARIES, getComponent().getSelectedLibraries());
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARIES_FOLDER, librariesFolder);
+    }
+
+    @Override
+    public void prepareValidation() {
+        getComponent().lockPanel();
+    }
+
+    @NbBundle.Messages({
+        "JavaScriptLibrarySelectionPanel.jsLibs.downloading=Downloading selected JavaScript libraries...",
+        "# {0} - number of failed libraries",
+        "JavaScriptLibrarySelectionPanel.error.downloading=Not all libraries can be downloaded ({0} failed)."
+    })
+    @Override
+    public void validate() throws WizardValidationException {
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.JavaScriptLibrarySelectionPanel_jsLibs_downloading());
+        progressHandle.start();
+        try {
+            FileUtilities.cleanupFolder(librariesFolder);
+            List<SelectedLibrary> selectedLibraries = getComponent().getSelectedLibraries();
+            if (selectedLibraries.isEmpty()) {
+                return;
+            }
+            List<SelectedLibrary> failedLibs = ClientSideProjectUtilities.applyJsLibraries(selectedLibraries, getComponent().getLibrariesFolder(), librariesFolder, progressHandle);
+            if (!failedLibs.isEmpty()) {
+                LOGGER.log(Level.INFO, "Failed download of JS libraries: {0}", failedLibs);
+                getComponent().updateFailed(failedLibs);
+                asynchError = true;
+                throw new WizardValidationException(getComponent(), "ERROR_DOWNLOAD", Bundle.JavaScriptLibrarySelectionPanel_error_downloading(failedLibs.size())); // NOI18N
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            asynchError = true;
+            throw new WizardValidationException(getComponent(), "ERROR_DOWNLOAD", ex.getLocalizedMessage()); // NOI18N
+        } finally {
+            progressHandle.finish();
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    getComponent().unlockPanel();
+                }
+            });
         }
     }
 
     @Override
     public boolean isValid() {
-        // error
-        String error;
-        synchronized (javaScriptLibrarySelectionLock) {
-            error = getComponent().getErrorMessage();
+        // grrr
+        if (asynchError) {
+            return true;
         }
+        // error
+        String error = getComponent().getErrorMessage();
         if (error != null && !error.isEmpty()) {
             setErrorMessage(error);
             return false;
         }
         // warning
-        String warning;
-        synchronized (javaScriptLibrarySelectionLock) {
-            warning = getComponent().getWarningMessage();
-        }
+        String warning = getComponent().getWarningMessage();
         if (warning != null && !warning.isEmpty()) {
             setErrorMessage(warning);
             return true;
@@ -123,21 +186,30 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
 
     @Override
     public void addChangeListener(ChangeListener listener) {
-        synchronized (javaScriptLibrarySelectionLock) {
-            getComponent().addChangeListener(listener);
-        }
+        getComponent().addChangeListener(listener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
-        synchronized (javaScriptLibrarySelectionLock) {
-            getComponent().removeChangeListener(listener);
-        }
+        getComponent().removeChangeListener(listener);
     }
 
     @Override
     public boolean isFinishPanel() {
         return true;
+    }
+
+    private FileObject createLibrariesFolder() {
+        int i = 0;
+        for (;;) {
+            File tmpDir = new File(System.getProperty("java.io.tmpdir"), "netbeans-jslibs-" + i++); // NOI18N
+            if (!tmpDir.isDirectory() && tmpDir.mkdirs()) {
+                FileObject fo = FileUtil.toFileObject(tmpDir);
+                if (fo != null && fo.isValid()) {
+                    return fo;
+                }
+            }
+        }
     }
 
 }

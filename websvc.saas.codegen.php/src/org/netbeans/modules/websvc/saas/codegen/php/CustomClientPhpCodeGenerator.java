@@ -80,7 +80,7 @@ import org.openide.filesystems.FileUtil;
  * @author nam
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
-public class CustomClientPhpCodeGenerator extends SaasClientCodeGenerator {
+public class CustomClientPhpCodeGenerator extends AbstractRestCodeGenerator {
 
     private FileObject saasServiceFile = null;
     private FileObject serviceFolder = null;
@@ -209,15 +209,6 @@ public class CustomClientPhpCodeGenerator extends SaasClientCodeGenerator {
         });
     }
     
-    protected void createRestConnectionFile(Project project) throws IOException {
-        Util.createDataObjectFromTemplate(SaasClientCodeGenerator.TEMPLATES_SAAS+
-                REST_CONNECTION+"."+Constants.PHP_EXT, 
-                getSaasFolder(), null);
-        Util.createDataObjectFromTemplate(SaasClientCodeGenerator.TEMPLATES_SAAS+
-                REST_RESPONSE+"."+Constants.PHP_EXT, 
-                getSaasFolder(), null);
-    }
-
     protected String getFixedParameterDeclaration() {
         String fixedCode = "";
         List<ParameterInfo> inputParams = getBean().getInputParameters();
@@ -252,13 +243,6 @@ public class CustomClientPhpCodeGenerator extends SaasClientCodeGenerator {
         imports.add(getBean().getSaasServicePackageName() + "->" + getBean().getSaasServiceName());
         imports.add(REST_CONNECTION_PACKAGE + "->" + REST_RESPONSE);
         addImportsToPhp(getTargetFile(), imports);
-    }
-
-    protected void addImportsToSaasService() throws IOException {
-        List<String> imports = new ArrayList<String>();
-        imports.add(REST_CONNECTION_PACKAGE + "->" + REST_CONNECTION);
-        imports.add(REST_CONNECTION_PACKAGE + "->" + REST_RESPONSE);
-        addImportsToPhp(saasServiceFile, imports);
     }
 
     /**
