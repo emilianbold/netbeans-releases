@@ -48,7 +48,6 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -71,10 +70,7 @@ public class WebStrutsProjectValidation extends WebProjectValidationEE5 {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebStrutsProjectValidation.class);
-        conf = addServerTests(Server.GLASSFISH, conf, TESTS);
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.GLASSFISH, WebStrutsProjectValidation.class, TESTS);
     }
 
     /** Test creation of web project.
