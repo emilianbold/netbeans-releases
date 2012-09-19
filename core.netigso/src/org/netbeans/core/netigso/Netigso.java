@@ -193,9 +193,9 @@ implements Cloneable, Stamps.Updater {
         }
     }
 
+    /** contributed by Alex Bowen (trajar@netbeans.org) */
     private void injectSystemProperties(Map configProps) {
-        for (Enumeration e = System.getProperties().propertyNames(); e.hasMoreElements(); )
-        {
+        for (Enumeration e = System.getProperties().propertyNames(); e.hasMoreElements(); ) {
             String key = e.nextElement().toString();
             if (key.startsWith("felix.") || key.startsWith("org.osgi.framework.")) { // NOI18N
                 configProps.put(key, System.getProperty(key));
