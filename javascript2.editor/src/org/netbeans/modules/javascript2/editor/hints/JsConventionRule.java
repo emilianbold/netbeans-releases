@@ -285,6 +285,7 @@ public class JsConventionRule extends JsAstRule {
             int curlyBalance = 0;
             int parenBalance = 0;
             int bracketBalance = 0;
+            boolean isGetterSetter = false;
             if (ts.movePrevious() && ts.moveNext()) {
                 HashSet<String> names = new HashSet<String>();
                 while (ts.moveNext() && ts.offset() < objectNode.getFinish()) {
@@ -292,16 +293,22 @@ public class JsConventionRule extends JsAstRule {
                     switch (state) {
                         case BEFORE_COLON:
                             if (id == JsTokenId.IDENTIFIER || id == JsTokenId.STRING) {
-                                if (!names.add(ts.token().text().toString())) {
+                                String name = ts.token().text().toString();
+                                if ("set".equals(name) || "get".equals(name)) {
+                                    isGetterSetter = true;
+                                } else if (!names.add(name) && !isGetterSetter) {
                                     int docOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
                                     if (docOffset >= 0) {
-                                        hints.add(new Hint(duplicatePropertyName, Bundle.DuplicateName(ts.token().text().toString()),
+                                        hints.add(new Hint(duplicatePropertyName, Bundle.DuplicateName(name),
                                                 context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                                                 new OffsetRange(docOffset, docOffset + ts.token().length()), null, 500));
                                     }
                                 }
                             } else if (id == JsTokenId.OPERATOR_COLON) {
                                 state = State.AFTER_COLON;
+                            }  else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
+                                state = State.AFTER_CURLY;
+                                isGetterSetter = false;
                             }
                             break;
                         case AFTER_COLON:

@@ -622,7 +622,7 @@ public class Utilities {
                 int type = d.getType();
                 String name = d.getName();
                 for (ModuleInfo depMI : deco.getDependening ()) {
-                        Module depM = getModuleInstance(depMI.getCodeName(), depMI.getSpecificationVersion());
+                        Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
                         if (depM == null) {
                             continue;
                         }
@@ -827,7 +827,7 @@ public class Utilities {
                 DependencyAggregator deco = DependencyAggregator.getAggregator (d);
                 for (ModuleInfo depMI : deco.getDependening ()) {
                         //Module depM = Utilities.toModule (depMI);
-                        Module depM = getModuleInstance(depMI.getCodeName(), depMI.getSpecificationVersion());
+                        Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
                         if (depM == null) {
                             continue;
                         }
@@ -857,7 +857,7 @@ public class Utilities {
                     DependencyAggregator deco = DependencyAggregator.getAggregator (d);
                     for (ModuleInfo depMI : deco.getDependening ()) {
                             //Module depM = Utilities.toModule (depMI);
-                            Module depM = getModuleInstance(depMI.getCodeName(), depMI.getSpecificationVersion());
+                            Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
                             if (depM == null) {
                                 continue;
                             }

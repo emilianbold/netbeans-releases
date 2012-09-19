@@ -1334,7 +1334,8 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     }
                 }
             });
-        }
+            MakeProjectClassPathProvider.addProjectSources(sources);
+        }        
     }
 
     void setDeleted() {
@@ -1363,6 +1364,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         if(nativeProject instanceof NativeProjectProvider) {
             NativeProjectRegistry.getDefault().unregister(nativeProject);
         }
+        MakeProjectClassPathProvider.removeProjectSources(sources);
     }
 
     public synchronized void save() {
@@ -1676,7 +1678,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
     } // End of ClassPathImplementation class
 
-    private static final class PathResourceImpl implements FilteringPathResourceImplementation, PropertyChangeListener {
+    static final class PathResourceImpl implements FilteringPathResourceImplementation, PropertyChangeListener {
 
         private final PathResourceImplementation delegate;
 

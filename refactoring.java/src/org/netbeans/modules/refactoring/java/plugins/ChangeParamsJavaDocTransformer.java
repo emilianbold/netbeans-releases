@@ -303,6 +303,7 @@ public class ChangeParamsJavaDocTransformer extends RefactoringVisitor {
 
     static Comment updateJavadoc(ExecutableElement method, ParameterInfo[] parameters, WorkingCopy workingCopy) {
         Doc javadoc = workingCopy.getElementUtilities().javaDocFor(method);
+        List<? extends VariableElement> origParams = method.getParameters();
         List<Tag> paramTags = new LinkedList<Tag>();
         List<Tag> otherTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags()));
         List<Tag> returnTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@return"))); // NOI18N
@@ -319,10 +320,11 @@ public class ChangeParamsJavaDocTransformer extends RefactoringVisitor {
                 Tag newTag = new ParamTagImpl(parameter.getName(), "the value of " + parameter.getName(), javadoc); // NOI18N
                 paramTags.add(newTag);
             } else {
+                VariableElement origVar = origParams.get(parameter.getOriginalIndex());
                 for (Tag tag : oldParamTags) {
                     ParamTag paramTag = (ParamTag) tag;
-                    if (parameter.getName().toString().equals(paramTag.parameterName())) {
-                        paramTags.add(tag);
+                    if (origVar.getSimpleName().toString().equals(paramTag.parameterName())) {
+                        paramTags.add(updateTag(paramTag, paramTag.parameterName(), parameter.getName()));
                         continue params;
                     }
                 }
@@ -451,6 +453,15 @@ public class ChangeParamsJavaDocTransformer extends RefactoringVisitor {
         } while (changed);
 
         return expressionTree;
+    }
+    
+    private static ParamTag updateTag(ParamTag tag, String oldName, String newName) {
+        if(oldName.contentEquals(newName)) {
+            return tag;
+        } else {
+            String comment = tag.parameterComment().replaceAll("\\b" + oldName + "\\b", newName);
+            return new ParamTagImpl(newName, comment, tag.holder());
+        }
     }
 
     private static class ParamTagImpl implements ParamTag {

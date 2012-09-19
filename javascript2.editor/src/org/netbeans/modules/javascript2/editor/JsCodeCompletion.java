@@ -191,7 +191,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         }
                     }
                     completeKeywords(request, resultList);
-                    Collection<IndexedElement> fromIndex = JsIndex.get(fileObject).getGlobalVar(request.prefix);
+                    JsIndex jsIndex = JsIndex.get(fileObject);
+                    Collection<IndexedElement> fromIndex = jsIndex.getGlobalVar(request.prefix);
+                    //  enhance results for all window properties - see issue #218412, #215863, #218122, ...
+                    fromIndex.addAll(jsIndex.getPropertiesWithPrefix("window", request.prefix)); //NOI18N
                     for (IndexedElement indexElement : fromIndex) {
                         if (startsWith(indexElement.getName(), request.prefix)) {
                             JsElement element = addedProperties.get(indexElement.getName());
@@ -441,16 +444,19 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     && startsWith(object.getName(), request.prefix)) {
                 JsElement fobject = foundObjects.get(object.getName());
                 if(fobject == null) {
-                    foundObjects.put(object.getName(), object);
+                    if (!(object.getName().equals(request.prefix)
+                            && object.getDeclarationName().getOffsetRange().getStart() == request.anchor)) {
+                        foundObjects.put(object.getName(), object);
+                    }
                 } else {
                     if (object.isDeclared()) {
-                        if (fobject.isDeclared()) {
+//                        if (fobject.isDeclared()) {
                             // put to the cc result both
-                            resultList.add(JsCompletionItem.Factory.create(object, request));
-                        } else {
+//                            resultList.add(JsCompletionItem.Factory.create(object, request));
+//                        } else {
                             // replace with the one, which is declared
                             foundObjects.put(object.getName(), object);
-                        }
+//                        }
                     }
                 }
             }

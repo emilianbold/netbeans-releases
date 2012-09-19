@@ -96,18 +96,6 @@ public class ASTUtils {
         return lexOffset;
     }
 
-//    public static int getAstOffset(CompilationInfo info, int lexOffset) {
-//        ParserResult result = info.getEmbeddedResult(GroovyTokenId.GROOVY_MIME_TYPE, 0);
-//        if (result != null) {
-//            TranslatedSource ts = result.getTranslatedSource();
-//            if (ts != null) {
-//                return ts.getAstOffset(lexOffset);
-//            }
-//        }
-//
-//        return lexOffset;
-//    }
-
     public static GroovyParserResult getParseResult(Parser.Result info) {
         assert info instanceof GroovyParserResult : "Expecting GroovyParseResult, but have " + info; //NOI18N
         return (GroovyParserResult) info;

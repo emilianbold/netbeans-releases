@@ -72,6 +72,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.editor.JumpList;
+import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
 import org.openide.awt.HtmlRenderer;
 import org.openide.awt.HtmlRenderer.Renderer;
 import org.openide.explorer.ExplorerManager;
@@ -98,8 +100,9 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
     }
 
     private static final int USABLE_HEIGHT = 19;
-    private static final int LEFT_SEPARATOR_INSET = 3;
-    private static final int RIGHT_SEPARATOR_INSET = 18;
+    private static final int LEFT_SEPARATOR_INSET = 2;
+    private static final int RIGHT_SEPARATOR_INSET = 10;
+    private static final int ICON_TEXT_SEPARATOR = 5;
     private static final int START_INSET = 8;
     private static final int MAX_ROWS_IN_POP_UP = 20;
     public static final int COMPONENT_HEIGHT = USABLE_HEIGHT;
@@ -259,6 +262,7 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
         Openable openable = node.getLookup().lookup(Openable.class);
 
         if (openable != null) {
+            JumpList.checkAddEntry();
             openable.open();
         }
     }
@@ -348,11 +352,11 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
         renderer.reset();
         
         Image nodeIcon = node.getIcon(BeanInfo.ICON_COLOR_16x16);
-        Icon icon = nodeIcon != null ? ImageUtilities.image2Icon(nodeIcon) : null;
+        Icon icon = nodeIcon != null && nodeIcon != BreadcrumbsController.NO_ICON ? ImageUtilities.image2Icon(nodeIcon) : null;
         int width = icon != null ? icon.getIconWidth() : 0;
         if (width > 0) {
             renderer.setIcon(icon);
-            renderer.setIconTextGap(24 - width);
+            renderer.setIconTextGap(ICON_TEXT_SEPARATOR);
         } else {
             renderer.setIcon(null);
             renderer.setIconTextGap(0);

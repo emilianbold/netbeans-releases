@@ -1,0 +1,6 @@
+Code completion result for source line:
+window.history.b|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     back(): undefined               [PUBLIC]   stub_DOM_History.js
+FIELD      b                               [PUBLIC]   issue218361_5.js

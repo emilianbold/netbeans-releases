@@ -1,0 +1,33 @@
+Code completion result for source line:
+window.history.|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      prototype                       [PUBLIC]   stub_DOM_History.js
+METHOD     back(): undefined               [PUBLIC]   stub_DOM_History.js
+METHOD     create(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperties(O: Object, Pr  [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperty(O: Object, P: S  [PUBLIC,   stub_CORE_Object.js
+METHOD     forward(): undefined            [PUBLIC]   stub_DOM_History.js
+METHOD     freeze(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   stub_CORE_Object.js
+METHOD     go(): undefined                 [PUBLIC]   stub_DOM_History.js
+METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   stub_CORE_Object.js
+METHOD     isExtensible(O: Object): Boole  [PUBLIC,   stub_CORE_Object.js
+METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
+METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   stub_CORE_Object.js
+METHOD     isSealed(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
+METHOD     keys(O: Object): Array          [PUBLIC,   stub_CORE_Object.js
+METHOD     preventExtensions(O: Object):   [PUBLIC,   stub_CORE_Object.js
+METHOD     propertyIsEnumerable(V: String  [PUBLIC]   stub_CORE_Object.js
+METHOD     pushState(): undefined          [PUBLIC]   stub_DOM_History.js
+METHOD     replaceState(): undefined       [PUBLIC]   stub_DOM_History.js
+METHOD     seal(O: Object): Object         [PUBLIC,   stub_CORE_Object.js
+METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
+METHOD     toString(): String              [PUBLIC]   stub_CORE_Object.js
+METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
+FIELD      constructor                     [PUBLIC]   stub_CORE_Object.js
+FIELD      length                          [PUBLIC]   stub_DOM_History.js
+FIELD      state                           [PUBLIC]   stub_DOM_History.js
+FIELD      var                             [PUBLIC]   issue218361_2.js

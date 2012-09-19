@@ -575,11 +575,12 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             int startIndex;
             int endIndex;
             if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINE)) {
-                ViewHierarchyImpl.PAINT_LOG.fine("\nDocumentViewChildren.paint(): START clipBounds: " + clipBounds + "\n"); // NOI18N
+                ViewHierarchyImpl.PAINT_LOG.fine(
+                        "\nDocumentViewChildren.paint(): clipBounds: " + ViewUtils.toString(clipBounds) + "\n"); // NOI18N
             }
             do {
                 startIndex = viewIndexAtY(startY, docViewAlloc);
-                endIndex = viewIndexAtY(endY, docViewAlloc) + 1;
+                endIndex = viewIndexAtY(endY - 0.1d, docViewAlloc) + 1; // [TODO] consider doing an extra method checking endY == viewY
                 if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINE)) {
                     ViewHierarchyImpl.PAINT_LOG.fine("  paint:docView:[" + startIndex + "," + endIndex + // NOI18N
                             "] for y:<" + startY + "," + endY + ">\n"); // NOI18N
@@ -654,6 +655,10 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 ViewHierarchyImpl.PAINT_LOG.fine("Painted " + (endIndex-startIndex) + // NOI18N
                         " lines <" + startIndex + "," + endIndex + // NOI18N
                         "> in " + (nanoTime/1000000d) + " ms\n"); // NOI18N
+                if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINEST)) {
+                    ViewHierarchyImpl.PAINT_LOG.log(Level.FINE, "----- PAINT FINISHED -----", // NOI18N
+                            new Exception("Cause of just performed paint")); // NOI18N
+                }
             }
             // [TODO] Since this portion was painted => exclude it from possibly scheduled paint
         }

@@ -31,26 +31,34 @@
                   <Component id="bClassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="aClassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="aClassHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="anAnonymousClassHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="aClassFooterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="anAnonymousClassFooterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="bFieldsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="aFieldsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="anAnonymousClassHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="bMethodsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="aMethodsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="aImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="bImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="aPackageField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="bPackageField" alignment="0" max="32767" attributes="0"/>
-                  <Component id="aFieldsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="bFieldsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="anAnonymousClassHeaderField" alignment="0" max="32767" attributes="0"/>
-                  <Component id="aClassHeaderField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="aClassField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="bClassField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="bMethodsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="aMethodsField" pref="0" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="aImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="bImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="aPackageField" alignment="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="bPackageField" alignment="0" max="32767" attributes="0"/>
+                      <Component id="anAnonymousClassHeaderField" alignment="0" max="32767" attributes="0"/>
+                      <Component id="aClassHeaderField" alignment="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="aClassField" alignment="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="bClassField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="aClassFooterField" alignment="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="anAnonymousClassFooterField" alignment="0" max="32767" attributes="0"/>
+                      <Component id="bMethodsField" alignment="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="aFieldsField" alignment="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="aMethodsField" alignment="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="bFieldsField" min="-2" pref="26" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -97,6 +105,16 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="anAnonymousClassHeaderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="anAnonymousClassHeaderField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="aClassFooterField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="aClassFooterLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="anAnonymousClassFooterLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="anAnonymousClassFooterField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -240,6 +258,33 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="anAnonymousClassHeaderField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="aClassFooterLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="aClassFooterField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_blBeforeClassFooter" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="aClassFooterField">
+      <Properties>
+        <Property name="columns" type="int" value="5"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="anAnonymousClassFooterLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="anAnonymousClassFooterField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_blBeforeAnonymousClassFooter" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="anAnonymousClassFooterField">
     </Component>
     <Component class="javax.swing.JLabel" name="bFieldsLabel">
       <Properties>

@@ -884,6 +884,10 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "D^D::bar as foo;", "trait ^DD {");
     }
 
+    public void testIssue218487() throws Exception {
+        checkDeclaration(getTestPath(), "class AbstractController implements Dispatch^able2 {", "use Zend\\Stdlib2\\DispatchableInterface2 as ^Dispatchable2;");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

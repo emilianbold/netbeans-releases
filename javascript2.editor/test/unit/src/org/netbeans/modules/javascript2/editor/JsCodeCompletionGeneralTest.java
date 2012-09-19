@@ -109,6 +109,25 @@ public class JsCodeCompletionGeneralTest extends JsTestBase {
         checkCompletion("testfiles/completion/issue215746.js", "window.history.s^tate;", false);
     }
 
+    public void testIssue218361_01() throws Exception {
+        checkCompletion("testfiles/completion/issue218361_1.js", "window.history.^;", false);
+    }
+
+    public void testIssue218361_02() throws Exception {
+        checkCompletion("testfiles/completion/issue218361_2.js", "window.history.^", false);
+    }
+
+    public void testIssue218361_03() throws Exception {
+        checkCompletion("testfiles/completion/issue218361_3.js", "window.history.^", false);
+    }
+
+    public void testIssue218361_04() throws Exception {
+        checkCompletion("testfiles/completion/issue218361_4.js", "window.history.^", false);
+    }
+
+    public void testIssue218361_05() throws Exception {
+        checkCompletion("testfiles/completion/issue218361_5.js", "window.history.b^", false);
+    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

@@ -170,8 +170,7 @@ public class UIDUtilities {
     }
 
     private static <T extends CsmObject> CsmUID<T> getCachedUID(CachedUID<T> uid, T obj) {
-        updateCachedUID(uid, obj);
-        return uid;
+        return updateCachedUID(uid, obj);
     }
 
     public static int getProjectID(CsmUID<?> uid) {

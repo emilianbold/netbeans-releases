@@ -158,7 +158,25 @@ public class JsParserTest extends JsTestBase {
             1,
             JsParser.Sanitize.SYNTAX_ERROR_PREVIOUS);
     }
-    
+
+    public void testSimplePreviousError2() throws Exception {
+        parse("window.history.",
+            "window.history ",
+            1,
+            JsParser.Sanitize.SYNTAX_ERROR_PREVIOUS);
+    }
+
+    public void testSimpleErrorDot1() throws Exception {
+        parse("window.history.\n"
+            + "function test(){"
+            + "}",
+            "window.history \n"
+            + "function test(){"
+            + "}",
+            1,
+            JsParser.Sanitize.ERROR_DOT);
+    }
+
     public void testSimpleErrorLine1() throws Exception {
         parse("var global1 = new Foo.Bar();\n"
             + "var global2 = new Array();\n"

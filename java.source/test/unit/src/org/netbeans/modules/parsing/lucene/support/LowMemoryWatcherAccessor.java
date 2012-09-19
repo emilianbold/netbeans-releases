@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,42 +34,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.editor.impl.actions.clipboardhistory;
-
-import java.awt.GraphicsConfiguration;
-import java.awt.Rectangle;
-import javax.swing.text.JTextComponent;
+package org.netbeans.modules.parsing.lucene.support;
 
 /**
- * borrowed org.netbeans.modules.editor.completion.ScreenBoundsProvider
+ *
+ * @author Tomas Zezula
  */
-public class ScreenBoundsProvider {
-    
-    /** Relative width of screen covered by CC */
-    static final double COMPL_COVERAGE = 0.4;
-    
-    /** Relative maximum width of screen covered by CC */
-    static final double MAX_COMPL_COVERAGE = 0.9;
-    
-    private static Rectangle screenBounds;
-    
-    static Rectangle getScreenBounds(JTextComponent editorComponent) {
-        if (screenBounds == null) {
-            GraphicsConfiguration configuration = editorComponent != null
-                    ? editorComponent.getGraphicsConfiguration() : null;
-            screenBounds = configuration != null
-                    ? configuration.getBounds() : new Rectangle();
-        }
-        return screenBounds;
+public class LowMemoryWatcherAccessor {
+
+    private LowMemoryWatcherAccessor() {
+        throw new IllegalStateException();
     }
-    
-    static void clear() {
-        screenBounds = null;
+
+    public static void setLowMemory(final boolean lowMemory) {
+        LowMemoryWatcher.getInstance().setLowMemory(lowMemory);
     }
 }
