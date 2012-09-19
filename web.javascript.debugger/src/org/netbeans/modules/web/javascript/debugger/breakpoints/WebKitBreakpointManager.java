@@ -397,8 +397,19 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 return ;
             }
             if (d.isEnabled()) {
+                boolean removed = true;
                 for (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b : bps.values()) {
-                    d.removeLineBreakpoint(b);
+                    if (b.getBreakpointID() != null) {
+                        d.removeLineBreakpoint(b);
+                    } else {
+                        removed = false;
+                    }
+                }
+                if (!removed) {
+                    Set<String> events = eb.getEvents();
+                    for (String event : events) {
+                        d.removeEventBreakpoint(event);
+                    }
                 }
             }
             bps = null;
@@ -469,7 +480,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 return ;
             }
             if (d.isEnabled()) {
-                d.removeLineBreakpoint(b);
+                if (b.getBreakpointID() != null) {
+                    d.removeLineBreakpoint(b);
+                } else {
+                    String urlSubstring = xb.getUrlSubstring();
+                    d.removeXHRBreakpoint(urlSubstring);
+                }
             }
             b = null;
         }
