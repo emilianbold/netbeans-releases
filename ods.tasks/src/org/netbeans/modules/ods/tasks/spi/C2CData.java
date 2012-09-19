@@ -62,6 +62,9 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class C2CData {
+    public static final String ATTR_QUERY_CRITERIA = "query_criteria";
+    public static final String ATTR_SUMMARY = "task.common.summary";
+    public static final String ATTR_DESCRIPTION = "task.common.description";
     public static final String ATTR_OWNER = "task.common.user.assigned";
     public static final String ATTR_PARENT = "blocks";
     public static final String ATTR_SUBTASK = "dependson";
