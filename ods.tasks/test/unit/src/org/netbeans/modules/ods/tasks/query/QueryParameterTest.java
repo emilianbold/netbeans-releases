@@ -45,7 +45,6 @@ package org.netbeans.modules.ods.tasks.query;
 import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JList;

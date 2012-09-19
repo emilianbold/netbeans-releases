@@ -62,7 +62,6 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.modules.ods.tasks.C2C;
 import org.openide.util.Lookup;
 
 /** Provides access to extended methods not available on {@link AbstractRepositoryConnector}
