@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ItemXMLCodec;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -68,7 +69,8 @@ import org.openide.util.NbBundle;
 
 public class ItemConfiguration implements ConfigurationAuxObject {
     
-    private static final boolean SHOW_HEADER_EXCLUDE = Boolean.getBoolean("cnd.makeproject.showHeaderExclude"); // NOI18N
+    // enabled by default for now, see #217779
+    private static final boolean SHOW_HEADER_EXCLUDE = CndUtils.getBoolean("cnd.makeproject.showHeaderExclude", true); // NOI18N
 
     private boolean needSave = false;
     private Configuration configuration;
