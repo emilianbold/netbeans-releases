@@ -191,7 +191,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         }
                     }
                     completeKeywords(request, resultList);
-                    Collection<IndexedElement> fromIndex = JsIndex.get(fileObject).getGlobalVar(request.prefix);
+                    JsIndex jsIndex = JsIndex.get(fileObject);
+                    Collection<IndexedElement> fromIndex = jsIndex.getGlobalVar(request.prefix);
+                    //  enhance results for all window properties - see issue #218412, #215863, #218122, ...
+                    fromIndex.addAll(jsIndex.getPropertiesWithPrefix("window", request.prefix)); //NOI18N
                     for (IndexedElement indexElement : fromIndex) {
                         if (startsWith(indexElement.getName(), request.prefix)) {
                             JsElement element = addedProperties.get(indexElement.getName());
