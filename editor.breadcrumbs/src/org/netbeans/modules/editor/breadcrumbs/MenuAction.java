@@ -52,7 +52,8 @@ import org.netbeans.api.editor.EditorActionRegistration;
 @EditorActionRegistration(name="toggle-breadcrumbs-view",
                           menuPath="View",
                           menuPosition=887,
-                          preferencesKey=SideBarFactoryImpl.KEY_BREADCRUMBS)
+                          preferencesKey=SideBarFactoryImpl.KEY_BREADCRUMBS,
+                          preferencesDefault=SideBarFactoryImpl.DEF_BREADCRUMBS)
 public class MenuAction extends AbstractAction {
 
     @Override

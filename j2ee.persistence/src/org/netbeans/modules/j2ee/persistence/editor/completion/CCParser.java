@@ -99,6 +99,10 @@ public class CCParser {
             String nnName = null;
             String currAttrName = null;
             String currAttrValue = null;
+            int currAttrStartOffset = -1;
+            boolean currAttrQuated = false;
+            int lparopened = 0;
+            
             List<NNAttr> attrs = new ArrayList<NNAttr>(5);
             //helper var
             int eqOffset = -1;
@@ -170,6 +174,9 @@ public class CCParser {
                         switch(id) {
                             case EQ:
                                 state = EQ;
+                                currAttrValue = "";
+                                currAttrStartOffset = -1;
+                                currAttrQuated = false;
                                 eqOffset = ts.offset();
                                 break;
                             default:
@@ -179,14 +186,25 @@ public class CCParser {
                     case EQ:
                         switch(id) {
                             case STRING_LITERAL:
-                                state = INNN;
-                                currAttrValue = Utils.unquote(titk.text().toString());
-                                attrs.add(new NNAttr(currAttrName, currAttrValue, ts.offset(), true));
+                                currAttrStartOffset = currAttrStartOffset<0 ? ts.offset() : currAttrStartOffset;
+                                currAttrQuated = true;//currently is used in cc and we support qq for one literal only, may need to be revieved later for "combined" cases
+                                currAttrValue += Utils.unquote(titk.text().toString());
                                 break;
+                            case DOT:
                             case IDENTIFIER:
-                                state = INNN;
-                                currAttrValue = titk.text().toString();
-                                attrs.add(new NNAttr(currAttrName, currAttrValue, ts.offset(), false));
+                                //need to collect data, do not switch to INNN here
+                                //multidot identifier can be expected, and it may be summ with literals and with parensis
+                                currAttrStartOffset = currAttrStartOffset<0 ? ts.offset() : currAttrStartOffset;
+                                currAttrValue += titk.text().toString();
+                                break;
+                            case PLUS:
+                                currAttrStartOffset = currAttrStartOffset<0 ? ts.offset() : currAttrStartOffset;
+                                currAttrValue += titk.text().toString();
+                                break;
+                            case LPAREN:
+                                lparopened++;
+                                currAttrStartOffset = currAttrStartOffset<0 ? ts.offset() : currAttrStartOffset;
+                                currAttrValue += titk.text().toString();
                                 break;
                             case AT:
                                 //nested annotation
@@ -197,6 +215,20 @@ public class CCParser {
                                 if (ts.move(nestedNN.getEndOffset()) == 0)if(!ts.moveNext())ts.movePrevious();
                                 titk = ts.token();
                                 continue; //next loop
+                            case RPAREN:
+                                lparopened--;
+                                if(currAttrValue.length()>0 && lparopened<0){
+                                    state = INNN;
+                                    attrs.add(new NNAttr(currAttrName, currAttrValue, currAttrStartOffset, currAttrQuated));
+                                    ts.movePrevious();
+                                    break;
+                                }
+                            case COMMA:
+                                if(currAttrValue.length()>0){
+                                    state = INNN;
+                                    attrs.add(new NNAttr(currAttrName, currAttrValue, currAttrStartOffset, currAttrQuated));
+                                    break;
+                                }
                             default:
                                 //ERROR => recover
                                 //set the start offset of the value to the offset of the equator + 1

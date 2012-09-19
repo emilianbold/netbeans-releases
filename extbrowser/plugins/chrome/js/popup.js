@@ -79,7 +79,7 @@ NetBeans_PresetMenu.resizePage = function(preset) {
 NetBeans_PresetMenu.setAutoPresetActive = function() {
     document.getElementById('autoPresetMenu').setAttribute('class', 'active');
     document.getElementById('autoPresetRadio').setAttribute('checked', 'checked');
-}
+};
 /*** ~Private ***/
 // menu init
 NetBeans_PresetMenu._init = function() {
@@ -103,11 +103,8 @@ NetBeans_PresetMenu._registerEvents = function() {
     document.getElementById('customizePresetsMenu').addEventListener('click', function() {
         that._showPresetCustomizer();
     }, false);
-    document.getElementById('selectionModeCheckBox').addEventListener('click', function() {
-        that._updateSelectionMode(false);
-    }, false);
-    document.getElementById('selectionModeMenu').addEventListener('click', function() {
-        that._updateSelectionMode(true);
+    document.getElementById('selectionModeMenu').addEventListener('click', function(event) {
+        that._updateSelectionMode(event.target.id !== 'selectionModeCheckBox');
     }, false);
 };
 // clean and put presets to the menu
@@ -130,7 +127,7 @@ NetBeans_PresetMenu._putPresets = function() {
         // formitem
         var formItemDiv = document.createElement('div');
         formItemDiv.setAttribute('class', 'form-item');
-        var radio = document.createElement('input')
+        var radio = document.createElement('input');
         radio.setAttribute('type', 'radio');
         radio.setAttribute('tabindex', '-1');
         if (activePreset) {
@@ -186,7 +183,7 @@ NetBeans_PresetMenu._updateSelectionMode = function(switchCheckBoxValue) {
 window.addEventListener('load', function() {
     NetBeans.detectViewPort(function() {
         NetBeans.getWindowInfo(function(window) {
-            if (window.state == 'maximized') {
+            if (window.state === 'maximized') {
                 NetBeans_PresetMenu.setAutoPresetActive();
             }
         });

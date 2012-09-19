@@ -27,7 +27,7 @@
                   <Component id="cboReformat" min="-2" max="-2" attributes="0"/>
                   <Component id="cboRemoveTrailingWhitespace" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="146" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
@@ -51,7 +51,7 @@
                   <Component id="lRemoveTrailingWhitespace" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cboRemoveTrailingWhitespace" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="211" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

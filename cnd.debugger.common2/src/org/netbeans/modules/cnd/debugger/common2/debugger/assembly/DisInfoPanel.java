@@ -98,7 +98,7 @@ public class DisInfoPanel extends JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        gridBagConstraints.weightx = 0.0;
+        gridBagConstraints.weightx = 1.0;
         add(addressText, gridBagConstraints);
 
         JLabel fileLabel = new JLabel();

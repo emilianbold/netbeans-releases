@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -166,11 +167,15 @@ public class JsStructureScanner implements StructureScanner {
                     // hardcoded values should be ok since token comes in case if it's completed (/** ... */)
                     int startOffset = ts.offset() + 3;
                     int endOffset = ts.offset() + ts.token().length() - 2;
-                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(startOffset, endOffset));
+                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(
+                            info.getSnapshot().getOriginalOffset(startOffset), 
+                            info.getSnapshot().getOriginalOffset(endOffset)));
                 } else if (tokenId == JsTokenId.BLOCK_COMMENT) {
                     int startOffset = ts.offset() + 2;
                     int endOffset = ts.offset() + ts.token().length() - 2;
-                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(startOffset, endOffset));
+                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(
+                            info.getSnapshot().getOriginalOffset(startOffset), 
+                            info.getSnapshot().getOriginalOffset(endOffset)));
                 } else if (((JsTokenId) tokenId).isKeyword()) {
                     lastContextId = (JsTokenId) tokenId;
                 } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {

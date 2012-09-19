@@ -1547,15 +1547,15 @@ exists or setup the property manually. For example like this:
             </target>
 
             <target name="-profile-pre-init">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
-                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
 
             <target name="-profile-post-init">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
-                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
             <target name="-profile-init-check">
                 <xsl:attribute name="depends">-profile-pre-init, init, -profile-post-init</xsl:attribute>
@@ -2385,8 +2385,8 @@ exists or setup the property manually. For example like this:
             
             <target name="-profile-test-single-pre72">
                 <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
-                <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
                 <xsl:attribute name="depends">profile-init,compile-test-single</xsl:attribute>
+                <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
                 <nbprofiledirect>
                     <classpath>
                         <path path="${{run.test.classpath}}"/>

@@ -126,6 +126,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private long lastShowWaitNodeTime = -1;
     //@GuardedBy this
     private Toolbar toolbar;
+    private volatile boolean auto;
 
     private static final int JDOC_TIME = 500;
     private static final Logger LOG = Logger.getLogger(ClassMemberPanelUI.class.getName()); //NOI18N
@@ -283,7 +284,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     void refresh(
             @NonNull final Description description,
             final boolean userAction) {
-        
+        auto = !userAction;
         final ElementNode rootNode = getRootNode();
         
         if ( rootNode != null && rootNode.getDescritption().fileObject.equals( description.fileObject) ) {
@@ -331,6 +332,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             } );
             
         }
+    }
+
+    boolean isAuto() {
+        return auto;
     }
     
     public void sort() {

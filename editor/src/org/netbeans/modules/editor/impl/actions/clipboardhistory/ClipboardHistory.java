@@ -45,11 +45,10 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
-import org.openide.ErrorManager;
 import org.openide.util.NbPreferences;
 import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
@@ -57,7 +56,7 @@ import org.openide.util.datatransfer.ExClipboard;
 
 
 public final class ClipboardHistory implements ClipboardListener {
-    private final LinkedList<ClipboardHistoryElement> data;
+    private final ArrayList<ClipboardHistoryElement> data;
     private static ClipboardHistory instance;
     private static int MAXSIZE = 9;
 
@@ -85,13 +84,13 @@ public final class ClipboardHistory implements ClipboardListener {
     }
 
     private ClipboardHistory() {
-        data = new LinkedList<ClipboardHistoryElement>();
+        data = new ArrayList<ClipboardHistoryElement>();
         if (PERSISTENT_STATE) {
             load();
         }
     }
 
-    private synchronized void addHistory(String text) {
+    private void addHistory(String text) {
         if (text == null) {
             return;
         }
@@ -104,13 +103,13 @@ public final class ClipboardHistory implements ClipboardListener {
     }
 
     private synchronized void addHistory(ClipboardHistoryElement newHistory) {
-        if (!data.isEmpty() && newHistory.equals(data.getFirst())) {
+        if (!data.isEmpty() && newHistory.equals(data.get(0))) {
             return;
         }
         data.remove(newHistory);
-        data.addFirst(newHistory);
+        data.add(0,newHistory);
         if (data.size() > 2 * MAXSIZE) {
-            data.removeLast();
+            data.remove(data.size()-1);
         }
     }
 
@@ -125,9 +124,8 @@ public final class ClipboardHistory implements ClipboardListener {
 
 
     @Override
-    public synchronized void clipboardChanged(ClipboardEvent ev) {
+    public void clipboardChanged(ClipboardEvent ev) {
         ExClipboard clipboard = ev.getClipboard();
-        clipboard.removeClipboardListener(this);
 
         String clipboardContent = null;
         try {
@@ -135,14 +133,14 @@ public final class ClipboardHistory implements ClipboardListener {
             if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                 clipboardContent = (String) transferable.getTransferData(DataFlavor.stringFlavor);
             }
-        } catch (Exception ex) {
+        } catch (IOException ioe) {
+            //ignored for bug #218255
+        } catch (UnsupportedFlavorException ufe) {
         }
 
         if (clipboardContent != null) {
             addHistory(clipboardContent);
         }
-
-        clipboard.addClipboardListener(this);
     }
 
     public synchronized int getPosition(ClipboardHistoryElement history) {
@@ -175,8 +173,10 @@ public final class ClipboardHistory implements ClipboardListener {
         }
         data.add(0, newHistoryElement);
 
-        for(int i=0;i < data.size();i++){
-            prefs.put(PROP_ITEM_PREFIX + i, data.get(i).getFullText());
+        int i = 0;
+        for (ClipboardHistoryElement elem : data) {
+            prefs.put(PROP_ITEM_PREFIX + i, elem.getFullText());
+            i++;
         }
     }
 }

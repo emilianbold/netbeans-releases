@@ -91,6 +91,7 @@ implements PropertyChangeListener, ContextAwareAction {
     private static final String PREFERENCES_NODE = "preferencesNode"; // NOI18N
 
     private static final String PREFERENCES_KEY = "preferencesKey"; // NOI18N
+    private static final String PREFERENCES_DEFAULT = "preferencesDefault"; // NOI18N
 
     static AlwaysEnabledAction create(Map m) {
         return (m.containsKey(PREFERENCES_KEY)) ? new CheckBox(m) : new AlwaysEnabledAction(m);
@@ -403,7 +404,8 @@ implements PropertyChangeListener, ContextAwareAction {
             Preferences prefs = prefs();
             boolean value;
             if (key != null && prefs != null) {
-                value = prefs.getBoolean(key, false);
+                Object defaultValue = getValue(PREFERENCES_DEFAULT);
+                value = prefs.getBoolean(key, defaultValue instanceof Boolean ? (Boolean) defaultValue : false);
                 synchronized (this) {
                     if (!prefsListening) {
                         prefsListening = true;
@@ -495,7 +497,8 @@ implements PropertyChangeListener, ContextAwareAction {
             String key = (String) getValue(PREFERENCES_KEY);
             Preferences prefs = prefs();
             if (key != null && prefs != null) {
-                prefs.putBoolean(key, !prefs.getBoolean(key, false));
+                Object defaultValue = getValue(PREFERENCES_DEFAULT);
+                prefs.putBoolean(key, !prefs.getBoolean(key, defaultValue instanceof Boolean ? (Boolean) defaultValue : false));
             }
         }
 

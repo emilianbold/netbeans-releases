@@ -974,6 +974,7 @@ FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1390, text= }
 FormattingToken{kind=TEXT, offset=1391, text=new}
+FormattingToken{kind=AFTER_NEW_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1394, text= }
 FormattingToken{kind=TEXT, offset=1395, text=Kolo}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
@@ -1099,6 +1100,7 @@ FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1550, text= }
 FormattingToken{kind=TEXT, offset=1551, text=new}
+FormattingToken{kind=AFTER_NEW_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1554, text= }
 FormattingToken{kind=TEXT, offset=1555, text=Ridic}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}

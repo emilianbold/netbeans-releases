@@ -289,6 +289,7 @@ public class MoveClassRefactoringPlugin extends JavaRefactoringPlugin {
                 sourceRoots.add(root);
             }
         }
+        // XXX: there should be no URL in lookup when moving to Class
         URL target = moveRefactoring.getTarget().lookup(URL.class);
         if (target == null) {
             return null;

@@ -69,7 +69,6 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test of web application debugging. Manual test specification is here:
@@ -89,8 +88,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class);
-        conf = addServerTests(Server.GLASSFISH, conf,
+        return createAllModulesServerSuite(Server.GLASSFISH, JSPDebuggingOverallTest.class,
                 "testOpenProjects",
                 // "testSetTomcatPort", // use this for tomcat
                 "testRunProject",
@@ -103,8 +101,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
                 "testStartAnotherSession",
                 "testJavaSession",
                 "testStopServer");
-        conf = conf.enableModules(".*").clusters(".*");
-        return conf.suite();
     }
 
     /** Print test name and initialize status bar tracer. */

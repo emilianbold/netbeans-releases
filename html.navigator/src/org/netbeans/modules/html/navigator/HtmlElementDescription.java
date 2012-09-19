@@ -233,9 +233,6 @@ public class HtmlElementDescription extends SourceDescription {
                             for (OpenTag child : nonVirtualChildren) {
                                 children.add(new HtmlElementDescription(HtmlElementDescription.this, child, file));
                             }
-                        } else {
-                            //cannot resolve the node
-                            children = Collections.emptyList();
                         }
                     }
                 });
@@ -244,7 +241,7 @@ public class HtmlElementDescription extends SourceDescription {
                 Exceptions.printStackTrace(ex);
             }
         }
-        return children;
+        return children==null?Collections.EMPTY_LIST:children;
     }
     
      private List<OpenTag> gatherNonVirtualChildren(Node element) {
