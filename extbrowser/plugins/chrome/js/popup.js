@@ -183,7 +183,7 @@ NetBeans_PresetMenu._updateSelectionMode = function(switchCheckBoxValue) {
 window.addEventListener('load', function() {
     NetBeans.detectViewPort(function() {
         NetBeans.getWindowInfo(function(window) {
-            if (window.state == 'maximized') {
+            if (window.state === 'maximized') {
                 NetBeans_PresetMenu.setAutoPresetActive();
             }
         });
