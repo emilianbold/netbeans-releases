@@ -62,19 +62,19 @@ public class QueryParameters {
 
     
     public enum Column {
-        COMMENT("comment"),
-        COMPONENT("componentName"),
-        DESCRIPTION("description"),
-        ITERATION("iteration"),
-        PRODUCT("productName"), 
-        RELEASE("release"),
-        RESOLUTION("resolution"),
-        SEVERITY("severity"),
-        STATUS("status"),
-        SUMMARY("summary"),
-        PRIORITY("priority"),
-        TASK_TYPE("tasktype"),
-        TAGS("tags");
+        COMMENT("comment"), // NOI18N 
+        COMPONENT("componentName"), // NOI18N
+        DESCRIPTION("description"), // NOI18N
+        ITERATION("iteration"), // NOI18N
+        PRODUCT("productName"), // NOI18N
+        RELEASE("release"), // NOI18N
+        RESOLUTION("resolution"), // NOI18N
+        SEVERITY("severity"), // NOI18N
+        STATUS("status"), // NOI18N
+        SUMMARY("summary"), // NOI18N
+        PRIORITY("priority"), // NOI18N
+        TASK_TYPE("tasktype"), // NOI18N
+        TAGS("tags"); // NOI18N
             
         private String columnName;
         
@@ -202,7 +202,7 @@ public class QueryParameters {
         
         @Override
         public void populate(String values) {
-            populate(values.split(","));
+            populate(values.split(",")); // NOI18N
         }
         
         private void populate(String[] values) {
@@ -249,7 +249,7 @@ public class QueryParameters {
             for (int i = 0; i < values.length; i++) {
                 sb.append(values[i]);
                 if(i < values.length - 1) {
-                    sb.append(",");
+                    sb.append(","); // NOI18N
                 }
             }
             return sb.toString();
@@ -257,7 +257,7 @@ public class QueryParameters {
         
         @Override
         public void populate(String values) {
-            populate(values.split(","));
+            populate(values.split(",")); // NOI18N
         }
         
         private void populate(String[] values) {
