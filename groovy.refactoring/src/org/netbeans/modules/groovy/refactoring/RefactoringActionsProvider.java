@@ -69,6 +69,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     }
 
     @Override
+    public boolean canMove(Lookup lookup) {
+        return false;
+//        return canBeDone(lookup, RefactoringType.MOVE);
+    }
+
+    @Override
     public void doFindUsages(Lookup lookup) {
         createTask(lookup, RefactoringType.FIND_USAGES).run();
     }
@@ -76,6 +82,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     @Override
     public void doRename(Lookup lookup) {
         createTask(lookup, RefactoringType.RENAME).run();
+    }
+
+    @Override
+    public void doMove(Lookup lookup) {
+        createTask(lookup, RefactoringType.MOVE).run();
     }
 
     private boolean canBeDone(Lookup lookup, RefactoringType type) {
