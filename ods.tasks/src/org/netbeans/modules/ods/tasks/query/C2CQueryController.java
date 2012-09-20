@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.ods.tasks.query;
 
+import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
@@ -90,8 +91,9 @@ import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.C2CConfig;
 import org.netbeans.modules.ods.tasks.C2CConnector;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
-import org.netbeans.modules.ods.tasks.query.QueryParameter.ComboParameter;
-import org.netbeans.modules.ods.tasks.query.QueryParameter.ListParameter;
+import org.netbeans.modules.ods.tasks.query.QueryParameters.ComboParameter;
+import org.netbeans.modules.ods.tasks.query.QueryParameters.ListParameter;
+import org.netbeans.modules.ods.tasks.query.QueryParameters.Parameter;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
@@ -113,22 +115,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
     private static final String CHANGED_NOW = "Now";                            // NOI18N
 
-//    private final ComboParameter nameParameter;
-    private final ComboParameter tagsParameter;
-    private final ListParameter productParameter;
-    private final ListParameter componentParameter;
-    private final ListParameter releasesParameter;
-    private final ListParameter iterationsParameter;
-    
-    private final ListParameter issueTypeParameter;
-    private final ListParameter priorityParameter;
-    private final ListParameter severityParameter;
-    
-    private final ListParameter statusParameter;
-    private final ListParameter resolutionParameter;
-    
-    private final List<QueryParameter> parameters;
-
     private RequestProcessor rp = new RequestProcessor("C2C query", 1, true);  // NOI18N
 
     private final C2CRepository repository;
@@ -142,6 +128,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private boolean modifiable;
     private Criteria criteria;
     private Criteria originalCriteria;
+    private final QueryParameters parameters;
         
     C2CQueryController(C2CRepository repository, C2CQuery query, Criteria criteria) {
         this.repository = repository;
@@ -182,20 +169,21 @@ public class C2CQueryController extends QueryController implements ItemListener,
         panel.byTextTextField.addActionListener(this);
 
         // setup parameters
-        parameters = new LinkedList<QueryParameter>();
-        productParameter = createQueryParameter(ListParameter.class, panel.productList, TaskAttribute.PRODUCT);              // NOI18N
-        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, TaskAttribute.COMPONENT);        // NOI18N
-        releasesParameter = createQueryParameter(ListParameter.class, panel.releaseList, C2CData.ATTR_MILESTONE);           // NOI18N
-        iterationsParameter = createQueryParameter(ListParameter.class, panel.iterationList, C2CData.ATTR_ITERATION);       // NOI18N
+        parameters = new QueryParameters();
+        
+        parameters.addListParameter(QueryParameters.Column.PRODUCT, panel.productList);  
+        parameters.addListParameter(QueryParameters.Column.COMPONENT, panel.componentList);
+        parameters.addListParameter(QueryParameters.Column.RELEASE, panel.releaseList);    
+        parameters.addListParameter(QueryParameters.Column.ITERATION, panel.iterationList);
            
-        issueTypeParameter = createQueryParameter(ListParameter.class, panel.issueTypeList, C2CData.ATTR_TASK_TYPE);        // NOI18N
-        priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, TaskAttribute.PRIORITY);           // NOI18N
-        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, TaskAttribute.SEVERITY);           // NOI18N
+        parameters.addListParameter(QueryParameters.Column.TASK_TYPE, panel.issueTypeList);
+        parameters.addListParameter(QueryParameters.Column.PRIORITY, panel.priorityList);  
+        parameters.addListParameter(QueryParameters.Column.SEVERITY, panel.severityList);  
         
-        statusParameter = createQueryParameter(ListParameter.class, panel.statusList, TaskAttribute.STATUS);                 // NOI18N
-        resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, TaskAttribute.RESOLUTION);     // NOI18N
+        parameters.addListParameter(QueryParameters.Column.STATUS, panel.statusList);      
+        parameters.addListParameter(QueryParameters.Column.RESOLUTION, panel.resolutionList);
         
-        tagsParameter = createQueryParameter(ComboParameter.class, panel.tagsComboBox, C2CData.ATTR_TAGS);                  // NOI18N
+        //parameters.addListParameter(QueryParameters.Column.TAGS, panel.tagsComboBox);                   // NOI18N
         
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 
@@ -203,7 +191,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
             setAsSaved();
         }
         if (modifiable) {
-            postPopulate(criteria, false);
+            postPopulate(false);
         } else {
             hideModificationFields();
         }
@@ -254,18 +242,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
 //        }
     }
 
-    private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String attribute) {
-        try {
-            Constructor<T> constructor = clazz.getConstructor(c.getClass(), String.class);
-            T t = constructor.newInstance(c, attribute);
-            parameters.add(t);
-            return t;
-        } catch (Exception ex) {
-            C2C.LOG.log(Level.SEVERE, attribute, ex);
-        }
-        return null;
-    }
-
     @Override
     public JComponent getComponent() {
         return panel;
@@ -300,7 +276,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         return repository;
     }
 
-    private void postPopulate(final Criteria criteria, final boolean forceRefresh) {
+    private void postPopulate(final boolean forceRefresh) {
 
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
@@ -332,7 +308,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
                     if(forceRefresh) {
                         repository.refreshConfiguration();
                     }
-                    populate(criteria);
+                    populate();
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
@@ -347,7 +323,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         });
     }
 
-    protected void populate(final Criteria criteria) {
+    protected void populate() {
         if(C2C.LOG.isLoggable(Level.FINE)) {
             C2C.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
@@ -357,25 +333,19 @@ public class C2CQueryController extends QueryController implements ItemListener,
             @Override
             public void run() {
                 try {
-                    productParameter.setParameterValues(toParameterValues(clientData.getProducts()));
+                    parameters.get(QueryParameters.Column.PRODUCT).populate(toParameterValues(clientData.getProducts()));
                     populateProductDetails(clientData, clientData.getProducts());
                     
                     
-                    issueTypeParameter.setParameterValues(toParameterValues(clientData.getTaskTypes()));
-                    priorityParameter.setParameterValues(toParameterValues(clientData.getPriorities()));
-                    severityParameter.setParameterValues(toParameterValues(clientData.getSeverities()));
+                    parameters.get(QueryParameters.Column.TASK_TYPE).populate(toParameterValues(clientData.getTaskTypes()));
+                    parameters.get(QueryParameters.Column.PRIORITY).populate(toParameterValues(clientData.getPriorities()));
+                    parameters.get(QueryParameters.Column.SEVERITY).populate(toParameterValues(clientData.getSeverities()));
                     
-                    statusParameter.setParameterValues(toParameterValues(clientData.getStatuses()));
-                    resolutionParameter.setParameterValues(toParameterValues(clientData.getResolutions()));
+                    parameters.get(QueryParameters.Column.STATUS).populate(toParameterValues(clientData.getStatuses()));
+                    parameters.get(QueryParameters.Column.RESOLUTION).populate(toParameterValues(clientData.getResolutions()));
                     
-                    tagsParameter.setParameterValues(toParameterValues(clientData.getKeywords()));
+                    parameters.get(QueryParameters.Column.TAGS).populate(toParameterValues(clientData.getKeywords()));
                     panel.tagsComboBox.setSelectedIndex(-1); // ensure none is selected
-                    
-//                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-//                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-//                    panel.changedToTextField.setText(CHANGED_NOW);
-
-//                    setParameters(parametersString != null ? parametersString : C2CConfig.getInstance().getDefaultParameters());
 
                 } finally {
                     if(C2C.LOG.isLoggable(Level.FINE)) {
@@ -393,13 +363,13 @@ public class C2CQueryController extends QueryController implements ItemListener,
             hideModificationFields();
         }
         // set the parameter fields
-        for (QueryParameter qp : parameters) {
+        for (QueryParameters.Parameter qp : parameters.getAll()) {
             qp.setEnabled(bl);
         }
     }
 
     protected void disableProduct() { // XXX whatever field
-        productParameter.setAlwaysDisabled(true);
+        parameters.get(QueryParameters.Column.PRODUCT).setAlwaysDisabled(true);
     }
 
     protected void selectFirstProduct() {
@@ -581,14 +551,11 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onCancelChanges() {
+        assert EventQueue.isDispatchThread();
+        
         criteria = originalCriteria;
         originalCriteria = null;
-        if(query.getDisplayName() != null) { // XXX need a better semantic - isSaved?
-            String urlParameters = C2CConfig.getInstance().getUrlParams(repository, query.getDisplayName());
-            if(urlParameters != null) {
-//                XXX setParameters(urlParameters);
-            }
-        }
+        
         setAsSaved();
     }
 
@@ -739,9 +706,24 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onModify() {
+        assert EventQueue.isDispatchThread();
+        
+        if(criteria instanceof ColumnCriteria) {
+            ColumnCriteria cc = (ColumnCriteria) criteria;
+            Parameter p = parameters.get(cc.getColumnName());
+//            p.setValues(cc.getColumnValue());
+        }
+        
+//      XXX anything interesting here?         
+//      changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
+//      peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
+//      panel.changedToTextField.setText(CHANGED_NOW);
+
         originalCriteria = criteria;
         criteria = null;
         panel.setModifyVisible(true);
+        
+        
     }
 
     private void onMarkSeen() {
@@ -822,9 +804,9 @@ public class C2CQueryController extends QueryController implements ItemListener,
             newMilestones.addAll(clientData.getMilestones(p));
         }
 
-        componentParameter.setParameterValues(toParameterValues(newComponents));
-        iterationsParameter.setParameterValues(toParameterValues(newIterations));
-        releasesParameter.setParameterValues(toParameterValues(newMilestones));
+        parameters.get(QueryParameters.Column.COMPONENT).populate(toParameterValues(newComponents));
+        parameters.get(QueryParameters.Column.ITERATION).populate(toParameterValues(newIterations));
+        parameters.get(QueryParameters.Column.RELEASE).populate(toParameterValues(newMilestones));
     }
 
     private String toParameterValues(Collection values) {

@@ -50,10 +50,10 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ods.tasks.query.QueryParameter.CheckBoxParameter;
-import org.netbeans.modules.ods.tasks.query.QueryParameter.ComboParameter;
-import org.netbeans.modules.ods.tasks.query.QueryParameter.ListParameter;
-import org.netbeans.modules.ods.tasks.query.QueryParameter.TextFieldParameter;
+import org.netbeans.modules.ods.tasks.query.QueryParameters.CheckBoxParameter;
+import org.netbeans.modules.ods.tasks.query.QueryParameters.ComboParameter;
+import org.netbeans.modules.ods.tasks.query.QueryParameters.ListParameter;
+import org.netbeans.modules.ods.tasks.query.QueryParameters.TextFieldParameter;
 
 /**
  *
@@ -61,7 +61,6 @@ import org.netbeans.modules.ods.tasks.query.QueryParameter.TextFieldParameter;
  */
 public class QueryParameterTest extends NbTestCase {
 
-    private final static String ATTRIBUTE = "test.atribute";
     private final static String VALUE1 = "value1";
     private final static String VALUE2 = "value2";
     private final static String VALUE3 = "value3";
@@ -79,7 +78,7 @@ public class QueryParameterTest extends NbTestCase {
 
     public void testComboParameterEnabled() {
         JComboBox combo = new JComboBox();
-        ComboParameter cp = new QueryParameter.ComboParameter(combo, ATTRIBUTE);
+        ComboParameter cp = new QueryParameters.ComboParameter(combo, QueryParameters.Column.COMMENT);
         assertTrue(combo.isEnabled());
         cp.setEnabled(false);
         assertFalse(combo.isEnabled());
@@ -91,11 +90,11 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testComboParametersValues() {
         JComboBox combo = new JComboBox();
-        ComboParameter cp = new QueryParameter.ComboParameter(combo, ATTRIBUTE);
-        assertEquals(ATTRIBUTE, cp.getAttribute());
+        ComboParameter cp = new QueryParameters.ComboParameter(combo, QueryParameters.Column.COMMENT);
+        assertEquals(QueryParameters.Column.COMMENT, cp.getColumn());
         assertNull(combo.getSelectedItem());
         assertEquals((String)null, cp.getValues());
-        cp.setParameterValues(VALUES);
+        cp.populate(toString(VALUES));
         cp.setValues(VALUE3);
 
         Object item = combo.getSelectedItem();
@@ -111,7 +110,7 @@ public class QueryParameterTest extends NbTestCase {
 
     public void testListParameterEnabled() {
         JList list = new JList();
-        ListParameter lp = new ListParameter(list, ATTRIBUTE);
+        ListParameter lp = new ListParameter(list, QueryParameters.Column.COMMENT);
         assertTrue(list.isEnabled());
         lp.setEnabled(false);
         assertFalse(list.isEnabled());
@@ -123,10 +122,10 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testListParameters() {
         JList list = new JList();
-        ListParameter lp = new ListParameter(list, ATTRIBUTE);
-        assertEquals(ATTRIBUTE, lp.getAttribute());
+        ListParameter lp = new ListParameter(list, QueryParameters.Column.COMMENT);
+        assertEquals(QueryParameters.Column.COMMENT, lp.getColumn());
         assertEquals(-1, list.getSelectedIndex());
-        lp.setParameterValues(VALUES);
+        lp.populate(toString(VALUES));
         lp.setValues(VALUE1 + "," + VALUE3);
 
         Object[] items = list.getSelectedValues();
@@ -151,7 +150,7 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testTextFieldParameterEnabled() {
         JTextField text = new JTextField();
-        TextFieldParameter tp = new TextFieldParameter(text, ATTRIBUTE);
+        TextFieldParameter tp = new TextFieldParameter(text, QueryParameters.Column.COMMENT);
         assertTrue(text.isEnabled());
         tp.setEnabled(false);
         assertFalse(text.isEnabled());
@@ -163,8 +162,8 @@ public class QueryParameterTest extends NbTestCase {
 
     public void testTextFieldParameter() throws UnsupportedEncodingException {
         JTextField text = new JTextField();
-        TextFieldParameter tp = new TextFieldParameter(text, ATTRIBUTE);
-        assertEquals(ATTRIBUTE, tp.getAttribute());
+        TextFieldParameter tp = new TextFieldParameter(text, QueryParameters.Column.COMMENT);
+        assertEquals(QueryParameters.Column.COMMENT, tp.getColumn());
         assertEquals("", text.getText());
 
         tp.setValues(VALUE2);
@@ -179,7 +178,7 @@ public class QueryParameterTest extends NbTestCase {
 
     public void testCheckBoxParameterEnabled() {
         JCheckBox checkbox = new JCheckBox();
-        CheckBoxParameter cp = new CheckBoxParameter(checkbox, ATTRIBUTE);
+        CheckBoxParameter cp = new CheckBoxParameter(checkbox, QueryParameters.Column.COMMENT);
         assertTrue(checkbox.isEnabled());
         cp.setEnabled(false);
         assertFalse(checkbox.isEnabled());
@@ -191,8 +190,8 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testCheckBoxParameter() {
         JCheckBox checkbox = new JCheckBox();
-        CheckBoxParameter cp = new CheckBoxParameter(checkbox, ATTRIBUTE);
-        assertEquals(ATTRIBUTE, cp.getAttribute());
+        CheckBoxParameter cp = new CheckBoxParameter(checkbox, QueryParameters.Column.COMMENT);
+        assertEquals(QueryParameters.Column.COMMENT, cp.getColumn());
         assertFalse(checkbox.isSelected());
 
         cp.setValues(Boolean.TRUE.toString());
@@ -204,4 +203,14 @@ public class QueryParameterTest extends NbTestCase {
         assertEquals(Boolean.FALSE.toString(), cp.getValues());
     }
 
+    private String toString(String[] array) {
+        StringBuilder sb = new StringBuilder();
+        for (String s : array) {
+            if(sb.length() > 0) {
+                sb.append(",");
+            }
+            sb.append(s);
+        }
+        return sb.toString();
+    }
 }

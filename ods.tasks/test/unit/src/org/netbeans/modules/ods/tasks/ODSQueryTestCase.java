@@ -55,7 +55,7 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.netbeans.modules.ods.tasks.query.QueryParameter;
+import org.netbeans.modules.ods.tasks.query.QueryParameters;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 
 /**
@@ -119,7 +119,7 @@ public class ODSQueryTestCase extends AbstractC2CTestCase {
         
         String summary = "The first unit test task";
         CriteriaBuilder cb = new CriteriaBuilder();
-        cb.column(QueryParameter.CRITERIA_SUMMARY, Criteria.Operator.EQUALS, summary);
+        cb.column(QueryParameters.Column.SUMMARY.toString(), Criteria.Operator.EQUALS, summary);
         
         query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
         
@@ -137,7 +137,7 @@ public class ODSQueryTestCase extends AbstractC2CTestCase {
         
         String containsSummary = "test task";
         CriteriaBuilder cb = new CriteriaBuilder();
-        cb.column(QueryParameter.CRITERIA_SUMMARY, Criteria.Operator.STRING_CONTAINS, "test task");
+        cb.column(QueryParameters.Column.SUMMARY.toString(), Criteria.Operator.STRING_CONTAINS, "test task");
         
         query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
         
@@ -156,7 +156,7 @@ public class ODSQueryTestCase extends AbstractC2CTestCase {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
-        cb.column(QueryParameter.CRITERIA_PRODUCT, Criteria.Operator.EQUALS, TEST_PRODUCT);
+        cb.column(QueryParameters.Column.PRODUCT.toString(), Criteria.Operator.EQUALS, TEST_PRODUCT);
         
         query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
         
@@ -172,8 +172,8 @@ public class ODSQueryTestCase extends AbstractC2CTestCase {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
-        cb.column(QueryParameter.CRITERIA_PRODUCT, Criteria.Operator.EQUALS, TEST_PRODUCT);
-        cb.and(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, TEST_COMPONENT2);
+        cb.column(QueryParameters.Column.PRODUCT.toString(), Criteria.Operator.EQUALS, TEST_PRODUCT);
+        cb.and(QueryParameters.Column.COMPONENT.toString(), Criteria.Operator.EQUALS, TEST_COMPONENT2);
         
         query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
         
@@ -190,8 +190,8 @@ public class ODSQueryTestCase extends AbstractC2CTestCase {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
-        cb.column(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, TEST_COMPONENT2);
-        cb.or(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, TEST_COMPONENT3);
+        cb.column(QueryParameters.Column.COMPONENT.toString(), Criteria.Operator.EQUALS, TEST_COMPONENT2);
+        cb.or(QueryParameters.Column.COMPONENT.toString(), Criteria.Operator.EQUALS, TEST_COMPONENT3);
         
         query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
         
@@ -211,10 +211,10 @@ public class ODSQueryTestCase extends AbstractC2CTestCase {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
-        cb.column(QueryParameter.CRITERIA_PRODUCT, Criteria.Operator.EQUALS, TEST_PRODUCT);
+        cb.column(QueryParameters.Column.PRODUCT.toString(), Criteria.Operator.EQUALS, TEST_PRODUCT);
         cb.and(new CriteriaBuilder()
-                    .column(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, TEST_COMPONENT2)
-                    .or(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, TEST_COMPONENT3)
+                    .column(QueryParameters.Column.COMPONENT.toString(), Criteria.Operator.EQUALS, TEST_COMPONENT2)
+                    .or(QueryParameters.Column.COMPONENT.toString(), Criteria.Operator.EQUALS, TEST_COMPONENT3)
                .toCriteria());
         
         query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());

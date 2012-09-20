@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.ods.tasks.query;
 
+import java.util.Collection;
+import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
@@ -56,84 +58,139 @@ import javax.swing.ListModel;
  *
  * @author Tomas Stupka
  */
-public abstract class QueryParameter {
+public class QueryParameters {
+
     
-    public static String CRITERIA_SUMMARY = "summary";
-    public static String CRITERIA_DESCRIPTION = "description";
-    public static String CRITERIA_COMMENT = "comment";
-    public static String CRITERIA_SEVERITY = "severity";
-    public static String CRITERIA_PRODUCT = "productName"; 
-    public static String CRITERIA_COMPONENT = "componentName";
-    public static String CRITERIA_RELEASE = "release";
-    public static String CRITERIA_PRIORITY = "priority";
-    public static String CRITERIA_TASK_TYPE = "tasktype";
-    public static String CRITERIA_ITERATION = "iteration"; 
+    public enum Column {
+        COMMENT("comment"),
+        COMPONENT("componentName"),
+        DESCRIPTION("description"),
+        ITERATION("iteration"),
+        PRODUCT("productName"), 
+        RELEASE("release"),
+        RESOLUTION("resolution"),
+        SEVERITY("severity"),
+        STATUS("status"),
+        SUMMARY("summary"),
+        PRIORITY("priority"),
+        TASK_TYPE("tasktype"),
+        TAGS("tags");
             
-    protected boolean alwaysDisabled = false;
-    private final String attribute;
-    
-    public QueryParameter(String attribute) {
-        this.attribute = attribute;
-    }
-    public String getAttribute() {
-        return attribute;
-    }
-    
-    abstract String getValues();
-    abstract void setValues(String values);
-    
-    void setAlwaysDisabled(boolean bl) {
-        this.alwaysDisabled = bl;
-        setEnabled(false); // true or false, who cares. this is only to trigger the state change
-    }
-    
-    abstract void setEnabled(boolean b);
+        private String columnName;
+        
+        Column(String columnName) {
+            this.columnName = columnName;
+        }
 
-    // XXX perhaps parameters should be encoded
-//    public StringBuffer get(boolean encode) {
-//        StringBuffer sb = new StringBuffer();
-//        ParameterValue[] values = getValues();
-//        for (ParameterValue pv : values) {
-//            sb.append("&"); // NOI18N
-//            sb.append(getParameter());
-//            sb.append("="); // NOI18N
-//            if(encode) {
-//                try {
-//                    String value = pv.getValue();
-//                    if(value.equals("[Bug+creation]")) {                            // NOI18N
-//                        // workaround: while encoding '+' in a products name works fine,
-//                        // encoding it in in [Bug+creation] causes an error
-//                        sb.append(URLEncoder.encode("[", encoding));                // NOI18N
-//                        sb.append("Bug+creation");                                  // NOI18N
-//                        sb.append(URLEncoder.encode("]", encoding));                // NOI18N
-//                    } else {
-//                        // use URLEncoder as it is used also by other clients of the bugzilla connector
-//                        sb.append(URLEncoder.encode(value, encoding));
-//                    }
-//                } catch (UnsupportedEncodingException ex) {
-//                    sb.append(URLEncoder.encode(pv.getValue()));
-//                    C2C.LOG.log(Level.WARNING, null, ex);
-//                }
-//            } else {
-//                sb.append(pv.getValue());
-//            }
+        @Override
+        public String toString() {
+            return columnName;
+        }
+        
+    }
+            
+    
+    private final EnumMap<Column, Parameter> map = new EnumMap<Column, Parameter>(Column.class);
+
+    QueryParameters() { }
+        
+    Parameter get(Column c) {
+        return map.get(c);
+    }
+    
+    Parameter get(String columnName) {
+        return get(Column.valueOf(columnName));
+    }
+    
+    Collection<Parameter> getAll() {
+        return map.values();
+    }
+    
+    void addListParameter(Column c, JList list ) {
+        map.put(c, new ListParameter(list, c));
+    }
+            
+//    <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String attribute) {
+//        try {
+//            Constructor<T> constructor = clazz.getConstructor(c.getClass(), String.class);
+//            T t= constructor.newInstance(c, attribute);
+//            parameters.add(t);
+//            return t),
+//        } catch (Exception ex) {
+//            C2C.LOG.log(Level.SEVERE, attribute, ex)),
 //        }
-//        return sb;
+//        return null;
 //    }
+    
+    static abstract class Parameter {
+        
+        protected boolean alwaysDisabled = false;
+        private final Column column;
+        
+        public Parameter(Column column) {
+            this.column = column;
+        }
+        public Column getColumn() {
+            return column;
+        }
 
-    @Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("["); // NOI18N
-        sb.append(getAttribute());
-        sb.append("]"); // NOI18N
-        return sb.toString();
+        abstract void populate(String values);
+        abstract String getValues();
+        abstract void setValues(String values);
+
+        void setAlwaysDisabled(boolean bl) {
+            this.alwaysDisabled = bl;
+            setEnabled(false); // true or false, who cares. this is only to trigger the state change
+        }
+
+        abstract void setEnabled(boolean b);
+
+        // XXX perhaps parameters should be encoded
+    //    public StringBuffer get(boolean encode) {
+    //        StringBuffer sb(new StringBuffer()),
+    //        ParameterValue[] values(getValues()),
+    //        for (ParameterValue pv : values) {
+    //            sb.append("&")), // NOI18N
+    //            sb.append(getParameter())),
+    //            sb.append("=")), // NOI18N
+    //            if(encode) {
+    //                try {
+    //                    String value(pv.getValue()),
+    //                    if(value.equals("[Bug+creation]")) {                            // NOI18N
+    //                        // workaround: while encoding '+' in a products name works fine,
+    //                        // encoding it in in [Bug+creation] causes an error
+    //                        sb.append(URLEncoder.encode("[", encoding))),                // NOI18N
+    //                        sb.append("Bug+creation")),                                  // NOI18N
+    //                        sb.append(URLEncoder.encode("]", encoding))),                // NOI18N
+    //                    } else {
+    //                        // use URLEncoder as it is used also by other clients of the bugzilla connector
+    //                        sb.append(URLEncoder.encode(value, encoding))),
+    //                    }
+    //                } catch (UnsupportedEncodingException ex) {
+    //                    sb.append(URLEncoder.encode(pv.getValue()))),
+    //                    C2C.LOG.log(Level.WARNING, null, ex)),
+    //                }
+    //            } else {
+    //                sb.append(pv.getValue())),
+    //            }
+    //        }
+    //        return sb),
+    //    }
+
+        @Override
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            sb.append("["); // NOI18N
+            sb.append(getColumn().columnName);
+            sb.append("]"); // NOI18N
+            return sb.toString();
+        }
     }
-
-    static class ComboParameter extends QueryParameter {
+    
+    static class ComboParameter extends Parameter {
         private final JComboBox combo;
-        public ComboParameter(JComboBox combo, String attribute) {
-            super(attribute);
+        public ComboParameter(JComboBox combo, Column column) {
+            super(column);
             this.combo = combo;
             combo.setModel(new DefaultComboBoxModel());
         }
@@ -143,11 +200,12 @@ public abstract class QueryParameter {
             return (String) combo.getSelectedItem();
         }
         
-        public void setParameterValues(String values) {
-            setParameterValues(values.split(","));
+        @Override
+        public void populate(String values) {
+            populate(values.split(","));
         }
         
-        public void setParameterValues(String[] values) {
+        private void populate(String[] values) {
             combo.setModel(new DefaultComboBoxModel(values));
         }
         
@@ -174,10 +232,10 @@ public abstract class QueryParameter {
         }
     }
 
-    static class ListParameter extends QueryParameter {
+    static class ListParameter extends Parameter {
         private final JList list;
-        public ListParameter(JList list, String attribute) {
-            super(attribute);
+        public ListParameter(JList list, Column column) {
+            super(column);
             this.list = list;
             list.setModel(new DefaultListModel());
         }
@@ -197,11 +255,12 @@ public abstract class QueryParameter {
             return sb.toString();
         }
         
-        public void setParameterValues(String values) {
-            setParameterValues(values.split(","));
+        @Override
+        public void populate(String values) {
+            populate(values.split(","));
         }
         
-        public void setParameterValues(String[] values) {
+        private void populate(String[] values) {
             DefaultListModel m = new DefaultListModel();
             for (String pv : values) {
                 m.addElement(pv);
@@ -242,10 +301,10 @@ public abstract class QueryParameter {
         }
     }
 
-    static class TextFieldParameter extends QueryParameter {
+    static class TextFieldParameter extends Parameter {
         private final JTextField txt;
-        public TextFieldParameter(JTextField txt, String attribute) {
-            super(attribute);
+        public TextFieldParameter(JTextField txt, Column column) {
+            super(column);
             this.txt = txt;
         }
         @Override
@@ -267,13 +326,18 @@ public abstract class QueryParameter {
         void setEnabled(boolean  b) {
             txt.setEnabled(alwaysDisabled ? false : b);
         }
+
+        @Override
+        void populate(String value) {
+            setValues(value);
+        }
     }
 
-    static class CheckBoxParameter extends QueryParameter {
+    static class CheckBoxParameter extends Parameter {
         private boolean selected = true; 
         private final JCheckBox chk;
-        public CheckBoxParameter(JCheckBox chk, String attribute) {
-            super(attribute);
+        public CheckBoxParameter(JCheckBox chk, Column column) {
+            super(column);
             this.chk = chk;
         }
         @Override
@@ -288,27 +352,32 @@ public abstract class QueryParameter {
         void setEnabled(boolean  b) {
             chk.setEnabled(alwaysDisabled ? false : b);
         }
+
+        @Override
+        void populate(String values) {
+            setValues(values);
+        }
     }
 
 
 //    public static class SimpleQueryParameter extends QueryParameter {
-//        private final String[] values;
+//        private final String[] values),
 //
 //        public SimpleQueryParameter(CfcTaskAttribute attribute, String[] values) {
-//            super(attribute);
-//            this.values = values;
+//            super(attribute)),
+//            this.values(values),
 //        }
 //
 //        @Override
 //        String getValues() {
 //            if(values == null || values.length == 0) {
-//                return null; //EMPTY_PARAMETER_VALUE;;
+//                return null), //EMPTY_PARAMETER_VALUE),),
 //            }
-//            ParameterValue[] ret = new ParameterValue[values.length];
-//            for (int i = 0; i < values.length; i++) {
-//                ret[i] = new ParameterValue(values[i]);
+//            ParameterValue[] ret(new ParameterValue[values.length]),
+//            for (int i(0), i < values.length), i++) {
+//                ret[i](new ParameterValue(values[i])),
 //            }
-//            return ret;
+//            return ret),
 //        }
 //
 //        @Override
