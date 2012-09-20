@@ -40,21 +40,23 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring.rename;
+package org.netbeans.modules.groovy.refactoring.move;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
-import static org.netbeans.modules.groovy.refactoring.rename.Bundle.*;
-import org.netbeans.modules.groovy.refactoring.ui.RenamePanel;
+import static org.netbeans.modules.groovy.refactoring.move.Bundle.*;
+import org.netbeans.modules.groovy.refactoring.ui.MoveClassPanel;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
@@ -63,31 +65,30 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Martin Janicek
  */
-public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
+public class MoveRefactoringUI  implements RefactoringUI, RefactoringUIBypass {
 
     private final AbstractRefactoring refactoring;
-    private final String name;
-    private RenamePanel panel;
+    private final FileObject fo;
+    private MoveClassPanel panel;
 
 
-    public RenameRefactoringUI(GroovyRefactoringElement element) {
-        name = element.getName();
+    public MoveRefactoringUI(GroovyRefactoringElement element) {
+        fo = element.getFileObject();
         Collection<Object> lookupContent = new ArrayList<Object>();
         lookupContent.add(element);
-        refactoring = new RenameRefactoring(Lookups.fixed(lookupContent.toArray()));
-        //refactoring.getContext().add(UI.Constants.REQUEST_PREVIEW);
+        refactoring = new MoveRefactoring(Lookups.fixed(lookupContent.toArray()));
     }
 
     @Override
-    @Messages("LBL_Rename=Rename")
+    @Messages("LBL_Move=Move")
     public String getName() {
-        return LBL_Rename();
+        return LBL_Move();
     }
 
     @Override
-    @Messages("LBL_Rename_Descr=Groovy Elements Rename")
+    @Messages("LBL_Move_Descr=Groovy Elements Move")
     public String getDescription() {
-        return LBL_Rename_Descr();
+        return LBL_Move_Descr();
     }
 
     @Override
@@ -96,32 +97,32 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     }
 
     @Override
+    @Messages("LBL_MoveClassNamed=Move class {0}")
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new RenamePanel(name, parent, LBL_Rename(), true, true); //NOI18N
-        }
+            final String packageName = getPackageName(fo);
+            final String sourceName = fo.getName();
 
+            panel = new MoveClassPanel(packageName, LBL_MoveClassNamed(sourceName), fo);
+        }
         return panel;
+    }
+
+    private static String getPackageName(final FileObject fo) {
+        final ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        final String fileName = cp.getResourceName(fo, '.', false); //NOI18N
+
+        return fileName.substring(0, fileName.lastIndexOf(".")); //NOI18N
     }
 
     @Override
     public Problem setParameters() {
-        String newName = panel.getNameValue();
-        if (refactoring instanceof RenameRefactoring) {
-            ((RenameRefactoring) refactoring).setNewName(newName);
-        }
-        return refactoring.checkParameters();
+        return null;
     }
 
     @Override
     public Problem checkParameters() {
-        if (!panel.isUpdateReferences()) {
-            return null;
-        }
-        if (refactoring instanceof RenameRefactoring) {
-            ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
-        }
-        return refactoring.checkParameters();
+        return null;
     }
 
     @Override
@@ -136,7 +137,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.groovy.refactoring.rename.RenameRefactoringUI");
+        return new HelpCtx("org.netbeans.modules.groovy.refactoring.move.MoveRefactoringUI"); //NOI18N
     }
 
     @Override
@@ -147,5 +148,4 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     @Override
     public void doRefactoringBypass() throws IOException {
     }
-
 }
