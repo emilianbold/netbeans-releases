@@ -88,4 +88,35 @@ public final class FileUtilities {
         }
     }
 
+    /**
+     * Move content of the source to the target. If the target file already exists and is a file
+     * (not folder), the source file is moved and renamed (suffix <i>_0</i>, <i>_1</i> etc.).
+     * @param source source file object
+     * @param target target file object
+     * @throws IOException if any error occurs
+     */
+    public static void moveContent(FileObject source, FileObject target) throws IOException {
+        for (FileObject child : source.getChildren()) {
+            FileObject newChild = target.getFileObject(child.getNameExt());
+            if (newChild == null) {
+                // does not exists
+                FileUtil.moveFile(child, target, child.getName());
+            } else if (newChild.isFolder()) {
+                // copy directory content
+                moveContent(child, newChild);
+                child.delete();
+            } else {
+                // file already exists => rename
+                int i = 0;
+                for (;;) {
+                    String newName = child.getName() + "_" + i++; // NOI18N
+                    if (target.getFileObject(newName) == null) {
+                        FileUtil.moveFile(child, target, newName);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
 }
