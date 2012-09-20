@@ -127,10 +127,12 @@ final class DropGlassPane extends JPanel {
         }
         final JRootPane rp = originalSource.getRootPane();
         if (rp == null) {
-            throw new IllegalStateException("originalSource " + originalSource + " has no root pane: " + rp); // NOI18N
+            if( originalSource.isDisplayable() ) //#216921
+                throw new IllegalStateException("originalSource " + originalSource + " has no root pane: " + rp); // NOI18N
+        } else {
+            rp.setGlassPane(oldPane);
+            oldPane.setVisible(wasVisible);
         }
-        rp.setGlassPane(oldPane);
-        oldPane.setVisible(wasVisible);
         oldPane = null;
     }
 

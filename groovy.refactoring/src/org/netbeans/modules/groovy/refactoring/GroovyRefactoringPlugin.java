@@ -39,21 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.core.browser.webview.ext;
 
-import org.netbeans.modules.web.browser.spi.MessageDispatcher;
+package org.netbeans.modules.groovy.refactoring;
 
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.openide.filesystems.FileObject;
 
 /**
- * Implementation of {@code MessageDispatcher} for {@code WebBrowserImpl}.
+ * Base class for the groovy refactoring plugins. Mostly just for lowering code duplicity.
  *
- * @author Jan Stola
+ * @author Martin Janicek
  */
-public class MessageDispatcherImpl extends MessageDispatcher {
+public abstract class GroovyRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
 
-    @Override
-    public void dispatchMessage(String featureId, String message) {
-        super.dispatchMessage(featureId, message);
+    protected final GroovyRefactoringElement element;
+    protected final FileObject fileObject;
+    protected final AbstractRefactoring refactoring;
+
+
+    protected GroovyRefactoringPlugin(GroovyRefactoringElement element, FileObject fileObject, AbstractRefactoring refactoring) {
+        this.element = element;
+        this.fileObject = fileObject;
+        this.refactoring = refactoring;
     }
 
+    @Override
+    public Problem preCheck() {
+        return null;
+    }
+
+    @Override
+    public Problem checkParameters() {
+        return null;
+    }
+
+    @Override
+    public Problem fastCheckParameters() {
+        return null;
+    }
+
+    @Override
+    public void cancelRequest() {
+    }
 }

@@ -45,7 +45,10 @@
 package org.netbeans.modules.glassfish.common;
 
 import java.awt.Color;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -56,6 +59,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.Action;
 import org.glassfish.tools.ide.server.FetchLog;
+import org.glassfish.tools.ide.server.FetchLogPiped;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.actions.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -64,7 +68,6 @@ import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.*;
 
@@ -1083,7 +1086,7 @@ public class LogViewMgr {
     static public void displayOutput(/*Map<String,String> properties*/GlassfishInstance instance, Lookup lookup) {
         String uri = instance.getProperty(GlassfishModule.URL_ATTR);
         if (null != uri && (uri.contains("gfv3ee6wc") || uri.contains("localhost"))) {
-            try {
+//            try {
                 FetchLog log = getServerLogStream(instance);
                 LogViewMgr mgr = LogViewMgr.getInstance(uri);
                 List<Recognizer> recognizers = new ArrayList<Recognizer>();
@@ -1092,10 +1095,10 @@ public class LogViewMgr {
                 }
                 mgr.ensureActiveReader(recognizers, log, instance);
                 mgr.selectIO(true);
-            } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, NbBundle.getMessage(LogViewMgr.class,
-                        "WARN_UNREADABLE_LOG_STREAM", uri),ioe);
-            }
+//            } catch (IOException ioe) {
+//                LOGGER.log(Level.WARNING, NbBundle.getMessage(LogViewMgr.class,
+//                        "WARN_UNREADABLE_LOG_STREAM", uri),ioe);
+//            }
         }
     }
 
@@ -1113,10 +1116,67 @@ public class LogViewMgr {
         return recognizers;
     }
 
-    private static final Map<String,PipedInputStream> remoteInputStreams = new HashMap<String,PipedInputStream>();
+    private static final Map<GlassfishInstance, FetchLog> serverInputStreams
+            = new HashMap<GlassfishInstance, FetchLog>();
 
-    static private FetchLog getServerLogStream(GlassfishInstance instance) throws IOException {
-        return FetchLog.create(instance);
+    /**
+     * Get GlassFish log fetcher for given server instance.
+     * <p/>
+     * GlassFish log fetchers are reused so only one log fetcher exists for
+     * each running server instance.
+     * <p/>
+     * @param instance GlassFish server instance used as key to retrieve
+     *                 log fetcher.
+     * @return GlassFish log fetcher stored for given server instance or newly
+     *         cerated one when no log fetcher was found.
+     * @throws IOException 
+     */
+    static private FetchLog getServerLogStream(GlassfishInstance instance) {
+        FetchLog log;
+        FetchLog deadLog = null;
+        synchronized (serverInputStreams) {
+            log = serverInputStreams.get(instance);
+            if (log != null) {
+                if (log instanceof FetchLogPiped) {
+                    // Log reading task in running state
+                    if (((FetchLogPiped) log).isRunning()) {
+                        return log;
+                    // Log reading task is dead
+                    } else {
+                        // Postpone cleanup after synchronized block.
+                        deadLog = log;
+                        serverInputStreams.remove(instance);
+                    }
+                } else {
+                    return log;
+                }
+            }
+            log = FetchLog.create(instance);
+            serverInputStreams.put(instance, log);
+        }
+        if (deadLog != null) {
+            deadLog.close();
+        }
+        return log;
+    }
+
+    /**
+     * Remove GlassFish log fetcher for given server instance.
+     * <p/>
+     * Removes log fetcher from internal storage and destroys log fetcher
+     * instance.
+     * <p/>
+     * @param instance GlassFish server instance used as key to select
+     *                 log fetcher to be removed and destroyed.
+     */
+    static public void removeServerLogStream(GlassfishInstance instance) {
+        FetchLog log;
+        synchronized (serverInputStreams) {
+            log = serverInputStreams.remove(instance);
+        }
+        if (log != null) {
+            log.close();
+        }
     }
 
 }

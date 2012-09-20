@@ -68,12 +68,13 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class DeclarationFinderImpl implements DeclarationFinder{
+public class DeclarationFinderImpl implements DeclarationFinder {
 
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
@@ -91,7 +92,10 @@ public class DeclarationFinderImpl implements DeclarationFinder{
             List<IndexResult> indexResults = new ArrayList<IndexResult>();
             if (assignments == null || assignments.isEmpty()) {
                 if (object.isDeclared()) {
-                    return new DeclarationLocation(object.getFileObject(), object.getDeclarationName().getOffsetRange().getStart());
+                    FileObject fo = object.getFileObject();
+                    if (fo != null) {
+                        return new DeclarationLocation(fo, object.getDeclarationName().getOffsetRange().getStart());
+                    }
                 } else {
                     Collection<? extends IndexResult> items = jsIndex.query(
                             JsIndex.FIELD_FQ_NAME, ModelUtils.createFQN(object), QuerySupport.Kind.EXACT,
@@ -164,7 +168,10 @@ public class DeclarationFinderImpl implements DeclarationFinder{
         }
         return result;
     }
-    
+
+    // Note: this class has a natural ordering that is inconsistent with equals.
+    // We have to implement AlternativeLocation
+    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_COMPARETO_USE_OBJECT_EQUALS")
     public static class AlternativeLocationImpl implements AlternativeLocation {
 
         private final IndexResult iResult;
