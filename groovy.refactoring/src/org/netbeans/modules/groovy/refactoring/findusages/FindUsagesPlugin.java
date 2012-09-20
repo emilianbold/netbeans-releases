@@ -49,6 +49,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.GroovyRefactoringPlugin;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.AbstractFindUsages;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindAllSubtypes;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindAllUsages;
@@ -63,9 +64,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
-import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -74,18 +73,12 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Janicek
  */
-public class FindUsagesPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
-    
-    private final GroovyRefactoringElement element;
-    private final FileObject fileObject;
-    protected final AbstractRefactoring refactoring;
-
+public class FindUsagesPlugin extends GroovyRefactoringPlugin {
     
     public FindUsagesPlugin(FileObject fileObject, GroovyRefactoringElement element, AbstractRefactoring whereUsedQuery) {
-        this.element = element;
-        this.fileObject = fileObject;
-        this.refactoring = whereUsedQuery;
+        super(element, fileObject, whereUsedQuery);
     }
+    
     
     @Override
     public Problem prepare(final RefactoringElementsBag elementsBag) {
@@ -221,24 +214,5 @@ public class FindUsagesPlugin extends ProgressProviderAdapter implements Refacto
             return ((WhereUsedQuery) refactoring).getBooleanValue(constant);
         }
         return false;
-    }
-
-    @Override
-    public Problem preCheck() {
-        return null;
-    }
-
-    @Override
-    public Problem checkParameters() {
-        return null;
-    }
-
-    @Override
-    public Problem fastCheckParameters() {
-        return null;
-    }
-
-    @Override
-    public void cancelRequest() {
     }
 }
