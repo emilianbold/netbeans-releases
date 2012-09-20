@@ -125,11 +125,12 @@ public class EngineComponentsProviderImpl implements EngineComponentsProvider {
                     ex.printStackTrace();
                 }*/
                 boolean isOpened = tc.isOpened();
+                String tcId = WindowManager.getDefault().findTopComponentID(tc);
                 Properties.getDefault().getProperties(PROPERTY_BASE_NAME).
-                        getProperties(PROPERTY_CLOSED_TC).setBoolean(tc.getName(), !isOpened);
+                        getProperties(PROPERTY_CLOSED_TC).setBoolean(tcId, !isOpened);
                 boolean isMinimized = WindowManager.getDefault().isTopComponentMinimized(tc);
                 Properties.getDefault().getProperties(PROPERTY_BASE_NAME).
-                        getProperties(PROPERTY_MINIMIZED_TC).setBoolean(tc.getName(), isMinimized);
+                        getProperties(PROPERTY_MINIMIZED_TC).setBoolean(tcId, isMinimized);
             }
         }
     }
