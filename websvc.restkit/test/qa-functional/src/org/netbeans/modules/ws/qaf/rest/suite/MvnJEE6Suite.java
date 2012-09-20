@@ -43,7 +43,6 @@ package org.netbeans.modules.ws.qaf.rest.suite;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.rest.JEE6MvnCRUDTest;
 import org.netbeans.modules.ws.qaf.rest.JEE6MvnFromDBTest;
 import org.netbeans.modules.ws.qaf.rest.JEE6MvnPatternsTest;
@@ -61,7 +60,7 @@ public class MvnJEE6Suite extends J2eeTestCase {
     public static Test suite() {
         return addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
-                addServerTests(Server.GLASSFISH, NbModuleSuite.emptyConfiguration(), JEE6MvnFromDBTest.class,
+                addServerTests(Server.GLASSFISH, emptyConfiguration(), JEE6MvnFromDBTest.class,
                 "testFromDB",
                 "testRun",
                 "testUndeploy"), JEE6MvnCRUDTest.class,

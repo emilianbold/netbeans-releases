@@ -258,6 +258,7 @@ import org.openide.util.RequestProcessor;
                 }
                 
                 final ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(getLoginName(), data.getHostName(), data.getPort());
+                configurationPanel.applyChanges(env);
 
                 tpOutput.setText("");
 

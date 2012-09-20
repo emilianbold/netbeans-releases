@@ -57,5 +57,5 @@ METHOD     toString(): String              [PUBLIC]   stub_CORE_String.js
 METHOD     toUpperCase(): String           [PUBLIC]   stub_CORE_String.js
 METHOD     trim(): String                  [PUBLIC]   stub_CORE_String.js
 METHOD     valueOf(): String               [PUBLIC]   stub_CORE_String.js
-FIELD      constructor                     [PUBLIC]   stub_CORE_String.js
-FIELD      length                          [PUBLIC]   stub_CORE_String.js
+FIELD      constructor: Function           [PUBLIC]   stub_CORE_String.js
+FIELD      length: Number                  [PUBLIC]   stub_CORE_String.js
