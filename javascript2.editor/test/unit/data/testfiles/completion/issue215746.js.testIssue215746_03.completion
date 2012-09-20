@@ -3,4 +3,4 @@ window.history.s|tate;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     seal(O: Object): Object         [PUBLIC,   stub_CORE_Object.js
-FIELD      state                           [PUBLIC]   stub_DOM_History.js
+FIELD      state: Object                   [PUBLIC]   stub_DOM_History.js
