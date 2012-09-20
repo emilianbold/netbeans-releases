@@ -247,14 +247,16 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
      */
     public FormatToken getCoveringToken(int offset) {
         Map.Entry<Integer, FormatToken> entry = tokenPosition.floorEntry(offset);
-        FormatToken token = entry.getValue();
-        if (!token.isVirtual()) {
-            if (token.getOffset() == offset) {
-                return token;
-            }
-            int endPos = token.getOffset() + token.getText().length();
-            if (offset >= token.getOffset() && offset < endPos) {
-                return token;
+        if (entry != null) {
+            FormatToken token = entry.getValue();
+            if (!token.isVirtual()) {
+                if (token.getOffset() == offset) {
+                    return token;
+                }
+                int endPos = token.getOffset() + token.getText().length();
+                if (offset >= token.getOffset() && offset < endPos) {
+                    return token;
+                }
             }
         }
         return null;
