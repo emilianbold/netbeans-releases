@@ -187,7 +187,10 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
     //useless class just because we need to put something into the AlternativeLocation to be
     //able to get some icon from it
     private static final CssSelectorElementHandle CSS_SELECTOR_ELEMENT_HANDLE_SINGLETON = new CssSelectorElementHandle();
-    
+
+    // Note: this class has a natural ordering that is inconsistent with equals.
+    // We have to implement AlternativeLocation
+    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_COMPARETO_USE_OBJECT_EQUALS")
     private static class AlternativeLocationImpl implements AlternativeLocation {
 
         private DeclarationLocation location;
@@ -320,8 +323,13 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
         }
 
         private static String getComparableString(AlternativeLocation loc) {
-            return new StringBuilder().append(loc.getLocation().getOffset()) //offset
-                    .append(loc.getLocation().getFileObject().getPath()).toString(); //filename
+            StringBuilder sb = new StringBuilder();
+            sb.append(loc.getLocation().getOffset()); //offset
+            FileObject fo = loc.getLocation().getFileObject();
+            if (fo != null) {
+                sb.append(fo.getPath()); //filename
+            }
+            return sb.toString();
         }
     }
     
