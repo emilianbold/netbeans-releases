@@ -251,6 +251,12 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     }
     void setSalient(HudsonJobImpl job, boolean salient) {
         HudsonInstanceProperties props = getProperties();
+        List<String> preferred = new ArrayList<String>(HudsonInstanceProperties.split(props.get(INSTANCE_PREF_JOBS)));
+        if (salient && !preferred.isEmpty() && !preferred.contains(job.getName())) {
+            List<String> list = new ArrayList<String>(preferred);
+            list.add(job.getName());
+            props.put(INSTANCE_PREF_JOBS, HudsonInstanceProperties.join(list));
+        }
         List<String> suppressed = new ArrayList<String>(HudsonInstanceProperties.split(props.get(INSTANCE_SUPPRESSED_JOBS)));
         if (salient) {
             suppressed.remove(job.getName());
