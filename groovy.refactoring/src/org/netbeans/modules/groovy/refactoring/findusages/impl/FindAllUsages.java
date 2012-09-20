@@ -51,9 +51,9 @@ import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 /**
  * This strategy is used in refactoring other then Find Usages. 
  *
- * {@link FindTypeUsages} doesn't find all usages in all files (e.g. if finding
- * usages for a specific class type, we don't want to see constructor in the find
- * results, but on the other hand these are pretty important for rename refactoring).
+ * {@link FindTypeUsages} doesn't find all usages in all files (e.g. if we are 
+ * finding usages for a specific class type, we don't want to see constructor in
+ * the result, but on the other hand these are pretty important for rename refactoring).
  *
  * Because of that we need to have two different implementation. One for FindUsages
  * itself and the second one as a base used by other refactoring types.
