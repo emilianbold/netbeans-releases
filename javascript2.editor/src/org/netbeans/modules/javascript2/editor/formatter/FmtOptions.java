@@ -640,16 +640,19 @@ public class FmtOptions {
         // Private methods -----------------------------------------------------
 
         private void performOperation(int operation, JComponent jc, String optionID, Preferences p) {
-            switch(operation) {
-            case LOAD:
-                loadData(jc, optionID, p);
-                break;
-            case STORE:
-                storeData(jc, optionID, p);
-                break;
-            case ADD_LISTENERS:
-                addListener(jc);
-                break;
+            switch (operation) {
+                case LOAD:
+                    loadData(jc, optionID, p);
+                    break;
+                case STORE:
+                    storeData(jc, optionID, p);
+                    break;
+                case ADD_LISTENERS:
+                    addListener(jc);
+                    break;
+                default:
+                    LOGGER.log(Level.WARNING, "Unknown operation value {0}", operation);
+                    break;
             }
         }
 

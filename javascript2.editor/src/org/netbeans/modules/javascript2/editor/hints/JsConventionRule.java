@@ -254,6 +254,8 @@ public class JsConventionRule extends JsAstRule {
                 case NE:
                     message = Bundle.ExpectedInstead("!==", "!="); //NOI18N
                     break;
+                default:
+                    break;
             }
             if (message != null) {
                 hints.add(new Hint(betterConditionRule, message,
