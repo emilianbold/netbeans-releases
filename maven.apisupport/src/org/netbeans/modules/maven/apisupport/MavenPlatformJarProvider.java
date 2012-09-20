@@ -102,19 +102,24 @@ public class MavenPlatformJarProvider implements PlatformJarProvider {
             String type = dep.getType();
             if ("jar".equals(type)) {
                 // XXX how to eliminate non-module deps? does it matter?
-                if (dep.isRelease()) {
+                if (!dep.isSnapshot()) {
                     arts.add(dep);
                 } // else a snapshot is probably from this "suite"... crude heuristic, rethink
             } else if ("nbm-file".equals(type)) { // usually via org.netbeans.cluster:*:*:pom
                 arts.add(online.createArtifact(dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), "jar"));
             }
         }
-        download(arts, online, mp.getRemoteArtifactRepositories());
-        Set<File> jars = new LinkedHashSet<File>();
-        for (Artifact art : arts) {
-            jars.add(art.getFile());
+        try {
+            download(arts, online, mp.getRemoteArtifactRepositories());
+        } finally {
+            Set<File> jars = new LinkedHashSet<File>();
+            for (Artifact art : arts) {
+                if (art.getFile() != null && art.getFile().exists()) {
+                    jars.add(art.getFile());
+                }
+            }
+            return jars;
         }
-        return jars;
         // XXX as a fallback could use findPlatformFolder and just scan for $plaf/*/{lib,core,modules}/{,locale/}*.jar
     }
 

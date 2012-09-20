@@ -99,6 +99,20 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     private final TreePathHandle refactoringSource;
     private MethodTree origMethod;
     private final String newName;
+    private boolean fromIntroduce = false;
+    
+    public ChangeParamsTransformer(ParameterInfo[] paramInfo,
+            Collection<? extends Modifier> newModifiers,
+            String returnType,
+            String newName,
+            boolean compatible,
+            Javadoc javaDoc,
+            Set<ElementHandle<ExecutableElement>> am,
+            TreePathHandle refactoringSource,
+            boolean fromIntroduce) {
+        this(paramInfo, newModifiers, returnType, newName, compatible, javaDoc, am, refactoringSource);
+        this.fromIntroduce = fromIntroduce;
+    }
 
     public ChangeParamsTransformer(ParameterInfo[] paramInfo,
             Collection<? extends Modifier> newModifiers,
@@ -214,33 +228,37 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         final BlockTree oldBody = ((MethodTree)tree).getBody();
                         genutils.copyComments(oldBody, body, true);
                         genutils.copyComments(oldBody, body, false);
-                        
-                        List<? extends TypeParameterElement> typeParameters = element.getTypeParameters();
-                        List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParameters.size());
-                        transformTypeParameters(typeParameters, make, genutils, newTypeParams);
+                        MethodTree newMethod;
+                        if (!fromIntroduce) {
+                            List<? extends TypeParameterElement> typeParameters = element.getTypeParameters();
+                            List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParameters.size());
+                            transformTypeParameters(typeParameters, make, genutils, newTypeParams);
 
-                        final List<? extends VariableElement> parameters = element.getParameters();
-                        List<VariableTree> newParameters = new ArrayList<VariableTree>(parameters.size());
-                        for (VariableElement variableElement : parameters) {
-                            newParameters.add(make.Variable(variableElement, null));
+                            final List<? extends VariableElement> parameters = element.getParameters();
+                            List<VariableTree> newParameters = new ArrayList<VariableTree>(parameters.size());
+                            for (VariableElement variableElement : parameters) {
+                                newParameters.add(make.Variable(variableElement, null));
+                            }
+
+                            final List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
+                            List<ExpressionTree> newThrownTypes = new ArrayList<ExpressionTree>(thrownTypes.size());
+                            for (TypeMirror typeMirror : thrownTypes) {
+                                newThrownTypes.add((ExpressionTree) make.Type(typeMirror));
+                            }
+
+                            newMethod = make.Method(
+                                    make.Modifiers(element.getModifiers()),
+                                    newName == null ? element.getSimpleName() : newName,
+                                    make.Type(methodReturnType),
+                                    newTypeParams,
+                                    newParameters,
+                                    newThrownTypes,
+                                    body,
+                                    null,
+                                    element.isVarArgs());
+                        } else {
+                            newMethod = make.Method(element, body);
                         }
-                        
-                        final List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
-                        List<ExpressionTree> newThrownTypes = new ArrayList<ExpressionTree>(thrownTypes.size());
-                        for (TypeMirror typeMirror : thrownTypes) {
-                            newThrownTypes.add((ExpressionTree) make.Type(typeMirror));
-                        }
-                        
-                        MethodTree newMethod = make.Method(
-                                make.Modifiers(element.getModifiers()),
-                                newName == null ? element.getSimpleName() : newName,
-                                make.Type(methodReturnType),
-                                newTypeParams,
-                                newParameters,
-                                newThrownTypes,
-                                body,
-                                null,
-                                element.isVarArgs());
                         genutils.copyComments(tree, newMethod, true);
                         genutils.copyComments(tree, newMethod, false);
 
@@ -472,7 +490,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         typeTree = make.Identifier(newType); // NOI18N
                     }
                     vt = make.Variable(originalVt.getModifiers(),
-                            p[i].getName(),
+                            fromIntroduce? originalVt.getName() : p[i].getName(),
                             typeTree,
                             originalVt.getInitializer());
                 }
@@ -551,7 +569,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     current.getTypeParameters(),
                     newParameters,
                     current.getThrows(),
-                    body,
+                    fromIntroduce? current.getBody() : body,
                     (ExpressionTree) current.getDefaultValue(),
                     p.length > 0 && p[p.length-1].getType().endsWith("...")); //NOI18N
 
