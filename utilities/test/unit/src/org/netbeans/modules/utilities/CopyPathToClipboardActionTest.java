@@ -42,6 +42,7 @@
 package org.netbeans.modules.utilities;
 
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.LinkedList;
@@ -115,7 +116,8 @@ public class CopyPathToClipboardActionTest extends NbTestCase {
         assertTrue(action.getAbsolutePath(dataObjects.get(1)).matches(
                 ".*test2[/\\\\]data\\.txt$")); // data.txt
         assertTrue(action.getAbsolutePath(dataObjects.get(2)).matches(
-                ".*test2[/\\\\]archive.zip:b\\.txt$")); // ZIP file
+                ".*test2[/\\\\]archive.zip" + File.pathSeparator
+                + "b\\.txt$")); // ZIP file
         assertTrue(action.getAbsolutePath(dataObjects.get(3)).matches(
                 ".*test2[/\\\\]data\\.txt$")); // Shadow File for data.txt
     }

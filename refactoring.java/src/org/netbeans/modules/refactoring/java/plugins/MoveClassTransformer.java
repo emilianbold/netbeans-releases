@@ -76,7 +76,6 @@ import org.openide.util.Utilities;
 public class MoveClassTransformer extends RefactoringVisitor {
 
     private Problem problem;
-    private final TreePathHandle tph;
     private final ElementHandle<TypeElement> elementHandle;
     private final URL targetURL;
     private boolean inMovingClass;
@@ -91,16 +90,19 @@ public class MoveClassTransformer extends RefactoringVisitor {
     private boolean deleteFile;
 
     public MoveClassTransformer(TreePathHandle elementHandle, URL targetURL) {
-        this(elementHandle, elementHandle.getElementHandle(), targetURL, null);
+        this(elementHandle.getElementHandle(), targetURL, null);
         this.targetPackageName = RefactoringUtils.getPackageName(targetURL);
     }
     
     public MoveClassTransformer(TreePathHandle elementHandle, ElementHandle<TypeElement> targetHandle) {
-        this(elementHandle, elementHandle.getElementHandle(), null, targetHandle);
+        this(elementHandle.getElementHandle(), null, targetHandle);
     }
-
-    public MoveClassTransformer(TreePathHandle tph, ElementHandle<TypeElement> elementHandle, URL targetURL, ElementHandle<TypeElement> targetHandle) {
-        this.tph = tph;
+    
+    public MoveClassTransformer(ElementHandle<TypeElement> elementHandle, ElementHandle<TypeElement> targetHandle) {
+        this(elementHandle, null, targetHandle);
+    }
+    
+    private MoveClassTransformer(ElementHandle<TypeElement> elementHandle, URL targetURL, ElementHandle<TypeElement> targetHandle) {
         this.elementHandle = elementHandle;
         this.targetURL = targetURL;
         this.targetHandle = targetHandle;
@@ -184,8 +186,7 @@ public class MoveClassTransformer extends RefactoringVisitor {
             TypeMirror type = workingCopy.getTrees().getTypeMirror(currentPath);
             TypeMirror targetType = targetHandle.resolve(workingCopy).asType();
             if(targetType != null && workingCopy.getTypes().isSameType(type, targetType)) {
-                ElementHandle sourceHandle = this.tph.getElementHandle();
-                final Element resolved = sourceHandle.resolve(workingCopy);
+                final Element resolved = elementHandle.resolve(workingCopy);
                 if(resolved != null) {
                     final TreePath resolvedPath = workingCopy.getTrees().getPath(resolved);
                     final GeneratorUtilities get = GeneratorUtilities.get(workingCopy);
