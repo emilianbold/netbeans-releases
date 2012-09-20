@@ -169,7 +169,6 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
         final boolean caseSensitive = true;
 
         Source testSource = getTestSource(getTestFile(file));
-        final String fileName = file.substring(0, file.indexOf(".")) + ".expected.js";
         final AtomicReference<CompletionProposal> found = new AtomicReference<CompletionProposal>();
 
         final int caretOffset;
@@ -360,7 +359,8 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
                     }
                 });
 
-                assertDescriptionMatches(file, bd.getText(0, bd.getLength()), false, ".expected");
+                assertDescriptionMatches(file, bd.getText(0, bd.getLength()), false, ".expected.js");
+                final String fileName = file.substring(0, file.indexOf(".")) + ".js.expected.js";
                 assertTrue("File not found: " + getTestFile(fileName).getPath(), getTestFile(fileName).isValid());
                 Source expectedSource = getTestSource(getTestFile(fileName));
                 final StringBuilder expectedContent = new StringBuilder(expectedSource.getDocument(false).getText(0, expectedSource.getDocument(false).getLength()));
