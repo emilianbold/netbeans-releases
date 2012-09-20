@@ -55,6 +55,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
@@ -582,6 +583,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         protected Node[] createNodes(Node key) {
+            FileObject fo = key.getLookup().lookup(FileObject.class);
+            if (fo != null && !VisibilityQuery.getDefault().isVisible(fo)) {
+                return new Node[0];
+            }
             for (String ignore : ignoreList) {
                 if (key.getDisplayName().equals(ignore)) {
                     return new Node[0];
