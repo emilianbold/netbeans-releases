@@ -377,11 +377,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
 //                    setParameters(parametersString != null ? parametersString : C2CConfig.getInstance().getDefaultParameters());
 
-                    // XXX
-//                    if(query.isSaved()) {
-//                        final boolean autoRefresh = C2CConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
-//                        panel.refreshCheckBox.setSelected(autoRefresh);
-//                    }
                 } finally {
                     if(C2C.LOG.isLoggable(Level.FINE)) {
                         C2C.LOG.log(Level.FINE, "Finnished populate query controller {0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
