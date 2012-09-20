@@ -60,7 +60,7 @@ ide/docs/css3-spec.zip                                                W3C (the o
 ide/docs/html-4.01.zip                                                W3C (the original at http://www.w3.org/TR/1999/REC-html401-19991224/)
 ide/docs/html5doc.zip                                                 HTML5DOC
 ide/modules/dict/ispell-enwl-3.1.20.zip                               BSD-ispell-enwl
-ide/modules/ext/antlr-runtime-3.3.jar                                 BSD-antlr-runtime
+ide/modules/ext/antlr-runtime-3.4.jar                                 BSD-antlr-runtime
 ide/modules/org-apache-commons-codec.jar                              Apache-2.0
 ide/modules/ext/bytelist-0.1.jar                                      LGPL-2.1
 ide/modules/org-apache-commons-httpclient.jar                         Apache-2.0
@@ -82,6 +82,7 @@ ide/modules/ext/jaxb/jaxb1-impl.jar                                   CDDL-1.0, 
 ide/modules/ext/jing.jar                                              BSD-jing
 ide/modules/com-jcraft-jsch.jar                                       BSD-jsch
 ide/modules/ext/js.jar                                                MPL-1.1
+ide/modules/ext/json-simple-1.1.1.jar                                 Apache-2.0
 ide/modules/ext/jvyamlb-0.2.3.jar                                     MIT-jvyamlb
 ide/modules/com-jcraft-jzlib.jar                                      BSD-jzlib
 ide/modules/ext/libpam4j-1.1.jar                                      MIT
@@ -103,6 +104,7 @@ ide/modules/org-eclipse-mylyn-bugzilla-core.jar                       EPL-v10
 ide/modules/org-eclipse-mylyn-commons-core.jar                        EPL-v10
 ide/modules/org-eclipse-mylyn-commons-net.jar                         EPL-v10
 ide/modules/org-eclipse-mylyn-commons-xmlrpc.jar                      EPL-v10
+ide/modules/org-eclipse-mylyn-commons-repositories-core.jar           EPL-v10
 ide/modules/org-eclipse-mylyn-tasks-core.jar                          EPL-v10
 ide/modules/org-eclipse-jgit.jar                                      EDL-v10-jgit
 ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/XMLSchema.xsd  W3C (the original at http://www.w3.org/2001/XMLSchema.xsd)
@@ -117,12 +119,12 @@ ide/modules/ext/servlet-2.2.jar                                       Apache-1.1
 ide/modules/ext/smack.jar                                             Apache-2.0
 ide/modules/ext/smackx.jar                                            Apache-2.0
 ide/modules/ext/sqljet-1.1.0.jar                                      TMate
-ide/modules/ext/svnClientAdapter-javahl-1.8.5.jar                     Apache-2.0
-ide/modules/ext/svnClientAdapter-main-1.8.5.jar                       Apache-2.0
-ide/modules/ext/svnClientAdapter-svnkit-1.8.5.jar                     Apache-2.0
-ide/modules/ext/svnjavahl-1.7.2.jar                                   Subversion
-ide/modules/ext/svnkit-1.7.4.jar                                      TMate
-ide/modules/ext/swingx-0.9.5.jar                                      LGPL-2.1
+ide/modules/ext/svnClientAdapter-javahl-1.8.14.jar                    Apache-2.0
+ide/modules/ext/svnClientAdapter-main-1.8.14.jar                      Apache-2.0
+ide/modules/ext/svnClientAdapter-svnkit-1.8.14.jar                    Apache-2.0
+ide/modules/ext/svnjavahl-1.7.5.jar                                   Subversion
+ide/modules/ext/svnkit-1.7.5.jar                                      TMate
+ide/modules/ext/swingx-all-1.6.4.jar                                  LGPL-2.1
 ide/modules/ext/trilead.ssh2_1.0.0.jar                                TRILEAD-LICENSE
 ide/modules/ext/validator.jar                                         MIT-validator
 ide/modules/ext/webserver.jar                                         Apache-1.1
@@ -146,19 +148,14 @@ java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_1.0.1.jar  EPL-v10
 java/modules/ext/hibernate                                            LGPL-2.1, incl. BSD, Apache-2.0 (see also Hibernate 3.2.5 at http://hibernate.org)
 java/modules/ext/jaxws22/woodstox-core-asl.jar                        Apache-2.0
 java/modules/ext/jaxws22/stax2-api.jar                                BSD-woodstox
-java/modules/ext/maven/indexer-artifact-4.1.2.jar                     Apache-2.0
-java/modules/ext/maven/indexer-core-4.1.2.jar                         Apache-2.0
+java/modules/ext/maven/indexer-artifact-4.1.3.jar                     Apache-2.0
+java/modules/ext/maven/indexer-core-4.1.3.jar                         Apache-2.0
 java/modules/ext/maven/jdom-1.0.jar                                   Apache-JDOM
-java/modules/ext/maven/lucene-core-3.0.3.jar                          Apache-2.0
-java/modules/ext/maven/maven-dependency-tree-1.2.jar                  Apache-2.0
+java/modules/ext/maven/lucene-core-3.6.1.jar                          Apache-2.0
+java/modules/ext/maven/lucene-highlighter-3.6.1.jar                   Apache-2.0
+java/modules/ext/maven/maven-dependency-tree-2.0.jar                  Apache-2.0
 java/modules/ext/spring-3.0/spring-aop-3.1.1.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-3.0/spring-asm-3.1.1.RELEASE.jar              Apache-2.0
 java/modules/ext/spring-3.0/spring-aspects-3.1.1.RELEASE.jar          Apache-2.0
-java/modules/ext/spring-3.0/spring-beans-3.1.1.RELEASE.jar            Apache-2.0
-java/modules/ext/spring-3.0/spring-context-3.1.1.RELEASE.jar          Apache-2.0
-java/modules/ext/spring-3.0/spring-context-support-3.1.1.RELEASE.jar   Apache-2.0
-java/modules/ext/spring-3.0/spring-core-3.1.1.RELEASE.jar             Apache-2.0
-java/modules/ext/spring-3.0/spring-expression-3.1.1.RELEASE.jar       Apache-2.0
 java/modules/ext/spring-3.0/spring-instrument-3.1.1.RELEASE.jar       Apache-2.0
 java/modules/ext/spring-3.0/spring-instrument-tomcat-3.1.1.RELEASE.jar   Apache-2.0
 java/modules/ext/spring-3.0/spring-jdbc-3.1.1.RELEASE.jar             Apache-2.0
@@ -168,10 +165,17 @@ java/modules/ext/spring-3.0/spring-oxm-3.1.1.RELEASE.jar              Apache-2.0
 java/modules/ext/spring-3.0/spring-struts-3.1.1.RELEASE.jar           Apache-2.0
 java/modules/ext/spring-3.0/spring-test-3.1.1.RELEASE.jar             Apache-2.0
 java/modules/ext/spring-3.0/spring-tx-3.1.1.RELEASE.jar               Apache-2.0
-java/modules/ext/spring-3.0/spring-web-3.1.1.RELEASE.jar              Apache-2.0
 java/modules/ext/spring-3.0/spring-webmvc-3.1.1.RELEASE.jar           Apache-2.0
 java/modules/ext/spring-3.0/spring-webmvc-portlet-3.1.1.RELEASE.jar   Apache-2.0
 java/modules/ext/spring/spring-2.5.6.SEC03.jar                        Apache-2.0
+java/modules/org-springframework-asm.jar                              Apache-2.0
+java/modules/org-springframework-beans.jar                            Apache-2.0
+java/modules/org-springframework-context.jar                          Apache-2.0
+java/modules/org-springframework-context-support.jar                  Apache-2.0
+java/modules/org-springframework-core.jar                             Apache-2.0
+java/modules/org-springframework-expression.jar                       Apache-2.0
+java/modules/org-springframework-web.jar                              Apache-2.0
+java/modules/javax-servlet.jar                                        Apache-2.0
 mobility/modules/docs/jmunit-1.2.1-api.zip                            Apache-2.0
 mobility/modules/ext/ant-contrib-1.0b3.jar                            Apache-2.0
 mobility/modules/ext/commons-httpclient-3.0.1.jar                     Apache-2.0

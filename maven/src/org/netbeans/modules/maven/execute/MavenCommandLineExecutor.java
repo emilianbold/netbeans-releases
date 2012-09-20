@@ -244,14 +244,21 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     
     @Override
     public boolean cancel() {
-        if (preProcess != null) {
-            kill(preProcess, preProcessUUID);
-            preProcess = null;
-        }
-        if (process != null) {
-            kill(process, processUUID);
-            process = null;
-        }
+        final Process pre = preProcess;
+        preProcess = null;
+        final Process pro = process;
+        process = null;
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                if (pre != null) {
+                    kill(pre, preProcessUUID);
+                }
+                if (pro != null) {
+                    kill(pro, processUUID);
+                }
+            }
+        });
         return true;
     }
         

@@ -163,40 +163,12 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         if (isPersisted()) {
             return;
         }
-        String name = properties.get(INSTANCE_NAME);
-        String url = properties.get(INSTANCE_URL);
-        String sync = properties.get(INSTANCE_SYNC);
-
-        HudsonInstanceProperties newProps = new HudsonInstanceProperties(name, url, sync);
-        //just in case there are also other properties.
-        for (Map.Entry<String,String> ent : properties.entrySet()) {
-            newProps.put(ent.getKey(), ent.getValue());
-        }
-        
-        //reassign listeners
-        List<PropertyChangeListener> list = properties.getCurrentListeners();
-        for (PropertyChangeListener listener : list) {
-            newProps.addPropertyChangeListener(listener);
-            properties.removePropertyChangeListener(listener);
-        }
-        properties = newProps;
-
-        storeDefinition();
+        properties.put(INSTANCE_PERSISTED, TRUE);
         fireContentChanges();
     }
 
-    void storeDefinition() {
-        if (!isPersisted()) {
-            return;
-        }
-        Preferences node = prefs();
-        for (Map.Entry<String,String> entry : properties.entrySet()) {
-            node.put(entry.getKey(), entry.getValue());
-        }
-    }
-
     @Override public Preferences prefs() {
-        return HudsonManagerImpl.instancePrefs().node(HudsonManagerImpl.simplifyServerLocation(getName(), true));
+        return properties.getPreferences();
     }
     
     public static HudsonInstanceImpl createHudsonInstance(String name, String url, String sync) {
@@ -279,6 +251,12 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     }
     void setSalient(HudsonJobImpl job, boolean salient) {
         HudsonInstanceProperties props = getProperties();
+        List<String> preferred = new ArrayList<String>(HudsonInstanceProperties.split(props.get(INSTANCE_PREF_JOBS)));
+        if (salient && !preferred.isEmpty() && !preferred.contains(job.getName())) {
+            List<String> list = new ArrayList<String>(preferred);
+            list.add(job.getName());
+            props.put(INSTANCE_PREF_JOBS, HudsonInstanceProperties.join(list));
+        }
         List<String> suppressed = new ArrayList<String>(HudsonInstanceProperties.split(props.get(INSTANCE_SUPPRESSED_JOBS)));
         if (salient) {
             suppressed.remove(job.getName());
