@@ -90,4 +90,32 @@ public class ResolvedPropertyTest extends CssTestBase {
 //        dumpTree(rp.getParseTree());
         
     }
+    
+    public void testNegativeZIndex() {
+        PropertyModel pm = Properties.getPropertyModel("z-index");
+        assertNotNull(pm);
+
+        ResolvedProperty rp = new ResolvedProperty(pm, "-1 ");
+//        dumpTree(rp.getParseTree());
+//        for(Token t : rp.getTokens()) {
+//            System.out.println(t);
+//        }
+
+        assertTrue(rp.isResolved());
+    }
+    
+    public void testNegativeLeftValue() {
+        PropertyModel pm = Properties.getPropertyModel("left");
+        assertNotNull(pm);
+
+        ResolvedProperty rp = new ResolvedProperty(pm, "-10% ");
+//        dumpTree(rp.getParseTree());
+//        for(Token t : rp.getTokens()) {
+//            System.out.println(t);
+//        }
+
+        assertTrue(rp.isResolved());
+    }
+    
+    
 }
