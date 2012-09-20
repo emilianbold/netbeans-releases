@@ -51,6 +51,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.core.AbstractTaskFactory;
@@ -173,7 +174,8 @@ public class BreadCrumbsTask extends ElementScanningTask {
                 
             }, false), Lookups.fixed(new OpenCookie() {
                 @Override public void open() {
-                    FileObject file = item.getElementHandle().getFileObject();
+                    ElementHandle elementHandle = item.getElementHandle();
+                    FileObject file = elementHandle != null ? elementHandle.getFileObject() : null;
                     if (file != null) {
                         UiUtils.open(file, (int) item.getPosition());
                     }

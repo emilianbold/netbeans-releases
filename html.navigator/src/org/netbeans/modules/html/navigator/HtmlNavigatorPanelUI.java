@@ -147,6 +147,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             String propName = evt.getPropertyName();
             if (PageModel.PROP_DOCUMENT.equals(propName)) {
                 pageModelDocumentChanged();
+                List nodes = translate(manager.getSelectedNodes());
+                pageModel.setSelectedNodes(nodes);
             } else if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
                 updateSelection();
             } else if (PageModel.PROP_HIGHLIGHTED_NODES.equals(propName)) {
@@ -1013,20 +1015,21 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 }
             }
 
-            private List translate(Node[] selectedNodes) {
-                List result = new ArrayList();
-                for (Node n:selectedNodes) {
-                    if (n instanceof HtmlElementNode) {
-                        Node domNode = ((HtmlElementNode) n).getDOMNode();
-                        if (domNode!=null) {
-                            result.add(domNode);
-                        }
-                    }
-                }
-                return result;
-            }
         };
     }    
+
+    private List translate(Node[] selectedNodes) {
+        List result = new ArrayList();
+        for (Node n : selectedNodes) {
+            if (n instanceof HtmlElementNode) {
+                Node domNode = ((HtmlElementNode) n).getDOMNode();
+                if (domNode != null) {
+                    result.add(domNode);
+                }
+            }
+        }
+        return result;
+    }
     
     
 }

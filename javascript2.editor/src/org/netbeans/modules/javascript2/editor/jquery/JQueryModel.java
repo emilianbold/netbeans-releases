@@ -78,13 +78,11 @@ public class JQueryModel {
         }
         File apiFile = InstalledFileLocator.getDefault().locate(JQueryCodeCompletion.HELP_LOCATION, null, false); //NoI18N
         if (globalObject == null && apiFile != null) {
-            globalObject = JsFunctionImpl.createGlobal(FileUtil.toFileObject(apiFile), (int)apiFile.length());                  
+            globalObject = JsFunctionImpl.createGlobal(FileUtil.toFileObject(apiFile), (int) apiFile.length());
             jQuery =  new JQFunctionImpl((DeclarationScope)globalObject, globalObject, new IdentifierImpl("jQuery", OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE); // NOI18N
             rjQuery = new JQFunctionReference(new IdentifierImpl("$", OffsetRange.NONE), jQuery, false); // NOI18N
             
-            if (apiFile != null) {
-                SelectorsLoader.addToModel(apiFile, jQuery);
-            }
+            SelectorsLoader.addToModel(apiFile, jQuery);
             jQuery.setInScope((DeclarationScope)globalObject);
             jQuery.setParent(globalObject);
             globalObject.addProperty("jQuery", jQuery); // NOI18N

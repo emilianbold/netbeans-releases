@@ -129,6 +129,22 @@ public class JsCodeCompletionGeneralTest extends JsTestBase {
         checkCompletion("testfiles/completion/issue218361_5.js", "window.history.b^", false);
     }
 
+    public void testIssue215863_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "window.lo^cation.toString();", false);
+    }
+
+    public void testIssue215863_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "window.^location.toString();", false);
+    }
+
+    public void testIssue215863_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "h^istory", false);
+    }
+
+    public void testIssue215863_04() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "a^lert(\"Text\");", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

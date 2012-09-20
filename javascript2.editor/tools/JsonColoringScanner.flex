@@ -41,7 +41,7 @@ package org.netbeans.modules.javascript2.editor.lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
-@org.netbeans.api.annotations.common.SuppressWarnings({"URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE"})
+@org.netbeans.api.annotations.common.SuppressWarnings({"URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE", "DM_DEFAULT_ENCODING"})
 %%
 
 %public

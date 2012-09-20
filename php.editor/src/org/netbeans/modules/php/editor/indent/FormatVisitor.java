@@ -894,10 +894,11 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(InfixExpression node) {
         scan(node.getLeft());
-        FormatToken.Kind whitespace = FormatToken.Kind.WHITESPACE_AROUND_BINARY_OP;
+        FormatToken.Kind whitespaceBefore = FormatToken.Kind.WHITESPACE_BEFORE_BINARY_OP;
+        FormatToken.Kind whitespaceAfter = FormatToken.Kind.WHITESPACE_AFTER_BINARY_OP;
 
         if (node.getOperator() == InfixExpression.OperatorType.CONCAT) {
-            whitespace = FormatToken.Kind.WHITESPACE_AROUND_CONCAT_OP;
+            whitespaceBefore = whitespaceAfter = FormatToken.Kind.WHITESPACE_AROUND_CONCAT_OP;
         }
 
         while (ts.moveNext() && ts.offset() < node.getRight().getStartOffset()
@@ -906,9 +907,9 @@ public class FormatVisitor extends DefaultVisitor {
             addFormatToken(formatTokens);
         }
         if (ts.token().id() == PHPTokenId.PHP_TOKEN || ts.token().id() == PHPTokenId.PHP_OPERATOR) {
-            formatTokens.add(new FormatToken(whitespace, ts.offset()));
+            formatTokens.add(new FormatToken(whitespaceBefore, ts.offset()));
             addFormatToken(formatTokens);
-            formatTokens.add(new FormatToken(whitespace, ts.offset() + ts.token().length()));
+            formatTokens.add(new FormatToken(whitespaceAfter, ts.offset() + ts.token().length()));
         } else {
             ts.movePrevious();
         }
