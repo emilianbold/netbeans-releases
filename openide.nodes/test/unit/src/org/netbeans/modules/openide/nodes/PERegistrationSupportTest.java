@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.xml.tax;
+package org.netbeans.modules.openide.nodes;
 
-import java.beans.*;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import org.openide.modules.OnStart;
-import org.openide.modules.OnStop;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * Module installation class for tax module.
  *
- * @author Libor Kramolis
+ * @author Jan Horvath <jhorvath@netbeans.org>
  */
-@OnStart
-public class TAXModuleInstall implements Runnable {
-
-    private static final String BEANINFO_PATH = "org.netbeans.modules.xml.tax.beans.beaninfo"; // NOI18N
-
-    @Override
-    public void run () {
-        String[] sp = Introspector.getBeanInfoSearchPath();
-        String[] newSP = new String[sp.length + 1];
-        System.arraycopy(sp, 0, newSP, 0, sp.length);
-        newSP[newSP.length - 1] = BEANINFO_PATH;
-        Introspector.setBeanInfoSearchPath(newSP);
+public class PERegistrationSupportTest extends NbTestCase {
+    
+    public PERegistrationSupportTest(String name) {
+        super(name);
     }
-
-    @OnStop
-    public static final class Down implements Runnable{
-        
-        @Override
-        public void run () {
-            List searchPath;
-
-            searchPath = new LinkedList (Arrays.asList (Introspector.getBeanInfoSearchPath()));
-            searchPath.remove (BEANINFO_PATH);
-            Introspector.setBeanInfoSearchPath ((String[])searchPath.toArray (new String[0]));
+    
+    public void doTest(String type) throws ClassNotFoundException {
+        Class<?> cls = PERegistrationSupport.getClassFromCanonicalName(type);
+        assertEquals(type, cls.getCanonicalName());
+    }
+    
+    public void testPrimitives() throws ClassNotFoundException {
+        String[] classNames = {"int", "boolean", "float", "short", "char"};
+        for (int i = 0; i < classNames.length; i++) {
+            doTest(classNames[i]);
         }
     }
+    
+    public void testArrays() throws ClassNotFoundException {
+        String[] classNames = {"int[][][]", "boolean[]", "java.lang.String[]"};
+        for (int i = 0; i < classNames.length; i++) {
+            doTest(classNames[i]);
+        }
+    }
+    
+    public void testTypes() throws ClassNotFoundException {
+        String[] classNames = {"java.lang.String", "java.lang.Integer"};
+        for (int i = 0; i < classNames.length; i++) {
+            doTest(classNames[i]);
+        }
+    }
+    
     
 }
