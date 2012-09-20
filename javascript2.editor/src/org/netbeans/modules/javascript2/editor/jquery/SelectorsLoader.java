@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,10 +57,8 @@ import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -601,12 +598,10 @@ public class SelectorsLoader extends DefaultHandler {
 
         @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
-            switch(tagPath.get(0)) {
-                case added:
-                    if (tagPath.size() > 1 && tagPath.get(1) == Tag.signature) {
-                        added = new String(ch, start, length);
-                    }
-                    break;
+            if (tagPath.get(0) == Tag.added) {
+                if (tagPath.size() > 1 && tagPath.get(1) == Tag.signature) {
+                    added = new String(ch, start, length);
+                }
             }
         }
         
