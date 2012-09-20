@@ -51,6 +51,7 @@ import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,7 +59,20 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
  */
 public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel implements CustomRefactoringPanel {
 
+    private static final String[] columnNames = {
+        getString("LBL_BuilderParameter"), // NOI18N
+        getString("LBL_BuilderSetterName"), // NOI18N
+        getString("LBL_BuilderDefaultValue"), // NOI18N
+        getString("LBL_BuilderOptionalSetter") // NOI18N
+    };
+    private static final boolean[] columnCanEdit = new boolean[]{
+        false, true, true, true
+    };
+    private static final Class[] columnTypes = new Class[]{
+        String.class, String.class, String.class, Boolean.class
+    };
     private List<String> parameterTypes;
+
     public ReplaceConstructorWithBuilderPanel(final @NonNull ChangeListener parent, String initialFQN, List<String> paramaterNames, List<String> parameterTypes) {
         initComponents();
         this.parameterTypes = parameterTypes;
@@ -67,7 +81,6 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
         nameField.setSelectionEnd(nameField.getText().length());
 
         nameField.getDocument().addDocumentListener(new DocumentListener() {
-
             @Override
             public void insertUpdate(DocumentEvent e) {
                 parent.stateChanged(new ChangeEvent(ReplaceConstructorWithBuilderPanel.this));
@@ -84,11 +97,10 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
         });
         DefaultTableModel model = (DefaultTableModel) paramTable.getModel();
         Iterator<String> typesIt = parameterTypes.iterator();
-        for (String name:paramaterNames) {
+        for (String name : paramaterNames) {
             model.addRow(new Object[]{typesIt.next() + " " + name, "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1), null, false}); //NOI18N
         }
         model.addTableModelListener(new TableModelListener() {
-
             @Override
             public void tableChanged(TableModelEvent e) {
                 parent.stateChanged(new ChangeEvent(ReplaceConstructorWithBuilderPanel.this));
@@ -115,26 +127,13 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
         nameField.setColumns(15);
 
         paramTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Parameter", "Setter Name", "Default Value", "Optional Setter"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Boolean.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, true, true, true
-            };
-
+            new Object[][]{}, columnNames) {
             public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
+                return columnTypes[columnIndex];
             }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
+                return columnCanEdit[columnIndex];
             }
         });
         paramScrollPane.setViewportView(paramTable);
@@ -179,7 +178,7 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
     public void requestFocus() {
         nameField.requestFocus();
     }
-    
+
     public List<ReplaceConstructorWithBuilderRefactoring.Setter> getSetters() {
         List<ReplaceConstructorWithBuilderRefactoring.Setter> result = new ArrayList();
         for (int i = 0; i < parameterTypes.size(); i++) {
@@ -189,8 +188,7 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
                     parameterTypes.get(i),
                     (String) ((DefaultTableModel) paramTable.getModel()).getValueAt(i, 2),
                     name.substring(name.lastIndexOf(' ')).trim(),
-                    (Boolean) ((DefaultTableModel) paramTable.getModel()).getValueAt(i, 3)
-                    ));
+                    (Boolean) ((DefaultTableModel) paramTable.getModel()).getValueAt(i, 3)));
         }
         return result;
     }
@@ -199,5 +197,8 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
     public Component getComponent() {
         return this;
     }
-    
+
+    private static String getString(String key) {
+        return NbBundle.getMessage(ReplaceConstructorWithBuilderPanel.class, key);
+    }
 }
