@@ -167,7 +167,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         private final Snapshot snapshot;
 
         private final Map<String, UnusedOffsetRanges> unusedUsesOffsetRanges;
-        // last visited class declaration
+        // last visited type declaration
         private TypeDeclaration typeDeclaration;
 
         public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights, Snapshot snapshot) {
@@ -311,6 +311,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
+            typeDeclaration = node;
             Identifier name = node.getName();
             addOffsetRange(name, ColoringAttributes.CLASS_SET);
             super.visit(node);
@@ -321,6 +322,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
+            typeDeclaration = node;
             Identifier name = node.getName();
             addOffsetRange(name, ColoringAttributes.CLASS_SET);
             needToScan = new ArrayList<Block>();
