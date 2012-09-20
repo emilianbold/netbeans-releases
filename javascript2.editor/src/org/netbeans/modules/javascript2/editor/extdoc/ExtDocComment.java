@@ -50,12 +50,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElement;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
+import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocIdentSimpleElement;
+import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
 
 /**
  *
@@ -104,8 +107,8 @@ public class ExtDocComment extends JsComment {
     }
 
     @Override
-    public boolean isDeprecated() {
-        return false;
+    public String getDeprecated() {
+        return null;
     }
 
     @Override
@@ -116,6 +119,51 @@ public class ExtDocComment extends JsComment {
             modifiers.add(JsModifier.fromString(extDocElement.getType().toString().substring(1)));
         }
         return modifiers;
+    }
+
+    @Override
+    public List<DocParameter> getThrows() {
+        return Collections.<DocParameter>emptyList();
+    }
+
+    @Override
+    public List<Type> getExtends() {
+        List<Type> extendsList = new LinkedList<Type>();
+        for (ExtDocElement extDocElement : getTagsForType(ExtDocElementType.EXTENDS)) {
+            ExtDocIdentSimpleElement ident = (ExtDocIdentSimpleElement) extDocElement;
+            extendsList.add(new TypeImpl(ident.getIdentifier(), -1));
+        }
+        return extendsList;
+    }
+
+    @Override
+    public List<String> getSee() {
+        return Collections.<String>emptyList();
+    }
+
+    @Override
+    public String getSince() {
+        return null;
+    }
+
+    @Override
+    public boolean isClass() {
+        return !getTagsForTypes(new ExtDocElementType[]{ExtDocElementType.CLASS, ExtDocElementType.CONSTRUCTOR}).isEmpty();
+    }
+
+//    @Override
+//    public List<String> getAuthor() {
+//        return Collections.<String>emptyList();
+//    }
+//
+//    @Override
+//    public String getVersion() {
+//        return null;
+//    }
+
+    @Override
+    public List<String> getExamples() {
+        return Collections.<String>emptyList();
     }
 
     private void initComment(List<ExtDocElement> elements) {

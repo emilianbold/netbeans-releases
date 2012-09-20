@@ -104,10 +104,16 @@ public final class SpringUtilities {
     }
 
     public static boolean isSpringLibrary(Library library) {
+        if (!"j2se".equals(library.getType())) { //NOI18N
+            return false;
+        }
         return containsClass(library, SPRING_CLASS_NAME);
     }
 
     public static boolean isSpringWebMVCLibrary(Library library) {
+        if (!"j2se".equals(library.getType())) { //NOI18N
+            return false;
+        }
         return containsClass(library, SPRING_WEBMVC_CLASS_NAME);
     }
 

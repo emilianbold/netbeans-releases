@@ -70,8 +70,10 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.diff.options.DiffOptionsController;
 import org.openide.awt.UndoRedo;
+import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -139,6 +141,12 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
             controller.removePropertyChangeListener(this);
             addPropertyChangeListener(this);
         }
+        
+        // whatever the reason is that the fileobject isn't refreshed (!?),
+        // this is an explicit user refresh so
+        // refresh the FO explicitly as well
+        base.refresh();
+        modified.refresh();
         
         StreamSource ss1 = new DiffStreamSource(base, type, false);
         StreamSource ss2 = new DiffStreamSource(modified, type, true);

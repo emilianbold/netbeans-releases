@@ -105,8 +105,10 @@ public class AttachmentsPanel extends JPanel {
     private LinkButton createNewButton;
     private JLabel dummyLabel = new JLabel();
     private boolean hadNoAttachments;
+    private IssuePanel issuePanel;
 
-    public AttachmentsPanel() {
+    public AttachmentsPanel(IssuePanel issuePanel) {
+        this.issuePanel = issuePanel;
         setBackground(UIManager.getColor("TextArea.background")); // NOI18N
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
         noneLabel = new JLabel(bundle.getString("AttachmentsPanel.noneLabel.text")); // NOI18N
@@ -361,9 +363,9 @@ public class AttachmentsPanel extends JPanel {
                 updateCreateNewButton(false);
             }
             newAttachments.add(nameField);
-            UIUtils.keepFocusedComponentVisible(nameField);
-            UIUtils.keepFocusedComponentVisible(browseButton);
-            UIUtils.keepFocusedComponentVisible(deleteButton);
+            UIUtils.keepFocusedComponentVisible(nameField, issuePanel);
+            UIUtils.keepFocusedComponentVisible(browseButton, issuePanel);
+            UIUtils.keepFocusedComponentVisible(deleteButton, issuePanel);
             revalidate();
         }
     }

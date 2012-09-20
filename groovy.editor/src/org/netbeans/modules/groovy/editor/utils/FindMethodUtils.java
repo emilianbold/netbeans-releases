@@ -46,12 +46,13 @@ import java.util.List;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
+import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.Methods;
 
 /**
@@ -79,7 +80,9 @@ public final class FindMethodUtils {
             } else {
                 return getThisMethodNode(path, methodCall);
             }
-
+        } else if (expression instanceof ClassExpression) {
+            // Situations like: "GroovySupportObject.println()"
+            return findMethod(((ClassExpression) expression).getType(), methodCall);
         } else if (expression instanceof ConstructorCallExpression) {
             // Situations like: "new GalacticMaster().destroyWorldMethod()"
             return findMethod(((ConstructorCallExpression) expression).getType(), methodCall);

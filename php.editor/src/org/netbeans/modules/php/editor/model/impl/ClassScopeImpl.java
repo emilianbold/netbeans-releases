@@ -41,26 +41,25 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.*;
-import org.netbeans.modules.php.editor.model.ClassConstantElement;
-import org.netbeans.modules.php.editor.model.IndexScope;
-import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -76,6 +75,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     private Union2<String, List<ClassScopeImpl>> superClass;
     private Collection<QualifiedName> possibleFQSuperClassNames;
     private Collection<QualifiedName> usedTraits;
+    private Set<? super TypeScope> superRecursionDetection = new HashSet<TypeScope>();
+    private Set<? super TypeScope> subRecursionDetection = new HashSet<TypeScope>();
 
     @Override
     void addElement(ModelElementImpl element) {
@@ -95,7 +96,6 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     ClassScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
         Expression superId = nodeInfo.getSuperClass();
-        String superName = null;
         if (superId != null) {
             NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(inScope);
             QualifiedName superClassName = QualifiedName.create(superId);
@@ -166,7 +166,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         }
         List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaceScopes();
         if (implementedInterfaces.size() > 0) {
-            sb.append(" implements ");
+            sb.append(" implements "); //NOI18N
             for (InterfaceScope interfaceScope : implementedInterfaces) {
                 sb.append(interfaceScope.getName()).append(" ");
             }
@@ -251,6 +251,19 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 }
             }
         }
+        Set<TraitScope> traitScopes = new HashSet<TraitScope>(getTraits());
+        for (TraitScope traitScope : traitScopes) {
+            Set<MethodElement> indexedMethods =
+                    org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAllMethods(traitScope));
+            for (MethodElement methodElement : indexedMethods) {
+                TypeElement type = methodElement.getType();
+                if (type.isTrait()) {
+                    allMethods.add(new MethodScopeImpl(new TraitScopeImpl(indexScope, (TraitElement) type), methodElement));
+                } else {
+                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement) type), methodElement));
+                }
+            }
+        }
         return allMethods;
     }
 
@@ -310,12 +323,11 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
 
 
-    @NonNull
+    @CheckForNull
     @Override
     public QualifiedName getSuperClassName() {
-        List<? extends ClassScope> retval = null;
         if (superClass != null) {
-            retval = superClass.hasSecond() ? superClass.second() : null;//this
+            List<? extends ClassScope> retval = superClass.hasSecond() ? superClass.second() : null;//this
             if (retval == null) {
                 assert superClass.hasFirst();
                 String superClasName = superClass.first();
@@ -330,7 +342,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 }
             }
         }
-        return null;//NOI18N
+        return null;
     }
 
     @Override
@@ -355,7 +367,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         }
         sb.append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
-        QualifiedName qualifiedName = namespaceScope.getQualifiedName();
+        QualifiedName qualifiedName = namespaceScope != null ? namespaceScope.getQualifiedName() : QualifiedName.create("");
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         List<? extends String> superInterfaceNames = getSuperInterfaceNames();
         StringBuilder ifaceSb = new StringBuilder();
@@ -455,15 +467,14 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         return filter(getElements(), new ElementFilter() {
             @Override
             public boolean isAccepted(ModelElement element) {
-                if (element instanceof MethodScopeImpl && ((MethodScopeImpl)element).isConstructor()
+                if (element instanceof MethodScope && ((MethodScope) element).isInitiator()
                         && element instanceof LazyBuild) {
                     LazyBuild scope = (LazyBuild)element;
                     if (!scope.isScanned()) {
                         scope.scan();
                     }
                 }
-                boolean value = element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
-                return value;
+                return element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
             }
         });
     }
@@ -502,21 +513,24 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @Override
     public boolean isSuperTypeOf(final TypeScope subType) {
         boolean result = false;
-        if (subType.isClass()) {
-            for (ClassScope classScope : ((ClassScope) subType).getSuperClasses()) {
-                if (classScope.equals(this)) {
-                    result = true;
-                } else {
-                    result = isSuperTypeOf(classScope);
+        if (superRecursionDetection.add(subType)) {
+            if (subType.isClass()) {
+                assert (subType instanceof ClassScope);
+                for (ClassScope classScope : ((ClassScope) subType).getSuperClasses()) {
+                    if (classScope.equals(this)) {
+                        result = true;
+                    } else {
+                        result = isSuperTypeOf(classScope);
+                    }
+                    if (result == true) {
+                        break;
+                    }
                 }
-                if (result == true) {
-                    break;
-                }
+            } else if (subType.isTrait()) {
+                result = false;
+            } else {
+                result = super.isSuperTypeOf(subType);
             }
-        } else if (subType.isTrait()) {
-            result = false;
-        } else {
-            result = super.isSuperTypeOf(subType);
         }
         return result;
     }
@@ -524,41 +538,43 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @Override
     public boolean isSubTypeOf(final TypeScope superType) {
         boolean result = false;
-        if (superType.isClass()) {
-            for (ClassScope classScope : getSuperClasses()) {
-                if (classScope.equals(superType)) {
-                    result = true;
-                } else {
-                    result = classScope.isSubTypeOf(superType);
+        if (subRecursionDetection.add(superType)) {
+            if (superType.isClass()) {
+                for (ClassScope classScope : getSuperClasses()) {
+                    if (classScope.equals(superType)) {
+                        result = true;
+                    } else {
+                        result = classScope.isSubTypeOf(superType);
+                    }
+                    if (result == true) {
+                        break;
+                    }
                 }
-                if (result == true) {
-                    break;
-                }
-            }
-        } else if (superType.isTrait()) {
-            for (ClassScope classScope : getSuperClasses()) {
-                result = classScope.isSubTypeOf(superType);
-                if (result == true) {
-                    break;
-                }
-            }
-            for (TraitScope traitScope : getTraits()) {
-                if (traitScope.equals(superType)) {
-                    result = true;
-                } else {
-                    result = traitScope.isSubTypeOf(superType);
-                }
-                if (result == true) {
-                    break;
-                }
-            }
-        } else {
-            result = super.isSubTypeOf(superType);
-            if (result == false) {
+            } else if (superType.isTrait()) {
                 for (ClassScope classScope : getSuperClasses()) {
                     result = classScope.isSubTypeOf(superType);
                     if (result == true) {
                         break;
+                    }
+                }
+                for (TraitScope traitScope : getTraits()) {
+                    if (traitScope.equals(superType)) {
+                        result = true;
+                    } else {
+                        result = traitScope.isSubTypeOf(superType);
+                    }
+                    if (result == true) {
+                        break;
+                    }
+                }
+            } else {
+                result = super.isSubTypeOf(superType);
+                if (result == false) {
+                    for (ClassScope classScope : getSuperClasses()) {
+                        result = classScope.isSubTypeOf(superType);
+                        if (result == true) {
+                            break;
+                        }
                     }
                 }
             }

@@ -43,6 +43,8 @@ package org.netbeans.modules.maven.cos;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -115,6 +117,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main"; //NOI18N
     private static final String DEBUG_MAIN = ActionProvider.COMMAND_DEBUG_SINGLE + ".main"; //NOI18N
     private static final String PROFILE_MAIN = ActionProvider.COMMAND_PROFILE_SINGLE + ".main"; // NOI18N
+    private static final Logger LOG = Logger.getLogger(CosChecker.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(CosChecker.class);
 
     @Override
     public boolean checkRunConfig(RunConfig config) {
@@ -145,7 +149,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             //do clean the generated class files everytime, that won't hurt anything
             // unless the classes are missing then ?!? if the action doesn't perform the compilation step?
             try {
-                cleanGeneratedClassfiles(config);
+                cleanGeneratedClassfiles(config.getProject());
             } catch (IOException ex) {
                 if (!"clean".equals(config.getGoals().get(0))) { //NOI18N
                     config.getGoals().add(0, "clean"); //NOI18N
@@ -580,10 +584,9 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         return true;
     }
 
-    private static void cleanGeneratedClassfiles(RunConfig config) throws IOException { // #145243
+    private static void cleanGeneratedClassfiles(Project p) throws IOException { // #145243
         //we execute normal maven build, but need to clean any
         // CoS classes present.
-        Project p = config.getProject();
         List<ClassPath> executePaths = new ArrayList<ClassPath>();
         for (SourceGroup g : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
             FileObject root = g.getRootFolder();
@@ -835,6 +838,15 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             if (RunUtils.hasApplicationCompileOnSaveEnabled(project)) {
                 touchCoSTimeStamp(mvn, false);
             } else {
+                File f = getCoSFile(mvn, false);
+                boolean doClean = f != null && f.exists();
+                if (doClean) {
+                    try {
+                        cleanGeneratedClassfiles(project);
+                    } catch (IOException ex) {
+                        LOG.log(Level.FINE, "Error cleaning up", ex);
+                    }
+                }
                 deleteCoSTimeStamp(mvn, false);
             }
             if (RunUtils.hasTestCompileOnSaveEnabled(project)) {
@@ -936,25 +948,54 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     public static class CosPOH extends ProjectOpenedHook {
 
         private final Project project;
+        
+        private final PropertyChangeListener listener;
 
         public CosPOH(Project prj) {
             project = prj;
+            listener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                        touchProject(project);
+                    }
+                }
+            };
         }
 
         @Override
         protected void projectOpened() {
-            touchProject(project);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    touchProject(project);
+                }
+            });
+            NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+            if (prj != null) {
+                prj.addPropertyChangeListener(listener);
+            }
         }
 
         @Override
         protected void projectClosed() {
             NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
             if (prj != null) {
+                prj.removePropertyChangeListener(listener);
                 MavenProject mvn = prj.getMavenProject();
                 deleteCoSTimeStamp(mvn, true);
                 deleteCoSTimeStamp(mvn, false);
-
-                //TODO also delete the IDE generated class files now?
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            //also delete the IDE generated class files now?
+                            cleanGeneratedClassfiles(project);
+                        } catch (IOException ex) {
+                            LOG.log(Level.FINE, "Error cleaning up", ex);
+                        }
+                    }
+                });
             }
         }
     }

@@ -166,10 +166,10 @@ public class FindInFilesAction extends CallableSystemAction {
         }
 
         Object refObj = getProperty(VAR_TOOLBAR_COMP_REF);
-        if (refObj != null) {
-            Reference ref = (Reference) refObj;
+        if (refObj instanceof Reference<?>) {
+            Reference<?> ref = (Reference<?>) refObj;
             Object presenterObj = ref.get();
-            if (presenterObj != null) {
+            if (presenterObj instanceof Component) {
                 return (Component) presenterObj;
             }
         }
@@ -214,7 +214,8 @@ public class FindInFilesAction extends CallableSystemAction {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(FindInFilesAction.class);
+        return new HelpCtx(
+                "org.netbeans.modules.search.FindInFilesAction");       //NOI18N
     }
 
     /** Perform this action. */
@@ -263,7 +264,7 @@ public class FindInFilesAction extends CallableSystemAction {
     }
 
     private void log(String msg) {
-        LOG.finer(shortClassName + ": " + msg);
+        LOG.log(FINER, "{0}: {1}", new Object[]{shortClassName, msg});  //NOI18N
     }
 
     public static class Selection extends FindInFilesAction {

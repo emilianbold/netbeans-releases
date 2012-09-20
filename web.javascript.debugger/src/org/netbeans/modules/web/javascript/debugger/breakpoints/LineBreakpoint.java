@@ -147,18 +147,6 @@ public class LineBreakpoint extends AbstractBreakpoint {
             myWeakListener = null;
         }
     }
-    
-    private Project getProject() {
-        Line line = getLine();
-        if ( line == null ){
-            return null;
-        }
-        FileObject fileObject = line.getLookup().lookup(FileObject.class);
-        if ( fileObject == null ){
-            return null;
-        }
-        return FileOwnerQuery.getOwner( fileObject );
-    }
 
     /**
      * Difference from getURLString method is that project's local file URL 
@@ -168,24 +156,46 @@ public class LineBreakpoint extends AbstractBreakpoint {
      * file URL.
      */
     String getURLStringToPersist() {
-        return getURLStringImpl(false);
+        return getURLStringImpl(null, null, false);
     }
     
     /**
      * See also getURLStringToPersist().
      */
-    String getURLString() {
-        return getURLStringImpl(true);
+    String getURLString(Project p, URL urlConnectionBeingDebugged) {
+        return getURLStringImpl(p, urlConnectionBeingDebugged, true);
     }
     
-    private String getURLStringImpl(boolean applyInternalServerMapping) {
+    private String getURLStringImpl(Project p, URL urlConnectionBeingDebugged, boolean applyInternalServerMapping) {
         FileObject fo = getLine().getLookup().lookup(FileObject.class);
         String url;
         URL remoteURL = RemoteFileCache.isRemoteFile(fo);
         if (remoteURL == null) {
             // should "file://foo.bar" be translated into "http://localhost/smth/foo.bar"?
-            if (applyInternalServerMapping) {
-                URL internalServerURL = ServerURLMapping.toServer(getProject(), fo);
+            if (applyInternalServerMapping && p != null) {
+                assert urlConnectionBeingDebugged != null;
+                URL internalServerURL = ServerURLMapping.toServer(p, ServerURLMapping.CONTEXT_PROJECT_SOURCES, fo);
+                boolean useTestingContext = false;
+                if (internalServerURL == null) {
+                    useTestingContext = true;
+                } else {
+                    if (!internalServerURL.getHost().equals(urlConnectionBeingDebugged.getHost()) ||
+                            internalServerURL.getPort() != urlConnectionBeingDebugged.getPort()) {
+                        // if FileObject was resolved to a server which is different from current
+                        // debugging connection then try to resolve the FileObject 
+                        // in ServerURLMapping.CONTEXT_PROJECT_TESTS context
+                        useTestingContext = true;
+                    }
+                }
+                if (useTestingContext && p != null) {
+                    URL internalServerURL2 = ServerURLMapping.toServer(p, ServerURLMapping.CONTEXT_PROJECT_TESTS, fo);
+                    if (internalServerURL2 != null && 
+                            (internalServerURL2.getHost().equals(urlConnectionBeingDebugged.getHost()) ||
+                            internalServerURL2.getPort() == urlConnectionBeingDebugged.getPort())) {
+                        // use it:
+                        internalServerURL = internalServerURL2;
+                    }
+                }
                 if (internalServerURL != null) {
                     return internalServerURL.toExternalForm();
                 }

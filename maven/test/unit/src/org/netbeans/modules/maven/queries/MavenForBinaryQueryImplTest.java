@@ -115,7 +115,7 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
         URL root = FileUtil.getArchiveRoot(Utilities.toURI(art).toURL());
         Project p = ProjectManager.getDefault().findProject(d.getFileObject("a"));
         FileOwnerQuery.markExternalOwner(Utilities.toURI(art), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("grp", "art", "0", d.getFileObject("a").toURL());
+        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("grp", "art", "0", d.getFileObject("a").toURL(), true);
         
         
         SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(root);
@@ -137,7 +137,7 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
         root = FileUtil.getArchiveRoot(Utilities.toURI(art).toURL());
         p = ProjectManager.getDefault().findProject(d.getFileObject("b"));
         FileOwnerQuery.markExternalOwner(Utilities.toURI(art), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("grp", "art", "0", d.getFileObject("b").toURL());
+        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("grp", "art", "0", d.getFileObject("b").toURL(), true);
         
         r = SourceForBinaryQuery.findSourceRoots2(root);
         assertEquals(Collections.singletonList(src), Arrays.asList(r.getRoots()));

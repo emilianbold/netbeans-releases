@@ -16,7 +16,7 @@ METHOD     showLegs(): undefined           [PUBLIC]   person.js
 METHOD     shower(): undefined             [PUBLIC]   person.js
 METHOD     toString()                      [PROTECTE  person.js
 METHOD     weigh()                         [PROTECTE  person.js
-FIELD      clothing                        [PUBLIC]   person.js
-FIELD      dirtFactor                      [PUBLIC]   person.js
-FIELD      legs                            [PUBLIC]   person.js
-FIELD      population                      [PUBLIC,   person.js
+FIELD      clothing: String                [PUBLIC]   person.js
+FIELD      dirtFactor: Number              [PUBLIC]   person.js
+FIELD      legs: Number                    [PUBLIC]   person.js
+FIELD      population: Number              [PUBLIC,   person.js

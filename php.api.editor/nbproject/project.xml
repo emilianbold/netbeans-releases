@@ -40,6 +40,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.cakephp.netbeans</friend>
                 <friend>org.netbeans.modules.php.api.framework</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.project</friend>

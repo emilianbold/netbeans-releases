@@ -72,6 +72,8 @@ public class TransportHelper {
 
     public static final String OBJECT_GROUP_NAME = "netbeans-debugger-objects";
     
+    static final boolean SHOW_WEBKIT_PROTOCOL = Boolean.getBoolean("show.webkit.protocol");
+    
     private final RequestProcessor RP = new RequestProcessor();
 
     public TransportHelper(TransportImplementation impl) {
@@ -206,11 +208,15 @@ public class TransportHelper {
     }
     
     private void log(String s) {
-       getOutputLogger().getOut().println(getCurrentTime()+" "+s); 
+        if (SHOW_WEBKIT_PROTOCOL) {
+            getOutputLogger().getOut().println(getCurrentTime() + " " + s);
+        }
     }
     
     private void logError(String s) {
-       getOutputLogger().getErr().println(getCurrentTime()+" "+s); 
+        if (SHOW_WEBKIT_PROTOCOL) {
+            getOutputLogger().getErr().println(getCurrentTime()+" "+s); 
+        }
     }
     
     

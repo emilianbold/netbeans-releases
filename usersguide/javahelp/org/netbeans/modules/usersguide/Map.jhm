@@ -143,8 +143,6 @@ Other names may be trademarks of their respective owners.
 <mapID target="text.javascript" url="javascript/js_basics.html" />
 <mapID target="js.refactoring" url="javascript/refactoring.html" />
 <mapID target="js.quickfixes" url="javascript/quickfixes.html" />
-<mapID target="js.browser.compatibility" url="javascript/browser_compat.html" />
-<mapID target="js.function.jump" url="javascript/function_jumping.html" />
 <mapID target="javascript_debugger_advanced_options" url="javascript/options.html" />
 
 <!-- ================================ begin CSH IDs ================================ -->
@@ -278,6 +276,8 @@ Other names may be trademarks of their respective owners.
   
 <!--ID for Waiting For Tasks to Finish dialog box:-->
     <mapID target="org.netbeans.core.execution.Install.pending" url="misc-general/waiting.html" />
+<!--ID for Shelved Changes dialog box:-->
+    <mapID target="org.netbeans.modules.versioning.shelve.impl.UnshelveChangesAction" url="misc-general/shelved_changes.html" />
 
     <!--ID for Find and Replace in Projects dialog. "search" module is in utilities package-->
 <mapID target="org.netbeans.modules.search.SearchPanel.false" url="files/csh/search_projects.html" />    

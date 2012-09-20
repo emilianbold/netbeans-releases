@@ -82,7 +82,6 @@ public class ButtonCellEditor extends DefaultCellEditor {
 
         @Override
         public void focusGained (FocusEvent e) {
-            System.err.println("Bu");
         }
 
         @Override

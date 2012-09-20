@@ -465,7 +465,12 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
     }
     
     private boolean isEditorValid() {
-        return editor.isVisible() && Utilities.getEditorUI(editor) != null;
+        if (editor.isVisible() && Utilities.getEditorUI(editor) != null) {
+            // do not operate on editors, which do not have focus
+            return editor.hasFocus();
+        } else {
+            return false;
+        }
     }
     
     public JComponent createToolTipView(int start, int end) {
@@ -492,6 +497,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
                 tooltipPane.setEditorKit(kit);
                 tooltipPane.setDocument(doc);
                 tooltipPane.setEditable(false);
+                tooltipPane.setFocusable(false);
                 tooltipPane.putClientProperty("nbeditorui.vScrollPolicy", JScrollPane.VERTICAL_SCROLLBAR_NEVER);
                 tooltipPane.putClientProperty("nbeditorui.hScrollPolicy", JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
                 tooltipPane.putClientProperty("nbeditorui.selectSidebarLocations", "West");
@@ -568,7 +574,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
         //y += visible.y;
         
         ToolTipSupport tts = baseUI.getEditorUI().getToolTipSupport();
-        tts.setToolTipVisible(true);
+        tts.setToolTipVisible(true, false);
         tts.setToolTip(tooltip, 
                 PopupManager.ScrollBarBounds, 
                 new Point(-x, -y),

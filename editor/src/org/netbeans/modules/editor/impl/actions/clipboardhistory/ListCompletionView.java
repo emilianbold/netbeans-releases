@@ -53,6 +53,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.event.MouseListener;
 import java.util.Map;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
@@ -77,7 +78,8 @@ public class ListCompletionView extends JList {
     private Font font;
     private final RenderComponent renderComponent;
                 
-    public ListCompletionView() {
+    public ListCompletionView(MouseListener mouseListener) {
+        addMouseListener(mouseListener);
         setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         font = getFont();
         if (font.getSize() < 15 ) {
@@ -207,7 +209,7 @@ public class ListCompletionView extends JList {
     }
 
     public @Override void paint(Graphics g) {
-        Object value = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
+        Object value = Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
         Map renderingHints = (value instanceof Map) ? (java.util.Map)value : null;
         if (renderingHints != null && g instanceof Graphics2D) {
             Graphics2D g2d = (Graphics2D) g;
@@ -320,7 +322,7 @@ public class ListCompletionView extends JList {
         FontMetrics fm = g.getFontMetrics(defaultFont);
         int textY = (height - fm.getHeight())/2 + fm.getHeight() - fm.getDescent();
 
-        HtmlRenderer.renderHTML(f.getNumber() + " " + f.getShortenText(), g, 1, textY, textEnd, textY,
+        HtmlRenderer.renderHTML(f.getNumber() + " " + f.getShortenText(), g, 1, textY, textEnd, textY, //NOI18N
                 defaultFont, defaultColor, HtmlRenderer.STYLE_TRUNCATE, true);//, selected);
     }
 }

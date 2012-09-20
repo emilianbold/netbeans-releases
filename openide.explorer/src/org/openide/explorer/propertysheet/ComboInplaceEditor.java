@@ -43,18 +43,18 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
-
 import java.awt.*;
 import java.awt.event.*;
-
 import java.beans.PropertyEditor;
-
+import java.lang.reflect.Method;
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
 import javax.swing.plaf.ComboBoxUI;
+import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.text.JTextComponent;
+import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
+import org.openide.util.Lookup;
 
 
 /** A combo box inplace editor.  Does a couple of necessary things:
@@ -172,6 +172,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
 
             setEditable(editable);
             setActionCommand(COMMAND_SUCCESS);
+            setupAutoComplete();
             reset();
         } finally {
             connecting = false;
@@ -204,6 +205,10 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             return;
         } else {
             if (editor == null) {
+                return;
+            }
+
+            if( isAutoComplete() && isPopupVisible() ) {
                 return;
             }
 
@@ -280,6 +285,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         boolean useClean = tableUI && (lf instanceof MetalLookAndFeel 
                 || "GTK".equals(id) //NOI18N
                 || ("Aqua".equals(id) && "10.5".compareTo(System.getProperty("os.version")) <= 0) //NOI18N
+                || PropUtils.isWindowsVistaLaF() //#217957
                 || "Kunststoff".equals(id)); //NOI18N
 
         if (useClean) {
@@ -573,36 +579,25 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         }
     }
 
-    /* Replacement renderer class to hack around bug in SynthComboUI - will
-    * only be used on GTK look & feel.  GTK does not set background/highlight
-    * colors correctly */
-    private class Renderer extends DefaultListCellRenderer {
-        private boolean sel = false;
-
-        /** Overridden to return the combo box's background color if selected
-         * and focused - in GTK L&F combo boxes are always white (there's even
-         * a &quot;fixme&quot; note in the code. */
-        public Color getBackground() {
-            //This method can be called in the superclass constructor, thanks
-            //to updateUI().  At that time, this==null, so an NPE would happen
-            //if we tried tor reference the outer class
-            if (ComboInplaceEditor.this == null) {
-                return null;
-            }
-
-            if (!sel && ((getText() != null) && (getSelectedItem() != null) && getText().equals(getSelectedItem()))) {
-                return ComboInplaceEditor.this.getBackground();
-            } else {
-                return super.getBackground();
-            }
+    private boolean autoComplete = false;
+    /**
+     * Use reflection to check if SwingX library is on class path and add auto-complete.
+     */
+    private void setupAutoComplete() {
+        if( Boolean.getBoolean( "nb.propertysheet.combobox.autocomplete.disable") ) //NOI18N
+            return;
+        try {
+            ClassLoader cl = Lookup.getDefault().lookup( ClassLoader.class );
+            Class c = cl.loadClass( "org.jdesktop.swingx.autocomplete.AutoCompleteDecorator" ); //NOI18N
+            Method m = c.getMethod( "decorate", JComboBox.class );
+            m.invoke( null, this );
+            autoComplete = true;
+        } catch( Exception e ) {
+            //ignore, SwingX is either not available or unsupported version
         }
+    }
 
-        public Component getListCellRendererComponent(
-            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
-        ) {
-            sel = isSelected;
-
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
+    boolean isAutoComplete() {
+        return autoComplete;
     }
 }

@@ -55,19 +55,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.admin.CommandVersion;
-import org.glassfish.tools.ide.admin.ResultString;
-import org.glassfish.tools.ide.admin.ServerAdmin;
-import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.data.IdeContext;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
-import org.netbeans.modules.glassfish.spi.CommandFactory;
-import org.netbeans.modules.glassfish.spi.GlassfishModule3;
-import org.netbeans.modules.glassfish.spi.Utils;
-import org.netbeans.modules.glassfish.spi.VMIntrospector;
 import org.netbeans.modules.glassfish.spi.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -84,6 +77,58 @@ import org.openide.util.lookup.Lookups;
  * @author Peter Williams
  */
 public class CommonServerSupport implements GlassfishModule3, RefreshModulesCookie {
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Task state listener watching __locations command execution.
+     */
+    private static class LocationsTaskStateListener
+            implements TaskStateListener {
+
+        /** GlassFish server support object instance. */
+        final CommonServerSupport css;
+
+        /**
+         * Creates an instance of task state listener watching __locations
+         * command execution.
+         * <p/>
+         * @param css GlassFish server support object instance.
+         */
+        LocationsTaskStateListener(CommonServerSupport css) {
+            this.css = css;
+        }
+
+        /**
+         * Callback to notify about GlassFish __locations command execution
+         * state change.
+         * <p/>
+         * @param newState New command execution state.
+         * @param event    Event related to execution state change.
+         * @param args     Additional String arguments.
+         */
+        @Override
+        public void operationStateChanged(
+                TaskState newState, TaskEvent event,
+                String[] args) {
+            String message = args.length > 0 ? args[0] : null;
+            synchronized (css) {
+                long lastDisplayed = css.getLatestWarningDisplayTime();
+                long currentTime = System.currentTimeMillis();
+                if (TaskState.FAILED == newState
+                        && !"".equals(message)
+                        && currentTime - lastDisplayed > 5000) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                    css.setLatestWarningDisplayTime(currentTime);
+                    Logger.getLogger("glassfish").log(Level.INFO, message);
+                }
+            }
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -118,9 +163,12 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
         // !PW FIXME hopefully temporary patch for JavaONE 2008 to make it easier
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
-        if (!isRemote) {
-            refresh();
-        }
+ 
+        // Bug# 218526 - Refresh (admin command call) on startup causes deadlock
+        //               because of Keryring access.
+        //if (!isRemote) {
+        //    refresh();
+        //}
     }
 
     /**
@@ -555,7 +603,8 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
         instanceFO = fo;
     }
 
-    public static boolean isRunning(final String host, final int port, String name) {
+    public static boolean isRunning(final String host, final int port,
+            String name) {
         if(null == host)
             return false;
 
@@ -566,11 +615,13 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
             if ("localhost".equals(host) || "127.0.0.1".equals(host)) {
                 timeout = 2000;
             }
-            Logger.getLogger("glassfish-socket-connect-diagnostic").log(Level.FINE, "Using socket.connect", new Exception());
+            Logger.getLogger("glassfish-socket-connect-diagnostic").log(
+                    Level.FINE, "Using socket.connect", new Exception());
             socket.connect(isa, timeout);
             socket.setSoTimeout(timeout);
             try { socket.close(); } catch (IOException ioe) {
-                Logger.getLogger("glassfish").log(Level.INFO, "closing after test", ioe);
+                Logger.getLogger("glassfish").log(
+                        Level.INFO, "closing after test", ioe);
             }
             return true;
         } catch (java.net.ConnectException ex) {
@@ -581,21 +632,23 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
             String message;
             if (name == null || "".equals(name.trim())) {
                 message = NbBundle.getMessage(CommonServerSupport.class,
-                        "MSG_FLAKEY_NETWORK", host, ""+port, ioe.getLocalizedMessage()); // NOI18N
+                        "MSG_FLAKEY_NETWORK", host, ""+port,
+                        ioe.getLocalizedMessage());
             } else {
                 message = NbBundle.getMessage(CommonServerSupport.class,
-                        "MSG_FLAKEY_NETWORK2", host, ""+port, ioe.getLocalizedMessage(), name); // NOI18N
+                        "MSG_FLAKEY_NETWORK2", host, ""+port,
+                        ioe.getLocalizedMessage(), name);
             }
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notifyLater(nd);
-            Logger.getLogger("glassfish").log(Level.INFO, "evidence of network flakiness", ioe); // NOI18N
+            Logger.getLogger("glassfish").log(Level.INFO,
+                    "evidence of network flakiness", ioe);
             return false;
         }
     }
 
     public boolean isReallyRunning() {
-        return //isRunning(getHostName(), getAdminPortNumber(), instance.getProperty(DISPLAY_NAME_ATTR)) &&
-                isReady(false,30,TimeUnit.SECONDS);
+        return isReady(false,30,TimeUnit.SECONDS);
     }
 
     @SuppressWarnings("SleepWhileInLoop")
@@ -613,39 +666,42 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
                 }
             }
             long start = System.nanoTime();
-            Commands.LocationCommand command = new Commands.LocationCommand();
+            CommandLocation commandLocation = new CommandLocation();
             try {
-                Future<OperationState> result;
-
+                //Future<OperationState> result;
+                Future<ResultMap<String, String>> futureLocation;
                 if (isRemote) {
-                    final CommonServerSupport css = this;
-                    result = execute(true, command, new OperationStateListener() {
-                        @Override
-                        public void operationStateChanged(OperationState newState, String message) {
-                            synchronized (css) {
-                                long lastDisplayed = css.getLatestWarningDisplayTime();
-                                long currentTime = System.currentTimeMillis();
-                                if (OperationState.FAILED == newState && !"".equals(message)
-                                        && currentTime - lastDisplayed > 5000) { // NOI18N
-                                    NotifyDescriptor nd = new NotifyDescriptor.Message(message);
-                                    DialogDisplayer.getDefault().notifyLater(nd);
-                                    css.setLatestWarningDisplayTime(currentTime);
-                                    Logger.getLogger("glassfish").log(Level.INFO, message); // NOI18N
-                                }
-                            }
-                        }
-                    });
+                    TaskStateListener[] listenersLocation
+                            = new TaskStateListener[]{
+                        new LocationsTaskStateListener(this)};
+                    futureLocation
+                            = ServerAdmin.<ResultMap<String, String>>exec(
+                            instance, commandLocation, new IdeContext(),
+                            listenersLocation);
                 } else {
-                    result = execute(true, command);
+                    futureLocation
+                            = ServerAdmin.<ResultMap<String, String>>exec(
+                            instance, commandLocation, new IdeContext());
                 }
-                if(result.get(timeout, units) == OperationState.COMPLETED) {
+                ResultMap<String, String> resultLocation
+                        = futureLocation.get(timeout, units);
+                if (resultLocation.getState() == TaskState.COMPLETED) {
                     long end = System.nanoTime();
-                    Logger.getLogger("glassfish").log(Level.FINE, "{0} responded in {1}ms", new Object[]{command.getCommand(), (end - start) / 1000000});  // NOI18N
-                    String domainRoot = getDomainsRoot() + File.separator + getDomainName();
-                    String targetDomainRoot = command.getDomainRoot();
-                    if(getDomainsRoot() != null && targetDomainRoot != null) {
-                        File installDir = FileUtil.normalizeFile(new File(domainRoot));
-                        File targetInstallDir = FileUtil.normalizeFile(new File(targetDomainRoot));
+                    Logger.getLogger("glassfish").log(Level.FINE,
+                            "{0} responded in {1}ms",
+                            new Object[]{commandLocation.getCommand(),
+                                (end - start) / 1000000});
+                    String domainRoot = getDomainsRoot() + File.separator
+                            + getDomainName();
+                    String targetDomainRoot
+                            = resultLocation.getValue().get(
+                            "Domain-Root_value");
+                    if (getDomainsRoot() != null && targetDomainRoot != null) {
+                        File installDir
+                                = FileUtil.normalizeFile(new File(domainRoot));
+                        File targetInstallDir
+                                = FileUtil.normalizeFile(
+                                new File(targetDomainRoot));
                         isReady = installDir.equals(targetInstallDir);
                     } else {
                         // if we got a response from the server... we are going
@@ -658,10 +714,10 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
                         updateHttpPort();
                     }
                     break;
-                } else if(!command.retry()) {
-                    // !PW temporary while some server versions support __locations
-                    // and some do not but are still V3 and might the ones the user
-                    // is using.
+                } else if (!commandLocation.retry()) {
+                    // !PW temporary while some server versions support
+                    // __locationsband some do not but are still V3 and might
+                    // the ones the user is using.
                     Future<ResultString> future = 
                             ServerAdmin.<ResultString>exec(instance,
                             new CommandVersion(), new IdeContext());
@@ -669,22 +725,48 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
                     break;
                 } else {
                     // keep trying for 10 minutes if the server is stuck between
-                    // httpLive and server ready state. We have to give up sometime, though.
-                    VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
-                    boolean suspended = null == vmi ? false : vmi.isSuspended(getHostName(), (String) instance.getProperty(GlassfishModule.DEBUG_PORT));
+                    // httpLive and server ready state. We have to give up
+                    // sometime, though.
+                    VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH)
+                            .lookup(VMIntrospector.class);
+                    boolean suspended = null == vmi
+                            ? false
+                            : vmi.isSuspended(getHostName(),
+                            (String) instance.getProperty(
+                            GlassfishModule.DEBUG_PORT));
                     if (suspended) {
                         tries--;
                     } else if (maxtries < 20) {
                         maxtries++;
                     }
                     long end = System.nanoTime();
-                    Logger.getLogger("glassfish").log(Level.INFO, "{0} returned from server after {1}ms. The server is still getting ready", new Object[]{command.getCommand(), (end - start) / 1000000}); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.INFO,
+                            "{0} returned from server after {1}ms."
+                            + " The server is still getting ready",
+                            new Object[]{commandLocation.getCommand(),
+                                (end - start) / 1000000});
                 }
             } catch(TimeoutException ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, command.getCommand() + " timed out. "+tries+" of "+maxtries, ex); // NOI18N
+                Logger.getLogger("glassfish").log(Level.INFO,
+                        "Server {0} {1}:{2} user {3}",
+                        new Object[]{instance.getName(),
+                            instance.getHost(),
+                            instance.getHttpAdminPort(),
+                            instance.getAdminUser()});
+                Logger.getLogger("glassfish").log(Level.INFO,
+                        commandLocation.getCommand() + " timed out. "
+                        +tries+" of "+maxtries, ex);
                 isReady = false;
             } catch (Exception ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, command.getCommand() + " failed at  "+tries+" of "+maxtries, ex); // NOI18N
+                Logger.getLogger("glassfish").log(Level.INFO,
+                        "Server {0} {1}:{2} user {3}",
+                        new Object[]{instance.getName(),
+                            instance.getHost(),
+                            instance.getHttpAdminPort(),
+                            instance.getAdminUser()});
+                Logger.getLogger("glassfish").log(Level.INFO,
+                        commandLocation.getCommand() + " failed at  "
+                        +tries+" of "+maxtries, ex);
                 isReady = false;
                 break;
             }
@@ -712,23 +794,28 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    // Can block for up to a few seconds...
-                    boolean isRunning = isReallyRunning();
-                    if (isRunning && !Util.isDefaultOrServerTarget(
-                            instance.getProperties())) {
-                        isRunning = pingHttp(1);
-                    }
-                    ServerState currentState = getServerState();
-                    
-                    if((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
-                        setServerState(ServerState.RUNNING);
-                    } else if((currentState == ServerState.RUNNING || currentState == ServerState.UNKNOWN) && !isRunning) {
-                        setServerState(ServerState.STOPPED);
-                    } else if(currentState == ServerState.STOPPED_JVM_PROFILER && isRunning) {
-                        setServerState(ServerState.RUNNING);
-                    }
+                    try {
+                        // Can block for up to a few seconds...
+                        boolean isRunning = isReallyRunning();
+                        if (isRunning && !Util.isDefaultOrServerTarget(
+                                instance.getProperties())) {
+                            isRunning = pingHttp(1);
+                        }
+                        ServerState currentState = getServerState();
 
-                    refreshRunning.set(false);
+                        if ((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
+                            setServerState(ServerState.RUNNING);
+                        } else if ((currentState == ServerState.RUNNING || currentState == ServerState.UNKNOWN) && !isRunning) {
+                            setServerState(ServerState.STOPPED);
+                        } else if (currentState == ServerState.STOPPED_JVM_PROFILER && isRunning) {
+                            setServerState(ServerState.RUNNING);
+                        }
+                    } catch (Exception ex) {
+                         Logger.getLogger("glassfish").log(Level.WARNING,
+                                 ex.getMessage());
+                    } finally {
+                        refreshRunning.set(false);
+                    }
                 }
             });
         }

@@ -55,7 +55,7 @@ public class CC implements Serializable {
             return false;
         }
         CC other = (CC)object;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) { return false; }
+        if (other != null && this.id != other.id && (this.id == null || !this.id.equals(other.id))) { return false; }
         return true;
     }
 

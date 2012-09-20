@@ -113,6 +113,13 @@ made subject to such option by the copyright holder.
                     <attr name='preferencesKey' stringvalue='myKey'/>
                     <attr name='preferencesNode' stringvalue='user:/myNode'/>
                 </file>
+                <file name="testPreferencesDefault.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.checkbox'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.preferencesAction'/>
+                    <attr name='preferencesKey' stringvalue='myKey'/>
+                    <attr name='preferencesNode' stringvalue='user:/myNode'/>
+                    <attr name='preferencesDefault' boolvalue='true'/>
+                </file>
                 <file name="testNbPreferences.instance">
                     <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.checkbox'/>
                     <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.preferencesAction'/>

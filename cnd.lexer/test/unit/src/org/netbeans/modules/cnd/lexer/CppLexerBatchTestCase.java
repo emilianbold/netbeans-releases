@@ -84,14 +84,24 @@ public class CppLexerBatchTestCase extends TestCase {
     }
 
     public void testPreprocEmbedding() {
-        String text = "#define C 1 \"/*\" /* \n@see C */";
+        doTestPreprocEmbedding(true);
+        doTestPreprocEmbedding(false);
+    }
+
+    private void doTestPreprocEmbedding(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "define C 1 \"/*\" /* \n@see C */";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
 
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_DIRECTIVE, "#define C 1 \"/*\" /* \n@see C */");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_DIRECTIVE, startText + "define C 1 \"/*\" /* \n@see C */");
 
         TokenSequence<?> ep = ts.embedded();
-        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_DEFINE, "define");
         LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_IDENTIFIER, "C");

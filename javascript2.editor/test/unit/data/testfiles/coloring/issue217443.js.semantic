@@ -7,7 +7,7 @@ var |>GLOBAL:components<| = [];
 function |>METHOD:countComponentTables<|() { 
     |>GLOBAL:$<|(".sortable").each(function() { // each table
         var index = 0;
-        var sums = new |>GLOBAL:Array<|();
+        var sums = new Array();
         var id = |>GLOBAL:$<|(this).attr("id");
         |>GLOBAL:$<|(this).find("thead th").each(function() {
             index++;

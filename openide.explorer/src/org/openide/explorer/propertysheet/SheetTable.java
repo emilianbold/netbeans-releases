@@ -934,6 +934,36 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         return result;
     }
 
+    /**
+     * Select (and start editing) the given property.
+     * @param fd
+     * @param startEditing
+     */
+    public void select( FeatureDescriptor fd, boolean startEditing ) {
+        PropertySetModel psm = getPropertySetModel();
+        final int index = psm.indexOf( fd );
+        if( index < 0 ) {
+            return; //not in our list
+        }
+
+        getSelectionModel().setSelectionInterval( index, index );
+        if( startEditing && psm.isProperty( index ) ) {
+            editCellAt( index, 1, new MouseEvent( SheetTable.this, 0, System.currentTimeMillis(), 0, 0, 0, 1, false) );
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    SheetCellEditor cellEditor = getEditor();
+                    if( null != cellEditor ) {
+                        InplaceEditor inplace = cellEditor.getInplaceEditor();
+                        if( null != inplace && null != inplace.getComponent() ) {
+                            inplace.getComponent().requestFocus();
+                        }
+                    }
+                }
+            });
+        }
+    }
+
     //*********Implementation of editing*************************************    
 
     /**

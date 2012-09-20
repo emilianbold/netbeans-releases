@@ -57,6 +57,7 @@ import javax.swing.plaf.UIResource;
 class ColorComboBoxRendererWrapper implements ListCellRenderer, UIResource {
 
     private final ListCellRenderer renderer;
+    private static final boolean isGTK = "GTK".equals(UIManager.getLookAndFeel().getID()); //NOI18N
 
     ColorComboBoxRendererWrapper (JComboBox comboBox) {
         this.renderer = comboBox.getRenderer();
@@ -71,7 +72,7 @@ class ColorComboBoxRendererWrapper implements ListCellRenderer, UIResource {
         Component res = renderer.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
         if( res instanceof JLabel ) {
             JLabel label = ( JLabel ) res;
-            int height = Math.max( res.getPreferredSize().height - 4, 4 );
+            int height = isGTK ? 10 : Math.max( res.getPreferredSize().height - 4, 4 );
             Icon icon = null;
             if( value instanceof ColorValue ) {
                 ColorValue color = ( ColorValue ) value;

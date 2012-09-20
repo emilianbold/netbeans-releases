@@ -48,8 +48,10 @@ import com.oracle.nashorn.ir.ExecuteNode;
 import com.oracle.nashorn.ir.ForNode;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IfNode;
+import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.ObjectNode;
+import com.oracle.nashorn.ir.ReturnNode;
 import com.oracle.nashorn.ir.VarNode;
 import com.oracle.nashorn.ir.WhileNode;
 import java.util.Arrays;
@@ -58,11 +60,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
@@ -84,29 +88,33 @@ public class JsConventionRule extends JsAstRule {
         Rule missingSemicolon = null;
         Rule duplicatePropertyName = null;
         Rule assignmentInCondition = null;
-        Rule unexpectedCommaInOL = null;
+        Rule objectTrailingComma = null;
+        Rule arrayTrailingComma = null;
         if (conventionHints != null) {
             for (AstRule astRule : conventionHints) {
-                if(manager.isEnabled(astRule)) {
-                    if(astRule instanceof BetterConditionHint) {
+                if (manager.isEnabled(astRule)) {
+                    if (astRule instanceof BetterConditionHint) {
                         betterConditionRule = astRule;
-                    } else if(astRule instanceof MissingSemicolonHint) {
+                    } else if (astRule instanceof MissingSemicolonHint) {
                         missingSemicolon = astRule;
                     } else if (astRule instanceof DuplicatePropertyName) {
                         duplicatePropertyName = astRule;
                     } else if (astRule instanceof AssignmentInCondition) {
                         assignmentInCondition = astRule;
-                    } else if (astRule instanceof UnexpectedCommaInObjectLiteral) {
-                        unexpectedCommaInOL = astRule;
+                    } else if (astRule instanceof ObjectTrailingComma) {
+                        objectTrailingComma = astRule;
+                    } else if (astRule instanceof ArrayTrailingComma) {
+                        arrayTrailingComma = astRule;
                     }
                 }
             }
         }
-        ConventionVisitor conventionVisitor = new ConventionVisitor(this, betterConditionRule, missingSemicolon, duplicatePropertyName,
-                assignmentInCondition, unexpectedCommaInOL);
+        ConventionVisitor conventionVisitor = new ConventionVisitor(
+                betterConditionRule, missingSemicolon, duplicatePropertyName,
+                assignmentInCondition, objectTrailingComma, arrayTrailingComma);
         conventionVisitor.process(context, hints);
     }
-            
+
     @Override
     public Set<?> getKinds() {
         return Collections.singleton(JsAstRule.JS_OTHER_HINTS);
@@ -131,23 +139,26 @@ public class JsConventionRule extends JsAstRule {
 
     private static class ConventionVisitor extends PathNodeVisitor {
 
-        private List<Hint> hints;
-        private JsRuleContext context;
-        private final Rule rule;
         private final Rule betterConditionRule;
         private final Rule missingSemicolon;
         private final Rule duplicatePropertyName;
         private final Rule assignmentInCondition;
-        private final Rule unexpectedCommaInOL;
-        
-        public ConventionVisitor(Rule rule, Rule betterCondition, Rule missingSemicolon, 
-                Rule duplicatePropertyName, Rule assignmentInCondition, Rule unexpectedCommaInOL) {
-            this.rule = rule;
+        private final Rule objectTrailingComma;
+        private final Rule arrayTrailingComma;
+
+        private List<Hint> hints;
+
+        private JsRuleContext context;
+
+        public ConventionVisitor(Rule betterCondition, Rule missingSemicolon, 
+                Rule duplicatePropertyName, Rule assignmentInCondition,
+                Rule objectTrailingComma, Rule arrayTrailingComma) {
             this.betterConditionRule = betterCondition;
             this.missingSemicolon = missingSemicolon;
             this.duplicatePropertyName = duplicatePropertyName;
             this.assignmentInCondition = assignmentInCondition;
-            this.unexpectedCommaInOL = unexpectedCommaInOL;
+            this.objectTrailingComma = objectTrailingComma;
+            this.arrayTrailingComma = arrayTrailingComma;
         }
         
         @NbBundle.Messages({"# {0} - expected char or string",
@@ -172,69 +183,85 @@ public class JsConventionRule extends JsAstRule {
             if (fileOffset == -1) {
                 return;
             }
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, fileOffset);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                    context.parserResult.getSnapshot(), offset);
             if (ts == null) {
                 return;
             }
-            ts.move(fileOffset);
-            if(ts.movePrevious() && ts.moveNext()) {
+            // actually end might mark position after semicolon
+            ts.move(offset - 1);
+            if (ts.moveNext()) {
+                if (ts.token().id() == JsTokenId.OPERATOR_SEMICOLON) {
+                    return;
+                }
+            }
+            ts.move(offset);
+            if (ts.movePrevious() && ts.moveNext()) {
                 JsTokenId id = ts.token().id();
-                if(id == JsTokenId.STRING_END && ts.moveNext()) {
+                if (id == JsTokenId.STRING_END && ts.moveNext()) {
                     id = ts.token().id();
                 }
-                if (id == JsTokenId.EOL && ts.movePrevious()) {
+                if ((id == JsTokenId.EOL || id == JsTokenId.LINE_COMMENT) && ts.movePrevious()) {
                     id = ts.token().id();
                 }
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
-                    id = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE)).id();
-                    if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
-                        // check again whether there is not semicolon
-                        hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()), 
-                                context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
-                                new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                    Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
+                    id = previous.id();
+                    // check again whether there is not semicolon and it is not generated
+                    if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA
+                            && !JsEmbeddingProvider.isGeneratedIdentifier(previous.text().toString())) {
+                        fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
+                        if (fileOffset >= 0) {
+                            hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()),
+                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                    new OffsetRange(fileOffset, fileOffset + ts.token().length()), null, 500));
+                        }
                     }
                 }
             }
         }
 
         @NbBundle.Messages("AssignmentCondition=Expected a conditional expression and instead saw an assignment.")
-        private void checkCondition(Node condition) {
-            if (betterConditionRule == null && assignmentInCondition == null) {
+        private void checkAssignmentInCondition(Node condition) {
+            if (assignmentInCondition == null) {
                 return;
             }
-            if(condition instanceof BinaryNode) {
+            if (condition instanceof BinaryNode) {
                 BinaryNode binaryNode = (BinaryNode)condition;
                 if (assignmentInCondition != null && binaryNode.isAssignment()) {
-                    
-                    hints.add(new Hint(assignmentInCondition, Bundle.AssignmentCondition(), 
+                    hints.add(new Hint(assignmentInCondition, Bundle.AssignmentCondition(),
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
-                } else {
-                    if (betterConditionRule == null) {
-                        return;
-                    }
-                    String message = null;
-                    switch(binaryNode.tokenType()) {
-                        case EQ:
-                            message = Bundle.ExpectedInstead("===", "=="); //NOI18N
-                            break;
-                        case NE:
-                            message = Bundle.ExpectedInstead("!==", "!="); //NOI18N
-                            break;
-                    }
-                    if (message != null) {
-                        hints.add(new Hint(betterConditionRule, message, 
-                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                            ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
-                    }
                 }
                 if (binaryNode.lhs() instanceof BinaryNode) {
-                    checkCondition(binaryNode.lhs());
+                    checkAssignmentInCondition(binaryNode.lhs());
                 }
                 if (binaryNode.rhs() instanceof BinaryNode) {
-                    checkCondition(binaryNode.rhs());
+                    checkAssignmentInCondition(binaryNode.rhs());
                 }
             }
+        }
+
+        private void checkCondition(BinaryNode binaryNode) {
+            if (betterConditionRule == null) {
+                return;
+            }
+            String message = null;
+            switch (binaryNode.tokenType()) {
+                case EQ:
+                    message = Bundle.ExpectedInstead("===", "=="); //NOI18N
+                    break;
+                case NE:
+                    message = Bundle.ExpectedInstead("!==", "!="); //NOI18N
+                    break;
+            }
+            if (message != null) {
+                hints.add(new Hint(betterConditionRule, message,
+                    context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                    ModelUtils.documentOffsetRange(context.getJsParserResult(),
+                        binaryNode.getStart(), binaryNode.getFinish()), null, 500));
+            }
+
         }
 
         private enum State  { BEFORE_COLON, AFTER_COLON, AFTER_CURLY, AFTER_PAREN, AFTER_BRACKET};
@@ -249,26 +276,39 @@ public class JsConventionRule extends JsAstRule {
             if (startOffset == -1 || endOffset == -1) {
                 return;
             }
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, startOffset);
-            ts.move(startOffset);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.parserResult.getSnapshot(), objectNode.getStart());
+            if (ts == null) {
+                return;
+            }
+            ts.move(objectNode.getStart());
             State state = State.BEFORE_COLON;
             int curlyBalance = 0;
             int parenBalance = 0;
             int bracketBalance = 0;
+            boolean isGetterSetter = false;
             if (ts.movePrevious() && ts.moveNext()) {
                 HashSet<String> names = new HashSet<String>();
-                while (ts.moveNext() && ts.offset() < endOffset) {
+                while (ts.moveNext() && ts.offset() < objectNode.getFinish()) {
                     JsTokenId id = ts.token().id();
                     switch (state) {
                         case BEFORE_COLON:
                             if (id == JsTokenId.IDENTIFIER || id == JsTokenId.STRING) {
-                                if (!names.add(ts.token().text().toString())) {
-                                    hints.add(new Hint(duplicatePropertyName, Bundle.DuplicateName(ts.token().text().toString()),
-                                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                                            new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                                String name = ts.token().text().toString();
+                                if ("set".equals(name) || "get".equals(name)) {
+                                    isGetterSetter = true;
+                                } else if (!names.add(name) && !isGetterSetter) {
+                                    int docOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
+                                    if (docOffset >= 0) {
+                                        hints.add(new Hint(duplicatePropertyName, Bundle.DuplicateName(name),
+                                                context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                                new OffsetRange(docOffset, docOffset + ts.token().length()), null, 500));
+                                    }
                                 }
                             } else if (id == JsTokenId.OPERATOR_COLON) {
                                 state = State.AFTER_COLON;
+                            }  else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
+                                state = State.AFTER_CURLY;
+                                isGetterSetter = false;
                             }
                             break;
                         case AFTER_COLON:
@@ -318,98 +358,135 @@ public class JsConventionRule extends JsAstRule {
                     }
                 }
             }
-        }   
-       
-        @Override
-        public Node visit(DoWhileNode doWhileNode, boolean onset) {
-            if (onset) {
-                checkCondition(doWhileNode.getTest());
-            }
-            return super.visit(doWhileNode, onset);
         }
-        
-        
+
         @Override
-        public Node visit(ExecuteNode executeNode, boolean onset) {
-            if (onset && !(executeNode.getExpression() instanceof Block)) {
+        public Node enter(DoWhileNode doWhileNode) {
+            checkAssignmentInCondition(doWhileNode.getTest());
+            return super.enter(doWhileNode);
+        }
+
+        @Override
+        public Node enter(ForNode forNode) {
+            checkAssignmentInCondition(forNode.getTest());
+            return super.enter(forNode);
+        }
+
+        @Override
+        public Node enter(IfNode ifNode) {
+            checkAssignmentInCondition(ifNode.getTest());
+            return super.enter(ifNode);
+        }
+
+        @Override
+        public Node enter(WhileNode whileNode) {
+            checkAssignmentInCondition(whileNode.getTest());
+            return super.enter(whileNode);
+        }
+
+        @Override
+        public Node enter(ExecuteNode executeNode) {
+            if (!(executeNode.getExpression() instanceof Block)) {
                 checkSemicolon(executeNode.getFinish());
             }
-            return super.visit(executeNode, onset);
+            return super.enter(executeNode);
         }
-
-        @Override
-        public Node visit(ForNode forNode, boolean onset) {
-            if (onset) {
-                checkCondition(forNode.getTest());
-            }
-            return super.visit(forNode, onset);
-        }
-
-        @Override
-        public Node visit(IfNode ifNode, boolean onset) {
-            if (onset) {
-                checkCondition(ifNode.getTest());
-            }
-            return super.visit(ifNode, onset);
-        }
-        
-        
 
         @Override
         @NbBundle.Messages({"# {0} - the eunexpected token",
-            "Unexpected=Unexpected \"{0}\"."})
-        public Node visit(ObjectNode objectNode, boolean onset) {
-            if (onset) {
-                checkDuplicateLabels(objectNode);
-                if (unexpectedCommaInOL != null) {
-                    int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
-                    if (offset > -1) {
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.doc, offset);
-                        ts.move(offset);
-                        if(ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
-                            LexUtilities.findPrevious(ts, Arrays.asList(
-                                    JsTokenId.EOL, JsTokenId.WHITESPACE, 
-                                    JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
-                                    JsTokenId.BLOCK_COMMENT));
-                            if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
-                                hints.add(new Hint(unexpectedCommaInOL, Bundle.Unexpected(ts.token().text().toString()), 
-                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(), 
-                                    new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+            "UnexpectedObjectTrailing=Unexpected \"{0}\"."})
+        public Node enter(ObjectNode objectNode) {
+            checkDuplicateLabels(objectNode);
+            if (objectTrailingComma != null) {
+                int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
+                if (offset > -1) {
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                            context.parserResult.getSnapshot(), objectNode.getFinish());
+                    if (ts == null) {
+                        return super.enter(objectNode);
+                    }
+                    ts.move(objectNode.getFinish());
+                    if (ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
+                        LexUtilities.findPrevious(ts, Arrays.asList(
+                                JsTokenId.EOL, JsTokenId.WHITESPACE,
+                                JsTokenId.BRACKET_RIGHT_CURLY, JsTokenId.LINE_COMMENT,
+                                JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
+                        if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
+                            offset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
+                            if (offset >= 0) {
+                                hints.add(new Hint(objectTrailingComma, Bundle.UnexpectedObjectTrailing(ts.token().text().toString()),
+                                        context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                        new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
                             }
                         }
                     }
                 }
             }
-            return super.visit(objectNode, onset);
+            return super.enter(objectNode);
         }
 
         @Override
-        public Node visit(VarNode varNode, boolean onset) {
-            if (onset) {
-                boolean check = true;
-                Node previous = getPath().get(getPath().size() - 1);
-                if (previous instanceof Block) {
-                    Block block = (Block)previous;
-                    if (block.getStatements().size() == 2 && block.getStatements().get(1) instanceof ForNode) {
-                        check = false;
+        @NbBundle.Messages({"# {0} - the eunexpected token",
+            "UnexpectedArrayTrailing=Unexpected \"{0}\"."})
+        public Node enter(LiteralNode literalNode) {
+            if (arrayTrailingComma != null) {
+                if (literalNode.getValue() instanceof Node[]) {
+                    int offset = context.parserResult.getSnapshot().getOriginalOffset(literalNode.getFinish());
+                    if (offset > -1) {
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                                context.parserResult.getSnapshot(), literalNode.getFinish());
+                        if (ts == null) {
+                            return super.enter(literalNode);
+                        }
+                        ts.move(literalNode.getFinish());
+                        if (ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
+                            LexUtilities.findPrevious(ts, Arrays.asList(
+                                    JsTokenId.EOL, JsTokenId.WHITESPACE,
+                                    JsTokenId.BRACKET_RIGHT_BRACKET, JsTokenId.LINE_COMMENT,
+                                    JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
+                            if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
+                                offset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
+                                if (offset >= 0) {
+                                    hints.add(new Hint(arrayTrailingComma, Bundle.UnexpectedArrayTrailing(ts.token().text().toString()),
+                                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                            new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                                }
+                            }
+                        }
                     }
-                } else if (previous instanceof ForNode) {
+                }
+            }
+            return super.enter(literalNode);
+        }
+
+        @Override
+        public Node enter(VarNode varNode) {
+            boolean check = true;
+            Node previous = getPath().get(getPath().size() - 1);
+            if (previous instanceof Block) {
+                Block block = (Block) previous;
+                if (block.getStatements().size() == 2 && block.getStatements().get(1) instanceof ForNode) {
                     check = false;
                 }
-                if (check) {
-                    checkSemicolon(varNode.getFinish());
-                }
+            } else if (previous instanceof ForNode) {
+                check = false;
             }
-            return super.visit(varNode, onset);
+            if (check) {
+                checkSemicolon(varNode.getFinish());
+            }
+            return super.enter(varNode);
         }
 
         @Override
-        public Node visit(WhileNode whileNode, boolean onset) {
-            if (onset) {
-                checkCondition(whileNode.getTest());
-            }
-            return super.visit(whileNode, onset);
+        public Node enter(ReturnNode returnNode) {
+            checkSemicolon(returnNode.getFinish());
+            return super.enter(returnNode);
         }
-        
+
+        @Override
+        public Node enter(BinaryNode binaryNode) {
+            checkCondition(binaryNode);
+            return super.enter(binaryNode);
+        }
     }
 }

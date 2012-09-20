@@ -13,7 +13,7 @@ var x = 1, d = function c() {
 var test = {
     getDescription: function() {
         return "test"
-    }, a:5, testFuntion: function() {
+    }, a: 5, testFuntion: function() {
         return x
-    }, b:7
+    }, b: 7
 }

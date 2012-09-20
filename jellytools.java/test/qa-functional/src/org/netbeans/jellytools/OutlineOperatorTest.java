@@ -78,7 +78,7 @@ public class OutlineOperatorTest extends JellyTestCase {
     public void setUp() throws Exception {
         System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
-        JavaNode lrTestClass = new JavaNode(new SourcePackagesNode("SampleProject"), "sample1|TestOutline.java");
+        JavaNode lrTestClass = new JavaNode(new SourcePackagesNode("SampleProject"), "sample1.outline|TestOutline.java");
         lrTestClass.open();
         EditorOperator eo = new EditorOperator("TestOutline.java");
         eo.setCaretPosition(67, 1);

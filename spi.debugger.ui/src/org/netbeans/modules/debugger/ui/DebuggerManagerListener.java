@@ -52,9 +52,12 @@ import java.beans.DesignMode;
 import java.beans.beancontext.BeanContextChildComponentProxy;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -68,9 +71,11 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 
-import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.debugger.ui.actions.DebuggerAction;
 import org.netbeans.spi.debugger.ActionsProvider;
+import org.netbeans.spi.debugger.ui.EngineComponentsProvider;
+import org.netbeans.spi.debugger.ui.EngineComponentsProvider.ComponentInfo;
+import org.openide.ErrorManager;
 import org.openide.awt.Toolbar;
 import org.openide.awt.ToolbarPool;
 import org.openide.util.Exceptions;
@@ -89,11 +94,11 @@ import org.openide.windows.WindowManager;
  */
 public class DebuggerManagerListener extends DebuggerManagerAdapter {
 
-    private static final String PROPERTY_CLOSED_TC = "closedTopComponents"; // NOI18N
-
     private List<DebuggerEngine> openedGroups = new LinkedList<DebuggerEngine>();
-    private final Map<DebuggerEngine, List<? extends Component>> openedComponents = new HashMap<DebuggerEngine, List<? extends Component>>();
-    private Set<Reference<Component>> componentsInitiallyOpened = new HashSet<Reference<Component>>();
+    //private final Map<DebuggerEngine, List<? extends Component>> openedComponents = new HashMap<DebuggerEngine, List<? extends Component>>();
+    private final Map<DebuggerEngine, Map<EngineComponentsProvider, List<? extends ComponentInfo>>> openedComponents =
+            new HashMap<DebuggerEngine, Map<EngineComponentsProvider, List<? extends ComponentInfo>>>();
+    private static final Set<Reference<Component>> componentsInitiallyOpened = new HashSet<Reference<Component>>();
     private final Map<DebuggerEngine, List<? extends Component>> closedToolbarButtons = new HashMap<DebuggerEngine, List<? extends Component>>();
     private final Map<DebuggerEngine, List<? extends Component>> usedToolbarButtons = new HashMap<DebuggerEngine, List<? extends Component>>();
     private final Map<Component, Dimension> toolbarButtonsPrefferedSize = new HashMap<Component, Dimension>();
@@ -101,7 +106,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
     private ToolbarContainerListener toolbarContainerListener;
     private static final RequestProcessor RP = new RequestProcessor("Debugger Engine Setup", 1);        // NOI18N
 
-    private static final List<Component> OPENED_COMPONENTS = new LinkedList<Component>();
+    private static final List<ComponentInfo> OPENED_COMPONENTS = new LinkedList<ComponentInfo>();
 
     @Override
     public void engineAdded (DebuggerEngine engine) {
@@ -116,10 +121,12 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             }
             final List<? extends BeanContextChildComponentProxy> componentProxies =
                     engine.lookup(null, BeanContextChildComponentProxy.class);
+            final List<? extends EngineComponentsProvider> componentsProvidersL = engine.lookup(null, EngineComponentsProvider.class);
             //final List<? extends TopComponent> windowsToOpen = engine.lookup(null, TopComponent.class);
-            if (componentProxies != null && !componentProxies.isEmpty()) {
-                final List<Component> componentsToOpen = new ArrayList<Component>(componentProxies.size());
-                componentsToOpen.add(new java.awt.Label("EMPTY"));
+            if (!componentProxies.isEmpty() || !componentsProvidersL.isEmpty()) {
+                final Map<EngineComponentsProvider, List<? extends ComponentInfo>> componentsToOpen =
+                        new LinkedHashMap<EngineComponentsProvider, List<? extends ComponentInfo>>();
+                componentsToOpen.put(null, null); // Going to initialize...
                 if (openedComponents.isEmpty() && openedGroups.isEmpty()) {
                     fillOpenedDebuggerComponents(componentsInitiallyOpened);
                 }
@@ -130,48 +137,53 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 rp.post (new Runnable () {
                     @Override
                     public void run () {
-                        List<Component> cs = new ArrayList<Component>(componentProxies.size());
+                        final Map<EngineComponentsProvider, List<? extends ComponentInfo>> ecs =
+                                new LinkedHashMap<EngineComponentsProvider, List<? extends ComponentInfo>>();
+                        final List<ComponentInfo> cs = new ArrayList<ComponentInfo>();
                         try {
-                            final List<TopComponent> topComponentsToOpen = new ArrayList<TopComponent>(componentProxies.size());
-                            for (final BeanContextChildComponentProxy cp : componentProxies) {
-                                final Component[] c = new Component[] { null };
-                                final boolean[] doOpen = new boolean[] { false };
-                                try {
-                                    SwingUtilities.invokeAndWait(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            c[0] = cp.getComponent();
-                                            doOpen[0] = (cp instanceof DesignMode) ? ((DesignMode) cp).isDesignTime() : true;
-                                        }
-                                    });
-                                    if (c[0] == null) {
-                                        //throw new NullPointerException("No component from "+cp);
-                                        continue;
-                                    }
-                                } catch (Exception ex) {
-                                    Exceptions.printStackTrace(ex);
-                                    continue;
-                                }
-                                cs.add(c[0]);
-                                if (c[0] instanceof TopComponent) {
-                                    final TopComponent tc = (TopComponent) c[0];
-                                    boolean wasClosed = Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
-                                            getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), false);
-                                    boolean wasOpened = !Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
-                                            getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), true);
-                                    if (doOpen[0] && !wasClosed || !doOpen[0] && wasOpened) {
-                                        topComponentsToOpen.add(tc);
-                                    }
+                            final List<? extends EngineComponentsProvider> componentsProviders;
+                            if (!componentProxies.isEmpty()) {
+                                BeanContextComponentProvider bccp = new BeanContextComponentProvider(componentProxies);
+                                if (componentsProvidersL.isEmpty()) {
+                                    componentsProviders = Collections.singletonList(bccp);
                                 } else {
-                                    if (doOpen[0]) {
-                                        SwingUtilities.invokeLater(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                c[0].setVisible(true);
-                                            }
-                                        });
-                                    }
+                                    List<EngineComponentsProvider> cps = new ArrayList<EngineComponentsProvider>(componentsProvidersL.size() + 1);
+                                    cps.addAll(componentsProvidersL);
+                                    cps.add(bccp);
+                                    componentsProviders = Collections.unmodifiableList(cps);
                                 }
+                            } else {
+                                componentsProviders = componentsProvidersL;
+                            }
+                            final Map<TopComponent, ComponentInfo> topComponentsToOpen = new LinkedHashMap<TopComponent, ComponentInfo>();
+                            for (EngineComponentsProvider ecp : componentsProviders) {
+                                List<ComponentInfo> cis = ecp.getComponents();
+                                for (final ComponentInfo ci : cis) {
+                                    if (ci.isOpened()) {
+                                        try {
+                                            SwingUtilities.invokeAndWait(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Component c = ci.getComponent();
+                                                    if (c == null) {
+                                                        ErrorManager.getDefault().notify(new IllegalStateException("Null component from "+ci));
+                                                        return ;
+                                                    }
+                                                    if (c instanceof TopComponent) {
+                                                        topComponentsToOpen.put((TopComponent) c, ci);
+                                                    } else {
+                                                        c.setVisible(true);
+                                                    }
+                                                }
+                                            });
+                                        } catch (Exception ex) {
+                                            Exceptions.printStackTrace(ex);
+                                            continue;
+                                        }
+                                    }
+                                    cs.add(ci);
+                                }
+                                ecs.put(ecp, cis);
                             }
                             if (topComponentsToOpen.size() > 0) {
                                 SwingUtilities.invokeLater(new Runnable() {
@@ -184,19 +196,23 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                         } finally {
                             synchronized (openedComponents) {
                                 componentsToOpen.clear();
-                                componentsToOpen.addAll(cs);
+                                componentsToOpen.putAll(ecs);
                                 openedComponents.notifyAll();
                             }
                             synchronized (OPENED_COMPONENTS) {
+                                OPENED_COMPONENTS.addAll(cs);
+                                /* consider componentsInitiallyOpened when closing components from OPENED_COMPONENTS
+                                 * instead of this:
                                 if (componentsInitiallyOpened.isEmpty()) {
                                     OPENED_COMPONENTS.addAll(cs);
                                 } else {
-                                    List<Component> ocs = new ArrayList<Component>(cs);
+                                    List<ComponentInfo> ocs = new ArrayList<ComponentInfo>(cs);
                                     for (Reference<Component> cref : componentsInitiallyOpened) {
                                         ocs.remove(cref.get());
                                     }
                                     OPENED_COMPONENTS.addAll(ocs);
                                 }
+                                */
                             }
                         }
                     }
@@ -231,11 +247,17 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         }
     }
 
-    private void openTopComponents(List<TopComponent> components) {
+    private void openTopComponents(Map<TopComponent, ComponentInfo> components) {
         assert SwingUtilities.isEventDispatchThread();
         Set<Mode> modesWithVisibleTC = new HashSet<Mode>();
-        for (TopComponent tc : components) {
+        for (Map.Entry<TopComponent, ComponentInfo> tci : components.entrySet()) {
+            TopComponent tc = tci.getKey();
+            ComponentInfo ci = tci.getValue();
+            boolean wasOpened = tc.isOpened();
             tc.open();
+            if (!(wasOpened && ci.isMinimized())) { // Do not minimize opened windows
+                WindowManager.getDefault().setTopComponentMinimized(tc, ci.isMinimized());
+            }
             Mode mode = WindowManager.getDefault().findMode(tc);
             if (modesWithVisibleTC.add(mode)) {
                 TopComponent tcSel = mode.getSelectedTopComponent();
@@ -375,35 +397,77 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
     public void engineRemoved (DebuggerEngine engine) {
         //boolean doCloseToolbar = false;
         synchronized (openedComponents) {
-            List<? extends Component> openedWindows = openedComponents.remove(engine);
-            if (openedWindows != null) {
+            final Map<EngineComponentsProvider, List<? extends ComponentInfo>> openedWindowsByProvider = openedComponents.remove(engine);
+            if (openedWindowsByProvider != null) {
                 // If it's not filled yet by AWT, wait...
-                if (openedWindows.size() == 1 && openedWindows.get(0) instanceof java.awt.Label) {
+                if (openedWindowsByProvider.size() == 1 && openedWindowsByProvider.containsKey(null)) {
                     try {
                        openedComponents.wait();
                     } catch (InterruptedException iex) {}
                 }
+                List<ComponentInfo> openedWindows = new ArrayList<ComponentInfo>();
+                for (List<? extends ComponentInfo> lci : openedWindowsByProvider.values()) {
+                    openedWindows.addAll(lci);
+                }
                 // Check whether the component is opened by some other engine...
-                final List<Component> retainOpened = new ArrayList<Component>();
-                for (List<? extends Component> ltc : openedComponents.values()) {
-                    retainOpened.addAll(ltc);
+                final List<ComponentInfo> retainOpened = new ArrayList<ComponentInfo>();
+                for (Map<EngineComponentsProvider, List<? extends ComponentInfo>> meci : openedComponents.values()) {
+                    for (List<? extends ComponentInfo> lci : meci.values()){
+                        retainOpened.addAll(lci);
+                    }
                 }
-                final List<Component> windowsToClose = new ArrayList<Component>(openedWindows);
-                windowsToClose.removeAll(retainOpened);
+                final List<Component> initiallyOpened = new ArrayList<Component>();
                 for (Reference<Component> cref : componentsInitiallyOpened) {
-                    windowsToClose.remove(cref.get());
+                    Component c = cref.get();
+                    if (c != null) {
+                        initiallyOpened.add(c);
+                    }
                 }
-                if (!windowsToClose.isEmpty()) {
-                    SwingUtilities.invokeLater (new Runnable () {
+                final List<ComponentInfo> windowsToClose = new ArrayList<ComponentInfo>(openedWindows);
+                //windowsToClose.removeAll(retainOpened);
+                try {
+                    SwingUtilities.invokeLater(new Runnable() {
                         @Override
-                        public void run () {
+                        public void run() {
+                            List<Component> retainOpenedComponents = new ArrayList<Component>(retainOpened.size());
+                            for (ComponentInfo ci : retainOpened) {
+                                Component c = ci.getComponent();
+                                if (c == null) {
+                                    ErrorManager.getDefault().notify(new IllegalStateException("Null component from "+ci));
+                                    continue;
+                                }
+                                retainOpenedComponents.add(c);
+                            }
+                            for (Component c : initiallyOpened) {
+                                if (c != null) {
+                                    retainOpenedComponents.add(c);
+                                }
+                            }
+                            List<ComponentInfo> windowsToCloseCopy = (ArrayList<ComponentInfo>) ((ArrayList) windowsToClose).clone();
+                            for (ComponentInfo ci : windowsToCloseCopy) {
+                                Component c = ci.getComponent();
+                                if (retainOpenedComponents.contains(c)) {
+                                    windowsToClose.remove(ci);
+                                }
+                            }
+                            for (EngineComponentsProvider ecp : openedWindowsByProvider.keySet()) {
+                                List<? extends ComponentInfo> cis = openedWindowsByProvider.get(ecp);
+                                List<ComponentInfo> closing = new ArrayList<ComponentInfo>(cis);
+                                closing.retainAll(windowsToClose);
+                                ecp.willCloseNotify(closing);
+                            }
                             final List<TopComponent> topComponentsToClose = new ArrayList<TopComponent>(windowsToClose.size());
-                            for (Component c : windowsToClose) {
+                            for (ComponentInfo ci : windowsToClose) {
+                                Component c = ci.getComponent();
+                                if (c == null) {
+                                    ErrorManager.getDefault().notify(new IllegalStateException("Null component from "+ci));
+                                    continue;
+                                }
                                 if (c instanceof TopComponent) {
                                     TopComponent tc = (TopComponent) c;
                                     boolean isOpened = tc.isOpened();
-                                    Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
-                                            getProperties(PROPERTY_CLOSED_TC).setBoolean(tc.getName(), !isOpened);
+                                    //Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
+                                    //        getProperties(PROPERTY_CLOSED_TC).setBoolean(tc.getName(), !isOpened);
                                     if (isOpened) {
                                         topComponentsToClose.add(tc);
                                     }
@@ -412,11 +476,13 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                 }
                             }
                             closeTopComponentsList(topComponentsToClose);
+                            synchronized (OPENED_COMPONENTS) {
+                                OPENED_COMPONENTS.removeAll(windowsToClose);
+                            }
                         }
                     });
-                }
-                synchronized (OPENED_COMPONENTS) {
-                    OPENED_COMPONENTS.removeAll(windowsToClose);
+                } catch (Exception exc) {
+                    Exceptions.printStackTrace(exc);
                 }
             } else {
                 openedGroups.remove(engine);
@@ -435,6 +501,9 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             }
             if (openedComponents.isEmpty() && openedGroups.isEmpty()) {
                 componentsInitiallyOpened.clear();
+                synchronized (OPENED_COMPONENTS) {
+                    OPENED_COMPONENTS.clear();
+                }
                 /*doCloseToolbar = true;
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
@@ -568,14 +637,40 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             group.close ();
         }
         synchronized (OPENED_COMPONENTS) {
-            for (Component c : OPENED_COMPONENTS) {
+            final List<Component> initiallyOpened;
+            if (componentsInitiallyOpened.isEmpty()) {
+                initiallyOpened = Collections.EMPTY_LIST;
+            } else {
+                initiallyOpened = new ArrayList<Component>();
+                for (Reference<Component> cref : componentsInitiallyOpened) {
+                    Component c = cref.get();
+                    if (c != null) {
+                        initiallyOpened.add(c);
+                    }
+                }
+            }
+            for (ComponentInfo ci : OPENED_COMPONENTS) {
+                Component c = ci.getComponent();
+                if (initiallyOpened.contains(c)) {
+                    continue;
+                }
                 if (c instanceof TopComponent) {
+                    /* To check which components we're closing:
+                    try {
+                        Method pid = TopComponent.class.getDeclaredMethod("preferredID");
+                        pid.setAccessible(true);
+                    System.err.println("doCloseDebuggerUI("+pid.invoke(c)+")");
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    */
                     ((TopComponent) c).close();
-                } else {
+                } else if (c != null) {
                     c.setVisible(false);
                 }
             }
             OPENED_COMPONENTS.clear();
+            componentsInitiallyOpened.clear();
         }
         ToolbarPool.getDefault().waitFinished();
         if (ToolbarPool.getDefault().getConfiguration().equals("Debugging")) { // NOI18N
@@ -669,6 +764,26 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     }
                 });
             }
+        }
+        
+    }
+    
+    private static class BeanContextComponentProvider implements EngineComponentsProvider {
+        
+        private final List<? extends BeanContextChildComponentProxy> componentProxies;
+        
+        public BeanContextComponentProvider(List<? extends BeanContextChildComponentProxy> componentProxies) {
+            this.componentProxies = componentProxies;
+        }
+
+        @Override
+        public List<ComponentInfo> getComponents() {
+            return ComponentInfoFromBeanContext.transform(componentProxies);
+        }
+
+        @Override
+        public void willCloseNotify(List<ComponentInfo> components) {
+            ComponentInfoFromBeanContext.closing(components);
         }
         
     }

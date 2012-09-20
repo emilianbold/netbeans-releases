@@ -171,12 +171,12 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     // Interface OptionsProvider
     @Override
     public String getOptions(AbstractCompiler compiler) {
-        String options = "$(COMPILE.cc) "; // NOI18N
-        options += getAllOptions2(compiler) + " "; // NOI18N
-        options += getCommandLineConfiguration().getValue() + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        StringBuilder options = new StringBuilder("$(COMPILE.cc) "); // NOI18N
+        options.append(getAllOptions2(compiler)).append(' '); // NOI18N
+        options.append(getCommandLineOptions(true));
+        return CppUtils.reformatWhitespaces(options.toString());
     }
-    
+
     public String getCCFlagsBasic(AbstractCompiler compiler) {
         String options = ""; // NOI18N
         options += compiler.getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
@@ -326,36 +326,38 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         };
         Sheet.Set set0 = getSet();
         sheet.put(set0);
-        if (conf.isCompileConfiguration() && folder == null) {
-            Sheet.Set bset = getBasicSet();
-            sheet.put(bset);            
-            if (compilerSet !=null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler                
-                Sheet.Set set2 = new Sheet.Set();
-                set2.setName("OtherOptions"); // NOI18N
-                set2.setDisplayName(getString("OtherOptionsTxt"));
-                set2.setShortDescription(getString("OtherOptionsHint"));
-                set2.put(new IntNodeProp(getMTLevel(), getMaster() != null ? false : true, "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
-                set2.put(new IntNodeProp(getLibraryLevel(), getMaster() != null ? false : true, "LibraryLevel", getString("LibraryLevelTxt"), getString("LibraryLevelHint"))); // NOI18N
-                set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
-                set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
-                sheet.put(set2);
-            } else {
-                bset.put(standardProp);
-            }
-            if (getMaster() != null) {
-                sheet.put(getInputSet());
-            }
+        if (conf.isCompileConfiguration()) {
+            if (folder == null) {
+                Sheet.Set bset = getBasicSet();
+                sheet.put(bset);
+                if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler                
+                    Sheet.Set set2 = new Sheet.Set();
+                    set2.setName("OtherOptions"); // NOI18N
+                    set2.setDisplayName(getString("OtherOptionsTxt"));
+                    set2.setShortDescription(getString("OtherOptionsHint"));
+                    set2.put(new IntNodeProp(getMTLevel(), getMaster() != null ? false : true, "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getLibraryLevel(), getMaster() != null ? false : true, "LibraryLevel", getString("LibraryLevelTxt"), getString("LibraryLevelHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
+                    sheet.put(set2);
+                } else {
+                    bset.put(standardProp);
+                }
+                if (getMaster() != null) {
+                    sheet.put(getInputSet());
+                }
 
-            Sheet.Set set4 = new Sheet.Set();
-            set4.setName("Tool"); // NOI18N
-            set4.setDisplayName(getString("ToolTxt1"));
-            set4.setShortDescription(getString("ToolHint1"));
-            if (ccCompiler != null) {
-                set4.put(new StringNodeProp(getTool(), ccCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+                Sheet.Set set4 = new Sheet.Set();
+                set4.setName("Tool"); // NOI18N
+                set4.setDisplayName(getString("ToolTxt1"));
+                set4.setShortDescription(getString("ToolHint1"));
+                if (ccCompiler != null) {
+                    set4.put(new StringNodeProp(getTool(), ccCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+                }
+                sheet.put(set4);
             }
-            sheet.put(set4);
             
-            String[] texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
+            String[] texts = new String[]{getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
             Sheet.Set set2 = new Sheet.Set();
             set2.setName("CommandLine"); // NOI18N
             set2.setDisplayName(getString("CommandLineTxt"));
@@ -364,7 +366,6 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
                 set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, ccCompiler, null, texts));
             }
             sheet.put(set2);
-        
         } else if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE && item != null && ccCompiler != null) {
             AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
             if (options != null) {
@@ -381,6 +382,13 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
             }
         }  
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+            if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
+                set0.put(standardProp);
+            }
+        }
+        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION || 
+            conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB || 
+           conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
             if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
                 set0.put(standardProp);
             }

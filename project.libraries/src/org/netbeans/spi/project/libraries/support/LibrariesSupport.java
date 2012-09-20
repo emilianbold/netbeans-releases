@@ -52,6 +52,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -68,6 +69,19 @@ public final class LibrariesSupport {
     private LibrariesSupport () {
     }
 
+    /**
+     * Creates default {@link LibraryImplementation3}
+     * @param libraryType type of library
+     * @param volumeTypes types of supported volumes
+     * @return LibraryImplementation3
+     * @since 1.39
+     */
+    @NonNull
+    public static LibraryImplementation3 createLibraryImplementation3 (
+            @NonNull final String libraryType,
+            @NonNull final String... volumeTypes) {
+        return new DefaultLibraryImplementation (libraryType, volumeTypes);
+    }
 
     /**
      * Creates default LibraryImplementation
@@ -76,7 +90,7 @@ public final class LibrariesSupport {
      * @return LibraryImplementation, never return null
      */
     public static LibraryImplementation createLibraryImplementation (String libraryType, String[] volumeTypes) {
-        return new DefaultLibraryImplementation (libraryType, volumeTypes);
+        return createLibraryImplementation3(libraryType, volumeTypes);
     }
     
     /**

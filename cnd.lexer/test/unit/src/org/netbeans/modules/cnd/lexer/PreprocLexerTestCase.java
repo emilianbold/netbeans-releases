@@ -51,7 +51,7 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
  * tests for preprocessor directive lexer
- * 
+ *
  * @author Vladimir Voskresensky
  */
 public class PreprocLexerTestCase extends NbTestCase {
@@ -69,41 +69,66 @@ public class PreprocLexerTestCase extends NbTestCase {
     protected int timeOut() {
         return 500000;
     }
-    
-    public void testIfdef() {
-        String text = "#ifdef MACRO\n";
+
+    private void doTestIfdef(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "ifdef MACRO\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IFDEF, "ifdef");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "MACRO");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
-        
+
         assertFalse("No more tokens", ts.moveNext());
     }
-    
-    public void testIfndef() {
-        String text = "# ifndef MACRO\n";
+
+    public void testIfdef() {
+        doTestIfdef(true);
+        doTestIfdef(false);
+    }
+
+    private void doTestIfndef(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + " ifndef MACRO\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IFNDEF, "ifndef");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "MACRO");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
-        
-        assertFalse("No more tokens", ts.moveNext());
-    }    
 
-    public void testIf() {
-        String text = "# if defined MACRO\n";
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
+    public void testIfndef() {
+        doTestIfndef(true);
+        doTestIfndef(false);
+    }
+
+    private void doTestIf(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + " if defined MACRO\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IF, "if");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
@@ -114,12 +139,22 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
-    
-    public void testElif() {
-        String text = "#elif !defined(MACRO)\n";
+
+    public void testIf() {
+        doTestIf(true);
+        doTestIf(false);
+    }
+
+    private void doTestElif(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "elif !defined(MACRO)\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_ELIF, "elif");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NOT, "!");
@@ -131,12 +166,22 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
- 
-    public void testElif2() {
-        String text = "#elif!defined(MACRO)\n";
+
+    public void testElif() {
+        doTestElif(true);
+        doTestElif(false);
+    }
+
+    private void doTestElif2(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "elif!defined(MACRO)\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_ELIF, "elif");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NOT, "!");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_DEFINED, "defined");
@@ -147,12 +192,22 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
-    
-    public void testElse() {
-        String text = "#else //comment\n";
+
+    public void testElif2() {
+        doTestElif2(true);
+        doTestElif2(false);
+    }
+
+    private void doTestElse(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "else //comment\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_ELSE, "else");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LINE_COMMENT, "//comment");
@@ -160,12 +215,22 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
-    
-    public void testEndif() {
-        String text = "#endif defined// MACRO\n";
+
+    public void testElse() {
+        doTestElse(true);
+        doTestElse(false);
+    }
+
+    private void doTestEndif(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "endif defined// MACRO\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_ENDIF, "endif");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "defined");
@@ -175,12 +240,22 @@ public class PreprocLexerTestCase extends NbTestCase {
         assertFalse("No more tokens", ts.moveNext());
 
     }
-    
-    public void testDefine() {
-        String text = "#define MAX(x,y) \\\n (((x)<(y)) ? (y) : (x))\n";
+
+    public void testEndif() {
+        doTestEndif(true);
+        doTestEndif(false);
+    }
+
+    private void doTestDefine(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "define MAX(x,y) \\\n (((x)<(y)) ? (y) : (x))\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_DEFINE, "define");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "MAX");
@@ -217,12 +292,22 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
-    
-    public void testUndef() {
-        String text = "#undef MACRO\n";
+
+    public void testDefine() {
+        doTestDefine(true);
+        doTestDefine(false);
+    }
+
+    private void doTestUndef(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "undef MACRO\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_UNDEF, "undef");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "MACRO");
@@ -230,12 +315,22 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
- 
-    public void testPragma() {
-        String text = "#pragma omp parallel for shared(array, array1, array2, dim) private(ii, jj, kk)\n";
+
+    public void testUndef() {
+        doTestUndef(true);
+        doTestUndef(false);
+    }
+
+    private void doTestPragma(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "pragma omp parallel for shared(array, array1, array2, dim) private(ii, jj, kk)\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_PRAGMA, "pragma");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PRAGMA_OMP_START, "omp");
@@ -272,12 +367,22 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
-    
-    public void testError() {
-        String text = "#error \"message\"  \n";
+
+    public void testPragma() {
+        doTestPragma(true);
+        doTestPragma(false);
+    }
+
+    private void doTestError(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "error \"message\"  \n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_ERROR, "error");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.STRING_LITERAL, "\"message\"");
@@ -286,12 +391,22 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
-    
-    public void testLine() {
-        String text = "#line 100 //change line\n";
+
+    public void testError() {
+        doTestError(true);
+        doTestError(false);
+    }
+
+    private void doTestLine(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "line 100 //change line\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_LINE, "line");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT_LITERAL, "100");
@@ -301,12 +416,22 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
-    
-    public void testSysIncludeNext() {
-        String text = "#  include_next <file.h>\n";
+
+    public void testLine() {
+        doTestLine(true);
+        doTestLine(false);
+    }
+
+    private void doTestSysIncludeNext(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "  include_next <file.h>\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE_NEXT, "include_next");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
@@ -315,15 +440,48 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
-    
-    public void testSysInclude() {
-        String text = "#  include <file.h>\n";
+
+    public void testSysIncludeNext() {
+        doTestSysIncludeNext(true);
+        doTestSysIncludeNext(false);
+    }
+
+    private void doTestSysInclude(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "  include <file.h>\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE, "include");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_SYS_INCLUDE, "<file.h>");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
+
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
+    public void testSysInclude() {
+        doTestSysInclude(true);
+        doTestSysInclude(false);
+    }
+
+    private void doTestSysIncludeNext2(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "  include_next<file.h>\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
+        TokenSequence<?> ts = hi.tokenSequence();
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE_NEXT, "include_next");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_SYS_INCLUDE, "<file.h>");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
@@ -331,66 +489,93 @@ public class PreprocLexerTestCase extends NbTestCase {
     }
 
     public void testSysIncludeNext2() {
-        String text = "#  include_next<file.h>\n";
+        doTestSysIncludeNext2(true);
+        doTestSysIncludeNext2(false);
+    }
+
+    private void doTestSysInclude2(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "  include<file.h>\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE_NEXT, "include_next");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE, "include");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_SYS_INCLUDE, "<file.h>");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
+
     }
-    
+
     public void testSysInclude2() {
-        String text = "#  include<file.h>\n";
+        doTestSysInclude2(true);
+        doTestSysInclude2(false);
+    }
+
+    private void doTestUsrIncludeNext(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "  include_next \"file.h\"\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE, "include");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_SYS_INCLUDE, "<file.h>");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE_NEXT, "include_next");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_USER_INCLUDE, "\"file.h\"");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
+    }
 
-    }  
-    
     public void testUsrIncludeNext() {
-        String text = "#  include_next \"file.h\"\n";
+        doTestUsrIncludeNext(true);
+        doTestUsrIncludeNext(false);
+    }
+
+    private void doTestUsrInclude(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "  include \"file.h\"\n";
+
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE_NEXT, "include_next");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE, "include");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_USER_INCLUDE, "\"file.h\"");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
-        assertFalse("No more tokens", ts.moveNext());    
+        assertFalse("No more tokens", ts.moveNext());
     }
-    
+
     public void testUsrInclude() {
-        String text = "#  include \"file.h\"\n";
-        
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
-        TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE, "include");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_USER_INCLUDE, "\"file.h\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
-
-        assertFalse("No more tokens", ts.moveNext());
+        doTestUsrInclude(true);
+        doTestUsrInclude(false);
     }
-    
-    public void testUsrIncludeNext2() {
-        String text = "#  include_next\"file.h\"\n";
+
+    private void doTestUsrIncludeNext2(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "  include_next\"file.h\"\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE_NEXT, "include_next");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_USER_INCLUDE, "\"file.h\"");
@@ -398,13 +583,23 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
-    
-    public void testUsrInclude2() {
-        String text = "#  include\"file.h\"\n";
-        
+
+    public void testUsrIncludeNext2() {
+        doTestUsrIncludeNext2(true);
+        doTestUsrIncludeNext2(false);
+    }
+
+    private void doTestUsrInclude2(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "  include\"file.h\"\n";
+
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE, "include");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_USER_INCLUDE, "\"file.h\"");
@@ -412,13 +607,23 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
-    
-    public void testIncludeMacro() {
-        String text = "#include AA(x,7)\n";
+
+    public void testUsrInclude2() {
+        doTestUsrInclude2(true);
+        doTestUsrInclude2(false);
+    }
+
+    private void doTestIncludeMacro(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "include AA(x,7)\n";
 
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        }
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE, "include");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "AA");
@@ -430,5 +635,10 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
+    }
+
+    public void testIncludeMacro() {
+        doTestIncludeMacro(true);
+        doTestIncludeMacro(false);
     }
 }

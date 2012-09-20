@@ -49,6 +49,10 @@ import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -61,8 +65,14 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.windows.WindowManager;
 
 /**
@@ -91,23 +101,43 @@ public class UIUtils {
             EventQueue.invokeLater(r);
         }
     }
-
-    public static void keepFocusedComponentVisible(JScrollPane scrollPane) {
-        keepFocusedComponentVisible(scrollPane.getViewport().getView());
+    
+    public static void keepFocusedComponentVisible(JComponent component) {
+        keepFocusedComponentVisible(component, component);
     }
-
-    public static void keepFocusedComponentVisible(Component component) {
-        FocusListener listener= getScrollingFocusListener();
-        component.removeFocusListener(listener); // Making sure that it is not added twice
-        component.addFocusListener(listener);
+    
+    public static void keepFocusedComponentVisible(Component component, JComponent container) {
+        FocusListener listener;
+        if(component instanceof JComponent ) {
+            listener = getNotShowingFieldsFocusListener(container);
+        } else {
+            listener = getScrollingFocusListener(); // legacy fallback
+        }
+        keepFocusedComponentVisible(component, listener);
+    }
+    
+    private static void keepFocusedComponentVisible(Component component, FocusListener l) {
+        component.removeFocusListener(l); // Making sure that it is not added twice
+        component.addFocusListener(l);
         if (component instanceof Container) {
             for (Component subComponent : ((Container)component).getComponents()) {
-                keepFocusedComponentVisible(subComponent);
+                keepFocusedComponentVisible(subComponent, l);
             }
         }
     }
 
     private static FocusListener scrollingFocusListener;
+    
+    private static FocusListener getNotShowingFieldsFocusListener(JComponent container) {
+        String key = "notShowingFieldFocusListener";                            // NOI18N
+        Object l = container.getClientProperty(key);
+        if (l == null) {
+            l = new NotShowingFieldsFocusListener(container);
+            container.putClientProperty(key, l);
+        }
+        return (FocusListener) l;
+    }
+    
     private static FocusListener getScrollingFocusListener() {
         if (scrollingFocusListener == null) {
             scrollingFocusListener = new FocusAdapter() {
@@ -130,6 +160,85 @@ public class UIUtils {
             };
         }
         return scrollingFocusListener;
+    }
+
+    public interface SizeController {
+        public void setWidth(int width);
+    }
+        
+    public static void keepComponentsWidthByVisibleArea(final JPanel panel, final SizeController sc) {
+        panel.addAncestorListener(new AncestorListener() {
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                final JViewport v = getViewport(panel);
+                assert v != null;
+                if(v == null) {
+                    return;
+                }
+                sc.setWidth(computeWidth(v));
+                v.addChangeListener(new ChangeListener() {
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        sc.setWidth(computeWidth(v));
+                    }
+                });
+                v.addComponentListener(new ComponentListener() {
+                    @Override
+                    public void componentResized(ComponentEvent e) {
+                        sc.setWidth(computeWidth(v));
+                    }
+                    @Override public void componentMoved(ComponentEvent e) { }
+                    @Override public void componentShown(ComponentEvent e) { }
+                    @Override public void componentHidden(ComponentEvent e) { }
+                });
+            }
+            private int computeWidth(JViewport v) {
+                Rectangle vr = v.getViewRect();
+                return vr.width + vr.x;
+            }
+            @Override public void ancestorRemoved(AncestorEvent event) { }
+            @Override public void ancestorMoved(AncestorEvent event) { }
+        });
+    }
+    
+    private static JViewport getViewport(Container c) {
+        if(c == null) {
+            return null;
+        }
+        if(c instanceof JScrollPane) {
+            return ((JScrollPane) c).getViewport();
+        }
+        return getViewport(c.getParent());
+    }
+    
+    private static class NotShowingFieldsFocusListener implements FocusListener {
+        private final JComponent container;
+        
+        public NotShowingFieldsFocusListener(JComponent container) {
+            this.container = container;
+        }
+        
+        @Override
+        public void focusGained(FocusEvent e) {
+            if (e.isTemporary()) {
+                return;
+            }
+            Component cmp = e.getComponent();
+            if(cmp instanceof JComponent) {
+                JViewport vp = getViewport(container);
+                Rectangle vr = vp.getViewRect();
+                Point p = SwingUtilities.convertPoint(cmp.getParent(), cmp.getLocation(), container);
+                final Rectangle r = new Rectangle(p, cmp.getSize());
+                if(vr.intersects(r)) {
+                    return; 
+                }
+                container.scrollRectToVisible(r);
+            }
+        }
+
+        @Override
+        public void focusLost(FocusEvent e) { }
+
     }
 
     // A11Y - Issues 163597 and 163598

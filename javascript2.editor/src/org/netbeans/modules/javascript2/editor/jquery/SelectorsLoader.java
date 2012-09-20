@@ -183,13 +183,11 @@ public class SelectorsLoader extends DefaultHandler {
     }
     
     private static class Argument {
-        String name;
-        String type;
-        String description;
+        final String name;
+        final String description;
 
         public Argument(String name, String type, String description) {
             this.name = name;
-            this.type = type;
             this.description = description;
         }    
     }
@@ -568,8 +566,6 @@ public class SelectorsLoader extends DefaultHandler {
                 case argument : 
                     if (isMethod) {
                         String paramName = attributes.getValue(NAME);
-                        String paramType = attributes.getValue(TYPE);
-                        boolean isOptional = Boolean.parseBoolean(attributes.getValue("optional"));
                         IdentifierImpl param = new IdentifierImpl(paramName, OffsetRange.NONE);
                         params.add(param);
                     }

@@ -146,7 +146,7 @@ public class JsDocumentationCompleter {
     
     private static boolean isWrapperObject(JsParserResult jsParserResult, JsObject jsObject, Node nearestNode) {
         List<Identifier> nodeName = jsParserResult.getModel().getNodeName(nearestNode);
-        if (nodeName.isEmpty()) {
+        if (nodeName == null || nodeName.isEmpty()) {
             return false;
         }
         return jsObject.getProperties().containsKey(nodeName.get(nodeName.size() - 1).getName());
@@ -166,8 +166,10 @@ public class JsDocumentationCompleter {
         StringBuilder fqn = new StringBuilder();
         for (Node currentNode : ptnv.getFinalPath()) {
             List<Identifier> name = parserResult.getModel().getNodeName(currentNode);
-            for (Identifier identifier : name) {
-                fqn.append(".").append(identifier.getName()); //NOI18N
+            if (name != null) {
+                for (Identifier identifier : name) {
+                    fqn.append(".").append(identifier.getName()); //NOI18N
+                }
             }
         }
         return fqn.toString().substring(1);
@@ -304,11 +306,9 @@ public class JsDocumentationCompleter {
             this.offset = offset;
         }
 
-        private void processNode(Node node, boolean onset) {
-            if (onset) {
-                if (offset < node.getStart() && (nearestNode == null || node.getStart() < nearestNode.getStart())) {
-                    nearestNode = node;
-                }
+        private void processNode(Node node) {
+            if (offset < node.getStart() && (nearestNode == null || node.getStart() < nearestNode.getStart())) {
+                nearestNode = node;
             }
         }
 
@@ -322,35 +322,35 @@ public class JsDocumentationCompleter {
         }
 
         @Override
-        public Node visit(AccessNode accessNode, boolean onset) {
-            processNode(accessNode, onset);
-            return super.visit(accessNode, onset);
+        public Node enter(AccessNode accessNode) {
+            processNode(accessNode);
+            return super.enter(accessNode);
         }
 
         @Override
-        public Node visit(FunctionNode functionNode, boolean onset) {
+        public Node enter(FunctionNode functionNode) {
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
-                processNode(functionNode, onset);
+                processNode(functionNode);
             }
-            return super.visit(functionNode, onset);
+            return super.enter(functionNode);
         }
 
         @Override
-        public Node visit(PropertyNode propertyNode, boolean onset) {
-            processNode(propertyNode, onset);
-            return super.visit(propertyNode, onset);
+        public Node enter(PropertyNode propertyNode) {
+            processNode(propertyNode);
+            return super.enter(propertyNode);
         }
 
         @Override
-        public Node visit(VarNode varNode, boolean onset) {
-            processNode(varNode, onset);
-            return super.visit(varNode, onset);
+        public Node enter(VarNode varNode) {
+            processNode(varNode);
+            return super.enter(varNode);
         }
 
         @Override
-        public Node visit(BinaryNode binaryNode, boolean onset) {
-            processNode(binaryNode, onset);
-            return super.visit(binaryNode, onset);
+        public Node enter(BinaryNode binaryNode) {
+            processNode(binaryNode);
+            return super.enter(binaryNode);
         }
     }
 
@@ -360,12 +360,16 @@ public class JsDocumentationCompleter {
         private final StringBuilder farestPath = new StringBuilder();
 
         @Override
-        public Node visit(IdentNode identNode, boolean onset) {
+        public Node enter(IdentNode identNode) {
             farestNode = identNode;
-            if (onset) {
-                farestPath.append(".").append(identNode.getName()); //NOI18N
-            }
-            return super.visit(identNode, onset);
+            farestPath.append(".").append(identNode.getName()); //NOI18N
+            return super.enter(identNode);
+        }
+
+        @Override
+        public Node leave(IdentNode identNode) {
+            farestNode = identNode;
+            return super.leave(identNode);
         }
 
         public Node getFarestNode() {

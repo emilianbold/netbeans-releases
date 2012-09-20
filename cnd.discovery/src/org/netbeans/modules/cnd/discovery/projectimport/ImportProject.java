@@ -1129,29 +1129,39 @@ public class ImportProject implements PropertyChangeListener {
                 @Override
                 public void projectParsingFinished(CsmProject project) {
                     if (project.equals(p)) {
-                        try {
-                            ImportProject.listeners.remove(p);
-                            CsmListeners.getDefault().removeProgressListener(this); // ignore java warning "usage of this in anonymous class"
-                            if (TRACE) {
-                                logger.log(Level.INFO, "#model ready, explore model"); // NOI18N
+                        ImportProject.listeners.remove(p);
+                        CsmListeners.getDefault().removeProgressListener(this); // ignore java warning "usage of this in anonymous class"
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                postModelDiscovery(np, p, isFull);
                             }
-                            if (isFull) {
-                                modelDiscovery();
-                            } else {
-                                fixExcludedHeaderFiles();
-                            }
-                            showFollwUp(np);
-                        } catch (Throwable ex) {
-                            isFinished = true;
-                            Exceptions.printStackTrace(ex);
-                        }
+                        });
                     }
                 }
+
             };
             CsmListeners.getDefault().addProgressListener(listener);
             ImportProject.listeners.put(p, listener);
         } else {
             isFinished = true;
+        }
+    }
+
+    private void postModelDiscovery(NativeProject np, CsmProject p, boolean isFull) {
+        try {
+            if (TRACE) {
+                logger.log(Level.INFO, "#model ready, explore model"); // NOI18N
+            }
+            if (isFull) {
+                modelDiscovery();
+            } else {
+                fixExcludedHeaderFiles();
+            }
+            showFollwUp(np);
+        } catch (Throwable ex) {
+            isFinished = true;
+            Exceptions.printStackTrace(ex);
         }
     }
 

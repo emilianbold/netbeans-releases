@@ -81,6 +81,7 @@ public class VariousUtils {
     public static final String VAR_TYPE_PREFIX = "var" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
     public static final String ARRAY_TYPE_PREFIX = "array" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
     private static final Collection<String> SPECIAL_CLASS_NAMES = new LinkedList<String>();
+    private static final String VAR_TYPE_COMMENT_PREFIX = "@var"; //NOI18N
 
     static {
         SPECIAL_CLASS_NAMES.add("self"); //NOI18N
@@ -868,7 +869,7 @@ public class VariousUtils {
         StringBuilder metaAll = new StringBuilder();
         while (!state.equals(State.INVALID) && !state.equals(State.STOP) && tokenSequence.movePrevious() && skipWhitespaces(tokenSequence)) {
             Token<PHPTokenId> token = tokenSequence.token();
-            if (!CTX_DELIMITERS.contains(token.id())) {
+            if (!CTX_DELIMITERS.contains(token.id()) || isVarTypeComment(token)) {
                 switch (state) {
                     case METHOD:
                     case START:
@@ -992,7 +993,11 @@ public class VariousUtils {
                         break;
                 }
             } else {
-                if (state.equals(State.CLASSNAME)) {
+                if (state.equals(State.VARBASE)) {
+                    metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.VAR_TYPE_PREFIX);
+                    state = State.STOP;
+                    break;
+                } else if (state.equals(State.CLASSNAME)) {
                     if (!metaAll.toString().startsWith("\\")) { //NOI18N
                         if (tokenSequence.moveNext()) { // return to last valid token
                             metaAll = transformToFullyQualifiedType(metaAll, tokenSequence, varScope);
@@ -1023,6 +1028,18 @@ public class VariousUtils {
             }
         }
         return null;
+    }
+
+    private static boolean isVarTypeComment(final Token<PHPTokenId> token) {
+        boolean result = false;
+        if (token != null) {
+            CharSequence tokenText = token.text();
+            if (PHPTokenId.PHP_COMMENT.equals(token.id()) && tokenText != null
+                    && tokenText.toString().trim().startsWith(VAR_TYPE_COMMENT_PREFIX)) {
+                result = true;
+            }
+        }
+        return result;
     }
 
     private static String fetchPossibleClassName(final TokenSequence<PHPTokenId> tokenSequence) {

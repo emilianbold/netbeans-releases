@@ -286,11 +286,11 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
                     if (files == null) {
                         if (handles.length == 1 && handles[0].getElementHandle() != null && handles[0].getElementHandle().getKind() == ElementKind.CLASS) {
                             CompilationUnitTree compilationUnit = handles[0].resolve(info).getCompilationUnit();
-//                            if(compilationUnit.getTypeDecls().size() == 1) {
-//                                return new MoveClassUI(DataObject.find(handles[0].getFileObject()), tar, paste);
-//                            } else {
+                            if(compilationUnit.getTypeDecls().size() == 1) {
+                                return new MoveClassUI(DataObject.find(handles[0].getFileObject()), tar, paste);
+                            } else {
                                 return new MoveClassUI(handles[0], tar, paste, handles[0].resolveElement(info).getSimpleName().toString());
-//                            }
+                            }
                         }
                         return new MoveMembersUI(handles);
                     } else {
@@ -366,15 +366,15 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
                             return new MoveMembersUI(tph);
                         }
                     }
-//                    try {
-//                        if(topLevelElements.size() == 1) {
-//                            return new MoveClassUI(DataObject.find(info.getFileObject()));
-//                        } else {
+                    try {
+                        if(topLevelElements.size() == 1) {
+                            return new MoveClassUI(DataObject.find(info.getFileObject()));
+                        } else {
                             return new MoveClassUI(TreePathHandle.create(typeElement, info), typeElement.getSimpleName().toString());
-//                        }
-//                    } catch (DataObjectNotFoundException ex) {
-//                        throw new RuntimeException(ex);
-//                    }
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
             }
 //                    if (selectedElement.resolve(info).getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {

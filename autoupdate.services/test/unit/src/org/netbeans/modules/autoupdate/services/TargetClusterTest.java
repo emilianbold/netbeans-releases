@@ -54,6 +54,7 @@ import org.netbeans.updater.UpdateTracking;
  *
  * @author Jiri Rechtacek
  */
+@RandomlyFails
 public class TargetClusterTest extends TargetClusterTestCase {
     
     public TargetClusterTest (String testName) {

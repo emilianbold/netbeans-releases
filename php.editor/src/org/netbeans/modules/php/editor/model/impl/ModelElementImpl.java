@@ -41,12 +41,7 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.php.editor.api.ElementQuery.Index;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.php.editor.model.*;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -55,12 +50,16 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.elements.PhpElementImpl;
 import org.netbeans.modules.php.editor.index.PHPElement;
+import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -252,7 +251,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     @Override
     public Set<Modifier> getModifiers() {
         assert modifiers != null;
-        Set<Modifier> retval = new HashSet<Modifier>();
+        Set<Modifier> retval = EnumSet.noneOf(Modifier.class);
         if (modifiers.isPublic()) {
             retval.add(Modifier.PUBLIC);
         }

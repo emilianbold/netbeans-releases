@@ -59,7 +59,7 @@
           <Properties>
             <Property name="focusCycleRoot" type="boolean" value="true"/>
             <Property name="focusTraversalPolicy" type="java.awt.FocusTraversalPolicy" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new java.awt.FocusTraversalPolicy() {&#xa;            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){&#xa;                return statementCombo;&#xa;            }//end getDefaultComponent&#xa;&#xa;            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){&#xa;                return statementCombo;&#xa;            }//end getFirstComponent&#xa;&#xa;            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){&#xa;                return assignOpsCombo;&#xa;            }//end getLastComponent&#xa;&#xa;            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){&#xa;                if(aComponent ==  chainedMethodCallsCombo){&#xa;                    return arrayInitCombo;&#xa;                }&#xa;                if(aComponent ==  methodCallArgsCombo){&#xa;                    return chainedMethodCallsCombo;&#xa;                }&#xa;                if(aComponent ==  methodParamsCombo){&#xa;                    return methodCallArgsCombo;&#xa;                }&#xa;                if(aComponent ==  variablesCombo){&#xa;                    return methodParamsCombo;&#xa;                }&#xa;                if(aComponent ==  doWhileStatementCombo){&#xa;                    return withStatementCombo;&#xa;                }&#xa;                if(aComponent ==  withStatementCombo){&#xa;                    return binaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  statementCombo){&#xa;                    return variablesCombo;&#xa;                }&#xa;                if(aComponent ==  ternaryOpsCombo){&#xa;                    return assignOpsCombo;&#xa;                }&#xa;                if(aComponent ==  binaryOpsCombo){&#xa;                    return ternaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  whileStatementComboBox){&#xa;                    return doWhileStatementCombo;&#xa;                }&#xa;                if(aComponent ==  forStatementCombo){&#xa;                    return ifStatementCombo;&#xa;                }&#xa;                if(aComponent ==  ifStatementCombo){&#xa;                    return whileStatementComboBox;&#xa;                }&#xa;                if(aComponent ==  arrayInitCombo){&#xa;                    return forCombo;&#xa;                }&#xa;                if(aComponent ==  forCombo){&#xa;                    return forStatementCombo;&#xa;                }&#xa;                return statementCombo;//end getComponentAfter&#xa;            }&#xa;            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){&#xa;                if(aComponent ==  arrayInitCombo){&#xa;                    return chainedMethodCallsCombo;&#xa;                }&#xa;                if(aComponent ==  chainedMethodCallsCombo){&#xa;                    return methodCallArgsCombo;&#xa;                }&#xa;                if(aComponent ==  methodCallArgsCombo){&#xa;                    return methodParamsCombo;&#xa;                }&#xa;                if(aComponent ==  methodParamsCombo){&#xa;                    return variablesCombo;&#xa;                }&#xa;                if(aComponent ==  binaryOpsCombo){&#xa;                    return doWhileStatementCombo;&#xa;                }&#xa;                if(aComponent ==  variablesCombo){&#xa;                    return statementCombo;&#xa;                }&#xa;                if(aComponent ==  assignOpsCombo){&#xa;                    return ternaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  ternaryOpsCombo){&#xa;                    return binaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  doWhileStatementCombo){&#xa;                    return whileStatementComboBox;&#xa;                }&#xa;                if(aComponent ==  ifStatementCombo){&#xa;                    return forStatementCombo;&#xa;                }&#xa;                if(aComponent ==  whileStatementComboBox){&#xa;                    return ifStatementCombo;&#xa;                }&#xa;                if(aComponent ==  forCombo){&#xa;                    return arrayInitCombo;&#xa;                }&#xa;                if(aComponent ==  forStatementCombo){&#xa;                    return forCombo;&#xa;                }&#xa;                return assignOpsCombo;//end getComponentBefore&#xa;&#xa;            }}" type="code"/>
+              <Connection code="new java.awt.FocusTraversalPolicy() {&#xa;            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){&#xa;                return variablesCombo;&#xa;            }//end getDefaultComponent&#xa;&#xa;            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){&#xa;                return variablesCombo;&#xa;            }//end getFirstComponent&#xa;&#xa;            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){&#xa;                return assignOpsCombo;&#xa;            }//end getLastComponent&#xa;&#xa;            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){&#xa;                if(aComponent ==  chainedMethodCallsCombo){&#xa;                    return afterDotCheckBox;&#xa;                }&#xa;                if(aComponent ==  afterDotCheckBox){&#xa;                    return arrayInitCombo;&#xa;                }&#xa;                if(aComponent ==  methodCallArgsCombo){&#xa;                    return chainedMethodCallsCombo;&#xa;                }&#xa;                if(aComponent ==  methodParamsCombo){&#xa;                    return methodCallArgsCombo;&#xa;                }&#xa;                if(aComponent ==  variablesCombo){&#xa;                    return methodParamsCombo;&#xa;                }&#xa;                if(aComponent ==  doWhileStatementCombo){&#xa;                    return withStatementCombo;&#xa;                }&#xa;                if(aComponent ==  withStatementCombo){&#xa;                    return binaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  ternaryOpsCombo){&#xa;                    return afterTernaryOpsCheckBox;&#xa;                }&#xa;                if(aComponent ==  afterTernaryOpsCheckBox){&#xa;                    return assignOpsCombo;&#xa;                }&#xa;                if(aComponent ==  binaryOpsCombo){&#xa;                    return afterBinaryOpsCheckBox;&#xa;                }&#xa;                if(aComponent ==  afterBinaryOpsCheckBox){&#xa;                    return ternaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  whileStatementComboBox){&#xa;                    return doWhileStatementCombo;&#xa;                }&#xa;                if(aComponent ==  forStatementCombo){&#xa;                    return ifStatementCombo;&#xa;                }&#xa;                if(aComponent ==  ifStatementCombo){&#xa;                    return whileStatementComboBox;&#xa;                }&#xa;                if(aComponent ==  arrayInitCombo){&#xa;                    return forCombo;&#xa;                }&#xa;                if(aComponent ==  forCombo){&#xa;                    return forStatementCombo;&#xa;                }&#xa;                return variablesCombo;//end getComponentAfter&#xa;            }&#xa;            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){&#xa;                if(aComponent ==  afterDotCheckBox){&#xa;                    return chainedMethodCallsCombo;&#xa;                }&#xa;                if(aComponent ==  arrayInitCombo){&#xa;                    return afterDotCheckBox;&#xa;                }&#xa;                if(aComponent ==  chainedMethodCallsCombo){&#xa;                    return methodCallArgsCombo;&#xa;                }&#xa;                if(aComponent ==  methodCallArgsCombo){&#xa;                    return methodParamsCombo;&#xa;                }&#xa;                if(aComponent ==  methodParamsCombo){&#xa;                    return variablesCombo;&#xa;                }&#xa;                if(aComponent ==  binaryOpsCombo){&#xa;                    return doWhileStatementCombo;&#xa;                }&#xa;                if(aComponent ==  assignOpsCombo){&#xa;                    return afterTernaryOpsCheckBox;&#xa;                }&#xa;                if(aComponent ==  afterTernaryOpsCheckBox){&#xa;                    return ternaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  afterBinaryOpsCheckBox){&#xa;                    return binaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  ternaryOpsCombo){&#xa;                    return afterBinaryOpsCheckBox;&#xa;                }&#xa;                if(aComponent ==  doWhileStatementCombo){&#xa;                    return whileStatementComboBox;&#xa;                }&#xa;                if(aComponent ==  ifStatementCombo){&#xa;                    return forStatementCombo;&#xa;                }&#xa;                if(aComponent ==  whileStatementComboBox){&#xa;                    return ifStatementCombo;&#xa;                }&#xa;                if(aComponent ==  forCombo){&#xa;                    return arrayInitCombo;&#xa;                }&#xa;                if(aComponent ==  forStatementCombo){&#xa;                    return forCombo;&#xa;                }&#xa;                return assignOpsCombo;//end getComponentBefore&#xa;&#xa;            }}" type="code"/>
             </Property>
             <Property name="opaque" type="boolean" value="false"/>
           </Properties>
@@ -76,123 +76,90 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Component id="statementLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="statementCombo" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="1">
-                                      <Component id="variablesLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="variablesCombo" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="methodParamsLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="methodParamsCombo" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="methodCallArgsLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="60" max="32767" attributes="0"/>
-                                      <Component id="methodCallArgsCombo" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="chainedMethodCallsLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="chainedMethodCallsCombo" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="afterDotCheckBox" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="variablesLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="variablesCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="methodParamsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="methodParamsCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="methodCallArgsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="methodCallArgsCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="chainedMethodCallsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="chainedMethodCallsCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
                               <Component id="arrayInitLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="arrayInitCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="forLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="forCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="forStatementLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="forStatementCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="ifStatementLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="ifStatementCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="whileStatementLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="whileStatementComboBox" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="doWhileStatementLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="doWhileStatementCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="withStatementCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="propertiesLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="propertiesCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="binaryOpsLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="binaryOpsCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="ternaryOpsLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="ternaryOpsCombo" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" attributes="0">
-                                      <Component id="afterBinaryOpsCheckBox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                  </Group>
-                              </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="ternaryOpsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="ternaryOpsCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="afterTernaryOpsCheckBox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="assignOpsLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="assignOpsCombo" min="-2" max="-2" attributes="0"/>
-                                  </Group>
+                                  <Component id="afterDotCheckBox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="afterBinaryOpsCheckBox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="afterTernaryOpsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
+                              <EmptySpace min="0" pref="11" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="assignOpsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="assignOpsCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -202,32 +169,27 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="statementLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="statementCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="variablesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="variablesCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="methodParamsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="methodParamsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="methodCallArgsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="methodCallArgsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="chainedMethodCallsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="chainedMethodCallsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="afterDotCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -274,14 +236,14 @@
                           <Component id="binaryOpsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="binaryOpsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="afterBinaryOpsCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="ternaryOpsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="ternaryOpsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="afterTernaryOpsCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -294,44 +256,6 @@
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JLabel" name="statementLabel">
-              <Properties>
-                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                  <ComponentRef name="statementCombo"/>
-                </Property>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="LBL_wrp_statement" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-              </Properties>
-              <AccessibilityProperties>
-                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.statementLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.statementLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-              </AccessibilityProperties>
-            </Component>
-            <Component class="javax.swing.JComboBox" name="statementCombo">
-              <Properties>
-                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="4">
-                    <StringItem index="0" value="Item 1"/>
-                    <StringItem index="1" value="Item 2"/>
-                    <StringItem index="2" value="Item 3"/>
-                    <StringItem index="3" value="Item 4"/>
-                  </StringArray>
-                </Property>
-              </Properties>
-              <AccessibilityProperties>
-                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.statementCombo.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.statementCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-              </AccessibilityProperties>
-            </Component>
             <Component class="javax.swing.JLabel" name="variablesLabel">
               <Properties>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
@@ -879,6 +803,14 @@
                 </Property>
                 <Property name="opaque" type="boolean" value="false"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.afterBinaryOpsCheckBox.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.afterBinaryOpsCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JCheckBox" name="afterTernaryOpsCheckBox">
               <Properties>
@@ -895,16 +827,32 @@
                 </Property>
                 <Property name="opaque" type="boolean" value="false"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.afterTernaryOpsCheckBox.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.afterTernaryOpsCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JLabel" name="propertiesLabel">
               <Properties>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                  <ComponentRef name="binaryOpsCombo"/>
+                  <ComponentRef name="propertiesCombo"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.propertiesLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="LBL_wrp_props" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.propertiesLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.propertiesLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="propertiesCombo">
               <Properties>
@@ -917,6 +865,14 @@
                   </StringArray>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.propertiesCombo.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.propertiesCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JCheckBox" name="afterDotCheckBox">
               <Properties>
@@ -933,6 +889,14 @@
                 </Property>
                 <Property name="opaque" type="boolean" value="false"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.afterDotCheckBox.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.afterDotCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
           </SubComponents>
         </Container>

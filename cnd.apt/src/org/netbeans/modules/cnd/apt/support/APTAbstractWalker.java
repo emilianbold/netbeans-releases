@@ -197,7 +197,7 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
     }
     
-    protected final String getFileOnceMacroName() {
+    protected final CharSequence getFileOnceMacroName() {
         return APTUtils.getFileOnceMacroName(getRootFile());
     }
 

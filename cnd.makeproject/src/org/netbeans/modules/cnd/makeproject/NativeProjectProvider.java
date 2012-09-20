@@ -365,9 +365,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     @Override
     public NativeFileItem findFileItem(FileObject fileObject) {
-        MakeConfigurationDescriptor descr = getMakeConfigurationDescriptor();
-        if (descr != null && projectDescriptorProvider.gotDescriptor()) {
-            return (NativeFileItem) descr.findItemByFileObject(fileObject);
+        if (projectDescriptorProvider.gotDescriptor()) {
+            MakeConfigurationDescriptor descr = getMakeConfigurationDescriptor();
+            if (descr != null) {
+                return (NativeFileItem) descr.findItemByFileObject(fileObject);
+            }
         }
         return null;
     }

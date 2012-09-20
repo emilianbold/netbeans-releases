@@ -45,7 +45,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
-import org.netbeans.modules.cnd.repository.translator.UnitsUtil;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 
 /**
  *
@@ -53,8 +53,11 @@ import org.netbeans.modules.cnd.repository.translator.UnitsUtil;
  */
 public class RepositoryDataInputStream extends DataInputStream implements RepositoryDataInput, SharedStringBuffer {
 
-    public RepositoryDataInputStream(InputStream in) {
+    private final UnitCodec unitCodec;
+    
+    public RepositoryDataInputStream(InputStream in, UnitCodec unitCodec) {
         super(in);
+        this.unitCodec = unitCodec;
     }
 
     @Override
@@ -64,7 +67,7 @@ public class RepositoryDataInputStream extends DataInputStream implements Reposi
 
     @Override
     public int readUnitId() throws IOException {        
-        return UnitsUtil.readUnitId(this);
+        return unitCodec.addRepositoryID(readInt());
     }
 
     private static final int sharedArrySize = 1024;

@@ -354,6 +354,10 @@ public class TypeFactory {
                 this.nameEndOffset = endOffset;
             }
         }
+
+        public CharSequence getName() {
+            return nameBuilder.getName();
+        }
         
         public void setNameBuilder(NameBuilder nameBuilder) {
             this.nameBuilder = nameBuilder;

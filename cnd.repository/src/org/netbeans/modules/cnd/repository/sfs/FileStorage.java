@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import org.netbeans.modules.cnd.repository.disk.Storage;
+import org.netbeans.modules.cnd.repository.util.UnitCodec;
 
 /**
  *
@@ -55,8 +56,8 @@ import org.netbeans.modules.cnd.repository.disk.Storage;
  */
 public abstract class FileStorage implements Storage {
     
-    public static FileStorage create(File basePath) throws IOException {
-        return  new DoubleFileStorage(basePath);
+    public static FileStorage create(File basePath, UnitCodec unitCodec) throws IOException {
+        return  new DoubleFileStorage(basePath, unitCodec);
     }
     
     abstract public void dump(PrintStream ps) throws IOException;

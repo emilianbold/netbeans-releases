@@ -1153,7 +1153,7 @@ public class TraceModel extends TraceModelBase {
                 sleep(100); // so that we don't run ahead of fileParsingFinished event
             }
             APTPreprocHandler preprocHandler = states.get(fileImpl);
-            assert preprocHandler != null;
+            assert preprocHandler != null : "no handler was kept for " + fileImpl;
             dumpMacroMap(preprocHandler.getMacroMap());
         }
         time = System.currentTimeMillis() - time;
@@ -1288,7 +1288,7 @@ public class TraceModel extends TraceModelBase {
     }
 
     private void testLibProject() {
-        LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), CndFileUtils.getLocalFileSystem(), "/usr/include"); // NOI18N
+        LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), CndFileUtils.getLocalFileSystem(), "/usr/include", null); // NOI18N
         getModel().addProject(libProject);
         tracer.dumpModel(libProject);
     }

@@ -69,6 +69,9 @@ var testReturnType = {
           return 10;
       }  
       return "default";
+    },
+    getRegExp: function () {
+        return /regexp/;
     }
 }
 

@@ -80,7 +80,7 @@ public class RunIDEInstallationChecker implements PrerequisitesChecker {
             Project project = config.getProject();
             if (project != null) {
                 NbMavenProject nbmp = project.getLookup().lookup(NbMavenProject.class);
-                if (nbmp != null && MavenNbModuleImpl.findIDEInstallation(nbmp) == null) {
+                if (nbmp != null && MavenNbModuleImpl.findIDEInstallation(project) == null) {
                         String netbeansInstallation = new File(System.getProperty("netbeans.home")).getParent();
                         if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(RunIDEInstallationChecker_message(netbeansInstallation, MavenCli.DEFAULT_USER_SETTINGS_FILE), RunIDEInstallationChecker_title(), NotifyDescriptor.OK_CANCEL_OPTION)) == NotifyDescriptor.OK_OPTION) {
                             try {

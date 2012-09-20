@@ -45,6 +45,7 @@ package org.netbeans.modules.parsing.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -88,6 +89,15 @@ import org.openide.util.Lookup;
 public final class SourceCache {
 
     private static final Logger LOG = Logger.getLogger(SourceCache.class.getName());
+
+    private static final Comparator<SchedulerTask> PRIORITY_ORDER = new Comparator<SchedulerTask>() {
+        @Override
+        public int compare(final SchedulerTask o1, final SchedulerTask o2) {
+            final int p1 = o1.getPriority();
+            final int p2 = o2.getPriority();
+            return p1 < p2 ? -1 : p1 == p2 ? 0 : 1;
+        }
+    };
     
     private final Source    source;
     //@GuardedBy(this)
@@ -454,11 +464,8 @@ retry:  while (true) {
             pendingTasks1 = new HashSet<SchedulerTask> ();
             Lookup lookup = MimeLookup.getLookup (mimeType);
             Collection<? extends TaskFactory> factories = lookup.lookupAll (TaskFactory.class);
-            //Issue #162990 workaround >>>
-            Collection<? extends TaskFactory> resortedFactories = resortTaskFactories(factories);
-            //<<< End of workaround
             Snapshot fakeSnapshot = null;
-            for (TaskFactory factory : resortedFactories) {
+            for (TaskFactory factory : factories) {
                 // #185586 - this is here in order not to create snapshots (a copy of file/doc text)
                 // if there is no task that would really need it (eg. in C/C++ projects there is no parser
                 // registered and no tasks will ever run on these files, even though there may be tasks
@@ -478,10 +485,9 @@ retry:  while (true) {
                 if (newTasks != null) {
                     tasks1.addAll (newTasks);
                     pendingTasks1.addAll (newTasks);
-//                    for (SchedulerTask task : newTasks)
-//                        System.out.println("  createTask " + task);
                 }
             }
+            Collections.sort(tasks1, PRIORITY_ORDER);
         }
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             if ((tasks == null) && (tasks1 != null)) {
@@ -496,22 +502,7 @@ retry:  while (true) {
         // recurse and hope
         return createTasks();
     }
-
-    //Issue #162990 workaround >>>
-    //Move the JsEmbeddingProvider$Factory to the beginning of the factories list
-    private Collection<? extends TaskFactory> resortTaskFactories(Collection<? extends TaskFactory> factories) {
-        List<TaskFactory> resorted = new ArrayList<TaskFactory>(factories);
-        for(TaskFactory tf : resorted) {
-            if(tf.getClass().getName().equals("org.netbeans.modules.javascript.editing.embedding.JsEmbeddingProvider$Factory")) { //NOI18N
-                resorted.remove(tf); 
-                resorted.add(0, tf);
-                break;
-            }
-        }
-        return resorted;
-    }
-    //<<< End of workaround
-
+    
     //tzezula: probably has race condition
     public void scheduleTasks (Class<? extends Scheduler> schedulerType) {
         //S ystem.out.println("scheduleTasks " + schedulerType);

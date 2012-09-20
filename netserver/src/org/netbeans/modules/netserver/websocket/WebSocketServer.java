@@ -93,6 +93,12 @@ public class WebSocketServer extends SocketServer {
         send(bytes , key); 
     }
     
+    @Override
+    public void close(SelectionKey key) throws IOException {
+        super.close(key);
+        getWebSocketReadHandler().closed(key);
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.common.websocket.SocketServer#getWriteQueue(java.nio.channels.SelectionKey)
      */
@@ -116,10 +122,6 @@ public class WebSocketServer extends SocketServer {
         }
     }
     
-    protected SocketContext getContext( SelectionKey key ){
-        return (SocketContext)key.attachment();
-    }
-    
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.common.websocket.SocketServer#getReadHandler()
      */
@@ -128,18 +130,16 @@ public class WebSocketServer extends SocketServer {
         return (WebSocketHandler)super.getReadHandler();
     }
     
-    protected void setHandler( WebSocketChanelHandler handler , SelectionKey key){
+    SocketContext getContext( SelectionKey key ){
+        return (SocketContext)key.attachment();
+    }
+    
+    void setHandler( WebSocketChanelHandler handler , SelectionKey key){
         getContext(key).setHandler(handler);
     }
     
-    protected WebSocketChanelHandler getHandler(SelectionKey key ){
+    WebSocketChanelHandler getHandler(SelectionKey key ){
         return getContext(key).getHandler();
-    }
-
-    @Override
-    public void close(SelectionKey key) throws IOException {
-        super.close(key);
-        getWebSocketReadHandler().closed(key);
     }
     
     static class SocketContext {

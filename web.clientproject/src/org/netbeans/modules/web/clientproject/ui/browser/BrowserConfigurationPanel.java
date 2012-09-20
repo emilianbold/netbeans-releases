@@ -53,14 +53,14 @@ import org.netbeans.modules.web.clientproject.browser.ClientProjectConfiguration
  */
 public class BrowserConfigurationPanel extends javax.swing.JPanel {
 
+    private boolean integration;
+    
     /**
      * Creates new form BrowserConfigurationPanel
      */
     public BrowserConfigurationPanel(ClientSideProject project, ClientProjectConfigurationImpl cfg, WebBrowser browser) {
         initComponents();
-        // never editable
-        jNetBeansIntegrationCheckBox.setEnabled(false);
-        jNetBeansIntegrationCheckBox.setSelected(cfg.getBrowserIntegration() == Boolean.TRUE);
+        integration = cfg.getBrowserIntegration() == Boolean.TRUE;
         if (cfg.getBrowserIntegration() != Boolean.TRUE) {
             jAutoRefreshCheckBox.setVisible(false);
             jHighlightSelectionCheckBox.setVisible(false);
@@ -87,16 +87,8 @@ public class BrowserConfigurationPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jNetBeansIntegrationCheckBox = new javax.swing.JCheckBox();
         jAutoRefreshCheckBox = new javax.swing.JCheckBox();
         jHighlightSelectionCheckBox = new javax.swing.JCheckBox();
-
-        org.openide.awt.Mnemonics.setLocalizedText(jNetBeansIntegrationCheckBox, org.openide.util.NbBundle.getMessage(BrowserConfigurationPanel.class, "BrowserConfigurationPanel.jNetBeansIntegrationCheckBox.text")); // NOI18N
-        jNetBeansIntegrationCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jNetBeansIntegrationCheckBoxActionPerformed(evt);
-            }
-        });
 
         org.openide.awt.Mnemonics.setLocalizedText(jAutoRefreshCheckBox, org.openide.util.NbBundle.getMessage(BrowserConfigurationPanel.class, "BrowserConfigurationPanel.jAutoRefreshCheckBox.text")); // NOI18N
 
@@ -107,10 +99,7 @@ public class BrowserConfigurationPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jNetBeansIntegrationCheckBox)
-                .addGap(0, 30, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jAutoRefreshCheckBox)
                     .addComponent(jHighlightSelectionCheckBox))
@@ -119,7 +108,6 @@ public class BrowserConfigurationPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jNetBeansIntegrationCheckBox)
                 .addGap(0, 0, 0)
                 .addComponent(jAutoRefreshCheckBox)
                 .addGap(0, 0, 0)
@@ -127,18 +115,13 @@ public class BrowserConfigurationPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jNetBeansIntegrationCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jNetBeansIntegrationCheckBoxActionPerformed
-        updateEnablement();
-    }//GEN-LAST:event_jNetBeansIntegrationCheckBoxActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jAutoRefreshCheckBox;
     private javax.swing.JCheckBox jHighlightSelectionCheckBox;
-    private javax.swing.JCheckBox jNetBeansIntegrationCheckBox;
     // End of variables declaration//GEN-END:variables
 
     private void updateEnablement() {
-        jAutoRefreshCheckBox.setEnabled(jNetBeansIntegrationCheckBox.isSelected());
-        jHighlightSelectionCheckBox.setEnabled(jNetBeansIntegrationCheckBox.isSelected());
+        jAutoRefreshCheckBox.setEnabled(integration);
+        jHighlightSelectionCheckBox.setEnabled(integration);
     }
 }

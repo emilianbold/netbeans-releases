@@ -460,7 +460,11 @@ public class PluginManagerUI extends javax.swing.JPanel  {
 private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tpTabsStateChanged
     Component component = ((JTabbedPane) evt.getSource ()).getSelectedComponent ();
     if (component instanceof SettingsTab) {
+        int i = ((SettingsTab)component).getSelectedRow();
         ((SettingsTab)component).getSettingsTableModel ().refreshModel ();
+        if (i > -1) {
+            ((SettingsTab)component).setSelectedRow(i);
+        }
         wasSettings = true;
     } else {
         if (wasSettings) {

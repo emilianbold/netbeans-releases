@@ -43,7 +43,6 @@ package org.netbeans.modules.nativeexecution;
 
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import java.util.concurrent.TimeoutException;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
@@ -74,6 +73,7 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import static org.junit.Assert.*;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
@@ -141,6 +141,20 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
     @org.junit.Test
     public void testLocalExecAndWaitTasks() throws Exception {
         doTestExecAndWaitTasks(ExecutionEnvironmentFactory.getLocal());
+    }
+
+    @org.junit.Test
+    @ForAllEnvironments(section = "remote.platforms")
+    public void testDestroySignal() throws Exception {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(getTestExecutionEnvironment());
+        npb.getEnvironment().put("LC_ALL", "C"); // NOI18N
+        npb.setExecutable("/bin/sh").setArguments("-c", "trap \"echo OK && exit\" TERM \n read X"); // NOI18N
+        NativeProcess process = npb.call();
+        process.destroy();
+        String output = ProcessUtils.readProcessOutputLine(process);
+        String error = ProcessUtils.readProcessErrorLine(process);
+        assertEquals("OK", output); // NOI18N
+        assertEquals("", error); // NOI18N
     }
 
     public void doTestDestroyInfiniteTasks(final ExecutionEnvironment execEnv) throws Exception {

@@ -65,7 +65,7 @@ import org.openide.filesystems.*;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-
+@Deprecated
 public class CorefileFilter extends javax.swing.filechooser.FileFilter {
     
     public CorefileFilter() {
@@ -92,7 +92,9 @@ public class CorefileFilter extends javax.swing.filechooser.FileFilter {
 		    MIMENames.ELF_CORE_MIME_TYPE.equals(mime)) {
 		    return true;
 	    */
-	    return checkElfHeader(f);
+            if (f.isFile()) {
+                return checkElfHeader(f);
+            }
 	}
 	return false;
     }

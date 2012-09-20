@@ -143,7 +143,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         panel = pnl;
         initComponents();
 
-        kenaiCombo.setSelectedItem(panel.getKenai());
+        kenaiCombo.setSelectedItem(KenaiServer.forKenai(panel.getKenai()));
         kenaiCombo.addActionListener(new ActionListener() {
 
             @Override

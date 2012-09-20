@@ -45,21 +45,38 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import org.openide.ErrorManager;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
 import org.openide.util.datatransfer.ExClipboard;
 
 
 public final class ClipboardHistory implements ClipboardListener {
-    private final LinkedList<ClipboardHistoryElement> data;
+    private final ArrayList<ClipboardHistoryElement> data;
     private static ClipboardHistory instance;
-    private static final int MAXSIZE = 9;
+    private static int MAXSIZE = 9;
 
-    public static ClipboardHistory getInstance() {
+    private static Preferences prefs;
+    /** Name of preferences node where we persist history */
+    private static final String PREFS_NODE = "ClipboardHistory";  //NOI18N
+    private static final String PROP_ITEM_PREFIX = "item_";  //NOI18N
+    private static final boolean PERSISTENT_STATE = Boolean.getBoolean("netbeans.clipboard.history.persistent"); //NOI18N
+
+    static {
+        Integer maxsize = Integer.getInteger("netbeans.clipboard.history.maxsize"); //NOI18N
+        if (maxsize != null) {
+            MAXSIZE = maxsize;
+        }
+        if (PERSISTENT_STATE) {
+            prefs = NbPreferences.forModule(ClipboardHistory.class).node(PREFS_NODE);
+        }
+    }
+
+    public synchronized static ClipboardHistory getInstance() {
         if (instance == null) {
             instance = new ClipboardHistory();
         }
@@ -67,19 +84,32 @@ public final class ClipboardHistory implements ClipboardListener {
     }
 
     private ClipboardHistory() {
-        data = new LinkedList<ClipboardHistoryElement>();
+        data = new ArrayList<ClipboardHistoryElement>();
+        if (PERSISTENT_STATE) {
+            load();
+        }
     }
 
-
-    private synchronized void addHistory(String text) {
+    private void addHistory(String text) {
+        if (text == null) {
+            return;
+        }
         ClipboardHistoryElement newHistory = new ClipboardHistoryElement(text);
-        if (!data.isEmpty() && newHistory.equals(data.getFirst())) {
+        if (PERSISTENT_STATE) {
+            addAndPersist(newHistory);
+        } else {
+            addHistory(newHistory);
+        }
+    }
+
+    private synchronized void addHistory(ClipboardHistoryElement newHistory) {
+        if (!data.isEmpty() && newHistory.equals(data.get(0))) {
             return;
         }
         data.remove(newHistory);
-        data.addFirst(newHistory);
+        data.add(0,newHistory);
         if (data.size() > 2 * MAXSIZE) {
-            data.removeLast();
+            data.remove(data.size()-1);
         }
     }
 
@@ -96,28 +126,57 @@ public final class ClipboardHistory implements ClipboardListener {
     @Override
     public void clipboardChanged(ClipboardEvent ev) {
         ExClipboard clipboard = ev.getClipboard();
-        clipboard.removeClipboardListener(this);
 
-        Transferable transferable = clipboard.getContents(null);
         String clipboardContent = null;
         try {
+            Transferable transferable = clipboard.getContents(null);
             if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                 clipboardContent = (String) transferable.getTransferData(DataFlavor.stringFlavor);
             }
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (UnsupportedFlavorException ex) {
-            ErrorManager.getDefault().notify(ex);
+        } catch (IOException ioe) {
+            //ignored for bug #218255
+        } catch (UnsupportedFlavorException ufe) {
         }
 
         if (clipboardContent != null) {
             addHistory(clipboardContent);
         }
-
-        clipboard.addClipboardListener(this);
     }
 
     public synchronized int getPosition(ClipboardHistoryElement history) {
         return data.indexOf(history);
+    }
+
+    private void load() {
+        for(int i=0; i < MAXSIZE; i++){
+            String item = prefs.get(PROP_ITEM_PREFIX + i, null);
+            if (item != null) {
+                data.add(i, new ClipboardHistoryElement(item));
+            }
+        }
+    }
+
+    public synchronized void addAndPersist(ClipboardHistoryElement newHistoryElement) {
+        if (data.size() > 0 && newHistoryElement.equals(data.get(0))) {
+            return;
+        }
+
+        for (int i = 0; i < data.size(); i++) {
+            if (newHistoryElement.equals(data.get(i))) {
+                data.remove(i);
+                break;
+            }
+        }
+
+        if (data.size() == MAXSIZE){
+            data.remove(MAXSIZE-1);
+        }
+        data.add(0, newHistoryElement);
+
+        int i = 0;
+        for (ClipboardHistoryElement elem : data) {
+            prefs.put(PROP_ITEM_PREFIX + i, elem.getFullText());
+            i++;
+        }
     }
 }

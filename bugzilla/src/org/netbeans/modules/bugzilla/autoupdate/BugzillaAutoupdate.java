@@ -50,10 +50,12 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
+import org.netbeans.api.autoupdate.InstallSupport;
+import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -114,17 +116,23 @@ public class BugzillaAutoupdate {
             if(!BugzillaConfig.getInstance().getCheckUpdates()) {
                 return true;
             }
-            if(!checkSupportedBugzillaServerVersion(repository) && checkNewBugzillaPluginAvailable()) {
-                updateAvailableMap.put(repository.getUrl(), Boolean.TRUE);
-                AutoupdatePanel panel = new AutoupdatePanel();
-                if(BugzillaUtil.show(
-                        panel,
-                        NbBundle.getMessage(BugzillaAutoupdate.class, "CTL_AutoupdateTitle"), // NOI18N
-                        NbBundle.getMessage(BugzillaAutoupdate.class, "CTL_Yes"),             // NOI18N
-                        new HelpCtx(BugzillaAutoupdate.class)))
-                {
-                    BugtrackingUtil.openPluginManager();
-                    return false;
+            
+            if(!checkSupportedBugzillaServerVersion(repository)) {
+                UpdateElement ue = checkNewBugzillaPluginAvailable();
+                if(ue != null) {
+                    updateAvailableMap.put(repository.getUrl(), Boolean.TRUE);
+                    AutoupdatePanel panel = new AutoupdatePanel();
+                    if(BugzillaUtil.show(
+                            panel,
+                            NbBundle.getMessage(BugzillaAutoupdate.class, "CTL_AutoupdateTitle"), // NOI18N
+                            NbBundle.getMessage(BugzillaAutoupdate.class, "CTL_Yes"),             // NOI18N
+                            new HelpCtx(BugzillaAutoupdate.class)))
+                    {
+                        OperationContainer<InstallSupport> oc = OperationContainer.createForUpdate();
+                        oc.add(ue);
+                        PluginManager.openInstallWizard(oc);
+                        return false;
+                    }
                 }
             }
         } finally {
@@ -133,7 +141,7 @@ public class BugzillaAutoupdate {
         return true;
     }
 
-    boolean checkNewBugzillaPluginAvailable() {
+    UpdateElement checkNewBugzillaPluginAvailable() {
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
         for (UpdateUnit u : units) {
             if(u.getCodeName().equals(BUGZILLA_MODULE_CODE_NAME)) {
@@ -144,20 +152,21 @@ public class BugzillaAutoupdate {
                         BugzillaVersion version = getVersion(desc);
                         if(version != null){
                             if(SUPPORTED_BUGZILLA_VERSION.compareTo(version) < 0){
-                                return true;
+                                return updateElement;
                             }
                         } else {
-                            return elements.size() > 0; // looks like we weren't able to
-                                                // parse the version; on the other hand ->
-                                                // there is something so lets be optimistic
+                            // looks like we weren't able to
+                            // parse the version; on the other hand ->
+                            // there is something so lets be optimistic
+                            return elements.size() > 0 ? updateElement : null; 
                         }
                     }                    
                 } else {
-                    return false;
+                    return null;
                 }
             }
         }
-        return false;
+        return null;
     }
 
     /**

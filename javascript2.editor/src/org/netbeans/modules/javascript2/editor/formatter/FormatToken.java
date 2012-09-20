@@ -67,6 +67,8 @@ public final class FormatToken {
     }
 
     public static FormatToken forText(int offset, CharSequence text) {
+        assert text != null;
+        assert offset >= 0 : offset;
         return new FormatToken(Kind.TEXT, offset, text);
     }
 
@@ -75,6 +77,8 @@ public final class FormatToken {
     }
 
     public static FormatToken forAny(Kind kind, int offset, CharSequence text) {
+        assert text != null;
+        assert offset >= 0 : offset;
         return new FormatToken(kind, offset, text);
     }
 
@@ -83,9 +87,10 @@ public final class FormatToken {
         return kind;
     }
 
-    @CheckForNull
+    @NonNull
     public CharSequence getText() {
-        return text;
+        assert !isVirtual();
+        return text != null ? text : ""; // NOI18N
     }
 
     public int getOffset() {
@@ -471,6 +476,10 @@ public final class FormatToken {
         BEFORE_ASSIGNMENT_OPERATOR,
         AFTER_ASSIGNMENT_OPERATOR,
 
+        // around property
+        BEFORE_PROPERTY_OPERATOR,
+        AFTER_PROPERTY_OPERATOR,
+
         // around comma
         BEFORE_COMMA,
         AFTER_COMMA,
@@ -489,6 +498,7 @@ public final class FormatToken {
 
         // no parenthesis but we should handle that
         AFTER_VAR_KEYWORD,
+        AFTER_NEW_KEYWORD,
 
         // keywords with possible space before
         BEFORE_WHILE_KEYWORD,

@@ -48,10 +48,10 @@ import java.util.Collection;
  *
  * The utility methods needs to be called from within either 
  * {@link Model#runReadTask(org.netbeans.modules.css.model.api.Model.ModelTask) }
- * or  {@link Model#runWriteTask(org.netbeans.modules.css.model.api.Model.ModelTask) !!!
+ * or null {@link Model#runWriteTask(org.netbeans.modules.css.model.api.Model.ModelTask) !!!
  *
  * TODO: add model tasks checking
- * 
+ *
  * @author marekfukala
  */
 public class ModelUtils {
@@ -68,42 +68,31 @@ public class ModelUtils {
 
     /**
      * Creates a new {@link Rule}
-     * 
+     *
      * @param selectors list of selectors from the selector group
-     * @param declarations  list of declarations in the "property:value" form
+     * @param declarations list of declarations in the "property:value" form
      */
     public Rule createRule(Collection<String> selectors, Collection<String> declarations) {
         SelectorsGroup selectorsGroup = factory.createSelectorsGroup();
-        for(String selectorName : selectors) {
+        for (String selectorName : selectors) {
             selectorsGroup.addSelector(factory.createSelector(selectorName));
         }
         Declarations decls = factory.createDeclarations();
-        for(String declaration : declarations) {
-            int separatorIndex = declaration.indexOf(':');
-            if(separatorIndex == -1) {
-                throw new IllegalArgumentException(String.format("Bad declaration value (forgotten colon): %s", declaration));
-            }
-            String propertyImg = declaration.substring(0, separatorIndex);
-            String valueImg = declaration.substring(separatorIndex + 1);
-            
-            Property property = factory.createProperty(propertyImg);
-            PropertyValue propertyValue = factory.createPropertyValue(factory.createExpression(valueImg));
-            
-            Declaration decl = factory.createDeclaration(property, propertyValue, false);
-            decls.addDeclaration(decl);
+        for (String declaration : declarations) {
+            decls.addDeclaration(createDeclaration(declaration));
         }
         return factory.createRule(selectorsGroup, decls);
     }
-    
+
     /**
      * Returns an instance of {@link Body}.
-     * 
+     *
      * If the body doesn't exist in the stylesheet it is created
-     * 
+     *
      * @return non-null instance of {@link Body}
      */
     public Body getBody() {
-         Body body = styleSheet.getBody();
+        Body body = styleSheet.getBody();
         if (body == null) {
             //create body if empty file
             body = factory.createBody();
@@ -111,5 +100,18 @@ public class ModelUtils {
         }
         return body;
     }
-    
+
+    public Declaration createDeclaration(String code) {
+        int separatorIndex = code.indexOf(':');
+        if (separatorIndex == -1) {
+            throw new IllegalArgumentException(String.format("Bad declaration value (forgotten colon): %s", code));
+        }
+        String propertyImg = code.substring(0, separatorIndex);
+        String valueImg = code.substring(separatorIndex + 1);
+
+        Property property = factory.createProperty(propertyImg);
+        PropertyValue propertyValue = factory.createPropertyValue(factory.createExpression(valueImg));
+
+        return factory.createDeclaration(property, propertyValue, false);
+    }
 }

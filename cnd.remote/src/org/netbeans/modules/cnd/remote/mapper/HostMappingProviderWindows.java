@@ -133,7 +133,12 @@ public class HostMappingProviderWindows implements HostMappingProvider {
         for( line = reader.readLine(); line != null; line = reader.readLine() ) {  //NOI18N
             if (line.indexOf(':') != -1) {
                 String local = line.substring(nLocal, nRemote -1).trim(); // something like X:
-                String remote = line.substring(nRemote, nNetwork -1).trim(); // something like \\hostname\foldername
+                String remote = line.substring(nRemote).trim(); // something like \\hostname\foldername
+                if (remote.length() > nNetwork - 1 - nRemote) {
+                    if (remote.charAt(nNetwork - 2 - nRemote) == ' ') {
+                        remote = remote.substring(0, nNetwork - 1 - nRemote).trim();
+                    }
+                }
                 if (remote.length() > 2) {
                     String[] arRemote = remote.substring(2).split("\\\\"); //NOI18N
                     if (arRemote.length >=2) {

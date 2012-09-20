@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.hudson.ui.nodes;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +53,7 @@ import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.constants.HudsonInstanceConstants;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.LogInAction;
@@ -67,6 +70,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
@@ -80,11 +84,13 @@ public class HudsonJobNode extends AbstractNode {
     
     private String htmlDisplayName;
     private HudsonJob job;
+    private PropertyChangeListener watchedListener;
     
     public HudsonJobNode(HudsonJob job) {
         super(makeChildren(job), Lookups.singleton(job));
         setName(job.getName());
         setHudsonJob(job);
+        setWatchedListener();
     }
 
     private static Children makeChildren(final HudsonJob job) {
@@ -146,10 +152,29 @@ public class HudsonJobNode extends AbstractNode {
         return s;
     }
     
+    private void setWatchedListener() {
+        if (job instanceof HudsonJobImpl) {
+            final HudsonJobImpl jobImpl = (HudsonJobImpl) job;
+            watchedListener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(
+                            HudsonInstanceConstants.INSTANCE_SUPPRESSED_JOBS)) {
+                        setHudsonJob(HudsonJobNode.this.job);
+                    }
+                }
+            };
+            jobImpl.getInstance().getProperties().addPropertyChangeListener(
+                    WeakListeners.propertyChange(watchedListener,
+                    jobImpl.getInstance().getProperties()));
+        }
+    }
+
     @Messages({
         "HudsonJobNode.running=(running)",
         "HudsonJobNode.in_queue=(in queue)",
-        "HudsonJobNode.secured=(secured)"
+        "HudsonJobNode.secured=(secured)",
+        "HudsonJobNode.not_watched=(not watched)"
     })
     private void setHudsonJob(HudsonJob job) {
         this.job = job;
@@ -161,24 +186,34 @@ public class HudsonJobNode extends AbstractNode {
 
         String oldHtmlDisplayName = getHtmlDisplayName();
         try {
-            htmlDisplayName = color.colorizeDisplayName(XMLUtil.toElementContent(job.getDisplayName()));
+            String escapedName = XMLUtil.toElementContent(job.getDisplayName());
+            htmlDisplayName = job.isSalient()
+                    ? color.colorizeDisplayName(escapedName)
+                    : toGray(escapedName);
         } catch (CharConversionException ex) {
             assert false : ex;
             return;
         }
         if (!job.isSalient()) {
-            // XXX visually mark this somehow?
+            htmlDisplayName += toGrayWithSpace(HudsonJobNode_not_watched());
         }
         if (color.isRunning()) {
-            htmlDisplayName += " <font color='!controlShadow'>" + HudsonJobNode_running() + "</font>";
+            htmlDisplayName += toGrayWithSpace(HudsonJobNode_running());
         }
         if (color == Color.secured) {
-            htmlDisplayName += " <font color='!controlShadow'>" + HudsonJobNode_secured() + "</font>";
+            htmlDisplayName += toGrayWithSpace(HudsonJobNode_secured());
         }
         if (job.isInQueue()) {
-            htmlDisplayName += " <font color='!controlShadow'>" + HudsonJobNode_in_queue() + "</font>";
+            htmlDisplayName += toGrayWithSpace(HudsonJobNode_in_queue());
         }
         fireDisplayNameChange(oldHtmlDisplayName, htmlDisplayName);
     }
 
+    private String toGray(String text) {
+        return "<font color='!controlShadow'>" + text + "</font>";      //NOI18N
+    }
+
+    private String toGrayWithSpace(String text) {
+        return " " + toGray(text);                                      //NOI18N
+    }
 }

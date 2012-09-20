@@ -112,8 +112,8 @@ public final class DeployOnSaveManager {
     
     private final WeakHashMap<J2eeModuleProvider, Object> suspended = new WeakHashMap<J2eeModuleProvider, Object>();
     
-    private final WeakHashMap<J2eeModuleProvider, List<J2eeModuleProvider.DeployOnSaveListener>> projectListeners = new
-        WeakHashMap<J2eeModuleProvider, List<J2eeModuleProvider.DeployOnSaveListener>>();
+    private final WeakHashMap<J2eeModuleProvider, List<ConfigSupportImpl.DeployOnSaveListener>> projectListeners = new
+        WeakHashMap<J2eeModuleProvider, List<ConfigSupportImpl.DeployOnSaveListener>>();
 
     /**
      * We need a custom thread factory because the default one stores the
@@ -272,22 +272,22 @@ public final class DeployOnSaveManager {
         }        
     }
     
-    public void addDeployOnSaveListener( J2eeModuleProvider provider, J2eeModuleProvider.DeployOnSaveListener listener )
+    public void addDeployOnSaveListener( J2eeModuleProvider provider, ConfigSupportImpl.DeployOnSaveListener listener )
     {
         synchronized (this) {
-            List<J2eeModuleProvider.DeployOnSaveListener> listeners = projectListeners.get(provider);
+            List<ConfigSupportImpl.DeployOnSaveListener> listeners = projectListeners.get(provider);
             if (listeners == null) {
-                listeners = new ArrayList<J2eeModuleProvider.DeployOnSaveListener>();
+                listeners = new ArrayList<ConfigSupportImpl.DeployOnSaveListener>();
                 projectListeners.put(provider, listeners);
             }
             listeners.add(listener);
         }
     }
 
-    public void removeDeployOnSaveListener( J2eeModuleProvider provider, J2eeModuleProvider.DeployOnSaveListener listener )
+    public void removeDeployOnSaveListener( J2eeModuleProvider provider, ConfigSupportImpl.DeployOnSaveListener listener )
     {
         synchronized (this) {
-            List<J2eeModuleProvider.DeployOnSaveListener> listeners = projectListeners.get(provider);
+            List<ConfigSupportImpl.DeployOnSaveListener> listeners = projectListeners.get(provider);
             if (listeners == null) {
                 return;
             }
@@ -426,7 +426,7 @@ public final class DeployOnSaveManager {
             LOGGER.log(Level.FINE, "Performing pending deployments");
 
             Map<J2eeModuleProvider, Set<Artifact>> deployNow;
-            Map<J2eeModuleProvider, List<J2eeModuleProvider.DeployOnSaveListener>> listeners = new HashMap<J2eeModuleProvider, List<J2eeModuleProvider.DeployOnSaveListener>>();
+            Map<J2eeModuleProvider, List<ConfigSupportImpl.DeployOnSaveListener>> listeners = new HashMap<J2eeModuleProvider, List<ConfigSupportImpl.DeployOnSaveListener>>();
             synchronized (DeployOnSaveManager.this) {
                 if (toDeploy.isEmpty()) {
                     return;
@@ -436,11 +436,11 @@ public final class DeployOnSaveManager {
                 toDeploy = new HashMap<J2eeModuleProvider, Set<Artifact>>();
                 
                 // copy the listeners
-                for (Map.Entry<J2eeModuleProvider, List<J2eeModuleProvider.DeployOnSaveListener>> entry : projectListeners.entrySet()) {
+                for (Map.Entry<J2eeModuleProvider, List<ConfigSupportImpl.DeployOnSaveListener>> entry : projectListeners.entrySet()) {
                     if (!deployNow.containsKey(entry.getKey())) {
                         continue;
                     }
-                    listeners.put(entry.getKey(), new ArrayList<J2eeModuleProvider.DeployOnSaveListener>(entry.getValue()));
+                    listeners.put(entry.getKey(), new ArrayList<ConfigSupportImpl.DeployOnSaveListener>(entry.getValue()));
                 }
             }
 
@@ -455,9 +455,9 @@ public final class DeployOnSaveManager {
                         runJPDAAppReloaded();
                         
                         
-                       List<J2eeModuleProvider.DeployOnSaveListener> toFire = listeners.get(entry.getKey());
+                       List<ConfigSupportImpl.DeployOnSaveListener> toFire = listeners.get(entry.getKey());
                        if (toFire != null) {
-                            for (J2eeModuleProvider.DeployOnSaveListener listener : toFire) {
+                            for (ConfigSupportImpl.DeployOnSaveListener listener : toFire) {
                                 listener.deployed(entry.getValue());
                             }
                         }

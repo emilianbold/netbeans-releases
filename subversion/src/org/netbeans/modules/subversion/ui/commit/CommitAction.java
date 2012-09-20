@@ -729,6 +729,7 @@ public class CommitAction extends ContextAction {
             List<ISVNLogMessage> logs = new ArrayList<ISVNLogMessage>();
             List<File> hookFiles = new ArrayList<File>();
             boolean handleHooks = false;
+            String originalMessage = message;
             if(hooks.size() > 0) {
                 for (List<File> l : managedTrees) {
                     hookFiles.addAll(l);
@@ -794,7 +795,7 @@ public class CommitAction extends ContextAction {
                 Subversion.getInstance().getHistoryProvider().fireHistoryChange(commitedFiles);
                 
                 if(handleHooks) {
-                    afterCommit(hooks, hookFiles, message, logs);
+                    afterCommit(hooks, hookFiles, originalMessage, logs);
                 }
 
                 // update and refresh

@@ -43,15 +43,16 @@ package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import java.util.*;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
+import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
  * Represents block of jsDoc comment which contains particular {@link JsDocTag}s.
@@ -129,8 +130,13 @@ public class JsDocComment extends JsComment {
     }
 
     @Override
-    public boolean isDeprecated() {
-        return !getTagsForType(JsDocElementType.DEPRECATED).isEmpty();
+    public String getDeprecated() {
+        List<? extends JsDocElement> deprecatedTags = getTagsForType(JsDocElementType.DEPRECATED);
+        if (deprecatedTags.isEmpty()) {
+            return null;
+        } else {
+            return ((DescriptionElement) deprecatedTags.get(0)).getDescription();
+        }
     }
 
     @Override
@@ -141,6 +147,82 @@ public class JsDocComment extends JsComment {
             modifiers.add(JsModifier.fromString(jsDocElement.getType().toString().substring(1)));
         }
         return modifiers;
+    }
+
+    @Override
+    public List<DocParameter> getThrows() {
+        List<DocParameter> throwsEntries = new LinkedList<DocParameter>();
+        for (JsDocElement exceptionTag : getTagsForType(JsDocElementType.THROWS)) {
+            throwsEntries.add((UnnamedParameterElement) exceptionTag);
+        }
+        return throwsEntries;
+    }
+
+    @Override
+    public List<Type> getExtends() {
+        List<Type> extendsEntries = new LinkedList<Type>();
+        for (JsDocElement extend : getTagsForTypes(
+                new JsDocElementType[]{JsDocElementType.EXTENDS, JsDocElementType.AUGMENTS})) {
+            DeclarationElement ident = (DeclarationElement) extend;
+            extendsEntries.add(ident.getDeclaredType());
+        }
+        return extendsEntries;
+    }
+
+    @Override
+    public List<String> getSee() {
+        List<String> sees = new LinkedList<String>();
+        for (JsDocElement extend : getTagsForType(JsDocElementType.SEE)) {
+            DescriptionElement element = (DescriptionElement) extend;
+            sees.add(element.getDescription());
+        }
+        return sees;
+    }
+
+    @Override
+    public String getSince() {
+        List<? extends JsDocElement> since = getTagsForType(JsDocElementType.SINCE);
+        if (since.isEmpty()) {
+            return null;
+        } else {
+            return ((DescriptionElement) since.get(0)).getDescription();
+        }
+    }
+
+    @Override
+    public boolean isClass() {
+        return !getTagsForTypes(new JsDocElementType[]{JsDocElementType.CLASS, JsDocElementType.CONSTRUCTOR,
+            JsDocElementType.CONSTRUCTS}).isEmpty();
+    }
+
+//    @Override
+//    public List<String> getAuthor() {
+//        List<String> authors = new LinkedList<String>();
+//        for (JsDocElement extend : getTagsForType(JsDocElementType.AUTHOR)) {
+//            DescriptionElement element = (DescriptionElement) extend;
+//            authors.add(element.getDescription());
+//        }
+//        return authors;
+//    }
+//
+//    @Override
+//    public String getVersion() {
+//        List<? extends JsDocElement> version = getTagsForType(JsDocElementType.VERSION);
+//        if (version.isEmpty()) {
+//            return null;
+//        } else {
+//            return ((DescriptionElement) version.get(0)).getDescription();
+//        }
+//    }
+
+    @Override
+    public List<String> getExamples() {
+        List<String> examples = new LinkedList<String>();
+        for (JsDocElement extend : getTagsForType(JsDocElementType.EXAMPLE)) {
+            DescriptionElement element = (DescriptionElement) extend;
+            examples.add(element.getDescription());
+        }
+        return examples;
     }
 
     private void initTags(List<JsDocElement> elements) {

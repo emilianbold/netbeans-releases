@@ -979,6 +979,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     }
 
     boolean valid() {
+        setConnectionInfo();
         return wd.getValid();
     }
 

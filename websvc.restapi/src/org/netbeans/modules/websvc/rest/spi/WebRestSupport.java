@@ -910,8 +910,8 @@ public abstract class WebRestSupport extends RestSupport {
     }
     
     protected void reconfigApplicationClass( final String appClassFqn ) {
+        scheduleReconfigAppClass(appClassFqn);
         if ( restModelListener == null ){
-            scheduleReconfigAppClass(appClassFqn);
             restModelListener = new PropertyChangeListener() {
                 
                 @Override
@@ -1007,6 +1007,9 @@ public abstract class WebRestSupport extends RestSupport {
         Set<ElementHandle<TypeElement>> handles = ci.getDeclaredTypes(
                 simple, ClassIndex.NameKind.SIMPLE_NAME, 
                 Collections.singleton(ClassIndex.SearchScope.SOURCE));
+        if ( handles == null ){
+            return null;
+        }
         for (ElementHandle<TypeElement> handle : handles) {
             if (qualifiedClassName.equals(handle.getQualifiedName())) {
                 return SourceUtils.getFile(handle, cpInfo);

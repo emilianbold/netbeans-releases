@@ -315,6 +315,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             return null;
         }
         String inspectedURL = pageModel.getDocumentURL();
+        if (inspectedURL == null) {
+            return null;
+        }
         try {
             
             URL url = new URL(inspectedURL);
@@ -487,14 +490,14 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         if (!"text/html".equals(FileUtil.getMIMEType(fo))) {
             return;
         }
-        
+
         setPageModel(PageInspectorImpl.getDefault().getPage());
 
         Source source = Source.create(fo);
-        if (source == null) {
+        if (source == null || !"text/html".equals(source.getMimeType())) {
             return;
         }
-        
+
         //TODO: uncomment when working again
         //showWaitNode();
         
@@ -861,6 +864,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      * Updates the set of highlighted nodes.
      */
     final void updateHighlight() {
+        if (pageModel==null) {
+            return;
+        }
         synchronized (highlightedTreeNodes) {
             highlightedTreeNodes.clear();
             //System.out.println("highlighted treenodes cleared");

@@ -53,9 +53,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode.PathNotFoundException;
+import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
@@ -63,7 +66,6 @@ import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.text.Line;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -83,12 +85,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         ab.addPropertyChangeListener(this);
     }
     
-    public static WebKitBreakpointManager create(Debugger d, LineBreakpoint lb) {
-        return new WebKitLineBreakpointManager(d, lb);
+    public static WebKitBreakpointManager create(Debugger d, ProjectContext pc, LineBreakpoint lb) {
+        return new WebKitLineBreakpointManager(d, pc, lb);
     }
     
-    public static WebKitBreakpointManager create(WebKitDebugging wd, Project project, DOMBreakpoint db) {
-        return new WebKitDOMBreakpointManager(wd, project, db);
+    public static WebKitBreakpointManager create(WebKitDebugging wd, ProjectContext pc, DOMBreakpoint db) {
+        return new WebKitDOMBreakpointManager(wd, pc, db);
     }
 
     public static WebKitBreakpointManager create(Debugger d, EventsBreakpoint eb) {
@@ -134,15 +136,19 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         }
     }
     
-    private static final class WebKitLineBreakpointManager extends WebKitBreakpointManager implements Debugger.Listener {
+    private static final class WebKitLineBreakpointManager extends WebKitBreakpointManager 
+        implements Debugger.Listener, ChangeListener {
         
         private final LineBreakpoint lb;
         private org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
         private final AtomicBoolean lineChanged = new AtomicBoolean(false);
+        private ProjectContext pc;
         
-        public WebKitLineBreakpointManager(Debugger d, LineBreakpoint lb) {
+        public WebKitLineBreakpointManager(Debugger d, ProjectContext pc, LineBreakpoint lb) {
             super(d, lb);
             this.lb = lb;
+            this.pc = pc;
+            pc.addChangeSupport(this);
         }
 
         @Override
@@ -150,7 +156,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             if (b != null) {
                 return ;
             }
-            String url = lb.getURLString();
+            String url = lb.getURLString(pc.getProject(), d.getConnectionURL());
             url = reformatFileURL(url);
             b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
             d.addListener(this);
@@ -171,7 +177,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         private void resubmit() {
             if (b != null) {
                 d.removeLineBreakpoint(b);
-                String url = lb.getURLString();
+                String url = lb.getURLString(pc.getProject(), d.getConnectionURL());
                 url = reformatFileURL(url);
                 b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
             }
@@ -213,22 +219,30 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 super.propertyChange(event);
             }
         }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            // project context has changed and line breakpoints need to
+            // be refreshed:
+            resubmit();
+        }
         
     }
 
-    private static final class WebKitDOMBreakpointManager extends WebKitBreakpointManager {
+    private static final class WebKitDOMBreakpointManager extends WebKitBreakpointManager implements ChangeListener {
         
         private final WebKitDebugging wd;
-        private final Project project;
+        private final ProjectContext pc;
         private final DOMBreakpoint db;
         private Node node;
         private Set<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint> bps;
         
-        public WebKitDOMBreakpointManager(WebKitDebugging wd, Project project, DOMBreakpoint db) {
+        public WebKitDOMBreakpointManager(WebKitDebugging wd, ProjectContext pc, DOMBreakpoint db) {
             super(wd.getDebugger(), db);
             this.wd = wd;
-            this.project = project;
+            this.pc = pc;
             this.db = db;
+            pc.addChangeSupport(this);
         }
 
         @Override
@@ -236,6 +250,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             if (bps != null) {
                 return ;
             }
+            Project project = pc.getProject();
             if (project != null) {
                 URL urlBP = db.getURL();
                 FileObject fo = URLMapper.findFileObject(urlBP);
@@ -331,9 +346,23 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     removeBreakpoints();
                     addTo(theNode);
                 }
+            } else if (DOMBreakpoint.PROP_NODE.equals(propertyName)) {
+                DOMNode oldNode = (DOMNode) event.getOldValue();
+                oldNode.unbind();
+                oldNode.removePropertyChangeListener(this);
+                removeBreakpoints();
+                add();
             } else {
                 super.propertyChange(event);
             }
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            // project context has changed and DOM breakpoint needs to be
+            // refreshed:
+            remove();
+            add();
         }
         
     }
@@ -368,8 +397,19 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 return ;
             }
             if (d.isEnabled()) {
+                boolean removed = true;
                 for (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b : bps.values()) {
-                    d.removeLineBreakpoint(b);
+                    if (b.getBreakpointID() != null) {
+                        d.removeLineBreakpoint(b);
+                    } else {
+                        removed = false;
+                    }
+                }
+                if (!removed) {
+                    Set<String> events = eb.getEvents();
+                    for (String event : events) {
+                        d.removeEventBreakpoint(event);
+                    }
                 }
             }
             bps = null;
@@ -440,7 +480,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 return ;
             }
             if (d.isEnabled()) {
-                d.removeLineBreakpoint(b);
+                if (b.getBreakpointID() != null) {
+                    d.removeLineBreakpoint(b);
+                } else {
+                    String urlSubstring = xb.getUrlSubstring();
+                    d.removeXHRBreakpoint(urlSubstring);
+                }
             }
             b = null;
         }

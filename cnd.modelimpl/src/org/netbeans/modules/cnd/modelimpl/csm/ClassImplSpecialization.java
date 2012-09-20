@@ -79,7 +79,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     }
 
     @Override
-    public final void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, boolean register) {
+    public final void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, boolean register) throws AstRendererException {
         // does not call super.init(), but copies super.init() with some changes:
         // it needs to initialize qualifiedNameSuffix
         // after rendering, but before calling initQualifiedName() and register()
@@ -88,22 +88,24 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         temporaryRepositoryRegistration(register, this);
         render(ast, file, fileContent, !register);
 
-        initQualifiedName(ast, scope, register);
+        initQualifiedName(ast, scope, register, file);
 
         if (register) {
             register(getScope(), false);
         }
     }
 
-    protected final void initQualifiedName(AST ast, CsmScope scope, boolean register) {
+    protected final void initQualifiedName(AST ast, CsmScope scope, boolean register, CsmFile file) throws AstRendererException {
         AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-        assert qIdToken != null;
+        if (qIdToken == null) {
+            throw AstRendererException.throwAstRendererException((FileImpl) file, ast, getStartOffset(), "Empty class specialization name."); // NOI18N
+        }
         qualifiedNameSuffix = NameCache.getManager().getString(TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters()));
         initQualifiedName(scope);
         specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), scope, register);
     }
 
-    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, FileContent fileContent, boolean register, DeclarationsContainer container) {
+    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
         ClassImpl clsImpl = findExistingClassImplInContainer(container, ast);
         ClassImplSpecialization impl = null;
         if (clsImpl instanceof ClassImplSpecialization) {

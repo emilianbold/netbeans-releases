@@ -145,7 +145,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
             }
             if (outputDirectory == null) {
                 try {
-                    outputDirectory = (String) PluginPropertyUtils.createEvaluator(p.getLookup().lookup(NbMavenProject.class).getMavenProject()).evaluate("${project.reporting.outputDirectory}/jacoco");
+                    outputDirectory = (String) PluginPropertyUtils.createEvaluator(p).evaluate("${project.reporting.outputDirectory}/jacoco");
                 } catch (ExpressionEvaluationException x) {
                     LOG.log(Level.WARNING, null, x);
                     return null;
@@ -159,7 +159,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
         }
         if (outputDirectory == null) {
             try {
-                outputDirectory = (String) PluginPropertyUtils.createEvaluator(p.getLookup().lookup(NbMavenProject.class).getMavenProject()).evaluate("${project.reporting.outputDirectory}/cobertura");
+                outputDirectory = (String) PluginPropertyUtils.createEvaluator(p).evaluate("${project.reporting.outputDirectory}/cobertura");
             } catch (ExpressionEvaluationException x) {
                 LOG.log(Level.WARNING, null, x);
                 return null;

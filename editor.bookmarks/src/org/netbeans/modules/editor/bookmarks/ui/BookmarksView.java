@@ -177,14 +177,14 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         nodeTree = new BookmarksNodeTree();
         explorerManager = new ExplorerManager();
         ActionMap actionMap = getActionMap();
-        actionMap.put("delete", ExplorerUtils.actionDelete(explorerManager, false));
+        actionMap.put("delete", ExplorerUtils.actionDelete(explorerManager, false)); //NOI18N
         associateLookup(ExplorerUtils.createLookup(explorerManager, actionMap));
         explorerManager.addPropertyChangeListener(this);
 
         // Ctrl+T will toggle the tree/table view
         InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.CTRL_DOWN_MASK), "toggle-view");
-        actionMap.put("toggle-view", new AbstractAction() {
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.CTRL_DOWN_MASK), "toggle-view"); //NOI18N
+        actionMap.put("toggle-view", new AbstractAction() { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
                 setTreeViewVisible(!treeViewShowing);
@@ -521,7 +521,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
     void showPreview(FileObject fo, Document doc, BookmarkInfo bookmarkInfo) {
         if (bookmarkInfo != displayedBookmarkInfo) {
             int lineIndex = bookmarkInfo.getCurrentLineIndex();
-            String mimeType = (String) doc.getProperty("mimeType");
+            String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
             if (mimeType != null) {
                 JEditorPane pane = new JEditorPane();
                 EditorKit editorKit = MimeLookup.getLookup(mimeType).lookup(EditorKit.class);
@@ -669,7 +669,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if ("selectedNodes".equals(evt.getPropertyName())) {
+        if ("selectedNodes".equals(evt.getPropertyName())) { //NOI18N
             schedulePaneRefresh();
         }
     }

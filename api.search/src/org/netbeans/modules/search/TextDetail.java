@@ -45,11 +45,14 @@
 
 package org.netbeans.modules.search;
 
+import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
@@ -62,6 +65,8 @@ import org.netbeans.api.search.SearchPattern;
 import org.netbeans.modules.search.ui.ReplaceCheckableNode;
 import org.netbeans.modules.search.ui.ResultsOutlineSupport;
 import org.netbeans.modules.search.ui.UiUtils;
+import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
@@ -86,6 +91,8 @@ import org.openide.xml.XMLUtil;
  */
 public final class TextDetail implements Selectable {
 
+    private static final Logger LOG = Logger.getLogger(
+            TextDetail.class.getName());
     /** Property name which indicates this detail to show. */
     public static final int DH_SHOW = 1;
     /** Property name which indicates this detail to go to. */
@@ -117,6 +124,8 @@ public final class TextDetail implements Selectable {
     private boolean selected = true;
     /** Line number indent */
     private String lineNumberIndent = "";                               //NOI18N
+    /** Show the text detail after the data object is updated */
+    private boolean showAfterDataObjectUpdated = false;
 
     private ChangeSupport changeSupport = new ChangeSupport(this);
     /** Constructor using data object. 
@@ -136,10 +145,18 @@ public final class TextDetail implements Selectable {
      * @see #DH_GOTO 
      * @see #DH_SHOW 
      * @see #DH_HIDE */
+    @NbBundle.Messages({
+        "MSG_CannotShowTextDetai=The text match cannot be shown."
+    })
     public void showDetail(int how) {
         prepareLine();
         if (lineObj == null) {
             Toolkit.getDefaultToolkit().beep();
+            EditCookie ed = dobj.getLookup().lookup(EditCookie.class);
+            if (ed != null) {
+                ed.edit();
+                showAfterDataObjectUpdated = true; // show correct line later
+            }
             return;
         }
         if (how == DH_HIDE) {
@@ -166,13 +183,20 @@ public final class TextDetail implements Selectable {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        Caret caret = panes[0].getCaret(); // #23626
-                        caret.moveDot(caret.getDot() + markLength);
+                        try {
+                            Caret caret = panes[0].getCaret(); // #23626
+                            caret.moveDot(caret.getDot() + markLength);
+                        } catch (Exception e) { // #217038
+                            StatusDisplayer.getDefault().setStatusText(
+                                    Bundle.MSG_CannotShowTextDetai());
+                            LOG.log(Level.FINE,
+                                    Bundle.MSG_CannotShowTextDetai(), e);
+                        }
                     }
                 });
             }
         }
-        SearchHistory.getDefault().setLastSelected(
+        SearchHistory.getDefault().add(
                 SearchPattern.create(
                 searchPattern.getSearchExpression(),
                 searchPattern.isWholeWords(), searchPattern.isMatchCase(),
@@ -381,6 +405,31 @@ public final class TextDetail implements Selectable {
 
     public void fireChange() {
         changeSupport.fireChange();
+    }
+
+    /**
+     * Update data object. Can be called when a module is enabled and new data
+     * loader produces new data object. The new data object can provide new
+     * features, e.g. LineCookie.
+     */
+    public void updateDataObject(DataObject dataObject) {
+        if (this.dobj.getPrimaryFile().equals(
+                dataObject.getPrimaryFile())) {
+            this.dobj = dataObject;
+            this.lineObj = null;
+            if (showAfterDataObjectUpdated) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        showDetail(TextDetail.DH_GOTO);
+                    }
+                });
+                showAfterDataObjectUpdated = false;
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "Expected data object for the same file");          //NOI18N
+        }
     }
 
     /**
@@ -601,7 +650,8 @@ public final class TextDetail implements Selectable {
                 text.append(escape(txtDetail.getLineTextPart(
                         matchEnd - off, matchEnd)));
             } else {
-                text.append(txtDetail.getLineTextPart(matchStart, matchEnd));
+                text.append(escape(
+                        txtDetail.getLineTextPart(matchStart, matchEnd)));
             }
             int markEnd = matchStart + txtDetail.getMarkLength();
             text.append("</b>"); // NOI18N

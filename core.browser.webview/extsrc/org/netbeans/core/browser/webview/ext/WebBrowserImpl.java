@@ -66,6 +66,7 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.embed.swing.JFXPanel;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.*;
 import javafx.scene.web.WebHistory.Entry;
@@ -741,8 +742,15 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         Platform.runLater( new Runnable() {
             @Override
             public void run() {
+                if( !(container.getScene().getRoot() instanceof ScrollPane) ) {
+                    ScrollPane scroll = new ScrollPane();
+                    scroll.setContent( browser );
+                    container.getScene().setRoot( scroll );
+                }
                 browser.setMaxWidth( width );
                 browser.setMaxHeight( height );
+                browser.setMinWidth( width );
+                browser.setMinHeight( height );
             }
         });
     }
@@ -751,8 +759,15 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         Platform.runLater( new Runnable() {
             @Override
             public void run() {
+                if( container.getScene().getRoot() instanceof ScrollPane ) {
+                    BorderPane pane = new BorderPane();
+                    pane.setCenter( browser );
+                    container.getScene().setRoot( pane );
+                }
                 browser.setMaxWidth( Integer.MAX_VALUE );
                 browser.setMaxHeight( Integer.MAX_VALUE );
+                browser.setMinWidth( -1 );
+                browser.setMinHeight( -1 );
                 browser.autosize();
             }
         });

@@ -1398,7 +1398,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             }
                         }
 
-                        Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = IndexerCache.getEifCache().getIndexersFor(mimeType, true);
+                        Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = collectEmbeddingIndexers(mimeType);
                         for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : eifInfos) {
                             try {
                                 EmbeddingIndexerFactory factory = info.getIndexerFactory();
@@ -1443,6 +1443,23 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     LOGGER.log(Level.WARNING, null, ex);
                 }
             }
+        }
+    }
+
+    @NonNull
+    private static Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> collectEmbeddingIndexers(
+            @NonNull final String topMimeType){
+        final Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> result = new ArrayDeque<IndexerInfo<EmbeddingIndexerFactory>>();
+        collectEmbeddingIndexers(topMimeType, result);
+        return result;
+    }
+
+    private static void collectEmbeddingIndexers(
+            @NonNull final String mimeType,
+            @NonNull final Collection<? super IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> collector) {
+        collector.addAll(IndexerCache.getEifCache().getIndexersFor(mimeType, true));
+        for (EmbeddingProviderFactory epf : MimeLookup.getLookup(MimePath.get(mimeType)).lookupAll(EmbeddingProviderFactory.class)) {
+            collectEmbeddingIndexers(epf.getTargetMimeType(), collector);
         }
     }
 
@@ -2605,7 +2622,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             try {
                 for (Map.Entry<BinaryIndexerFactory, Context> entry : contexts.entrySet()) {
                     parkWhileSuspended();
+                    long st = System.currentTimeMillis();
                     entry.getKey().scanFinished(entry.getValue());
+                    long et = System.currentTimeMillis();
+                    logIndexerTime(entry.getKey().getIndexerName(), (int)(et-st));
                 }
             } finally {
                 for(Context ctx : contexts.values()) {

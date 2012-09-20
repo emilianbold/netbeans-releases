@@ -86,19 +86,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
      */
     private int previousAdjustmentIndent;
 
-
-    public boolean isInsertMatchingEnabled(BaseDocument doc) {
-        // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
-        // Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
-        // return b == null || b.booleanValue();
-        EditorOptions options = EditorOptions.get(JsTokenId.JAVASCRIPT_MIME_TYPE);
-        if (options != null) {
-            return options.getMatchBrackets();
-        }
-
-        return true;
-    }
-
     @Override
     public void afterInsert(final Context context) throws BadLocationException {
         isAfter = true;
@@ -170,12 +157,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         case ']':
         case '(':
         case '[': {
-
-            if (!isInsertMatchingEnabled(doc)) {
-                return;
-            }
-
-
             Token<? extends JsTokenId> token = LexUtilities.getToken(doc, dotPos);
             if (token == null) {
                 return;
@@ -238,10 +219,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 //            break;
 
         case '/': {
-            if (!isInsertMatchingEnabled(doc)) {
-                return;
-            }
-
             // Bracket matching for regular expressions has to be done AFTER the
             // character is inserted into the document such that I can use the lexer
             // to determine whether it's a division (e.g. x/y) or a regular expression (/foo/)
@@ -261,19 +238,20 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                         return;
                     }
                 }
-                if (id == JsTokenId.REGEXP_BEGIN || id == JsTokenId.REGEXP_END) {
-                    TokenId[] stringTokens = REGEXP_TOKENS;
-                    TokenId beginTokenId = JsTokenId.REGEXP_BEGIN;
-
-                    boolean inserted =
-                        completeQuote(doc, dotPos, caret, ch, stringTokens, beginTokenId);
-
-                    if (inserted) {
-                        caret.setDot(dotPos + 1);
-                    }
-
-                    return;
-                }
+                // see issue #217134 - it's confusing to have it turned on by default
+//                if (id == JsTokenId.REGEXP_BEGIN || id == JsTokenId.REGEXP_END) {
+//                    TokenId[] stringTokens = REGEXP_TOKENS;
+//                    TokenId beginTokenId = JsTokenId.REGEXP_BEGIN;
+//
+//                    boolean inserted =
+//                        completeQuote(doc, dotPos, caret, ch, stringTokens, beginTokenId);
+//
+//                    if (inserted) {
+//                        caret.setDot(dotPos + 1);
+//                    }
+//
+//                    return;
+//                }
             }
             break;
         }
@@ -289,12 +267,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         char ch = context.getText().charAt(0);
         BaseDocument doc = (BaseDocument) context.getDocument();
 
-        if (!isInsertMatchingEnabled(doc)) {
-            return false;
-        }
-
-        //dumpTokens(doc, caretOffset);
-
         if (target.getSelectionStart() != -1) {
             if (GsfUtilities.isCodeTemplateEditing(doc)) {
                 int start = target.getSelectionStart();
@@ -307,7 +279,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                     doc.remove(start, end-start);
                 }
                 // Fall through to do normal insert matching work
-            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[' || ch == '/') {
+            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[') {
                 // Bracket the selection
                 String selection = target.getSelectedText();
                 if (selection != null && selection.length() > 0) {
@@ -316,7 +288,11 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                         int start = target.getSelectionStart();
                         int end = target.getSelectionEnd();
                         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, start);
-                        if (ts != null && ts.token().id() != JsTokenId.STRING) { // Not inside strings!
+                        if (ts != null
+                                && ts.token().id() != JsTokenId.LINE_COMMENT
+                                && ts.token().id() != JsTokenId.DOC_COMMENT
+                                && ts.token().id() != JsTokenId.BLOCK_COMMENT // not inside comments
+                                && ts.token().id() != JsTokenId.STRING) { // not inside strings!
                             int lastChar = selection.charAt(selection.length()-1);
                             // Replace the surround-with chars?
                             if (selection.length() > 1 &&
@@ -355,7 +331,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         }
 
         Token<? extends JsTokenId> token = ts.token();
-        TokenId id = token.id();
+        JsTokenId id = token.id();
         TokenId[] stringTokens = null;
         TokenId beginTokenId = null;
 
@@ -371,7 +347,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         if (ch == '\"' || ch == '\'') {
             stringTokens = STRING_TOKENS;
             beginTokenId = JsTokenId.STRING_BEGIN;
-        } else if (id == JsTokenId.UNKNOWN) {
+        } else if (id.isError()) {
             //String text = token.text().toString();
 
             ts.movePrevious();
@@ -535,7 +511,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
         if ((token.id() == JsTokenId.BLOCK_COMMENT)
                 || (token.id() == JsTokenId.DOC_COMMENT)
-                || (token.id() == JsTokenId.LINE_COMMENT)) {
+                || (token.id() == JsTokenId.LINE_COMMENT)
+                || (previousToken != null && previousToken.id() == JsTokenId.LINE_COMMENT && token.id() == JsTokenId.EOL)) {
             return false;
         } else if ((token.id() == JsTokenId.WHITESPACE) && eol && ((dotPos - 1) > 0)) {
             // check if the caret is at the very end of the line comment
@@ -549,7 +526,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         boolean completablePosition = isQuoteCompletablePosition(doc, dotPos);
 
         boolean insideString = false;
-        TokenId id = token.id();
+        JsTokenId id = token.id();
 
         for (TokenId currId : stringTokens) {
             if (id == currId) {
@@ -558,15 +535,15 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             }
         }
 
-        if ((id == JsTokenId.UNKNOWN) && (previousToken != null) &&
-                (previousToken.id() == beginToken)) {
+        if (id.isError() && (previousToken != null)
+                && (previousToken.id() == beginToken)) {
             insideString = true;
         }
 
         if (id == JsTokenId.EOL && previousToken != null) {
             if (previousToken.id() == beginToken) {
                 insideString = true;
-            } else if (previousToken.id() == JsTokenId.UNKNOWN) {
+            } else if (previousToken.id().isError()) {
                 if (ts.movePrevious()) {
                     if (ts.token().id() == beginToken) {
                         insideString = true;

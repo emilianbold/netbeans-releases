@@ -64,7 +64,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class RemoteFilesCache {
 
     private static final RemoteFilesCache DEFAULT = new RemoteFilesCache();
-    private static final String REMOTE_URL = "remote.url";
+    private static final String REMOTE_URL = "remote.url"; //NOI18N
     
     private RequestProcessor RP2 = new RequestProcessor(RemoteFilesCache.class.getName(), 5);
     
@@ -118,7 +118,7 @@ public class RemoteFilesCache {
         if (s.lastIndexOf('.') != -1) {
             s = s.substring(s.lastIndexOf('.'));
         } else {
-            s = "";
+            s = ""; //NOI18N
         }
         String fileName = getMD5(url.toExternalForm())+s;
         File f = new File(getCacheRoot(), fileName);
@@ -130,9 +130,9 @@ public class RemoteFilesCache {
         try {
             is = url.openStream();
         } catch (FileNotFoundException ex) {
-            is = new ByteArrayInputStream(("file not found at "+url.toExternalForm()+" \n"+ex.toString()).getBytes());
+            is = new ByteArrayInputStream(("file not found at "+url.toExternalForm()+" \n"+ex.toString()).getBytes()); //NOI18N
         } catch (Throwable ex) {
-            is = new ByteArrayInputStream(("could not open stream for "+url.toExternalForm()+" \n"+ex.toString()).getBytes());
+            is = new ByteArrayInputStream(("could not open stream for "+url.toExternalForm()+" \n"+ex.toString()).getBytes()); //NOI18N
         }
         OutputStream os = null;
         try {
@@ -151,7 +151,7 @@ public class RemoteFilesCache {
     }
 
     private static File getCacheRoot() {
-        return Places.getCacheSubdirectory("remotefiles");
+        return Places.getCacheSubdirectory("remotefiles"); //NOI18N
     }
     
     private static String getMD5(String name) {

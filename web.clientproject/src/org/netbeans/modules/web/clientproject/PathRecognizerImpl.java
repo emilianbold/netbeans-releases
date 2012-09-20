@@ -70,7 +70,7 @@ public final class PathRecognizerImpl extends PathRecognizer {
 
     @Override
     public Set<String> getMimeTypes() {
-        return Collections.singleton("text/html");
+        return Collections.singleton("text/html"); //NOI18N
     }
 
 }

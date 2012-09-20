@@ -45,9 +45,11 @@ package org.netbeans.modules.glassfish.common;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -137,6 +139,27 @@ public enum ServerDetails {
         "http://download.java.net/glassfish/4.0/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v4-0.txt" // NOI18N
     );
+
+    /**
+     * Creates an iterator for a wizard to instantiate server objects.
+     * <p/>
+     * @return Server wizard iterator initialized with supported GlassFish
+     * server versions.
+     */
+    public static WizardDescriptor.InstantiatingIterator
+            getInstantiatingIterator() {
+        return new ServerWizardIterator(new ServerDetails[]{
+                    GLASSFISH_SERVER_3_1_1,
+                    GLASSFISH_SERVER_3_1_2_2,
+                    GLASSFISH_SERVER_3_1_2,
+                    GLASSFISH_SERVER_4_0,
+                    GLASSFISH_SERVER_3_0_1,
+                    GLASSFISH_SERVER_3,
+                    GLASSFISH_SERVER_3_1,},
+                new ServerDetails[]{
+                    GLASSFISH_SERVER_3_1_2_2,
+                    GLASSFISH_SERVER_3_0_1,});
+    }
 
     /**
      * Determine the version of the GlassFish Server installed in a directory
@@ -270,4 +293,5 @@ public enum ServerDetails {
     public String getIndirectUrl() {
         return indirectUrl;
     }
+
 }

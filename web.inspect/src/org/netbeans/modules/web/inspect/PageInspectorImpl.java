@@ -49,7 +49,6 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -225,9 +224,6 @@ public class PageInspectorImpl extends PageInspector {
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
-                            if (!selectionMode) {
-                                pageModel.setHighlightedNodes(Collections.EMPTY_LIST);
-                            }
                             pageModel.setSelectionMode(selectionMode);
                         }
                     });
@@ -245,14 +241,6 @@ public class PageInspectorImpl extends PageInspector {
                                 selectionModeButton.setSelected(selectionMode);
                             }
                         });
-                    } else if (PageModel.PROP_SYNCHRONIZE_SELECTION.equals(propName)) {
-                        final boolean synchronizeSelection = pageModel.isSynchronizeSelection();
-                        EventQueue.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                selectionModeButton.setVisible(synchronizeSelection);
-                            }
-                        });
                     }
                 }
             });
@@ -266,7 +254,6 @@ public class PageInspectorImpl extends PageInspector {
             toolBar.add(Box.createHorizontalStrut(gapSize));
             toolBar.add(selectionModeButton);
             selectionModeButton.setSelected(pageModel.isSelectionMode());
-            selectionModeButton.setVisible(pageModel.isSynchronizeSelection());
         }
     }
 
@@ -391,9 +378,6 @@ public class PageInspectorImpl extends PageInspector {
                     if (MESSAGE_SELECTION_MODE.equals(type)) {
                         boolean selectionMode = (Boolean)message.get(MESSAGE_SELECTION_MODE_ATTR);
                         pageModel.setSelectionMode(selectionMode);
-                        if (!selectionMode) {
-                            pageModel.setHighlightedNodes(Collections.EMPTY_LIST);
-                        }
                     }
                 } catch (ParseException ex) {
                     Logger.getLogger(PageInspectorImpl.class.getName())
