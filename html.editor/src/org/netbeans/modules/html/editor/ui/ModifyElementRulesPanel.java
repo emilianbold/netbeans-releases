@@ -319,7 +319,9 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
         sb.append(' ');
         sb.append(type);
         sb.append("=");
+        sb.append("\"");
         sb.append(value);
+        sb.append("\"");
         if(surroundingTag != null) {
             sb.append("</");
             sb.append(surroundingTag);
