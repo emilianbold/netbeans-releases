@@ -68,4 +68,14 @@ public class HudsonInstanceConstants {
      */
     public static final String INSTANCE_SUPPRESSED_JOBS = "suppressed_jobs"; // NOI18N
 
+    public static final String INSTANCE_PERSISTED = "persisted";        //NOI18N
+
+    /**
+     * True value, e.g. for {@link #INSTANCE_PERSISTED} key.
+     */
+    public static final String TRUE = "true";                           //NOI18N
+    /**
+     * False value, e.g. for {@link #INSTANCE_PERSISTED} key.
+     */
+    public static final String FALSE = "false";                         //NOI18N
 }
