@@ -27,7 +27,7 @@ METHOD     seal(O: Object): Object         [PUBLIC,   stub_CORE_Object.js
 METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
 METHOD     toString(): String              [PUBLIC]   stub_CORE_Object.js
 METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
-FIELD      constructor                     [PUBLIC]   stub_CORE_Object.js
-FIELD      length                          [PUBLIC]   stub_DOM_History.js
-FIELD      state                           [PUBLIC]   stub_DOM_History.js
+FIELD      constructor: Function           [PUBLIC]   stub_CORE_Object.js
+FIELD      length: Number                  [PUBLIC]   stub_DOM_History.js
+FIELD      state: Object                   [PUBLIC]   stub_DOM_History.js
 FIELD      var                             [PUBLIC]   issue218361_2.js

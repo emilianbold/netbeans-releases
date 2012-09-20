@@ -30,4 +30,4 @@ FIELD      MIN_VALUE: Number               [PUBLIC,   stub_CORE_Number.js
 FIELD      NEGATIVE_INFINITY: String       [PUBLIC,   stub_CORE_Number.js
 FIELD      NaN: Number                     [PUBLIC,   stub_CORE_Number.js
 FIELD      POSITIVE_INFINITY: String       [PUBLIC,   stub_CORE_Number.js
-FIELD      constructor                     [PUBLIC]   stub_CORE_Number.js
+FIELD      constructor: Function           [PUBLIC]   stub_CORE_Number.js

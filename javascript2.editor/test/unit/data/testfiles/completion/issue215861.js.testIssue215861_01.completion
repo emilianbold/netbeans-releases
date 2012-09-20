@@ -28,7 +28,7 @@ FIELD      appCodeName: String             [PUBLIC]   stub_DOM_Navigator.js
 FIELD      appName: String                 [PUBLIC]   stub_DOM_Navigator.js
 FIELD      appVersion: String              [PUBLIC]   stub_DOM_Navigator.js
 FIELD      buildID: String                 [PUBLIC]   stub_DOM_Navigator.js
-FIELD      constructor                     [PUBLIC]   stub_CORE_Object.js
+FIELD      constructor: Function           [PUBLIC]   stub_CORE_Object.js
 FIELD      cookieEnabled: Boolean          [PUBLIC]   stub_DOM_Navigator.js
 FIELD      doNotTrack: String              [PUBLIC]   stub_DOM_Navigator.js
 FIELD      language: String                [PUBLIC]   stub_DOM_Navigator.js

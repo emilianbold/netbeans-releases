@@ -45,5 +45,5 @@ METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
 METHOD     toString(): String              [PUBLIC]   stub_CORE_Array.js
 METHOD     unshift(): Number               [PUBLIC]   stub_CORE_Array.js
 METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
-FIELD      constructor                     [PUBLIC]   stub_CORE_Array.js
-FIELD      length                          [PUBLIC]   stub_CORE_Array.js
+FIELD      constructor: Function           [PUBLIC]   stub_CORE_Array.js
+FIELD      length: Number                  [PUBLIC]   stub_CORE_Array.js
