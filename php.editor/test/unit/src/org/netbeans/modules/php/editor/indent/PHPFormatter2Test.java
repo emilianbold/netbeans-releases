@@ -820,19 +820,43 @@ public class PHPFormatter2Test extends PHPCodeCompletionTestBase {
     public void testWrappingBinaryOps02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapAfterBinOps, false);
         reformatFileContents("testfiles/formatting/wrapping/binaryOps02.php", options);
     }
 
     public void testWrappingBinaryOps03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterBinOps, false);
         reformatFileContents("testfiles/formatting/wrapping/binaryOps03.php", options);
     }
 
     public void testWrappingBinaryOps04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapAfterBinOps, false);
         reformatFileContents("testfiles/formatting/wrapping/binaryOps04.php", options);
+    }
+
+    public void testWrappingBinaryOps05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapAfterBinOps, true);
+        reformatFileContents("testfiles/formatting/wrapping/binaryOps05.php", options);
+    }
+
+    public void testWrappingBinaryOps06() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterBinOps, true);
+        reformatFileContents("testfiles/formatting/wrapping/binaryOps06.php", options);
+    }
+
+    public void testWrappingBinaryOps07() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapAfterBinOps, true);
+        reformatFileContents("testfiles/formatting/wrapping/binaryOps07.php", options);
     }
 
     public void testTernaryOp01() throws Exception {

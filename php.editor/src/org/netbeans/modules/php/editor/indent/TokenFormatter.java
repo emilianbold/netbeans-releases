@@ -177,6 +177,7 @@ public class TokenFormatter {
         public CodeStyle.WrapStyle wrapAssignOps;
         public boolean wrapBlockBrace;
         public boolean wrapStatementsOnTheSameLine;
+        public boolean wrapAfterBinOps;
         public boolean alignMultilineMethodParams;
         public boolean alignMultilineCallArgs;
         public boolean alignMultilineImplements;
@@ -302,6 +303,7 @@ public class TokenFormatter {
             wrapAssignOps = codeStyle.wrapAssignOps();
             wrapBlockBrace = codeStyle.wrapBlockBrace();
             wrapStatementsOnTheSameLine = codeStyle.wrapStatementsOnTheSameLine();
+            wrapAfterBinOps = codeStyle.wrapAfterBinOps();
 
             alignMultilineMethodParams = codeStyle.alignMultilineMethodParams();
             alignMultilineCallArgs = codeStyle.alignMultilineCallArgs();
@@ -776,29 +778,56 @@ public class TokenFormatter {
                                         countSpaces = docOptions.spaceAroundUnaryOps ? 1 : countSpaces;
                                         break;
                                     case WHITESPACE_BEFORE_BINARY_OP:
-                                        indentRule = true;
-                                        switch (docOptions.wrapBinaryOps) {
-                                            case WRAP_ALWAYS:
-                                                newLines = 1;
-                                                countSpaces = indent;
-                                                break;
-                                            case WRAP_NEVER:
-                                                newLines = 0;
-                                                countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
-                                                break;
-                                            case WRAP_IF_LONG:
-                                                if (column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                        if (docOptions.wrapAfterBinOps) {
+                                            countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
+                                        } else {
+                                            indentRule = true;
+                                            switch (docOptions.wrapBinaryOps) {
+                                                case WRAP_ALWAYS:
                                                     newLines = 1;
                                                     countSpaces = indent;
-                                                } else {
+                                                    break;
+                                                case WRAP_NEVER:
                                                     newLines = 0;
-                                                    countSpaces = 1;
-                                                }
-                                                break;
+                                                    countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
+                                                    break;
+                                                case WRAP_IF_LONG:
+                                                    if (column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                        newLines = 1;
+                                                        countSpaces = indent;
+                                                    } else {
+                                                        newLines = 0;
+                                                        countSpaces = 1;
+                                                    }
+                                                    break;
+                                            }
                                         }
                                         break;
                                     case WHITESPACE_AFTER_BINARY_OP:
-                                        countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
+                                        if (docOptions.wrapAfterBinOps) {
+                                            indentRule = true;
+                                            switch (docOptions.wrapBinaryOps) {
+                                                case WRAP_ALWAYS:
+                                                    newLines = 1;
+                                                    countSpaces = indent;
+                                                    break;
+                                                case WRAP_NEVER:
+                                                    newLines = 0;
+                                                    countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
+                                                    break;
+                                                case WRAP_IF_LONG:
+                                                    if (column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                        newLines = 1;
+                                                        countSpaces = indent;
+                                                    } else {
+                                                        newLines = 0;
+                                                        countSpaces = 1;
+                                                    }
+                                                    break;
+                                            }
+                                        } else {
+                                            countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
+                                        }
                                         break;
                                     case WHITESPACE_AROUND_TERNARY_OP:
                                         countSpaces = docOptions.spaceAroundTernaryOps ? 1 : 0;

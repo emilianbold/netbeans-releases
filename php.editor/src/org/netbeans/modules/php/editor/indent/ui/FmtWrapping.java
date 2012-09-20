@@ -95,6 +95,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         assignOpsCombo.addFocusListener(this);
         cbOpenCloseBlockBrace.putClientProperty(OPTION_ID, wrapBlockBraces);
         cbStatements.putClientProperty(OPTION_ID, wrapStatementsOnTheLine);
+        wrapAfterBinOpsCheckBox.putClientProperty(OPTION_ID, wrapAfterBinOps);
 
         Dimension dimension = new Dimension((int) panel1.getPreferredSize().getWidth() + Utils.POSSIBLE_SCROLL_BAR_WIDTH, (int) scrollPane.getMinimumSize().getHeight());
         scrollPane.setMinimumSize(dimension);
@@ -158,6 +159,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         assignOpsCombo = new javax.swing.JComboBox();
         cbOpenCloseBlockBrace = new javax.swing.JCheckBox();
         cbStatements = new javax.swing.JCheckBox();
+        wrapAfterBinOpsCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_Wrapping")); // NOI18N
         setOpaque(false);
@@ -359,6 +361,9 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 }
             });
 
+            wrapAfterBinOpsCheckBox.setMnemonic('A');
+            org.openide.awt.Mnemonics.setLocalizedText(wrapAfterBinOpsCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.wrapAfterBinOpsCheckBox.text_1")); // NOI18N
+
             javax.swing.GroupLayout panel1Layout = new javax.swing.GroupLayout(panel1);
             panel1.setLayout(panel1Layout);
             panel1Layout.setHorizontalGroup(
@@ -368,7 +373,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(panel1Layout.createSequentialGroup()
                             .addComponent(extendsImplemetsKeywordLabel)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
                             .addComponent(extendsImplementsKeywordCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
                             .addComponent(extendsImplementsListLabel)
@@ -425,6 +430,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(assignOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addContainerGap())
+                .addGroup(panel1Layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(wrapAfterBinOpsCheckBox)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
             panel1Layout.setVerticalGroup(
                 panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -477,7 +486,9 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(binaryOpsLabel)
                         .addComponent(binaryOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(14, 14, 14)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(wrapAfterBinOpsCheckBox)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(ternaryOpsLabel)
                         .addComponent(ternaryOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -489,7 +500,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     .addComponent(cbOpenCloseBlockBrace)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(cbStatements)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap(42, Short.MAX_VALUE))
             );
 
             extendsImplemetsKeywordLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplemetsKeywordLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -602,6 +613,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel ternaryOpsLabel;
     private javax.swing.JComboBox whileStatementComboBox;
     private javax.swing.JLabel whileStatementLabel;
+    private javax.swing.JCheckBox wrapAfterBinOpsCheckBox;
     // End of variables declaration//GEN-END:variables
 
 }
