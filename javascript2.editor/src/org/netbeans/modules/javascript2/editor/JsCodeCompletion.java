@@ -109,7 +109,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
         LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
-            request.context = context;
             String pref = getPrefix(info, caretOffset, true);
             pref = pref == null ? "" : pref;
 

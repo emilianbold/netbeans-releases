@@ -166,12 +166,10 @@ public class JsCompletionItem implements CompletionProposal {
      }
     
     public static class CompletionRequest {
-        public  int anchor;
-        public  JsParserResult result;
-        public  ParserResult info;
-        public  String prefix;
-        public  String currentlyEditedFileURL;
-        public CompletionContext context;
+        public int anchor;
+        public JsParserResult result;
+        public ParserResult info;
+        public String prefix;
     }
     
     public static class JsFunctionCompletionItem extends JsCompletionItem {
