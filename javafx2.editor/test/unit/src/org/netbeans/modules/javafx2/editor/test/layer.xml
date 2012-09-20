@@ -55,6 +55,12 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Templates">
+        <folder name="Classes">
+            <file name="Class.java"/>
+            <file name="Empty.java"/>
+        </folder>
+    </folder>
 <!--    <folder name="Services">
         <folder name="Hidden">
             <file name="org-netbeans-modules-lexer-nbbridge-MimeLookupLanguageProvider.instance">
