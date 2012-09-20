@@ -144,15 +144,11 @@ public class C2CQueryController extends QueryController implements ItemListener,
     C2CQueryController(C2CRepository repository, C2CQuery query) {
         this(repository, query, null);
     }
-    
-    public C2CQueryController(C2CRepository repository, C2CQuery query, String parametersString) {
-        this(repository, query, parametersString, true);
-    }
 
-    public C2CQueryController(C2CRepository repository, C2CQuery query, String parametersString, boolean modifiable) {
+    C2CQueryController(C2CRepository repository, C2CQuery query, String parametersString) {
         this.repository = repository;
         this.query = query;
-        this.modifiable = modifiable;
+        this.modifiable = parametersString != null;
         
         issueTable = new IssueTable(C2CUtil.getRepository(repository), query, query.getColumnDescriptors());
 //      XXX  setupRenderer(issueTable);
