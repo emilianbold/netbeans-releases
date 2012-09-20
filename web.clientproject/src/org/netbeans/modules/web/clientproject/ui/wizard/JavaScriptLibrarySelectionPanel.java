@@ -204,7 +204,7 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
         for (;;) {
             File tmpDir = new File(System.getProperty("java.io.tmpdir"), "netbeans-jslibs-" + i++); // NOI18N
             if (!tmpDir.isDirectory() && tmpDir.mkdirs()) {
-                FileObject fo = FileUtil.toFileObject(tmpDir);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(tmpDir));
                 if (fo != null && fo.isValid()) {
                     return fo;
                 }
