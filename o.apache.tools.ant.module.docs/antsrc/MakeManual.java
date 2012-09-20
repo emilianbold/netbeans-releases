@@ -45,6 +45,7 @@
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Reader;
@@ -118,9 +119,19 @@ public class MakeManual extends Task {
                 }
             }
             Properties taskdefs = new Properties();
-            taskdefs.load(Project.class.getResourceAsStream("/org/apache/tools/ant/taskdefs/defaults.properties"));
+            InputStream is = Project.class.getResourceAsStream("/org/apache/tools/ant/taskdefs/defaults.properties");
+            try {
+                taskdefs.load(is);
+            } finally {
+                is.close();
+            }
             Properties typedefs = new Properties();
-            typedefs.load(Project.class.getResourceAsStream("/org/apache/tools/ant/types/defaults.properties"));
+            is = Project.class.getResourceAsStream("/org/apache/tools/ant/types/defaults.properties");
+            try {
+                typedefs.load(is);
+            } finally {
+                is.close();
+            }
             TocItem top = tockify(antdocs, "toc.html", null, null, new HashSet/*<String>*/(), taskdefs.keySet(), typedefs.keySet());
             writeMapAndToc(top);
         } catch (Exception x) {

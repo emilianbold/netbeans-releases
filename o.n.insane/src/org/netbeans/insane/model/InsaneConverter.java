@@ -331,8 +331,13 @@ final class InsaneConverter {
     
     
     private void process()  throws Exception {
+        FileInputStream fis = new FileInputStream(from);
         // parse
-        parse(new FileInputStream(from));
+        try {
+            parse(fis);
+        } finally {
+            fis.close();
+        }
         // compute offsets
         compute();
         // store headers
@@ -344,7 +349,12 @@ final class InsaneConverter {
         
         // second pass
         prescan = false;
-        parse(new FileInputStream(from));
+        fis = new FileInputStream(from);
+        try {
+            parse(fis);
+        } finally {
+            fis.close();
+        }
         store.force();
     }
 

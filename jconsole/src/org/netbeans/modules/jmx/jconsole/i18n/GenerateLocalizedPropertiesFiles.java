@@ -61,7 +61,12 @@ public class GenerateLocalizedPropertiesFiles {
         
         //Load properties file
         Properties properties = new Properties();
-        properties.load(new FileInputStream(file));
+        FileInputStream fis = new FileInputStream(file);
+        try {
+            properties.load(fis);
+        } finally {
+            fis.close();
+        }
         Properties newProperties = new Properties();
         Set<Entry<Object, Object>> entries = properties.entrySet();
         for(Entry entry : entries) {

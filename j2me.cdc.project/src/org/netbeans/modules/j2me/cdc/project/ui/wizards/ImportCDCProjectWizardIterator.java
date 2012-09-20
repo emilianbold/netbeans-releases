@@ -172,11 +172,22 @@ public class ImportCDCProjectWizardIterator implements TemplateWizard.Iterator {
         final String name = (String) templateWizard.getProperty(ProjectPanel.PROJECT_NAME);
         
         final EditableProperties oldep=new EditableProperties();
-        oldep.load(new FileInputStream(location+File.separator+AntProjectHelper.PROJECT_PROPERTIES_PATH));
+        FileInputStream fis = new FileInputStream(location+File.separator+AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        try {
+            oldep.load(fis);
+        } finally {
+            fis.close();
+        }
         File f=new File(location+File.separator+AntProjectHelper.PRIVATE_PROPERTIES_PATH);        
         final EditableProperties oldpriv=new EditableProperties();
-        if (f.exists())
-            oldpriv.load(new FileInputStream(f));
+        if (f.exists()) {
+            fis = new FileInputStream(f);
+            try {
+                oldpriv.load(fis);
+            } finally {
+                fis.close();
+            }
+        }
         JavaPlatform platforms[]=JavaPlatformManager.getDefault().getPlatforms(null,new Specification(CDCPlatform.PLATFORM_CDC,null));
        
         PlatformSelectionPanel.PlatformDescription pdesc=new PlatformSelectionPanel.PlatformDescription();
