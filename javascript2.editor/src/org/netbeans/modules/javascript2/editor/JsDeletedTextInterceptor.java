@@ -130,7 +130,10 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
             if ((match != null) && (match[0] == ch)) {
                 doc.remove(dotPos, 1);
             }
+            break;
         } // TODO: Test other auto-completion chars, like %q-foo-
+        default:
+            break;
         }
     }
 

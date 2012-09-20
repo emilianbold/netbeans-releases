@@ -160,11 +160,9 @@ public class SelectorsLoader extends DefaultHandler {
 
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        switch (inTag) {
-            case sample:
-                sample = new String(ch, start, length);
-                inTag = Tag.notinterested;
-                break;
+        if (inTag == Tag.sample) {
+            sample = new String(ch, start, length);
+            inTag = Tag.notinterested;
         }
     }
     
@@ -272,7 +270,7 @@ public class SelectorsLoader extends DefaultHandler {
                     current = Tag.notinterested;
                 }
                 tagPath.add(0, current);
-                switch(current) {
+                switch (current) {
                     case argument:
                         argName = attributes.getValue(NAME);
                         argType = attributes.getValue(TYPE);
@@ -280,9 +278,8 @@ public class SelectorsLoader extends DefaultHandler {
                     case signature:
                         signatures.add(new Signature());
                         break;
-                }
-                if (current == Tag.argument) {
-                    
+                    default:
+                        break;
                 }
             } else if (qName.equals(Tag.entry.name())) {
                 String type = attributes.getValue(TYPE);
@@ -336,12 +333,14 @@ public class SelectorsLoader extends DefaultHandler {
                         signatures.get(signatures.size() - 1).fromVersion = new String(ch, start, length);
                         break;
                     case desc:
-                        switch(tagPath.get(1)) {
+                        switch (tagPath.get(1)) {
                             case entry:
                                 description = new String(ch, start, length);
                                 break;
                             case argument:
-                                signatures.get(signatures.size()-1).arguments.add(new Argument(argName, argType, new String(ch, start, length)));
+                                signatures.get(signatures.size() - 1).arguments.add(new Argument(argName, argType, new String(ch, start, length)));
+                                break;
+                            default:
                                 break;
                         }
                         break;
@@ -353,6 +352,8 @@ public class SelectorsLoader extends DefaultHandler {
                         break;
                     case sample:
                         sample = new String(ch, start, length);
+                        break;
+                    default:
                         break;
                 }
             }
@@ -560,13 +561,14 @@ public class SelectorsLoader extends DefaultHandler {
                         returns = attributes.getValue(RETURN);
                     }
                     break;
-                case argument : 
+                case argument: 
                     if (isMethod) {
                         String paramName = attributes.getValue(NAME);
                         IdentifierImpl param = new IdentifierImpl(paramName, OffsetRange.NONE);
                         params.add(param);
                     }
-                    
+                    break;
+                default:
                     break;
             }    
         }
@@ -578,18 +580,18 @@ public class SelectorsLoader extends DefaultHandler {
                 if (isMethod){
                     switch (current) {
                         case signature:
-                            if(name.indexOf('.') == -1) {
+                            if (name.indexOf('.') == -1) {
                                 JsFunctionImpl function = new JsFunctionImpl((DeclarationScope) jQuery, jQuery, new IdentifierImpl(name, OffsetRange.NONE), params, OffsetRange.NONE);
                                 function.addReturnType(new TypeUsageImpl(returns, -1, true));
                                 jQuery.addProperty(name + "#" + added, function);
-//                                System.out.println(name + "#" + added);
                                 params.clear();
                             }
                             break;
                         case entry:
                             isMethod = false;
                             params.clear();
-                            ;
+                            break;
+                        default:
                             break;
                     }
                 }
