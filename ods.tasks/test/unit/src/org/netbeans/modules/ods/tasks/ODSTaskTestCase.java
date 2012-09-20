@@ -65,7 +65,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -85,105 +84,126 @@ public class ODSTaskTestCase extends AbstractC2CTestCase {
     }
 
     public void testC2CTasks() throws Throwable {
-        try {
+        C2CData clientData = C2CExtender.getData(rc, taskRepository);
 
-            C2CData clientData = C2CExtender.getData(rc, taskRepository);
-            
-            // create
-            
-            TaskData taskData = createIssue("this is my bug", "a bug", "bug");
-            
-            printTaskData(taskData); 
-            
-            // change
-            TaskAttribute rta = taskData.getRoot();
-            TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
-            ta.setValue(ta.getValue() + ".2");
-            
-            RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
-            String taskId = rr.getTaskId();
-            taskData = rc.getTaskData(taskRepository, taskId, nullProgressMonitor);
+        // create
 
-            printTaskData(taskData); 
-            
-            // change custom field            
-            rta = taskData.getRoot();
-            ta = rta.getMappedAttribute(C2CData.CUSTOM_FIELD_PREFIX + clientData.getCustomFields().get(0).getName());
-            ta.setValue("custom value");
-            
-            rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
-            taskData = rc.getTaskData(taskRepository, rr.getTaskId(), nullProgressMonitor);
+        TaskData taskData = createIssue("this is my bug", "a bug", "bug");
+        assertNotNull(taskData);
 
-            printTaskData(taskData); 
-            C2C.LOG.log(Level.FINE, "   custom field name : " + clientData.getCustomFields().get(0).getName());
-            C2C.LOG.log(Level.FINE, "   custom field value : " + taskData.getRoot().getAttribute(C2CData.CUSTOM_FIELD_PREFIX + clientData.getCustomFields().get(0).getName()).getValue());
-            
-            // reassign
-            rta = taskData.getRoot();
-            ta = rta.getMappedAttribute(C2CData.ATTR_OWNER);
-            ta.setValue(getDifferentUser(ta.getValue(), clientData.getUsers()));
-            
-            rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
-            taskId = rr.getTaskId();
-            taskData = rc.getTaskData(taskRepository, taskId, nullProgressMonitor);
-            
-            printTaskData(taskData);
-            
-            // create attachment
-            File f = File.createTempFile("attachment", "txt");
-            FileOutputStream fos = new FileOutputStream(f);
-            fos.write(ATTACHMENT_DATA.getBytes());
-            fos.flush();
-            fos.close();
-            
-            AbstractTaskAttachmentHandler ah = rc.getTaskAttachmentHandler();
-            TaskAttribute attAttribute = new TaskAttribute(taskData.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
-            ta = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION);
-            ta.setValue("adding attachment");
-            ta = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE);
-            ta.setValue("text/plain");
-            ta = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_FILENAME);
-            ta.setValue(f.getName());
+        printTaskData(taskData); 
+
+        // change
+        TaskAttribute rta = taskData.getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
+        ta.setValue(ta.getValue() + ".2");
+
+        RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
+        assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
+
+        String taskId = rr.getTaskId();
+        assertNotNull(taskId);
+        taskData = rc.getTaskData(taskRepository, taskId, nullProgressMonitor);
+        assertNotNull(taskData);
         
-            ah.postContent(taskRepository, new ITaskImpl(taskData), new FileTaskAttachmentSource(f), "adding attachment", attAttribute, nullProgressMonitor);
-            taskData = rc.getTaskData(taskRepository, rr.getTaskId(), nullProgressMonitor);
-            
-            printTaskData(taskData);
-        
-            List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_ATTACHMENT);
-            InputStream is = ah.getContent(taskRepository, new ITaskImpl(taskData), attrs.get(0), nullProgressMonitor);
-            
-            byte[] b = new byte[ATTACHMENT_DATA.length()];
-            is.read(b);
-            is.close();
-            
-            C2C.LOG.log(Level.FINE, "   attachment data : " + new String(b));
-            
-            // resolve
-            rta = taskData.getRoot();
-            ta = rta.getMappedAttribute(TaskAttribute.STATUS);
-            ta.setValue("RESOLVED");
-            
-            rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
-            taskData = rc.getTaskData(taskRepository, rr.getTaskId(), nullProgressMonitor);
-            
-            printTaskData(taskData);
+        printTaskData(taskData); 
 
-            // subtask 
-            TaskData taskData2 = createIssue("this is a subbug", "a subbug", "subbug");
-            
-            printTaskData(taskData2); 
-            
-            rta = taskData.getRoot();
-            ta = rta.getMappedAttribute(C2CData.ATTR_SUBTASK);
-            ta.setValue(taskData2.getTaskId());
-            rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
-            
-            taskData2 = rc.getTaskData(taskRepository, taskData2.getTaskId(), nullProgressMonitor);
-            taskData = rc.getTaskData(taskRepository, taskData.getTaskId(), nullProgressMonitor);
-            
-            printTaskData(taskData); 
-            printTaskData(taskData2); 
+        // change custom field            
+        rta = taskData.getRoot();
+        ta = rta.getMappedAttribute(C2CData.CUSTOM_FIELD_PREFIX + clientData.getCustomFields().get(0).getName());
+        ta.setValue("custom value");
+
+        rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
+        assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
+
+        taskData = rc.getTaskData(taskRepository, rr.getTaskId(), nullProgressMonitor);
+        assertNotNull(taskData);
+        
+        printTaskData(taskData); 
+        C2C.LOG.log(Level.FINE, "   custom field name : " + clientData.getCustomFields().get(0).getName());
+        C2C.LOG.log(Level.FINE, "   custom field value : " + taskData.getRoot().getAttribute(C2CData.CUSTOM_FIELD_PREFIX + clientData.getCustomFields().get(0).getName()).getValue());
+
+        // reassign
+        rta = taskData.getRoot();
+        ta = rta.getMappedAttribute(C2CData.ATTR_OWNER);
+        ta.setValue(getDifferentUser(ta.getValue(), clientData.getUsers()));
+
+        rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
+        assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
+
+        taskId = rr.getTaskId();
+        assertNotNull(taskId);
+        
+        taskData = rc.getTaskData(taskRepository, taskId, nullProgressMonitor);
+        assertNotNull(taskData);
+        
+        printTaskData(taskData);
+
+        // create attachment
+        File f = File.createTempFile("attachment", "txt");
+        FileOutputStream fos = new FileOutputStream(f);
+        fos.write(ATTACHMENT_DATA.getBytes());
+        fos.flush();
+        fos.close();
+
+        AbstractTaskAttachmentHandler ah = rc.getTaskAttachmentHandler();
+        TaskAttribute attAttribute = new TaskAttribute(taskData.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
+        ta = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION);
+        ta.setValue("adding attachment");
+        ta = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE);
+        ta.setValue("text/plain");
+        ta = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_FILENAME);
+        ta.setValue(f.getName());
+
+        ah.postContent(taskRepository, new ITaskImpl(taskData), new FileTaskAttachmentSource(f), "adding attachment", attAttribute, nullProgressMonitor);
+        taskData = rc.getTaskData(taskRepository, rr.getTaskId(), nullProgressMonitor);
+        assertNotNull(taskData);
+        
+        printTaskData(taskData);
+
+        List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_ATTACHMENT);
+        InputStream is = ah.getContent(taskRepository, new ITaskImpl(taskData), attrs.get(0), nullProgressMonitor);
+
+        byte[] b = new byte[ATTACHMENT_DATA.length()];
+        is.read(b);
+        is.close();
+        assertEquals(ATTACHMENT_DATA, new String(b));
+        
+        C2C.LOG.log(Level.FINE, "   attachment data : " + new String(b));
+
+        // resolve
+        rta = taskData.getRoot();
+        ta = rta.getMappedAttribute(TaskAttribute.STATUS);
+        ta.setValue("RESOLVED");
+
+        rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
+        assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
+                
+        taskData = rc.getTaskData(taskRepository, rr.getTaskId(), nullProgressMonitor);
+        assertNotNull(taskData);
+        assertEquals("RESOLVED", taskData.getRoot().getMappedAttribute(TaskAttribute.STATUS).getValue());
+        
+        printTaskData(taskData);
+
+        // subtask 
+        TaskData taskData2 = createIssue("this is a subbug", "a subbug", "subbug");
+        assertNotNull(taskData);
+        
+        printTaskData(taskData2); 
+
+        rta = taskData.getRoot();
+        ta = rta.getMappedAttribute(C2CData.ATTR_SUBTASK);
+        ta.setValue(taskData2.getTaskId());
+        rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
+        assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
+
+        taskData2 = rc.getTaskData(taskRepository, taskData2.getTaskId(), nullProgressMonitor);
+        assertNotNull(taskData2);
+        taskData = rc.getTaskData(taskRepository, taskData.getTaskId(), nullProgressMonitor);
+        assertNotNull(taskData);
+        
+        printTaskData(taskData); 
+        printTaskData(taskData2); 
             
             // get history
 //            TaskHistory history = rc.getTaskHistory(taskRepository, new ITaskImpl(taskData), nullProgressMonitor);
@@ -204,14 +224,6 @@ public class ODSTaskTestCase extends AbstractC2CTestCase {
 //                    
 //                }
 //            }
-            
-        } catch (CoreException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (Throwable t) {
-            Exceptions.printStackTrace(t);
-        }
     }
 
     public TaskData createIssue(String summary, String desc, String typeName) throws CoreException, MalformedURLException {
@@ -255,8 +267,14 @@ public class ODSTaskTestCase extends AbstractC2CTestCase {
         ta.setValue(clientData.getStatusByValue("UNCONFIRMED").getValue());
         
         RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, data);
+        assertEquals(RepositoryResponse.ResponseKind.TASK_CREATED, rr.getReposonseKind());
+        
         String taskId = rr.getTaskId();
+        assertNotNull(taskId);
+        
         data = rc.getTaskData(taskRepository, taskId, nullProgressMonitor);
+        assertFalse(data.isNew());
+        
         C2C.LOG.log(Level.FINE, " dataRoot after get {0}", data.getRoot().toString());
         return data;
     }
