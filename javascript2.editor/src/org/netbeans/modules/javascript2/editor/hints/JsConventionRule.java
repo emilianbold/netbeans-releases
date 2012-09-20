@@ -228,7 +228,7 @@ public class JsConventionRule extends JsAstRule {
             }
             if (condition instanceof BinaryNode) {
                 BinaryNode binaryNode = (BinaryNode)condition;
-                if (assignmentInCondition != null && binaryNode.isAssignment()) {
+                if (binaryNode.isAssignment()) {
                     hints.add(new Hint(assignmentInCondition, Bundle.AssignmentCondition(),
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
