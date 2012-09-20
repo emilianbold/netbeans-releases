@@ -42,7 +42,6 @@
 package org.netbeans.modules.ods.tasks.query;
 
 import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
-import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -85,27 +84,28 @@ public class C2CQuery {
     private boolean saved;
     private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
-    private final IRepositoryQuery predefinedQuery;
     private OwnerInfo info;
-    private final String queryString;
+    
+    private final IRepositoryQuery predefinedQuery;
+    private final String queryCriteria;
         
     public C2CQuery(C2CRepository repository) {
-        this(null, repository, null, null, false);
+        this(repository, null, null, null, false);
     }
     
-    public C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery) {
-        this(name, repository, savedQuery, null, true);
+    public C2CQuery(C2CRepository repository, String name, IRepositoryQuery predefinedQuery) {
+        this(repository, name, predefinedQuery, null, true);
     }
     
-    public C2CQuery(SavedTaskQuery savedQuery, C2CRepository repository) {
-        this(savedQuery.getName(), repository, null, savedQuery.getQueryString(), true);
+    public C2CQuery(C2CRepository repository, String name, String queryCriteria) {
+        this(repository, name, null, queryCriteria, true);
     }
         
-    private C2CQuery(String name, C2CRepository repository, IRepositoryQuery savedQuery, String queryString, boolean saved) {
+    private C2CQuery(C2CRepository repository, String name, IRepositoryQuery predefinedQuery, String queryString, boolean saved) {
         this.name = name;
         this.repository = repository;
-        this.predefinedQuery = savedQuery;
-        this.queryString = queryString;
+        this.predefinedQuery = predefinedQuery;
+        this.queryCriteria = queryString;
         this.saved = saved;
         if (saved) {
             getController();
@@ -243,7 +243,7 @@ public class C2CQuery {
             if (predefinedQuery == null) {
                 controller = new C2CQueryController(repository, this);
             } else {
-                controller = new C2CQueryController(repository, this, queryString, false);
+                controller = new C2CQueryController(repository, this, queryCriteria, false);
             }
         }
         return controller;
@@ -325,8 +325,8 @@ public class C2CQuery {
                         query = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), "ODS query -" + getDisplayName());
                         
                         // XXX hacked for now
-                        if(queryString != null) {
-                            query.setAttribute("query_criteria", queryString);
+                        if(queryCriteria != null) {
+                            query.setAttribute("query_criteria", queryCriteria);
                         } else {
                             for (QueryParameter p : parameters) {
                                 String values = p.getValues();

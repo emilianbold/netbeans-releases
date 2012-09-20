@@ -347,7 +347,7 @@ public class C2CRepository {
         if (conf != null) {
             List<SavedTaskQuery> savedQueries = conf.getSavedTaskQueries();
             for (SavedTaskQuery sq : savedQueries) {
-                C2CQuery q = new C2CQuery(sq, this);
+                C2CQuery q = new C2CQuery(this, sq.getName(), sq.getQueryString());
                 queries.add(q);
             }
         }
@@ -369,7 +369,7 @@ public class C2CRepository {
             synchronized(QUERIES_LOCK) {
                 predefinedQueries = new EnumMap<PredefinedTaskQuery, C2CQuery>(PredefinedTaskQuery.class);
                 for (Map.Entry<PredefinedTaskQuery, IRepositoryQuery> e : queries.entrySet()) {
-                    predefinedQueries.put(e.getKey(), new C2CQuery(e.getValue().getSummary(), C2CRepository.this, e.getValue()));
+                    predefinedQueries.put(e.getKey(), new C2CQuery(C2CRepository.this, e.getValue().getSummary(), e.getValue()));
                 }
             }
         }
