@@ -63,7 +63,7 @@ if [ -z $en_build ] ; then
     en_build=1
 fi
 
-if [ 0 -eq "${signing_identity}" ] ; then
+if [ 0 = "${signing_identity}" ] ; then
     signing_identity=0
 fi
 
