@@ -106,7 +106,7 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
         }
             
     }
-    
+
     public AbstractC2CTestCase(String arg0) {
         super(arg0);
     }

@@ -53,7 +53,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import junit.framework.Test;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
@@ -63,7 +62,6 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.AbstractTaskAttachmentHandler;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
@@ -73,15 +71,11 @@ import org.openide.util.Exceptions;
  *
  * @author tomas
  */
-public class C2CIssueTest extends AbstractC2CTestCase {
+public class ODSTaskTestCase extends AbstractC2CTestCase {
 
     private static final String ATTACHMENT_DATA = "attachment data";
     
-    public static Test suite() {
-        return NbModuleSuite.create(C2CIssueTest.class, null, null);
-    }
-    
-    public C2CIssueTest(String arg0) {
+    public ODSTaskTestCase(String arg0) {
         super(arg0);
     }
 

@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import junit.framework.Test;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
@@ -56,7 +55,6 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ods.tasks.query.QueryParameter;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 
@@ -64,13 +62,9 @@ import org.netbeans.modules.ods.tasks.spi.C2CData;
  *
  * @author tomas
  */
-public class C2CQueryTest extends AbstractC2CTestCase {
+public class ODSQueryTestCase extends AbstractC2CTestCase {
 
-    public static Test suite() {
-        return NbModuleSuite.create(C2CQueryTest.class, null, null);
-    }
-    
-    public C2CQueryTest(String arg0) {
+    public ODSQueryTestCase(String arg0) {
         super(arg0);
     }
 
