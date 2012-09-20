@@ -101,6 +101,8 @@ public final class FxXmlSymbols {
      */
     public static final String NAME_VALUE_OF = "valueOf"; // NOI18N
     public static final String SETTER_PREFIX = "set"; // NOI18N
+    
+    public static final String SCENEBUILDER_PI_PREFIX = "scenebuilder-"; // NOI18N
 
     /**
      * Determines, whether a character sequence (local tag name) is a classname tag.

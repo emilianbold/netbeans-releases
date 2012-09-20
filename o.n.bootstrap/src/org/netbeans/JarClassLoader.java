@@ -796,7 +796,7 @@ public class JarClassLoader extends ProxyClassLoader {
         public String getIdentifier() {
             String tmp = getURL().toExternalForm();
             if (tmp.startsWith("jar:file:") && tmp.endsWith("!/")) {
-                String path = tmp.substring(9, tmp.length() - 2);
+                String path = tmp.substring(9, tmp.length() - 2).replace("%20", " ");
                 if (Utilities.isWindows()) {
                     if (path.startsWith("/")) { // NOI18N
                         path = path.substring(1);
