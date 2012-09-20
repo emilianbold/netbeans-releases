@@ -356,7 +356,7 @@ public class JQueryCodeCompletion {
                         break;
                     case CLASS:
                         Collection<String> classes = getCSSClasses(context.prefix, parserResult);
-                        anchorOffset = docOffset + prefix.length() - context.prefix.length();
+                        anchorOffset = docOffset + anchorOffsetDelta;
                         for (String cl : classes) {
                             result.add(JQueryCompletionItem.createCSSItem("." + cl, anchorOffset, wrapup));
                         }

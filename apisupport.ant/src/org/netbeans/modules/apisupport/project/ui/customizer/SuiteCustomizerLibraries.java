@@ -789,6 +789,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         // Probably not needed for most platform apps, and won't even work under JNLP.
         DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.autoupdate.services"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.autoupdate.ui"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.autoupdate.cli"); // NOI18N
         // XXX the following would not be shown in regular apps anyway, because they are autoloads,
         // but they *are* shown in JNLP apps because currently even unused autoloads are enabled under JNLP:
         // Just annoying; e.g. shows Runtime tab prominently.

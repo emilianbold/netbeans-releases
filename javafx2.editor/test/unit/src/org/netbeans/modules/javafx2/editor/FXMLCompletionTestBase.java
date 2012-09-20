@@ -179,7 +179,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 try {
                     if (ClassPath.SOURCE.equals(type)) {
                         return ClassPathSupport.createClassPath(new FileObject[]{FileUtil.toFileObject(getWorkDir())});
-                    }
+                                }
                     if (ClassPath.COMPILE.equals(type)) {
                         return fxPath;
                     }

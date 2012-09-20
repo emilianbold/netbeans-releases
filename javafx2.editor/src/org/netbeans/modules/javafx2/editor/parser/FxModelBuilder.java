@@ -931,6 +931,9 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             node = handleFxImport(data);
         } else if (FX_LANGUAGE.equals(target)) {
             node = handleFxLanguage(data);
+        } else if (target != null && target.startsWith(FxXmlSymbols.SCENEBUILDER_PI_PREFIX)) {
+            // valid, but uninterpreted
+            return;
         } else if (!"xml".equals(target)) {
             handleErrorInstruction(target, data);
         }

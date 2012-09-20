@@ -17,7 +17,7 @@ Other names may be trademarks of their respective owners.
 
   <!-- maps -->
   <maps>
-     <homeID>org.netbeans.modules.web.clientproject.about</homeID>
+     <homeID>org.netbeans.modules.web.clientproject.helpset.about</homeID>
      <mapref location="clientproject-map.jhm" />
   </maps>
 
@@ -28,7 +28,6 @@ Other names may be trademarks of their respective owners.
     <type>javax.help.TOCView</type>
     <data>clientproject-toc.xml</data>
   </view>
-
 
   <view>
     <name>Search</name>
