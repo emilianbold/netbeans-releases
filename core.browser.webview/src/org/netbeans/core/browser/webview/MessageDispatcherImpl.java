@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.core.browser.webview.ext;
+package org.netbeans.core.browser.webview;
 
 import org.netbeans.modules.web.browser.spi.MessageDispatcher;
 
