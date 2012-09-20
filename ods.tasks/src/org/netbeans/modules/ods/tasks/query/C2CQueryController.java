@@ -67,7 +67,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -135,7 +134,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
     private QueryTask refreshTask;
-//    private final IssueTable issueTable;
 
     private final Object REFRESH_LOCK = new Object();
     private final IssueTable issueTable;
