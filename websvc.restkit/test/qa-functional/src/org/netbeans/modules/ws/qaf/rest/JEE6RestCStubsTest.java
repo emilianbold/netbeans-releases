@@ -42,7 +42,6 @@
 package org.netbeans.modules.ws.qaf.rest;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests for New REST service client stub wizard
@@ -66,11 +65,10 @@ public class JEE6RestCStubsTest extends RestCStubsTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6RestCStubsTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, JEE6RestCStubsTest.class,
                 "testWizard", //NOI18N
                 "testCreateSimpleStubs", //NOI18N
                 "testFromWADL", //NOI18N
-                "testCloseProject" //NOI18N
-                ).enableModules(".*").clusters(".*")); //NOI18N
+                "testCloseProject"); //NOI18N
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,9 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ws.qaf.rest;
+@HelpSetRegistration(helpSet = "clientproject-hs.xml", position = 3110)
+package org.netbeans.modules.web.clientproject.helpset.docs;
 
-import junit.framework.Test;
-
-/**
- *
- * @author lukas
- */
-public class MvnFromDBTest extends FromDBTest {
-
-    public MvnFromDBTest(String name) {
-        super(name);
-    }
-
-    @Override
-    protected ProjectType getProjectType() {
-        return ProjectType.MAVEN_WEB;
-    }
-
-    @Override
-    public String getProjectName() {
-        return "MvnFromDB"; //NOI18N
-    }
-
-    /**
-     * Creates suite from particular test cases. You can define order of testcases here.
-     */
-    public static Test suite() {
-        return createAllModulesServerSuite(Server.GLASSFISH, MvnFromDBTest.class,
-                "testFromDB", //NOI18N
-                "testRun", //NOI18N
-                "testUndeploy"); //NOI18N
-    }
-}
+import org.netbeans.api.javahelp.HelpSetRegistration;

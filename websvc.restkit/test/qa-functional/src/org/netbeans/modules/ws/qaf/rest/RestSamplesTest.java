@@ -50,7 +50,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.xml.sax.SAXException;
 
 /**
@@ -162,11 +161,11 @@ public class RestSamplesTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(RestSamplesTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, RestSamplesTest.class,
                 "testHelloWorldSample", //NOI18N
                 "testCustomerDBSample", //NOI18N
                 "testCustomerDBSpringSample", //NOI18N
                 "testMessageBoardSample" //NOI18N
-                ).enableModules(".*").clusters(".*").suite(); //NOI18N
+                );
     }
 }
