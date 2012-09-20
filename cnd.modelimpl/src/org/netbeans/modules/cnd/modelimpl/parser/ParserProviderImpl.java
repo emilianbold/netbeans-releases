@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -208,7 +209,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     CsmNamespace ns = nsDef.getNamespace();
                     if (ast != null && ns instanceof NamespaceImpl) {
                         new AstRenderer(nsBodyFile, fileContent, objects).render(ast, (NamespaceImpl) ns, nsDef);
-                    }                    
+                    }     
+                    RepositoryUtils.put(ns);
                     break;
                 }
                 case CLASS_BODY:
@@ -218,6 +220,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     CsmVisibility visibility = (CsmVisibility) context[2];
                     boolean localClass = (Boolean) context[3];
                     cls.fixFakeRender(fileContent, visibility, ast, localClass);
+                    if (!localClass) {
+                        RepositoryUtils.put(cls);
+                    }
                     break;
                 }
                 case ENUM_BODY:
@@ -226,6 +231,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     EnumImpl enumImpl = (EnumImpl) context[1];
                     boolean localEnum = (Boolean) context[2];
                     enumImpl.fixFakeRender(fileContent, ast, localEnum);
+                    if (!localEnum) {
+                        RepositoryUtils.put(enumImpl);
+                    }                    
                     break;
                 }
                 default:
