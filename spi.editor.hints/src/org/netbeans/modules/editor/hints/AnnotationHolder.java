@@ -81,6 +81,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
@@ -1106,6 +1107,19 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
         try {
             while (true) {
                 int lineStart = Utilities.getRowStartFromLineOffset(doc, lineNumber);
+                if (lineStart < 0) {
+                    Element lineRoot = doc.getDefaultRootElement();
+                    int lineElementCount = lineRoot.getElementCount();
+                    LOG.info("AnnotationHolder: Invalid lineNumber=" + lineNumber + // NOI18N
+                            ", lineStartOffset=" + lineStart + ", lineElementCount=" + lineElementCount + // NOI18N
+                            ", docReadLocked=" + DocumentUtilities.isReadLocked(doc) + ", doc:\n" + doc + '\n'); // NOI18N
+                    // Correct the lineStart
+                    if (lineNumber < 0) {
+                        lineStart = 0;
+                    } else { // Otherwise use last line
+                        lineStart = lineRoot.getElement(lineRoot.getElementCount() - 1).getStartOffset();
+                    }
+                }
                 try {
                     int index = Collections.binarySearch(knownPositions, lineStart, new PositionComparator());
 

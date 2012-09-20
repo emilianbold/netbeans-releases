@@ -55,7 +55,6 @@ public class TplBracesMatchingTest extends TplTestBase {
 
     public TplBracesMatchingTest(String name) {
         super(name);
-        resetSmartyOptions();
     }
 
     public void testCreateMatcher() throws BadLocationException {

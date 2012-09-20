@@ -92,7 +92,7 @@ public class JSObjectsTest extends GeneralJavaScript {
         this.name_iterator++;
         createPhpApplication(TEST_BASE_NAME +"jso_"+ name_iterator);
         EditorOperator eo = createWebFile("jsocc", TEST_BASE_NAME +"jso_"+ name_iterator, "JavaScript File");
-        this.currentFile = "jsocc.js";
+        JSObjectsTest.currentFile = "jsocc.js";
         try {
             waitScanFinished();
         } catch (Exception e) {
@@ -105,7 +105,7 @@ public class JSObjectsTest extends GeneralJavaScript {
 
     public void testObject(String[] lines, String[] result) {
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(JSObjectsTest.currentFile);
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
         for (String line : lines) {
@@ -200,7 +200,7 @@ public class JSObjectsTest extends GeneralJavaScript {
     }
 
     public void testObjectConfirmedCompletion(String[] lines, String toSelect, String expectedResult) {
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(JSObjectsTest.currentFile);
         cleanFile(eo);
         for (String line : lines) {
             type(eo, line + "\n");
@@ -218,7 +218,7 @@ public class JSObjectsTest extends GeneralJavaScript {
     public void testMathHelp() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(JSObjectsTest.currentFile);
         cleanFile(eo);
         type(eo, "\n\n");
         eo.setCaretPositionToLine(1);
@@ -303,7 +303,7 @@ public class JSObjectsTest extends GeneralJavaScript {
     public void testGlobalHelpWindow() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(JSObjectsTest.currentFile);
         cleanFile(eo);
         type(eo, "\n\n");
         eo.setCaretPositionToLine(1);

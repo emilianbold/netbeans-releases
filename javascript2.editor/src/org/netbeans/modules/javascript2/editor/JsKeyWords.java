@@ -58,7 +58,8 @@ public class JsKeyWords {
         ENDS_WITH_CURLY_BRACKETS,
         ENDS_WITH_SPACE,
         ENDS_WITH_SEMICOLON,
-        ENDS_WITH_COLON
+        ENDS_WITH_COLON,
+        ENDS_WITH_DOT
     };
 
     protected final static Map<String, CompletionType> KEYWORDS = new HashMap<String, CompletionType>();
@@ -82,6 +83,7 @@ public class JsKeyWords {
         KEYWORDS.put(JsTokenId.KEYWORD_RETURN.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_SWITCH.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
         // XXX this keyword is missing here
+        KEYWORDS.put(JsTokenId.KEYWORD_THIS.fixedText(), CompletionType.ENDS_WITH_DOT);
         KEYWORDS.put(JsTokenId.KEYWORD_THROW.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_TRY.fixedText(), CompletionType.ENDS_WITH_CURLY_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_TYPEOF.fixedText(), CompletionType.ENDS_WITH_SPACE);

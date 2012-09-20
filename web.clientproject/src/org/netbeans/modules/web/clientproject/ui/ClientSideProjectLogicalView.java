@@ -65,6 +65,9 @@ import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.ToolsAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -86,6 +89,12 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
+@ActionReferences({
+    @ActionReference(
+        id=@ActionID(id="org.netbeans.modules.project.ui.problems.BrokenProjectActionFactory", category="Project"),
+        position=2950,
+        path="Projects/org-netbeans-modules-web-clientproject/Actions")
+})
 public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     private ClientSideProject project;
@@ -220,7 +229,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean arg0) {
-            return CommonProjectActions.forType(ClientSideProjectType.TYPE);
+            return CommonProjectActions.forType("org-netbeans-modules-web-clientproject"); // NOI18N
         }
 
         @Override
@@ -627,7 +636,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             } catch (DataObjectNotFoundException ex) {
                 return new Node[] {};
             }
-            return new Node[] { dobj.getNodeDelegate() };
+            return new Node[] { dobj.getNodeDelegate().cloneNode() };
         }
 
         @Override

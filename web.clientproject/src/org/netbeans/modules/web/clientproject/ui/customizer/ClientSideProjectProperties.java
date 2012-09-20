@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +61,8 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigur
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection.SelectedLibrary;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Mutex;
@@ -69,11 +73,11 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-final class ClientSideProjectProperties {
+public final class ClientSideProjectProperties {
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectProperties.class.getName());
 
-    private final ClientSideProject project;
+    final ClientSideProject project;
     private final List<JavaScriptLibrarySelection.SelectedLibrary> newJsLibraries = new CopyOnWriteArrayList<JavaScriptLibrarySelection.SelectedLibrary>();
 
     private volatile String jsLibFolder = null;
@@ -83,7 +87,48 @@ final class ClientSideProjectProperties {
         this.project = project;
     }
 
+    /**
+     * Add or replace project and/or private properties.
+     * <p>
+     * This method cannot be called in the UI thread.
+     * @param projectProperties project properties to be added to (replaced in) the current project properties
+     * @param privateProperties private properties to be added to (replaced in) the current private properties
+     */
+    public void save(final Map<String, String> projectProperties, final Map<String, String> privateProperties) {
+        assert !EventQueue.isDispatchThread();
+        assert !projectProperties.isEmpty() || !privateProperties.isEmpty() : "Neither project nor private properties to be saved";
+        try {
+            // store properties
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws IOException {
+                    AntProjectHelper helper = project.getProjectHelper();
+
+                    mergeProperties(helper, AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                    mergeProperties(helper, AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+
+                    ProjectManager.getDefault().saveProject(project);
+                    return null;
+                }
+
+                private void mergeProperties(AntProjectHelper helper, String path, Map<String, String> properties) {
+                    if (properties.isEmpty()) {
+                        return;
+                    }
+                    EditableProperties currentProperties = helper.getProperties(path);
+                    for (Map.Entry<String, String> entry : properties.entrySet()) {
+                        currentProperties.put(entry.getKey(), entry.getValue());
+                    }
+                    helper.putProperties(path, currentProperties);
+                }
+            });
+        } catch (MutexException e) {
+            LOGGER.log(Level.WARNING, null, e.getException());
+        }
+    }
+
     public void save() {
+        assert !EventQueue.isDispatchThread();
         try {
             // store properties
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {

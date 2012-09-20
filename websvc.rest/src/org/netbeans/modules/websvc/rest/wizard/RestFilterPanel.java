@@ -111,11 +111,19 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
                 object = support.getRestServletMapping(support.getWebApp());
             }
             catch(IOException e ){
-                // just keep object with null valu
+                // just keep object with null value
             }
             if (  object==  null ){
-                myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(RestFilterPanel.class, 
-                        "ERR_NoJerseyConfig"));                 // NOI18N
+                if ( support.isRestSupportOn() ){
+                    myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
+                        NbBundle.getMessage(RestFilterPanel.class, 
+                        "ERR_NoJerseyConfig"));                      // NOI18N
+                }
+                else {
+                    myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
+                            NbBundle.getMessage(RestFilterPanel.class, 
+                            "ERR_NoRestConfig"));                   // NOI18N
+                }
                 return false;
             }
         }

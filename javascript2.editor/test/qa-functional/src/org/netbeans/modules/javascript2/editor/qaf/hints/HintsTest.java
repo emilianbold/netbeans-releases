@@ -72,7 +72,7 @@ public class HintsTest extends GeneralJavaScript {
         this.name_iterator++;
         createPhpApplication(TEST_BASE_NAME + "ht_" + name_iterator);
         EditorOperator eo = createWebFile("ht", TEST_BASE_NAME + "ht_" + name_iterator, "JavaScript File");
-        this.currentFile = "ht.js";
+        HintsTest.currentFile = "ht.js";
         try {
             waitScanFinished();
         } catch (Exception e) {
@@ -85,7 +85,7 @@ public class HintsTest extends GeneralJavaScript {
     public void testComparison() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(HintsTest.currentFile);
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
 
@@ -107,7 +107,7 @@ public class HintsTest extends GeneralJavaScript {
     public void testMissingSemicolon() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(HintsTest.currentFile);
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
 
@@ -130,7 +130,7 @@ public class HintsTest extends GeneralJavaScript {
     public void testExtraComma() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(HintsTest.currentFile);
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
 
@@ -153,7 +153,7 @@ public class HintsTest extends GeneralJavaScript {
     public void testWeirdAssignement() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(HintsTest.currentFile);
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
 
@@ -176,7 +176,7 @@ public class HintsTest extends GeneralJavaScript {
     public void testDuplicateProperty() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(HintsTest.currentFile);
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
 
