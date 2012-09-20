@@ -69,7 +69,7 @@ public class GeneralJavaScript extends JellyTestCase {
     static final String PHP_PROJECT_NAME = "PHP Application";
     static final String OTHER_CATEGORY_NAME = "Other";
     protected EventTool evt;
-    public String currentFile = "";
+    public static String currentFile = "";
     public final String TEST_BASE_NAME = "js2_";
     public int name_iterator = 0;
 
