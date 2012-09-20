@@ -69,6 +69,7 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -141,7 +142,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.textBackground"); // NOI18N
     
     private transient RequestProcessor requestProcessor = new RequestProcessor("DebuggingView Refresh Scheduler", 1);
-    private transient boolean refreshScheduled = false;
+    private transient AtomicBoolean refreshScheduled = new AtomicBoolean(false);
     private transient ExplorerManager manager = new ExplorerManager();
     private transient ViewLifecycle viewLifecycle;
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
@@ -661,13 +662,13 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     }
     
     void refreshView() {
-        if (refreshScheduled) {
+        if (refreshScheduled.getAndSet(true)) {
             return;
         }
-        refreshScheduled = true;
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
+                refreshScheduled.set(false);
                 JPDAThread currentThread;
                 ThreadsCollector tc;
                 synchronized (DebuggingView.this.lock) {
@@ -825,7 +826,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         @Override
         public void run() {
             DebugTreeView tView = getTreeView();
-            refreshScheduled = false;
             leftPanel.clearBars();
             rightPanel.startReset();
             int sx = (rightPanel.getWidth() - ClickableIcon.CLICKABLE_ICON_WIDTH) / 2;
