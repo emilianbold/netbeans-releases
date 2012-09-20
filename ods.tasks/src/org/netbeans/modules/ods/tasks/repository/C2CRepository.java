@@ -347,7 +347,7 @@ public class C2CRepository {
         if (conf != null) {
             List<SavedTaskQuery> savedQueries = conf.getSavedTaskQueries();
             for (SavedTaskQuery sq : savedQueries) {
-                C2CQuery q = new C2CQuery(this, sq.getName(), sq.getQueryString());
+                C2CQuery q = C2CQuery.createSaved(this, sq);
                 queries.add(q);
             }
         }
@@ -369,7 +369,7 @@ public class C2CRepository {
             synchronized(QUERIES_LOCK) {
                 predefinedQueries = new EnumMap<PredefinedTaskQuery, C2CQuery>(PredefinedTaskQuery.class);
                 for (Map.Entry<PredefinedTaskQuery, IRepositoryQuery> e : queries.entrySet()) {
-                    predefinedQueries.put(e.getKey(), new C2CQuery(C2CRepository.this, e.getValue().getSummary(), e.getValue()));
+                    predefinedQueries.put(e.getKey(), C2CQuery.createPredefined(C2CRepository.this, e.getValue().getSummary(), e.getValue()));
                 }
             }
         }
@@ -395,7 +395,7 @@ public class C2CRepository {
     }
 
     public C2CQuery createQuery() {
-        return new C2CQuery(this);
+        return C2CQuery.createNew(this);
     }
 
     public C2CIssue[] getIssues(String[] ids) {

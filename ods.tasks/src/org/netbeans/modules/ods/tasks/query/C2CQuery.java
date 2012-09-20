@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.ods.tasks.query;
 
+import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
+import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -73,7 +75,7 @@ import org.netbeans.modules.ods.tasks.spi.C2CData;
  *
  * @author Tomas Stupka
  */
-public class C2CQuery {
+public abstract class C2CQuery {
 
     private final C2CRepository repository;
     private C2CQueryController controller;
@@ -84,40 +86,31 @@ public class C2CQuery {
     private long lastRefresh;
     
     private boolean saved;
-    private final boolean modifiable;
 
     private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
     private OwnerInfo info;
     
-    private final IRepositoryQuery repositoryQuery;
-        
-    public C2CQuery(C2CRepository repository) {
-        this(repository, null, null, null, false, true);
+    public static C2CQuery createNew(C2CRepository repository) {
+        return new CustomQuery(repository, null);
     }
     
-    public C2CQuery(C2CRepository repository, String name, IRepositoryQuery predefinedQuery) {
-        this(repository, name, predefinedQuery, null, true, false);
+    public static C2CQuery createSaved(C2CRepository repository, SavedTaskQuery stq) {
+        return new CustomQuery(repository, stq);
     }
     
-    public C2CQuery(C2CRepository repository, String name, String queryCriteria) {
-        this(repository, name, null, queryCriteria, true, true);
+    public static C2CQuery createPredefined(C2CRepository repository, String name, IRepositoryQuery predefinedQuery) {
+        return new PredefinedQuery(repository, name, predefinedQuery);
     }
         
-    private C2CQuery(C2CRepository repository, String name, IRepositoryQuery predefinedQuery, String queryCriteria, boolean saved, boolean modifiable) {
+    protected abstract void refresh(Criteria criteria, boolean autoRefresh);
+    protected abstract Criteria getCriteria();
+    protected abstract IRepositoryQuery getRepositoryQuery();
+    
+    protected C2CQuery(C2CRepository repository, String name) {
         this.name = name;
         this.repository = repository;
-        if(predefinedQuery != null) {
-            this.repositoryQuery = predefinedQuery;
-        } else {
-            this.repositoryQuery = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), "ODS query -" + name); // NOI18N
-            repositoryQuery.setAttribute(C2CData.ATTR_QUERY_CRITERIA, queryCriteria);
-        }
-        this.saved = saved;
-        this.modifiable = modifiable;
-        if (saved) {
-            getController();
-        }
+        this.saved = name != null;
     }
     
     public C2CRepository getRepository() {
@@ -248,11 +241,7 @@ public class C2CQuery {
 
     public final C2CQueryController getController () {
         if(controller == null) {
-            if (modifiable) {
-                controller = new C2CQueryController(repository, this, repositoryQuery.getAttribute(C2CData.ATTR_QUERY_CRITERIA));
-            } else {
-                controller = new C2CQueryController(repository, this);
-            }
+            controller = new C2CQueryController(repository, this, getCriteria());
         }
         return controller;
     }
@@ -277,32 +266,21 @@ public class C2CQuery {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
     }  
 
-    void refresh(List<QueryParameter> parameters, boolean autoRefresh) {
-        assert parameters != null;
-        if (repositoryQuery == null) {
-            this.parameters = parameters;
-        }
-        refreshIntern(autoRefresh);
-    }
-    
     public void refresh() {
         refreshIntern(false);
     }
     
     private final Set<String> issues = new HashSet<String>();
     private Set<String> archivedIssues = new HashSet<String>();
-    private List<QueryParameter> parameters = null;
     public void refreshIntern(final boolean autoRefresh) {
         
-        assert parameters != null || repositoryQuery != null;
+//        assert if query was provided with parameters from controller
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
           
         executeQuery(new Runnable() {
             @Override
             public void run() {
-                C2C.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, repositoryQuery == null
-                        ? parameters
-                        : repositoryQuery.getAttributes()}); // NOI18N
+                C2C.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(C2CData.ATTR_QUERY_CRITERIA)}); // NOI18N
                 try {
                     
                     // keeps all issues we will retrieve from the server
@@ -331,7 +309,7 @@ public class C2CQuery {
                             C2C.getInstance().getRepositoryConnector(),
                             repository.getTaskRepository(), 
                             new IssuesCollector(),
-                            repositoryQuery);
+                            getRepositoryQuery());
                     repository.getExecutor().execute(queryCmd, true, !autoRefresh);
                     if(queryCmd.hasFailed()) {
                         return;
@@ -353,9 +331,7 @@ public class C2CQuery {
                 } finally {
                     logQueryEvent(issues.size(), autoRefresh);
                     if(C2C.LOG.isLoggable(Level.FINE)) {
-                        C2C.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new Object[] {name, repositoryQuery == null
-                        ? parameters
-                        : repositoryQuery.getAttributes()}); // NOI18N
+                        C2C.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(C2CData.ATTR_QUERY_CRITERIA)}); // NOI18N
                     }
                 }
             }
@@ -407,4 +383,62 @@ public class C2CQuery {
             fireNotifyData(issue); // XXX - !!! triggers getIssues()
         }
     };    
+    
+    private static class CustomQuery extends C2CQuery {
+
+        private IRepositoryQuery repositoryQuery;
+        private final SavedTaskQuery savedQuery;
+                
+        public CustomQuery(C2CRepository repository, SavedTaskQuery savedQuery) {
+            super(repository, savedQuery != null ? savedQuery.getName() : null);
+            this.savedQuery = savedQuery;
+        }
+
+        @Override
+        protected IRepositoryQuery getRepositoryQuery() {
+            if(repositoryQuery == null) {
+                repositoryQuery = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), "ODS query -" + getDisplayName()); // NOI18N
+                repositoryQuery.setAttribute(C2CData.ATTR_QUERY_CRITERIA, savedQuery.getQueryString());
+            }
+            return repositoryQuery;
+        }
+
+        @Override
+        protected Criteria getCriteria() { 
+            return savedQuery.getQueryCriteria();
+        }
+
+        @Override
+        protected void refresh(Criteria criteria, boolean autoRefresh) {
+            assert criteria != null : "can't invoke query with null criteria";
+            savedQuery.setQueryString(criteria.toQueryString());
+            refreshIntern(autoRefresh);
+        }
+        
+    }
+
+    private static class PredefinedQuery extends C2CQuery {
+        private final IRepositoryQuery repositoryQuery;
+
+        public PredefinedQuery(C2CRepository repository, String name, IRepositoryQuery predefinedQuery) {
+            super(repository, name);
+            repositoryQuery = predefinedQuery;
+        }
+        
+        @Override
+        protected IRepositoryQuery getRepositoryQuery() {
+            return repositoryQuery;
+        }
+
+        @Override
+        protected Criteria getCriteria() {
+            return null;
+        }
+
+        @Override
+        protected void refresh(Criteria criteria, boolean autoRefresh) {
+            refreshIntern(autoRefresh);
+        }
+        
+    }
 }

@@ -42,10 +42,12 @@
 
 package org.netbeans.modules.ods.tasks.query;
 
+import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Product;
+import com.tasktop.c2c.server.tasks.service.CriteriaQueryArguments;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -138,15 +140,14 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private final Object REFRESH_LOCK = new Object();
     private final IssueTable issueTable;
     private boolean modifiable;
+    private Criteria criteria;
+    private Criteria originalCriteria;
         
-    C2CQueryController(C2CRepository repository, C2CQuery query) {
-        this(repository, query, null);
-    }
-
-    C2CQueryController(C2CRepository repository, C2CQuery query, String parametersString) {
+    C2CQueryController(C2CRepository repository, C2CQuery query, Criteria criteria) {
         this.repository = repository;
         this.query = query;
-        this.modifiable = parametersString != null;
+        this.modifiable = criteria != null;
+        this.criteria = criteria;
         
         issueTable = new IssueTable(C2CUtil.getRepository(repository), query, query.getColumnDescriptors());
 //      XXX  setupRenderer(issueTable);
@@ -202,7 +203,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
             setAsSaved();
         }
         if (modifiable) {
-            postPopulate(parametersString, false);
+            postPopulate(criteria, false);
         } else {
             hideModificationFields();
         }
@@ -299,7 +300,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         return repository;
     }
 
-    private void postPopulate(final String parametersString, final boolean forceRefresh) {
+    private void postPopulate(final Criteria criteria, final boolean forceRefresh) {
 
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
@@ -331,7 +332,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
                     if(forceRefresh) {
                         repository.refreshConfiguration();
                     }
-                    populate(parametersString);
+                    populate(criteria);
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
@@ -346,16 +347,12 @@ public class C2CQueryController extends QueryController implements ItemListener,
         });
     }
 
-    protected void populate(final String parametersString) {
+    protected void populate(final Criteria criteria) {
         if(C2C.LOG.isLoggable(Level.FINE)) {
             C2C.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
         repository.ensureCredentials();
         final C2CData clientData = C2C.getInstance().getClientData(repository);
-        if(clientData == null) {
-            // XXX nice errro msg?
-            return;
-        }
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -589,6 +586,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onCancelChanges() {
+        criteria = originalCriteria;
+        originalCriteria = null;
         if(query.getDisplayName() != null) { // XXX need a better semantic - isSaved?
             String urlParameters = C2CConfig.getInstance().getUrlParams(repository, query.getDisplayName());
             if(urlParameters != null) {
@@ -745,6 +744,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onModify() {
+        originalCriteria = criteria;
+        criteria = null;
         panel.setModifyVisible(true);
     }
 
@@ -800,7 +801,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onRefreshConfiguration() {
-        postPopulate(getUrlParameters(false), true);
+//        postPopulate(getUrlParameters(false), true);
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     private void remove() {
@@ -859,6 +861,14 @@ public class C2CQueryController extends QueryController implements ItemListener,
         }    
         return sb.toString();
     }
+    
+    private Criteria getCriteria() {
+        if(criteria == null) {
+            // XXX implement me!
+        }
+        return criteria;
+    }
+    
 //
 //    private void setParameters(String urlParameters) {
 //        if(urlParameters == null) {
@@ -1027,7 +1037,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
 //                C2CConfig.getInstance().setLastChangeFrom(lastChageFrom);
 //            }
             try {
-                query.refresh(parameters, autoRefresh);
+                
+                query.refresh(getCriteria(), autoRefresh);
             } finally {
                 setQueryRunning(false); // XXX do we need this? its called in finishQuery anyway
                 task = null;
