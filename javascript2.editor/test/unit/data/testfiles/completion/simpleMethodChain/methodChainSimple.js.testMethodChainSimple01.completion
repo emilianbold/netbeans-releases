@@ -25,5 +25,5 @@ METHOD     seal(O: Object): Object         [PUBLIC,   stub_CORE_Object.js
 METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
 METHOD     toString(): String              [PUBLIC]   stub_CORE_Object.js
 METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
-FIELD      constructor                     [PUBLIC]   stub_CORE_Object.js
+FIELD      constructor: Function           [PUBLIC]   stub_CORE_Object.js
 FIELD      version: Number                 [PUBLIC]   methodChainSimple.js
