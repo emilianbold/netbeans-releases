@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.mozilla.rhino.patched/1
 OpenIDE-Module-Localizing-Bundle: org/mozilla/rhino/patched/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.118
+OpenIDE-Module-Specification-Version: 1.118.1

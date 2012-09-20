@@ -54,18 +54,19 @@ build_info.ADDITIONAL_BUILD_LOCATION   = "{alternative.languages.page.url}";
 
 build_info.BUILD_LOCATION = "";
 
-build_info.LOAD_OMNITURE_CODE          = 0;
-build_info.LOAD_GOOGLE_ANALYTICS_CODE  = 0;
+build_info.LOAD_OMNITURE_CODE          = 1;
+build_info.LOAD_GOOGLE_ANALYTICS_CODE  = 1;
 build_info.USE_BOUNCER                 = 0;
 build_info.ADD_VERSION_INFO_TO_URL     = 0;
 
 build_info.BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 
-build_info.USE_HTML_ZIP_LISTING = 0;
+build_info.USE_HTML_ZIP_LISTING = 1;
 
 build_info.add_download_tabs = function() {
 	add_download_tab("7.2", "http://netbeans.org/downloads/");
-	add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
+        add_download_tab("7.3 Beta");
+	add_download_tab(DEVELOPMENT_TITLE,DEVELOPMENT_BUILDS_LINK);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }
 add_build_info(build_info);

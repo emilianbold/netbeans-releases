@@ -9,17 +9,17 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="Dev"/>
-    <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
-    <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
+    <property name="baseide.version" value="7.3 Beta"/>
+    <property name="appname" value="NetBeans 7.3 Beta"/> 
+    <property name="mpkg.name_nb" value="NetBeans 7.3 Beta"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb"/>      
     <property name="nb.check.build.number" value="0"/>
     <property name="nb.id" value="${buildnumber}"/>
 
-    <property name="appversion" value="Development Version"/>
-    <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
-    <property name="nb.display.version.short" value="Dev"/>
+    <property name="appversion" value="7.3 Beta"/>
+    <property name="nb.display.version.long"  value="7.3 Beta"/>
+    <property name="nb.display.version.short" value="7.3 Beta"/>
 
     <!-- Tomcat properties   -->    
     <property name="tomcat.version" value="7.0.27"/>
@@ -67,7 +67,7 @@
     <!-- Java FX Runtime -->
     <property name="javafx_runtime_location" value="${jdk_builds_host}/java/re/javafx/2.2.0/promoted/fcs/b21/bundles/macosx-x86_64/javafx-runtime-for-cobundle.zip"/>
 
-    <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
+    <property name="dmg.prefix.name" value="${prefix}"/>                         
 
     <!-- JDK Properties-->    
     <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
