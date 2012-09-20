@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.c2c;
+package org.netbeans.modules.ods;
 
 import org.netbeans.modules.ods.client.api.ODSFactory;
 import com.tasktop.c2c.server.cloud.domain.ServiceType;

@@ -39,20 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.c2c.tasks.nb;
+package org.netbeans.modules.ods.tasks.nb;
 
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.ods.tasks.QueryTck;
+import org.netbeans.modules.ods.tasks.C2CTestInfrastructure;
+import java.net.URL;
+import java.net.URLStreamHandlerFactory;
+import junit.framework.Assert;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
-/** Runs all the tests from TCK defined in ods.tasks module.
+/**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class NbTCKTest {
-    public static NbTestSuite suite() {
-        NbTestSuite s = new NbTestSuite();
-        s.addTestSuite(QueryTck.class);
-        return s;
+@ServiceProvider(service=C2CTestInfrastructure.class)
+public final class NbTestInfrastructure extends C2CTestInfrastructure {
+    static {
+        URLStreamHandlerFactory f = Lookup.getDefault().lookup(URLStreamHandlerFactory.class);
+        Assert.assertNotNull("Factory found: ", f);
+        URL.setURLStreamHandlerFactory(f);
+    }
+
+    @Override
+    protected String initializeRepository() {
+        return "test://my.dream.org/alm/s/anagramgame/tasks";
+    }
+
+    @Override
+    protected void expectQuery(String url, Appendable response, String reply) {
+        TSHandler.expectQuery(url, response, reply);
     }
     
 }

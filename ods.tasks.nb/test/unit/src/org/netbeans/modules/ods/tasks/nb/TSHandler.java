@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.c2c.tasks.nb;
+package org.netbeans.modules.ods.tasks.nb;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
