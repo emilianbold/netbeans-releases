@@ -221,8 +221,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             ClassImpl scopeCls = (ClassImpl)scope;
             if(impl.getStartOffset() == scopeCls.getStartOffset() &&
                     impl.getEndOffset() == scopeCls.getEndOffset() &&
-                    impl.getName().toString().equals(scopeCls.getName().toString()) &&
-                    impl.getKind().equals(scopeCls.getKind())) {
+                    impl.getKind().equals(scopeCls.getKind()) &&
+                    impl.getName().equals(scopeCls.getName())) {
                 return null;
             }
         }

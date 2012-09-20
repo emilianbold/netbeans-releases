@@ -459,7 +459,11 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         if (!super.equals(obj)){
             return false;
         }
-        return getName().equals(((OffsetableDeclarationBase<?>)obj).getName());
+        final OffsetableDeclarationBase<?> other = (OffsetableDeclarationBase<?>)obj;
+        if (!this.getKind().equals(other.getKind())) {
+            return false;
+        }
+        return getName().equals(other.getName());
     }
 
     @Override

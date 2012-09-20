@@ -54,7 +54,7 @@ public class WebProjectSuite extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        NbModuleSuite.Configuration conf = emptyConfiguration();
         conf = addServerTests(Server.GLASSFISH, conf, WebProjectValidation14.class, WebProjectValidation14.TESTS);
         conf = addServerTests(Server.GLASSFISH, conf, WebProjectValidationEE5.class, WebProjectValidationEE5.TESTS);
         conf = addServerTests(Server.GLASSFISH, conf, WebProjectValidation.class, WebProjectValidation.TESTS);
@@ -63,6 +63,6 @@ public class WebProjectSuite extends J2eeTestCase {
         conf = addServerTests(Server.GLASSFISH, conf, WebStrutsProjectValidation.class, WebStrutsProjectValidation.TESTS);
         conf = addServerTests(Server.GLASSFISH, conf, MavenWebProjectValidation.class, MavenWebProjectValidation.TESTS);
         conf = addServerTests(Server.GLASSFISH, conf, MavenWebProjectValidationEE6.class, MavenWebProjectValidationEE6.TESTS);
-        return NbModuleSuite.create(conf);
+        return conf.suite();
     }
 }

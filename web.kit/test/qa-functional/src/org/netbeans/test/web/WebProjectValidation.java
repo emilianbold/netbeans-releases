@@ -88,7 +88,6 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbModuleSuite;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -127,10 +126,7 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation.class);
-        conf = addServerTests(Server.GLASSFISH, conf, TESTS);
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.GLASSFISH, WebProjectValidation.class, TESTS);
     }
 
     @Override

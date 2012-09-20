@@ -54,7 +54,6 @@ import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -226,11 +225,11 @@ public class RestCStubsTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(RestCStubsTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, RestCStubsTest.class,
                 "testWizard", //NOI18N
                 "testCreateSimpleStubs", //NOI18N
                 "testFromWADL", //NOI18N
                 "testCloseProject" //NOI18N
-                ).enableModules(".*").clusters(".*").suite(); //NOI18N
+                );
     }
 }

@@ -56,7 +56,6 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -384,12 +383,12 @@ public class CRUDTest extends RestTestBase {
      * testcases here.
      */
     public static Test suite() {
-        return addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(CRUDTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, CRUDTest.class,
                 "testRfE", //NOI18N
                 "testPropAccess", //NOI18N
                 "testDeploy", //NOI18N
                 "testCreateRestClient", //NOI18N
                 "testUndeploy" //NOI18N
-                ).enableModules(".*").clusters(".*").suite(); //NOI18N
+                ); //NOI18N
     }
 }

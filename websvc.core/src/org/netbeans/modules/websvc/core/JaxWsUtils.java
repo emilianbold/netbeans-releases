@@ -431,7 +431,11 @@ public class JaxWsUtils {
             throws DataObjectNotFoundException
     {
         DataObject dobj = DataObject.find(implClassFo);
-        List services = jaxWsSupport.getServices();
+        if ( dobj == null ){
+            return;
+        }
+        openFileInEditor(dobj);
+        /*List services = jaxWsSupport.getServices();
         if (serviceID != null) {
             for (Object serv : services) {
                 if (serviceID.equals(((Service) serv).getName())) {
@@ -448,7 +452,7 @@ public class JaxWsUtils {
                     }
                 }
             }
-        }
+        }*/
     }
 
     private static void generateJaxWsProvider(Project project, 

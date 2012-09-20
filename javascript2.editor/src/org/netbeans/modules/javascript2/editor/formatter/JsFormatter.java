@@ -230,7 +230,7 @@ public class JsFormatter implements Formatter {
                             || token.getKind() == FormatToken.Kind.LINE_COMMENT) {
                         try {
                             int indent = context.lineIndent(context.lineStartOffset(
-                                    token.getOffset() + formatContext.getOffsetDiff()));
+                                    formatContext.getDocumentOffset(token.getOffset()) + formatContext.getOffsetDiff()));
                             formatComment(token, formatContext, indent);
                         } catch (BadLocationException ex) {
                             LOGGER.log(Level.INFO, null, ex);

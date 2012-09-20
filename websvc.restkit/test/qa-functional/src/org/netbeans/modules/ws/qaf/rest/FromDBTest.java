@@ -53,7 +53,6 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests for New REST web services from Database wizard
@@ -134,9 +133,9 @@ public class FromDBTest extends CRUDTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(FromDBTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, FromDBTest.class,
                 "testFromDB", //NOI18N
                 "testDeploy", //NOI18N
-                "testUndeploy").enableModules(".*").clusters(".*")); //NOI18N
+                "testUndeploy"); //NOI18N
     }
 }

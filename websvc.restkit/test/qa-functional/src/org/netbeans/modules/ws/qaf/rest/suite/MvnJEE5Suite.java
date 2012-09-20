@@ -43,7 +43,6 @@ package org.netbeans.modules.ws.qaf.rest.suite;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.rest.MvnCRUDTest;
 import org.netbeans.modules.ws.qaf.rest.MvnFromDBTest;
 import org.netbeans.modules.ws.qaf.rest.MvnPatternsTest;
@@ -62,7 +61,7 @@ public class MvnJEE5Suite extends J2eeTestCase {
         // This "nicely recursive" implementation is due to limitations in J2eeTestCase API
         return addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
-                addServerTests(Server.GLASSFISH, NbModuleSuite.emptyConfiguration(), MvnFromDBTest.class,
+                addServerTests(Server.GLASSFISH, emptyConfiguration(), MvnFromDBTest.class,
                 "testFromDB",
                 "testRun",
                 "testUndeploy"), MvnCRUDTest.class,
