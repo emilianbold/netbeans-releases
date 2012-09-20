@@ -137,7 +137,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return true;
     }
 
-    public CsmProject findProject(Object id) {
+    /*package*/ CsmProject findProject(Object id) {
         ProjectBase prj = null;
         if (id != null) {
             synchronized (lock) {
@@ -822,7 +822,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private CsmModelState state;
     private double warningThreshold = 0.98;
     //private double fatalThreshold = 0.99;
-    private final Set<Object> disabledProjects = new HashSet<Object>();
+    private final Set<Object> disabledProjects = Collections.synchronizedSet(new HashSet<Object>());
     private final RequestProcessor modelProcessor = new RequestProcessor("Code model request processor", 1); // NOI18N
     private final Set<Runnable> modelProcessorTasks = new HashSet<Runnable>();
     private final RequestProcessor userTasksProcessor = new RequestProcessor("User model tasks processor", 4); // NOI18N
