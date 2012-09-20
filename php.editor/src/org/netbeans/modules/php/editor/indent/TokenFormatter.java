@@ -775,7 +775,29 @@ public class TokenFormatter {
                                     case WHITESPACE_AROUND_UNARY_OP:
                                         countSpaces = docOptions.spaceAroundUnaryOps ? 1 : countSpaces;
                                         break;
-                                    case WHITESPACE_AROUND_BINARY_OP:
+                                    case WHITESPACE_BEFORE_BINARY_OP:
+                                        indentRule = true;
+                                        switch (docOptions.wrapBinaryOps) {
+                                            case WRAP_ALWAYS:
+                                                newLines = 1;
+                                                countSpaces = indent;
+                                                break;
+                                            case WRAP_NEVER:
+                                                newLines = 0;
+                                                countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
+                                                break;
+                                            case WRAP_IF_LONG:
+                                                if (column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                    newLines = 1;
+                                                    countSpaces = indent;
+                                                } else {
+                                                    newLines = 0;
+                                                    countSpaces = 1;
+                                                }
+                                                break;
+                                        }
+                                        break;
+                                    case WHITESPACE_AFTER_BINARY_OP:
                                         countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
                                         break;
                                     case WHITESPACE_AROUND_TERNARY_OP:
