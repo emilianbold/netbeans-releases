@@ -215,7 +215,7 @@ implements LookupListener, FlavorListener, AWTEventListener
                 // This is workaround of JDK bug described in issue 41098.
                 long curr = System.currentTimeMillis();
                 int waitTime = Integer.getInteger("sun.awt.datatransfer.timeout", 1000); // NOI18N
-                if (waitTime > 0) {
+                if (waitTime > 0 && !Boolean.TRUE.equals(FIRING.get())) {
                     scheduleGetFromSystemClipboard(false).waitFinished (waitTime);
                 }
                 prev = super.getContents (requestor);
