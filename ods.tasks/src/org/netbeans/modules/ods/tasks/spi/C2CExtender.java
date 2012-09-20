@@ -92,9 +92,9 @@ public abstract class C2CExtender<Data> {
     public static IRepositoryQuery getQuery(
         AbstractRepositoryConnector rc,
         PredefinedTaskQuery predefinedTaskQuery,
-        String string,
+        String name,
         String connectorKind) {
-        return getDefault().spiQuery(rc, predefinedTaskQuery, string, connectorKind);
+        return getDefault().spiQuery(rc, predefinedTaskQuery, name, connectorKind);
     }
 
     static String getProductKey(String component, String product) {
@@ -127,7 +127,7 @@ public abstract class C2CExtender<Data> {
     protected abstract void spiAssignTaskRepositoryLocationFactory(AbstractRepositoryConnector rc, TaskRepositoryLocationFactory f);
     protected abstract C2CData spiClientData(AbstractRepositoryConnector rc, TaskRepository taskRepository);
     protected abstract void spiRepositoryRemove(AbstractRepositoryConnector rc, TaskRepository r);
-    protected abstract IRepositoryQuery spiQuery(AbstractRepositoryConnector rc, PredefinedTaskQuery predefinedTaskQuery, String string, String connectorKind);
+    protected abstract IRepositoryQuery spiQuery(AbstractRepositoryConnector rc, PredefinedTaskQuery predefinedTaskQuery, String name, String connectorKind);
 
     protected abstract void spiResolve(TaskData data, TaskResolution resolution);
     
