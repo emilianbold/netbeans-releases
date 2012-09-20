@@ -1,0 +1,5 @@
+Code completion result for source line:
+h|istory;
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+FIELD      history: History                [PUBLIC]   stub_DOM_window.js

@@ -412,6 +412,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         // from index
         JsIndex index = JsIndex.get(fo);
         Collection<IndexedElement> fromIndex = index.getGlobalVar(request.prefix);
+        fromIndex.addAll(index.getPropertiesWithPrefix("window", request.prefix));  //NOI18N
         for (IndexedElement indexedElement : fromIndex) {
             JsElement object = foundObjects.get(indexedElement.getName());
             if(object == null) {
@@ -461,7 +462,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
-        
+
         for(JsElement element: foundObjects.values()) {
             resultList.add(JsCompletionItem.Factory.create(element, request));
         }

@@ -407,7 +407,7 @@ public class ModelUtils {
                         lastResolvedTypes.add(windowProperty);
                     }
                     if(localObject == null || (localObject.getJSKind() != JsElement.Kind.PARAMETER
-                            && localObject.getJSKind() != JsElement.Kind.VARIABLE)) {
+                            && (ModelUtils.isGlobal(localObject.getParent()) || localObject.getJSKind() != JsElement.Kind.VARIABLE))) {
                         // Add global variables from index
                         Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
                         for (IndexedElement globalVar : globalVars) {
