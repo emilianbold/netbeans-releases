@@ -346,7 +346,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     this.session = null;
                 }
             }
-            RequestProcessor.getDefault().post(new Runnable() {
+            requestProcessor.post(new Runnable() {
                 public void run() {
                     threadsListener.changeDebugger(deb);
                 }
@@ -360,9 +360,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 this.debugger = null;
                 this.session = null;
             }
-            if (threadsListener != null) {
-                threadsListener.changeDebugger(null);
-            }
+            requestProcessor.post(new Runnable() {
+                public void run() {
+                    threadsListener.changeDebugger(null);
+                }
+            });
         }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -650,6 +652,24 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         refreshScheduled = true;
         requestProcessor.post(new Runnable() {
             public void run() {
+                JPDAThread currentThread;
+                ThreadsCollector tc;
+                synchronized (DebuggingView.this.lock) {
+                    currentThread = debugger != null ? debugger.getCurrentThread() : null;
+                    tc = debugger != null ? debugger.getThreadsCollector() : null;
+                }
+                // collect all deadlocked threads
+                Set<Deadlock> deadlocks = tc != null ? tc.getDeadlockDetector().getDeadlocks() : null;
+                Set<JPDAThread> deadlockedThreads;
+                if (deadlocks == null) {
+                    deadlockedThreads = Collections.EMPTY_SET;
+                } else {
+                    deadlockedThreads = new HashSet<JPDAThread>();
+                    for (Deadlock deadlock : deadlocks) {
+                        deadlockedThreads.addAll(deadlock.getThreads());
+                    }
+                }
+                viewRefresher.setup(currentThread, deadlockedThreads);
                 SwingUtilities.invokeLater(viewRefresher);
             }
         }, 20);
@@ -769,6 +789,14 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     }
 
     private final class ViewRefresher implements Runnable {
+        
+        private JPDAThread currentThread;
+        private Set<JPDAThread> deadlockedThreads;
+        
+        void setup(JPDAThread currentThread, Set<JPDAThread> deadlockedThreads) {
+            this.currentThread = currentThread;
+            this.deadlockedThreads = deadlockedThreads;
+        }
 
         public void run() {
             DebugTreeView tView = getTreeView();
@@ -777,22 +805,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             rightPanel.startReset();
             int sx = (rightPanel.getWidth() - ClickableIcon.CLICKABLE_ICON_WIDTH) / 2;
             int sy = 0;
-
-            JPDAThread currentThread;
-            ThreadsCollector tc;
-            synchronized (DebuggingView.this.lock) {
-                currentThread = debugger != null ? debugger.getCurrentThread() : null;
-                tc = debugger != null ? debugger.getThreadsCollector() : null;
-            }
-            // collect all deadlocked threads
-            Set<Deadlock> deadlocks = tc != null ? tc.getDeadlockDetector().getDeadlocks() : Collections.EMPTY_SET;
-            if (deadlocks == null) {
-                deadlocks = Collections.EMPTY_SET;
-            }
-            Set<JPDAThread> deadlockedThreads = new HashSet<JPDAThread>();
-            for (Deadlock deadlock : deadlocks) {
-                deadlockedThreads.addAll(deadlock.getThreads());
-            }
 
             JPDAThread threadToScroll = threadToScrollRef != null ? threadToScrollRef.get() : null;
             threadToScrollRef = null;
