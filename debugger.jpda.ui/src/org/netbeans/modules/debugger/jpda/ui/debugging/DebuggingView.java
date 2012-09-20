@@ -347,6 +347,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 }
             }
             requestProcessor.post(new Runnable() {
+                @Override
                 public void run() {
                     threadsListener.changeDebugger(deb);
                 }
@@ -361,6 +362,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 this.session = null;
             }
             requestProcessor.post(new Runnable() {
+                @Override
                 public void run() {
                     threadsListener.changeDebugger(null);
                 }
@@ -399,6 +401,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         });
     }
     
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -506,6 +509,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         return NbBundle.getMessage (DebuggingView.class, "CTL_Debugging_tooltip"); // NOI18N
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
         if (ExplorerManager.PROP_ROOT_CONTEXT.equals(propertyName) || 
@@ -540,12 +544,15 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     private static boolean isJPDASession(Session s) {
         DebuggerEngine engine = s.getCurrentEngine ();
-        if (engine == null) return false;
+        if (engine == null) {
+            return false;
+        }
         return engine.lookupFirst(null, JPDADebugger.class) != null;
     }
     
     void updateSessionsComboBox() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 sessionComboBox.removeActionListener(sessionsComboListener);
                 sessionComboBox.removePopupMenuListener(sessionsComboListener);
@@ -595,7 +602,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     private void releaseTreeView() {
         synchronized (lock) {
-            if (treeView == null) return ;
+            if (treeView == null) {
+                return ;
+            }
             treeView.getTree().removeMouseWheelListener(this);
             treeView.removeTreeExpansionListener(this);
             TreeModel model = treeView.getTree().getModel();
@@ -615,26 +624,32 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // implementation of TreeExpansion and TreeModel listener
     // **************************************************************************
     
+    @Override
     public void treeExpanded(TreeExpansionEvent event) {
         refreshView();
     }
 
+    @Override
     public void treeCollapsed(TreeExpansionEvent event) {
         refreshView();
     }
 
+    @Override
     public void treeNodesChanged(TreeModelEvent e) {
         refreshView();
     }
 
+    @Override
     public void treeNodesInserted(TreeModelEvent e) {
         refreshView();
     }
 
+    @Override
     public void treeNodesRemoved(TreeModelEvent e) {
         refreshView();
     }
 
+    @Override
     public void treeStructureChanged(TreeModelEvent e) {
         refreshView();
     }
@@ -651,6 +666,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         }
         refreshScheduled = true;
         requestProcessor.post(new Runnable() {
+            @Override
             public void run() {
                 JPDAThread currentThread;
                 ThreadsCollector tc;
@@ -715,6 +731,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // connected to treeView)
     // **************************************************************************
     
+    @Override
     public void adjustmentValueChanged(AdjustmentEvent e) {
         DebugTreeView tView = getTreeView();
         if (tView == null) {
@@ -731,8 +748,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // implementation of ChangeListener on treeView
     // **************************************************************************
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 adjustTreeScrollBar(-1);
             }
@@ -743,6 +762,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // implementation of MouseWheelListener on treeView
     // **************************************************************************
     
+    @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         JScrollBar scrollBar = mainScrollPane.getVerticalScrollBar();
         if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
@@ -755,6 +775,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // implementation of TreeSelectionListener
     // **************************************************************************
     
+    @Override
     public void valueChanged(TreeSelectionEvent e) {
         TreePath path = e.getNewLeadSelectionPath();
         DebugTreeView tView = getTreeView();
@@ -762,7 +783,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             JTree tree = tView.getTree();
             int row = tree.getRowForPath(path);
             Rectangle rect = tree.getRowBounds(row);
-            if (rect == null) return ;
+            if (rect == null) {
+                return ;
+            }
             JViewport viewport = mainScrollPane.getViewport();
             ((JComponent)viewport.getView()).scrollRectToVisible(rect);
         }
@@ -779,6 +802,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     
     private final class DebuggingPreferenceChangeListener implements PreferenceChangeListener {
 
+        @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
             if (FiltersDescriptor.SHOW_SUSPEND_TABLE.equals(key)) {
@@ -798,6 +822,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             this.deadlockedThreads = deadlockedThreads;
         }
 
+        @Override
         public void run() {
             DebugTreeView tView = getTreeView();
             refreshScheduled = false;
@@ -976,10 +1001,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             g.setColor(originalColor);
         }
 
+        @Override
         public void mouseDragged(MouseEvent e) {
             computeToolTipText(e);
         }
 
+        @Override
         public void mouseMoved(MouseEvent e) {
             computeToolTipText(e);
         }
@@ -1110,6 +1137,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         SessionItem selectedItem = null;
         boolean popupVisible = false;
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             SessionItem si = (SessionItem)sessionComboBox.getSelectedItem();
             if (popupVisible) {
@@ -1119,16 +1147,19 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             }
         }
 
+        @Override
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
             popupVisible = true;
         }
 
+        @Override
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
             changeSession(selectedItem);
             selectedItem = null;
             popupVisible = false;
         }
 
+        @Override
         public void popupMenuCanceled(PopupMenuEvent e) {
             selectedItem = null;
             popupVisible = false;
