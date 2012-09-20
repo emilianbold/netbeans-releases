@@ -76,15 +76,18 @@ public class StopTask extends BasicTask<OperationState> {
     /**
      * 
      */
+    @SuppressWarnings("SleepWhileInLoop")
     @Override
     public OperationState call() {
         // save the current time so that we can deduct that the startup
         // failed due to timeout
-        Logger.getLogger("glassfish").log(Level.FINEST, "StopTask.call() called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
+        Logger.getLogger("glassfish").log(Level.FINEST,
+                "StopTask.call() called on thread \"{0}\"",
+                Thread.currentThread().getName()); // NOI18N
         long start = System.currentTimeMillis();
         
         String host; // = null;
-        int port = 0;
+        int port;
         
         host = instance.getProperty(GlassfishModule.HOSTNAME_ATTR);
         if(host == null || host.length() == 0) {
@@ -131,8 +134,9 @@ public class StopTask extends BasicTask<OperationState> {
                     Thread.sleep(1000); // flush the process
                 } catch (InterruptedException e) {
                 }
+                LogViewMgr.removeServerLogStream(instance);
                 LogViewMgr logger = LogViewMgr.getInstance(instance.getProperty(GlassfishModule.URL_ATTR));
-                logger.stopReaders();
+                logger.stopReaders();                
 
                 return fireOperationStateChanged(OperationState.COMPLETED, 
                         "MSG_SERVER_STOPPED", instanceName); // NOI18N
