@@ -70,6 +70,9 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
     protected static String proxyPort = null;
     
     protected static String TEST_PRODUCT = "Unit Test Product";
+    protected static final String TEST_COMPONENT1 = "Component1";
+    protected static final String TEST_COMPONENT2 = "Component2";
+    protected static final String TEST_COMPONENT3 = "Component3";
             
     protected TaskRepository taskRepository;
     protected AbstractRepositoryConnector rc;

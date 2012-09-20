@@ -162,7 +162,7 @@ public class C2CQueryTest extends AbstractC2CTestCase {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
-        cb.column(QueryParameter.CRITERIA_PRODUCT, Criteria.Operator.EQUALS, "Unit Test Product");
+        cb.column(QueryParameter.CRITERIA_PRODUCT, Criteria.Operator.EQUALS, TEST_PRODUCT);
         
         query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
         
@@ -178,8 +178,8 @@ public class C2CQueryTest extends AbstractC2CTestCase {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
-        cb.column(QueryParameter.CRITERIA_PRODUCT, Criteria.Operator.EQUALS, "Unit Test Product");
-        cb.and(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, "Component2");
+        cb.column(QueryParameter.CRITERIA_PRODUCT, Criteria.Operator.EQUALS, TEST_PRODUCT);
+        cb.and(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, TEST_COMPONENT2);
         
         query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
         
@@ -189,15 +189,15 @@ public class C2CQueryTest extends AbstractC2CTestCase {
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status is OK", status.getCode(), IStatus.OK);
         assertEquals(1, c.arr.size());
-        assertTrue(c.arr.get(0).getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals("Component2"));
+        assertTrue(c.arr.get(0).getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT2));
     }
     
     public void testC1OrC2() throws IOException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
-        cb.column(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, "Component2");
-        cb.or(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, "Component3");
+        cb.column(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, TEST_COMPONENT2);
+        cb.or(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, TEST_COMPONENT3);
         
         query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
         
@@ -208,8 +208,8 @@ public class C2CQueryTest extends AbstractC2CTestCase {
         assertEquals("Status is OK", status.getCode(), IStatus.OK);
         assertEquals(2, c.arr.size());
         for (TaskData td : c.arr) {
-            assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals("Component2") ||
-                       td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals("Component3"));
+            assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT2) ||
+                       td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT3));
         }
     }
     
@@ -217,10 +217,10 @@ public class C2CQueryTest extends AbstractC2CTestCase {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
-        cb.column(QueryParameter.CRITERIA_PRODUCT, Criteria.Operator.EQUALS, "Unit Test Product");
+        cb.column(QueryParameter.CRITERIA_PRODUCT, Criteria.Operator.EQUALS, TEST_PRODUCT);
         cb.and(new CriteriaBuilder()
-                    .column(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, "Component2")
-                    .or(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, "Component3")
+                    .column(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, TEST_COMPONENT2)
+                    .or(QueryParameter.CRITERIA_COMPONENT, Criteria.Operator.EQUALS, TEST_COMPONENT3)
                .toCriteria());
         
         query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
@@ -232,8 +232,8 @@ public class C2CQueryTest extends AbstractC2CTestCase {
         assertEquals("Status is OK", status.getCode(), IStatus.OK);
         assertEquals(2, c.arr.size());
         for (TaskData td : c.arr) {
-            assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals("Component2") ||
-                       td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals("Component3"));
+            assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT2) ||
+                       td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT3));
         }
     }
     
