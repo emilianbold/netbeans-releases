@@ -113,7 +113,7 @@ public class JsDocModelTest extends JsDocumentationTestBase {
                 assertTrue(result instanceof JsParserResult);
                 JsParserResult parserResult = (JsParserResult) result;
 
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult);
+                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
                 JsComment comment = documentationHolder.getCommentForOffset(offset, documentationHolder.getCommentBlocks());
                 checkJsDocElements(expected, ((JsDocComment) comment).getTags());
             }

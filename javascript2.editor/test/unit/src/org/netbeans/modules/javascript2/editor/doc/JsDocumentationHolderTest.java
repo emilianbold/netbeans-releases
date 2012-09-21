@@ -69,7 +69,7 @@ public class JsDocumentationHolderTest extends JsDocumentationTestBase {
                 assertTrue(result instanceof JsParserResult);
                 JsParserResult parserResult = (JsParserResult) result;
 
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
+                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult);
                 JsComment comment = documentationHolder.getCommentForOffset(offset, documentationHolder.getCommentBlocks());
                 assertEquals(exists, comment != null);
                 if (exists) {
