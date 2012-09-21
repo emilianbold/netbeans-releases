@@ -74,6 +74,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -170,12 +171,20 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
             //from the event queue only so let's wait till the dialog window is 
             //painted before filtering out Actions without an icon
             firstTimeInit = false;
-            SwingUtilities.invokeLater( new Runnable() {
+            new RequestProcessor( "ToolbarPanelConfigWarmUp").post( new Runnable() { //NOI18N
+
+                @Override
                 public void run() {
                     //warm up action nodes so that 'expand all' in actions tree is fast
                     Node[] categories = root.getChildren().getNodes( true );
                     for( int i=0; i<categories.length; i++ ) {
-                        categories[i].getChildren().getNodes( true );
+                        final Node category = categories[i];
+                        SwingUtilities.invokeLater( new Runnable() {
+                            @Override
+                            public void run() {
+                                category.getChildren().getNodes( true );
+                            }
+                        });
                     }
                     //replace 'please wait' message with actions tree
                     SwingUtilities.invokeLater( ConfigureToolbarPanel.this );
