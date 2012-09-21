@@ -264,6 +264,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
             suppressed.add(job.getName());
         }
         props.put(INSTANCE_SUPPRESSED_JOBS, HudsonInstanceProperties.join(suppressed));
+        fireContentChanges();
     }
     
     public @Override synchronized Collection<HudsonView> getViews() {
