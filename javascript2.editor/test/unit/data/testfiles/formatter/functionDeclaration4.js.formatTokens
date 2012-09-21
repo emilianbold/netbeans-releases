@@ -126,6 +126,7 @@ FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=104, text=
 }
 FormattingToken{kind=WHITESPACE, offset=105, text=    }
+FormattingToken{kind=BEFORE_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=109, text=getDescription}
 FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=123, text=:}
@@ -160,6 +161,7 @@ FormattingToken{kind=TEXT, offset=166, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
 FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=167, text= }
+FormattingToken{kind=BEFORE_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=168, text=a}
 FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=169, text=:}
@@ -170,6 +172,7 @@ FormattingToken{kind=TEXT, offset=171, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
 FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=172, text= }
+FormattingToken{kind=BEFORE_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=173, text=testFuntion}
 FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=184, text=:}
@@ -194,6 +197,7 @@ FormattingToken{kind=TEXT, offset=206, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
 FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=207, text= }
+FormattingToken{kind=BEFORE_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=208, text=b}
 FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=209, text=:}
@@ -201,7 +205,6 @@ FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=210, text=7}
 FormattingToken{kind=EOL, offset=211, text=
 }
-FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=212, text=}}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}

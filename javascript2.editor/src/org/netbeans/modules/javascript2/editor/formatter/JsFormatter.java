@@ -924,7 +924,7 @@ public class JsFormatter implements Formatter {
                     return null;
                 }
                 return CodeStyle.get(context).wrapTernaryOps();
-            case AFTER_PROPERTY:
+            case BEFORE_PROPERTY:
                 return CodeStyle.get(context).wrapProperties();
             case AFTER_ARRAY_LITERAL:
                 return CodeStyle.get(context).wrapArrayInit();

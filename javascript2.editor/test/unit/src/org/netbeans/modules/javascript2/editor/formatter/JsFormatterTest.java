@@ -512,6 +512,24 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/objects7.js", options, ".inverted.formatted");
     }
 
+    public void testObjects8Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/objects8.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testObjects8Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/objects8.js", options, ".wrapNever.formatted");
+    }
+
+    public void testObjects8IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/objects8.js", options, ".wrapIfLong.formatted");
+    }
+
     public void testSwitch1() throws Exception {
         reformatFileContents("testfiles/formatter/switch1.js",new IndentPrefs(4, 4));
     }
