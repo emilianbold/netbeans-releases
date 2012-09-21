@@ -123,8 +123,6 @@ public class WebLogicPanel extends DestinationPanel {
                 DEFAULT_PASSWORD_LABEL_TEXT);
         setProperty(REPEAT_PASSWORD_LABEL_TEXT_PROPERTY,
                 DEFAULT_REPEAT_PASSWORD_LABEL_TEXT);
-        setProperty(DEFAULTS_LABEL_TEXT_PROPERTY,
-                DEFAULT_DEFAULTS_LABEL_TEXT);
         
         setProperty(ERROR_DOMAINNAME_NULL_PROPERTY,
                 DEFAULT_ERROR_DOMAINNAME_NULL);        
@@ -351,8 +349,6 @@ public class WebLogicPanel extends DestinationPanel {
         private NbiLabel passwordLabel;
         private NbiPasswordField passwordField;
         
-        private NbiLabel defaultsLabel;
-        
         private NbiLabel repeatPasswordLabel;
         private NbiPasswordField repeatPasswordField;                
         
@@ -434,11 +430,6 @@ public class WebLogicPanel extends DestinationPanel {
             usernameField.setText(panel.getWizard().getProperty(USERNAME_PROPERTY));
             passwordField.setText(panel.getWizard().getProperty(PASSWORD_PROPERTY));
             repeatPasswordField.setText(panel.getWizard().getProperty(PASSWORD_PROPERTY));
-                                   
-            defaultsLabel.setText(StringUtils.format(
-                    panel.getProperty(DEFAULTS_LABEL_TEXT_PROPERTY),
-                    panel.getProperty(DEFAULT_USERNAME_PROPERTY),
-                    panel.getProperty(DEFAULT_PASSWORD_PROPERTY)));            
                         
             super.initialize();
         }
@@ -951,10 +942,6 @@ public class WebLogicPanel extends DestinationPanel {
             repeatPasswordLabel = new NbiLabel();
             repeatPasswordLabel.setLabelFor(repeatPasswordField);
             
-           
-            // defaultsLabel ////////////////////////////////////////////////////////
-            defaultsLabel = new NbiLabel();
-            
             // this /////////////////////////////////////////////////////////////////
            /*add(domainDestinationLabel, new GridBagConstraints(
                     0, 2,                             // x, y
@@ -1123,14 +1110,6 @@ public class WebLogicPanel extends DestinationPanel {
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(4, 6, 0, 11),          // padding
-                    0, 0));                           // padx, pady - ???
-            containerPanel.add(defaultsLabel, new GridBagConstraints(
-                    3, 2,                             // x, y
-                    1, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(4, 0, 0, 11),          // padding
                     0, 0));                           // padx, pady - ???
             
             containerPanel.add(repeatPasswordLabel, new GridBagConstraints(
@@ -1330,8 +1309,6 @@ public class WebLogicPanel extends DestinationPanel {
             "password.label.text"; // NOI18N
     public static final String REPEAT_PASSWORD_LABEL_TEXT_PROPERTY =
             "repeat.password.label.text"; // NOI18N  
-    public static final String DEFAULTS_LABEL_TEXT_PROPERTY =
-            "defaults.label.text"; // NOI18N        
     public static final String DOMAIN_DESTINATION_LABEL_TEXT_PROPERTY
             = "domain.destination.label.text"; // NOI18N
     
