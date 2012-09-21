@@ -260,6 +260,9 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         public void actionPerformed(ActionEvent e) {
             if (invokerTimerRunning) {
                 cleanupInterrupter();
+                if( null != instance ) {
+                    instance.hideCurrentPopup();
+                }
                 instance = new KeyboardPopupSwitcher( hits, forward );
                 instance.showPopup();
             }
@@ -360,10 +363,10 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         } else if (keyCode == triggerKey
                 && kev.getModifiers() == InputEvent.CTRL_MASK
                 && kev.getID() == KeyEvent.KEY_PRESSED) {
-            // count number of trigger key hits before popup is shown
-            hits++;
             kev.consume();
             cleanupInterrupter();
+            if( null != instance )
+                instance.hideCurrentPopup();
             instance = new KeyboardPopupSwitcher(hits + 1, true);
             instance.showPopup();
         }
@@ -430,6 +433,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             // processing against the popup contents to run before the popup is
             // hidden
             SwingUtilities.invokeLater(new PopupHider(popup));
+            popup = null;
         }
     }
 
@@ -461,7 +465,9 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         
         @Override
         public void run() {
+            toHide.setAlwaysOnTop( false );
             toHide.setVisible(false);
+            toHide.dispose();
             shown = false;
             hits = 0;
             // part of #82743 fix

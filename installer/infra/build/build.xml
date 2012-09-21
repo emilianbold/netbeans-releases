@@ -1974,7 +1974,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-weblogic-bundles" depends="init-weblogic-bundles" if="do.build.weblogic">
 	<antcall target="generate-weblogic-bundle-single">
-	    <param name="weblogic.bundle.files.prefix"     value="weblogic_1212"/>	   
+	    <param name="weblogic.bundle.files.prefix"     value="weblogic_12c"/>	   
     	    <!--param name="license.resource"            value="$S{nbi.overall.license.weblogic.resource}"/-->
 	</antcall>
     </target>
