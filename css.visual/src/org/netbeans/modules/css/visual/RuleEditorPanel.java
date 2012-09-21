@@ -43,6 +43,8 @@ package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.FeatureDescriptor;
@@ -236,6 +238,14 @@ public class RuleEditorPanel extends JPanel {
         }
     };
 
+    private final ActionListener addPropertyCBActionListener = new ActionListener() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            addPropertyCBValueEntered();
+        }
+    };
+    
     public RuleEditorPanel() {
         this(false);
     }
@@ -321,11 +331,19 @@ public class RuleEditorPanel extends JPanel {
             @Override
             public void focusGained(FocusEvent e) {
                 ADD_PROPERTY_CB_MODEL.removeInitialText();
+                
+                //add the ActionListener after the model change (removed initial text) 
+                //as it fires an action event
+                addPropertyCB.addActionListener(addPropertyCBActionListener);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 ADD_PROPERTY_CB_MODEL.addInitialText();
+                
+                //add the ActionListener after the model change (added initial text) 
+                //as it fires an action event
+                addPropertyCB.removeActionListener(addPropertyCBActionListener);
             }
         });
 
@@ -774,11 +792,6 @@ public class RuleEditorPanel extends JPanel {
         addPropertyCB.setEditable(true);
         addPropertyCB.setEnabled(false);
         addPropertyCB.setRenderer(new AddPropertyCBRendeder());
-        addPropertyCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addPropertyCBActionPerformed(evt);
-            }
-        });
         southPanel.add(addPropertyCB, java.awt.BorderLayout.CENTER);
 
         add(southPanel, java.awt.BorderLayout.SOUTH);
@@ -792,10 +805,6 @@ public class RuleEditorPanel extends JPanel {
     private void cancelFilterLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cancelFilterLabelMouseClicked
         filterTextField.setText(null);
     }//GEN-LAST:event_cancelFilterLabelMouseClicked
-
-    private void addPropertyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPropertyCBActionPerformed
-        addPropertyCBValueEntered();
-    }//GEN-LAST:event_addPropertyCBActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addPropertyButton;

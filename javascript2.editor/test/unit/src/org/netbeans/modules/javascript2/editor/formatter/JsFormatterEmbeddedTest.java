@@ -47,7 +47,6 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 import org.netbeans.modules.html.editor.api.HtmlKit;
@@ -115,6 +114,10 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
 
     public void testEmbeddedSimple4() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedSimple4.html", new IndentPrefs(4,4));
+    }
+
+    public void testEmbeddedSimple5() throws Exception {
+        reformatFileContents("testfiles/formatter/embeddedSimple5.html", new IndentPrefs(4,4));
     }
 
     public void testEmbeddedTrimmed1() throws Exception {

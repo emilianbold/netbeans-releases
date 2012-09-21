@@ -137,7 +137,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return true;
     }
 
-    public CsmProject findProject(Object id) {
+    /*package*/ CsmProject findProject(Object id) {
         ProjectBase prj = null;
         if (id != null) {
             synchronized (lock) {
@@ -190,8 +190,14 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                         new IllegalStateException("CsmProject does not exist: " + id).printStackTrace(System.err); // NOI18N
                         name = "<unnamed>"; // NOI18N
                     }
-                    prj = ProjectImpl.createInstance(this, (NativeProject) id, name);
-                    putProject2Map(id, prj);
+                    NativeProject nativeProject = (NativeProject) id;
+                    try {
+                        projectsBeingCreated.add(nativeProject);
+                        prj = ProjectImpl.createInstance(this, nativeProject, name);
+                        putProject2Map(id, prj);
+                    } finally {
+                        projectsBeingCreated.remove(nativeProject);
+                    }
                 }
             }
         }
@@ -212,9 +218,14 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 }
                 prj = obj2Project(id);
                 if (prj == null) {
-                    prj = ProjectImpl.createInstance(this, id, name);
-                    putProject2Map(id, prj);
-                    fireOpened = true;
+                    try {                        
+                        projectsBeingCreated.add(id);
+                        prj = ProjectImpl.createInstance(this, id, name);
+                        putProject2Map(id, prj);
+                        fireOpened = true;
+                    } finally {
+                        projectsBeingCreated.remove(id);
+                    }
                 } else {
                     String expectedUniqueName = ProjectBase.getUniqueName(id).toString();
                     String defactoUniqueName = prj.getUniqueName().toString();
@@ -727,9 +738,25 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return null;
     }
 
-    public boolean isProjectEnabled(NativeProject nativeProject) {
-        ProjectBase project = (ProjectBase) findProject(nativeProject);
+    /**
+     * @return 
+     * Boolean.TRUE if the project is enabled
+     * Boolean.FALSE if the project is disabled
+     * null if the project is being created
+     */
+    public Boolean isProjectEnabled(NativeProject nativeProject) {
+        if (projectsBeingCreated.contains(nativeProject)) {
+            return null;
+        }
+        ProjectBase project = getProjectFast(nativeProject); // no sync here: just get what we have
         return (project != null) && (!project.isDisposing());
+    }
+    
+    /**
+     * Gets project without synchronization
+     */
+    public ProjectBase getProjectFast(NativeProject nativeProject) {
+        return obj2Project(nativeProject);
     }
 
     public boolean isProjectDisabled(NativeProject id) {
@@ -822,12 +849,13 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private CsmModelState state;
     private double warningThreshold = 0.98;
     //private double fatalThreshold = 0.99;
-    private final Set<Object> disabledProjects = new HashSet<Object>();
+    private final Set<Object> disabledProjects = Collections.synchronizedSet(new HashSet<Object>());
+    private final Set<NativeProject> projectsBeingCreated = Collections.synchronizedSet(new HashSet<NativeProject>());
     private final RequestProcessor modelProcessor = new RequestProcessor("Code model request processor", 1); // NOI18N
     private final Set<Runnable> modelProcessorTasks = new HashSet<Runnable>();
     private final RequestProcessor userTasksProcessor = new RequestProcessor("User model tasks processor", 4); // NOI18N
     private final Set<Runnable> userProcessorTasks = new HashSet<Runnable>();
-    
+        
     /////////// 
     // tracing
     public void dumpInfo(PrintWriter printOut, boolean withContainers) {

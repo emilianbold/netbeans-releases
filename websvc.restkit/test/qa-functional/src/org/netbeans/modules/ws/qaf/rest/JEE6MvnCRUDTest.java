@@ -43,7 +43,6 @@ package org.netbeans.modules.ws.qaf.rest;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests for New REST web services from Entity Classes wizard
@@ -70,12 +69,11 @@ public class JEE6MvnCRUDTest extends MvnCRUDTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6MvnCRUDTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, JEE6MvnCRUDTest.class,
                 "testRfE", //NOI18N
                 "testPropAccess", //NOI18N
                 "testRun", //NOI18N
                 "testCreateRestClient", //NOI18N
-                "testUndeploy" //NOI18N
-                ).enableModules(".*").clusters(".*")); //NOI18N
+                "testUndeploy"); //NOI18N
     }
 }

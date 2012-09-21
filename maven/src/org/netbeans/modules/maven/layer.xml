@@ -212,7 +212,7 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="OptionsExport">
-        <folder name="Advanced">
+        <folder name="Java">
             <file name="Maven">
                 <attr name="include" stringvalue="config/(Preferences/org/netbeans/modules/maven([.]properties|/(?!externalOwners[.]properties).*)|Projects/org-netbeans-modules-maven/nbactions[.]xml)"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.maven.Bundle#options-export-displayName"/>

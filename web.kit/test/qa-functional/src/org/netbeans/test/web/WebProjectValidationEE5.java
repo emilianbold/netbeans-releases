@@ -40,7 +40,6 @@
 package org.netbeans.test.web;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  */
@@ -62,10 +61,7 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidationEE5.class);
-        conf = addServerTests(Server.GLASSFISH, conf, TESTS);
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.GLASSFISH, WebProjectValidationEE5.class, TESTS);
     }
 
     @Override

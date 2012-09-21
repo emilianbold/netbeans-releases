@@ -47,5 +47,5 @@ FIELD      LOG2E: Number                   [PUBLIC]   stub_CORE_Math.js
 FIELD      PI: Number                      [PUBLIC]   stub_CORE_Math.js
 FIELD      SQRT1_2: Number                 [PUBLIC]   stub_CORE_Math.js
 FIELD      SQRT2: Number                   [PUBLIC]   stub_CORE_Math.js
-FIELD      constructor                     [PUBLIC]   stub_CORE_Object.js
+FIELD      constructor: Function           [PUBLIC]   stub_CORE_Object.js
 FIELD      prototype                       [PUBLIC]   stub_CORE_Math.js

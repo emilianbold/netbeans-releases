@@ -96,6 +96,8 @@ public class JQueryCodeCompletion {
                     addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
                 break;
+            default:
+                break;
         }
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting jQuery CC took {0}ms ", (end - start));
@@ -356,7 +358,7 @@ public class JQueryCodeCompletion {
                         break;
                     case CLASS:
                         Collection<String> classes = getCSSClasses(context.prefix, parserResult);
-                        anchorOffset = docOffset + prefix.length() - context.prefix.length();
+                        anchorOffset = docOffset + anchorOffsetDelta;
                         for (String cl : classes) {
                             result.add(JQueryCompletionItem.createCSSItem("." + cl, anchorOffset, wrapup));
                         }

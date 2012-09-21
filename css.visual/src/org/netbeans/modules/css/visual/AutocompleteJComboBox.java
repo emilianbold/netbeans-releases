@@ -47,10 +47,10 @@
 
 package org.netbeans.modules.css.visual;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.LookAndFeel;
-import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
@@ -58,18 +58,9 @@ import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 
 public class AutocompleteJComboBox extends JComboBox {
 
+    private static final Logger LOGGER = Logger.getLogger(AutocompleteJComboBox.class.getSimpleName());
+    
     private boolean popupCancelled;
-    private static boolean isMacAquaLF;
-    static {
-        String osName = System.getProperty("os.name").toLowerCase(); //NOI18N
-        if (osName.indexOf("mac") == -1) { //NOI18N
-            isMacAquaLF = false;
-        } else {
-            LookAndFeel lf = UIManager.getLookAndFeel();
-            String id = lf.getID();
-            isMacAquaLF = "Aqua".equals(id); //NOI18N
-        }
-    }
 
     public AutocompleteJComboBox(ComboBoxModel model, ObjectToStringConverter objectToStringConverter) {
         super(model);
@@ -79,44 +70,41 @@ public class AutocompleteJComboBox extends JComboBox {
     private void initialize(ObjectToStringConverter converter) {
         AutoCompleteDecorator.decorate(this, converter);
 
-        //On Mac, the decorated JComboBox doesn't not fire
+        //At least on Mac and Windows XP L&F, the decorated JComboBox doesn't not fire
         //ActionEvent when the value is confirmed.
-        if (isMacAquaLF) {
-            addPopupMenuListener(new PopupMenuListener() {
-                @Override
-                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                    popupCancelled = false;
-                }
+        addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                popupCancelled = false;
+            }
 
-                @Override
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                    if (!popupCancelled) {
-                        doFireActionEvent();
-                    }
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                if (!popupCancelled) {
+                    superFireActionEvent();
                 }
+            }
 
-                @Override
-                public void popupMenuCanceled(PopupMenuEvent e) {
-                    popupCancelled = false;
-                }
-            });
-        }
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                popupCancelled = false;
+            }
+        });
 
     }
 
     @Override
     protected void fireActionEvent() {
+        LOGGER.log(Level.FINE, "fireActionEvent()", new Exception());
+        LOGGER.log(Level.FINE, "popup opened: {0}", isPopupVisible());
+            
         //On the contrary to the ActionEvent not being fired upon entering the value,
         //each keystroke causes an ActionEvent to be fired!!!
-        //So on Mac, filter out such action events
-        if (isMacAquaLF) {
-            //ignore
-        } else {
-            super.fireActionEvent();
-        }
+        //So filter out such action events and fire the action event only when the popup is closed
+        //and it has not been cancelled.
     }
 
-    private void doFireActionEvent() {
+    private void superFireActionEvent() {
         //really fire the action event once the edited value is confirmed
         super.fireActionEvent();
     }

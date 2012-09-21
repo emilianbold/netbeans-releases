@@ -209,6 +209,7 @@ public class AddMavenCompilerPlugin implements ModelOperation<POMModel> {
         newPlugin.addExecution(compileExecution);
 
         PluginExecution testCompileExecution = factory.createExecution();
+        testCompileExecution.addGoal("compile");                            // NOI18N
         testCompileExecution.addGoal("testCompile");                        // NOI18N
         testCompileExecution.setId("testCompileId");                        // NOI18N
         testCompileExecution.setConfiguration(createConfiguration());

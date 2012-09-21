@@ -202,7 +202,7 @@ public class StartTask extends BasicTask<OperationState> {
                     // if the http command is successful, we are not done yet...
                     // The server still has to stop. If we signal success to the 'stateListener'
                     // for the task, it may be premature.
-
+                    @SuppressWarnings("SleepWhileInLoop")
                     @Override
                     public void operationStateChanged(OperationState newState, String message) {
                         if (newState == OperationState.RUNNING) {
@@ -281,6 +281,7 @@ public class StartTask extends BasicTask<OperationState> {
 
     }
 
+    @SuppressWarnings("SleepWhileInLoop")
     private OperationState startDASAndClusterOrInstance(String adminHost, int adminPort) {
         long start = System.currentTimeMillis();
         Process serverProcess;
@@ -363,11 +364,9 @@ public class StartTask extends BasicTask<OperationState> {
 
             if (httpLive) {
                 Logger.getLogger("glassfish").log(Level.FINE, "Server HTTP is live."); // NOI18N
-                OperationState state = OperationState.COMPLETED;
-                String messageKey = "MSG_SERVER_STARTED"; // NOI18N
                 if (!support.isReady(true, 3, TimeUnit.HOURS)) {
-                    state = OperationState.FAILED;
-                    messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
+                    OperationState  state = OperationState.FAILED;
+                    String messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
                     serverProcess.destroy();
                     logger.stopReaders();
                     return fireOperationStateChanged(state, messageKey, instanceName);
@@ -550,9 +549,8 @@ public class StartTask extends BasicTask<OperationState> {
         if ("true".equals(instance.getProperty(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
             debugTransport = "dt_shmem";  // NOI18N
         } else {
-            int t = 0;
             if (null != debugPortString && debugPortString.trim().length() > 0) {
-                t = Integer.parseInt(debugPortString);
+                int t = Integer.parseInt(debugPortString);
                 if (t < LOWEST_USER_PORT || t > 65535) {
                     throw new NumberFormatException();
                 }
@@ -603,8 +601,7 @@ public class StartTask extends BasicTask<OperationState> {
                 getMode(instance.getProperty(GlassfishModule.JVM_MODE)))) {
             for (String arg : args.getArguments()) {
                 String[] argSplitted = arg.trim().split("\\s+(?=-)");
-                for (String singleArg : argSplitted)
-                    optList.add(singleArg);
+                optList.addAll(Arrays.asList(argSplitted));
             }
         }
     }

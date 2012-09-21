@@ -60,6 +60,7 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -294,10 +295,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
             if (jsLibs != null) {
                 // move all downloaded libraries
-                for (FileObject child : jsLibs.getChildren()) {
-                    FileUtil.moveFile(child, siteRootDir, child.getName());
-                }
-                jsLibs.delete();
+                FileUtilities.moveContent(jsLibs, siteRootDir);
             }
 
             // index file (#216293)
@@ -319,7 +317,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public void uninitialize(WizardDescriptor wizardDescriptor) {
             // cleanup js libs
             FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
-            if (jsLibs != null) {
+            if (jsLibs != null && jsLibs.isValid()) {
                 try {
                     jsLibs.delete();
                 } catch (IOException ex) {

@@ -56,7 +56,7 @@ public class Utils {
     public static final int POSSIBLE_SCROLL_BAR_WIDTH = 30;
 
     public static String loadPreviewText(InputStream is) throws IOException {
-            BufferedReader r = new BufferedReader(new InputStreamReader(is));
+            BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
             try {
                 StringBuilder sb = new StringBuilder();
                 for (String line = r.readLine(); line != null; line = r.readLine()) {

@@ -68,9 +68,11 @@ import javax.lang.model.util.AbstractTypeVisitor7;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
 
 /**
@@ -157,6 +159,7 @@ public final class BeanModelBuilder {
     FxBean process() {
         classElement = compilationInfo.getElements().getTypeElement(className);
         TypeElement builderEl = compilationInfo.getElements().getTypeElement("javafx.util.Builder"); // NOI18N
+        TypeElement mapEl = compilationInfo.getElements().getTypeElement("java.util.Map"); // NOI18N
         
         if (classElement == null) {
             return resultInfo = null;
@@ -195,6 +198,13 @@ public final class BeanModelBuilder {
         resultInfo.setFxInstance(fxInstance);
         resultInfo.setValueOf(valueOf);
 
+        if (mapEl != null) {
+            Types t = compilationInfo.getTypes();
+            if (t.isAssignable(
+                    t.erasure(classElement.asType()), t.erasure(mapEl.asType()))) {
+                resultInfo.makeMap();
+            }
+        }
         inspectMembers();
         
         // try to find default property
@@ -211,6 +221,9 @@ public final class BeanModelBuilder {
         merge.setValueOf(resultInfo.hasValueOf());
         merge.setFxInstance(resultInfo.isFxInstance());
         merge.setDeclaredInfo(resultInfo);
+        if (resultInfo.isMap()) {
+            merge.makeMap();
+        }
         
         resultInfo = merge;
 
@@ -232,23 +245,21 @@ public final class BeanModelBuilder {
     }
     
     private void findBuilder() {
-        if (classElement.getNestingKind() != NestingKind.TOP_LEVEL) {
+        if (classElement.getNestingKind() != NestingKind.TOP_LEVEL || builder) {
             return;
         }
-        StringBuilder sb = new StringBuilder(((PackageElement)classElement.getEnclosingElement()).getQualifiedName().toString());
-        if (sb.length() > 0) {
-            sb.append(".");
+        Collection<? extends BuilderResolver> resolvers = MimeLookup.getLookup(JavaFXEditorUtils.FXML_MIME_TYPE).lookupAll(BuilderResolver.class);
+        for (BuilderResolver r : resolvers) {
+            String builderName = r.findBuilderClass(compilationInfo, null, className);
+            if (builderName != null) {
+                FxBean builderBean = provider.getBeanInfo(builderName);
+                if (builderBean != null) {
+                    resultInfo.setBuilder(builderBean);
+                    builderBean.makeBuilder(resultInfo);
+                    return;
+                }
+            }
         }
-        sb.append(classElement.getSimpleName().toString()).append("Builder");
-        
-        String s = sb.toString();
-        
-        FxBean builderBean = provider.getBeanInfo(s);
-        if (builderBean == null) {
-            return;
-        }
-        resultInfo.setBuilder(builderBean);
-        builderBean.makeBuilder(resultInfo);
     }
     
     public FxBean getBeanInfo() {

@@ -69,6 +69,7 @@ import java.util.Collections;
 import javax.xml.namespace.QName;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.model.Resource;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -241,10 +242,24 @@ public class MavenNbModuleImpl implements NbModuleProvider {
 
     @Override
     public String getResourceDirectoryPath(boolean isTest) {
+        NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
+        List<Resource> res;
+        String defaultValue;
+        
         if (isTest) {
-            return "src/test/resources"; //NOI18N
+            res = watch.getMavenProject().getTestResources();           
+            defaultValue = "src/test/resources"; //NOI18N
+        } else {
+            res = watch.getMavenProject().getResources();
+            defaultValue = "src/main/resources"; //NOI18N
         }
-        return "src/main/resources"; //NOI18N
+        for (Resource resource : res) {
+            FileObject fo = FileUtilities.convertStringToFileObject(resource.getDirectory());
+            if (FileUtil.isParentOf(project.getProjectDirectory(), fo)) {
+                return FileUtil.getRelativePath(project.getProjectDirectory(), fo);
+            }
+        }
+        return defaultValue;
     }
 
     @Override

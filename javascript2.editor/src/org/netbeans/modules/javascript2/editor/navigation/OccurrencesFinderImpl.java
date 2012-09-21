@@ -98,6 +98,9 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
         if (occurrence != null) {
             range2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
             for (JsObject object : occurrence.getDeclarations()) {
+                if(object.getDeclarationName() == null) {
+                    continue;
+                }
                 range2Attribs.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.MARK_OCCURRENCES);
                 for (Occurrence oc : object.getOccurrences()) {
                     range2Attribs.put(oc.getOffsetRange(), ColoringAttributes.MARK_OCCURRENCES);

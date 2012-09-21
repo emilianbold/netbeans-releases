@@ -49,6 +49,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
@@ -58,6 +59,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -107,8 +109,13 @@ public class JsCompletionItem implements CompletionProposal {
 
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
+        String url = getFileNameURL();
+        if (url == null) {
+            return null;
+        }
+
         formatter.reset();
-        formatter.appendText(getFileNameURL());
+        formatter.appendText(url);
         return formatter.getText();
     }
 
@@ -144,21 +151,25 @@ public class JsCompletionItem implements CompletionProposal {
     public String getCustomInsertTemplate() {
         return null;
     }
-    
-    public String getFileNameURL() {
-        ElementHandle elem = getElement(); 
-        return elem.getFileObject() != null 
-                ? elem.getFileObject().getNameExt()
-                : getName();
+
+    @CheckForNull
+    public final String getFileNameURL() {
+        ElementHandle elem = getElement();
+        if (elem == null) {
+            return null;
+        }
+        FileObject fo = elem.getFileObject();
+        if (fo != null) {
+            return fo.getNameExt();
+        }
+        return getName();
      }
     
     public static class CompletionRequest {
-        public  int anchor;
-        public  JsParserResult result;
-        public  ParserResult info;
-        public  String prefix;
-        public  String currentlyEditedFileURL;
-        public CompletionContext context;
+        public int anchor;
+        public JsParserResult result;
+        public ParserResult info;
+        public String prefix;
     }
     
     public static class JsFunctionCompletionItem extends JsCompletionItem {
@@ -354,11 +365,12 @@ public class JsCompletionItem implements CompletionProposal {
         public String getLhsHtml(HtmlFormatter formatter) {
             formatter.appendText(getName());
             Collection<? extends TypeUsage> assignment = null;
-            if (getElement() instanceof JsObject) {
-                JsObject jsObject = (JsObject) getElement();
+            ElementHandle element = getElement();
+            if (element instanceof JsObject) {
+                JsObject jsObject = (JsObject) element;
                 assignment = jsObject.getAssignmentForOffset(request.anchor);
-            } else if (getElement() instanceof IndexedElement) {
-                IndexedElement iElement = (IndexedElement)getElement();
+            } else if (element instanceof IndexedElement) {
+                IndexedElement iElement = (IndexedElement) element;
                 assignment = iElement.getAssignments();
             }
             if (assignment != null) {

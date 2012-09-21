@@ -328,7 +328,7 @@
 	<set property="tomcat.version"      value="7.0.27"/>
 	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
         
-        <set property="weblogic.version"      value="12.1.1"/>
+        <set property="weblogic.version"      value="12.1.2"/>
 	<set property="weblogic.full.version" value="${weblogic.version}.0.0"/>
 
         <set property="glassfish.ml.appendix" value="-ml"/>
@@ -1974,7 +1974,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-weblogic-bundles" depends="init-weblogic-bundles" if="do.build.weblogic">
 	<antcall target="generate-weblogic-bundle-single">
-	    <param name="weblogic.bundle.files.prefix"     value="weblogic_12c"/>	   
+	    <param name="weblogic.bundle.files.prefix"     value="weblogic_1212"/>	   
     	    <!--param name="license.resource"            value="$S{nbi.overall.license.weblogic.resource}"/-->
 	</antcall>
     </target>
@@ -1989,10 +1989,6 @@ jarsigner.storepass=${jarsigner.storepass}
 		<param name="bundle.platform"  value="linux"/>
 		<param name="bundle.extension" value="sh"/>
 	</antcall>
-	<antcall target="generate-weblogic-bundle">
-               <param name="bundle.platform"  value="macosx-x86"/>
-               <param name="bundle.extension" value="zip"/>
-        </antcall>
     </target>
 
     <target name="generate-weblogic-bundle">
@@ -2003,7 +1999,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base"         version="${nb.full.version}"/>
             <component uid="nb-javase"       version="${nb.full.version}"/>            
-            <component uid="nb-wbcommon"     version="${nb.full.version}"/>
+            <component uid="nb-webcommon"     version="${nb.full.version}"/>
             <component uid="nb-javaee"       version="${nb.full.version}"/>            
             <component uid="weblogic"        version="${weblogic.full.version}"/>
             <bundleProperty name="${bundledproduct.name}" value="weblogic"/>
@@ -2012,10 +2008,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <bundleProperty name="nbi.overall.license.resource" value="${license.resource}"/>
 	    -->
         </create-bundle>
-	<antcall target="convert-weblogic-bundle"/>
     </target>
-  
-    <target name="convert-weblogic-bundle" depends="convert-zip-to-dmg"/>
 
 <!--end-->
 

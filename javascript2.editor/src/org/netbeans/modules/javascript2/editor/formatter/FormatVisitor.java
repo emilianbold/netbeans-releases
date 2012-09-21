@@ -577,9 +577,8 @@ public class FormatVisitor extends NodeVisitor {
                     // remove around binary operator tokens added during token
                     // stream creation
                     if (TokenType.ADD.equals(type) || TokenType.SUB.equals(type)) {
-                        assert formatToken != null
-                                && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
-                                    || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText())) : formatToken;
+                        assert formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
+                                    || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText()) : formatToken;
                         // we remove blindly inserted binary op markers
                         FormatToken toRemove = findVirtualToken(formatToken,
                                 FormatToken.Kind.BEFORE_BINARY_OPERATOR, true);
@@ -852,9 +851,7 @@ public class FormatVisitor extends NodeVisitor {
         FormatToken formatToken = getPreviousToken(
                 statement.getStart() < finish ? finish - 1 : finish, null, true);
         if (formatToken != null && !isScript(block)) {
-            if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationDec));
-            }
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationDec));
         }
     }
 
