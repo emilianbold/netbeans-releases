@@ -66,11 +66,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.filesystems</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

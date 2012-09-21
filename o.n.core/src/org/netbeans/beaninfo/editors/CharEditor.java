@@ -46,13 +46,11 @@ package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
-import org.openide.nodes.PropertyEditorRegistration;
 
 /**
  * Editor for Character.TYPE
  * @author  Petr Zajac, David Strupl
  */
-@PropertyEditorRegistration(targetType=Character.class)
 public class CharEditor extends PropertyEditorSupport implements EnhancedPropertyEditor {
 
     /**

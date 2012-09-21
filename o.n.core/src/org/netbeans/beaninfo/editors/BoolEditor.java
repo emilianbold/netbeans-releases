@@ -50,7 +50,6 @@
 package org.netbeans.beaninfo.editors;
 import java.beans.*;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
-import org.openide.nodes.PropertyEditorRegistration;
 import org.openide.util.NbBundle;
 /** Replacement editor for boolean primitive values which supports
  *  internationalization and alternate string values that
@@ -64,7 +63,6 @@ import org.openide.util.NbBundle;
  *
  * @author  Tim Boudreau
  */
-@PropertyEditorRegistration(targetType=Boolean.class)
 public class BoolEditor extends ExPropertyEditorSupport {
     String[] stringValues = null;
     /** Creates a new instance of BoolEditor */

@@ -52,7 +52,6 @@ import java.util.Arrays;
 import org.netbeans.beaninfo.editors.ExPropertyEditorSupport.EnvException;
 import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.*;
-import org.openide.nodes.PropertyEditorRegistration;
 import org.openide.util.NbBundle;
 /** An editor for primitive integer types which allows hinting of tag
  *  values and handles whitespace in setAsText better than the default
@@ -69,7 +68,6 @@ import org.openide.util.NbBundle;
  * @author  Tim Boudreau
  * @version 1.0
  */
-@PropertyEditorRegistration(targetType=Integer.class)
 public class IntEditor extends ExPropertyEditorSupport {
     
     public static final String KEYS = "stringKeys"; //NOI18N

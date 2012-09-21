@@ -49,24 +49,6 @@ made subject to such option by the copyright holder.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
-    <change id="PropertyEditorRegistration">
-        <api name="nodes"/>
-        <summary>Adding <code>@PropertyEditorRegistration</code> and <code>@PropertyEditorSearchPath</code> annotations</summary>
-        <version major="7" minor="30"/>
-        <date year="2012" month="9" day="12"/>
-        <author login="jhorvath"/>
-        <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" deletion="no"/>
-        <description>
-            <p>
-                Adding <code>@PropertyEditorRegistration</code> and <code>@PropertyEditorSearchPath</code> annotations
-                to allow convenient way of registering property editors.
-            </p>
-        </description>
-        <class package="org.openide.nodes" name="NodeOp"/>
-        <class package="org.openide.nodes" name="PropertyEditorRegistration"/>
-        <class package="org.openide.nodes" name="PropertyEditorSearchPath"/>
-        <issue number="218300"/>
-    </change>
     <change id="ChildFactory.incremental">
         <api name="nodes"/>
         <summary><code>ChildFactory.createKeys</code> better supports incremental display</summary>

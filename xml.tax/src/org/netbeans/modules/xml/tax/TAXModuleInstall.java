@@ -45,41 +45,67 @@ package org.netbeans.modules.xml.tax;
 
 import java.beans.*;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import org.openide.modules.OnStart;
-import org.openide.modules.OnStop;
+import java.util.LinkedList;
+
+import org.openide.modules.ModuleInstall;
 
 /**
  * Module installation class for tax module.
  *
  * @author Libor Kramolis
  */
-@OnStart
-public class TAXModuleInstall implements Runnable {
+public class TAXModuleInstall extends ModuleInstall {
 
     private static final String BEANINFO_PATH = "org.netbeans.modules.xml.tax.beans.beaninfo"; // NOI18N
+    private static final String EDITOR_PATH   = "org.netbeans.modules.xml.tax.beans.editor";
 
-    @Override
-    public void run () {
+
+    /**
+     */
+    public void restored () {
+        installBeans();
+    }
+
+    /**
+     */
+    public void uninstalled () {
+        uninstallBeans();
+    }
+
+
+    //
+    // beans
+    //
+
+    /**
+     */
+    private void installBeans () {
         String[] sp = Introspector.getBeanInfoSearchPath();
         String[] newSP = new String[sp.length + 1];
         System.arraycopy(sp, 0, newSP, 0, sp.length);
         newSP[newSP.length - 1] = BEANINFO_PATH;
         Introspector.setBeanInfoSearchPath(newSP);
+
+        sp = PropertyEditorManager.getEditorSearchPath();
+        newSP = new String[sp.length + 1];
+        System.arraycopy(sp, 0, newSP, 0, sp.length);
+        newSP[newSP.length - 1] = EDITOR_PATH;
+        PropertyEditorManager.setEditorSearchPath(newSP);
     }
 
-    @OnStop
-    public static final class Down implements Runnable{
-        
-        @Override
-        public void run () {
-            List searchPath;
+    /**
+     */
+    private void uninstallBeans () {
+	List searchPath;
 
-            searchPath = new LinkedList (Arrays.asList (Introspector.getBeanInfoSearchPath()));
-            searchPath.remove (BEANINFO_PATH);
-            Introspector.setBeanInfoSearchPath ((String[])searchPath.toArray (new String[0]));
-        }
+	searchPath = new LinkedList (Arrays.asList (Introspector.getBeanInfoSearchPath()));
+	searchPath.remove (BEANINFO_PATH);
+        Introspector.setBeanInfoSearchPath ((String[])searchPath.toArray (new String[0]));
+
+	searchPath = new LinkedList (Arrays.asList (PropertyEditorManager.getEditorSearchPath()));
+	searchPath.remove (EDITOR_PATH);
+        PropertyEditorManager.setEditorSearchPath  ((String[])searchPath.toArray (new String[0]));
     }
-    
+
 }
