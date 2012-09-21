@@ -15,6 +15,7 @@ FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=14, text=
 }
 FormattingToken{kind=WHITESPACE, offset=15, text=     }
+FormattingToken{kind=BEFORE_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=20, text=pocetValcu}
 FormattingToken{kind=WHITESPACE, offset=30, text= }
 FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
@@ -29,6 +30,7 @@ FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=35, text=
 }
 FormattingToken{kind=WHITESPACE, offset=36, text=    }
+FormattingToken{kind=BEFORE_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=40, text=vykon}
 FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=45, text=:}
@@ -44,6 +46,7 @@ FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=58, text=
 }
 FormattingToken{kind=WHITESPACE, offset=59, text=    }
+FormattingToken{kind=BEFORE_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=63, text=getDescription}
 FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=77, text=:}
@@ -123,6 +126,7 @@ FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=182, text=
 }
 FormattingToken{kind=WHITESPACE, offset=183, text=    }
+FormattingToken{kind=BEFORE_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=187, text=get}
 FormattingToken{kind=WHITESPACE, offset=190, text= }
 FormattingToken{kind=TEXT, offset=191, text=parameter}

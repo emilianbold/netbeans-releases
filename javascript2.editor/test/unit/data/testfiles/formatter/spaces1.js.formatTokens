@@ -15,6 +15,7 @@ FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=14, text=
 }
 FormattingToken{kind=WHITESPACE, offset=15, text=    }
+FormattingToken{kind=BEFORE_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=19, text=cylinders}
 FormattingToken{kind=WHITESPACE, offset=28, text= }
 FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
@@ -29,6 +30,7 @@ FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=33, text=
 }
 FormattingToken{kind=WHITESPACE, offset=34, text=    }
+FormattingToken{kind=BEFORE_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=38, text=power}
 FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=43, text=:}
@@ -44,6 +46,7 @@ FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=51, text=
 }
 FormattingToken{kind=WHITESPACE, offset=52, text=    }
+FormattingToken{kind=BEFORE_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=56, text=getDescription}
 FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=70, text=:}
@@ -180,7 +183,6 @@ FormattingToken{kind=WHITESPACE, offset=304, text=    }
 FormattingToken{kind=TEXT, offset=308, text=}}
 FormattingToken{kind=EOL, offset=309, text=
 }
-FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=310, text=}}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}

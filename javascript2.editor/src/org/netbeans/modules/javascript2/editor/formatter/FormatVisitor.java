@@ -481,14 +481,28 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
 
+        int objectFinish = getFinish(objectNode);
         for (Node property : objectNode.getElements()) {
+            int start = getStart(property);
             int finish = getFinish(property);
 
             property.accept(this);
 
-            formatToken = getPreviousToken(finish, null);
+            // mark property start
+            formatToken = getNextToken(start, null);
             if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY));
+                formatToken = formatToken.previous();
+                if (formatToken != null) {
+                    appendTokenAfterLastVirtual(formatToken,
+                            FormatToken.forFormat(FormatToken.Kind.BEFORE_PROPERTY));
+                }
+            }
+
+            // mark property end
+            formatToken = getNextToken(finish, JsTokenId.OPERATOR_COMMA, objectFinish);
+            if (formatToken != null) {
+                appendTokenAfterLastVirtual(formatToken,
+                        FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY));
             }
         }
 
