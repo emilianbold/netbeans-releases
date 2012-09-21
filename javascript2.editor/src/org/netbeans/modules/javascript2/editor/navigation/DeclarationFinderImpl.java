@@ -41,12 +41,19 @@
  */
 package org.netbeans.modules.javascript2.editor.navigation;
 
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryDeclarationFinder;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
@@ -54,13 +61,20 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
+import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class DeclarationFinderImpl implements DeclarationFinder{
+public class DeclarationFinderImpl implements DeclarationFinder {
 
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
@@ -69,16 +83,78 @@ public class DeclarationFinderImpl implements DeclarationFinder{
         OccurrencesSupport os = model.getOccurrencesSupport();
         Occurrence occurrence = os.getOccurrence(caretOffset);
         if (occurrence != null) {
+
             JsObject object = occurrence.getDeclarations().iterator().next();
-            return new DeclarationLocation(object.getFileObject(), object.getDeclarationName().getOffsetRange().getStart());
+            JsObject parent = object.getParent();
+            Collection<? extends TypeUsage> assignments = (parent == null) ? null : parent.getAssignmentForOffset(caretOffset);
+            Snapshot snapshot = jsResult.getSnapshot();
+            JsIndex jsIndex = JsIndex.get(snapshot.getSource().getFileObject());
+            List<IndexResult> indexResults = new ArrayList<IndexResult>();
+            if (assignments == null || assignments.isEmpty()) {
+                if (object.isDeclared()) {
+                    FileObject fo = object.getFileObject();
+                    if (fo != null) {
+                        return new DeclarationLocation(fo, object.getDeclarationName().getOffsetRange().getStart());
+                    }
+                } else {
+                    Collection<? extends IndexResult> items = jsIndex.query(
+                            JsIndex.FIELD_FQ_NAME, ModelUtils.createFQN(object), QuerySupport.Kind.EXACT,
+                            JsIndex.TERMS_BASIC_INFO);
+                    indexResults.addAll(items);
+                    DeclarationLocation location = processIndexResult(indexResults);
+                    if (location != null) {
+                        return location;
+                    }
+                } 
+            } else {  
+                TokenSequence ts = LexUtilities.getJsTokenSequence(snapshot, caretOffset);
+                if (ts != null) {
+                    ts.move(snapshot.getEmbeddedOffset(caretOffset));
+                    if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
+                        String propertyName = ts.token().text().toString();
+                        for (Type type : assignments) {
+                            Collection<? extends IndexResult> items = jsIndex.query(
+                                    JsIndex.FIELD_FQ_NAME, type.getType() + "." + propertyName, QuerySupport.Kind.EXACT,  //NOI18N
+                                    JsIndex.TERMS_BASIC_INFO);
+                            if(items.isEmpty()) {
+                                items = jsIndex.query(
+                                    JsIndex.FIELD_FQ_NAME, type.getType() + ".prototype." + propertyName, QuerySupport.Kind.EXACT,  //NOI18N
+                                    JsIndex.TERMS_BASIC_INFO);
+                            }
+                            indexResults.addAll(items);
+                        }
+                        DeclarationLocation location = processIndexResult(indexResults);
+                        if (location != null) {
+                            return location;
+                        }
+                    }
+                }
+            }
         }
         JQueryDeclarationFinder jQueryFinder = new JQueryDeclarationFinder();
         return jQueryFinder.findDeclaration(info, caretOffset);
     }
 
+    private DeclarationLocation processIndexResult(List<IndexResult> indexResults) {
+        if (!indexResults.isEmpty()) {
+            IndexResult iResult = indexResults.get(0);
+            String value = iResult.getValue(JsIndex.FIELD_OFFSET);
+            int offset = Integer.parseInt(value);
+            DeclarationLocation location = new DeclarationLocation(iResult.getFile(), offset);
+            if (indexResults.size() > 1) {
+                for (int i = 0; i < indexResults.size(); i++) {
+                    iResult = indexResults.get(i);
+                    location.addAlternative(new AlternativeLocationImpl(iResult));
+                }
+            }
+            return location;
+        }
+        return null;
+    }
+    
     @Override
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
-        OffsetRange result = null;
+        OffsetRange result = OffsetRange.NONE;
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
         if (ts != null) {
             ts.move(caretOffset);
@@ -88,9 +164,55 @@ public class DeclarationFinderImpl implements DeclarationFinder{
         }
         if(result == null) {
             JQueryDeclarationFinder jQueryFinder = new JQueryDeclarationFinder();
-            return jQueryFinder.getReferenceSpan(doc, caretOffset);
+            result =  jQueryFinder.getReferenceSpan(doc, caretOffset);
         }
-        return OffsetRange.NONE;
+        return result;
+    }
+
+    // Note: this class has a natural ordering that is inconsistent with equals.
+    // We have to implement AlternativeLocation
+    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_COMPARETO_USE_OBJECT_EQUALS")
+    public static class AlternativeLocationImpl implements AlternativeLocation {
+
+        private final IndexResult iResult;
+        private final int offset;
+        private final DeclarationLocation location;
+        private final IndexedElement element;
+        
+        public AlternativeLocationImpl(IndexResult iResult) {
+            this.iResult = iResult;
+            String value = iResult.getValue(JsIndex.FIELD_OFFSET);
+            this.offset = Integer.parseInt(value);
+            this.location = new DeclarationLocation(iResult.getFile(), offset);
+            this.element = IndexedElement.create(iResult);
+        }
+        
+        @Override
+        public ElementHandle getElement() {
+            return element;
+        }
+
+        private  String getStringLocation() {
+            return iResult.getRelativePath() + " : " + offset; //NOI18N
+        }
+        
+        @Override
+        public String getDisplayHtml(HtmlFormatter formatter) {
+            formatter.appendText(getStringLocation());
+            return formatter.getText();
+        }
+
+        @Override
+        public DeclarationLocation getLocation() {
+            return location;
+        }
+
+        @Override
+        public int compareTo(AlternativeLocation o) {
+            AlternativeLocationImpl ali = (AlternativeLocationImpl)o;
+            return getStringLocation().compareTo(ali.getStringLocation());
+        }
+        
     }
     
 }

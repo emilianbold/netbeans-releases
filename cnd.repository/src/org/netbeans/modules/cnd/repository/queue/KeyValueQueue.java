@@ -78,18 +78,12 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     }
 
     protected final Map<K, Entry<K, V>> map = new HashMap<K, Entry<K, V>>();
-    private final EventsDispatcher<K, V> dispatcher;
+    private EventsDispatcher<K, V> dispatcher;
     protected boolean active = true;
 	    
     public KeyValueQueue() {
         super(new BaseQueue.Queue());
-        dispatcher = new EventsDispatcher<K, V>(this);
     }
-    
-    protected final void start() {
-        dispatcher.start();
-    }
-    
     
     public void addLast(K key, V value) {
 	if( needsTrace() ) {
@@ -272,5 +266,14 @@ public class KeyValueQueue<K, V> extends BaseQueue {
 	    lock.notifyAll();
 	}
     }
-    
+
+    public void startup() {
+        active = true;
+        EventsDispatcher d = dispatcher;
+        if (d != null) {
+            d.interrupt();
+        }
+        dispatcher = new EventsDispatcher<K, V>(this);
+        dispatcher.start();
+    }
 }

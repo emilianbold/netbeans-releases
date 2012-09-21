@@ -44,6 +44,8 @@ package org.netbeans.modules.javascript2.editor.classpath;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -52,6 +54,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -62,6 +65,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=ClassPathProvider.class)
 public class ClassPathProviderImpl implements ClassPathProvider {
 
+    private static final Logger LOG = Logger.getLogger(ClassPathProviderImpl.class.getName());
     public static final String BOOT_CP = "classpath/javascript-boot"; //NOI18N
     public static final AtomicBoolean JS_CLASSPATH_REGISTERED = new AtomicBoolean(false);
 
@@ -93,15 +97,17 @@ public class ClassPathProviderImpl implements ClassPathProvider {
             if (allstubs == null) {
                 // Probably inside unit test.
                 try {
-                    File moduleJar = new File(
-                            ClassPathProviderImpl.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                    File moduleJar = Utilities.toFile(ClassPathProviderImpl.class.getProtectionDomain().getCodeSource().getLocation().toURI());
                     allstubs = new File(moduleJar.getParentFile().getParentFile(), "jsstubs/allstubs.zip"); //NOI18N
                 } catch (URISyntaxException x) {
                     assert false : x;
                     return null;
                 }
             }
-            assert allstubs.isFile() : allstubs;
+            if (!allstubs.isFile() || !allstubs.exists()) {
+                LOG.log(Level.WARNING, "JavaScript signature files were not found: {0}", allstubs.getAbsolutePath());
+                return null;
+            }
             jsStubsFileObject = FileUtil.getArchiveRoot(FileUtil.toFileObject(allstubs));
         }
         return jsStubsFileObject;

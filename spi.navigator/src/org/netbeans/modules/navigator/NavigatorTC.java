@@ -274,7 +274,7 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
             contentArea.removeAll();
             panelSelector.removeAllItems();
             // #63777: hide panel selector when only one panel available
-            holderPanel.setVisible(panelsCount != 1);
+            holderPanel.setVisible(panelsCount != 1 || select instanceof NavigatorPanelWithToolbar);
             boolean selectFound = false;
             for (NavigatorPanel curPanel : panels) {
                 panelSelector.addItem(curPanel.getDisplayName());
@@ -424,7 +424,7 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.5;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
         holderPanel.add(pnlToolbar, gridBagConstraints);
 

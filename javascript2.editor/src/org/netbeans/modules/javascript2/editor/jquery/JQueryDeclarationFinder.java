@@ -66,7 +66,6 @@ import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -83,8 +82,9 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
                 RefactoringElementType type = rule.rule.charAt(0) == '#' ? RefactoringElementType.ID : RefactoringElementType.CLASS;
                 Map<FileObject, Collection<EntryHandle>> findAll = CssRefactoring.findAllOccurances(rule.rule.substring(1), type, info.getSnapshot().getSource().getFileObject(), true);
                 DeclarationLocation dl = null;
-                for (FileObject f : findAll.keySet()) {
-                    Collection<EntryHandle> entries = findAll.get(f);
+                for (Map.Entry<FileObject, Collection<EntryHandle>> entry : findAll.entrySet()) {
+                    FileObject f = entry.getKey();
+                    Collection<EntryHandle> entries = entry.getValue();
                     for (EntryHandle entryHandle : entries) {
                         //grrr, the main declarationlocation must be also added to the alternatives
                         //if there are more than one
@@ -104,7 +104,9 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
                     dl.getAlternativeLocations().clear();
                 }
 
-                return dl;
+                if (dl != null) {
+                    return dl;
+                }
             }
             
         }
@@ -184,8 +186,11 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
     
     //useless class just because we need to put something into the AlternativeLocation to be
     //able to get some icon from it
-    private static CssSelectorElementHandle CSS_SELECTOR_ELEMENT_HANDLE_SINGLETON = new CssSelectorElementHandle();
-    
+    private static final CssSelectorElementHandle CSS_SELECTOR_ELEMENT_HANDLE_SINGLETON = new CssSelectorElementHandle();
+
+    // Note: this class has a natural ordering that is inconsistent with equals.
+    // We have to implement AlternativeLocation
+    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_COMPARETO_USE_OBJECT_EQUALS")
     private static class AlternativeLocationImpl implements AlternativeLocation {
 
         private DeclarationLocation location;
@@ -318,8 +323,13 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
         }
 
         private static String getComparableString(AlternativeLocation loc) {
-            return new StringBuilder().append(loc.getLocation().getOffset()) //offset
-                    .append(loc.getLocation().getFileObject().getPath()).toString(); //filename
+            StringBuilder sb = new StringBuilder();
+            sb.append(loc.getLocation().getOffset()); //offset
+            FileObject fo = loc.getLocation().getFileObject();
+            if (fo != null) {
+                sb.append(fo.getPath()); //filename
+            }
+            return sb.toString();
         }
     }
     
@@ -337,7 +347,7 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
 
         @Override
         public String getName() {
-            return null;
+            return ""; // NOI18N
         }
 
         @Override

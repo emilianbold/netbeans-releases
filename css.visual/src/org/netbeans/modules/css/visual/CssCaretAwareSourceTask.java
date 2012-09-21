@@ -161,6 +161,15 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         //find rule corresponding to the offset
         Rule rule = findRuleAtOffset(result.getSnapshot(), model, caretOffset);
         
+        if(rule != null) {
+            //check whether the rule is virtual
+            if(result.getSnapshot().getOriginalOffset(rule.getSelectorsGroup().getStartOffset()) == -1) {
+                //virtual selector created for html source element with class or id attribute
+                LOG.log(Level.FINE, "the found rule is virtual, exiting w/o change of the RuleEditor", caretOffset);
+                return ;
+            }
+        }
+        
         if (!mimeType.equals("text/css")) {
             //if not a css file, 
             //update the rule editor only if there's a rule in an embedded css code

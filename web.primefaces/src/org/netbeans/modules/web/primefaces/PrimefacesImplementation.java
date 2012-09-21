@@ -121,8 +121,9 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
                 Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
                 AntArtifactProvider antArtifactProvider = project.getLookup().lookup(AntArtifactProvider.class);
                 if (antArtifactProvider == null) {
-                    List<URL> mavenContent = primefacesLibrary.getContent("maven-pom"); //NOI18N
-                    if (mavenContent == null || mavenContent.isEmpty()) {
+                    Map<String, String> properties = primefacesLibrary.getProperties();
+                     if (!properties.containsKey("maven-dependencies") //NOI18N
+                             || properties.get("maven-dependencies").trim().isEmpty()) { //NOI18N
                         List<URI> pomURIs = getPomURIs(primefacesLibrary);
                         if (!pomURIs.isEmpty()) {
                             primefacesLibrary = JsfComponentUtils.enhanceLibraryWithPomContent(primefacesLibrary, pomURIs);

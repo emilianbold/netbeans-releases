@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
@@ -56,6 +57,9 @@ import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -85,10 +89,9 @@ public class JsCodeComplationBase extends JsTestBase {
         lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
         lookupAll.add(new IFL());
         MockLookup.setInstances(lookupAll.toArray());
-        OpenProjects.getDefault().getOpenProjects();    
+        OpenProjects.getDefault().getOpenProjects();
     }
-    
-    
+
     public static final class IFL extends InstalledFileLocator {
 
         public IFL() {
@@ -106,11 +109,12 @@ public class JsCodeComplationBase extends JsTestBase {
             return null;
         }
     }
-    
+
     public static enum Match {
+
         EXACT, CONTAINS, EMPTY, NOT_EMPTY, DOES_NOT_CONTAIN;
     }
-    
+
     public void assertComplete(String documentText, String expectedDocumentText, final String itemToComplete) throws ParseException, BadLocationException {
         StringBuilder content = new StringBuilder(documentText);
         StringBuilder expectedContent = new StringBuilder(expectedDocumentText);
@@ -128,7 +132,6 @@ public class JsCodeComplationBase extends JsTestBase {
         Source source = Source.create(doc);
         final AtomicReference<CompletionProposal> found = new AtomicReference<CompletionProposal>();
         ParserManager.parse(Collections.singleton(source), new UserTask() {
-
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result result = resultIterator.getParserResult();
@@ -164,7 +167,6 @@ public class JsCodeComplationBase extends JsTestBase {
 
         //since there's no access to the GsfCompletionItem.defaultAction() I've copied important code below:
         doc.runAtomic(new Runnable() {
-
             @Override
             public void run() {
                 try {
@@ -196,7 +198,7 @@ public class JsCodeComplationBase extends JsTestBase {
                     if (semiPosition != null) {
                         doc.insertString(semiPosition.getOffset(), ";", null);
                     }
-                    
+
                 } catch (BadLocationException e) {
                     // Can't update
                 }
@@ -205,10 +207,9 @@ public class JsCodeComplationBase extends JsTestBase {
 
         assertEquals(expectedContent.toString(), doc.getText(0, doc.getLength()));
         assertEquals(expPipeOffset, resultPipeOffset[0]);
-
     }
-    
-    private void assertCompletionItemNames(String[] expected, CodeCompletionResult ccresult, Match type) {
+
+    protected void assertCompletionItemNames(String[] expected, CodeCompletionResult ccresult, Match type) {
         Collection<String> real = new ArrayList<String>();
         for (CompletionProposal ccp : ccresult.getItems()) {
             real.add(ccp.getName());
@@ -230,7 +231,7 @@ public class JsCodeComplationBase extends JsTestBase {
             assertEquals("The unexpected element(s) '" + arrayToString(expected) + "' are present in the completion items list", originalRealSize, real.size());
         }
     }
-    
+
     private String arrayToString(String[] elements) {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < elements.length; i++) {
@@ -242,7 +243,7 @@ public class JsCodeComplationBase extends JsTestBase {
         }
         return buf.toString();
     }
-    
+
     private static TestCodeCompletionContext createContext(int offset, ParserResult result, String prefix) {
         return new TestCodeCompletionContext(offset, result, prefix, CodeCompletionHandler.QueryType.COMPLETION, false);
     }

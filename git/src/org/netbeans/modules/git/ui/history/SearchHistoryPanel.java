@@ -72,6 +72,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.KeyStroke;
@@ -85,6 +86,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.history.SearchHistoryTopComponent.DiffResultsViewFactory;
 import org.netbeans.modules.git.ui.history.SummaryView.GitLogEntry;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
@@ -118,6 +120,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private int showingResults;
     private Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap;
     private List<GitLogEntry> logEntries;
+    private boolean selectFirstRevision;
+    private DiffResultsViewFactory diffViewFactory;
 
     enum FilterKind {
         ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
@@ -145,6 +149,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         this.roots = roots;
         this.repository = repository;
         this.criteria = criteria;
+        this.diffViewFactory = new SearchHistoryTopComponent.DiffResultsViewFactory();
         criteriaVisible = true;
         explorerManager = new ExplorerManager ();
         initComponents();
@@ -185,8 +190,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private void enableFilters (boolean enabled) {
         lblFilter.setEnabled(enabled);
         cmbFilterKind.setEnabled(enabled);
-        lblFilterContains.setEnabled(enabled && cmbFilterKind.getSelectedItem() != FilterKind.ALL);
-        txtFilter.setEnabled(enabled && cmbFilterKind.getSelectedItem() != FilterKind.ALL);
+        lblFilterContains.setEnabled(enabled);
+        txtFilter.setEnabled(enabled);
     }
 
     private void setupComponents() {
@@ -287,9 +292,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                     summaryView.requestFocusInWindow();
                 } else {
                     if (diffView == null) {
-                        diffView = new DiffResultsView(this, filter(results));
+                        diffView = diffViewFactory.createDiffResultsView(this, filter(results));
                     }
                     resultsPanel.add(diffView.getComponent());
+                    if (selectFirstRevision) {
+                        selectFirstRevision();
+                    }
                 }
             }
             resultsPanel.revalidate();
@@ -306,6 +314,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         enableFilters(results != null);
         revalidate();
         repaint();
+    }
+
+    private void selectFirstRevision () {
+        if (diffView != null && results != null && !results.isEmpty()) {
+            diffView.select(results.get(0));
+        }
     }
  
     final void updateActions () {
@@ -415,6 +429,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         searchCriteriaPanel.setLayout(new java.awt.BorderLayout());
 
+        jToolBar1.setLayout(new BoxLayout(jToolBar1, BoxLayout.X_AXIS));
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
@@ -497,7 +512,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(searchCriteriaPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 525, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)
             .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(expandCriteriaButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -540,9 +555,9 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     }//GEN-LAST:event_expandCriteriaButtonActionPerformed
 
     private void cmbFilterKindActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbFilterKindActionPerformed
-        boolean filterCritEnabled = cmbFilterKind.getSelectedItem() != FilterKind.ALL;
-        lblFilterContains.setEnabled(filterCritEnabled);
-        txtFilter.setEnabled(filterCritEnabled);
+        boolean filterCritVisible = cmbFilterKind.getSelectedItem() != FilterKind.ALL;
+        lblFilterContains.setVisible(filterCritVisible);
+        txtFilter.setVisible(filterCritVisible);
         if (filterTimer != null && !txtFilter.getText().trim().isEmpty()) {
             filterTimer.restart();
         }
@@ -793,5 +808,21 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
             ret.add(new SummaryView.GitLogEntry(repositoryRevision, this));
         }
         return ret;
+    }
+
+    void activateDiffView (boolean selectFirstRevision) {
+        tbDiff.setSelected(true);
+        this.selectFirstRevision = selectFirstRevision;
+        selectFirstRevision();
+    }
+
+    /**
+     * Sets the factory creating the appropriate DiffResultsView to display.
+     * @param fac factory creating the appropriate DiffResultsView to display. If null then a default factory will be created.
+     */
+    void setDiffResultsViewFactory(SearchHistoryTopComponent.DiffResultsViewFactory fac) {
+        if (fac != null) {
+            this.diffViewFactory = fac;
+        }
     }
 }

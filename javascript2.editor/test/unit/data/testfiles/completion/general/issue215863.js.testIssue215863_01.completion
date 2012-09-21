@@ -1,0 +1,7 @@
+Code completion result for source line:
+window.lo|cation.toString();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+FIELD      localStorage: Storage           [PUBLIC]   stub_DOM_window.js
+FIELD      location: Location              [PUBLIC]   stub_DOM_Window.js
+FIELD      locationbar: Object             [PUBLIC]   stub_DOM_window.js

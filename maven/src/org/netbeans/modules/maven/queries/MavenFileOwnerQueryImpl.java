@@ -101,7 +101,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         projectListener = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
-                    if (!registerProject((NbMavenProjectImpl) evt.getSource())) {
+                    if (!registerProject((NbMavenProjectImpl) evt.getSource(), true)) {
                         fireChange();
                     }
                 }
@@ -121,6 +121,15 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             @Override
             public void projectGroupChanged(ProjectGroupChangeEvent event) {
                 //TODO should we check what projects were kept open and register them with current group?
+                //some were already registered when projectOpenHook was triggered, 
+                //but some might have been kept opened from previous group
+                for (Project prj : OpenProjects.getDefault().getOpenProjects()) {
+                    NbMavenProjectImpl mp = prj.getLookup().lookup(NbMavenProjectImpl.class);
+                    if (mp != null) {
+                        registerProject(mp, false);
+                    }
+                }
+                fireChange(); //optimization, just one change gets fired.
             }
         };
         ProjectGroup pg = OpenProjects.getDefault().getActiveProjectGroup();
@@ -142,14 +151,18 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         project.getProjectWatcher().addPropertyChangeListener(projectListener);       
     }
 
-    public void registerCoordinates(String groupId, String artifactId, String version, URL owner) {
+    public static String cacheKey(String groupId, String artifactId, String version) {
+        return groupId + ':' + artifactId + ":" + version;
+    }
+
+    public void registerCoordinates(String groupId, String artifactId, String version, URL owner, boolean fire) {
         String oldkey = groupId + ':' + artifactId;
         //remove old key if pointing to the same project
         if (owner.toString().equals(prefs().get(oldkey, null))) {
             prefs().remove(oldkey);
         }
         
-        String key = oldkey + ":" + version;
+        String key = cacheKey(groupId, artifactId, version);
         String ownerString = owner.toString();
         try {
             for (String k : prefs().keys()) {
@@ -164,6 +177,9 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         
         prefs().put(key, ownerString);
         LOG.log(Level.FINE, "Registering {0} under {1}", new Object[] {owner, key});
+        if (fire) {
+            fireChange();
+        }
         
     }
     
@@ -172,7 +188,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
      * @param project
      * @return true if project was registered, false otherwise 
      */
-    public boolean registerProject(NbMavenProjectImpl project) {
+    public boolean registerProject(NbMavenProjectImpl project, boolean fire) {
         MavenProject model = project.getOriginalMavenProject();
         attachProjectListener(project);
         if (NbMavenProject.isErrorPlaceholder(model)) {
@@ -180,8 +196,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             //TODO we should remove the project's mapping in this case and wait for it to reappear loadable again
             return false;
         }
-        registerCoordinates(model.getGroupId(), model.getArtifactId(), model.getVersion(), project.getProjectDirectory().toURL());
-        fireChange();
+        registerCoordinates(model.getGroupId(), model.getArtifactId(), model.getVersion(), project.getProjectDirectory().toURL(), fire);
         return true;
     }
     
@@ -270,7 +285,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     public Project getOwner(String groupId, String artifactId, String version) {
         LOG.log(Level.FINER, "Checking {0} / {1} / {2}", new Object[] {groupId, artifactId, version});
         String oldKey = groupId + ":" + artifactId;
-        String key = oldKey + ":" + version;
+        String key = cacheKey(groupId, artifactId, version);
         String ownerURI = prefs().get(key, null);
         boolean usingOldKey = false;
         if (ownerURI == null) {
@@ -298,11 +313,11 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
                                 } else {
                                     LOG.log(Level.FINE, "Mismatch on version {0} in {1}", new Object[] {model.getVersion(), ownerURI});
                                     stale = false; // we merely remembered another version
-                                    registerProject(mp);
+                                    registerProject(mp, true);
                                 }
                             } else {
                                 LOG.log(Level.FINE, "Mismatch on group and/or artifact ID in {0}", ownerURI);
-                                registerProject(mp);
+                                registerProject(mp, true);
                             }
                         } else {
                             LOG.log(Level.FINE, "Not a Maven project {0} in {1}", new Object[] {p, ownerURI});
@@ -324,7 +339,6 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
                 } else {
                     prefs().remove(key); // stale    
                 }
-                //TODO fire change..
             }
         } else {
             LOG.log(Level.FINE, "No known owner for {0}", key);
@@ -337,7 +351,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     public File getOwnerPOM(String groupId, String artifactId, String version) {
         LOG.log(Level.FINER, "Checking {0} / {1} / {2} (POM only)", new Object[] {groupId, artifactId, version});
         String oldKey = groupId + ":" + artifactId;
-        String key = oldKey + ":" + version;
+        String key = cacheKey(groupId, artifactId, version);
         String ownerURI = prefs().get(key, null);
         boolean usingOldKey = false;
         if (ownerURI == null) {

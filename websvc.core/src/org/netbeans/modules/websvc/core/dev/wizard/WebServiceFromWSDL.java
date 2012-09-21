@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -138,11 +139,19 @@ public class WebServiceFromWSDL implements WizardDescriptor.Panel<WizardDescript
     }
     
     private void fireChange() {
-        ChangeEvent e = new ChangeEvent(this);
-        Iterator<ChangeListener> it = listeners.iterator();
-        while (it.hasNext()) {
-            it.next().stateChanged(e);
-        }
+        Mutex.EVENT.readAccess(new Runnable() {
+            
+            @Override
+            public void run() {
+                ChangeEvent e = new ChangeEvent(this);
+                synchronized (WebServiceFromWSDL.this) {
+                    Iterator<ChangeListener> it = listeners.iterator();
+                    while (it.hasNext()) {
+                        it.next().stateChanged(e);
+                    }                    
+                }
+            }
+        });
     }
 
 }

@@ -136,7 +136,11 @@ public class CssAnalyser {
                                     String errorMsg = null;
 
                                     //error in property 
-                                    Token unexpectedToken = pv.getUnresolvedTokens().get(pv.getUnresolvedTokens().size() - 1);
+                                    List<Token> unresolved = pv.getUnresolvedTokens();
+                                    if(unresolved.isEmpty()) {
+                                        return false;
+                                    }
+                                    Token unexpectedToken = unresolved.iterator().next();
 
                                     if(isNonCss21CompatiblePropertyValue(unexpectedToken.toString())) {
                                         return false;

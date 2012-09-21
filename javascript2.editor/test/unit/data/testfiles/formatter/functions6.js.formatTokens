@@ -809,7 +809,9 @@ FormattingToken{kind=EOL, offset=1164, text=
 FormattingToken{kind=WHITESPACE, offset=1165, text=    }
 FormattingToken{kind=TEXT, offset=1169, text=pocetValcu}
 FormattingToken{kind=WHITESPACE, offset=1179, text= }
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1180, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1181, text= }
 FormattingToken{kind=TEXT, offset=1182, text=8}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
@@ -820,7 +822,9 @@ FormattingToken{kind=EOL, offset=1184, text=
 }
 FormattingToken{kind=WHITESPACE, offset=1185, text=    }
 FormattingToken{kind=TEXT, offset=1189, text=vykon}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1194, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1195, text= }
 FormattingToken{kind=TEXT, offset=1196, text="}
 FormattingToken{kind=TEXT, offset=1197, text=22kfdafa}
@@ -833,7 +837,9 @@ FormattingToken{kind=EOL, offset=1207, text=
 }
 FormattingToken{kind=WHITESPACE, offset=1208, text=    }
 FormattingToken{kind=TEXT, offset=1212, text=getDescription}
+FormattingToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1226, text=:}
+FormattingToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1227, text= }
 FormattingToken{kind=TEXT, offset=1228, text=function}
 FormattingToken{kind=WHITESPACE, offset=1236, text= }
@@ -922,6 +928,7 @@ FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1343, text= }
 FormattingToken{kind=TEXT, offset=1344, text=new}
+FormattingToken{kind=AFTER_NEW_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1347, text= }
 FormattingToken{kind=TEXT, offset=1348, text=Kolo}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
@@ -1047,6 +1054,7 @@ FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1503, text= }
 FormattingToken{kind=TEXT, offset=1504, text=new}
+FormattingToken{kind=AFTER_NEW_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1507, text= }
 FormattingToken{kind=TEXT, offset=1508, text=Ridic}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}

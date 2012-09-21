@@ -53,6 +53,10 @@ import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+//import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+//import org.netbeans.modules.php.smarty.editor.TplKit;
+//import org.netbeans.modules.php.smarty.editor.indent.TplIndentTaskFactory;
+//import org.netbeans.modules.php.smarty.editor.lexer.TplTokenId;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -71,6 +75,9 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
         MockMimeLookup.setInstances(MimePath.parse("text/javascript"), JsTokenId.javascriptLanguage());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/html"), HTMLTokenId.language());
+//        MockMimeLookup.setInstances(MimePath.parse("text/php"), PHPTokenId.language());
+//        TplIndentTaskFactory tplReformatFactory = new TplIndentTaskFactory();
+//        MockMimeLookup.setInstances(MimePath.parse("text/x-tpl"), tplReformatFactory, new TplKit("text/x-tpl"), TplTokenId.language());
     }
 
     @Override
@@ -100,7 +107,19 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
     public void testEmbeddedSimple2() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedSimple2.html", new IndentPrefs(4,4));
     }
-    
+
+    public void testEmbeddedSimple3() throws Exception {
+        reformatFileContents("testfiles/formatter/embeddedSimple3.html", new IndentPrefs(4,4));
+    }
+
+    public void testEmbeddedSimple4() throws Exception {
+        reformatFileContents("testfiles/formatter/embeddedSimple4.html", new IndentPrefs(4,4));
+    }
+
+    public void testEmbeddedSimple5() throws Exception {
+        reformatFileContents("testfiles/formatter/embeddedSimple5.html", new IndentPrefs(4,4));
+    }
+
     public void testEmbeddedTrimmed1() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedTrimmed1.html", new IndentPrefs(4,4));
     }
@@ -108,4 +127,10 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
     public void testEmbeddedMultipleSections1() throws Exception {
         reformatFileContents("testfiles/formatter/embeddedMultipleSections1.html", new IndentPrefs(4,4));
     }
+
+    public void testEmbeddedMultipleSections2() throws Exception {
+        reformatFileContents("testfiles/formatter/embeddedMultipleSections2.html", new IndentPrefs(4,4));
+    }
+
+    // XXX also see org.netbeans.modules.php.editor.js.JsFormatterEmbeddedTest
 }

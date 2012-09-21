@@ -42,6 +42,9 @@
 package org.netbeans.modules.php.smarty.editor;
 
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -59,15 +62,13 @@ import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 import org.netbeans.modules.php.smarty.editor.parser.TplParserResult;
 import org.netbeans.modules.php.smarty.editor.parser.TplParserResult.Block;
 import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
-import org.netbeans.modules.php.smarty.editor.utlis.ParserUtils;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 import org.openide.util.Exceptions;
 
 /**
- * TPL parser based implementation of BracesMatcher.
- * Inspired by HtmlBracesMatching.
+ * TPL parser based implementation of BracesMatcher. Inspired by HtmlBracesMatching.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
@@ -140,10 +141,10 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                     } else if (t3.id() == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) {
                                         if (tagNameEnd != -1) {
                                             return new int[]{from, to,
-                                                    from, tagNameEnd,
-                                                    to - 1, to};
+                                                        from, tagNameEnd,
+                                                        to - t3.length(), to};
                                         } else {
-                                            return new int[] {from, to};
+                                            return new int[]{from, to};
                                         }
                                     }
                                 }
@@ -177,6 +178,19 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
             return null;
         }
 
+        // comments - do not color them as errors
+        TokenSequence<TplTopTokenId> ts = LexerUtils.getTplTopTokenSequence(context.getDocument(), searchOffset);
+        int[] delims = new int[]{1, 1};
+        if (ts != null && ts.language() == TplTopTokenId.language()) {
+            delims = findDelimsLength(ts);
+            ts.move(searchOffset);
+            ts.moveNext();
+            ts.movePrevious();
+            if (ts.token().id() == TplTopTokenId.T_COMMENT) {
+                return new int[]{searchOffset, searchOffset};
+            }
+        }
+        final int[] delimiterLengths = delims;
         final int[][] ret = new int[1][];
         try {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
@@ -186,34 +200,51 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
                             || !source.getMimeType().equals(TplDataLoader.MIME_TYPE)) {
                         return;
                     }
-                    
+
                     if (resultIterator == null) {
                         ret[0] = new int[]{searchOffset, searchOffset};
                         return;
                     }
 
-                    TplParserResult result = (TplParserResult) resultIterator.getParserResult();
-                    if (result == null) {
+                    TplParserResult parserResult = (TplParserResult) resultIterator.getParserResult();
+                    if (parserResult == null) {
                         return;
                     }
-
                     int searchOffsetLocal = searchOffset;
                     while (searchOffsetLocal != context.getLimitOffset()) {
-                        int searched = result.getSnapshot().getEmbeddedOffset(searchOffsetLocal);
-                        Block block = ParserUtils.getBlockForOffset(result, searched);
-                        if (block == null || block.getSections().size() == 1) {
+                        int searched = parserResult.getSnapshot().getEmbeddedOffset(searchOffsetLocal);
+                        Block block = getBlockForOffset(parserResult, searched, context.isSearchingBackward(), delimiterLengths);
+                        if (block == null) {
+                            return;
+                        }
+                        if (block.getSections().size() == 1) {
                             //just simple tag - was found by findOrigin()
                             ret[0] = new int[]{searchOffset, searchOffset};
                             return;
                         }
 
-                        int sectionsCount = block.getSections().size();
-                        ret[0] = new int[sectionsCount * 2];
-                        for (int i = 0; i < sectionsCount; i++) {
-                            OffsetRange offset = block.getSections().get(i).getOffset();
-                            ret[0][i * 2] = offset.getStart();
-                            ret[0][i * 2 + 1] = offset.getEnd();
+                        List<Integer> result = new LinkedList<Integer>();
+                        TplParserResult.Section lastSection = null;
+                        for (TplParserResult.Section section : block.getSections()) {
+                            OffsetRange or = section.getOffset();
+                            or = new OffsetRange(or.getStart() - delimiterLengths[0], or.getEnd() + delimiterLengths[1]);
+                            if (!or.containsInclusive(searchOffset)) {
+                                insertMatchingSection(result, section, delimiterLengths);
+                            } else {
+                                if (lastSection == null) {
+                                    lastSection = section;
+                                } else {
+                                    if ((section.getOffset().getStart() < lastSection.getOffset().getStart() && context.isSearchingBackward())
+                                            || section.getOffset().getStart() > lastSection.getOffset().getStart() && !context.isSearchingBackward()) {
+                                        insertMatchingSection(result, lastSection, delimiterLengths);
+                                        lastSection = section;
+                                    } else {
+                                        insertMatchingSection(result, section, delimiterLengths);
+                                    }
+                                }
+                            }
                         }
+                        ret[0] = convertToIntegers(result);
                         searchOffsetLocal = searchOffsetLocal + (context.isSearchingBackward() ? -1 : +1);
                     }
                 }
@@ -224,6 +255,58 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
         }
 
         return ret[0];
+    }
+
+    private static void insertMatchingSection(List<Integer> result, TplParserResult.Section section, int[] delimLengths) {
+        // XXX - keep in mind custom delimiters
+        OffsetRange offset = section.getOffset();
+        result.add(offset.getStart() - delimLengths[0]);
+        result.add(offset.getStart() + section.getFunctionNameLength());
+        result.add(offset.getEnd());
+        result.add(offset.getEnd() + delimLengths[1]);
+    }
+
+    private static int[] convertToIntegers(List<Integer> list) {
+        int[] integers = new int[list.size()];
+        Iterator<Integer> iterator = list.iterator();
+        for (int i = 0; i < integers.length; i++) {
+            integers[i] = iterator.next().intValue();
+        }
+        return integers;
+    }
+
+    /**
+     * Gets block of tags for given offset.
+     *
+     * @param parserResult tplParserResult
+     * @param offset examined offset
+     * @return {@code TplParserResult.Block} where one of sections contain the offset, {@code null} otherwise - if no
+     * such block was found
+     */
+    private static TplParserResult.Block getBlockForOffset(TplParserResult parserResult, int offset, boolean backwardSearching, int[] delimLengths) {
+        // XXX - should think about the custom delimiters later
+        Block lastBlock = null;
+        int previousBlockOffset = -1;
+        for (TplParserResult.Block block : parserResult.getBlocks()) {
+            for (TplParserResult.Section section : block.getSections()) {
+                OffsetRange or = section.getOffset();
+                or = new OffsetRange(or.getStart() - delimLengths[0], or.getEnd() + delimLengths[1]);
+                if (or.containsInclusive(offset)) {
+                    if (lastBlock != null) {
+                        if ((section.getOffset().getStart() < previousBlockOffset && backwardSearching)
+                                || section.getOffset().getStart() > previousBlockOffset && !backwardSearching) {
+                            return block;
+                        } else {
+                            return lastBlock;
+                        }
+                    } else {
+                        lastBlock = block;
+                        previousBlockOffset = section.getOffset().getStart();
+                    }
+                }
+            }
+        }
+        return lastBlock;
     }
 
     @Override
@@ -243,4 +326,19 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
         return ret[0];
     }
 
+    private int[] findDelimsLength(TokenSequence<TplTopTokenId> ts) {
+        int[] delimLengths = new int[]{-1, -1};
+        ts.moveStart();
+        while (ts.moveNext()) {
+            if (ts.token().id() == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
+                delimLengths[0] = ts.token().length();
+            } else if (ts.token().id() == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) {
+                delimLengths[1] = ts.token().length();
+            }
+            if (delimLengths[0] > 0 && delimLengths[1] > 0) {
+                return delimLengths;
+            }
+        }
+        return new int[]{1, 1};
+    }
 }

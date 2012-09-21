@@ -3,5 +3,4 @@ my| //Foo
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     myFunc(): undefined             [PUBLIC]   test129036.js
-VARIABLE   my                              [PUBLIC]   test129036.js
 VARIABLE   myVar                           [PUBLIC]   test129036.js

@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
@@ -57,6 +58,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -71,7 +73,8 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
-    
+    private static List<String> GLOBAL_TYPES = Arrays.asList(Type.ARRAY, Type.STRING, Type.BOOLEAN, Type.NUMBER, Type.UNDEFINED);
+
     public JsSemanticAnalyzer() {
         this.cancelled = false;
         this.semanticHighlights = null;
@@ -130,18 +133,20 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 case PROPERTY_SETTER:
                     int offset = object.getDeclarationName().getOffsetRange().getStart();
                     TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(result.getSnapshot(), offset);
-                    ts.move(offset);
-                    if (ts.moveNext() && ts.movePrevious()) {
-                        Token token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
-                        if (token.id() == JsTokenId.IDENTIFIER && token.length() == 3) {
-                            highlights.put(new OffsetRange(ts.offset(), ts.offset() + token.length()), ColoringAttributes.METHOD_SET);
+                    if (ts != null) {
+                        ts.move(offset);
+                        if (ts.moveNext() && ts.movePrevious()) {
+                            Token token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
+                            if (token.id() == JsTokenId.IDENTIFIER && token.length() == 3) {
+                                highlights.put(new OffsetRange(ts.offset(), ts.offset() + token.length()), ColoringAttributes.METHOD_SET);
+                            }
                         }
+                        highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
                     }
-                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
                     break;
                 case OBJECT:
                 case OBJECT_LITERAL:
-                    if (parent.getParent() == null) {
+                    if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         for (Occurrence occurence : object.getOccurrences()) {
                             highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
@@ -165,13 +170,13 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     }
                     break;
                 case VARIABLE:
-                    if (parent.getParent() == null) {
+                    if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         for(Occurrence occurence: object.getOccurrences()) {
                             highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         }
                     } else {
-                        if (object.getOccurrences().isEmpty()) {
+                        if (object.getOccurrences().isEmpty() && !GLOBAL_TYPES.contains(object.getName())) {
                             OffsetRange range = object.getDeclarationName().getOffsetRange();
                             if (range.getStart() < range.getEnd()) {
                                 // some virtual variables (like arguments) doesn't have to be declared, but are in the model

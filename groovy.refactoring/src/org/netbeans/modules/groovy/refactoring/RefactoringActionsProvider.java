@@ -43,6 +43,7 @@
 package org.netbeans.modules.groovy.refactoring;
 
 import java.util.Collection;
+import org.netbeans.modules.groovy.refactoring.RefactoringTaskFactory.RefactoringType;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.openide.loaders.DataObject;
@@ -59,23 +60,42 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
-        return isValid(lookup);
-    }
-
-    @Override
-    public void doFindUsages(Lookup lookup) {
-        RefactoringTask.createRefactoringTask(lookup).run();
+        return canBeDone(lookup, RefactoringType.FIND_USAGES);
     }
 
     @Override
     public boolean canRename(Lookup lookup) {
-        return false;
-//        return isValid(lookup);
+        return canBeDone(lookup, RefactoringType.RENAME);
     }
 
     @Override
-    public void doDelete(Lookup lookup) {
-        super.doDelete(lookup);
+    public boolean canMove(Lookup lookup) {
+        return false;
+//        return canBeDone(lookup, RefactoringType.MOVE);
+    }
+
+    @Override
+    public void doFindUsages(Lookup lookup) {
+        createTask(lookup, RefactoringType.FIND_USAGES).run();
+    }
+
+    @Override
+    public void doRename(Lookup lookup) {
+        createTask(lookup, RefactoringType.RENAME).run();
+    }
+
+    @Override
+    public void doMove(Lookup lookup) {
+        createTask(lookup, RefactoringType.MOVE).run();
+    }
+
+    private boolean canBeDone(Lookup lookup, RefactoringType type) {
+        RefactoringTask task = createTask(lookup, type);
+        return isValid(lookup) && task != null && task.isValid();
+    }
+
+    private RefactoringTask createTask(Lookup lookup, RefactoringType type) {
+        return RefactoringTaskFactory.createRefactoringTask(lookup, type);
     }
 
     private boolean isValid(Lookup lookup) {

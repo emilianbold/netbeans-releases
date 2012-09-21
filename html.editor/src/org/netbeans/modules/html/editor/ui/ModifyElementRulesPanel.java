@@ -54,6 +54,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.StringTokenizer;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -65,6 +66,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.html.editor.api.actions.AbstractSourceElementAction;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
@@ -86,7 +88,9 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({
     "none.item=<font color=\"777777\">&lt;none&gt;</font>",
     "class.selector.descr=Applies to all elements with this style class assigned.\n\nThe selector name starts with dot.",
-    "id.selector.descr=Applies just to one single element with this id set.\n\nThe selector name starts with hash sign."
+    "id.selector.descr=Applies just to one single element with this id set.\n\nThe selector name starts with hash sign.",
+    "class.selector.error=The class selector {0} contains invalid characters!",
+    "id.selector.error=The id {0} selector contains invalid characters!"
 })
 public class ModifyElementRulesPanel extends javax.swing.JPanel {
 
@@ -186,7 +190,11 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
 
         updateResultCodeSample();
     }
-
+    
+    public boolean isPanelContentValid() {
+        return isClassNameOK() && isIdNameOK();
+    }
+    
     public Attribute getOriginalClassAttribute() {
         return clz;
     }
@@ -198,16 +206,24 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
     public String getNewClassAttributeValue() {
         return clzName;
     }
+    
+    public String[] getNewClasses() {
+        if(clzName == null) {
+            return null;
+        } else {
+            return  clzName.split("\\s");
+        }
+    }
 
     public String getNewIdAttributeValue() {
         return idName;
     }
     
-    public boolean classExistsInSelectedStyleSheet() {
+    public boolean classExistsInSelectedStyleSheet(String clzName) {
         if(getNewClassAttributeValue() == null) {
             return true;
         }
-        return files2classes.get(getSelectedStyleSheet()).contains(getNewClassAttributeValue());
+        return files2classes.get(getSelectedStyleSheet()).contains(clzName);
     }
     
     public boolean idExistsInSelectedStyleSheet() {
@@ -219,6 +235,24 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
     
     public FileObject getSelectedStyleSheet() {
         return (FileObject)styleSheetCB.getSelectedItem();
+    }
+    
+    private boolean isClassNameOK() {
+        if(clzName == null) {
+            return true;
+        } else {
+            String[] tokens = clzName.split("\\s");
+            for(String token : tokens) {
+                if(!CssTokenId.IDENT.matchesInput(token)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+    
+    private boolean isIdNameOK() {
+        return idName == null || CssTokenId.IDENT.matchesInput(idName);
     }
     
     private void updateResultCodeSample() {
@@ -238,11 +272,22 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
         appendCode(sb, "class", originalClzName, clzName, classExistInSS);
 
         sb.append("&gt;");
+        if(!isClassNameOK()) {
+            sb.append("<br><div><font color=\"bb5555\">");
+            sb.append(Bundle.class_selector_error(clzName));
+            sb.append("</font>");
+        }
+        if(!isIdNameOK()) {
+            sb.append("<br><div><font color=\"bb5555\">");
+            sb.append(Bundle.id_selector_error(idName));
+            sb.append("</font>");
+        }
+        
         sb.append("</html>");
 
         resultCodeLabel.setText(sb.toString());
     }
-
+    
     private void appendCode(StringBuilder sb, String type, String originalValue,  String value, boolean elementExistsInSS) {
         if (originalValue != null && value != null && !originalValue.equals(value)) {
             //changed
@@ -274,7 +319,9 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
         sb.append(' ');
         sb.append(type);
         sb.append("=");
+        sb.append("\"");
         sb.append(value);
+        sb.append("\"");
         if(surroundingTag != null) {
             sb.append("</");
             sb.append(surroundingTag);
@@ -622,11 +669,11 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(atRuleCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel3))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel5)
-                    .add(resultCodeLabel))
-                .addContainerGap())
+                    .add(resultCodeLabel)
+                    .add(jLabel5))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

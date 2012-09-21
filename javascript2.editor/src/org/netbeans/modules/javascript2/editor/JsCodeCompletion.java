@@ -107,10 +107,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
         CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
         
         LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
-        CodeCompletionResult result = CodeCompletionResult.NONE;
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
-            request.context = context;
             String pref = getPrefix(info, caretOffset, true);
             pref = pref == null ? "" : pref;
 
@@ -192,7 +190,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         }
                     }
                     completeKeywords(request, resultList);
-                    Collection<IndexedElement> fromIndex = JsIndex.get(fileObject).getGlobalVar(request.prefix);
+                    JsIndex jsIndex = JsIndex.get(fileObject);
+                    Collection<IndexedElement> fromIndex = jsIndex.getGlobalVar(request.prefix);
+                    //  enhance results for all window properties - see issue #218412, #215863, #218122, ...
+                    fromIndex.addAll(jsIndex.getPropertiesWithPrefix("window", request.prefix)); //NOI18N
                     for (IndexedElement indexElement : fromIndex) {
                         if (startsWith(indexElement.getName(), request.prefix)) {
                             JsElement element = addedProperties.get(indexElement.getName());
@@ -227,7 +228,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     JsDocumentationCodeCompletion.complete(request, resultList);
                     break;
                 default:
-                    result = CodeCompletionResult.NONE;
+                    break;
             }
         }
         
@@ -274,6 +275,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
             } catch (ParseException ex) {
                 LOGGER.log(Level.WARNING, null, ex);
             }
+        } else if (element instanceof JsObject) {
+            JsObject jsObject = (JsObject) element;
+            if (jsObject.getDocumentation() != null) {
+                documentation.append(jsObject.getDocumentation());
+            }
         }
         if (documentation.length() == 0) {
             String doc = jqueryCC.getHelpDocumentation(info, element);
@@ -299,17 +305,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
     @Override
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
         String prefix = "";
+
         BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
             return null;
         }
 
-
-        TokenHierarchy<Document> th = TokenHierarchy.get((Document) doc);
-
-
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, caretOffset);
-
+        caretOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot(), caretOffset);
         if (ts == null) {
             return null;
         }
@@ -344,7 +347,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
             if (id == JsTokenId.DOC_COMMENT) {
-                TokenSequence<? extends JsDocumentationTokenId> docTokenSeq = LexUtilities.getJsDocumentationTokenSequence(th, caretOffset);
+                TokenSequence<? extends JsDocumentationTokenId> docTokenSeq =
+                        LexUtilities.getJsDocumentationTokenSequence(info.getSnapshot(), caretOffset);
                 if (docTokenSeq == null) {
                     return null;
                 }
@@ -365,6 +369,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     // get the token before
                     docTokenSeq.movePrevious();
                     prefix = docTokenSeq.token().text().toString();
+                }
+            }
+            if (id.isError()) {
+                prefix = token.text().toString();
+                if (upToOffset) {
+                    prefix = prefix.substring(0, caretOffset - ts.offset());
                 }
             }
         }
@@ -401,6 +411,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         // from index
         JsIndex index = JsIndex.get(fo);
         Collection<IndexedElement> fromIndex = index.getGlobalVar(request.prefix);
+        fromIndex.addAll(index.getPropertiesWithPrefix("window", request.prefix));  //NOI18N
         for (IndexedElement indexedElement : fromIndex) {
             JsElement object = foundObjects.get(indexedElement.getName());
             if(object == null) {
@@ -433,21 +444,24 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     && startsWith(object.getName(), request.prefix)) {
                 JsElement fobject = foundObjects.get(object.getName());
                 if(fobject == null) {
-                    foundObjects.put(object.getName(), object);
+                    if (!(object.getName().equals(request.prefix)
+                            && object.getDeclarationName().getOffsetRange().getStart() == request.anchor)) {
+                        foundObjects.put(object.getName(), object);
+                    }
                 } else {
                     if (object.isDeclared()) {
-                        if (fobject.isDeclared()) {
+//                        if (fobject.isDeclared()) {
                             // put to the cc result both
-                            resultList.add(JsCompletionItem.Factory.create(object, request));
-                        } else {
+//                            resultList.add(JsCompletionItem.Factory.create(object, request));
+//                        } else {
                             // replace with the one, which is declared
                             foundObjects.put(object.getName(), object);
-                        }
+//                        }
                     }
                 }
             }
         }
-        
+
         for(JsElement element: foundObjects.values()) {
             resultList.add(JsCompletionItem.Factory.create(element, request));
         }
@@ -478,8 +492,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
                     && token.id() != JsTokenId.BRACKET_LEFT_PAREN
                     && token.id() != JsTokenId.BLOCK_COMMENT
-                    && token.id() != JsTokenId.LINE_COMMENT) {
-                
+                    && token.id() != JsTokenId.LINE_COMMENT
+                    && token.id() != JsTokenId.OPERATOR_ASSIGNMENT
+                    && token.id() != JsTokenId.OPERATOR_PLUS) {
+
                 if (token.id() != JsTokenId.EOL) {
                     if (token.id() != JsTokenId.OPERATOR_DOT) {
                         if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
@@ -651,20 +667,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
             
             // create code completion results
-            for(String name : addedProperties.keySet()) {
-                JsElement element = addedProperties.get(name);
+            for (JsElement element : addedProperties.values()) {
                 resultList.add(JsCompletionItem.Factory.create(element, request));
             }
         }
-    }
-    
-    private JsObject findObjectForOffset(String name, int offset, Model model) {
-        for (JsObject object : model.getVariables(offset)) {
-            if (object.getName().equals(name)) {
-                return object;
-            }
-        }
-        return null;
     }
     
     private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {

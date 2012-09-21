@@ -101,7 +101,7 @@ public class GotoBaseActionTest extends NbTestCase {
         setupTestFile(file);
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file)); //NOI18N
 
-        assertEquals("packagename/secondarypkg", gotoAction.findPackagePath(fo));
+        assertEquals("packagename" + File.separator + "secondarypkg", gotoAction.findPackagePath(fo));
     }
 
     private void setupFolder(File folder) {

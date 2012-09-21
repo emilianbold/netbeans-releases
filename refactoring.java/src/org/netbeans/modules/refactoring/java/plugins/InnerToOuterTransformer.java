@@ -49,6 +49,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -119,8 +120,21 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             // #it is impossible to call GeneratorUtilities.importFQNs
             // for the whole nested class since the method creates new identity
             // of the passed tree
-            Tree newTree = genUtils.importFQNs(node);
-            rewrite(node, newTree);
+            if(current.getModifiers().contains(Modifier.STATIC) && current.getKind() == ElementKind.METHOD) {
+                TreePath path = getCurrentPath();
+                Tree parent = path.getParentPath() != null ? path.getParentPath().getLeaf() : null;
+                TreePath elementPath = workingCopy.getTrees().getPath(current);
+                JavaFileObject sourceFile = elementPath != null ? elementPath.getCompilationUnit().getSourceFile() : null;
+                if (   (parent != null && parent.getKind() == Tree.Kind.CASE && ((CaseTree) parent).getExpression() == node && current.getKind() == ElementKind.ENUM_CONSTANT)
+                    || path.getCompilationUnit().getSourceFile() == sourceFile) {
+                    rewrite(node, make.Identifier(current.getSimpleName()));
+                } else {
+                    rewrite(node, make.QualIdent(current));
+                }
+            } else {
+                Tree newTree = genUtils.importFQNs(node);
+                rewrite(node, newTree);
+            }
         }
         return super.visitIdentifier(node, p);
     }

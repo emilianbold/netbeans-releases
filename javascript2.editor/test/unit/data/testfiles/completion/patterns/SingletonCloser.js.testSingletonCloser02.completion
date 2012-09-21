@@ -7,9 +7,9 @@ METHOD     _innerWork(): undefined         [PUBLIC]   SingletonCloser.js
 METHOD     createArr(): Array              [PUBLIC]   SingletonCloser.js
 METHOD     doSome(): undefined             [PUBLIC]   SingletonCloser.js
 METHOD     getArr()                        [PUBLIC]   SingletonCloser.js
-FIELD      myArr                           [PUBLIC]   SingletonCloser.js
-FIELD      myInt                           [PUBLIC]   SingletonCloser.js
+FIELD      myArr: Array                    [PUBLIC]   SingletonCloser.js
+FIELD      myInt: Number                   [PUBLIC]   SingletonCloser.js
 FIELD      myNul                           [PUBLIC]   SingletonCloser.js
-FIELD      myRx                            [PUBLIC]   SingletonCloser.js
-FIELD      myStr                           [PUBLIC]   SingletonCloser.js
-FIELD      myUnd                           [PUBLIC]   SingletonCloser.js
+FIELD      myRx: RegExp                    [PUBLIC]   SingletonCloser.js
+FIELD      myStr: String                   [PUBLIC]   SingletonCloser.js
+FIELD      myUnd: undefined                [PUBLIC]   SingletonCloser.js

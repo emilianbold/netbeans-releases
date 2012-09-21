@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.editor.breadcrumbs.spi;
 
+import java.awt.Image;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -57,6 +58,7 @@ import org.netbeans.modules.editor.breadcrumbs.support.BreadCrumbsScheduler;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Parameters;
 
 /**
@@ -64,7 +66,10 @@ import org.openide.util.Parameters;
  * @author lahvac
  */
 public class BreadcrumbsController {
-    
+
+    private BreadcrumbsController() {
+    }
+
     public static void setBreadcrumbs(@NonNull Document doc, @NonNull Node root, @NonNull Node selected) {
         Parameters.notNull("doc", doc);
         Parameters.notNull("root", root);
@@ -77,7 +82,7 @@ public class BreadcrumbsController {
     }
     
     public static boolean areBreadCrumsEnabled(@NonNull Document doc) {
-        return MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class).getBoolean(SideBarFactoryImpl.KEY_BREADCRUMBS, false);
+        return MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class).getBoolean(SideBarFactoryImpl.KEY_BREADCRUMBS, SideBarFactoryImpl.DEF_BREADCRUMBS);
     }
     
     public static void addBreadCrumbsEnabledListener(@NonNull final ChangeListener l) {
@@ -97,4 +102,9 @@ public class BreadcrumbsController {
     }
     
     public static final Class<? extends Scheduler> BREADCRUMBS_SCHEDULER = BreadCrumbsScheduler.class;
+    
+    /**
+     * @since 1.3
+     */
+    public static final Image NO_ICON = ImageUtilities.loadImage("org/netbeans/modules/editor/breadcrumbs/resources/no-icon.png");
 }

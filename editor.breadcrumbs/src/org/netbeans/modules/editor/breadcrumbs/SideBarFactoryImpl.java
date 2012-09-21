@@ -42,15 +42,24 @@
 package org.netbeans.modules.editor.breadcrumbs;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -67,6 +76,7 @@ import org.openide.util.WeakListeners;
 public class SideBarFactoryImpl implements SideBarFactory {
 
     public static final String KEY_BREADCRUMBS = "enable.breadcrumbs";
+    public static final boolean DEF_BREADCRUMBS = true;
     
     @Override
     public JComponent createSideBar(JTextComponent target) {
@@ -98,6 +108,7 @@ public class SideBarFactoryImpl implements SideBarFactory {
                 }
             });
             
+            setBorder(new SeparatorBorder());
             preferenceChange(null);
         }
         
@@ -108,20 +119,42 @@ public class SideBarFactoryImpl implements SideBarFactory {
         @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             if (evt == null || KEY_BREADCRUMBS.equals(evt.getKey())) {
-                enabled = prefs.getBoolean(KEY_BREADCRUMBS, false);
+                enabled = prefs.getBoolean(KEY_BREADCRUMBS, DEF_BREADCRUMBS);
                 updatePreferredSize();
             }
         }
         
         private void updatePreferredSize() {
             if (enabled) {
-                setPreferredSize(new Dimension(Integer.MAX_VALUE, 24));
+                setPreferredSize(new Dimension(Integer.MAX_VALUE, BreadCrumbComponent.COMPONENT_HEIGHT + SeparatorBorder.BORDER_WIDTH));
                 setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
             }else{
                 setPreferredSize(new Dimension(0,0));
                 setMaximumSize(new Dimension(0,0));
             }
             revalidate();
+        }
+    }
+    
+    private static final class SeparatorBorder implements Border {
+        private static final int BORDER_WIDTH = 1;
+        private final Insets INSETS = new Insets(BORDER_WIDTH, 0, 0, 0);
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            ((Graphics2D) g).addRenderingHints(Collections.singletonMap(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+            Color originalColor = g.getColor();
+            g.setColor (UIManager.getColor ("controlShadow")); //NOI18N
+            g.drawLine(0, 0, c.getWidth(), BORDER_WIDTH);
+            g.setColor(originalColor);
+        }
+
+        @Override public Insets getBorderInsets(Component c) {
+            return INSETS;
+        }
+
+        @Override public boolean isBorderOpaque() {
+            return true;
         }
     }
 

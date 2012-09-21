@@ -66,6 +66,7 @@ public interface GlassfishModule {
     public static final String USERNAME_ATTR = "username"; // NOI18N
     public static final String PASSWORD_ATTR = "password"; // NOI18N
     public static final String ADMINPORT_ATTR = "adminPort"; // NOI18N
+    public static final String TARGET_ATTR = "target";
     public static final String HTTPPORT_ATTR = "httpportnumber"; // NOI18N
     public static final String HOSTNAME_ATTR = "host"; // NOI18N
     public static final String JRUBY_HOME = "jruby.home"; // NOI18N
@@ -111,6 +112,9 @@ public interface GlassfishModule {
 
     public static final String JAVAMAIL = "JAVAMAIL"; // NOI18N
     public static final String JAVAMAIL_RESOURCE = "javamail-resource"; // NOI18N
+
+    /** Key to mark properties already imported into NetBeans 7.3 and fixed. */
+    public static final String NB73_IMPORT_FIXED = "nb73ImportFixed";
 
     public CommandFactory getCommandFactory();
 

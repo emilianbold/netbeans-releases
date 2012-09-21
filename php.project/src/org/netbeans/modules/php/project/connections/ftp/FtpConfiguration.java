@@ -75,14 +75,14 @@ public final class FtpConfiguration extends RemoteConfiguration {
         super(cfg);
 
         host = cfg.getValue(FtpConnectionProvider.HOST);
-        port = Integer.parseInt(cfg.getValue(FtpConnectionProvider.PORT));
+        port = readNumber(FtpConnectionProvider.PORT, FtpConnectionProvider.DEFAULT_PORT);
         security = new Security(
                 readEnum(Encryption.class, FtpConnectionProvider.ENCRYPTION, FtpConnectionProvider.DEFAULT_ENCRYPTION),
                 readBoolean(FtpConnectionProvider.ONLY_LOGIN_ENCRYPTED, FtpConnectionProvider.DEFAULT_ONLY_LOGIN_ENCRYPTED));
         userName = cfg.getValue(FtpConnectionProvider.USER);
         anonymousLogin = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY);
-        timeout = Integer.parseInt(cfg.getValue(FtpConnectionProvider.TIMEOUT));
+        timeout = readNumber(FtpConnectionProvider.TIMEOUT, FtpConnectionProvider.DEFAULT_TIMEOUT);
         keepAliveInterval = readNumber(FtpConnectionProvider.KEEP_ALIVE_INTERVAL, FtpConnectionProvider.DEFAULT_KEEP_ALIVE_INTERVAL);
         passiveMode = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.PASSIVE_MODE));
         ignoreDisconnectErrors = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.IGNORE_DISCONNECT_ERRORS));

@@ -161,7 +161,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     }
 
     /** used for synchronization instead of the IDO object */
-    private final Object IDO_LOCK = new Object();
+    private static final Object IDO_LOCK = new Object();
     /** Get the lock of the IDO object. Do not synchronize on the IDO object
      * directly to prevent deadlocks.
      */

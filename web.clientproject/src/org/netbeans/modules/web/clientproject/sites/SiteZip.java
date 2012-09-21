@@ -65,8 +65,8 @@ import org.openide.util.NbPreferences;
 public class SiteZip implements SiteTemplateImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(SiteZip.class.getName());
-    private static final String USED_TEMPLATES = "last.templates";
-    private static final String SEPARATOR = "=s e p=";
+    private static final String USED_TEMPLATES = "last.templates"; //NOI18N
+    private static final String SEPARATOR = "=s e p="; //NOI18N
 
     private Customizer cust;
 
@@ -96,7 +96,7 @@ public class SiteZip implements SiteTemplateImplementation {
         assert !EventQueue.isDispatchThread();
         assert !isPrepared();
         String template = cust.panel.getTemplate();
-        assert isRemoteUrl(template) : "Remote URL expected: " + template;
+        assert isRemoteUrl(template) : "Remote URL expected: " + template; //NOI18N
         SiteHelper.download(template, getArchiveFile(), null); // NOI18N
     }
 
@@ -105,7 +105,7 @@ public class SiteZip implements SiteTemplateImplementation {
         assert !EventQueue.isDispatchThread();
         if (!isPrepared()) {
             // not correctly prepared, user has to know about it already
-            LOGGER.info("Template not correctly prepared, nothing to be applied");
+            LOGGER.info("Template not correctly prepared, nothing to be applied"); //NOI18N
             return;
         }
         SiteHelper.unzipProjectTemplate(helper, getArchiveFile(), handle);
@@ -126,7 +126,7 @@ public class SiteZip implements SiteTemplateImplementation {
         CRC32 crc = new CRC32();
         crc.update(template.getBytes());
         String filename = String.valueOf(crc.getValue()) + ".zip"; // NOI18N
-        LOGGER.log(Level.INFO, "Remote URL \"{0}\" set, downloaded to {1}", new Object[] {template, filename});
+        LOGGER.log(Level.INFO, "Remote URL \"{0}\" set, downloaded to {1}", new Object[] {template, filename}); //NOI18N
         return new File(SiteHelper.getJsLibsDirectory(), filename);
     }
 
@@ -140,13 +140,13 @@ public class SiteZip implements SiteTemplateImplementation {
     }
 
     public static void registerTemplate(String name) {
-        String templates = NbPreferences.forModule(SiteZip.class).get(USED_TEMPLATES, "");
-        templates = name + SEPARATOR + templates.replace(name+SEPARATOR, "");
+        String templates = NbPreferences.forModule(SiteZip.class).get(USED_TEMPLATES, ""); //NOI18N
+        templates = name + SEPARATOR + templates.replace(name+SEPARATOR, ""); //NOI18N
         NbPreferences.forModule(SiteZip.class).put(USED_TEMPLATES, templates);
     }
 
     public static List<String> getUsedTemplates() {
-        String templates = NbPreferences.forModule(SiteZip.class).get(USED_TEMPLATES, "");
+        String templates = NbPreferences.forModule(SiteZip.class).get(USED_TEMPLATES, ""); //NOI18N
         return Arrays.asList(templates.split(SEPARATOR));
     }
 
@@ -156,7 +156,7 @@ public class SiteZip implements SiteTemplateImplementation {
 
         private SiteZipPanel panel = new SiteZipPanel(this);
         private ChangeSupport sup = new ChangeSupport(this);
-        private String error = "";
+        private String error = ""; //NOI18N
 
         public void addChangeListener(ChangeListener listener) {
             sup.addChangeListener(listener);
@@ -180,7 +180,7 @@ public class SiteZip implements SiteTemplateImplementation {
                 error = Bundle.SiteZip_error_template_missing();
                 return false;
             }
-            if (!tpl.startsWith("http")  && !new File(tpl).exists()) {
+            if (!tpl.startsWith("http")  && !new File(tpl).exists()) { //NOI18N
                 error = Bundle.SiteZip_error_template_invalid();
                 return false;
             }

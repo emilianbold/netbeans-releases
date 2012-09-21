@@ -12,6 +12,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.html.navigator</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.languages.apacheconf</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
@@ -33,12 +39,6 @@
                     <code-name-base>org.netbeans.modules.php.apigen</code-name-base>
                     <run-dependency>
                         <specification-version>1.5</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.php.composer</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -75,18 +75,6 @@
                     <code-name-base>org.netbeans.modules.php.samples</code-name-base>
                     <run-dependency>
                         <specification-version>1.14</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.web.clientproject</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.web.inspect</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

@@ -78,6 +78,9 @@ public final class SearchHistory {
     /** Maximum items allowed in SearchPatternsList */
     private static final int MAX_SEARCH_PATTERNS_ITEMS = 10;
 
+    /** Limit for stored pattern length */
+    private static final int MAX_PATTERN_LENGHT = 16384; // 16 kB
+
     /** Shareable SearchPattern history. It is a List of SearchPatterns */
     private List<SearchPattern> searchPatternsList
             = new ArrayList<SearchPattern>(MAX_SEARCH_PATTERNS_ITEMS);
@@ -91,6 +94,7 @@ public final class SearchHistory {
      *  newValue - new selected pattern
      *  @deprecated just changes in history
      */
+    @Deprecated
     public final static String LAST_SELECTED = "last-selected"; //NOI18N
     
     /** Property name for adding pattern that was not in history
@@ -135,6 +139,7 @@ public final class SearchHistory {
      *  @deprecated Use <code>getSearchPatterns().get(0)</code>
      *  @return last selected SearchPattern 
      */
+    @Deprecated
     public SearchPattern getLastSelected(){
         return searchPatternsList.get(0);
     }
@@ -143,6 +148,7 @@ public final class SearchHistory {
      *  @deprecated Use only <code>add(SearchPattern pattern)</code>
      *  @param pattern last selected pattern
      */
+    @Deprecated
     public void setLastSelected(SearchPattern pattern){
         SearchPattern oldPattern = searchPatternsList.get(0);
         add(pattern);
@@ -184,7 +190,8 @@ public final class SearchHistory {
      */
     public synchronized void add(SearchPattern pattern) { 
         if (pattern == null || pattern.getSearchExpression() == null || pattern.getSearchExpression().length() == 0
-                || (searchPatternsList.size() > 0 && pattern.equals(searchPatternsList.get(0)))) {
+                || (searchPatternsList.size() > 0 && pattern.equals(searchPatternsList.get(0))
+                || pattern.getSearchExpression().length() > MAX_PATTERN_LENGHT)) {
             return;
         }
         

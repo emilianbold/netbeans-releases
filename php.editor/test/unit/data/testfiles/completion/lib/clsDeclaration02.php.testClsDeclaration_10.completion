@@ -5,7 +5,6 @@ PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
 PACKAGE    AdminModule                     [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
-PACKAGE    Bar                             [PUBLIC]   null
 PACKAGE    Baz                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
@@ -15,8 +14,8 @@ PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    First                           [PUBLIC]   null
 PACKAGE    Fom                             [PUBLIC]   null
-PACKAGE    Foo                             [PUBLIC]   null
 PACKAGE    FrontSpace                      [PUBLIC]   null
+PACKAGE    God                             [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
@@ -46,7 +45,9 @@ PACKAGE    Test204925_08_P                 [PUBLIC]   null
 PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
+PACKAGE    bar                             [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
+PACKAGE    foo                             [PUBLIC]   null
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
 CLASS      Cls3DeclartionTest              [PUBLIC]   clsDeclaration02.php
 CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration02.php
@@ -83,6 +84,8 @@ PACKAGE    e                               [PUBLIC]   Test204925_08_C\d
 PACKAGE    f                               [PUBLIC]   Test204925_06_C\d\e
 PACKAGE    f                               [PUBLIC]   Test204925_07_C\d\e
 PACKAGE    f                               [PUBLIC]   Test204925_08_C\d\e
+PACKAGE    lib                             [PUBLIC]   foo
+PACKAGE    url                             [PUBLIC]   foo\lib
 CLASS      A                               [PUBLIC]   Test197084.php
 CLASS      A                               [PUBLIC]   classConstructorOptionalParam.php
 CLASS      A                               [PUBLIC]   issue195232.php
@@ -171,6 +174,7 @@ CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
 CLASS      Foo                             [PUBLIC]   test203294.php
+CLASS      FooUrl                          [PUBLIC]   foo\lib\url
 CLASS      Foooo                           [PUBLIC]   test204104.php
 CLASS      Foooo                           [PUBLIC]   test204104_02.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
@@ -202,7 +206,9 @@ CLASS      MethodExample                   [PUBLIC]   test201870.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
 CLASS      MockClass                       [PUBLIC]   MC
 CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
+CLASS      MyClass                         [PUBLIC]   MyClass.php
 CLASS      MyCls                           [PUBLIC]   anonymousObjectVariablesNs.php
+CLASS      MyNewClass123                   [PUBLIC]   Foo
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
 CLASS      MyTable                         [PUBLIC]   MyTable.php
 CLASS      MyTextException                 [PUBLIC]   catchinstanceof.php
@@ -229,6 +235,7 @@ CLASS      SuperUser                       [PUBLIC]   XUser
 CLASS      System147427                    [PUBLIC]   issue147427.php
 CLASS      TaskList                        [PUBLIC]   TaskList.php
 CLASS      Test                            [PUBLIC]   issue142024.php
+CLASS      Test                            [PUBLIC]   test216119.php
 CLASS      Test1                           [PUBLIC]   test207188.php
 CLASS      Test141999                      [PUBLIC]   issue141999.php
 CLASS      Test142234                      [PUBLIC]   issue142234.php
@@ -280,6 +287,8 @@ CLASS      TestOptionalArgsClass           [PUBLIC]   optional_args.php
 CLASS      TraitedClass                    [PUBLIC]   traits.php
 CLASS      Types                           [PUBLIC]   Package1
 CLASS      TypesinPHPDoc                   [PUBLIC]   types_in_phpdoc.php
+CLASS      Url                             [PUBLIC]   foo\lib\url
+CLASS      UrlClient                       [PUBLIC]   God
 CLASS      UsageReturnTypeInOtherFile      [PUBLIC]   Usage.php
 CLASS      User                            [PUBLIC]   Core
 CLASS      User                            [PUBLIC]   Core

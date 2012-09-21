@@ -41,13 +41,14 @@
  */
 package org.openide.awt;
 
+import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
@@ -138,33 +139,37 @@ public class ToolbarWithOverflow extends JToolBar {
                 maybeAddOverflow();
             }
         });
-        addContainerListener( new ContainerListener() {
+
+        Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
 
             @Override
-            public void componentAdded( ContainerEvent e ) {
-                System.err.println( e );
-            }
-
-            @Override
-            public void componentRemoved( ContainerEvent e ) {
-                System.err.println( e );
-            }
-        });
-        overflowToolbar.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (popup.isShowing()) {
-                    int minX = popup.getLocationOnScreen().x;
-                    int maxX = popup.getLocationOnScreen().x + popup.getWidth();
-                    int minY = popup.getLocationOnScreen().y;
-                    int maxY = popup.getLocationOnScreen().y + popup.getHeight();
-                    if (e.getXOnScreen() < minX || e.getXOnScreen() >= maxX || e.getYOnScreen() < minY || e.getYOnScreen() >= maxY) {
-                        popup.setVisible(false);
+            public void eventDispatched(AWTEvent event) {
+                MouseEvent e = (MouseEvent) event;
+                if (event.getSource() == popup) {
+                    if (popup.isShowing() && e.getID() == MouseEvent.MOUSE_EXITED) {
+                        int minX = popup.getLocationOnScreen().x;
+                        int maxX = popup.getLocationOnScreen().x + popup.getWidth();
+                        int minY = popup.getLocationOnScreen().y;
+                        int maxY = popup.getLocationOnScreen().y + popup.getHeight();
+                        if (e.getXOnScreen() < minX || e.getXOnScreen() >= maxX || e.getYOnScreen() < minY || e.getYOnScreen() >= maxY) {
+                            popup.setVisible(false);
+                        }
+                    }
+                } else {
+                    if (popup.isShowing() && (e.getID() == MouseEvent.MOUSE_MOVED || e.getID() == MouseEvent.MOUSE_EXITED)) {
+                        int minX = overflowButton.getLocationOnScreen().x;
+                        int maxX = getOrientation() == HORIZONTAL ? minX + popup.getWidth() :
+                                minX + overflowButton.getWidth() + popup.getWidth();
+                        int minY = overflowButton.getLocationOnScreen().y;
+                        int maxY = getOrientation() == HORIZONTAL ? minY + overflowButton.getHeight() + popup.getHeight() :
+                                minY + popup.getHeight();
+                        if (e.getXOnScreen() < minX || e.getXOnScreen() > maxX || e.getYOnScreen() < minY || e.getYOnScreen() > maxY) {
+                            popup.setVisible(false);
+                        }
                     }
                 }
             }
-        });
+        }, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK);
     }
 
     /**
@@ -241,19 +246,6 @@ public class ToolbarWithOverflow extends JToolBar {
             public void mouseEntered(MouseEvent e) {
                 if(displayOverflowOnHover) {
                     displayOverflow();
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (popup.isShowing()) {
-                    int minX = overflowButton.getLocationOnScreen().x;
-                    int maxX = getOrientation() == HORIZONTAL ? minX + overflowButton.getWidth() : popup.getLocationOnScreen().x + popup.getWidth();
-                    int minY = overflowButton.getLocationOnScreen().y;
-                    int maxY = getOrientation() == HORIZONTAL ? popup.getLocationOnScreen().y + popup.getHeight() : minY + overflowButton.getHeight();
-                    if(e.getXOnScreen() < minX || e.getXOnScreen() >= maxX || e.getYOnScreen() < minY || e.getYOnScreen() >= maxY) {
-                        popup.setVisible(false);
-                    }
                 }
             }
         });

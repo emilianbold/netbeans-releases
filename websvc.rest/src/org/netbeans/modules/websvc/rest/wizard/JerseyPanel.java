@@ -113,7 +113,7 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
     @Override
     public void stateChanged( ChangeEvent event ) {
         SourceGroup group = getSourceGroup();
-        if ( !group.equals( sourceGroup)){
+        if ( group != null && !group.equals( sourceGroup)){
             sourceGroup = group;
             updateSourceGroupPackages();
         }
@@ -195,6 +195,16 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
         listeners.add(listener);
     }
     
+    public double getRenderedHeight(){
+        return restAppClass.getLocation().getY()+restAppClass.getHeight()+getGap();
+    }
+    
+    private double getGap(){
+        double gap = restAppClass.getLocation().getY();
+        gap = gap - (restAppPackage.getLocation().getY() +restAppPackage.getHeight());
+        return gap;
+    }
+    
     private SourceGroup getSourceGroup(){
         return sourcePanel.getSourceGroup();
     }
@@ -272,7 +282,7 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(restAppPckgLbl)
                         .addGap(25, 25, 25)
-                        .addComponent(restAppPackage, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(restAppPackage, 0, 288, Short.MAX_VALUE)))
                 .addGap(0, 10, 10))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(restAppClassLbl)

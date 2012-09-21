@@ -42,7 +42,7 @@
 package org.netbeans.jellytools.nodes;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jellytools.JellyTestCase;
 
 /**
  * Run all tests in the same instance of the IDE.
@@ -53,7 +53,7 @@ import org.netbeans.junit.NbModuleSuite;
 public class NodesSuite {
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().
+        return JellyTestCase.emptyConfiguration().
                 addTest(ClassNodeTest.class, ClassNodeTest.tests).
                 addTest(FolderNodeTest.class, FolderNodeTest.tests).
                 addTest(FormNodeTest.class, FormNodeTest.tests).
@@ -65,7 +65,7 @@ public class NodesSuite {
                 addTest(ProjectRootNodeTest.class, ProjectRootNodeTest.tests).
                 addTest(PropertiesNodeTest.class, PropertiesNodeTest.tests).
                 addTest(URLNodeTest.class, URLNodeTest.tests).
-                addTest(UnrecognizedNodeTest.class, UnrecognizedNodeTest.tests);
-        return conf.clusters(".*").enableModules(".*").suite();
+                addTest(UnrecognizedNodeTest.class, UnrecognizedNodeTest.tests).
+                suite();
     }
 }

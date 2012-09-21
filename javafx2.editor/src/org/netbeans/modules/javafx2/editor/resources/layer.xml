@@ -105,6 +105,15 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.completion.CompletionProvider"/>
                     </file>
                 </folder>
+                <file name="org-netbeans-modules-javafx2-editor-completion-beans-FSBuilderResolver.instance">
+                    <attr name="javafx.scene.image.Image" stringvalue="com.sun.javafx.fxml.builder.JavaFXImageBuilder"/>
+                    <attr name="java.net.URL" stringvalue="com.sun.javafx.fxml.builder.URLBuilder"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.javafx2.editor.completion.beans.BuilderResolver"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javafx2.editor.completion.beans.FSBuilderResolver.create"/>
+                </file>
+                <file name="org-netbeans-modules-javafx2-editor-completion-beans-SimpleBuilderResolver.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.javafx2.editor.completion.beans.BuilderResolver"/>
+                </file>
             </folder>
             <folder name="x-java">
                 <folder name="CodeGenerators">
@@ -124,4 +133,13 @@ made subject to such option by the copyright holder.
             </folder> 
         </folder> 
     </folder> 
+    <folder name="Plugins">
+        <folder name="XML">
+            <folder name="UserCatalogs">
+                <file name="org-netbeans-modules-javafx2-editor-fxml-FxmlSchemaCatalog.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

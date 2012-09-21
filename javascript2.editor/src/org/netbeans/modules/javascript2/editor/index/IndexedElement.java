@@ -168,15 +168,20 @@ public class IndexedElement extends JsElementImpl {
     }
     
     public static Collection<TypeUsage> getAssignments(IndexResult indexResult) {
+        return getAssignments(indexResult.getValue(JsIndex.FIELD_ASSIGNMENS));
+    }
+
+    private static Collection<TypeUsage> getAssignments(String sAssignments) {
         Collection<TypeUsage> result = new ArrayList<TypeUsage>();
-        String text = indexResult.getValue(JsIndex.FIELD_ASSIGNMENS);
-        if (text != null) {
-            for (StringTokenizer st = new StringTokenizer(text, "|"); st.hasMoreTokens();) {
+        if (sAssignments != null) {
+            for (StringTokenizer st = new StringTokenizer(sAssignments, "|"); st.hasMoreTokens();) {
                 String token = st.nextToken();
                 int index = token.indexOf(':');
-                String type = token.substring(0, index);
-                String offset = token.substring(index + 1);
-                result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
+                if (index > -1) {
+                    String type = token.substring(0, index);
+                    String offset = token.substring(index + 1);
+                    result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
+                }
             }
         }
         return result;
@@ -189,9 +194,11 @@ public class IndexedElement extends JsElementImpl {
             for (StringTokenizer st = new StringTokenizer(text, "|"); st.hasMoreTokens();) {
                 String token = st.nextToken();
                 int index = token.indexOf(',');
-                String type = token.substring(0, index);
-                String offset = token.substring(index + 1);
-                result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
+                if(index > -1) {
+                    String type = token.substring(0, index);
+                    String offset = token.substring(index + 1);
+                    result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
+                }
             }
         }
         return result;
@@ -203,6 +210,13 @@ public class IndexedElement extends JsElementImpl {
         result.append(property.getName()).append(';');  //NOI18N
         result.append(jsKind.getId()).append(';');  //NOI18N
         result.append(Flag.getFlag(property)).append(';'); //NOI18N
+        for (TypeUsage type : property.getAssignments()) {
+            result.append(type.getType());
+            result.append(":"); //NOI18N
+            result.append(type.getOffset());
+            result.append("|");
+        }
+        result.append(';');
         if (jsKind.isFunction()) {
             result.append(codeParameters(((JsFunction)property).getParameters()));
             result.append(";");
@@ -214,7 +228,6 @@ public class IndexedElement extends JsElementImpl {
                 }
             }
         }
-        
         return result.toString();
     }
     
@@ -265,21 +278,22 @@ public class IndexedElement extends JsElementImpl {
         JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(parts[1]));
         int flag = Integer.parseInt(parts[2]);
         String fqnOfProperty = fqn + "." + name;
-        if (parts.length > 3) {
+        Collection<TypeUsage> assignments = (parts.length > 3) ? getAssignments(parts[3]) : Collections.EMPTY_LIST;
+        if (parts.length > 4) {
             if (jsKind.isFunction()) {
-                String paramsText = parts[3];
+                String paramsText = parts[4];
                 LinkedHashMap<String, Collection<String>> parameters = decodeParameters(paramsText);
                 Collection<String> returnTypes = new ArrayList();
-                if (parts.length > 4) {
-                    String returnTypesText = parts[4];
+                if (parts.length > 5) {
+                    String returnTypesText = parts[5];
                     for (StringTokenizer stringTokenizer = new StringTokenizer(returnTypesText, ","); stringTokenizer.hasMoreTokens();) {
                         returnTypes.add(stringTokenizer.nextToken());
                     }
                 }
-                return new FunctionIndexedElement(fo, name, fqnOfProperty, OffsetRange.NONE, flag, parameters, returnTypes, Collections.EMPTY_LIST);
+                return new FunctionIndexedElement(fo, name, fqnOfProperty, OffsetRange.NONE, flag, parameters, returnTypes, assignments);
             }
         }
-        return new IndexedElement(fo, name, fqnOfProperty, Flag.isDeclared(flag), Flag.isAnonymous(flag), jsKind,OffsetRange.NONE, Flag.getModifiers(flag), Collections.EMPTY_LIST);
+        return new IndexedElement(fo, name, fqnOfProperty, Flag.isDeclared(flag), Flag.isAnonymous(flag), jsKind,OffsetRange.NONE, Flag.getModifiers(flag), assignments);
     }
     
     public static class FunctionIndexedElement extends IndexedElement {

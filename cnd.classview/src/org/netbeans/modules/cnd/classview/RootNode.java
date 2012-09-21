@@ -51,9 +51,10 @@ import org.openide.nodes.AbstractNode;
  *
  * @author Alexander Simon
  */
-public class RootNode extends AbstractNode{
+public class RootNode extends AbstractNode {
+
     public RootNode(ChildrenUpdater updater) {
-        super(new ProjectsKeyArray(updater));
+        super(new ProjectsKeyArray(null, updater));
     }
 
     @Override

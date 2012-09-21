@@ -107,7 +107,7 @@ if ((int) $_GET['responder'] > 0) {
                     <td><?php echo Show($r['data']); ?></td>
                     <td>
                         <a href="?responder=<?php echo $r['id']; ?>">Responder</a><br />
-                        <a href="?deletar=<?php echo $r['id']; ?>" onclick="if(!confirm('Deseja deletar esta mensagem?')) return false;">Deletar</a>
+                        <a href="?deletar=<?php echo $r['id']; ?>" onclick="return false;">Deletar</a>
                     </td>
                 </tr>
                 <?php

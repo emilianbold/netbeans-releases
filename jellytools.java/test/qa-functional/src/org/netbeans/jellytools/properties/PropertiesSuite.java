@@ -42,8 +42,8 @@
 package org.netbeans.jellytools.properties;
 
 import junit.framework.Test;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.properties.editors.CustomEditorOperatorsTest;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Run all tests in the same instance of the IDE.
@@ -54,11 +54,11 @@ import org.netbeans.junit.NbModuleSuite;
 public class PropertiesSuite {
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().
+        return JellyTestCase.emptyConfiguration().
                 addTest(CustomPropertiesTest.class, CustomPropertiesTest.tests).
                 addTest(PropertySheetOperatorTest.class, PropertySheetOperatorTest.tests).
                 addTest(PropertyTest.class, PropertyTest.tests).
-                addTest(CustomEditorOperatorsTest.class, CustomEditorOperatorsTest.tests);
-        return conf.clusters(".*").enableModules(".*").suite();
+                addTest(CustomEditorOperatorsTest.class, CustomEditorOperatorsTest.tests).
+                suite();
     }
 }

@@ -7,7 +7,7 @@ function Shape(ahoj) {
 
     /**
      * 
-     * @return {undefined}^
+     * @returns {undefined}^
      */
     function addReference() {
         // Do nothing...

@@ -116,7 +116,7 @@ public class JTabbedPaneAdapter extends NBTabbedPane implements Tabbed.Accessor,
         @Override
         public void setToolTipTextAt( int index, String toolTip ) {
             CloseableTabComponent ctc = ( CloseableTabComponent ) getTabComponentAt( index );
-            ctc.setToolTipText( toolTip );
+            ctc.setTooltip( toolTip );
         }
 
         @Override

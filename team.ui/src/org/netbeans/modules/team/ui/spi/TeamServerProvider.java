@@ -44,6 +44,7 @@ package org.netbeans.modules.team.ui.spi;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.util.Collection;
+import javax.swing.Action;
 
 /**
  *
@@ -72,5 +73,9 @@ public interface TeamServerProvider {
     public void removePropertyListener (PropertyChangeListener list);
 
     public String validate (String url);
+    
+    public PopupMenuProvider getPopupMenuProvider (String repositoryUrl);
+
+    public Action getShareAction ();
 
 }

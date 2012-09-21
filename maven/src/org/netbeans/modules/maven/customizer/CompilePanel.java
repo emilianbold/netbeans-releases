@@ -132,7 +132,7 @@ public class CompilePanel extends javax.swing.JPanel {
                 return LABELS[i];
             }
         }
-        return LABELS[COS_APP];
+        return LABELS[getDefaultCOSValue()];
     }
 
     private String labelToValue(String label) {
@@ -141,7 +141,15 @@ public class CompilePanel extends javax.swing.JPanel {
                 return VALUES[i];
             }
         }
-        return VALUES[COS_APP];
+        return VALUES[getDefaultCOSValue()];
+    }
+    
+    private int getDefaultCOSValue() {
+        String packaging = handle.getProject().getPackaging();
+        if ("war".equals(packaging) || "ejb".equals(packaging) || "ear".equals(packaging)) {
+            return COS_APP;
+        }
+        return COS_NONE;
     }
 
     private void initValues() {
@@ -163,7 +171,7 @@ public class CompilePanel extends javax.swing.JPanel {
 
             @Override
             public String getDefaultValue() {
-                return LABELS[COS_APP];
+                return LABELS[getDefaultCOSValue()];
             }
 
             @Override
@@ -181,7 +189,7 @@ public class CompilePanel extends javax.swing.JPanel {
                 if (val != null) {
                     return valueToLabel(val);
                 }
-                return LABELS[COS_APP];
+                return LABELS[getDefaultCOSValue()];
             }
 
             @Override
@@ -189,11 +197,11 @@ public class CompilePanel extends javax.swing.JPanel {
                 handle.removePOMModification(operation);
                 modifiedValue = null;
                 String value = labelToValue(label);
-                if (value != null && value.equals(VALUES[COS_APP])) {
+                if (value != null && value.equals(VALUES[getDefaultCOSValue()])) {
                     //just reset the value, no need to persist default.
                     value = null;
                 }
-                if (value == null || VALUES[COS_ALL].equals(value) || VALUES[COS_APP].equals(value)) {
+                if (VALUES[COS_ALL].equals(value) || VALUES[COS_APP].equals(value) || (value == null && getDefaultCOSValue() != COS_NONE)) {
                     if (!warningShown && DontShowAgainSettings.getDefault().showWarningAboutApplicationCoS()) {
                         WarnPanel panel = new WarnPanel(NbBundle.getMessage(CompilePanel.class, "HINT_ApplicationCoS"));
                         NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.PLAIN_MESSAGE);

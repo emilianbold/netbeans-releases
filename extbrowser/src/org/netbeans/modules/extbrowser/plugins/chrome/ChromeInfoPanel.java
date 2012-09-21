@@ -41,15 +41,28 @@
  */
 package org.netbeans.modules.extbrowser.plugins.chrome;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputReaderTask;
+import org.netbeans.api.extexecution.input.InputReaders;
 
 import org.netbeans.modules.extbrowser.plugins.ExtensionManager.ExtensitionStatus;
 import org.netbeans.modules.extbrowser.plugins.PluginLoader;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -57,30 +70,85 @@ import org.openide.util.NbBundle;
  */
 class ChromeInfoPanel extends javax.swing.JPanel {
 
-    ChromeInfoPanel(String pluginPath, final PluginLoader loader, 
-            ExtensitionStatus currentStatus) 
+    private static final long serialVersionUID = 5394629966593049098L;
+    static final Logger LOGGER = Logger.getLogger(ChromeInfoPanel.class.getName());
+
+
+    ChromeInfoPanel(String pluginPath, final PluginLoader loader,
+            ExtensitionStatus currentStatus)
     {
         initComponents();
-        
+
         File file = new File(pluginPath);
         String name = file.getName();
-        String parent = file.getParent();
+        File parent = file.getParentFile();
         StringBuilder text = new StringBuilder("<html>");                       // NOI18N
         if ( currentStatus == ExtensitionStatus.NEEDS_UPGRADE ){
             text.append(NbBundle.getMessage(ChromeInfoPanel.class, "TXT_RequestUpgrade"));// NOI18N
             text.append(" ");           // NOI18N
         }
-        text.append(NbBundle.getMessage(ChromeInfoPanel.class, 
-                "TXT_PluginIstallationIssue" , "file:///"+parent, name ));      // NOI18N
-        text.append("</html>");         // NOI18N        
-        myEditorPane.setText(text.toString());             
-        
+        String path = "";
+        try {
+            path = file.toURI().toURL().toExternalForm();
+        }
+        catch( MalformedURLException e ){
+            LOGGER.log(Level.WARNING, null, e);
+        }
+        text.append(NbBundle.getMessage(ChromeInfoPanel.class,
+                "TXT_PluginIstallationIssue" ,                          // NOI18N
+                path, name ));      
+        text.append("</html>");         // NOI18N
+        myEditorPane.setText(text.toString());
+
         HyperlinkListener listener = new HyperlinkListener() {
-            
+
             @Override
             public void hyperlinkUpdate( HyperlinkEvent e ) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
+                    URL url = e.getURL();
+                    if (url.getProtocol().equals("file")) { // NOI18N
+                        // first, try java api
+                        Desktop desktop = Desktop.getDesktop();
+                        if (desktop.isSupported(Desktop.Action.OPEN)) {
+                            try {
+                                desktop.open(Utilities.toFile(url.toURI()));
+                            } catch (IOException ex) {
+                                LOGGER.log(Level.FINE, null, ex);
+                                openNativeFileManager(url);
+                            } catch (URISyntaxException ex) {
+                                LOGGER.log(Level.WARNING, null, ex);
+                                openNativeFileManager(url);
+                            }
+                        } else {
+                            openNativeFileManager(url);
+                        }
+                    } else {
+                        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                    }
+                }
+            }
+
+            private void openNativeFileManager(URL url) {
+                String executable;
+                if (Utilities.isWindows()) {
+                    executable = "explorer.exe"; // NOI18N
+                } else if (Utilities.isMac()) {
+                    executable = "open"; // NOI18N
+                } else {
+                    assert Utilities.isUnix() : "Unix expected";
+                    executable = "xdg-open"; // NOI18N
+                }
+                try {
+                    Process process = new ExternalProcessBuilder(executable)
+                            .addArgument(url.toURI().toString())
+                            .redirectErrorStream(true)
+                            .call();
+                    InputReaderTask task = InputReaderTask.newTask(InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()), null);
+                    RequestProcessor.getDefault().post(task);
+                } catch (URISyntaxException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
                 }
             }
         };

@@ -76,20 +76,12 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * ONLY FOR J2SE PROJECT TYPE!
- *
- * Instance of this class and LookupMerger<ActionProvider> is added to J2SEProject's lookup.
- * If somebody else will add another merger of ActionProvider, then good luck...
- *
- * There's no API to hook into project's Run file action implementations,
- * so this is extract from J2SEActionProvider to support:
+ * This ActionProvider support few basic operations.
  * - Compile File
  * - Run File
  * - Test File
  * - Debug File
  * - Debug Test File
- * Basically only modification is changing hardcoded .java to .groovy plus
- * some changes needed to solve lack of J2SE project internals
  *
  * @author Martin Adamek
  * @author Martin Janicek

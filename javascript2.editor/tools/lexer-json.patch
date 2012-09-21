@@ -1,7 +1,6 @@
-diff -Naur old/JsonColoringLexer.java new/JsonColoringLexer.java
---- old/JsonColoringLexer.java	2012-06-19 10:20:51.000000000 +0200
-+++ new/JsonColoringLexer.java	2012-06-19 10:32:07.000000000 +0200
-@@ -477,7 +477,7 @@
+--- JsonColoringLexer.java	2012-09-11 23:40:18.801590325 +0200
++++ JsonColoringLexer.java.patched	2012-09-11 23:40:18.877590343 +0200
+@@ -515,7 +515,7 @@
     * Returns the text matched by the current regular expression.
     */
    public final String yytext() {
@@ -10,7 +9,7 @@ diff -Naur old/JsonColoringLexer.java new/JsonColoringLexer.java
    }
  
  
-@@ -493,7 +493,7 @@
+@@ -531,7 +531,7 @@
     * @return the character at position pos
     */
    public final char yycharat(int pos) {
@@ -19,7 +18,7 @@ diff -Naur old/JsonColoringLexer.java new/JsonColoringLexer.java
    }
  
  
-@@ -501,7 +501,7 @@
+@@ -539,7 +539,7 @@
     * Returns the length of the matched text region.
     */
    public final int yylength() {
@@ -28,7 +27,7 @@ diff -Naur old/JsonColoringLexer.java new/JsonColoringLexer.java
    }
  
  
-@@ -544,7 +544,7 @@
+@@ -582,7 +582,7 @@
      if ( number > yylength() )
        zzScanError(ZZ_PUSHBACK_2BIG);
  
@@ -37,7 +36,7 @@ diff -Naur old/JsonColoringLexer.java new/JsonColoringLexer.java
    }
  
  
-@@ -577,7 +577,7 @@
+@@ -615,7 +615,7 @@
  
        zzAction = -1;
  
@@ -46,7 +45,7 @@ diff -Naur old/JsonColoringLexer.java new/JsonColoringLexer.java
    
        zzState = ZZ_LEXSTATE[zzLexicalState];
  
-@@ -585,30 +585,15 @@
+@@ -623,30 +623,15 @@
        zzForAction: {
          while (true) {
      
@@ -83,7 +82,7 @@ diff -Naur old/JsonColoringLexer.java new/JsonColoringLexer.java
            int zzNext = zzTransL[ zzRowMapL[zzState] + zzCMapL[zzInput] ];
            if (zzNext == -1) break zzForAction;
            zzState = zzNext;
-@@ -616,7 +601,7 @@
+@@ -654,7 +639,7 @@
            int zzAttributes = zzAttrL[zzState];
            if ( (zzAttributes & 1) == 1 ) {
              zzAction = zzState;
@@ -92,7 +91,7 @@ diff -Naur old/JsonColoringLexer.java new/JsonColoringLexer.java
              if ( (zzAttributes & 8) == 8 ) break zzForAction;
            }
  
-@@ -624,7 +609,9 @@
+@@ -662,7 +647,9 @@
        }
  
        // store back cached position
@@ -102,4 +101,4 @@ diff -Naur old/JsonColoringLexer.java new/JsonColoringLexer.java
 +      }
  
        switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
-         case 9: 
+         case 13: 

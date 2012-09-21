@@ -137,21 +137,21 @@ public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
         String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME, "999.9.9", "999.9.9");
         populateCatalog(contents);
 
-        assertTrue(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
+        assertNotNull(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
     }
 
     public void testNewBugzillaNotAvailable() throws Throwable {
         String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME, "0.0.0", "0.0.0");
         populateCatalog(contents);
 
-        assertFalse(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
+        assertNull(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
     }
 
     public void testBugzillaIsNotAtUCAvailable() throws Throwable {
         String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, "org.netbeans.modules.ketchup", "1.0.0", "1.0.0");
         populateCatalog(contents);
 
-        assertFalse(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
+        assertNull(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
     }
 
     public void testIsSupported() {

@@ -42,10 +42,8 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -70,6 +68,9 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private final static Integer PID_TIMEOUT =
             Integer.valueOf(System.getProperty(
             "dlight.nativeexecutor.pidtimeout", "70")); // NOI18N
+    private final static Integer SIGKILL_TIMEOUT =
+            Integer.valueOf(System.getProperty(
+            "dlight.nativeexecutor.forcekill.timeout", "5")); // NOI18N
     protected final NativeProcessInfo info;
     protected final HostInfo hostInfo;
     protected long creation_ts = -1;
@@ -83,7 +84,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private volatile boolean isInterrupted;
     private final AtomicBoolean cancelledFlag = new AtomicBoolean(false);
     private Future<ProcessInfoProvider> infoProviderSearchTask;
-    private Future<Integer> waitTask = null;
+    private volatile Future<Integer> waitTask = null;
     private final Object resultLock = new Object();
     private Integer result = null;
     private InputStream inputStream;
@@ -121,11 +122,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 //            Exceptions.printStackTrace(ex);
         }
         hostInfo = hinfo;
-
-        Collection<ChangeListener> ll = info.getListeners();
-        listeners = (ll == null || ll.isEmpty()) ? null
-                : Collections.unmodifiableList(
-                new ArrayList<ChangeListener>(ll));
+        listeners = info.getListenersSnapshot();
     }
 
     public final NativeProcess createAndStart() {
@@ -220,22 +217,23 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     }
 
     /**
-     * To be implemented by a successor.
-     * It must implement the specific termination of the underlaying system
-     * process on this method call.
-     * It is guaranteed that this method is called only once.
-     * Implementation should not (but may) wait for the actual terminaltion
-     * before returning from the call.
-     * If destroyImpl() returnes and process's waitFor() still not exited during 
-     * specified (by return value) seconds (i.e. process was not actually
-     * terminated), then a SIGKILL is send to the process.
+     * To be implemented by a successor. It must implement the specific
+     * termination of the underlying system process on this method call. It is
+     * guaranteed that this method is called only once. Implementation should
+     * not (but may) wait for the actual termination before returning from the
+     * call. If destroyImpl() returns and process's waitFor() still not exited
+     * during specified (by return value) seconds (i.e. process was not actually
+     * terminated), then a SIGTERM is send to the process.
      *
-     * Default implementation just returns 0. So SIGKILL is send immediately to
+     * Default implementation just returns 0. So SIGTERM is send immediately to
      * force-terminate the process.
      *
+     * SIGKILL is send if after SIGTERM process is still alive for
+     * "dlight.nativeexecutor.forcekill.timeout".
+     *
      * @return number of seconds to wait before doing an attempt to
-     * force-terminate the process with the SIGKILL signal (signal is send only
-     * if process was not finished by that time).
+     * force-terminate the process with the SIGTERM (and SIGKILL) signal (signal
+     * is send only if process was not finished by that time).
      */
     protected int destroyImpl() {
         return 0;
@@ -271,12 +269,13 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     }
 
     /**
-     * Terminates the underlaying system process. The system process represented
+     * Terminates the underlying system process. The system process represented
      * by this <code>AbstractNativeProcess</code> object is forcibly terminated.
      *
      * Returning from the call of this method does not mean that the process was
      * already terminated.
      *
+     * May block caller thread for significant time
      */
     @Override
     public final void destroy() {
@@ -286,39 +285,56 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
         final int timeToWait = destroyImpl();
 
-        if (pid > 0 && waitTask != null && !waitTask.isDone()) {
-            Future<Integer> killTask = null;
+        if (waitTask == null) {
+            // this could be in a case if exception occured during the process
+            // creation ...
+            return;
+        }
 
-            if (timeToWait > 0) {
-                // Submit an asynchronious task that will send SIGKILL if
-                // process is still here after returned timeout...
-                final Callable<Integer> waitForTermination = new Callable<Integer>() {
+        try {
+            waitTask.get(timeToWait, TimeUnit.SECONDS);
+            return;
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+        } catch (TimeoutException ex) {
+        }
 
-                    @Override
-                    public Integer call() throws Exception {
-                        try {
-                            return waitTask.get(timeToWait, TimeUnit.SECONDS);
-                        } catch (TimeoutException ex) {
-                            // Process didn't gone.. Kill it!
-                            return CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null).get();
-                        }
-                    }
-                };
+        try {
+            exitValue();
+            // No exception means successful termination
+            return;
+        } catch (IllegalThreadStateException ex) {
+        }
 
-                killTask = NativeTaskExecutorService.submit(waitForTermination,
-                        "Waiting " + timeToWait + " seconds for process " + id + " to terminate..."); // NOI18N
-            } else {
-                killTask = CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null);
-            }
+        try {
+            CommonTasksSupport.sendSignalGrp(execEnv, pid, Signal.SIGTERM, null).get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+        }
 
-            if (killTask != null) {
-                try {
-                    killTask.get();
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+        try {
+            waitTask.get(SIGKILL_TIMEOUT, TimeUnit.SECONDS);
+            return;
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+        } catch (TimeoutException ex) {
+        }
+
+        try {
+            exitValue();
+            // No exception means successful termination
+            return;
+        } catch (IllegalThreadStateException ex) {
+        }
+
+        try {
+            CommonTasksSupport.sendSignalGrp(execEnv, pid, Signal.SIGKILL, null).get();
+        } catch (InterruptedException ex1) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex1) {
         }
     }
 
@@ -440,14 +456,18 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
                 this.state = state;
 
-                if (listeners == null) {
-                    return;
-                }
+                if (!listeners.isEmpty()) {
+                    final ChangeEvent event = new NativeProcessChangeEvent(this, state, pid);
 
-                final ChangeEvent event = new NativeProcessChangeEvent(this, state, pid);
+                    for (ChangeListener l : listeners) {
+                        l.stateChanged(event);
+                    }
 
-                for (ChangeListener l : listeners) {
-                    l.stateChanged(event);
+                    if (this.state == State.CANCELLED
+                            || this.state == State.ERROR
+                            || this.state == State.FINISHED) {
+                        listeners.clear();
+                    }
                 }
             } finally {
                 if (isInterrupted()) {

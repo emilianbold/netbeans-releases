@@ -106,6 +106,7 @@ import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
+
 /** JaxWsCodeGenerator.java
  *
  * Created on March 2, 2006
@@ -983,10 +984,13 @@ public class JaxWsCodeGenerator {
             TreeMaker make = workingCopy.getTreeMaker();
             ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
             if (javaClass != null) {
-                TypeElement wsRefElement = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceRef"); //NOI18N
+                TypeElement wsRefElement = workingCopy.getElements().getTypeElement(
+                        "javax.xml.ws.WebServiceRef"); //NOI18N
                 AnnotationTree wsRefAnnotation = make.Annotation(
                         make.QualIdent(wsRefElement),
-                        Collections.<ExpressionTree>singletonList(make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlUrl)))); //NOI18N
+                        Collections.<ExpressionTree>singletonList(
+                                make.Assignment(make.Identifier("wsdlLocation"), 
+                                        make.Literal(wsdlUrl)))); //NOI18N
                 // create field modifier: private(static) with @WebServiceRef annotation
                 FileObject targetFo = workingCopy.getFileObject();
                 Set<Modifier> modifiers = new HashSet<Modifier>();
@@ -998,11 +1002,15 @@ public class JaxWsCodeGenerator {
                         modifiers,
                         Collections.<AnnotationTree>singletonList(wsRefAnnotation));
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(serviceJavaName);
-                VariableTree serviceRefInjection = make.Variable(
-                methodModifiers,
-                serviceFName,
-                make.Type(typeElement.asType()),
-                null);
+                Tree type;
+                if ( typeElement != null ){
+                    type = make.Type(typeElement.asType());
+                }
+                else {
+                    type = make.Type(serviceJavaName);
+                }
+                VariableTree serviceRefInjection = make.Variable(methodModifiers,
+                            serviceFName,type,null);
                 
                 ClassTree modifiedClass = make.insertClassMember(javaClass, 0, serviceRefInjection);
                 workingCopy.rewrite(javaClass, modifiedClass);

@@ -208,14 +208,12 @@ public class BookmarkManager {
         FileBookmarks fileBookmarks = null;
         ProjectBookmarks projectBookmarks = getProjectBookmarks(document);
         if (projectBookmarks != null) {
-            if (projectBookmarks != null) {
-                FileObject fo = NbEditorUtilities.getFileObject (document); // fo should be non-null
-                URL url = fo.toURL();
-                fileBookmarks = projectBookmarks.get(url);
-                if (fileBookmarks == null) {
-                    fileBookmarks = new FileBookmarks(projectBookmarks, url, fo, Collections.<BookmarkInfo>emptyList());
-                    projectBookmarks.add(fileBookmarks);
-                }
+            FileObject fo = NbEditorUtilities.getFileObject(document); // fo should be non-null
+            URL url = fo.toURL();
+            fileBookmarks = projectBookmarks.get(url);
+            if (fileBookmarks == null) {
+                fileBookmarks = new FileBookmarks(projectBookmarks, url, fo, Collections.<BookmarkInfo>emptyList());
+                projectBookmarks.add(fileBookmarks);
             }
         }
         return fileBookmarks;

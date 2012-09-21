@@ -58,7 +58,6 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.bookmarks.BookmarkAPIAccessor;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
-import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
@@ -220,16 +219,19 @@ public final class Bookmark {
     
     public final class AAnnotation extends Annotation {
 
+        @Override
         public String getAnnotationType () {
             return BOOKMARK_ANNOTATION_TYPE;
         }
 
+        @Override
         public String getShortDescription () {
             String fmt = NbBundle.getBundle (Bookmark.class).getString ("Bookmark_Tooltip"); // NOI18N
             int lineIndex = getLineNumber ();
-            return MessageFormat.format (fmt, new Object[] {new Integer (lineIndex + 1)});
+            return MessageFormat.format (fmt, new Object[] {Integer.valueOf(lineIndex + 1)});
         }
 
+        @Override
         public String toString() {
             return getShortDescription();
         }
@@ -243,6 +245,7 @@ public final class Bookmark {
             bookmarkListReference = new WeakReference<BookmarkList> (bookmarkList);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             BookmarkList bookmarkList = bookmarkListReference.get ();
             if (bookmarkList == null)

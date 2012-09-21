@@ -55,12 +55,20 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.remote.RemoteFS;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.FindAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.ToolsAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -78,9 +86,16 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
+@ActionReferences({
+    @ActionReference(
+        id=@ActionID(id="org.netbeans.modules.project.ui.problems.BrokenProjectActionFactory", category="Project"),
+        position=2950,
+        path="Projects/org-netbeans-modules-web-clientproject/Actions")
+})
 public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     private ClientSideProject project;
@@ -215,7 +230,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean arg0) {
-            return CommonProjectActions.forType(ClientSideProjectType.TYPE);
+            return CommonProjectActions.forType("org-netbeans-modules-web-clientproject"); // NOI18N
         }
 
         @Override
@@ -272,6 +287,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
     }
     private static class ClientSideProjectChildren extends Children.Keys<BasicNodes> {
 
+        // XXX threading! for all fields
         private ClientSideProject project;
         private FileObject siteRootFolder;
         private FileObject testsFolder;
@@ -433,9 +449,9 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         protected Node[] createNodes(BasicNodes k) {
             switch (k) {
                 case Sources:
-                    return createNodeForFolder(k, project.getSiteRootFolder(), new String[]{"nbproject", "build"});
+                    return createNodeForFolder(k, project.getSiteRootFolder(), new String[]{"nbproject", "build"}); //NOI18N
                 case Tests:
-                    return createNodeForFolder(k, project.getTestsFolder(), new String[]{"nbproject", "build"});
+                    return createNodeForFolder(k, project.getTestsFolder(), new String[]{"nbproject", "build"}); //NOI18N
                 case RemoteFiles:
                     return new Node[]{new RemoteFilesNode(project)};
                 case Configuration:
@@ -446,18 +462,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private Node[] createNodeForFolder(BasicNodes type, FileObject root, String[] ignoreList) {
-            if (root == null) {
-                if (type == BasicNodes.Sources) {
-                    // when site root is configured to point to non-existent directory:
-                    DataFolder fakeNode = DataFolder.findFolder(project.getProjectDirectory());
-                    return new Node[]{new FolderFilterNode(type, fakeNode.getNodeDelegate(), ignoreList)};
-                }
-            } else {
+            if (root != null && root.isValid()) {
                 DataFolder df = DataFolder.findFolder(root);
                 if (df.getChildren().length > 0 || type == BasicNodes.Sources) {
                     return new Node[]{new FolderFilterNode(type, df.getNodeDelegate(), ignoreList)};
                 }
             }
+            // missing root should be solved by project problems
             return new Node[0];
         }
 
@@ -491,8 +502,20 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         @Override
-        public Action[] getActions(boolean arg0) {
-            return new Action[]{CommonProjectActions.newFileAction()};
+        public Action[] getActions(boolean context) {
+            List<Action> actions = new ArrayList<Action>();
+            actions.add(CommonProjectActions.newFileAction());
+            actions.add(null);
+            actions.add(SystemAction.get(FindAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(FileSystemAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(PasteAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(ToolsAction.class));
+            actions.add(null);
+            actions.add(CommonProjectActions.customizeProjectAction());
+            return actions.toArray(new Action[actions.size()]);
         }
 
         @Override
@@ -537,11 +560,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         public String getDisplayName() {
             switch (nodeType) {
                 case Sources:
-                    return "Site Root";
+                    return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("SITE_ROOT");
                 case Tests:
-                    return "Unit Tests";
+                    return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("UNIT_TESTS");
                 case Configuration:
-                    return "Configuration Files";
+                    return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("CONFIGURATION_FILES");
                 default:
                     throw new AssertionError(nodeType.name());
             }
@@ -560,6 +583,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         protected Node[] createNodes(Node key) {
+            FileObject fo = key.getLookup().lookup(FileObject.class);
+            if (fo != null && !VisibilityQuery.getDefault().isVisible(fo)) {
+                return new Node[0];
+            }
             for (String ignore : ignoreList) {
                 if (key.getDisplayName().equals(ignore)) {
                     return new Node[0];
@@ -582,7 +609,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/remotefiles.png");
+            return ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/remotefiles.png"); //NOI18N
         }
 
         @Override
@@ -614,7 +641,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             } catch (DataObjectNotFoundException ex) {
                 return new Node[] {};
             }
-            return new Node[] { dobj.getNodeDelegate() };
+            return new Node[] { dobj.getNodeDelegate().cloneNode() };
         }
 
         @Override

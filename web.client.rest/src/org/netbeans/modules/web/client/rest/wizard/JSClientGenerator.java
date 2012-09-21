@@ -444,14 +444,13 @@ class JSClientGenerator {
                 myModels, myEntities, myUi);
         generator.generateModel(entity, path, 
                 collectionPath, httpPaths, useIds, controller);
-        generateRouter(entity, path, collectionPath, httpPaths, useIds, 
-                controller, generator);
+        generateRouter(entity, path, collectionPath, httpPaths, controller, 
+                generator);
     }
 
     private void generateRouter( TypeElement entity, String path,
             String collectionPath, Map<HttpRequests, String> httpPaths,
-            Map<HttpRequests, Boolean> useIds, CompilationController controller, 
-            ModelGenerator modelGenerator )
+            CompilationController controller, ModelGenerator modelGenerator )
     {
         if ( myModelsCount >0 ){
             myRouters.append("/*");                                 // NOI18N
@@ -462,8 +461,7 @@ class JSClientGenerator {
         }
         RouterGenerator generator = new RouterGenerator(myRouters, name, 
                 modelGenerator);
-        generator.generateRouter(entity, path, collectionPath, httpPaths, useIds, 
-                controller );
+        generator.generateRouter(entity, path, collectionPath, httpPaths,controller );
         
         if ( myModelsCount == 0 ){
             // Create HTML "view" for header identifier 
@@ -535,7 +533,7 @@ class JSClientGenerator {
                 }
                 String nameAttribute = modelGenerator.getDisplayNameAlias();
                 if ( !generator.useUi()){
-                    if ( !nameAttribute.equals( idAttribute )){
+                    if ( nameAttribute != null && !nameAttribute.equals( idAttribute )){
                         myTmplDetails.append("<label>Name:</label>\n");                 // NOI18N
                         myTmplDetails.append("<input type='text' id='");                // NOI18N
                         myTmplDetails.append(nameAttribute);

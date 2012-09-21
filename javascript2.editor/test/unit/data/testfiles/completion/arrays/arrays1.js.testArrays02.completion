@@ -1,0 +1,6 @@
+Code completion result for source line:
+arr02.l|ength;
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     lastIndexOf(searchElement: Obj  [PUBLIC]   stub_CORE_Array.js
+FIELD      length: Number                  [PUBLIC]   stub_CORE_Array.js

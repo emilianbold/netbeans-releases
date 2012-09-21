@@ -3,15 +3,12 @@
 
 <fontscolors>
     <fontcolor name="keyword" default="keyword"/>
-
-    <fontcolor name="FLOAT_LITERAL" default="number"/>
-    <fontcolor name="ANY_OPERATOR" default="operator"/>
-    <fontcolor name="STRING_LITERAL" default="string"/>
-    <fontcolor name="BLOCK_COMMENT" default="comment"/>
-    <fontcolor name="ERROR" default="error"/>
-    <fontcolor name="LINE_COMMENT" default="comment"/>
-    <fontcolor name="IDENTIFIER" default="identifier"/>
-    <fontcolor name="WHITESPACE" default="whitespace"/>
+    <fontcolor name="constant" default="number"/>
+    <fontcolor name="operator" default="operator"/>
+    <fontcolor name="string" default="string"/>
+    <fontcolor name="error" default="error"/>
+    <fontcolor name="identifier" default="identifier"/>
+    <fontcolor name="whitespace" default="whitespace"/>
 
     <fontcolor name="mod-regexp" foreColor="9933CC" default="regexp" />
 

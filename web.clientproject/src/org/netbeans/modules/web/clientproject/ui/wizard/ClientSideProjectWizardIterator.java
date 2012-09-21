@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -60,8 +59,8 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -120,7 +119,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         File dirF = FileUtil.normalizeFile((File) wizardDescriptor.getProperty(Wizard.PROJECT_DIRECTORY));
         String name = (String) wizardDescriptor.getProperty(Wizard.NAME);
         if (!dirF.isDirectory() && !dirF.mkdirs()) {
-            throw new IOException("Cannot create project directory");
+            throw new IOException("Cannot create project directory"); //NOI18N
         }
         FileObject dir = FileUtil.toFileObject(dirF);
         AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(dir, name);
@@ -147,7 +146,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public Set<FileObject> instantiate() throws IOException {
-        throw new UnsupportedOperationException("never implemented - use progress one");
+        throw new UnsupportedOperationException("never implemented - use progress one"); //NOI18N
     }
 
     @Override
@@ -159,7 +158,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         String[] steps = wizard.createSteps();
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
-            assert steps[i] != null : "Missing name for step: " + i;
+            assert steps[i] != null : "Missing name for step: " + i; //NOI18N
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
@@ -247,7 +246,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         public static final String SITE_TEMPLATE = "SITE_TEMPLATE"; // NOI18N
         public static final String LIBRARIES_FOLDER = "LIBRARIES_FOLDER"; // NOI18N
-        public static final String SELECTED_LIBRARIES = "SELECTED_LIBRARIES"; // NOI18N
 
 
         @Override
@@ -264,7 +262,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         @NbBundle.Messages({
             "NewProjectWizard.step.createProject=Name and Location",
             "NewProjectWizard.step.chooseSite=Site Template",
-            "NewProjectWizard.step.selectJsLibrary=JavaScript Libraries"
+            "NewProjectWizard.step.selectJsLibrary=JavaScript Files"
         })
         @Override
         public String[] createSteps() {
@@ -294,11 +292,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
              }
 
             // js libs
-            @SuppressWarnings("unchecked")
-            List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries = (List<JavaScriptLibrarySelection.SelectedLibrary>) wizardDescriptor.getProperty(SELECTED_LIBRARIES);
-            if (selectedLibraries != null) {
-                // any libraries selected
-                ClientSideProjectUtilities.applyJsLibraries(selectedLibraries, (String) wizardDescriptor.getProperty(LIBRARIES_FOLDER), siteRootDir, handle);
+            FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
+            if (jsLibs != null) {
+                // move all downloaded libraries
+                FileUtilities.moveContent(jsLibs, siteRootDir);
             }
 
             // index file (#216293)
@@ -318,9 +315,17 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public void uninitialize(WizardDescriptor wizardDescriptor) {
+            // cleanup js libs
+            FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
+            if (jsLibs != null && jsLibs.isValid()) {
+                try {
+                    jsLibs.delete();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+            }
             wizardDescriptor.putProperty(SITE_TEMPLATE, null);
             wizardDescriptor.putProperty(LIBRARIES_FOLDER, null);
-            wizardDescriptor.putProperty(SELECTED_LIBRARIES, null);
         }
 
         @NbBundle.Messages({

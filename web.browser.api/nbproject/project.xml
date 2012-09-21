@@ -120,6 +120,7 @@
                 <friend>org.netbeans.modules.extbrowser</friend>
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.navigator</friend>
+                <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>
                 <friend>org.netbeans.modules.web.clientproject.api</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>

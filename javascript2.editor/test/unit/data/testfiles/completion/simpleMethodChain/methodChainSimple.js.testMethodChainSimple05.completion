@@ -3,12 +3,19 @@ MyObj.create().getInfo().|big();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      prototype                       [PUBLIC]   stub_CORE_String.js
+METHOD     anchor(nameAttribute: String):  [PUBLIC]   stub_CORE_String.js
+METHOD     big(): String                   [PUBLIC]   stub_CORE_String.js
+METHOD     blink(): String                 [PUBLIC]   stub_CORE_String.js
+METHOD     bold(): String                  [PUBLIC]   stub_CORE_String.js
 METHOD     charAt(pos: Number): String     [PUBLIC]   stub_CORE_String.js
 METHOD     charCodeAt(pos: Number): Numbe  [PUBLIC]   stub_CORE_String.js
 METHOD     concat(): String                [PUBLIC]   stub_CORE_String.js
 METHOD     create(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   stub_CORE_Object.js
 METHOD     defineProperty(O: Object, P: S  [PUBLIC,   stub_CORE_Object.js
+METHOD     fixed(): String                 [PUBLIC]   stub_CORE_String.js
+METHOD     fontcolor(color: String): Stri  [PUBLIC]   stub_CORE_String.js
+METHOD     fontsize(size: Number): Number  [PUBLIC]   stub_CORE_String.js
 METHOD     freeze(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
 METHOD     fromCharCode(): String          [PUBLIC,   stub_CORE_String.js
 METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   stub_CORE_Object.js
@@ -20,8 +27,10 @@ METHOD     isExtensible(O: Object): Boole  [PUBLIC,   stub_CORE_Object.js
 METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
 METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   stub_CORE_Object.js
 METHOD     isSealed(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
+METHOD     italics(): String               [PUBLIC]   stub_CORE_String.js
 METHOD     keys(O: Object): Array          [PUBLIC,   stub_CORE_Object.js
 METHOD     lastIndexOf(searchString: Stri  [PUBLIC]   stub_CORE_String.js
+METHOD     link(hrefAttribute: String): S  [PUBLIC]   stub_CORE_String.js
 METHOD     localeCompare(that): Number     [PUBLIC]   stub_CORE_String.js
 METHOD     match(regexp): Array            [PUBLIC]   stub_CORE_String.js
 METHOD     preventExtensions(O: Object):   [PUBLIC,   stub_CORE_Object.js
@@ -30,9 +39,13 @@ METHOD     replace(searchValue: RegExp, r  [PUBLIC]   stub_CORE_String.js
 METHOD     seal(O: Object): Object         [PUBLIC,   stub_CORE_Object.js
 METHOD     search(regexp: RegExp): Number  [PUBLIC]   stub_CORE_String.js
 METHOD     slice(start: Number, end: Numb  [PUBLIC]   stub_CORE_String.js
+METHOD     small(): String                 [PUBLIC]   stub_CORE_String.js
 METHOD     split(separator: String, limit  [PUBLIC]   stub_CORE_String.js
+METHOD     strike(): String                [PUBLIC]   stub_CORE_String.js
+METHOD     sub(): String                   [PUBLIC]   stub_CORE_String.js
 METHOD     substr(start: Number, length:   [PUBLIC]   stub_CORE_String.js
 METHOD     substring(start: Number, end:   [PUBLIC]   stub_CORE_String.js
+METHOD     sup(): String                   [PUBLIC]   stub_CORE_String.js
 METHOD     toLocaleLowerCase(): String     [PUBLIC]   stub_CORE_String.js
 METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
 METHOD     toLocaleUpperCase(): String     [PUBLIC]   stub_CORE_String.js
@@ -41,5 +54,5 @@ METHOD     toString(): String              [PUBLIC]   stub_CORE_String.js
 METHOD     toUpperCase(): String           [PUBLIC]   stub_CORE_String.js
 METHOD     trim(): String                  [PUBLIC]   stub_CORE_String.js
 METHOD     valueOf(): String               [PUBLIC]   stub_CORE_String.js
-FIELD      constructor                     [PUBLIC]   stub_CORE_String.js
-FIELD      length                          [PUBLIC]   stub_CORE_String.js
+FIELD      constructor: Function           [PUBLIC]   stub_CORE_String.js
+FIELD      length: Number                  [PUBLIC]   stub_CORE_String.js

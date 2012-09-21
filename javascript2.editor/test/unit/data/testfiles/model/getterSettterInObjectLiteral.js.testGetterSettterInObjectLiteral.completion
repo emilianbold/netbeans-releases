@@ -4,5 +4,5 @@ formatter.println("The dos is old " + Dog.|years + " years.");
 ------------------------------------
 METHOD     getColor()                      [PUBLIC]   getterSettterInObjectLiteral.js
 FIELD      color                           [PUBLIC]   getterSettterInObjectLiteral.js
-FIELD      old                             [PUBLIC]   getterSettterInObjectLiteral.js
-FIELD      years                           [PUBLIC]   getterSettterInObjectLiteral.js
+FIELD      old: count                      [PUBLIC]   getterSettterInObjectLiteral.js
+FIELD      years: Number                   [PUBLIC]   getterSettterInObjectLiteral.js

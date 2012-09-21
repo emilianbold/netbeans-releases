@@ -120,11 +120,15 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         RP = new RequestProcessor(getUrl(), 1, true);
         final AtomicBoolean firstSynch = new AtomicBoolean(interactive); // #200643
         synchronization = RP.create(new Runnable() {
-            @Override public void run() {
+            private boolean firstRun = true;
+
+            @Override
+            public void run() {
                 String s = getProperties().get(INSTANCE_SYNC);
                 int pause = Integer.parseInt(s) * 60 * 1000;
                 if (pause > 0 || firstSynch.compareAndSet(true, false)) {
-                    doSynchronize(false);
+                    doSynchronize(false, firstRun);
+                    firstRun = false;
                 }
                 if (pause > 0) {
                     synchronization.schedule(pause);
@@ -159,40 +163,12 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         if (isPersisted()) {
             return;
         }
-        String name = properties.get(INSTANCE_NAME);
-        String url = properties.get(INSTANCE_URL);
-        String sync = properties.get(INSTANCE_SYNC);
-
-        HudsonInstanceProperties newProps = new HudsonInstanceProperties(name, url, sync);
-        //just in case there are also other properties.
-        for (Map.Entry<String,String> ent : properties.entrySet()) {
-            newProps.put(ent.getKey(), ent.getValue());
-        }
-        
-        //reassign listeners
-        List<PropertyChangeListener> list = properties.getCurrentListeners();
-        for (PropertyChangeListener listener : list) {
-            newProps.addPropertyChangeListener(listener);
-            properties.removePropertyChangeListener(listener);
-        }
-        properties = newProps;
-
-        storeDefinition();
+        properties.put(INSTANCE_PERSISTED, TRUE);
         fireContentChanges();
     }
 
-    void storeDefinition() {
-        if (!isPersisted()) {
-            return;
-        }
-        Preferences node = prefs();
-        for (Map.Entry<String,String> entry : properties.entrySet()) {
-            node.put(entry.getKey(), entry.getValue());
-        }
-    }
-
     @Override public Preferences prefs() {
-        return HudsonManagerImpl.instancePrefs().node(HudsonManagerImpl.simplifyServerLocation(getName(), true));
+        return properties.getPreferences();
     }
     
     public static HudsonInstanceImpl createHudsonInstance(String name, String url, String sync) {
@@ -275,6 +251,12 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     }
     void setSalient(HudsonJobImpl job, boolean salient) {
         HudsonInstanceProperties props = getProperties();
+        List<String> preferred = new ArrayList<String>(HudsonInstanceProperties.split(props.get(INSTANCE_PREF_JOBS)));
+        if (salient && !preferred.isEmpty() && !preferred.contains(job.getName())) {
+            List<String> list = new ArrayList<String>(preferred);
+            list.add(job.getName());
+            props.put(INSTANCE_PREF_JOBS, HudsonInstanceProperties.join(list));
+        }
         List<String> suppressed = new ArrayList<String>(HudsonInstanceProperties.split(props.get(INSTANCE_SUPPRESSED_JOBS)));
         if (salient) {
             suppressed.remove(job.getName());
@@ -311,33 +293,39 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         }
         RP.post(new Runnable() {
             @Override public void run() {
-                doSynchronize(authentication);
+                doSynchronize(authentication, true);
             }
         });
     }
 
     @Messages({"# {0} - server label", "MSG_Synchronizing=Synchronizing {0}"})
-    private void doSynchronize(final boolean authentication) {
-            final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
-            final AtomicReference<ProgressHandle> handle = new AtomicReference<ProgressHandle>();
-            handle.set(ProgressHandleFactory.createHandle(
-                    MSG_Synchronizing(getName()),
-                    new Cancellable() {
-                @Override public boolean cancel() {
-                    Thread t = synchThread.get();
-                    if (t != null) {
-                        LOG.log(Level.FINE, "Cancelling synchronization of {0}", getUrl());
-                        if (!isPersisted()) {
-                            properties.put(INSTANCE_SYNC, "0");
+    private void doSynchronize(final boolean authentication,
+            final boolean showProgress) {
+        final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
+        final AtomicReference<ProgressHandle> handle = new AtomicReference<ProgressHandle>();
+        ProgressHandle handleObject = ProgressHandleFactory.createHandle(
+                MSG_Synchronizing(getName()),
+                new Cancellable() {
+                    @Override
+                    public boolean cancel() {
+                        Thread t = synchThread.get();
+                        if (t != null) {
+                            LOG.log(Level.FINE,
+                                    "Cancelling synchronization of {0}",//NOI18N
+                                    getUrl());
+                            if (!isPersisted()) {
+                                properties.put(INSTANCE_SYNC, "0");     //NOI18N
+                            }
+                            t.interrupt();
+                            handle.get().finish();
+                            return true;
+                        } else {
+                            return false;
                         }
-                        t.interrupt();
-                        handle.get().finish();
-                        return true;
-                    } else {
-                        return false;
                     }
-                }
-            }));
+                });
+        handleObject.setInitialDelay(showProgress ? 100 : 30000);
+        handle.set(handleObject);
             
             handle.get().start();
             

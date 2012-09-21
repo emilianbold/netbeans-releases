@@ -92,9 +92,10 @@ import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
+import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.Methods;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
@@ -106,7 +107,6 @@ import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.java.ElementDeclaration;
 import org.netbeans.modules.groovy.editor.java.ElementSearch;
 import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -118,24 +118,17 @@ import org.openide.util.Exceptions;
  */
 public class GroovyDeclarationFinder implements DeclarationFinder {
 
-    private final Logger LOG = Logger.getLogger(GroovyDeclarationFinder.class.getName());
-    Token<? extends GroovyTokenId> tok;
+    private static final Logger LOG = Logger.getLogger(GroovyDeclarationFinder.class.getName());
 
-    Document lastDoc = null;
-    int lastOffset = -1;
-    OffsetRange lastRange = OffsetRange.NONE;
 
     public GroovyDeclarationFinder() {
         LOG.setLevel(Level.OFF);
     }
 
+    @Override
     public OffsetRange getReferenceSpan(Document document, int lexOffset) {
-        TokenHierarchy<Document> th = TokenHierarchy.get(document);
-
-        //BaseDocument doc = (BaseDocument)document;
-
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(th, lexOffset);
-
+        final TokenHierarchy<Document> th = TokenHierarchy.get(document);
+        final TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(th, lexOffset);
         if (ts == null) {
             return OffsetRange.NONE;
         }
@@ -147,8 +140,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
         }
 
         // Determine whether the caret position is right between two tokens
-        boolean isBetween = (lexOffset == ts.offset());
-
+        final boolean isBetween = (lexOffset == ts.offset());
         OffsetRange range = getReferenceSpan(ts, th, lexOffset);
 
         if ((range == OffsetRange.NONE) && isBetween) {
@@ -158,38 +150,32 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                 range = getReferenceSpan(ts, th, lexOffset);
             }
         }
-
         return range;
     }
 
+    @Override
     public DeclarationLocation findDeclaration(ParserResult info, int lexOffset) {
-        GroovyParserResult gpr = ASTUtils.getParseResult(info);
+        final GroovyParserResult parserResult = ASTUtils.getParseResult(info);
+        final Document document = LexUtilities.getDocument(parserResult, false);
+        if (document == null) {
+            return DeclarationLocation.NONE;
+        }
+
+        final TokenHierarchy<Document> th = TokenHierarchy.get(document);
+        final BaseDocument doc = (BaseDocument) document;
+        final int astOffset = ASTUtils.getAstOffset(info, lexOffset);
+        if (astOffset == -1) {
+            return DeclarationLocation.NONE;
+        }
+
+        final OffsetRange range = getReferenceSpan(doc, lexOffset);
+        if (range == OffsetRange.NONE) {
+            return DeclarationLocation.NONE;
+        }
+
+        final ASTNode root = ASTUtils.getRoot(info);
 
         try {
-            Document document = LexUtilities.getDocument(gpr, false);
-            if (document == null) {
-                return DeclarationLocation.NONE;
-            }
-            TokenHierarchy<Document> th = TokenHierarchy.get(document);
-            BaseDocument doc = (BaseDocument)document;
-
-            int astOffset = ASTUtils.getAstOffset(info, lexOffset);
-            if (astOffset == -1) {
-                return DeclarationLocation.NONE;
-            }
-
-            OffsetRange range = getReferenceSpan(doc, lexOffset);
-
-            if (range == OffsetRange.NONE) {
-                return DeclarationLocation.NONE;
-            }
-
-            // Determine the bias (if the caret is between two tokens, did we
-            // click on a link for the left or the right?
-            boolean leftSide = range.getEnd() <= lexOffset;
-
-            ASTNode root = ASTUtils.getRoot(info);
-
             // FIXME parsing API - source & binary IDs
             GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(info.getSnapshot().getSource().getFileObject(),
                     Collections.singleton(ClassPath.SOURCE), null, null));
@@ -208,11 +194,11 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                     Set<IndexedClass> classes =
                         index.getClasses(text, QuerySupport.Kind.EXACT, true, false, false);
 
-                    if (classes.size() == 0) {
+                    if (classes.isEmpty()) {
                         return DeclarationLocation.NONE;
                     }
 
-                    DeclarationLocation l = getClassDeclaration(gpr, classes, null, null, index, doc);
+                    DeclarationLocation l = getClassDeclaration(parserResult, classes, null, null, index, doc);
                     if (l != null) {
                         return l;
                     }
@@ -221,7 +207,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                     Set<IndexedMethod> methods =
                         index.getMethods(text, null, QuerySupport.Kind.EXACT);
 
-                    DeclarationLocation l = getMethodDeclaration(gpr, text, methods,
+                    DeclarationLocation l = getMethodDeclaration(parserResult, text, methods,
                          null, null, index, astOffset, lexOffset);
 
                     if (l != null) {
@@ -234,6 +220,9 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
 
             int tokenOffset = lexOffset;
 
+            // Determine the bias (if the caret is between two tokens, did we
+            // click on a link for the left or the right?
+            final boolean leftSide = range.getEnd() <= lexOffset;
             if (leftSide && (tokenOffset > 0)) {
                 tokenOffset--;
             }
@@ -259,7 +248,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                     String typeName = objectExpression.getType().getName();
 
                     // try to find it in Java
-                    FileObject fo = gpr.getSnapshot().getSource().getFileObject();
+                    FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
                     if (fo != null) {
                         final ClasspathInfo cpInfo = ClasspathInfo.create(fo);
                         DeclarationLocation location = findJavaMethod(cpInfo, typeName, methodCall);
@@ -275,13 +264,13 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                     VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path, doc, lexOffset);
                     scopeVisitor.collect();
                 }
-                if (type == null) {
+                if (type == null || call.isStatic()) {
                     String fqn = ASTUtils.getFqnName(path);
                     if (call == Call.LOCAL && fqn != null && fqn.length() == 0) {
                         fqn = "java.lang.Object"; // NOI18N
                     }
 
-                    return findMethod(name, fqn, type, call, gpr, astOffset, lexOffset, path, closest, index);
+                    return findMethod(name, fqn, type, call, parserResult, astOffset, lexOffset, path, closest, index);
                 }
 
             } else if (closest instanceof VariableExpression) {
@@ -324,7 +313,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                         String fieldName = ((ConstantExpression) closest).getText();
 
                         // try to find it in Java
-                        FileObject fo = gpr.getSnapshot().getSource().getFileObject();
+                        FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
                         if (fo != null) {
                             final ClasspathInfo cpInfo = ClasspathInfo.create(fo);
                             DeclarationLocation location = findJavaField(cpInfo, typeName, fieldName);
@@ -539,6 +528,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             this.latch = latch;
         }
 
+        @Override
         public void run(CompilationController info) throws Exception {
             Elements elements = info.getElements();
 
@@ -620,25 +610,25 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             fqn = possibleFqn;
 
             // methods directly from fqn class
-            if (methods.size() == 0) {
+            if (methods.isEmpty()) {
                 methods = index.getMethods(name, fqn, QuerySupport.Kind.EXACT);
             }
 
             methods = index.getInheritedMethods(fqn, name, QuerySupport.Kind.EXACT);
         }
 
-        if (type != null && methods.size() == 0) {
+        if (type != null && methods.isEmpty()) {
             fqn = possibleFqn;
 
-            if (methods.size() == 0) {
+            if (methods.isEmpty()) {
                 methods = index.getInheritedMethods(fqn + "." + type, name, QuerySupport.Kind.EXACT);
             }
 
-            if (methods.size() == 0) {
+            if (methods.isEmpty()) {
                 // Add methods in the class (without an FQN)
                 methods = index.getInheritedMethods(type, name, QuerySupport.Kind.EXACT);
 
-                if (methods.size() == 0 && type.indexOf(".") == -1) {
+                if (methods.isEmpty() && type.indexOf(".") == -1) {
                     // Perhaps we specified a class without its FQN, such as "TableDefinition"
                     // -- go and look for the full FQN and add in all the matches from there
                     Set<IndexedClass> classes = index.getClasses(type, QuerySupport.Kind.EXACT, false, false, false);
@@ -659,9 +649,9 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
 
             // Fall back to ALL methods across classes
             // Try looking at the libraries too
-            if (methods.size() == 0) {
+            if (methods.isEmpty()) {
                 fqn = possibleFqn;
-                while ((methods.size() == 0) && fqn != null && (fqn.length() > 0)) {
+                while ((methods.isEmpty()) && fqn != null && (fqn.length() > 0)) {
                     methods = index.getMethods(name, fqn + "." + type, QuerySupport.Kind.EXACT);
 
                     int f = fqn.lastIndexOf(".");
@@ -675,9 +665,9 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             }
         }
 
-        if (methods.size() == 0) {
+        if (methods.isEmpty()) {
             methods = index.getMethods(name, type, QuerySupport.Kind.EXACT);
-            if (methods.size() == 0 && type != null) {
+            if (methods.isEmpty() && type != null) {
                 methods = index.getMethods(name, null, QuerySupport.Kind.EXACT);
             }
         }
@@ -843,6 +833,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
         JavaSource javaSource = JavaSource.create(cpInfo);
         try {
             javaSource.runUserActionTask(new Task<CompilationController>() {
+                @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = ElementSearch.getClass(controller.getElements(), fqn);
@@ -860,6 +851,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                 if (fileObject != null) {
                     javaSource = JavaSource.forFileObject(fileObject);
                     javaSource.runUserActionTask(new Task<CompilationController>() {
+                        @Override
                         public void run(CompilationController controller) throws Exception {
                             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             Element element = handles[0].resolve(controller);
@@ -884,6 +876,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
         JavaSource javaSource = JavaSource.create(cpInfo);
         try {
             javaSource.runUserActionTask(new Task<CompilationController>() {
+                @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = ElementSearch.getClass(controller.getElements(), fqn);
@@ -902,6 +895,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                     javaSource = JavaSource.forFileObject(fileObject);
                     if (javaSource != null) {
                         javaSource.runUserActionTask(new Task<CompilationController>() {
+                            @Override
                             public void run(CompilationController controller) throws Exception {
                                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                                 Element element = handles[0].resolve(controller);

@@ -53,9 +53,9 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -129,7 +129,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     }
 
     public static DeclarationLocation findDeclarationImpl(ParserResult info, int caretOffset) {
-        if (!(info instanceof PHPParseResult)) return DeclarationLocation.NONE;
+        if (!(info instanceof PHPParseResult)) {
+            return DeclarationLocation.NONE;
+        }
         PHPParseResult result = (PHPParseResult) info;
         final Model model = result.getModel();
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(caretOffset);
@@ -279,10 +281,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     PHPDocBlock docBlock = docParser.parse(ts.offset()-3, ts.offset() + token.length(), token.toString());
                     ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docBlock, caretOffset);
                     PhpDocTypeTagInfo node = null;
-                    PHPDocTypeTag typeTag = null;
                     if (hierarchy != null && hierarchy.length > 0) {
                         if (hierarchy[0] instanceof PHPDocTypeTag) {
-                            typeTag = (PHPDocTypeTag) hierarchy[0];
+                            PHPDocTypeTag typeTag = (PHPDocTypeTag) hierarchy[0];
                             if (typeTag.getStartOffset() < caretOffset && caretOffset < typeTag.getEndOffset()) {
                                 VariableScope scope = model.getVariableScope(caretOffset);
                                 List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.CLASS, scope);

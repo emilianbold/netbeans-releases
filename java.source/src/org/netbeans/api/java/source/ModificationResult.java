@@ -94,6 +94,8 @@ import org.openide.util.Parameters;
  */
 public final class ModificationResult {
 
+    private static final Logger LOG = Logger.getLogger(ModificationResult.class.getName());
+    
     private Collection<Source> sources;
     private boolean committed;
     Map<FileObject, List<Difference>> diffs = new HashMap<FileObject, List<Difference>>();
@@ -108,6 +110,14 @@ public final class ModificationResult {
         this.sources = sources;
     }
 
+    private final Throwable creator;
+    
+    {
+        boolean keepStackTrace = false;
+        assert keepStackTrace = true;
+        creator = keepStackTrace ? new Throwable() : null;
+    }
+    
     // API of the class --------------------------------------------------------
 
     /**
@@ -185,6 +195,8 @@ public final class ModificationResult {
         return newFiles;
     }
     
+    static LinkedList<Throwable> lastCommitted = new LinkedList<Throwable>();
+
     /**
      * Once all of the changes have been collected, this method can be used
      * to commit the changes to the source files
@@ -219,6 +231,10 @@ public final class ModificationResult {
                     }
                 }
             }
+            while (lastCommitted.size() > 10) {
+                lastCommitted.removeLast();
+            }
+            lastCommitted.addFirst(creator);
         } finally {
             this.committed = true;
             this.sources = null;
@@ -244,8 +260,14 @@ public final class ModificationResult {
                         }
                     }
                 });
-                if (exceptions [0] != null)
+                if (exceptions [0] != null) {
+                    LOG.log(Level.INFO, "ModificationResult commit failed with an exception: ", exceptions[0]);
+                    int s = lastCommitted.size();
+                    for (Throwable t : lastCommitted) {
+                        LOG.log(Level.INFO, "Previous commit number " + s--, t);
+                    }
                     throw exceptions [0];
+                }
                 return;
             }
         }

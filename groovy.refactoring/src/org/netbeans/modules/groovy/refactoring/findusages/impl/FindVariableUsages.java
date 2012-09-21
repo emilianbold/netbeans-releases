@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
+import java.util.List;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.PropertyNode;
@@ -61,8 +62,8 @@ public class FindVariableUsages extends AbstractFindUsages {
     }
 
     @Override
-    protected AbstractFindUsagesVisitor getVisitor(ModuleNode moduleNode, String findingFqn) {
-        return new FindVariableUsagesVisitor(moduleNode, findingFqn);
+    protected List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass) {
+        return singleVisitor(new FindVariableUsagesVisitor(moduleNode, defClass));
     }
 
     @Override

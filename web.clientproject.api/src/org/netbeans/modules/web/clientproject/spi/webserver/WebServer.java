@@ -51,7 +51,10 @@ import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
@@ -135,13 +138,9 @@ public final class WebServer {
         if (p != null) {
             Pair pair = deployedApps.get(p);
             if (pair != null) {
-                String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") + 
+                String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                         FileUtil.getRelativePath(pair.siteRoot, projectFile);
-                try {
-                    return new URL("http://localhost:"+PORT+path);
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                return toURL("http://localhost:"+PORT+path); //NOI18N
             }
         } else {
             // fallback if project was not found:
@@ -149,19 +148,32 @@ public final class WebServer {
                 Pair pair = entry.getValue();
                 String relPath = FileUtil.getRelativePath(pair.siteRoot, projectFile);
                 if (relPath != null) {
-                    String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") + 
+                    String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                             relPath;
-                    try {
-                        return new URL("http://localhost:"+PORT+path);
-                    } catch (MalformedURLException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    return toURL("http://localhost:"+PORT+path); //NOI18N
                 }
             }
         }
         return null;
     }
 
+    /**
+     * Converts given string into URL and properly encodes the path.
+     */
+    public static URL toURL(String urlString) {
+        try {
+            // #216436:
+            // use URL to split the string into individual URI parts first:
+            URL u = new URL(urlString);
+            // and now use URI to properly encode spaces in path:
+            return new URI(u.getProtocol(), u.getAuthority(), u.getPath(), u.getQuery(), null).toURL();
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
     /**
      * Converts server URL back into project's source file.
      */
@@ -172,12 +184,12 @@ public final class WebServer {
     private FileObject fromServer(String serverURL) {
         Map.Entry<Project, Pair> rootEntry = null;
         for (Map.Entry<Project, Pair> entry : deployedApps.entrySet()) {
-            if ("/".equals(entry.getValue().webContextRoot)) {
+            if ("/".equals(entry.getValue().webContextRoot)) { //NOI18N
                 rootEntry = entry;
                 // process this one as last one:
                 continue;
             }
-            if (serverURL.startsWith(entry.getValue().webContextRoot+"/")) {
+            if (serverURL.startsWith(entry.getValue().webContextRoot+"/")) { //NOI18N
                 return findFile(entry, serverURL);
             }
         }
@@ -190,7 +202,7 @@ public final class WebServer {
     private FileObject findFile(Entry<Project, Pair> entry, String serverURL) {
         Project p = entry.getKey();
         int index = entry.getValue().webContextRoot.length()+1;
-        if (entry.getValue().webContextRoot.equals("/")) {
+        if (entry.getValue().webContextRoot.equals("/")) { //NOI18N
             index = 1;
         }
         String file = serverURL.substring(index);
@@ -270,24 +282,25 @@ public final class WebServer {
                 if (line == null || line.length() == 0) {
                     return;
                 }
-                if (line.startsWith("GET ")) {
-                    StringTokenizer st = new StringTokenizer(line, " ");
+                if (line.startsWith("GET ")) { //NOI18N
+                    StringTokenizer st = new StringTokenizer(line, " "); //NOI18N
                     st.nextToken();
                     String file = st.nextToken();
+                    file = URLDecoder.decode(file, "UTF-8"); //NOI18N
                     FileObject fo = getWebserver().fromServer(file);
                     if (fo != null && fo.isFolder()) {
-                        fo = fo.getFileObject("index", "html");
+                        fo = fo.getFileObject("index", "html"); //NOI18N
                     }
                     if (fo != null) {
                         fis = fo.getInputStream();
                         out = new DataOutputStream(outputStream);
                         String mime = fo.getMIMEType();
-                        if ("content/unknown".equals(mime)) {
-                            mime = "text/plain";
+                        if ("content/unknown".equals(mime)) { //NOI18N
+                            mime = "text/plain"; //NOI18N
                         }
                         try {
-                            out.writeBytes("HTTP/1.1 200 OK\nContent-Length: "+fo.getSize()+"\n"
-                                    + "Content-Type: "+mime+"\n\n");
+                            out.writeBytes("HTTP/1.1 200 OK\nContent-Length: "+fo.getSize()+"\n" //NOI18N
+                                    + "Content-Type: "+mime+"\n\n"); //NOI18N
                             FileUtil.copy(fis, out);
                         } catch (SocketException se) {
                             // browser refused to accept data or closed the connection;

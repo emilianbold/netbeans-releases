@@ -86,11 +86,6 @@ public class HtmlPanelVisual extends javax.swing.JPanel {
             public void changedUpdate( DocumentEvent arg0 ) {
                 updateFilePath();                
             }
-            
-            private void updateFilePath(){
-                myCreatedFile.setText(getCreatedFilePath().getPath());
-                myPanel.fireChangeEvent();
-            }
         };
         initDefaults();
         
@@ -124,6 +119,11 @@ public class HtmlPanelVisual extends javax.swing.JPanel {
         return true;
     }
     
+    private void updateFilePath(){
+        myCreatedFile.setText(getCreatedFilePath().getPath());
+        myPanel.fireChangeEvent();
+    }
+    
     private File getCreatedFilePath(){
         Project project = Templates.getProject(myPanel.getDescriptor());
         FileObject projectDirectory = project.getProjectDirectory();
@@ -152,6 +152,7 @@ public class HtmlPanelVisual extends javax.swing.JPanel {
             }
         }
         myName.setText(name);
+        myFolder.setText("public_html");        // NOI18N
     }
 
     /**

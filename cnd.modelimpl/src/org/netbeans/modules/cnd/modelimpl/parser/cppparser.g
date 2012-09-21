@@ -2666,6 +2666,7 @@ trailing_type
         POINTERTO 
         (tq=cv_qualifier)*
         ts=trailing_type_specifier
+        (options {greedy=true;} : tq=cv_qualifier)*
         (options {greedy=true;} : ptr_operator)*
         (LSQUARE (constant_expression)? RSQUARE)*
     ;
@@ -2776,7 +2777,9 @@ ctor_declarator[boolean definition]
         (LESSTHAN template_argument_list GREATERTHAN)?
 	//{declaratorParameterList(definition);}
 	LPAREN (parameter_list[false])? RPAREN
+        (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
 	//{declaratorEndParameterList(definition);}
+        ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
 	(exception_specification)?
         // IZ 136239 : C++ grammar does not allow attributes after constructor
         (function_attribute_specification)?
@@ -2896,6 +2899,7 @@ dtor_declarator[boolean definition]
 	//{declaratorParameterList(definition);}
         // VV: /06/06/06 ~dtor(void) is valid construction
 	LPAREN (LITERAL_void)? RPAREN
+        (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
         //{declaratorEndParameterList(definition);}
         ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?	
 	(exception_specification)?        
@@ -3214,10 +3218,11 @@ protected template_template_parameter
  */
 assigned_type_name
 	{/*TypeSpecifier*/int ts;
-         TypeQualifier tq;}
+         TypeQualifier tq;
+         DeclSpecifier ds = dsInvalid;}
 	:
             (options {greedy=true;}: tq=cv_qualifier)? (LITERAL_typename)?
-            ts = simple_type_specifier[false] (postfix_cv_qualifier)?
+            ts = type_specifier[ds, false] (postfix_cv_qualifier)?
             abstract_declarator
 	;
 

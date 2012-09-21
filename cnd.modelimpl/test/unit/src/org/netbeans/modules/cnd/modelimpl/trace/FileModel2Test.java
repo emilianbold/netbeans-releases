@@ -74,6 +74,27 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testPreprocDirectives() throws Exception {
+        // #218190 - NPE in APTPredefinedMacroMap
+        performTest("preproc_directives.cc"); // NOI18N
+    }
+
+    public void testPreprocDirectives2() throws Exception {
+        // #218344 - any #warning breaks parser
+        // #218308 - Empty preprocessor directives not supported
+        performTest("sharp_pp_directives.cc"); // NOI18N
+    }
+
+    public void test217089() throws Exception {
+        // #217089: "#define AAA 1 ## 0" line breaks parser
+        performTest("iz217089.c");
+    }
+    
+    public void test217711() throws Exception {
+        // #217711: complain about recursive include while #pragma once guarding the file
+        performTest("iz217711.h");
+    }
+
     public void test205270() throws Exception {
         // #205270 - R-value references breaks code model parser
         performTest("iz205270.cc");

@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
@@ -140,7 +141,17 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
 
     private void validate(){
         isValid = component.valid();
-        fireChangeEvent();
+        if (SwingUtilities.isEventDispatchThread()) {
+            fireChangeEvent();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    fireChangeEvent();
+                }
+            });
+        }
     }
 
     protected final void fireChangeEvent() {

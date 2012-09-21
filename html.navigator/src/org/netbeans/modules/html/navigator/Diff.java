@@ -196,17 +196,6 @@ public class Diff {
             return false;
         }
 
-        //and next? No idea - maybe ask the God?
-        try {
-            Object god = Lookup.getDefault().lookup(Class.forName("the.God"));
-            Method theMethod = god.getClass().getMethod("pleaseHelpMeWith", new Class[]{String.class});
-            String answer = (String) theMethod.invoke(god,
-                    String.format("please God, is the element %s same as the element %s?", d1, d2));
-            return Boolean.parseBoolean(answer);
-        } catch (Throwable badbad) {
-            //I should have been prying more...
-        }
-
         return true;
     }
 

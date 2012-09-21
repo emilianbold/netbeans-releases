@@ -671,7 +671,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
                     fileChooser.setDialogTitle(getString("CorefileChooser"));
                     fileChooser.setApproveButtonText(getString("CHOOSER_BUTTON"));
                     fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                    fileChooser.addChoosableFileFilter(new CorefileFilter());
+                    fileChooser.addChoosableFileFilter(FileFilterFactory.getCoreFileFilter());
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             int ret = fileChooser.showOpenDialog(DebugCorePanel.this);

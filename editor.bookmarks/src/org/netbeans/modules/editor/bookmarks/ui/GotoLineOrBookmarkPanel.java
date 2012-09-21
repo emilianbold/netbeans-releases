@@ -318,17 +318,15 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
                 int lineIndex = lineNumber - 1;
                 Document doc = c.getDocument();
                 Element rootElem = doc.getDefaultRootElement();
-                if (doc != null) {
-                    int lineCount = rootElem.getElementCount();
-                    if (lineIndex >= 0) {
-                        if (lineIndex >= lineCount) {
-                            lineIndex = lineCount - 1;
-                        }
-                        int offset = rootElem.getElement(lineIndex).getStartOffset();
-                        c.setCaretPosition(offset);
-                        return true;
-                    } // else: lineIndex < 0 => beep and return false
-                }
+                int lineCount = rootElem.getElementCount();
+                if (lineIndex >= 0) {
+                    if (lineIndex >= lineCount) {
+                        lineIndex = lineCount - 1;
+                    }
+                    int offset = rootElem.getElement(lineIndex).getStartOffset();
+                    c.setCaretPosition(offset);
+                    return true;
+                } // else: lineIndex < 0 => beep and return false
             } catch (NumberFormatException e) {
                 // Contains letters or other chars -> attempt bookmarks
                 BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
@@ -426,6 +424,7 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
         public BookmarksGotoAction() {
         }
     
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 new GotoLineOrBookmarkPanel().showDialog(new KeyEventBlocker(target, false));

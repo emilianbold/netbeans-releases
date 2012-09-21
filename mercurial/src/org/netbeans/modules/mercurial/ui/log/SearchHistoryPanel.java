@@ -65,6 +65,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.KeyStroke;
@@ -231,8 +232,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private void enableFilters (boolean enabled) {
         lblFilter.setEnabled(enabled);
         cmbFilterKind.setEnabled(enabled);
-        lblFilterContains.setEnabled(enabled && cmbFilterKind.getSelectedItem() != FilterKind.ALL);
-        txtFilter.setEnabled(enabled && cmbFilterKind.getSelectedItem() != FilterKind.ALL);
+        lblFilterContains.setEnabled(enabled);
+        txtFilter.setEnabled(enabled);
     }
 
     private void setupComponents() {
@@ -555,6 +556,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/log/Bundle"); // NOI18N
         bSearch.setToolTipText(bundle.getString("TT_Search")); // NOI18N
 
+        jToolBar1.setLayout(new BoxLayout(jToolBar1, BoxLayout.X_AXIS));
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
@@ -681,9 +683,9 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     }//GEN-LAST:event_expandCriteriaButtonActionPerformed
 
     private void cmbFilterKindActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbFilterKindActionPerformed
-        boolean filterCritEnabled = cmbFilterKind.getSelectedItem() != FilterKind.ALL;
-        lblFilterContains.setEnabled(filterCritEnabled);
-        txtFilter.setEnabled(filterCritEnabled);
+        boolean filterCritVisible = cmbFilterKind.getSelectedItem() != FilterKind.ALL;
+        lblFilterContains.setVisible(filterCritVisible);
+        txtFilter.setVisible(filterCritVisible);
         if (filterTimer != null && !txtFilter.getText().trim().isEmpty()) {
             filterTimer.restart();
         }

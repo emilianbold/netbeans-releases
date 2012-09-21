@@ -474,7 +474,8 @@ public class DefaultCssEditorModule extends CssEditorModule {
         result.add(new TopLevelStructureItem.Elements(elements));
 
         final Snapshot snapshot = context.getSnapshot();
-
+        final FileObject file = context.getFileObject();
+        
         return new NodeVisitor<T>() {
 
             @Override
@@ -489,27 +490,27 @@ public class DefaultCssEditorModule extends CssEditorModule {
                         int eo = snapshot.getOriginalOffset(ruleNode.to());
                         if (eo > so) {
                             //todo: filter out virtual selectors
-                            StructureItem item = new CssRuleStructureItem(node.image(), CssNodeElement.createElement(ruleNode), snapshot);
+                            StructureItem item = new CssRuleStructureItem(node.image(), CssNodeElement.createElement(file, ruleNode), snapshot);
                             rules.add(item);
                         }
                         break;
                     case elementName: //element
-                        elements.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(node), snapshot));
+                        elements.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case cssClass:
-                        classes.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(node), snapshot));
+                        classes.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case cssId:
-                        ids.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(node), snapshot));
+                        ids.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case charSet:
                     case imports:
                     case namespace:
-                        atrules.add(new CssRuleStructureItem(node.image(), CssNodeElement.createElement(node), snapshot));
+                        atrules.add(new CssRuleStructureItem(node.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case fontFace:
                         Node tokenNode = NodeUtil.getChildTokenNode(node, CssTokenId.FONT_FACE_SYM);
-                        atrules.add(new CssRuleStructureItem(tokenNode.image(), CssNodeElement.createElement(node), snapshot));
+                        atrules.add(new CssRuleStructureItem(tokenNode.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case mediaQueryList:
                         Node mediaNode = node.parent();
@@ -517,14 +518,14 @@ public class DefaultCssEditorModule extends CssEditorModule {
                         StringBuilder image = new StringBuilder();
                         image.append("@media "); //NOI18N
                         image.append(node.image());
-                        atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(mediaNode), snapshot));
+                        atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(file, mediaNode), snapshot));
                         break;
                     case page:
                         Node pageSymbolNode = NodeUtil.getChildTokenNode(node, CssTokenId.PAGE_SYM);
                         Node lbraceSymbolNode = NodeUtil.getChildTokenNode(node, CssTokenId.LBRACE);
                         if(pageSymbolNode != null && lbraceSymbolNode != null) {
                             CharSequence headingAreaImage = snapshot.getText().subSequence(pageSymbolNode.from(), lbraceSymbolNode.from());
-                            atrules.add(new CssRuleStructureItem(headingAreaImage, CssNodeElement.createElement(node), snapshot));
+                            atrules.add(new CssRuleStructureItem(headingAreaImage, CssNodeElement.createElement(file, node), snapshot));
                         }
                         break;
                     case counterStyle:
@@ -533,7 +534,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
                             image = new StringBuilder();
                             image.append("@counter-style "); //NOI18N
                             image.append(identNode.image());
-                            atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(node), snapshot));
+                            atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(file, node), snapshot));
                         }
                         break;
 

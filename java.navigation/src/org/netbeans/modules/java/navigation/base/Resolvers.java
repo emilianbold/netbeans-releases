@@ -61,7 +61,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -71,6 +70,7 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 public class Resolvers {
+
 
     private Resolvers() {
         throw new IllegalStateException();
@@ -124,12 +124,8 @@ public class Resolvers {
             final ElementHandle<TypeElement> handle = ret.get(0);
             if (handle == null) {
                 return null;
-            }
-            final FileObject file = SourceUtils.getFile(handle, js.getClasspathInfo());
-            if (file == null) {
-                return null;
-            }
-            return Pair.<URI,ElementHandle<TypeElement>>of(file.toURI(),handle);
+            }            
+            return Pair.<URI,ElementHandle<TypeElement>>of(fo.toURI(),handle);
         }
 
         @CheckForNull
@@ -217,11 +213,14 @@ public class Resolvers {
             if (handle == null) {
                 return null;
             }
-            final FileObject file = SourceUtils.getFile(handle, js.getClasspathInfo());
+            final FileObject file = Utils.getFile(
+                handle,
+                js.getClasspathInfo());
             if (file == null) {
                 return null;
             }
             return Pair.<URI,ElementHandle<TypeElement>>of(file.toURI(),handle);
         }
-    }
+
+    }    
 }

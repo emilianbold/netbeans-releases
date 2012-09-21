@@ -78,7 +78,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.ErrorManager;
@@ -945,16 +944,6 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     }
 
     /**
-     * Create an object permitting this project to expose a cache directory.
-     * Would be placed into the project's lookup.
-     * @return a cache directory provider object suitable for the project lookup
-     */
-    @Override
-    public CacheDirectoryProvider createCacheDirectoryProvider() {
-        return new ExtensibleMetadataProviderImpl(this);
-    }
-
-    /**
      * Create an implementation of the file sharability query.
      * You may specify a list of source roots to include that should be considered sharable,
      * as well as a list of build directories that should not be considered sharable.
@@ -1071,21 +1060,15 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         }
     }
 
-    private static final class ExtensibleMetadataProviderImpl implements AuxiliaryConfiguration, CacheDirectoryProvider {
+    private static final class ExtensibleMetadataProviderImpl implements AuxiliaryConfiguration {
 
         /**
          * Relative path from project directory to the required private cache directory.
          */
-        private static final String CACHE_PATH = "nbproject/private"; // NOI18N
         private final MakeProjectHelperImpl helper;
 
         ExtensibleMetadataProviderImpl(MakeProjectHelperImpl helper) {
             this.helper = helper;
-        }
-
-        @Override
-        public FileObject getCacheDirectory() throws IOException {
-            return FileUtil.createFolder(helper.getProjectDirectory(), CACHE_PATH);
         }
 
         @Override
