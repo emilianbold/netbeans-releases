@@ -57,11 +57,11 @@ import java.awt.event.WindowEvent;
 import java.beans.Introspector;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyEditorManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -86,7 +86,8 @@ import org.openide.execution.ExecutorTask;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.ListView;
-import org.openide.modules.ModuleInstall;
+import org.openide.modules.OnStart;
+import org.openide.modules.OnStop;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -106,16 +107,15 @@ import org.openide.util.actions.SystemAction;
  * Also adds/removes specific beaninfo and property editor search paths.
  * @author Jesse Glick
  */
-public class Install extends ModuleInstall {
+@OnStart
+public class Install implements Runnable {
     
     private static final String BEANINFO_PATH
             = "org.netbeans.core.execution.beaninfo"; // NOI18N
-    private static final String EDITOR_PATH
-            = "org.netbeans.core.execution.beaninfo.editors"; // NOI18N
 
     private static final Logger LOG = Logger.getLogger(Install.class.getName());
     
-    public @Override void restored() {
+    public @Override void run() {
         TopSecurityManager.register(SecMan.DEFAULT);
         
         // Add beaninfo search path.
@@ -127,46 +127,34 @@ public class Install extends ModuleInstall {
             Introspector.setBeanInfoSearchPath(
                     paths.toArray(new String[0]));
         }
-        
-        // Add property editor search path.
-        sp = PropertyEditorManager.getEditorSearchPath();
-        paths = Arrays.asList(sp);
-        if(!paths.contains(EDITOR_PATH)) {
-            paths = new ArrayList<String>(paths);
-            paths.add(EDITOR_PATH);
-            PropertyEditorManager.setEditorSearchPath(
-                    paths.toArray(new String[0]));
-        }
     }
     
-    public @Override void uninstalled() {
-        showPendingTasks();
+    @OnStop
+    public static final class Down implements Runnable {
         
-        TopSecurityManager.unregister(SecMan.DEFAULT);
-        
-        // Remove beaninfo search path.
-        String[] sp = Introspector.getBeanInfoSearchPath();
-        java.util.List<String> paths = Arrays.asList(sp);
-        if(paths.contains(BEANINFO_PATH)) {
-            paths = new ArrayList<String>(paths);
-            paths.remove(BEANINFO_PATH);
-            Introspector.setBeanInfoSearchPath(
-                    paths.toArray(new String[0]));
-        }
-        
-        // Remove property editor seach path.
-        sp = PropertyEditorManager.getEditorSearchPath();
-        paths = Arrays.asList(sp);
-        if(paths.contains(EDITOR_PATH)) {
-            paths = new ArrayList<String>(paths);
-            paths.remove(EDITOR_PATH);
-            PropertyEditorManager.setEditorSearchPath(
-                    paths.toArray(new String[0]));
+        public @Override void run() {
+            showPendingTasks();
+
+            TopSecurityManager.unregister(SecMan.DEFAULT);
+
+            // Remove beaninfo search path.
+            String[] sp = Introspector.getBeanInfoSearchPath();
+            java.util.List<String> paths = Arrays.asList(sp);
+            if(paths.contains(BEANINFO_PATH)) {
+                paths = new ArrayList<String>(paths);
+                paths.remove(BEANINFO_PATH);
+                Introspector.setBeanInfoSearchPath(
+                        paths.toArray(new String[0]));
+            }
         }
     }
-    
-    public @Override boolean closing() {
-        return showPendingTasks();
+
+    @OnStop
+    public static final class Closing implements Callable {
+        @Override
+        public Boolean call() throws Exception {
+            return showPendingTasks();
+        }
     }
     
     /** A class that server as a pending dialog manager.
