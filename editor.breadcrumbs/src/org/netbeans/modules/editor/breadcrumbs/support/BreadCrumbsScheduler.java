@@ -68,7 +68,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jan Lahoda, David Strupl, Jan Jancura
  */
-@ServiceProvider(service=Scheduler.class)
+//@ServiceProvider(service=Scheduler.class)
 public final class BreadCrumbsScheduler extends Scheduler {
 
     public BreadCrumbsScheduler () {

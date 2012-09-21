@@ -101,7 +101,7 @@ public class BreadcrumbsController {
         return new SideBarFactoryImpl();
     }
     
-    public static final Class<? extends Scheduler> BREADCRUMBS_SCHEDULER = BreadCrumbsScheduler.class;
+    public static final Class<? extends Scheduler> BREADCRUMBS_SCHEDULER = Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;//BreadCrumbsScheduler.class;
     
     /**
      * @since 1.3
