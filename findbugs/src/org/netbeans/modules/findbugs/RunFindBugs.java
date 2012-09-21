@@ -752,7 +752,7 @@ public class RunFindBugs {
                             mods = ((MethodTree) leaf).getModifiers();
                             break;
                         case VARIABLE:
-                            mods = ((MethodTree) leaf).getModifiers();
+                            mods = ((VariableTree) leaf).getModifiers();
                             break;
                         default:
                             throw new IllegalStateException(leaf.getKind().name());
