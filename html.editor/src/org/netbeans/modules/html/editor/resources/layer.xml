@@ -107,10 +107,6 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
 
-                <file name="org-netbeans-modules-html-editor-HtmlCaretAwareSourceTask$Factory.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
-                </file>
-
                 <folder name="Preferences">
                     <file name="org-netbeans-modules-html-editor-preferences.xml" url="Preferences.xml"/>
                 </folder>
@@ -141,11 +137,6 @@ made subject to such option by the copyright holder.
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1200"/>
-                    </file>
-                    <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
-                        <attr name="position" intvalue="1300"/>
-                        <attr name="location" stringvalue="North"/>
-                        <attr name="scrollable" boolvalue="false"/>
                     </file>
                 </folder>
 
@@ -255,10 +246,6 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-html-editor-indexing-HtmlIndexer$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/>
                 </file>
-                <file name="org-netbeans-modules-html-editor-HtmlCaretAwareSourceTask$Factory.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
-                </file>
-
                 <folder name="Preferences">
                     <file name="org-netbeans-modules-html-editor-preferences.xml" url="Preferences.xml"/>
                 </folder>
@@ -285,11 +272,6 @@ made subject to such option by the copyright holder.
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1200"/>
-                    </file>
-                    <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
-                        <attr name="position" intvalue="1300"/>
-                        <attr name="location" stringvalue="North"/>
-                        <attr name="scrollable" boolvalue="false"/>
                     </file>
                 </folder>
                 <file name="org-netbeans-modules-html-editor-indent-HtmlIndentTaskFactory.instance">
