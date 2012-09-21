@@ -336,4 +336,14 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
+    <folder name="ProjectXMLCatalog">
+        <folder name="php-project">
+            <file name="1.xsd" url="php-project1.xsd"/>
+        </folder>
+        <folder name="php-project-private">
+            <file name="1.xsd" url="php-project-private1.xsd"/>
+        </folder>
+    </folder>
+
 </filesystem>

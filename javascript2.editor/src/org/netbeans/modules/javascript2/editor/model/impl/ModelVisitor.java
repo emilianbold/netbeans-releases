@@ -630,6 +630,14 @@ public class ModelVisitor extends PathNodeVisitor {
                         if (!types.isEmpty()) {
                             property.addAssignment(types, name.getOffsetRange().getStart());
                         }
+                        if (value instanceof IdentNode) {
+                            IdentNode iNode = (IdentNode)value;
+                            JsFunction function = (JsFunction)ModelUtils.getDeclarationScope(property);
+                            JsObjectImpl param = (JsObjectImpl)function.getParameter(iNode.getName());
+                            if(param != null) {
+                                param.addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
+                            }
+                        }
                     }
                 }
             }

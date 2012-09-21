@@ -87,12 +87,18 @@ public class JsLanguage extends DefaultLanguageConfig {
 
     public JsLanguage() {
         super();
-        // has to be done here since JS hasn't its own project, also see issue #165915
-        ClassPathProviderImpl.registerJsClassPathIfNeeded();
     }
 
     @Override
     public org.netbeans.api.lexer.Language getLexerLanguage() {
+        // has to be done here since JS hasn't its own project, also see issue #165915
+        // It was moved here from the JsLanguage initialization since the the language is called much earlier than the
+        // JavaScipt is really needed. Calling it in the #getLexerLanguage() should ensure to be the CP registration
+        // called once the JS will be really nedded (means also for PHP, JSP, ... since they embedd HTML and HTML
+        // coloring embeding initialize way to call this method. Disadvantage of this solution is that it's to be called
+        // once per opened file but since the CP is registered it's only about one condition.
+        ClassPathProviderImpl.registerJsClassPathIfNeeded();
+
         return JsTokenId.javascriptLanguage();
     }
 
