@@ -89,7 +89,7 @@ class ChromeInfoPanel extends javax.swing.JPanel {
         }
         String path = "";
         try {
-            path = file.toURI().toURL().toExternalForm();
+            path = parent.toURI().toURL().toExternalForm();
         }
         catch( MalformedURLException e ){
             LOGGER.log(Level.WARNING, null, e);
