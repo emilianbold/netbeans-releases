@@ -299,11 +299,15 @@ public class StartTask extends BasicTask<OperationState> {
             try {
                 testPort = Integer.parseInt(portCandidate);
             } catch (NumberFormatException nfe) {
-                Logger.getLogger("glassfish").log(Level.INFO, "could not parse {0} as an Inetger", portCandidate); // NOI18N
+                Logger.getLogger("glassfish").log(Level.INFO,
+                        "could not parse {0} as an Inetger", portCandidate); // NOI18N
             }
             // this may be an autheticated server... so we will say it is started.
             // other operations will fail if the process on the port is not a
             // GF v3 server.
+            Logger.getLogger("glassfish").log(Level.FINEST,
+                    "Checking if GlassFish {0} is running. Timeout set to 20000 ms",
+                    instance.getName());
             if (support.isReady(false, 20000, TIMEUNIT)) {
                 OperationState result = OperationState.COMPLETED;
                 if (GlassfishModule.PROFILE_MODE.equals(instance.getProperty(GlassfishModule.JVM_MODE))) {
@@ -347,10 +351,13 @@ public class StartTask extends BasicTask<OperationState> {
                 new FetchLogSimple(serverProcess.getErrorStream()));
 
         // Waiting for server to start
+        Logger.getLogger("glassfish").log(Level.FINER, "Waiting for server to start for {0} ms",
+                new Object[] {Integer.toString(START_TIMEOUT)});
         while (System.currentTimeMillis() - start < START_TIMEOUT) {
             // Send the 'completed' event and return when the server is running
             boolean httpLive = CommonServerSupport.isRunning("localhost", adminPort, "localhost"); // Utils.isLocalPortOccupied(adminPort);
-
+            Logger.getLogger("glassfish").log(Level.FINEST, "{0} DAS port {1} {2} alive",
+                    new Object[] {instance.getName(), Integer.toString(adminPort), httpLive ? "is" : "is not"}); 
             // Sleep for a little so that we do not make our checks too often
             //
             // Doing this before we check httpAlive also prevents us from
@@ -363,10 +370,13 @@ public class StartTask extends BasicTask<OperationState> {
             }
 
             if (httpLive) {
-                Logger.getLogger("glassfish").log(Level.FINE, "Server HTTP is live."); // NOI18N
                 if (!support.isReady(true, 3, TimeUnit.HOURS)) {
                     OperationState  state = OperationState.FAILED;
                     String messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
+                    Logger.getLogger("glassfish").log(Level.INFO,
+                            "{0} is not responding, killing the process.",
+                            new Object[] {instance.getName()});
+                    LogViewMgr.removeServerLogStream(instance);
                     serverProcess.destroy();
                     logger.stopReaders();
                     return fireOperationStateChanged(state, messageKey, instanceName);
@@ -376,6 +386,9 @@ public class StartTask extends BasicTask<OperationState> {
 
             // if we are profiling, we need to lie about the status?
             if (null != jvmArgs) {
+                Logger.getLogger("glassfish").log(Level.FINE,
+                        "Profiling mode status hack for {0}",
+                        new Object[] {instance.getName()});
                 // save process to be able to stop process waiting for profiler to attach
                 support.setLocalStartProcess(serverProcess);
                 // try to sync the states after the profiler attaches
@@ -411,7 +424,11 @@ public class StartTask extends BasicTask<OperationState> {
 
         // If the server did not start in the designated time limits
         // We consider the startup as failed and warn the user
-        Logger.getLogger("glassfish").log(Level.INFO, "V3 Failed to start, killing process: {0} after {1}", new Object[]{serverProcess, System.currentTimeMillis() - start});
+        Logger.getLogger("glassfish").log(Level.INFO,
+                "{0} Failed to start, killing process {1} after {2} ms",
+                new Object[]{instance.getName(), serverProcess,
+                System.currentTimeMillis() - start});
+        LogViewMgr.removeServerLogStream(instance);
         serverProcess.destroy();
         logger.stopReaders();
         return fireOperationStateChanged(OperationState.FAILED,
