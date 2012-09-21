@@ -106,14 +106,14 @@ public class JsDocModelTest extends JsDocumentationTestBase {
 
     }
 
-    private static void checkJsDocBlock(Source source, final int offset, final String expected) throws Exception {
+    private void checkJsDocBlock(Source source, final int offset, final String expected) throws Exception {
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result result = resultIterator.getParserResult();
                 assertTrue(result instanceof JsParserResult);
                 JsParserResult parserResult = (JsParserResult) result;
 
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
+                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult);
                 JsComment comment = documentationHolder.getCommentForOffset(offset, documentationHolder.getCommentBlocks());
                 checkJsDocElements(expected, ((JsDocComment) comment).getTags());
             }
