@@ -443,20 +443,19 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         private boolean sbEnabled;
         private String detailsTitle;
 
-        private void prepareContent() {
+        synchronized private void prepareContent() {
             assert ! SwingUtilities.isEventDispatchThread() : "Invoke SettingsTab.prepareContent out of AWT only";
             int rowIndex = table.getSelectedRow();
             if (rowIndex != -1 && table.getRowCount() > 0 && getSettingsTableModel().getUpdateUnitProvider(rowIndex) != null) {
                 UpdateUnitProvider uup = getSettingsTableModel().getUpdateUnitProvider(rowIndex);
                 detailsTitle = uup.getDisplayName();
-                detailsText = new StringBuffer();
                 long lastTime = lastModification(uup);
                 if (lastTime > 0) {
-                    detailsText.append("<b>").append(NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime", //NOI18N
+                    detailsText = new StringBuffer().append("<b>").append(NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime", //NOI18N
                             "</b>")).append(new SimpleDateFormat().format(new Date(lastTime))).append("<br>");
                 } else {
                     String never = getMessage("UnitTab_ReloadTime_Never");//NOI18N
-                    detailsText.append("<b>").append(NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime", "</b>")).append(never).append("<br>"); //NOI18N                            
+                    detailsText = new StringBuffer().append("<b>").append(NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime", "</b>")).append(never).append("<br>"); //NOI18N                            
                 }
                 URL u = uup.getProviderURL();
                 String desc = uup.getDescription() == null ? "" : uup.getDescription();
