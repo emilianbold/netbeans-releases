@@ -156,7 +156,15 @@ public class ModelUtils {
         }
         return result;
     }
-    
+
+    public static DeclarationScope getDeclarationScope(JsObject object) {
+        JsObject result =  object;
+        while (result.getParent() != null && !(result.getParent() instanceof DeclarationScope)) {
+            result = result.getParent();
+        }
+        return (DeclarationScope)result.getParent();
+    }
+
     public static DeclarationScope getDeclarationScope(Model model, int offset) {
         DeclarationScope result = null;
         JsObject global = model.getGlobalObject();
@@ -352,19 +360,25 @@ public class ModelUtils {
 //            }
         } else if(type.getType().startsWith("@var;")){
             String name = type.getType().substring(5);
-            JsObject parent = object.getParent();
-            if(parent != null && parent.getJSKind().isFunction()) {
-                Collection<? extends JsObject> parameters = ((JsFunction)parent).getParameters();
+            JsFunction declarationScope = (JsFunction)getDeclarationScope(object);
+
+            //if(parent != null && parent.getJSKind().isFunction()) {
+                Collection<? extends JsObject> parameters = declarationScope.getParameters();
+                boolean isParameter = false;
                 for (JsObject parameter : parameters) {
                     if(name.equals(parameter.getName())) {
                         Collection<? extends TypeUsage> assignments = parameter.getAssignmentForOffset(parameter.getOffset());
                         result.addAll(assignments);
+                        isParameter = true;
                         break;
                     }
                 }
-            } else {
-                result.add(new TypeUsageImpl(name, type.getOffset(), false));
-            }
+                if (!isParameter) {
+                    result.add(new TypeUsageImpl(name, type.getOffset(), false));
+                }
+//            } else {
+//                result.add(new TypeUsageImpl(name, type.getOffset(), false));
+//            }
         } else {
             result.add(type);
         }

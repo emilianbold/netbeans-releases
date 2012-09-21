@@ -351,6 +351,18 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue218231.js", "var stylizeDisplayName = function(display^name, column, record) {", true);
     }
 
+    public void testIssue137317_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue137317.js", "        u^rl: url", true);
+    }
+
+    public void testIssue137317_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue137317.js", "        url: u^rl", true);
+    }
+
+    public void testIssue156832() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue156832.js", "CSSClass.remove = function(p^aram, c)", true);
+    }
+
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
