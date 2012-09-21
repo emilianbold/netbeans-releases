@@ -50,6 +50,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -107,11 +108,16 @@ public class ODSBuilderAccessor extends BuilderAccessor<ODSProject> {
         return projectHandle.getTeamProject().hasBuild();
     }
 
+    @Override
+    public List<JobHandle> getJobs(ProjectHandle<ODSProject> projectHandle) {
+        return getJobs(projectHandle, true);
+    }
+
     @NbBundle.Messages(
             {"MSG_from_cloud_project=(from cloud project)"}
     )
-    @Override
-    public List<JobHandle> getJobs(ProjectHandle<ODSProject> projectHandle) {
+    private List<JobHandle> getJobs(ProjectHandle<ODSProject> projectHandle,
+            boolean onlyWatched) {
         ODSPasswordAuthorizer.ProjectHandleRegistry.registerProjectHandle(
                 projectHandle);
         HudsonInstance hi = HudsonManager.addInstance(
@@ -122,7 +128,7 @@ public class ODSBuilderAccessor extends BuilderAccessor<ODSProject> {
             return Collections.emptyList();
         }
         List<JobHandle> cachedHandles = findBuildHandlesInCache(
-                projectHandle);
+                projectHandle, onlyWatched);
         if (cachedHandles != null) {
             return cachedHandles;
         }
@@ -135,13 +141,14 @@ public class ODSBuilderAccessor extends BuilderAccessor<ODSProject> {
         }
         bl.setBuildHandles(buildHandles);
         CACHE.put(bl, new Object());
-        return new LinkedList<JobHandle>(buildHandles);
+        return new LinkedList<JobHandle>(
+                onlyWatched ? bl.getWatchedJobHandles() : buildHandles);
     }
 
     @Override
     public JobHandle getJob (ProjectHandle<ODSProject> project, String jobName) {
         JobHandle buildHandle = null;
-        for (JobHandle bh : getJobs(project)) {
+        for (JobHandle bh : getJobs(project, false)) {
             if (bh instanceof HudsonJobHandle && jobName.equals(((HudsonJobHandle) bh).getJob().getName())) {
                 buildHandle = bh;
                 break;
@@ -155,7 +162,7 @@ public class ODSBuilderAccessor extends BuilderAccessor<ODSProject> {
      * information.
      */
     private List<JobHandle> findBuildHandlesInCache(
-            ProjectHandle<ODSProject> projectHandle) {
+            ProjectHandle<ODSProject> projectHandle, boolean onlyWatched) {
 
         for (final BuildsListener listener : CACHE.keySet()) {
             if (listener.projectHandle.get() == projectHandle
@@ -163,7 +170,10 @@ public class ODSBuilderAccessor extends BuilderAccessor<ODSProject> {
                     listener.instance.getUrl())) {
                 synchronized (listener) {
                     listener.checkJobList(); //update job list
-                    return new LinkedList<JobHandle>(listener.buildHandles);
+                    return new LinkedList<JobHandle>(
+                            onlyWatched
+                            ? listener.getWatchedJobHandles()
+                            : listener.buildHandles);
                 }
             }
         }
@@ -461,6 +471,7 @@ public class ODSBuilderAccessor extends BuilderAccessor<ODSProject> {
         private Reference<ProjectHandle<ODSProject>> projectHandle;
         private Reference<CloudServer> server;
         private final List<HudsonJobHandle> buildHandles;
+        private List<HudsonJobHandle> watchedBuildHandles;
 
         public BuildsListener(HudsonInstance instance,
                 ProjectHandle<ODSProject> projectHandle) {
@@ -470,6 +481,7 @@ public class ODSBuilderAccessor extends BuilderAccessor<ODSProject> {
             this.server = new WeakReference<CloudServer>(
                     projectHandle.getTeamProject().getServer());
             this.buildHandles = new LinkedList<HudsonJobHandle>();
+            this.watchedBuildHandles = new LinkedList<HudsonJobHandle>();
         }
 
         /**
@@ -484,7 +496,16 @@ public class ODSBuilderAccessor extends BuilderAccessor<ODSProject> {
          */
         public void setBuildHandles(List<HudsonJobHandle> buildHandles) {
             this.buildHandles.addAll(buildHandles);
+            for (HudsonJobHandle jobHandle : buildHandles) {
+                if (jobHandle.getJob().isSalient()) {
+                    watchedBuildHandles.add(jobHandle);
+                }
+            }
             instance.addHudsonChangeListener(this);
+        }
+
+        public synchronized List<HudsonJobHandle> getWatchedJobHandles() {
+            return watchedBuildHandles;
         }
 
         /**
@@ -572,8 +593,8 @@ public class ODSBuilderAccessor extends BuilderAccessor<ODSProject> {
 
         /**
          * Check whether the job of list has changed. If so, update
-         * {@link #buildHandles} list and return pair of original and update
-         * list. If the list has not been changed, return null.
+         * {@link #buildHandles} list and return pair of original and updated
+         * list of watched jobs. If the list has not been changed, return null.
          */
         private synchronized PairOfDifferentLists checkJobList() {
             Collection<HudsonJob> jobs = instance.getJobs();
@@ -592,15 +613,56 @@ public class ODSBuilderAccessor extends BuilderAccessor<ODSProject> {
                     allFound = false;
                 }
             }
-            if (jobs.size() == buildHandles.size() && allFound) {
-                return null; // no change
-            } else {
-                List<JobHandle> origList =
-                        new LinkedList<JobHandle>(buildHandles);
+            if (jobs.size() != buildHandles.size() || !allFound) {
                 removeOrphanedHandles(jobs);
                 addHandlesForAddedJobs(added);
-                return new PairOfDifferentLists(origList,
-                        new LinkedList<JobHandle>(buildHandles));
+            }
+            return updateWatchedJobsList();
+        }
+
+        /**
+         * Update list of watched jobs.
+         *
+         * @return null if list of watched jobs is still the same, otherwise
+         * {@link PairOfDifferentLists} containing the original list and the
+         * updated list of watched jobs.
+         */
+        public synchronized PairOfDifferentLists updateWatchedJobsList() {
+            List<HudsonJobHandle> origWatchedHandles =
+                    this.watchedBuildHandles;
+            List<HudsonJobHandle> newWatchedHandles =
+                    new ArrayList<HudsonJobHandle>(origWatchedHandles.size());
+            for (HudsonJobHandle handle : buildHandles) {
+                if (handle.getJob().isSalient()) {
+                    newWatchedHandles.add(handle);
+                }
+            }
+            if (listsAreEqual(origWatchedHandles, newWatchedHandles)) {
+                return null;
+            } else {
+                this.watchedBuildHandles = newWatchedHandles;
+                return new PairOfDifferentLists(
+                        new ArrayList<JobHandle>(origWatchedHandles),
+                        new ArrayList<JobHandle>(newWatchedHandles));
+            }
+        }
+
+        /**
+         * Compare two lists of hudson build handles. Return true if they are
+         * equal.
+         */
+        private boolean listsAreEqual(List<HudsonJobHandle> old,
+                List<HudsonJobHandle> nue) {
+            if (old.size() != nue.size()) {
+                return false;
+            } else {
+                for (int i = 0; i < old.size(); i++) {
+                    if (!old.get(i).getJob().getUrl().equals(
+                            nue.get(i).getJob().getUrl())) {
+                        return false;
+                    }
+                }
+                return true;
             }
         }
 
