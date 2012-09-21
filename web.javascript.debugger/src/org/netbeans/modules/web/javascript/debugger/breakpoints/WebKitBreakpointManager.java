@@ -156,10 +156,13 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             if (b != null) {
                 return ;
             }
-            String url = lb.getURLString(pc.getProject(), d.getConnectionURL());
-            url = reformatFileURL(url);
-            b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
-            d.addListener(this);
+            URL curl = d.getConnectionURL();
+            if (curl != null) {
+                String url = lb.getURLString(pc.getProject(), curl);
+                url = reformatFileURL(url);
+                b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                d.addListener(this);
+            }
         }
 
         @Override
@@ -177,9 +180,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         private void resubmit() {
             if (b != null) {
                 d.removeLineBreakpoint(b);
-                String url = lb.getURLString(pc.getProject(), d.getConnectionURL());
-                url = reformatFileURL(url);
-                b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                URL curl = d.getConnectionURL();
+                if (curl != null) {
+                    String url = lb.getURLString(pc.getProject(), curl);
+                    url = reformatFileURL(url);
+                    b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                }
             }
         }
         
