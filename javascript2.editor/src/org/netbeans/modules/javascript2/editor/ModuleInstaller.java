@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,42 +34,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.editor;
 
-package org.netbeans.modules.hudson.constants;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
+import org.openide.modules.ModuleInstall;
 
 /**
+ * Unregisters JavaScript boot classpath from GlobalPathRegistry.
  *
- * @author marigan
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class HudsonInstanceConstants {
+public class ModuleInstaller extends ModuleInstall {
 
-    private HudsonInstanceConstants() {}
-    
-    public static final String INSTANCE_NAME = "name"; // NOI18N
-    
-    public static final String INSTANCE_URL = "url"; // NOI18N
-    
-    public static final String INSTANCE_SYNC = "sync_time"; // NOI18N
+    @Override
+    public void uninstalled() {
+        GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.BOOT_CP,
+                new ClassPath[]{ClassPathProviderImpl.getBootClassPath()});
+    }
 
-    /**
-     * preferred jobs for the instance, list of job names, separated by |
-     */
-    public static final String INSTANCE_PREF_JOBS = "pref_jobs"; // NOI18N
-
-    /**
-     * Nonsalient jobs for the instance, list of job names, separated by |
-     */
-    public static final String INSTANCE_SUPPRESSED_JOBS = "suppressed_jobs"; // NOI18N
-
-    public static final String INSTANCE_PERSISTED = "persisted";        //NOI18N
-
-    /**
-     * True value, e.g. for {@link #INSTANCE_PERSISTED} key.
-     */
-    public static final String TRUE = "true";                           //NOI18N
-    /**
-     * False value, e.g. for {@link #INSTANCE_PERSISTED} key.
-     */
-    public static final String FALSE = "false";                         //NOI18N
 }

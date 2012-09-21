@@ -826,6 +826,8 @@ public class JsFormatter implements Formatter {
             case INDENTATION_DEC:
                 formatContext.decIndentationLevel();
                 break;
+            default:
+                break;
         }
     }
 

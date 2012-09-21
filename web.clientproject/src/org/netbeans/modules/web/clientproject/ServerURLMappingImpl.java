@@ -47,8 +47,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import org.netbeans.modules.javascript.jstestdriver.api.JsTestDriver;
-import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
 import org.netbeans.modules.web.clientproject.spi.webserver.WebServer;
@@ -78,12 +76,7 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
                 if (!root.endsWith("/")) { //NOI18N
                     root += "/"; //NOI18N
                 }
-                try {
-                    return new URL(root + relPath);
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                    return null;
-                }
+                return WebServer.toURL(root + relPath);
             }
         } else {
             return toJsTestDriverServer(projectFile);
