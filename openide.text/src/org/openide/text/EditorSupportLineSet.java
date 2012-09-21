@@ -136,7 +136,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
             
             if (editor != null) {
                 if (visibilityType == ShowVisibilityType.FRONT) {
-                    editor.getComponent().requestVisible();
+                    editor.getComponent().toFront();
                 } else if (visibilityType == ShowVisibilityType.FOCUS) {
                     editor.getComponent().requestActive();
                 }
