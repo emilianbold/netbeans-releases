@@ -303,6 +303,17 @@ public class JavaScriptLibrarySelection extends JPanel {
         changeSupport.removeChangeListener(listener);
     }
 
+    // XXX hotfix for #218726
+    /*
+     * Panel itself does not listen on jslibs list changes since fireChangeEvent would be called;
+     * that means that the new project wizard would not tell user the background-validation error (if any occurs)
+     * (JavaScriptLibrarySelectionPanel.asyncError is set to false after every change in this panel).
+     * That is a work around for issue #202796, can be removed once that issue is fixed.
+     */
+    public void addJsLibsListener(ListDataListener listener) {
+        selectedLibrariesListModel.addListDataListener(listener);
+    }
+
     final void fireChangeEvent() {
         changeSupport.fireChange();
     }
