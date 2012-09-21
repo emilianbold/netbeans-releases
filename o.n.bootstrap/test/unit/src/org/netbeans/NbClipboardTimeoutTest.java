@@ -70,8 +70,28 @@ public class NbClipboardTimeoutTest extends NbTestCase {
     }
 
     @Override
+    protected int timeOut() {
+        return 30000;
+    }
+
+    @Override
     protected void setUp() throws Exception {
-        sys = new Clipboard(getName());
+        sys = new Clipboard(getName()) {
+
+            @Override
+            public synchronized Transferable getContents(Object requestor) {
+                try {
+                    // every call to this clipboard is slow. Make sure
+                    // getContents from clipboardChanged does not call this
+                    // method at all.
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return super.getContents(requestor);
+            }
+
+        };
         clip = new NbClipboard(sys);
         makeSureSystemClipboardContainsString(sys, clip);
     }
@@ -84,8 +104,8 @@ public class NbClipboardTimeoutTest extends NbTestCase {
             
             @Override
             public synchronized void clipboardChanged(ClipboardEvent ev) {
-                Transferable in = ev.getClipboard().getContents(this);
                 try {
+                    Transferable in = ev.getClipboard().getContents(this);
                     value = (String) in.getTransferData(DataFlavor.stringFlavor);
                     cnt++;
                     if (prev == null) {
