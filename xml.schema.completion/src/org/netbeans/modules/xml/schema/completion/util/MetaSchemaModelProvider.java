@@ -91,12 +91,16 @@ public class MetaSchemaModelProvider extends CompletionModelProvider {
     private SchemaModel createMetaSchemaModel() {
         try {
             InputStream in = getClass().getResourceAsStream("XMLSchema.xsd"); //NOI18N
-            javax.swing.text.Document d = AbstractDocumentModel.
-                    getAccessProvider().loadSwingDocument(in);
-	    ModelSource ms = new ModelSource(Lookups.singleton(d), false);
-            SchemaModel m = SchemaModelFactory.getDefault().createFreshModel(ms);
-            m.sync();
-            return m;
+            try {
+                javax.swing.text.Document d = AbstractDocumentModel.
+                        getAccessProvider().loadSwingDocument(in);
+                ModelSource ms = new ModelSource(Lookups.singleton(d), false);
+                SchemaModel m = SchemaModelFactory.getDefault().createFreshModel(ms);
+                m.sync();
+                return m;
+            } finally {
+                in.close();
+            }
         } catch (Exception ex) {
             //just catch
         } 
