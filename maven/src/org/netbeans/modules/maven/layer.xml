@@ -91,6 +91,11 @@ made subject to such option by the copyright holder.
                 <attr name="mavenLicenseURL" stringvalue="http://www.eclipse.org/legal/epl-v10.html"/>
                 <attr name="template" boolvalue="true"/>
             </file>            
+            <file name="license-bsd.txt" url="licenses/bsd-license.txt">
+                <attr name="displayName" stringvalue="BSD 2-Clause License"/>
+                <attr name="mavenLicenseURL" stringvalue="http://opensource.org/licenses/bsd-license.php"/>
+                <attr name="template" boolvalue="true"/>
+            </file>            
         </folder>
         
     </folder>
