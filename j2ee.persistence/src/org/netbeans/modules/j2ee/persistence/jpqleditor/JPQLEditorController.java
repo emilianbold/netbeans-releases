@@ -43,17 +43,31 @@ package org.netbeans.modules.j2ee.persistence.jpqleditor;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.ui.JPQLEditorTopComponent;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -94,7 +108,8 @@ public class JPQLEditorController {
             }
         }
         //
-
+        final boolean containerManaged = Util.isSupportedJavaEEVersion(pe.getProject());
+        final Provider provider = ProviderUtil.getProvider(pu.getProvider(), pe.getProject());
         final ClassLoader defClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             ph.progress(10);
@@ -104,6 +119,30 @@ public class JPQLEditorController {
             localResourcesURLList.add(pe.getLocation().getParent().toURL());
             localResourcesURLList.add(pe.getLocation().toURL());
             localResourcesURLList.add(pe.getLocation().getFileObject("persistence.xml").toURL());
+            if (containerManaged) {
+                Library library = PersistenceLibrarySupport.getLibrary(provider);
+                if (library != null) {
+                    localResourcesURLList.addAll(library.getContent("classpath"));//NOI18N
+                }
+            }
+            if (dbconn != null) {
+                ////autoadd driver classpath
+                String driverClassName = dbconn.getDriverClass();
+                ClassPath cp = ClassPath.getClassPath(pe.getLocation(), ClassPath.EXECUTE);
+                if(cp == null){
+                    cp = ClassPath.getClassPath(pe.getLocation(), ClassPath.COMPILE);
+                }
+                String resourceName = driverClassName.replace('.', '/') + ".class"; // NOI18N
+                if(cp!=null){
+                    FileObject fob = cp.findResource(resourceName); // NOI18N
+                    if (fob == null) {
+                        JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(driverClassName);
+                        if (driver != null && driver.length > 0) {
+                            localResourcesURLList.addAll(Arrays.asList(driver[0].getURLs()));
+                        }
+                    }
+                }
+            }
 
             ClassLoader customClassLoader = pe.getProjectClassLoader(
                     localResourcesURLList.toArray(new URL[]{}));
