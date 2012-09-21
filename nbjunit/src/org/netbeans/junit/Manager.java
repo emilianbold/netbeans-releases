@@ -209,20 +209,18 @@ public class Manager extends Object {
     }
     
     protected static void readProperties() {
-        InputStream is= null;
         try {
             File propFile = getPreferencesFile();
-            is= new FileInputStream(propFile);
+            InputStream is= new FileInputStream(propFile);
             fPreferences= new Properties(fPreferences);
-            fPreferences.load(is);
+            try {
+                fPreferences.load(is);
+            } finally {
+                is.close();
+            }
         } 
         catch (IOException e) {
-            try {
-                if (is != null)
-                    is.close();
-            } 
-            catch (IOException e1) {
-            }
+            // ignore
         }
     }
 

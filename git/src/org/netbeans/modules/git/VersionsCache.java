@@ -87,10 +87,15 @@ public class VersionsCache {
             try {
                 GitClient client = Git.getInstance().getClient(repository);
                 boolean result;
-                if (GitUtils.INDEX.equals(revision)) {
-                    result = client.catIndexEntry(base, 0, new FileOutputStream(tempFile), pm);
-                } else {
-                    result = client.catFile(base, revision, new FileOutputStream(tempFile), pm);
+                FileOutputStream fos = new FileOutputStream(tempFile);
+                try {
+                    if (GitUtils.INDEX.equals(revision)) {
+                        result = client.catIndexEntry(base, 0, fos, pm);
+                    } else {
+                        result = client.catFile(base, revision, fos, pm);
+                    }
+                } finally {
+                    fos.close();
                 }
                 if (!result) {
                     tempFile.delete();
