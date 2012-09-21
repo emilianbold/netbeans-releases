@@ -72,11 +72,6 @@
                     <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1200"/>
                     </file>
-                    <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
-                        <attr name="position" intvalue="1300"/>
-                        <attr name="location" stringvalue="North"/>
-                        <attr name="scrollable" boolvalue="false"/>
-                    </file>
                 </folder>
 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
