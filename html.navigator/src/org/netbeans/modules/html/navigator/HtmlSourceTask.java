@@ -84,15 +84,15 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
             //set new parser result to the UI
             HtmlNavigatorPanel.ui.setParserResult(result);
             last = result;
+        } else {
+            //still the same parsing result
+            int caret = ((CursorMovedSchedulerEvent) event).getCaretOffset();
+            if(lastCaret != caret) {
+                //update the caret position
+                HtmlNavigatorPanel.ui.setCaretOffset(caret);
+                lastCaret = caret;
+            }
         }
-        
-        int caret = ((CursorMovedSchedulerEvent) event).getCaretOffset();
-        if(lastCaret != caret) {
-            //update the caret position
-            HtmlNavigatorPanel.ui.setCaretOffset(caret);
-            lastCaret = caret;
-        }
-        
     }
 
     @MimeRegistration(mimeType = "text/html", service = TaskFactory.class)
