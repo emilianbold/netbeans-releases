@@ -448,13 +448,19 @@ public final class FormatToken {
                 return false;
             }
         },
-
-        // a bit special tokens to detect proper continuation
-        AFTER_PROPERTY {
+        BEFORE_PROPERTY {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
             }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+
+        // a bit special tokens to detect proper continuation
+        AFTER_PROPERTY {
             @Override
             public boolean isSpaceMarker() {
                 return false;
