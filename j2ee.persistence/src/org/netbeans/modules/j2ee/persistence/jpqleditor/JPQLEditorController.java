@@ -129,6 +129,9 @@ public class JPQLEditorController {
                 ////autoadd driver classpath
                 String driverClassName = dbconn.getDriverClass();
                 ClassPath cp = ClassPath.getClassPath(pe.getLocation(), ClassPath.EXECUTE);
+                if(cp == null){
+                    cp = ClassPath.getClassPath(pe.getLocation(), ClassPath.COMPILE);
+                }
                 String resourceName = driverClassName.replace('.', '/') + ".class"; // NOI18N
                 if(cp!=null){
                     FileObject fob = cp.findResource(resourceName); // NOI18N

@@ -65,7 +65,8 @@ import org.openide.filesystems.FileObject;
  */
 @ProjectServiceProvider(service=PersistenceEnvironment.class, projectType={
     "org-netbeans-modules-maven",
-    "org-netbeans-modules-java-j2seproject"
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-web-project"
 })
 public class PersistenceEnvironmentImpl implements PersistenceEnvironment{
         /** Handle to the current project to which this HibernateEnvironment is bound*/
@@ -115,7 +116,9 @@ public class PersistenceEnvironmentImpl implements PersistenceEnvironment{
     public List<URL> getProjectClassPath(FileObject projectFile) {
         List<URL> projectClassPathEntries = new ArrayList<URL>();
         ClassPath cp = ClassPath.getClassPath(projectFile, ClassPath.EXECUTE);
-
+        if(cp == null){
+            cp = ClassPath.getClassPath(projectFile, ClassPath.COMPILE);
+        }
         for (ClassPath.Entry cpEntry : cp.entries()) {
             projectClassPathEntries.add(cpEntry.getURL());
         }
