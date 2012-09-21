@@ -103,7 +103,7 @@ ${selection}${cursor}
     <codetemplate abbreviation="fun" descriptionId="CT_fun">
         <code>
 <![CDATA[
-function(${parameters}) {
+function ${name}(${parameters}) {
     ${selection}${cursor}
 }]]>
         </code>
@@ -113,7 +113,7 @@ function(${parameters}) {
 <![CDATA[/**
  * ${1 default="Comment"}
  */
-function ${name}(${parameters}) {
+function ${name}() {
     ${cursor}
 }]]>
         </code>
