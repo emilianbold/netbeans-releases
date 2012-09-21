@@ -54,8 +54,10 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -65,8 +67,19 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.NoType;
+import javax.lang.model.type.NullType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.TypeVisitor;
+import javax.lang.model.type.UnionType;
+import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.SimpleTypeVisitor6;
+import javax.lang.model.util.SimpleTypeVisitor7;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -408,6 +421,88 @@ public class ControllerGenerator implements Task<WorkingCopy> {
         return genUtils;
     }
     
+    /* test */ static TypeMirror eraseFieldTypeParameters(TypeMirror tm, CompilationInfo cinfo) {
+        Boolean shouldReplace = tm.accept(new SimpleTypeVisitor6<Boolean, Void>() {
+
+            @Override
+            public Boolean visitPrimitive(PrimitiveType t, Void p) {
+                return false;
+            }
+
+            @Override
+            public Boolean visitNull(NullType t, Void p) {
+                return false;
+            }
+
+            @Override
+            public Boolean visitArray(ArrayType t, Void p) {
+                return visit(t.getComponentType());
+            }
+
+            @Override
+            public Boolean visitDeclared(DeclaredType t, Void p) {
+                return !t.getTypeArguments().isEmpty();
+            }
+
+            @Override
+            public Boolean visitNoType(NoType t, Void p) {
+                return false;
+            }
+            
+        }, null);
+        
+        if (Boolean.TRUE.equals(shouldReplace)) {
+            return tm.accept(new FieldTParamEraser(), cinfo);
+        } else {
+            return tm;
+        }
+    }
+    
+    private static class FieldTParamEraser extends SimpleTypeVisitor6<TypeMirror, CompilationInfo> {
+        @Override
+        public TypeMirror visitArray(ArrayType t, CompilationInfo p) {
+            TypeMirror component = visit(t.getComponentType(), p);
+            return p.getTypes().getArrayType(component);
+        }
+
+        @Override
+        public TypeMirror visitDeclared(DeclaredType t, CompilationInfo p) {
+            if (t.getTypeArguments().isEmpty()) {
+                return t;
+            }
+            List<TypeMirror> newArgs = new ArrayList<TypeMirror>(t.getTypeArguments().size());
+            for (TypeMirror tm : t.getTypeArguments()) {
+                newArgs.add(visit(tm, p));
+            }
+            
+            TypeMirror enclosing = t.getEnclosingType();
+            if (enclosing != null) {
+                enclosing = visit(enclosing, p);
+            }
+            
+            return p.getTypes().getDeclaredType(
+                (DeclaredType)enclosing,
+                (TypeElement)t.asElement(), 
+                newArgs.toArray(new TypeMirror[newArgs.size()]));
+        }
+
+        @Override
+        public TypeMirror visitTypeVariable(TypeVariable t, CompilationInfo p) {
+            TypeMirror lb = t.getLowerBound() == null ? null : visit(t.getLowerBound(), p);
+            TypeMirror ub = t.getUpperBound() == null ? null : visit(t.getUpperBound(), p);
+            if (ub.getKind() == TypeKind.DECLARED) {
+                DeclaredType dt = (DeclaredType)ub;
+                TypeElement tel = (TypeElement)dt.asElement();
+                if (tel.getQualifiedName().contentEquals("java.lang.Object")) { // NOI18N
+                    ub = null;
+                } else if (tel.getSimpleName().length() == 0) {
+                    ub = null;
+                }
+            }
+            return p.getTypes().getWildcardType(ub, lb);
+        }
+    }
+    
     /**
      * Updates the controller with the component.
      * If a field with the 'id' name does not exist, it creates the field as private,
@@ -428,7 +523,8 @@ public class ControllerGenerator implements Task<WorkingCopy> {
         
         VariableTree vt = fields.get(id);
         if (vt == null) {
-            defineNewField(id, wcopy.getTreeMaker().Type(declType.asType()));
+            defineNewField(id, wcopy.getTreeMaker().Type(
+                    eraseFieldTypeParameters(declType.asType(), wcopy)));
             generatedFields.put(id, declType.asType());
             return;
         }
@@ -439,10 +535,13 @@ public class ControllerGenerator implements Task<WorkingCopy> {
         if (e == null) {
             throw new IllegalStateException();
         }
-        if (!wcopy.getTypes().isAssignable(declType.asType(), e.asType())) {
+        if (!wcopy.getTypes().isAssignable(
+                wcopy.getTypes().erasure(declType.asType()), 
+                wcopy.getTypes().erasure(e.asType()))) {
             // the field's type does not match. Consistency of FXML vs. controller is necessary, so 
             // we change field's type even though it may produce a compiler error.
-            wcopy.rewrite(vt.getType(), wcopy.getTreeMaker().Type(declType.asType()));
+            wcopy.rewrite(vt.getType(), wcopy.getTreeMaker().Type(
+                    eraseFieldTypeParameters(declType.asType(), wcopy)));
         }
         // annotation and visibility. If not public, add @FXML annotation
         if (!FxClassUtils.isFxmlAccessible(e)) {

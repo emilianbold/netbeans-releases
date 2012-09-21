@@ -52,13 +52,13 @@ public class SearchResultsOperatorTest extends JellyTestCase {
     public static final String[] tests = new String[]{
         "testWaitEndOfSearch",
         //"testBtStopSearch", // don't know how to test
-        "testBtShowDetails",
         "testBtModifySearch",
         "testOutlineResult",
         "testSelectResult",
         "testOpenResult",
         "testModifySearch",
         "testVerify",
+        "testBtShowDetails",
         "testShowDetails", // has to be last because it steals focus
         "testClose"
     };
@@ -144,6 +144,8 @@ public class SearchResultsOperatorTest extends JellyTestCase {
 
     /** Test verify method */
     public void testVerify() {
+        // maximize to satisfy all buttons are visible
+        searchResultsOper.maximize();
         searchResultsOper.verify();
     }
     

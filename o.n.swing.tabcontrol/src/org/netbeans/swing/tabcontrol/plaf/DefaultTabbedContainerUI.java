@@ -1019,6 +1019,17 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
             tabDisplayer.setBounds (ins.left, ins.top, 
                 w,
                 tabSize.height);
+            if( tabDisplayer.getModel().size() > 1 ) {
+                //#214427 - check the preferred size again, during the first pass
+                //the tab displayer may not know the available width
+                Dimension newTabSize = tabDisplayer.getPreferredSize();
+                if( newTabSize.height != tabSize.height ) {
+                    tabSize = newTabSize;
+                    tabDisplayer.setBounds (ins.left, ins.top,
+                        w,
+                        tabSize.height);
+                }
+            }
             contentDisplayer.setBounds(ins.left, 
                 ins.top + tabSize.height, w,
                 container.getHeight() - (ins.top + ins.bottom + tabSize.height));

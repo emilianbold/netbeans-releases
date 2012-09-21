@@ -269,7 +269,11 @@ public abstract class MOXCCollablet extends Object implements Collablet {
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                 factory.setNamespaceAware(true);
                 factory.setValidating(false);
-                messageTemplate = factory.newDocumentBuilder().parse(templateStream);
+                try {
+                    messageTemplate = factory.newDocumentBuilder().parse(templateStream);
+                } finally {
+                    templateStream.close();
+                }
             } catch (Exception e) {
                 throw new CollabException(e, "Could not initialize MOXC message template");
             }

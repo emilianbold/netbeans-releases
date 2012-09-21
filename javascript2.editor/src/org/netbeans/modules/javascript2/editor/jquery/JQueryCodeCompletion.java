@@ -96,6 +96,8 @@ public class JQueryCodeCompletion {
                     addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
                 break;
+            default:
+                break;
         }
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting jQuery CC took {0}ms ", (end - start));

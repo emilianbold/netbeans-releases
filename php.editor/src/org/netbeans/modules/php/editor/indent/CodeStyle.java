@@ -615,6 +615,10 @@ public final class CodeStyle {
         return preferences.getBoolean(wrapStatementsOnTheLine, getDefaultAsBoolean(wrapStatementsOnTheLine));
     }
 
+    public boolean wrapAfterBinOps() {
+        return preferences.getBoolean(wrapAfterBinOps, getDefaultAsBoolean(wrapAfterBinOps));
+    }
+
     // Uses
 
     public boolean preferFullyQualifiedNames() {

@@ -38,7 +38,6 @@
 package org.netbeans.test.jsf;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test JSF support in Java EE 6 project.
@@ -67,10 +66,7 @@ public class JsfFunctionalEE6Test extends JsfFunctionalTest {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JsfFunctionalEE6Test.class);
-        conf = addServerTests(Server.GLASSFISH, conf, TESTS);
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.GLASSFISH, JsfFunctionalEE6Test.class, TESTS);
     }
 
     @Override

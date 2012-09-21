@@ -1,0 +1,2 @@
+outer:METHOD:[PUBLIC]:ESCAPED{outer}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+  inner:METHOD:[PRIVATE]:ESCAPED{inner}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:

@@ -44,7 +44,6 @@ import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.NewProjectAction;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test web application project from existing sources.
@@ -70,10 +69,7 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidationNb36WebModule.class);
-        conf = addServerTests(Server.GLASSFISH, conf, TESTS);
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.GLASSFISH, WebProjectValidationNb36WebModule.class, TESTS);
     }
 
     /** Test creation of web application.

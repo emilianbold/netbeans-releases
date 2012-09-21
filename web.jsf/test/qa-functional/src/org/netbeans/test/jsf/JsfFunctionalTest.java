@@ -51,7 +51,6 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.netbeans.test.web.NewWebProjectJSFFrameworkStepOperator;
@@ -106,10 +105,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JsfFunctionalTest.class);
-        conf = addServerTests(Server.GLASSFISH, conf, TESTS);
-        conf = conf.enableModules(".*").clusters(".*");
-        return conf.suite();
+        return createAllModulesServerSuite(Server.GLASSFISH, JsfFunctionalTest.class, TESTS);
     }
 
     @Override

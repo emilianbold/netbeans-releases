@@ -46,7 +46,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests REST node in project logical view
@@ -202,13 +201,13 @@ public class RestNodeTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(RestNodeTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, RestNodeTest.class,
                 "testNodesAfterOpen",
                 "testOpenOnResource",
                 "testOpenOnMethod",
                 "testOpenOnLocator",
                 "testAddMethod",
                 "testRemoveMethod",
-                "testCloseProject").enableModules(".*").clusters(".*"));
+                "testCloseProject");
     }
 }
