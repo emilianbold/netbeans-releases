@@ -586,7 +586,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 //                            System.out.println("ac pom=" + ac.getPom());
 //                            System.out.println("ac art=" + ac.getArtifact());
 //                            System.out.println("ac info=" + ac.getArtifactInfo());
-                                assert indexingContext.getIndexSearcher() != null;
+//                                assert indexingContext.getIndexSearcher() != null;
                                 indexer.addArtifactToIndex(ac, indexingContext);
                             } finally {
                                 unlock(indexingContext, true);
@@ -611,11 +611,11 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
      * @param exclusive 
      */
     private void lock(IndexingContext indexingContext, boolean exclusive) {
-        if (exclusive && indexingContext instanceof DefaultIndexingContext) {
-            ((DefaultIndexingContext) indexingContext).lockExclusively();
-        } else {
-            indexingContext.lock();
-        }
+//        if (exclusive && indexingContext instanceof DefaultIndexingContext) {
+//            ((DefaultIndexingContext) indexingContext).lockExclusively();
+//        } else {
+//            indexingContext.lock();
+//        }
 
     }
 
@@ -625,11 +625,11 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
      * @param exclusive 
      */
     private void unlock(IndexingContext indexingContext, boolean exclusive) {
-        if (exclusive && indexingContext instanceof DefaultIndexingContext) {
-            ((DefaultIndexingContext) indexingContext).unlockExclusively();
-        } else {
-            indexingContext.unlock();
-        }
+//        if (exclusive && indexingContext instanceof DefaultIndexingContext) {
+//            ((DefaultIndexingContext) indexingContext).unlockExclusively();
+//        } else {
+//            indexingContext.unlock();
+//        }
     }    
 
     @Override

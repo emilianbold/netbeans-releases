@@ -1,11 +1,10 @@
-Name: Apache Lucene
-Version: 3.0.3
-Description: Java-based indexing and search technology
+Name: Maven Indexer
+Version: 5.0.0
+Description: Maven remote repository indexing engine.
 License: Apache-2.0
-Origin: http://lucene.apache.org/
-Files: lucene-highlighter-3.0.3.jar
-Source: http://svn.apache.org/repos/asf/lucene/java/trunk
-OSR: 6381
+Origin: http://repo1.maven.org/maven2/org/apache/maven/indexer/
+Files: indexer-core-5.0.0.jar indexer-artifact-5.0.0.jar
+OSR: 9451
 
                                  Apache License
                            Version 2.0, January 2004
