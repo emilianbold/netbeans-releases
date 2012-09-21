@@ -235,7 +235,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         private final ProjectContext pc;
         private final DOMBreakpoint db;
         private Node node;
-        private Set<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint> bps;
+        private Map<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint, DOMBreakpoint.Type> bps;
         
         public WebKitDOMBreakpointManager(WebKitDebugging wd, ProjectContext pc, DOMBreakpoint db) {
             super(wd.getDebugger(), db);
@@ -285,12 +285,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             if (types.isEmpty()) {
                 return ;
             }
-            bps = new HashSet<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint>(types.size());
+            bps = new HashMap<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint, DOMBreakpoint.Type>(types.size());
             for (DOMBreakpoint.Type type : types) {
                 org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
                         d.addDOMBreakpoint(node, type.getTypeString());
                 if (b != null) {
-                    bps.add(b);
+                    bps.put(b, type);
                 }
             }
         }
@@ -304,13 +304,24 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         }
         
         private void removeBreakpoints() {
+            Node theNode = this.node;
             this.node = null;
+            if (theNode != null) {
+                removeBreakpoints(theNode);
+            }
+        }
+        
+        private void removeBreakpoints(Node theNode) {
             if (bps == null) {
                 return ;
             }
             if (d.isEnabled()) {
-                for (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b : bps) {
-                    d.removeLineBreakpoint(b);
+                for (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b : bps.keySet()) {
+                    if (b.getBreakpointID() != null) {
+                        d.removeLineBreakpoint(b);
+                    } else {
+                        d.removeDOMBreakpoint(theNode, bps.get(b).getTypeString());
+                    }
                 }
             }
             bps = null;
@@ -343,7 +354,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             } else if (DOMBreakpoint.PROP_TYPES.equals(propertyName)) {
                 Node theNode = node;
                 if (theNode != null) {
-                    removeBreakpoints();
+                    removeBreakpoints(theNode);
                     addTo(theNode);
                 }
             } else if (DOMBreakpoint.PROP_NODE.equals(propertyName)) {
