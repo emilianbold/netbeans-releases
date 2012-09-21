@@ -59,7 +59,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.index.*;
 import org.apache.maven.index.artifact.ArtifactPackagingMapper;
-import org.apache.maven.index.context.DefaultIndexingContext;
 import org.apache.maven.index.context.IndexCreator;
 import org.apache.maven.index.context.IndexingContext;
 import org.apache.maven.index.expr.StringSearchExpression;
