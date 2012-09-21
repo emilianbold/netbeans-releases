@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
@@ -127,7 +128,12 @@ public final class MPowerPlayerPlatformConfigurator implements CustomCLDCPlatfor
         if (apiSettings == null) {
             apiSettings = new Properties();
             try {
-                apiSettings.load(MPowerPlayerPlatformConfigurator.class.getResourceAsStream("Configuration.properties"));//NOI18N
+                InputStream resource = MPowerPlayerPlatformConfigurator.class.getResourceAsStream("Configuration.properties");  // NOI18N
+                try {
+                    apiSettings.load(resource);
+                } finally {
+                    resource.close();
+                }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }

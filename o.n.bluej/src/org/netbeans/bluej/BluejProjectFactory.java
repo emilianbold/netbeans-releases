@@ -78,6 +78,7 @@ public class BluejProjectFactory implements ProjectFactory {
             OutputStream out = buildxml.getOutputStream(lock);
             copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);  // NOI18N
             out.close();
+            str.close();
             lock.releaseLock();
             str = BluejProjectFactory.class.getResourceAsStream("resources/build-impl.xml");  // NOI18N
             FileObject buildimplxml = nbfolder.createData("build-impl.xml");  // NOI18N
@@ -85,6 +86,7 @@ public class BluejProjectFactory implements ProjectFactory {
             out = buildimplxml.getOutputStream(lock);
             copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);  // NOI18N
             out.close();
+            str.close();
             lock.releaseLock();
             str = BluejProjectFactory.class.getResourceAsStream("resources/project.properties");  // NOI18N
             FileObject props = nbfolder.createData("project.properties");  // NOI18N
@@ -94,6 +96,7 @@ public class BluejProjectFactory implements ProjectFactory {
                 new String[] { "@PROJECTNAME@", "@JAVAVERSION@" },
                 new String[] { PropertyUtils.getUsablePropertyName(projectName), specVersion} );  // NOI18N
             out.close();
+            str.close();
             lock.releaseLock();
             str = BluejProjectFactory.class.getResourceAsStream("resources/project.xml");  // NOI18N
             FileObject projxml = nbfolder.createData("project.xml");  // NOI18N
@@ -101,6 +104,7 @@ public class BluejProjectFactory implements ProjectFactory {
             out = projxml.getOutputStream(lock);
             FileUtil.copy(str, out);
             out.close();
+            str.close();
             lock.releaseLock();
             Lookup.Result res = Lookup.getDefault().lookup(new Lookup.Template(ProjectFactory.class));
             Iterator it = res.allInstances().iterator();
@@ -133,6 +137,7 @@ public class BluejProjectFactory implements ProjectFactory {
                      OutputStream out = buildimplxml.getOutputStream(lock);
                      copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);  // NOI18N
                      out.close();
+                     str.close();
                      lock.releaseLock();
                      str = BluejProjectFactory.class.getResourceAsStream("resources/project.xml");  // NOI18N
                      FileObject projxml = xml;  // NOI18N
@@ -140,6 +145,7 @@ public class BluejProjectFactory implements ProjectFactory {
                      out = projxml.getOutputStream(lock);
                      FileUtil.copy(str, out);
                      out.close();
+                     str.close();
                      lock.releaseLock();
                  }
             } catch (IOException e) {

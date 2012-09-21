@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -146,7 +147,14 @@ public final class Git {
         if (repository != null) {
             try {
                 GitClient client = getClient(repository);
-                if (!client.catFile(workingCopy, GitUtils.HEAD, new FileOutputStream(originalFile), GitUtils.NULL_PROGRESS_MONITOR)) {
+                FileOutputStream fos = new FileOutputStream(originalFile);
+                boolean ok;                
+                try {
+                    ok = client.catFile(workingCopy, GitUtils.HEAD, fos, GitUtils.NULL_PROGRESS_MONITOR);
+                } finally {
+                    fos.close();
+                }
+                if (!ok) {
                     originalFile.delete();
                 }
             } catch (java.io.FileNotFoundException ex) {
@@ -158,6 +166,8 @@ public final class Git {
             } catch (GitException ex) {
                 LOG.log(Level.INFO, "Error retrieving file", ex); //NOI18N
                 originalFile.delete();
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "IO exception", ex); //NOI18N
             }
         }
     }

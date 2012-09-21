@@ -1048,7 +1048,11 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         try {
             if(! resourceFile.isDirectory()){
                 FileInputStream in = new FileInputStream(resourceFile);
-                resourceGraph = DDProvider.getDefault().getResourcesGraph(in);
+                try {
+                    resourceGraph = DDProvider.getDefault().getResourcesGraph(in);
+                } finally {
+                    in.close();
+                }
             }
         } catch (RuntimeException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

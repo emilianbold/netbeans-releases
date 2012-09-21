@@ -217,7 +217,12 @@ public class CordovaPerformer extends AbstractAction implements ProjectActionPer
     private void createProperties(Project project, String buildproperties, String nbprojectbuildproperties) {
         Properties props = new Properties();
         try {
-            props.load(CordovaPerformer.class.getResourceAsStream("build.properties"));
+            InputStream is = CordovaPerformer.class.getResourceAsStream("build.properties");
+            try {
+                props.load(is);
+            } finally {
+                is.close();
+            }
             props.put("project.name", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));
             props.put("android.project.activity", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));
             props.put("android.project.package","org.netbeans");
