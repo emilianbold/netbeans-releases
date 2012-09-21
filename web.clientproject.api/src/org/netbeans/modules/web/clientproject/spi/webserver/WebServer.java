@@ -51,6 +51,8 @@ import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Map;
@@ -138,11 +140,7 @@ public final class WebServer {
             if (pair != null) {
                 String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                         FileUtil.getRelativePath(pair.siteRoot, projectFile);
-                try {
-                    return new URL("http://localhost:"+PORT+path); //NOI18N
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                return toURL("http://localhost:"+PORT+path); //NOI18N
             }
         } else {
             // fallback if project was not found:
@@ -152,17 +150,30 @@ public final class WebServer {
                 if (relPath != null) {
                     String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                             relPath;
-                    try {
-                        return new URL("http://localhost:"+PORT+path); //NOI18N
-                    } catch (MalformedURLException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    return toURL("http://localhost:"+PORT+path); //NOI18N
                 }
             }
         }
         return null;
     }
 
+    /**
+     * Converts given string into URL and properly encodes the path.
+     */
+    public static URL toURL(String urlString) {
+        try {
+            // #216436:
+            // use URL to split the string into individual URI parts first:
+            URL u = new URL(urlString);
+            // and now use URI to properly encode spaces in path:
+            return new URI(u.getProtocol(), u.getAuthority(), u.getPath(), u.getQuery(), null).toURL();
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
     /**
      * Converts server URL back into project's source file.
      */
