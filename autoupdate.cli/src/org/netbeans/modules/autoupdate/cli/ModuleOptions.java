@@ -362,8 +362,9 @@ public class ModuleOptions extends OptionProcessor {
         } catch (OperationException ex) {
             // a hack
             if (OperationException.ERROR_TYPE.INSTALL.equals(ex.getErrorType())) {
-                // probably timeout of loading, don't report now
+                // probably timeout of loading
                 env.getErrorStream().println(ex.getLocalizedMessage());
+                throw (CommandException) new CommandException(34, ex.getMessage()).initCause(ex);
             } else {
                 throw (CommandException) new CommandException(32, ex.getMessage()).initCause(ex);
             }
