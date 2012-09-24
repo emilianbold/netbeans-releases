@@ -1052,6 +1052,10 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(formatContext).spaceWithinParens();
             case BEFORE_RIGHT_PARENTHESIS:
                 return CodeStyle.get(formatContext).spaceWithinParens();
+            case AFTER_LEFT_BRACE:
+                return CodeStyle.get(formatContext).spaceWithinBraces();
+            case BEFORE_RIGHT_BRACE:
+                return CodeStyle.get(formatContext).spaceWithinBraces();
             case BEFORE_IF_BRACE:
                 return CodeStyle.get(formatContext).spaceBeforeIfLeftBrace();
             case BEFORE_ELSE_BRACE:
