@@ -213,7 +213,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
             if (testsProperty != null) {
                 // invalid test dir
                 File tests = ProjectPropertiesSupport.getSourceSubdirectory(project, testsProperty);
-                assert !tests.isDirectory() : "Test directory should be invalid: " + tests;
                 testFolderTextField.setText(tests.getAbsolutePath());
             }
         }
