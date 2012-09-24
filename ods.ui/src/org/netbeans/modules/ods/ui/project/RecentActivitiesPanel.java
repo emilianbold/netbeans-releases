@@ -62,6 +62,7 @@ import org.netbeans.modules.ods.client.api.ODSClient;
 import org.netbeans.modules.ods.client.api.ODSException;
 import org.netbeans.modules.ods.ui.utils.Utils;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -87,6 +88,10 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         this.client = client;
         this.projectHandle = projectHandle;
         initComponents();
+        loadRecentActivities();
+    }
+
+    void update() {
         loadRecentActivities();
     }
 
@@ -228,26 +233,39 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
     }
 
     private void createShowButtons() {
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.EAST;
         gbc.gridheight = GridBagConstraints.REMAINDER;
 
-        chbTask = new JCheckBox("Tasks", Utils.Settings.isShowTasks());
+        if (chbTask != null) {
+            pnlShow.remove(chbTask);
+        }
+        chbTask = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Tasks"), Utils.Settings.isShowTasks());
         chbTask.setOpaque(false);
         chbTask.addActionListener(new ShowActionListener());
         pnlShow.add(chbTask, gbc);
 
-        chbWiki = new JCheckBox("Wiki", Utils.Settings.isShowWiki());
+        if (chbWiki != null) {
+            pnlShow.remove(chbWiki);
+        }
+        chbWiki = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Wiki"), Utils.Settings.isShowWiki());
         chbWiki.setOpaque(false);
         chbWiki.addActionListener(new ShowActionListener());
         pnlShow.add(chbWiki, gbc);
 
-        chbScm = new JCheckBox("Commits", Utils.Settings.isShowScm());
+        if (chbScm != null) {
+            pnlShow.remove(chbScm);
+        }
+        chbScm = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Commits"), Utils.Settings.isShowScm());
         chbScm.setOpaque(false);
         chbScm.addActionListener(new ShowActionListener());
         pnlShow.add(chbScm, gbc);
 
-        chbBuild = new JCheckBox("Builds", Utils.Settings.isShowBuilds());
+        if (chbBuild != null) {
+            pnlShow.remove(chbBuild);
+        }
+        chbBuild = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Builds"), Utils.Settings.isShowBuilds());
         chbBuild.setOpaque(false);
         chbBuild.addActionListener(new ShowActionListener());
         pnlShow.add(chbBuild, gbc);
@@ -322,7 +340,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         boolean scmEnable = isScmEnable(recentActivities);
         chbScm.setSelected(Utils.Settings.isShowScm() && scmEnable);
         chbScm.setVisible(scmEnable);
-        
+
         boolean buildEnable = isBuildEnable(recentActivities);
         chbBuild.setSelected(Utils.Settings.isShowBuilds() && buildEnable);
         chbBuild.setVisible(buildEnable);

@@ -58,17 +58,17 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.UIManager;
@@ -77,10 +77,12 @@ import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.client.api.ODSFactory;
 import org.netbeans.modules.ods.client.api.ODSClient;
 import org.netbeans.modules.ods.client.api.ODSException;
+import org.netbeans.modules.ods.ui.settings.OdsSettings;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  * Top component which displays something.
@@ -101,7 +103,7 @@ preferredID = "ProjectDetailsTopComponent")
     "CTL_ProjectDetailsTopComponent=ProjectDetails Window",
     "HINT_ProjectDetailsTopComponent=This is a ProjectDetails window"
 })
-public final class ProjectDetailsTopComponent extends TopComponent implements Expandable {
+public final class ProjectDetailsTopComponent extends TopComponent implements Expandable, PropertyChangeListener {
 
     private static Map<String, ProjectDetailsTopComponent> projectToTC = new HashMap<String, ProjectDetailsTopComponent>();
     private boolean detailsExpanded;
@@ -111,6 +113,9 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     private ODSProject project = null;
     private ODSClient client = null;
     private BuildStatusPanel buildStatusPanel;
+    private static final RequestProcessor RP = new RequestProcessor(ProjectDetailsTopComponent.class.getName());
+    private DashboardRefresher refresher;
+    private RecentActivitiesPanel activitiesPanel;
 
     static ProjectDetailsTopComponent getInstanceFor(ProjectHandle<ODSProject> projectHandle) {
         ODSProject project = projectHandle.getTeamProject();
@@ -137,6 +142,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     private ProjectDetailsTopComponent(ProjectHandle<ODSProject> projectHandle) {
         this.projectHandle = projectHandle;
         this.project = projectHandle.getTeamProject();
+        this.refresher = new DashboardRefresher();
         initComponents();
     }
 
@@ -449,7 +455,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.weighty = 0.6;
         pnlContent.add(scrollPanelDetails, gridBagConstraints);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -495,6 +501,8 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
 
     @Override
     public void componentOpened() {
+        refresher.setRefreshEnabled(true);
+        refresher.setupDashboardRefresh();
         setName(project.getName());
         scrollPanelMain.getVerticalScrollBar().setUnitIncrement(16);
         scrollPanelDetails.getVerticalScrollBar().setUnitIncrement(16);
@@ -502,6 +510,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         scrollPanelDetails.setVisible(false);
         expandMouseListener = new ExpandableMouseListener(this, this);
         pnlProjectName.addMouseListener(expandMouseListener);
+        OdsSettings.getInstance().addPropertyChangedListener(this);
         client = ODSFactory.getInstance().createClient(project.getServer().getUrl().toString(), project.getServer().getPasswordAuthentication());
         initDetails();
         loadRecentActivities();
@@ -510,6 +519,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
 
     @Override
     public void componentClosed() {
+        refresher.setRefreshEnabled(false);
         if (project != null) {
             projectToTC.remove(project.getId());
         }
@@ -549,7 +559,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     }
 
     private void loadRecentActivities() {
-        RecentActivitiesPanel activityPanel = new RecentActivitiesPanel(client, projectHandle);
+        activitiesPanel = new RecentActivitiesPanel(client, projectHandle);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(3, 3, 0, 3);
         gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -557,7 +567,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         gbc.weightx = 2.5;
         gbc.weighty = 1.0;
         gbc.gridheight = GridBagConstraints.REMAINDER;
-        pnlMainContent.add(activityPanel, gbc);
+        pnlMainContent.add(activitiesPanel, gbc);
     }
 
     public ODSProject getProject() {
@@ -621,6 +631,18 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         textArtifacts.setText("dav:" + project.getMavenUrl());
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(OdsSettings.AUTO_SYNC_SETTINGS_CHANGED)) {
+            refresher.setupDashboardRefresh();
+        }
+    }
+
+    private void updateContent() {
+        activitiesPanel.update();
+        //TODO update project details
+    }
+
     private static class ScrollablePanel extends JPanel implements Scrollable {
 
         @Override
@@ -646,6 +668,61 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         @Override
         public boolean getScrollableTracksViewportHeight() {
             return false;
+        }
+    }
+
+    private class DashboardRefresher {
+
+        private RequestProcessor.Task refreshDashboard;
+        private boolean refreshEnabled = false;
+        private boolean dashboardBusy = false;
+        private boolean refreshWaiting = false;
+
+        public DashboardRefresher() {
+            refreshDashboard = RP.create(new Runnable() {
+                @Override
+                public void run() {
+                    if (!refreshEnabled) {
+                        return;
+                    }
+                    if (dashboardBusy) {
+                        refreshWaiting = true;
+                        return;
+                    }
+                    try {
+                        updateContent();
+                    } finally {
+                        setupDashboardRefresh();
+                    }
+                }
+            });
+        }
+
+        public void setupDashboardRefresh() {
+            final OdsSettings settings = OdsSettings.getInstance();
+            refreshDashboard.cancel();
+            if (!settings.isAutoSync() || !refreshEnabled) {
+                return;
+            }
+            scheduleDashboardRefresh();
+        }
+
+        private void scheduleDashboardRefresh() {
+            final OdsSettings settings = OdsSettings.getInstance();
+            int delay = settings.getAutoSyncValue();
+            refreshDashboard.schedule(delay * 60 * 1000); // given in minutes
+        }
+
+        public void setRefreshEnabled(boolean refreshEnabled) {
+            this.refreshEnabled = refreshEnabled;
+        }
+
+        public void setDashboardBusy(boolean dashboardBusy) {
+            this.dashboardBusy = dashboardBusy;
+            if (!dashboardBusy && refreshWaiting) {
+                refreshWaiting = false;
+                refreshDashboard.run();
+            }
         }
     }
 }
