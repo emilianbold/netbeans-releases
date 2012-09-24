@@ -83,7 +83,7 @@ public class JPQLEditorAction extends NodeAction {
                     Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
                     PersistenceEnvironment pe = project!=null ? project.getLookup().lookup(PersistenceEnvironment.class) : null;
                     if( pe != null ) {
-                        return !Util.isSupportedJavaEEVersion(project);//so far support only non-container managed projects
+                        return true;//!Util.isSupportedJavaEEVersion(project);//so far support only non-container managed projects
                     }
                 }
             }

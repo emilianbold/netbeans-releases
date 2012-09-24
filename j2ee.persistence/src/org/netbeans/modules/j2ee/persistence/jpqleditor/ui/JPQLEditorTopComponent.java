@@ -351,7 +351,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
  
                             ph2.progress(50);
                             ph2.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryParsingPassControlToProvider"));
-                            jpqlResult = queryExecutor.execute(jpql, selectedConfigObject, pe, 0, ph2, false);
+                            jpqlResult = queryExecutor.execute(jpql, selectedConfigObject, pe, new HashMap(), 0, ph2, false);
                             ph2.progress(80);
                             ph2.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryParsingProcessResults"));
 
