@@ -79,35 +79,55 @@ public class ToggleBlockCommentActionTest extends PHPCodeCompletionTestBase {
     }
 
     public void testIssue198269_01()throws Exception {
-        testInFile("testfiles/actions/issue198269_01.php");
+        testInFile("testfiles/actions/toggleComment/issue198269_01.php");
     }
 
     public void testIssue198269_02()throws Exception {
-        testInFile("testfiles/actions/issue198269_02.php");
+        testInFile("testfiles/actions/toggleComment/issue198269_02.php");
     }
 
     public void testIssue198269_03()throws Exception {
-        testInFile("testfiles/actions/issue198269_03.php");
+        testInFile("testfiles/actions/toggleComment/issue198269_03.php");
     }
 
     public void testIssue198269_04()throws Exception {
-        testInFile("testfiles/actions/issue198269_04.php");
+        testInFile("testfiles/actions/toggleComment/issue198269_04.php");
     }
 
     public void testIsue207153()throws Exception {
-        testInFile("testfiles/actions/issue207153.php");
+        testInFile("testfiles/actions/toggleComment/issue207153.php");
     }
 
     public void testIssue213706_01()throws Exception {
-        testInFile("testfiles/actions/issue213706_01.php");
+        testInFile("testfiles/actions/toggleComment/issue213706_01.php");
     }
 
     public void testIssue213706_02()throws Exception {
-        testInFile("testfiles/actions/issue213706_02.php");
+        testInFile("testfiles/actions/toggleComment/issue213706_02.php");
     }
 
     public void testIssue213706_03()throws Exception {
-        testInFile("testfiles/actions/issue213706_03.php");
+        testInFile("testfiles/actions/toggleComment/issue213706_03.php");
+    }
+
+    public void testIssue218830_01()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_01.php");
+    }
+
+    public void testIssue218830_02()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_02.php");
+    }
+
+    public void testIssue218830_03()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_03.php");
+    }
+
+    public void testIssue218830_04()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_04.php");
+    }
+
+    public void testIssue218830_05()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_05.php");
     }
 
     protected void testInFile(String file) throws Exception {
