@@ -984,7 +984,8 @@ public class ModelVisitor extends PathNodeVisitor {
         if (comment != null) {
             for (DocParameter docParameter : comment.getParameters()) {
                 DocIdentifier paramName = docParameter.getParamName();
-                if (paramName.getName().equals(jsObject.getName())) {
+                String name = (docParameter.getParamName() == null) ? "" : docParameter.getParamName().getName(); //NOI18N
+                if (name.equals(jsObject.getName())) {
                     jsObject.addOccurrence(DocumentationUtils.getOffsetRange(paramName));
                 }
             }
