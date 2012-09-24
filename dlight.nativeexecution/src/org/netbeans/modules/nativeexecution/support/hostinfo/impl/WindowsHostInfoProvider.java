@@ -43,9 +43,11 @@ package org.netbeans.modules.nativeexecution.support.hostinfo.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.Collator;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -92,7 +94,10 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         private Map<String, String> environment;
 
         HostInfoImpl() {
-            Map<String, String> env = new HashMap<String, String>(System.getenv());
+            Collator collator = Collator.getInstance(Locale.US);
+            collator.setStrength(Collator.PRIMARY);
+            Map<String, String> env = new TreeMap<String, String>(collator);
+            env.putAll(System.getenv());
 
             // Use os.arch to detect bitness.
             // Another way is described in the following article:
@@ -115,14 +120,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
 
             if (shell != null) {
                 String path = new File(shell).getParent();
-
-                if (env.containsKey("Path")) { // NOI18N
-                    path = path + ";" + env.get("Path"); // NOI18N
-                    env.put("Path", path); // NOI18N
-                } else if (env.containsKey("PATH")) { // NOI18N
-                    path = path + ";" + env.get("PATH"); // NOI18N
-                    env.put("PATH", path); // NOI18N
-                }
+                env.put("PATH", path + ";" + env.get("PATH")); // NOI18N
             }
 
             environment = Collections.unmodifiableMap(env);
