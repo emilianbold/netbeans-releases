@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -64,11 +65,7 @@ public class Block extends Statement {
     private Block(int start, int end, Statement[] statements, boolean isCurly) {
         super(start, end);
         this.isCurly = isCurly;
-        // set the child nodes' parent
-        for (int i = 0; i < statements.length; i++) {
-//            statements[i].setParent(this);
-            this.statements.add(statements[i]);
-        }
+        this.statements.addAll(Arrays.asList(statements));
     }
 
     public Block(int start, int end, List<Statement> statements, boolean isCurly) {
