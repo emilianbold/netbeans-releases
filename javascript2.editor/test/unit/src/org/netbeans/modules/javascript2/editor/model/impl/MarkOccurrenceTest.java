@@ -375,6 +375,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/model/getterSettterInObjectLiteral.js", "    set c(x^) {this.a = x / 2;}", true);
     }
 
+    public void testIssue218561_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218561.js", "        test: function(pa^r1) {", true);
+    }
+
+    public void testIssue218561_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218561.js", "                par1: pa^r1 // par1 after : is marked green as member variable", true);
+    }
+
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }

@@ -379,6 +379,21 @@ public class ModelUtils {
 //            } else {
 //                result.add(new TypeUsageImpl(name, type.getOffset(), false));
 //            }
+        } else if(type.getType().startsWith("@param;")) {   //NOI18N
+            String functionName = type.getType().substring(7);
+            int index = functionName.indexOf(":");
+            if (index > 0) {
+                functionName = functionName.substring(0, index - 1);
+                JsObject globalObject = ModelUtils.getGlobalObject(object);
+                JsObject function = ModelUtils.findJsObjectByName(globalObject, functionName);
+                if(function instanceof JsFunction) {
+                    JsObject param = ((JsFunction)function).getParameter(functionName.substring(index));
+                    if(param != null) {
+                        result.addAll(param.getAssignments());
+                    }
+                }
+            }
+
         } else {
             result.add(type);
         }
