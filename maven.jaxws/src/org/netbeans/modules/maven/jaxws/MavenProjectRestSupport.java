@@ -80,6 +80,7 @@ import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -310,7 +311,8 @@ public class MavenProjectRestSupport extends WebRestSupport {
                                 ProjectInformation.class).getDisplayName()), 
                 Collections.singletonList(DEPLOYMENT_GOAL));
         config.setProperty(ACTION_PROPERTY_DEPLOY_OPEN, Boolean.FALSE.toString() );
-        RunUtils.executeMaven(config);
+        ExecutorTask task = RunUtils.executeMaven(config);
+        task.waitFinished();
     }
     
     @Override
