@@ -646,13 +646,13 @@ public final class NbMavenProjectImpl implements Project {
     private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {
 
         private final NbMavenProject watcher;
-        private final Lookup lookup;
+        private final Lookup baseLookup;
         private String packaging;
 
         @SuppressWarnings("LeakingThisInConstructor")
-        PackagingTypeDependentLookup(NbMavenProject watcher, Lookup lookup) {
+        PackagingTypeDependentLookup(NbMavenProject watcher, Lookup baseLookup) {
             this.watcher = watcher;
-            this.lookup = lookup;
+            this.baseLookup = baseLookup;
             check();
             watcher.addPropertyChangeListener(this);
         }
@@ -664,7 +664,7 @@ public final class NbMavenProjectImpl implements Project {
             }
             if (!newPackaging.equals(packaging)) {
                 packaging = newPackaging;
-                setLookups(LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-maven/" + packaging + "/Lookup"));
+                setLookups(LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-maven/" + packaging + "/Lookup"));
             }
         }
 
