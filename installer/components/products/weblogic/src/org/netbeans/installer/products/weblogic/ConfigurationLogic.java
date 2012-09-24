@@ -91,7 +91,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File domainsubdir = new File(getProperty(WebLogicPanel.DOMAIN_INSTALLATION_SUBDIR_PROPERTY));
         final String domainname = getProperty(WebLogicPanel.DOMAINNAME_PROPERTY);
         final String username = getProperty(WebLogicPanel.USERNAME_PROPERTY);        
-        final String password = "";
+        final String password = getProperty(WebLogicPanel.PASSWORD_PROPERTY);
         
         final File domaindir = new File(domainsubdir, domainname);
 
@@ -193,7 +193,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 final File location = productToIntegrate.getInstallationLocation();
                 //registerJavaDB(location, new File(directory, "javadb"));
                 LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                if(!registerWebLogic(location, directory, domaindir, username, password)) {
+                if(!registerWebLogic(location, directory, domaindir, username, "")) {
                     continue;
                 }
                 
