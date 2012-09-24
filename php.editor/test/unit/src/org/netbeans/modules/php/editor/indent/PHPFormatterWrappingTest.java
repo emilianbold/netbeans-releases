@@ -485,4 +485,46 @@ public class PHPFormatterWrappingTest extends PHPFormatterTestBase {
         options.put(FmtOptions.wrapMethodCallArgs, CodeStyle.WrapStyle.WRAP_NEVER);
         reformatFileContents("testfiles/formatting/wrapping/issue211933_03.php", options);
     }
+
+    public void testWrappingAssignOps_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapAssignOps, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapAfterAssignOps, false);
+        reformatFileContents("testfiles/formatting/wrapping/assignOps01.php", options);
+    }
+
+    public void testWrappingAssignOps_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapAssignOps, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapAfterAssignOps, false);
+        reformatFileContents("testfiles/formatting/wrapping/assignOps02.php", options);
+    }
+
+    public void testWrappingAssignOps_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapAssignOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterAssignOps, false);
+        reformatFileContents("testfiles/formatting/wrapping/assignOps03.php", options);
+    }
+
+    public void testWrappingAssignOps_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapAssignOps, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapAfterAssignOps, true);
+        reformatFileContents("testfiles/formatting/wrapping/assignOps04.php", options);
+    }
+
+    public void testWrappingAssignOps_05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapAssignOps, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapAfterAssignOps, true);
+        reformatFileContents("testfiles/formatting/wrapping/assignOps05.php", options);
+    }
+
+    public void testWrappingAssignOps_06() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.wrapAssignOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapAfterAssignOps, true);
+        reformatFileContents("testfiles/formatting/wrapping/assignOps06.php", options);
+    }
 }
