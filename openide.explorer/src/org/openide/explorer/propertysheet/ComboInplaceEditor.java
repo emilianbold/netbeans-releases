@@ -49,6 +49,8 @@ import java.beans.PropertyEditor;
 import java.lang.reflect.Method;
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.ComboBoxUI;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.plaf.metal.MetalLookAndFeel;
@@ -89,6 +91,8 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
     private boolean hasBeenEditable = false;
     private boolean needLayout = false;
 
+    private boolean popupCancelled = false;
+
     /** Create a ComboInplaceEditor - the tableUI flag will tell it to use
      * less borders & such */
     public ComboInplaceEditor(boolean tableUI) {
@@ -109,6 +113,26 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         if (tableUI) {
             updateUI();
         }
+        
+        addPopupMenuListener(new PopupMenuListener() {
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent pme) {
+                popupCancelled = false;
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent pme) {
+                if( !popupCancelled ) {
+                    ComboInplaceEditor.super.fireActionEvent();
+                }
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent pme) {
+                popupCancelled = true;
+            }
+        });
     }
 
     /** Overridden to add a listener to the editor if necessary, since the
