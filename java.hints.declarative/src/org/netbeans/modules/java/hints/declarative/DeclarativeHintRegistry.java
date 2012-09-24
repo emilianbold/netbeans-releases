@@ -232,7 +232,6 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
         Result parsed = new DeclarativeHintsParser().parse(file, spec, ts);
 
         HintMetadata meta;
-        String primarySuppressWarningsKey;
         String id = parsed.options.get("hint");
         String fallbackDisplayName = file != null ? file.getName() : null;
         String description = parsed.options.get("description");
@@ -257,10 +256,8 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
             String[] w = suppressWarnings(parsed.options);
 
             meta = HintMetadata.Builder.create(id).setBundle(bundle, fallbackDisplayName, description).setCategory(cat).addSuppressWarnings(w).build();
-            primarySuppressWarningsKey = w.length > 0 ? w[0] : null;
         } else {
             meta = null;
-            primarySuppressWarningsKey = null;
         }
 
         int count = 0;
@@ -271,8 +268,9 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
             Map<String, String> constraints = Utilities.conditions2Constraints(hint.conditions);
             String imports = parsed.importsBlock != null ? spec.substring(parsed.importsBlock[0], parsed.importsBlock[1]) : "";
             String[] importsArray = parsed.importsBlock != null ? new String[] {spec.substring(parsed.importsBlock[0], parsed.importsBlock[1])} : new String[0];
+            String pattern = spec.substring(hint.textStart, hint.textEnd);
 
-            f = f.setTrigger(PatternDescription.create(spec.substring(hint.textStart, hint.textEnd), constraints, importsArray));
+            f = f.setTrigger(PatternDescription.create(pattern, constraints, importsArray));
 
             List<DeclarativeFix> fixes = new LinkedList<DeclarativeFix>();
 
@@ -307,15 +305,13 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
                     currentId = file != null ? file.getNameExt() + "-" + count : String.valueOf(count);
                     currentMeta = HintMetadata.Builder.create(currentId).setDescription(displayName, "No Description").setCategory(cat).addSuppressWarnings(w).build();
                 }
-
-                primarySuppressWarningsKey = w.length > 0 ? w[0] : null;
             }
 
             Map<String, String> options = new HashMap<String, String>(parsed.options);
 
             options.putAll(hint.options);
 
-            f = f.setWorker(new DeclarativeHintsWorker(displayName, hint.conditions, imports, fixes, options, primarySuppressWarningsKey));
+            f = f.setWorker(new DeclarativeHintsWorker(displayName, pattern, hint.conditions, imports, fixes, options));
             f = f.setMetadata(currentMeta);
             f = f.setAdditionalConstraints(new AdditionalQueryConstraints(new HashSet<String>(constraints.values())));
             f = f.setHintText(spec.substring(hint.textStart, hint.hintEnd));

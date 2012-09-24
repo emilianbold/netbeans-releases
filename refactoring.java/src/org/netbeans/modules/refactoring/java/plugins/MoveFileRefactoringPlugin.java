@@ -473,9 +473,11 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
                     EnumSet.of(ClassIndex.SearchScope.SOURCE));
             elementHandles.addAll(handles);
         }
-        TreePathHandle targetHandle = ((MoveRefactoring) refactoring).getTarget().lookup(TreePathHandle.class);
-        if(targetHandle != null) {
-            set.add(targetHandle.getFileObject());
+        if(!isRenameRefactoring) {
+            TreePathHandle targetHandle = ((MoveRefactoring) refactoring).getTarget().lookup(TreePathHandle.class);
+            if(targetHandle != null) {
+                set.add(targetHandle.getFileObject());
+            }
         }
         return set;
     }    
@@ -554,23 +556,28 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
         
         RefactoringVisitor transformer;
         
-        URL targetUrl = ((MoveRefactoring) refactoring).getTarget().lookup(URL.class);
-        TreePathHandle targetTph = ((MoveRefactoring) refactoring).getTarget().lookup(TreePathHandle.class);
-        
-        if(targetUrl != null && sourceTph == null) {
-            p = checkProjectDeps(a);
-            transformer = new MoveTransformer(this);
-        } else {
-            p = checkProjectDeps();
-            if(targetUrl != null) {
-                transformer = new MoveClassTransformer(sourceTph, targetUrl);
+        if(!isRenameRefactoring) {
+            URL targetUrl = ((MoveRefactoring) refactoring).getTarget().lookup(URL.class);
+            TreePathHandle targetTph = ((MoveRefactoring) refactoring).getTarget().lookup(TreePathHandle.class);
+
+            if(targetUrl != null && sourceTph == null) {
+                p = checkProjectDeps(a);
+                transformer = new MoveTransformer(this);
             } else {
-                if(sourceTph != null) {
-                    transformer = new MoveClassTransformer(sourceTph, targetTph.getElementHandle());
+                p = checkProjectDeps();
+                if(targetUrl != null) {
+                    transformer = new MoveClassTransformer(sourceTph, targetUrl);
                 } else {
-                    transformer = new MoveClassTransformer(classes.iterator().next(), targetTph.getElementHandle());
+                    if(sourceTph != null) {
+                        transformer = new MoveClassTransformer(sourceTph, targetTph.getElementHandle());
+                    } else {
+                        transformer = new MoveClassTransformer(classes.iterator().next(), targetTph.getElementHandle());
+                    }
                 }
             }
+        } else {
+            p = checkProjectDeps(a);
+            transformer = new MoveTransformer(this);
         }
         
         fireProgressListenerStep(a.size());

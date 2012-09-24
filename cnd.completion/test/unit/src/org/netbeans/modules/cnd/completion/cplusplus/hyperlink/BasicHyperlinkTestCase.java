@@ -947,6 +947,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("twoMacros1.h", 1, 9, "twoMacros1.c", 1, 1);
         performTest("twoMacros2.h", 1, 9, "twoMacros2.c", 1, 1);
     }    
+
+    public void testBug216965() throws Exception {
+        // Bug 216965 - Unresolved identifier when using constant unsigned indices
+        performTest("bug216965.cpp", 8, 26, "bug216965.cpp", 3, 5);
+        performTest("bug216965.cpp", 9, 27, "bug216965.cpp", 3, 5);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

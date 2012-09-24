@@ -16,6 +16,12 @@
         <property file="${suite.location}/nbproject/project.properties" prefix="suite.props."/>    
     </target>
     <target name="-init-maven-props" if="do.load.maven.props" depends="-init-props">
+        <!-- mkleint: this is completely wrong approach, one cannot rely on having properties present
+             in a given pom file. Additionally even if the property is present, just loading it using ant will
+             not perform any expression evaluation, being wrong again 
+           IF you want to add any similar properties here, please add them to the nbm-maven-plugin which has proper
+           access to the effective pom and nbm maven plugin's goal parameters. 
+        -->
         <xmlproperty file="${suite.location}/pom.xml" prefix="pom.props"/>
         <property name="suite.props.app.name"  value="${pom.props.project.properties.brandingToken}"/>
         <property name="suite.props.app.title" value="${pom.props.project.artifactId}"/>

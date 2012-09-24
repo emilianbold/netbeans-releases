@@ -114,7 +114,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
         initInteraction(searchAndReplace);
         setValuesOfComponents(initialCriteria, searchAndReplace);
-        setContextAwareOptions();
+        setContextAwareOptions(searchAndReplace);
     }
 
     /**
@@ -167,20 +167,22 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      * Set options that depend on current context, and listeners that ensure
      * they stay valid when the context changes.
      */
-    private void setContextAwareOptions() {
-        updateSearchInGeneratedForActiveTopComponent();
-        topComponentRegistryListener = new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(
-                        TopComponent.Registry.PROP_ACTIVATED)) {
-                    updateSearchInGeneratedForActiveTopComponent();
+    private void setContextAwareOptions(boolean searchAndReplace) {
+        if (!searchAndReplace) {
+            updateSearchInGeneratedForActiveTopComponent();
+            topComponentRegistryListener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(
+                            TopComponent.Registry.PROP_ACTIVATED)) {
+                        updateSearchInGeneratedForActiveTopComponent();
+                    }
                 }
-            }
-        };
-        TopComponent.getRegistry().addPropertyChangeListener(
-                WeakListeners.propertyChange(topComponentRegistryListener,
-                TopComponent.getRegistry()));
+            };
+            TopComponent.getRegistry().addPropertyChangeListener(
+                    WeakListeners.propertyChange(topComponentRegistryListener,
+                    TopComponent.getRegistry()));
+        }
     }
 
     /**
@@ -188,6 +190,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      * Search In Generated Sources option should be checked automatically.
      */
     private void updateSearchInGeneratedForActiveTopComponent() {
+        assert searchCriteria != null && !searchCriteria.isSearchAndReplace();
         TopComponent tc = TopComponent.getRegistry().getActivated();
         if (tc != null && tc.getHelpCtx() != null
                 && "ProjectTab_Files".equals( //NOI18N

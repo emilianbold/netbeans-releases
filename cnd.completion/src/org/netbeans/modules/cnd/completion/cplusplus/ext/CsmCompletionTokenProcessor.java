@@ -2099,6 +2099,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         break;
 
                     case INT_LITERAL:
+                    case UNSIGNED_LITERAL:
 //                    case HEX_LITERAL:
 //                    case OCTAL_LITERAL:
                         constExp = createTokenExp(CONSTANT);
