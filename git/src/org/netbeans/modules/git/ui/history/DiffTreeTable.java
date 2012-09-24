@@ -52,7 +52,6 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 import org.openide.ErrorManager;
 
 import javax.swing.*;
@@ -73,7 +72,9 @@ class DiffTreeTable extends OutlineView {
     private List<RepositoryRevision> results;
     private final SearchHistoryPanel master;
 
+    @NbBundle.Messages("LBL_DiffView.TreeColumnLabel=Revision")
     public DiffTreeTable(SearchHistoryPanel master) {
+        super(Bundle.LBL_DiffView_TreeColumnLabel());
         this.master = master;
         getOutline().setShowHorizontalLines(true);
         getOutline().setShowVerticalLines(false);
