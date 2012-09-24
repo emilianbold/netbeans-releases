@@ -207,8 +207,8 @@ public class ModelUtils {
     }
     
     public static OffsetRange documentOffsetRange(JsParserResult result, int start, int end) {
-        int lStart = LexUtilities.getLexerOffset(result, start);
-        int lEnd = LexUtilities.getLexerOffset(result, end);
+        int lStart = start; //LexUtilities.getLexerOffset(result, start);
+        int lEnd = end; //LexUtilities.getLexerOffset(result, end);
         if (lStart == -1 || lEnd == -1) {
             return OffsetRange.NONE;
         }

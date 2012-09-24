@@ -51,6 +51,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.SourceRoots;
@@ -195,7 +197,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                     && !relativePath.startsWith("../"); // NOI18N
     }
 
-    private final class FilteringPathResource implements FilteringPathResourceImplementation, PropertyChangeListener {
+    private final class FilteringPathResource implements FilteringPathResourceImplementation, PropertyChangeListener, ChangeListener {
 
         final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         volatile PathMatcher matcher;
@@ -207,6 +209,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
 
             this.root = root;
             ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, this);
+            ProjectPropertiesSupport.addWeakIgnoredFilesListener(project, this);
         }
 
         @Override
@@ -261,5 +264,13 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             }
             pcs.firePropertyChange(ev);
         }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            // #215880 - change in ignored files from frameworks
+            fireChange(null);
+        }
+
     }
+
 }

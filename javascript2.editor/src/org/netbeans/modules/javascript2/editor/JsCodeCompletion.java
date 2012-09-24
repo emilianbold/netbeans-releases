@@ -439,13 +439,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
         
         // from model
-        for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
+        int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
+        for(JsObject object : request.result.getModel().getVariables(offset)) {
             if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
                     && startsWith(object.getName(), request.prefix)) {
                 JsElement fobject = foundObjects.get(object.getName());
                 if(fobject == null) {
                     if (!(object.getName().equals(request.prefix)
-                            && object.getDeclarationName().getOffsetRange().getStart() == request.anchor)) {
+                            && object.getDeclarationName().getOffsetRange().getStart() == offset)) {
                         foundObjects.put(object.getName(), object);
                     }
                 } else {

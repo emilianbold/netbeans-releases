@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.persistence.jpqleditor;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,6 +95,8 @@ public class JPQLEditorController {
             final ProgressHandle ph) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 
+        //
+        final HashMap<String,String> props = new HashMap<String,String>();
         //connection open
         final DatabaseConnection dbconn = JPAEditorUtil.findDatabaseConnection(pu, pe.getProject());
         if (dbconn != null) {
@@ -110,6 +113,14 @@ public class JPQLEditorController {
         //
         final boolean containerManaged = Util.isSupportedJavaEEVersion(pe.getProject());
         final Provider provider = ProviderUtil.getProvider(pu.getProvider(), pe.getProject());
+        props.put("javax.persistence.provider", provider.getProviderClass());
+        props.put("javax.persistence.transactionType", "RESOURCE_LOCAL");
+        if(dbconn!=null){
+            props.put(provider.getJdbcUrl(),dbconn.getDatabaseURL());
+            props.put(provider.getJdbcDriver(),dbconn.getDriverClass());
+            props.put(provider.getJdbcUsername(),dbconn.getUser());
+            props.put(provider.getJdbcPassword(),dbconn.getPassword());
+        }
         final ClassLoader defClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             ph.progress(10);
@@ -160,7 +171,7 @@ public class JPQLEditorController {
 
                         ph.progress(50);
                         ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionPassControlToProvider"));
-                        jpqlResult = queryExecutor.execute(jpql, pu, pe, maxRowCount, ph, true);
+                        jpqlResult = queryExecutor.execute(jpql, pu, pe, props, maxRowCount, ph, true);
                         ph.progress(80);
                         ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionProcessResults"));
 

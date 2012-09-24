@@ -1140,6 +1140,21 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
     
+    public void testNonStaticInnerClassesMatch() throws Exception {
+        performVariablesTest("package test; import test.Test.Inner; public class Test { public class Inner { } } class Other { { Inner i = null; } }",
+                             "test.Test.Inner $i = $init$;",
+                             new Pair[] {
+                                 new Pair<String, int[]>("$i", new int[] {99, 114}),
+                                 new Pair<String, int[]>("$init$", new int[] {109, 113})
+                             },
+                             new Pair[0],
+                             new Pair[] {
+                                 new Pair<String, String>("$i", "i")
+                             },
+                             false,
+                             true);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

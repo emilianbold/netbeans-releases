@@ -85,6 +85,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
@@ -578,7 +579,8 @@ public final class ModificationResult {
         JavaFileObject fileObject;
         
         CreateChange(JavaFileObject fileObject, String text) {
-            super(Kind.CREATE, null, null, null, text, "Create file " + fileObject.getName());
+            super(Kind.CREATE, null, null, null, text, 
+                    NbBundle.getMessage(ModificationResult.class, "TXT_CreateFile", fileObject.getName()));
             this.fileObject = fileObject;
         }
 

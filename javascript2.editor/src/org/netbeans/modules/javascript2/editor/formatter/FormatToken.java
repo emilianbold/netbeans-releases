@@ -448,7 +448,17 @@ public final class FormatToken {
                 return false;
             }
         },
-        BEFORE_PROPERTY {
+        AFTER_OBJECT_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BEFORE_OBJECT_END {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
@@ -461,6 +471,10 @@ public final class FormatToken {
 
         // a bit special tokens to detect proper continuation
         AFTER_PROPERTY {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
             @Override
             public boolean isSpaceMarker() {
                 return false;

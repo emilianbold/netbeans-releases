@@ -227,6 +227,7 @@ public class FmtOptions {
     public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
     public static final String wrapBlockBraces = "wrapBlockBraces";  //NOI18N
     public static final String wrapStatementsOnTheLine = "wrapStateMentsOnTheLine"; // NOI18N
+    public static final String wrapObjects = "wrapObjects"; // NOI18N
     public static final String wrapProperties = "wrapProperties"; // NOI18N
 
     public static final String preferFullyQualifiedNames = "preferFullyQualifiedNames"; //NOI18N
@@ -405,7 +406,8 @@ public class FmtOptions {
             { wrapAssignOps, WRAP_NEVER},
             { wrapBlockBraces, TRUE},
             { wrapStatementsOnTheLine, TRUE},
-            { wrapProperties, WRAP_NEVER},
+            { wrapObjects, WRAP_NEVER},
+            { wrapProperties, TRUE},
 
             { preferFullyQualifiedNames, FALSE},
             { preferMultipleUseStatementsCombined, FALSE},

@@ -60,6 +60,7 @@ import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.util.Lookup;
@@ -87,6 +88,8 @@ public class WebKitPageModel extends PageModel {
     private List<? extends org.openide.nodes.Node> highlightedNodes = Collections.EMPTY_LIST;
     /** WebKit DOM domain listener. */
     private DOM.Listener domListener;
+    /** WebKit CSS domain listener. */
+    private CSS.Listener cssListener;
     /** Determines whether the selection mode is switched on. */
     private boolean selectionMode;
     /** Determines whether the selection between the IDE and the browser pane is synchronized. */
@@ -121,6 +124,11 @@ public class WebKitPageModel extends PageModel {
         domListener = createDOMListener();
         DOM dom = webKit.getDOM();
         dom.addListener(domListener);
+        
+        // Register CSS domain listener
+        cssListener = createCSSListener();
+        CSS css = webKit.getCSS();
+        css.addListener(cssListener);
 
         try {
             initializePage();
@@ -187,6 +195,8 @@ public class WebKitPageModel extends PageModel {
     protected void dispose() {
         DOM dom = webKit.getDOM();
         dom.removeListener(domListener);
+        CSS css = webKit.getCSS();
+        css.removeListener(cssListener);
         cSSUpdater.stop();
     }
 
@@ -365,6 +375,33 @@ public class WebKitPageModel extends PageModel {
                         domNode.updateCharacterData();
                     }
                 }
+            }
+        };
+    }
+
+    /**
+     * Creates CSS domain listener.
+     * 
+     * @return CSS domain listener.
+     */
+    private CSS.Listener createCSSListener() {
+        return new CSS.Listener() {
+            @Override
+            public void mediaQueryResultChanged() {
+            }
+
+            @Override
+            public void styleSheetChanged(String styleSheetId) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // Issue 217896
+                            String script = "NetBeans.repaintGlassPane();"; // NOI18N
+                            invokeInAllDocuments(script);
+                        } catch (TransportStateException tsex) {}
+                    }
+                });
             }
         };
     }
