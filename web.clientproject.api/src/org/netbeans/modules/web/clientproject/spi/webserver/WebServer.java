@@ -178,7 +178,13 @@ public final class WebServer {
      * Converts server URL back into project's source file.
      */
     public FileObject fromServer(URL serverURL) {
-        return fromServer(serverURL.getPath());
+        String path;
+        try {
+            path = serverURL.toURI().getPath();
+        } catch (URISyntaxException ex) {
+            path = serverURL.getPath(); // fallback
+        }
+        return fromServer(path);
     }
 
     private FileObject fromServer(String serverURL) {

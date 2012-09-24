@@ -10,6 +10,7 @@ FormattingToken{kind=BEFORE_OBJECT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=4, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_OBJECT_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_LEFT_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=5, text="}
 FormattingToken{kind=TEXT, offset=6, text=menu}
 FormattingToken{kind=TEXT, offset=10, text="}
@@ -21,6 +22,7 @@ FormattingToken{kind=BEFORE_OBJECT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=13, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_OBJECT_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_LEFT_BRACE, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=14, text=
 }
 FormattingToken{kind=WHITESPACE, offset=15, text=  }
@@ -99,6 +101,7 @@ FormattingToken{kind=BEFORE_OBJECT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=88, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_OBJECT_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_LEFT_BRACE, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=89, text=
 }
 FormattingToken{kind=WHITESPACE, offset=90, text=    }
@@ -125,6 +128,7 @@ FormattingToken{kind=BEFORE_OBJECT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=117, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_OBJECT_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_LEFT_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=118, text="}
 FormattingToken{kind=TEXT, offset=119, text=value}
 FormattingToken{kind=TEXT, offset=124, text="}
@@ -150,6 +154,7 @@ FormattingToken{kind=WHITESPACE, offset=144, text= }
 FormattingToken{kind=TEXT, offset=145, text="}
 FormattingToken{kind=TEXT, offset=146, text=CreateNewDoc()}
 FormattingToken{kind=TEXT, offset=160, text="}
+FormattingToken{kind=BEFORE_RIGHT_BRACE, offset=-1, text=null}
 FormattingToken{kind=BEFORE_OBJECT_END, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=161, text=}}
@@ -165,6 +170,7 @@ FormattingToken{kind=BEFORE_OBJECT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=170, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_OBJECT_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_LEFT_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=171, text="}
 FormattingToken{kind=TEXT, offset=172, text=value}
 FormattingToken{kind=TEXT, offset=177, text="}
@@ -190,6 +196,7 @@ FormattingToken{kind=WHITESPACE, offset=198, text= }
 FormattingToken{kind=TEXT, offset=199, text="}
 FormattingToken{kind=TEXT, offset=200, text=OpenDoc()}
 FormattingToken{kind=TEXT, offset=209, text="}
+FormattingToken{kind=BEFORE_RIGHT_BRACE, offset=-1, text=null}
 FormattingToken{kind=BEFORE_OBJECT_END, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=210, text=}}
@@ -205,6 +212,7 @@ FormattingToken{kind=BEFORE_OBJECT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=219, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_OBJECT_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_LEFT_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=220, text="}
 FormattingToken{kind=TEXT, offset=221, text=value}
 FormattingToken{kind=TEXT, offset=226, text="}
@@ -230,6 +238,7 @@ FormattingToken{kind=WHITESPACE, offset=248, text= }
 FormattingToken{kind=TEXT, offset=249, text="}
 FormattingToken{kind=TEXT, offset=250, text=CloseDoc()}
 FormattingToken{kind=TEXT, offset=260, text="}
+FormattingToken{kind=BEFORE_RIGHT_BRACE, offset=-1, text=null}
 FormattingToken{kind=BEFORE_OBJECT_END, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=261, text=}}
@@ -241,15 +250,18 @@ FormattingToken{kind=BEFORE_ARRAY_LITERAL_BRACKET, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=267, text=]}
 FormattingToken{kind=EOL, offset=268, text=
 }
+FormattingToken{kind=BEFORE_RIGHT_BRACE, offset=-1, text=null}
 FormattingToken{kind=BEFORE_OBJECT_END, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=269, text=  }
 FormattingToken{kind=TEXT, offset=271, text=}}
 FormattingToken{kind=EOL, offset=272, text=
 }
+FormattingToken{kind=BEFORE_RIGHT_BRACE, offset=-1, text=null}
 FormattingToken{kind=BEFORE_OBJECT_END, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=273, text=}}
+FormattingToken{kind=BEFORE_RIGHT_BRACE, offset=-1, text=null}
 FormattingToken{kind=BEFORE_OBJECT_END, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=274, text=}}

@@ -567,6 +567,9 @@ public final class FormatToken {
         BEFORE_RIGHT_PARENTHESIS,
         AFTER_LEFT_PARENTHESIS,
 
+        BEFORE_RIGHT_BRACE,
+        AFTER_LEFT_BRACE,
+
         // before braces
         BEFORE_FUNCTION_DECLARATION_BRACE,
         BEFORE_IF_BRACE,
