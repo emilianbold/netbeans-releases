@@ -134,7 +134,7 @@ public class WebLogicUtils {
         }
         domainBuilder.command(commands).directory(domainDir);   
         final ExecutionResults domainResults = 
-                executeCommandWithDestroyTag(domainBuilder, SERVER_RUNNING_TAG);
+                executeCommandWithDestroyTag(domainBuilder, SERVER_RUNNING_TAG, adminPassword);
         if (domainResults.getErrorCode() > 0) {
             throw new DomainCreationException(domainResults.getErrorCode());
         }
@@ -241,8 +241,8 @@ public class WebLogicUtils {
         return result;
     }    
     
-    private static ExecutionResults executeCommandWithDestroyTag(ProcessBuilder builder, String processDestroyTag) throws IOException {               
-        String commandString = StringUtils.asString(builder.command(), StringUtils.SPACE);
+    private static ExecutionResults executeCommandWithDestroyTag(ProcessBuilder builder, String processDestroyTag, String passwordToHide) throws IOException {               
+        String commandString = StringUtils.asString(builder.command(), StringUtils.SPACE).replace(passwordToHide, "*****"); //NOI18N
         LogManager.log(ErrorLevel.MESSAGE,
                 "executing command: " + commandString +
                 ", in directory: " + builder.directory());
