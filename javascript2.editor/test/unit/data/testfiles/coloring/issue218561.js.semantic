@@ -1,0 +1,18 @@
+
+|>GLOBAL:Core<|.test(function() {
+    var |>CLASS:test<| = {
+        /**
+         *
+         * @param {String} par1
+         * @returns {undefined}
+         */
+        |>METHOD:test<|: function(par1) {
+            this.|>FIELD:par1<| = par1; // par1 after = is marked green as member variable
+        },
+        |>METHOD:test2<|: function(par1) { // par1 is underlined as unused
+            var |>UNUSED:object<| = new |>GLOBAL:Test<|({
+                |>FIELD:par1<|: par1 // par1 after : is marked green as member variable
+            });
+        }
+    };
+});
