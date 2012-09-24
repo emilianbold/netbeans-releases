@@ -44,12 +44,14 @@
 
 package org.netbeans.core.windows.view.ui.popupswitcher;
 
+import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.event.*;
 import java.lang.ref.WeakReference;
+import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -116,6 +118,9 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
     
     /** Indicates whether an item to be selected is previous or next one. */
     private boolean fwd = true;
+
+    private final static AWTKeyStroke CTRL_TAB = AWTKeyStroke.getAWTKeyStroke( KeyEvent.VK_TAB, KeyEvent.CTRL_DOWN_MASK );
+    private final static AWTKeyStroke CTRL_SHIFT_TAB = AWTKeyStroke.getAWTKeyStroke( KeyEvent.VK_TAB, KeyEvent.CTRL_DOWN_MASK+KeyEvent.SHIFT_DOWN_MASK );
         
     /**
      * Tries to process given <code>KeyEvent</code> and returns true is event
@@ -158,8 +163,16 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             }
             if( !Switches.isCtrlTabWindowSwitchingInJTableEnabled() ) {
                 Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-                if( c instanceof JTabbedPane || c instanceof JTable ) {
-                    return false;
+                if( c instanceof JComponent ) {
+                    JComponent jc = ( JComponent ) c;
+                    if( jc.getFocusTraversalKeysEnabled() ) {
+                        Set<AWTKeyStroke> keys = jc.getFocusTraversalKeys( KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS );
+                        if( keys.contains( CTRL_TAB ) || keys.contains( CTRL_SHIFT_TAB ) )
+                            return false;
+                        keys = jc.getFocusTraversalKeys( KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS );
+                        if( keys.contains( CTRL_TAB ) || keys.contains( CTRL_SHIFT_TAB ) )
+                            return false;
+                    }
                 }
             }
 
