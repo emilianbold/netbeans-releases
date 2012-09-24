@@ -515,6 +515,12 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/objects7.js", options, ".inverted.formatted");
     }
 
+    public void testObjects8Spaces() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceWithinBraces, true);
+        reformatFileContents("testfiles/formatter/objects8.js", options, ".spaces.formatted");
+    }
+
     public void testObjects8Always() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapObjects, CodeStyle.WrapStyle.WRAP_ALWAYS);

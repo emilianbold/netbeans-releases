@@ -476,6 +476,7 @@ public class FormatVisitor extends NodeVisitor {
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_OBJECT_START));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_LEFT_BRACE));
             FormatToken previous = formatToken.previous();
             if (previous != null) {
                 appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_OBJECT));
@@ -500,6 +501,7 @@ public class FormatVisitor extends NodeVisitor {
         formatToken = getPreviousNonWhiteToken(getFinish(objectNode) - 1,
                 getStart(objectNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
         if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_RIGHT_BRACE));
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_OBJECT_END));
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
         }
