@@ -643,9 +643,13 @@ public final class CodeStyle {
         return preferences.getBoolean(wrapStatementsOnTheLine, getDefaultAsBoolean(wrapStatementsOnTheLine));
     }
 
-    public WrapStyle wrapProperties() {
-        String wrap = preferences.get(wrapProperties, getDefaultAsString(wrapProperties));
+    public WrapStyle wrapObjects() {
+        String wrap = preferences.get(wrapObjects, getDefaultAsString(wrapObjects));
         return WrapStyle.valueOf(wrap);
+    }
+
+    public boolean wrapProperties() {
+        return preferences.getBoolean(wrapProperties, getDefaultAsBoolean(wrapProperties));
     }
 
     // Uses
