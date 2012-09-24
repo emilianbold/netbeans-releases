@@ -29,7 +29,9 @@ public abstract class BuilderAccessor<P> {
     public abstract boolean isEnabled( ProjectHandle<P> project);
     
     /**
-     * Retrieve the list of builds in given project.
+     * Retrieve the list of jobs in given project. Only watched jobs are
+     * included.
+     *
      * @return a list of builds (never null)
      */
     public abstract List<JobHandle> getJobs( ProjectHandle<P> project );

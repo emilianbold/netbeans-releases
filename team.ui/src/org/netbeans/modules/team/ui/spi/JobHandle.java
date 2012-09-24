@@ -49,4 +49,10 @@ public abstract class JobHandle {
     public abstract @NonNull List<BuildHandle> getBuilds();
 
     public abstract @CheckForNull BuildHandle getBuild(String buildId);
+
+    /**
+     * @return True if the job is watched (salient), false if it was marked as
+     * unimportant.
+     */
+    public abstract boolean isWatched();
 }

@@ -421,6 +421,11 @@ public class ODSBuilderAccessor extends BuilderAccessor<ODSProject> {
             }
             return handles;
         }
+
+        @Override
+        public boolean isWatched() {
+            return hudsonJob.isSalient();
+        }
     }
 
     private static class HudsonBuildHandle extends BuildHandle {
