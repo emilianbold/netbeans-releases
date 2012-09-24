@@ -1047,6 +1047,12 @@ public class TokenFormatter {
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
+                                    case WHITESPACE_BEFORE_ELSE_WITHOUT_CURLY:
+                                        indentRule = true;
+                                        ws = countWSBeforeKeyword(true, docOptions.spaceBeforeElse, indent, formatTokens, index);
+                                        newLines = ws.lines;
+                                        countSpaces = ws.spaces;
+                                        break;
                                     case WHITESPACE_INDENT:
                                         indentLine = true;
                                         break;
