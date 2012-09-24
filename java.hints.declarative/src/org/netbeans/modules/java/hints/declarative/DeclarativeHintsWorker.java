@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.java.hints.declarative;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -66,19 +69,19 @@ import org.openide.util.NbBundle.Messages;
 class DeclarativeHintsWorker implements Worker {
 
     private final String displayName;
+    private final String pattern;
     private final List<Condition> conditions;
     private final String imports;
     private final List<DeclarativeFix> fixes;
     private final Map<String, String> options;
-    private final String primarySuppressWarningsKey;
 
-    public DeclarativeHintsWorker(String displayName, List<Condition> conditions, String imports, List<DeclarativeFix> fixes, Map<String, String> options, String primarySuppressWarningsKey) {
+    public DeclarativeHintsWorker(String displayName, String pattern, List<Condition> conditions, String imports, List<DeclarativeFix> fixes, Map<String, String> options) {
         this.displayName = displayName;
+        this.pattern = pattern;
         this.conditions = conditions;
         this.imports = imports;
         this.fixes = fixes;
         this.options = options;
-        this.primarySuppressWarningsKey = primarySuppressWarningsKey;
     }
 
     //for tests:
@@ -165,7 +168,37 @@ class DeclarativeHintsWorker implements Worker {
 //            editorFixes.addAll(FixFactory.createSuppressWarnings(ctx.getInfo(), ctx.getPath(), primarySuppressWarningsKey));
 //        }
 
-        ErrorDescription ed = ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, editorFixes.toArray(new Fix[0]));
+        Tree errorTree = ctx.getPath().getLeaf();
+        
+        if (errorTree.getKind() == Kind.BLOCK) {
+            Tree parsedPattern = org.netbeans.modules.java.hints.spiimpl.Utilities.parseAndAttribute(ctx.getInfo(), pattern, null);
+            
+            if (org.netbeans.modules.java.hints.spiimpl.Utilities.isFakeBlock(parsedPattern)) {
+                BlockTree fakeBlock = (BlockTree) parsedPattern;
+                Tree firstStatement = !fakeBlock.getStatements().isEmpty() ? fakeBlock.getStatements().get(0) : null;
+                String leadingName = firstStatement != null ? org.netbeans.modules.java.hints.spiimpl.Utilities.getWildcardTreeName(firstStatement).toString() : null;
+                
+                if (leadingName != null) {
+                    int skip;
+                    
+                    if (ctx.getMultiVariables().get(leadingName) != null) {
+                        skip = ctx.getMultiVariables().get(leadingName).size();
+                    } else if (ctx.getVariables().get(leadingName) != null) {
+                        skip = 1;
+                    } else {
+                        skip = 0;
+                    }
+                    
+                    BlockTree errorBlock = (BlockTree) errorTree;
+
+                    if (skip < errorBlock.getStatements().size()) {
+                        errorTree = errorBlock.getStatements().get(skip);
+                    }
+                }
+            }
+        }
+        
+        ErrorDescription ed = ErrorDescriptionFactory.forName(ctx, errorTree, displayName, editorFixes.toArray(new Fix[0]));
 
         if (ed == null) {
             return null;
