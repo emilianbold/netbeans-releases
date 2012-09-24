@@ -958,6 +958,7 @@ public class FormatVisitor extends DefaultVisitor {
             isCurly = false;
             while (ts.moveNext() && ts.offset() < body.getStartOffset()) {
                 if (ts.token().id() == PHPTokenId.PHP_ELSE || ts.token().id() == PHPTokenId.PHP_ELSEIF) {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ELSE_WITHOUT_CURLY, ts.offset()));
                     formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 } else {
                     addFormatToken(formatTokens);
