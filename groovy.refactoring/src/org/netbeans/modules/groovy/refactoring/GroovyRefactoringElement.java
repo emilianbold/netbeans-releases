@@ -103,7 +103,7 @@ public class GroovyRefactoringElement extends ASTElement {
     }
 
     public final String getDeclaringClassName() {
-        return ElementUtils.getDeclaringClass(node).getName();
+        return ElementUtils.getDeclaringClassName(node);
     }
 
     public final String getDeclaringClassNameWithoutPackage() {
