@@ -130,8 +130,6 @@ public class TraceFlags {
 
     public static final boolean USE_DEEP_REPARSING_TRACE = DebugUtils.getBoolean("cnd.modelimpl.use.deep.reparsing.trace", false); // NOI18N
     public static final boolean DEEP_REPARSING_OPTIMISTIC = DebugUtils.getBoolean("cnd.modelimpl.use.deep.reparsing.optimistic", false); // NOI18N
-    public static final boolean USE_PARTIAL_REPARSE = DebugUtils.getBoolean("cnd.modelimpl.use.partial.reparse", true); // NOI18N
-
     
     public static final boolean SAFE_REPOSITORY_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.repository.safe.access", false); // NOI18N
 
