@@ -1,10 +1,8 @@
-var engine = {
-    cylinders : 8, power: "22k", getDescription: function () {
+var engine = {cylinders : 8, power: "22k", getDescription: function () {
         with (this) if (!disabled) println('Cylinders: ' + cylinders + ' with power: ' + power); else log();
     }, get parameter () {
         return power;
-    }
-}
+    }}
 
 var colors = [0, 1, 2]; length = colors.length();
 
