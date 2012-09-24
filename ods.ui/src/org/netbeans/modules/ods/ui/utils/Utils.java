@@ -203,6 +203,7 @@ public class Utils {
         private static final String SHOW_SCM = "ods.ui.show_scm";
         private static final String SHOW_WIKI = "ods.ui.show_wiki";
         private static final String SHOW_BUILDS = "ods.ui.show_builds";
+        private static final String SHOW_BUILDS_UNWATCHED = "ods.ui.show_builds_unwatched";
 
         public static boolean isShowTasks() {
             return getPreferences().getBoolean(SHOW_TASKS, true);
@@ -234,6 +235,14 @@ public class Utils {
 
         public static void setShowBuilds(boolean showBuilds) {
             getPreferences().putBoolean(SHOW_BUILDS, showBuilds);
+        }
+
+        public static boolean isShowBuildsUnwatched() {
+            return getPreferences().getBoolean(SHOW_BUILDS_UNWATCHED, true);
+        }
+
+        public static void setShowBuildsUnwatched(boolean showBuilds) {
+            getPreferences().putBoolean(SHOW_BUILDS_UNWATCHED, showBuilds);
         }
 
         private static Preferences getPreferences() {
