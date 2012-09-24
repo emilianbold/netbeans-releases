@@ -48,6 +48,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -233,5 +234,13 @@ public class JackpotTrees {
             return "case " + ident.toString();
         }
 
+    }
+    
+    public static class FakeBlock extends JCBlock {
+
+        public FakeBlock(long flags, List<JCStatement> stats) {
+            super(flags, stats);
+        }
+        
     }
 }
