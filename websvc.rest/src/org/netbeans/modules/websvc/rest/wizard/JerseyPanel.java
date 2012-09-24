@@ -194,6 +194,16 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
     public void addChangeListener( ChangeListener listener ) {
         listeners.add(listener);
     }
+
+    public double getRenderedHeight(){
+        return restAppClass.getLocation().getY()+restAppClass.getHeight()+getGap();
+    }
+    
+    private double getGap(){
+        double gap = restAppClass.getLocation().getY();
+        gap = gap - (restAppPackage.getLocation().getY() +restAppPackage.getHeight());
+        return gap;
+    }
     
     private SourceGroup getSourceGroup(){
         return sourcePanel.getSourceGroup();
