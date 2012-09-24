@@ -76,7 +76,7 @@ import org.netbeans.spi.settings.Saver;
 import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 
-/** 
+/**
  * Toolbar configuration, it contains toolbar panel with a list of toolbar rows.
  *
  * @author S. Aubrecht
@@ -86,11 +86,11 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     private final JPanel toolbarPanel;
 
     private static Map<String,ToolbarConfiguration> name2config = new HashMap<String,ToolbarConfiguration>(10);
-    
+
     /** Toolbar menu is global so it is static. It it the same for all toolbar
      configurations. */
     private static JMenu toolbarMenu;
-    
+
     /** Name of configuration. */
     private final String configName;
     /** Display name of configuration. */
@@ -140,12 +140,12 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     public static final ToolbarConfiguration findConfiguration (String name) {
         return name2config.get(name);
     }
-    
+
     private static final ToolbarPool getToolbarPool() {
         return ToolbarPool.getDefault ();
     }
-    
-    public void rebuildMenu() {
+
+    public static void rebuildMenu() {
         synchronized( ToolbarConfiguration.class ) {
             if (toolbarMenu != null) {
                 toolbarMenu.removeAll();
@@ -157,7 +157,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     @NbBundle.Messages({
         "MSG_ToolbarsInitializing=Initializing..."
     })
-    private void fillToolbarsMenu (JComponent menu, boolean isContextMenu) {
+    private static void fillToolbarsMenu (JComponent menu, boolean isContextMenu) {
         final ToolbarPool pool = getToolbarPool();
         if (!pool.isFinished()) {
             final JMenuItem mi = new JMenuItem();
@@ -168,7 +168,11 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
         }
         boolean fullScreen = MainWindow.getInstance().isFullScreenMode();
 
-        Map<String, ToolbarConstraints> name2constr = collectAllConstraints();
+        ToolbarConfiguration conf = findConfiguration(ToolbarPool.getDefault().getConfiguration());
+        if (conf == null) {
+            return;
+        }
+        Map<String, ToolbarConstraints> name2constr = conf.collectAllConstraints();
         // generate list of available toolbars
         for( Toolbar tb : pool.getToolbars() ) {
             final Toolbar bar = tb;
@@ -188,8 +192,11 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
                         // for some reason (unknown to me - mkleint) the menu gets recreated repeatedly, which
                         // can cause the formerly final ToolbarConstraints instance to be obsolete.
                         // that's why we each time look up the current instance on the allToolbars map.
-                        ToolbarConstraints tc = getConstraints(tbName);
-                        setToolbarVisible(bar, !tc.isVisible());
+                        ToolbarConfiguration conf = findConfiguration(ToolbarPool.getDefault().getConfiguration());
+                        if (conf != null) {
+                            ToolbarConstraints tc = conf.getConstraints(tbName);
+                            conf.setToolbarVisible(bar, !tc.isVisible());
+                        }
                     }
                 });
                 mi.setEnabled( !fullScreen );
@@ -259,9 +266,9 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
             }
         }
     } // getContextMenu
-    
 
-    
+
+
     /** Rebuild toolbar panel when size of icons is changed.
      * All components are removed and again added using ToolbarPool's list of correct toolbars.
      */
@@ -311,10 +318,10 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
         adjustToolbarPanelBorder();
 
         rebuildMenu();
-        
+
         repaint();
     }
-    
+
     /**
      * Add a new row if the screen location points 'just below' the toolbar panel.
      * @param screenLocation
@@ -398,7 +405,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     public String getName () {
         return configName;
     }
-    
+
     public String getDisplayName () {
         return configDisplayName;
     }
@@ -416,13 +423,13 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     }
 
     /** Fills given menu with toolbars and configurations items and returns
-     * filled menu. */ 
-    public JMenu getToolbarsMenu (JMenu menu) {
+     * filled menu. */
+    public static JMenu getToolbarsMenu (JMenu menu) {
         fillToolbarsMenu(menu, false);
         toolbarMenu = menu;
         return menu;
     }
-    
+
     /** Make toolbar visible/invisible in this configuration
      * @param tb toolbar
      * @param b true to make toolbar visible
@@ -436,7 +443,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
             save();
         }
     }
-    
+
     /** Returns true if the toolbar is visible in this configuration
      * @param tb toolbar
      * @return true if the toolbar is visible
@@ -502,7 +509,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
         }
         return null;
     }
-    
+
     /**
      * Take a snapshot of current toolbar configuration and ask for saving it to a file.
      * (The actual saving will happen at some later undefined time).
@@ -514,7 +521,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
             createSnapshot();
             saver.requestSave();
         } catch( IOException ioE ) {
-            Logger.getLogger(ToolbarConfiguration.class.getName()).log(Level.INFO, 
+            Logger.getLogger(ToolbarConfiguration.class.getName()).log(Level.INFO,
                     "Error while saving toolbar configuration", ioE); //NOI18N
         }
     }

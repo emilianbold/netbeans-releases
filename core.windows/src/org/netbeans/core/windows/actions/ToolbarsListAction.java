@@ -62,34 +62,29 @@ import javax.swing.*;
  */
 public class ToolbarsListAction extends AbstractAction
                                 implements Presenter.Menu {
-    
+
     public ToolbarsListAction() {
         putValue(NAME,NbBundle.getMessage(ToolbarsListAction.class, "CTL_ToolbarsListAction"));
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
-    
+
     /** Perform the action. Tries the performer and then scans the ActionMap
      * of selected topcomponent.
      */
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         // no operation
     }
-    
+
     public JMenuItem getMenuPresenter() {
         String label = NbBundle.getMessage(ToolbarsListAction.class, "CTL_ToolbarsListAction");
         final JMenu menu = new JMenu(label);
         Mnemonics.setLocalizedText(menu, label);
-        final ToolbarConfiguration curConf = 
-            ToolbarConfiguration.findConfiguration(ToolbarPool.getDefault().getConfiguration());
-        if (curConf == null) {
-            return null;
-        }
         if (EventQueue.isDispatchThread()) {
-            return curConf.getToolbarsMenu(menu);
+            return ToolbarConfiguration.getToolbarsMenu(menu);
         } else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    curConf.getToolbarsMenu(menu);
+                    ToolbarConfiguration.getToolbarsMenu(menu);
                 }
             });
             return menu;
