@@ -71,7 +71,6 @@ import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -428,7 +427,7 @@ public class ModelSupport implements PropertyChangeListener {
         FileObject fo = dao.getPrimaryFile();
         if (fo.isValid()) {
             if (dao.isModified()) {
-                EditorCookie editor = dao.getCookie(EditorCookie.class);
+                EditorCookie editor = dao.getLookup().lookup(EditorCookie.class);
                 if (editor != null) {
                     Document doc = editor.getDocument();
                     if (doc != null) {
@@ -446,7 +445,7 @@ public class ModelSupport implements PropertyChangeListener {
             try {
                 DataObject dao = DataObject.find(fo);
                 if (dao.isModified()) {
-                    EditorCookie editor = dao.getCookie(EditorCookie.class);
+                    EditorCookie editor = dao.getLookup().lookup(EditorCookie.class);
                     if (editor != null) {
                         Document doc = editor.getDocument();
                         if (doc != null) {
@@ -528,7 +527,7 @@ public class ModelSupport implements PropertyChangeListener {
 
             if (set != null && !set.isEmpty()) {
 
-                EditorCookie editor = curObj.getCookie(EditorCookie.class);
+                EditorCookie editor = curObj.getLookup().lookup(EditorCookie.class);
                 Document doc = editor != null ? editor.getDocument() : null;
                 if (doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
                     FileObject primaryFile = curObj.getPrimaryFile();
@@ -648,7 +647,7 @@ public class ModelSupport implements PropertyChangeListener {
                     Diagnostic.trace("object " + i + ":" + curObj.getName()); // NOI18N
                     Diagnostic.indent();
                     Diagnostic.trace("with file: " + curObj.getPrimaryFile()); // NOI18N
-                    NativeFileItemSet set = curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+                    NativeFileItemSet set = curObj.getLookup().lookup(NativeFileItemSet.class);
                     if (set == null) {
                         Diagnostic.trace("NativeFileItemSet == null"); // NOI18N
                     } else {
@@ -657,7 +656,7 @@ public class ModelSupport implements PropertyChangeListener {
                             Diagnostic.trace("\t" + item.getNativeProject().getProjectDisplayName()); // NOI18N
                         }
                     }
-                    EditorCookie editor = curObj.getCookie(EditorCookie.class);
+                    EditorCookie editor = curObj.getLookup().lookup(EditorCookie.class);
                     Diagnostic.trace("has editor support: " + editor); // NOI18N
                     Document doc = editor != null ? editor.getDocument() : null;
                     Diagnostic.trace("with document: " + doc); // NOI18N

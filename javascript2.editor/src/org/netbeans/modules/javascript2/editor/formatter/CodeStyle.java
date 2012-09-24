@@ -90,10 +90,11 @@ public final class CodeStyle {
     }
 
     private static CodeStyle get(Document doc, boolean embedded) {
-        if (embedded) {
+        // TODO should we have a separate setting for JSON
+        //if (embedded) {
             return new CodeStyle(CodeStylePreferences.get(doc, JsTokenId.JAVASCRIPT_MIME_TYPE).getPreferences());
-        }
-        return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
+        //}
+        //return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
     }
 
     // General tabs and indents ------------------------------------------------
@@ -643,9 +644,13 @@ public final class CodeStyle {
         return preferences.getBoolean(wrapStatementsOnTheLine, getDefaultAsBoolean(wrapStatementsOnTheLine));
     }
 
-    public WrapStyle wrapProperties() {
-        String wrap = preferences.get(wrapProperties, getDefaultAsString(wrapProperties));
+    public WrapStyle wrapObjects() {
+        String wrap = preferences.get(wrapObjects, getDefaultAsString(wrapObjects));
         return WrapStyle.valueOf(wrap);
+    }
+
+    public boolean wrapProperties() {
+        return preferences.getBoolean(wrapProperties, getDefaultAsBoolean(wrapProperties));
     }
 
     // Uses
