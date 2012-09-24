@@ -47,6 +47,7 @@ import java.awt.Graphics;
 import java.util.Set;
 import javax.swing.*;
 import javax.swing.plaf.UIResource;
+import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.UiUtils;
@@ -130,10 +131,16 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
                     GroovyRefactoringElement element = ((GroovyRefactoringElement) value);
 
                     setText(element.getDeclaringClassNameWithoutPackage());
-                    if (element.getDeclaringClass().isInterface()) {
-                        setIcon(UiUtils.getElementIcon(ElementKind.INTERFACE, element.getModifiers()));
+                    ClassNode declaringClass = element.getDeclaringClass();
+                    if (declaringClass != null) {
+
+                        if (declaringClass.isInterface()) {
+                            setIcon(UiUtils.getElementIcon(ElementKind.INTERFACE, element.getModifiers()));
+                        } else {
+                            setIcon(UiUtils.getElementIcon(ElementKind.CLASS, element.getModifiers()));
+                        }
                     } else {
-                        setIcon(UiUtils.getElementIcon(ElementKind.CLASS, element.getModifiers()));
+                        setIcon(getEmptyIcon());
                     }
                 }
             }
