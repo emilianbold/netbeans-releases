@@ -1877,8 +1877,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
     // fix for unknown specifiers
     unknown_pretype_declaration_specifiers
 
-    (   ( (LITERAL_constexpr | LITERAL_static | literal_inline | LITERAL_friend)* LITERAL_auto declarator[declOther, 0]) => 
-        (LITERAL_constexpr | LITERAL_static | literal_inline | LITERAL_friend)*
+    (   ( (LITERAL_constexpr | cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)* LITERAL_auto declarator[declOther, 0]) => 
+        (LITERAL_constexpr | tq = cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)*
     |
         (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
         |   tq = cv_qualifier 
