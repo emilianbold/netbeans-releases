@@ -110,6 +110,26 @@ public class ToggleBlockCommentActionTest extends PHPCodeCompletionTestBase {
         testInFile("testfiles/actions/issue213706_03.php");
     }
 
+    public void testIssue218830_01()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_01.php");
+    }
+
+    public void testIssue218830_02()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_02.php");
+    }
+
+    public void testIssue218830_03()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_03.php");
+    }
+
+    public void testIssue218830_04()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_04.php");
+    }
+
+    public void testIssue218830_05()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_05.php");
+    }
+
     protected void testInFile(String file) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
