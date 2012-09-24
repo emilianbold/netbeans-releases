@@ -41,6 +41,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -347,27 +348,8 @@ public abstract class DBTestBase extends TestBase {
             return;
         }
 
-        if (isDerby()) {
-            // Trying to remove the schema is very difficult, as it has to
-            // be completely empty. Easier just to blow away the database directory.
-            // Next time we connect a new db will be automatically created
-            shutdownDerby();
-            if (! dblocation.equals(this.getWorkDirPath())) {
-                try {
-                    clearWorkDir();
-                } catch (IOException e) {
-                    // ignore on Windows because some files might be locked
-                    if (!Utilities.isWindows()) {
-                        throw e;
-                    }
-                }
-            } else {
-                deleteSubFiles(new File(dblocation));
-            }
-        } else {
             dbProvider.dropSchema(getConnection(), getSchema());
         }
-    }
 
     protected static void deleteSubFiles(File file) throws IOException {
         if (file.isDirectory() && file.exists()) {
@@ -640,19 +622,16 @@ public abstract class DBTestBase extends TestBase {
         String url = dbUrl + ";shutdown=true";
         url = url.replace(";create=true", "");
 
-        DatabaseConnection conn = DatabaseConnection.create(getJDBCDriver(),
-                url, getSchema(), getUsername(), getPassword(), false);
-
-        ConnectionManager.getDefault().addConnection(conn);
+        Properties p = new Properties();
+        p.put("username", username);
+        p.put("password", password);
 
         // This forces the shutdown
         try {
-            ConnectionManager.getDefault().connect(conn);
-        } catch (DatabaseException dbe) {
-            // expected, this always happens when you shut it down
+            getJDBCDriver().getDriver().connect(url, p);
+        } catch (SQLException ex) {
+            // Exception is expected
         }
-
-        ConnectionManager.getDefault().removeConnection(conn);
     }
 
     @Override
