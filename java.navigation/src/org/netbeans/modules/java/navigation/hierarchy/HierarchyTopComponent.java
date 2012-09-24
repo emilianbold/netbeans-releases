@@ -97,6 +97,7 @@ import org.netbeans.modules.java.navigation.base.Pair;
 import org.netbeans.modules.java.navigation.base.Resolvers;
 import org.netbeans.modules.java.navigation.base.SelectJavadocTask;
 import org.netbeans.modules.java.navigation.base.TapPanel;
+import org.netbeans.modules.java.navigation.base.Utils;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -216,7 +217,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         add(decorateAsUpperPanel(upperToolBar), BorderLayout.NORTH);
         contentView = new JPanel();
         contentView.setLayout(new CardLayout());
-        JPanel nonActiveContent = updateBackground(new JPanel());
+        JPanel nonActiveContent = Utils.updateBackground(new JPanel());
         nonActiveContent.setLayout(new BorderLayout());
         nonActiveInfo = new JLabel(Bundle.TXT_NonActiveContent());
         nonActiveInfo.setEnabled(false);
@@ -235,7 +236,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                 getBoolean(PROP_LOWER_TOOLBAR_EXPANDED, true); //NOI18N
         lowerToolBar.setExpanded(expanded);
         lowerToolBar.addPropertyChangeListener(this);
-        add(updateBackground(lowerToolBar), BorderLayout.SOUTH);
+        add(Utils.updateBackground(lowerToolBar), BorderLayout.SOUTH);
     }
 
     public void setContext(
@@ -369,14 +370,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         btw.setRootVisible(false);
         return btw;
     }
-
-    @NonNull
-    private static <T extends JComponent> T updateBackground(@NonNull final T comp) {
-        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-            comp.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-        }
-        return comp;
-    }
+    
 
     @NonNull
     private static JPanel decorateAsUpperPanel(@NonNull final JComponent comp) {
@@ -396,7 +390,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         wrapper.setBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0,
                     UIManager.getColor("NbSplitPane.background")));//NOI18N
-        return updateBackground(wrapper);
+        return Utils.updateBackground(wrapper);
     }
 
     private void showBusy() {
