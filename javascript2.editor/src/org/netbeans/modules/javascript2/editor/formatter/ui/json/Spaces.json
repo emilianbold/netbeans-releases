@@ -2,6 +2,6 @@
     "name": "item",
     "balance": -1,
     "available": false,
-    "types": ["good","bad"]
+    "types": ["good","bad"],
     "link": {"ok": true}
 }
