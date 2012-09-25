@@ -99,17 +99,20 @@ public final class NewProjectIterator extends BasicWizardIterator {
         "org.openide.loaders", // NOI18N
         "org.openide.dialogs", // NOI18N
         "org.openide.util", // NOI18N
+        "org.openide.util.lookup", // NOI18N
         "org.netbeans.modules.projectuiapi", // NOI18N
         "org.netbeans.modules.projectapi", // NOI18N
         "org.openide.awt", // NOI18N
     };
     
+    @Override
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         cmf.run();
         return getCreatedFiles(cmf, data.getProject());
     }
     
+    @Override
     protected BasicWizardIterator.Panel[] createPanels(WizardDescriptor wiz) {
         data = new NewProjectIterator.DataModel(wiz);
         return new BasicWizardIterator.Panel[] {
@@ -293,7 +296,7 @@ public final class NewProjectIterator extends BasicWizardIterator {
     
     private static String getRelativePath(String rootPath, String fullyQualifiedPackageName,
             String prefix, String postfix) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(rootPath).append('/').
                 append(fullyQualifiedPackageName.replace('.','/')).
                 append('/').append(prefix).append(postfix);
@@ -394,6 +397,7 @@ public final class NewProjectIterator extends BasicWizardIterator {
             templateProject = template;
         }
         
+        @Override
         public void run(FileSystem layer) throws IOException {
             FileObject folder = layer.getRoot().getFileObject(category);// NOI18N
             if (folder == null) {
