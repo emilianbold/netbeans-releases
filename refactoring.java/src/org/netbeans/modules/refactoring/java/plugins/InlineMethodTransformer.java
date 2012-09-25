@@ -436,7 +436,10 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             @Override
             public Void visitIdentifier(IdentifierTree node, Pair<Element, ExpressionTree> p) {
                 TreePath currentPath = trees.getPath(compilationUnitTree, node);
-                Element el = trees.getElement(currentPath);
+                Element el = null;
+                if(currentPath != null) {
+                    el = trees.getElement(currentPath);
+                }
                 if (p.first.equals(el)) {
                     original2TranslatedBody.put(node, p.second);
                 }
