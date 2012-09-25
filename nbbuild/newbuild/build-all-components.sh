@@ -159,7 +159,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 cd nbbuild
-Build catalog for IDE NBMs
+#Build catalog for IDE NBMs
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml
 ERROR_CODE=$?
 
@@ -169,7 +169,7 @@ if [ $ERROR_CODE != 0 ]; then
 #    exit $ERROR_CODE;
 fi
 
-Build catalog for Stable UC NBMs
+#Build catalog for Stable UC NBMs
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc2 -Dcatalog.file=${DIST}/uc2/catalog.xml
 ERROR_CODE=$?
 
