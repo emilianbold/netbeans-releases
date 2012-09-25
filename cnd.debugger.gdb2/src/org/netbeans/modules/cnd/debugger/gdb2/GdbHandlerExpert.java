@@ -92,8 +92,8 @@ public class GdbHandlerExpert implements HandlerExpert {
     Handler newHandler(NativeBreakpoint template,
 		       MIResult result,
 		       NativeBreakpoint breakpoint) {
-        assertBkptResult(result);
-	MIValue bkptValue = result.value();
+        //assertBkptResult(result);
+        MIValue bkptValue = result.value();
 	MITList props = bkptValue.asTuple();
 
 	if (breakpoint == null) {
@@ -104,12 +104,26 @@ public class GdbHandlerExpert implements HandlerExpert {
 	update(template, breakpoint, props);
 	Handler handler = new Handler(debugger, breakpoint);
 	setGenericProperties(handler, props);
+        
+        if (! (result.matches(GdbDebuggerImpl.MI_BKPT) || result.matches(GdbDebuggerImpl.MI_WPT))) {
+            handler.setError(Catalog.get("MSG_InvalidLocation")); //NOI18N
+        }
+        
 	return handler;
     }
 
     Handler replaceHandler(NativeBreakpoint template,
-                           Handler originalHandler, MIResult result) {
-        assertBkptResult(result);
+                           Handler originalHandler, MIResult result, NativeBreakpoint... targetTemplate) {
+        //assertBkptResult(result);
+        if ( !(result.matches(GdbDebuggerImpl.MI_BKPT) || result.matches(GdbDebuggerImpl.MI_WPT)) ) {
+            if (targetTemplate.length == 1) {
+                
+                String newLine = targetTemplate[0].getPos().propertyByName("lineNumber").toString(); //NOI18N
+                originalHandler.breakpoint().getPos().propertyByName("lineNumber").setFromString(newLine); //NOI18N
+                originalHandler.setError(Catalog.get("MSG_InvalidLocation")); //NOI18N
+            }
+            return originalHandler;
+        }
 	MIValue bkptValue = result.value();
 	MITList props = bkptValue.asTuple();
 
@@ -360,7 +374,7 @@ public class GdbHandlerExpert implements HandlerExpert {
         handler.setEnabled("y".equals(enabledString)); //NOI18N
         
 	// 'number'
-	int number = Integer.parseInt(props.getConstValue("number")); // NOI18N
+	int number = Integer.parseInt(props.getConstValue("number", "0")); // NOI18N
 	handler.setId(number);
     }
 
@@ -425,7 +439,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    // 'file'
 	    MIValue fileValue = props.valueOf("file"); // NOI18N
 	    if (fileValue == null) {
-		return null;
+		return originalBreakpoint.getPos().propertyByName("fileName").toString(); // NOI18N
             }
 //	    String fileString = fileValue.asConst().value();
 
@@ -434,19 +448,19 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    if (originalBreakpoint instanceof LineBreakpoint) {
 		LineBreakpoint olb = (LineBreakpoint) originalBreakpoint;
 		filename = olb.getFileName();
-	    }
+            }
 	}
 	return filename;
     }
 
-    private static int getLine(MITList props) {
+    private static int getLine(MITList props, NativeBreakpoint originalBreakpoint) {
 	MIValue lineValue = props.valueOf("line"); // NOI18N
         String lineString;
 	if (lineValue == null) {
             // try pending
             MIValue fullnameValue = props.valueOf("pending"); // NOI18N
             if (fullnameValue == null) {
-                return 0;
+                return Integer.parseInt(originalBreakpoint.getPos().propertyByName("lineNumber").toString()); // NOI18N
             }
             String lineStr = fullnameValue.asConst().value();
             // remove line number
@@ -491,7 +505,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    LineBreakpoint lb = (LineBreakpoint) breakpoint;
 
 	    String filename = getFileName(props, template);
-	    int line = getLine(props);
+	    int line = getLine(props, template);
 
 	    lb.setFileAndLine(filename, line);
 
@@ -555,11 +569,11 @@ public class GdbHandlerExpert implements HandlerExpert {
 			       NativeBreakpoint breakpoint,
 			       NativeBreakpoint template,
 			       MIResult result) {
-        assertBkptResult(result);
+        //assertBkptResult(result);
 	MIValue bkptValue = result.value();
 	MITList props = bkptValue.asTuple();
 
-	int line = getLine(props);
+	int line = getLine(props, template);
         String fileName = (line != 0) ? getFileName(props, template) : null;
 	long addr = getAddr(props);
 	// TMP if (line != 0 && fileName != null)
