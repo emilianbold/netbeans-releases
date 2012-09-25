@@ -54,7 +54,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JsCodeCompletionGeneralTest extends JsTestBase {
+public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
     
     public JsCodeCompletionGeneralTest(String testName) {
         super(testName);
