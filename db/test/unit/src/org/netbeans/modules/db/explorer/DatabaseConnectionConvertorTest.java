@@ -134,13 +134,16 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         
         Document goldenDoc = null;
         input = getClass().getResourceAsStream(goldenFileName);
+
+        errHandler = new ErrorHandlerImpl();
         try {
-            goldenDoc = XMLUtil.parse(new InputSource(input), true, true, null, EntityCatalog.getDefault());
+            goldenDoc = XMLUtil.parse(new InputSource(input), true, true, errHandler, EntityCatalog.getDefault());
         } finally {
             input.close();
         }
         
         assertTrue(DOMCompare.compareDocuments(doc, goldenDoc));
+        assertFalse("DatabaseConnectionConvertor generates invalid XML acc to the DTD!", errHandler.error);
     }
     
     public void testSaveOnPropertyChange() throws Exception {
@@ -183,15 +186,18 @@ public class DatabaseConnectionConvertorTest extends TestBase {
             input.close();
         }
         
+        assertFalse("Error while parsing XML", errHandler.error);
+        errHandler = new ErrorHandlerImpl();
         Document goldenDoc = null;
         input = getClass().getResourceAsStream("bar-connection.xml");
         try {
-            goldenDoc = XMLUtil.parse(new InputSource(input), true, true, null, EntityCatalog.getDefault());
+            goldenDoc = XMLUtil.parse(new InputSource(input), true, true, errHandler, EntityCatalog.getDefault());
         } finally {
             input.close();
         }
         
         assertTrue(DOMCompare.compareDocuments(doc, goldenDoc));
+        assertFalse("Error while parsing XML", errHandler.error);
     }
     
     public void testLookup() throws Exception {
