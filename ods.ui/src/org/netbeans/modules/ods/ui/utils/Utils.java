@@ -140,6 +140,7 @@ public class Utils {
     @NbBundle.Messages({
         "MSG_NoRouteToHost=No route to host",
         "MSG_UnreachableNetwork=Network is unreachable",
+        "MSG_MaxNumberOfProjects=Maximum number of projects has been reached",
         "MSG_BadCredentials=Wrong username or password"
     })
     public static String parseKnownMessage (ODSException ex) {
@@ -153,6 +154,8 @@ public class Utils {
                 knownMessage = Bundle.MSG_BadCredentials();
             } else if (msg.contains("network is unreachable")) { //NOI18N
                 knownMessage = Bundle.MSG_UnreachableNetwork();
+            } else if (msg.contains("maximum number of projects in the system")) { //NOI18N
+                knownMessage = Bundle.MSG_MaxNumberOfProjects();
             }
         }
         return knownMessage;

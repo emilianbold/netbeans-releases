@@ -152,7 +152,7 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
             project = server.createProject(newPrjTitle, newPrjDesc, newPrjAccessibility, newPrjWikiStyle);
         } catch (ODSException ex) {
             String errorMessage = Utils.parseKnownMessage(ex);
-            errorMessage = NewProject_progress_projectCreationFailed(errorMessage == null ? "" : errorMessage); //NOI18N
+            errorMessage = NewProject_progress_projectCreationFailed(errorMessage == null ? ex.getMessage() : errorMessage);
             ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG, errorMessage);
             throw new IOException(errorMessage, ex);
         }
