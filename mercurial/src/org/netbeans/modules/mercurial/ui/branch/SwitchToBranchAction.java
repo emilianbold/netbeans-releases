@@ -134,7 +134,7 @@ public class SwitchToBranchAction extends ContextAction {
                     logger.outputInRed(NbBundle.getMessage(SwitchToBranchAction.class, "MSG_SWITCH_TITLE_SEP")); //NOI18N
                     logger.output(NbBundle.getMessage(SwitchToBranchAction.class, "MSG_SWITCH_INFO_SEP", revStr, root.getAbsolutePath())); //NOI18N
                     List<String> list = HgCommand.doUpdateAll(root, doForcedUpdate, revStr);
-                    Utils.insert(NbPreferences.forModule(SwitchToBranchAction.class), PREF_KEY_RECENT_BRANCHES, revStr, 5);
+                    Utils.insert(NbPreferences.forModule(SwitchToBranchAction.class), PREF_KEY_RECENT_BRANCHES + root.getAbsolutePath(), revStr, 5);
                     
                     if (list != null && !list.isEmpty()){
                         bNoUpdates = HgCommand.isNoUpdates(list.get(0));

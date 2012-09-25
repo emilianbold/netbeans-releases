@@ -44,11 +44,13 @@
 
 package org.netbeans.modules.mercurial.ui.menu;
 
+import java.io.File;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.ui.branch.CloseBranchAction;
 import org.netbeans.modules.mercurial.ui.branch.CreateBranchAction;
@@ -109,16 +111,25 @@ public class BranchMenu extends DynamicMenu implements Presenter.Menu {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(SwitchToBranchAction.class), NbBundle.getMessage(SwitchToBranchAction.class, "CTL_PopupMenuItem_SwitchToBranch"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             if (ctx != null) {
-                List<String> recentlySwitched = Utils.getStringList(NbPreferences.forModule(BranchMenu.class), SwitchToBranchAction.PREF_KEY_RECENT_BRANCHES);
-                if (!recentlySwitched.isEmpty()) {
-                    int index = 0;
-                    for (String recentBranch : recentlySwitched) {
-                        menu.add(new SwitchToBranchAction.KnownBranchAction(recentBranch, ctx));
-                        if (++index > 2) {
-                            break;
-                        }
+                File repositoryRoot = null;
+                for (File f : ctx.getRootFiles()) {
+                    repositoryRoot = Mercurial.getInstance().getRepositoryRoot(f);
+                    if (repositoryRoot != null) {
+                        break;
                     }
-                    menu.add(new JSeparator());
+                }
+                if (repositoryRoot != null) {
+                    List<String> recentlySwitched = Utils.getStringList(NbPreferences.forModule(BranchMenu.class), SwitchToBranchAction.PREF_KEY_RECENT_BRANCHES + repositoryRoot.getAbsolutePath());
+                    if (!recentlySwitched.isEmpty()) {
+                        int index = 0;
+                        for (String recentBranch : recentlySwitched) {
+                            menu.add(new SwitchToBranchAction.KnownBranchAction(recentBranch, ctx));
+                            if (++index > 2) {
+                                break;
+                            }
+                        }
+                        menu.add(new JSeparator());
+                    }
                 }
             }
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "CTL_PopupMenuItem_CreateBranch"), lkp)); //NOI18N
