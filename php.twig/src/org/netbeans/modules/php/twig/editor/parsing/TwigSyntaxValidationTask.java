@@ -69,9 +69,10 @@ public class TwigSyntaxValidationTask extends ParserResultTask {
             List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
             for (TwigParserResult.Error error : result.getErrors()) {
                 try {
+                    String description = error.getDescription();
                     errors.add(ErrorDescriptionFactory.createErrorDescription(
                             Severity.ERROR,
-                            error.getDescription(),
+                            description == null ? "" : description, //NOI18N
                             document,
                             document.createPosition(error.getOffset()),
                             document.createPosition(error.getOffset() + error.getLength())));
