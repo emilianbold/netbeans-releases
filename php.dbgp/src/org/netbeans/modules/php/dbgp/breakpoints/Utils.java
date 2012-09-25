@@ -44,10 +44,8 @@
 package org.netbeans.modules.php.dbgp.breakpoints;
 
 import java.lang.reflect.InvocationTargetException;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.options.OptionsDisplayer;
