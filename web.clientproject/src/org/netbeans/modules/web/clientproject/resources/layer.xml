@@ -141,8 +141,10 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="200"/>
                 </file>
-
-
+                <file name="org-netbeans-modules-project-ui-SaveAsTemplate.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-web-clientproject-ui-action-CreateSiteTemplateAction.instance"/>
+                    <attr name="position" intvalue="686"/>
+                </file>
                 <file name="org-netbeans-modules-project-ui-RunProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
                     <attr name="position" intvalue="700"/>
