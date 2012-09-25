@@ -53,21 +53,21 @@ import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
-import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 
@@ -78,7 +78,6 @@ import org.openide.util.NbPreferences;
 public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
     private final transient WhereUsedSupport usage;
-    private WhereUsedSupport newElement;
     private final transient ChangeListener parent;
 
     /** Creates new form WhereUsedPanel */
@@ -114,7 +113,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         initialized = true;
     }
 
-    
+
     private void setupPanels() {
         ModelElement elem = usage.getModelElement();
         assert elem != null;
@@ -164,7 +163,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 m_isBaseClass.setSelected(false);
             }
         } else if (usage.getKind() == PhpElementKind.CLASS) {
-            add(classesPanel, BorderLayout.CENTER);            
+            add(classesPanel, BorderLayout.CENTER);
             classesPanel.setVisible(true);
         } else if (usage.getKind() == PhpElementKind.IFACE) {
             add(classesPanel, BorderLayout.CENTER);

@@ -41,20 +41,20 @@
  */
 package org.netbeans.modules.refactoring.php.rename;
 
-import org.netbeans.modules.refactoring.php.DiffElement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
-import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport;
-import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport.Results;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.php.DiffElement;
 import org.netbeans.modules.refactoring.php.findusages.PhpWhereUsedQueryPlugin;
 import org.netbeans.modules.refactoring.php.findusages.WarningFileElement;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedElement;
+import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport;
+import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport.Results;
 import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
@@ -73,13 +73,15 @@ public class PhpRenameRefactoringPlugin extends PhpWhereUsedQueryPlugin {
     @Override
     public Problem checkParameters() {
         String newName = getRefactoring().getNewName();
-        if (newName.length() == 0) {
-            return new Problem(true, NbBundle.getMessage(PhpRenameRefactoringPlugin.class, "MSG_Error_ElementEmpty")); //NOI18N
-        }
-        final WhereUsedSupport usages = getUsages();
-        String oldName = PhpRenameRefactoringUI.getElementName(usages.getName(), usages.getElementKind());
-        if (newName.equals(oldName)) {
-            return new Problem(true, NbBundle.getMessage(PhpRenameRefactoringPlugin.class, "MSG_Error_SameName")); //NOI18N
+        if (newName != null) {
+            if (newName.length() == 0) {
+                return new Problem(true, NbBundle.getMessage(PhpRenameRefactoringPlugin.class, "MSG_Error_ElementEmpty")); //NOI18N
+            }
+            final WhereUsedSupport usages = getUsages();
+            String oldName = PhpRenameRefactoringUI.getElementName(usages.getName(), usages.getElementKind());
+            if (newName.equals(oldName)) {
+                return new Problem(true, NbBundle.getMessage(PhpRenameRefactoringPlugin.class, "MSG_Error_SameName")); //NOI18N
+            }
         }
         return null;
     }
@@ -107,7 +109,7 @@ public class PhpRenameRefactoringPlugin extends PhpWhereUsedQueryPlugin {
                 refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
             }
         }
-        
+
         Collection<WarningFileElement> warningElements = results.getWarningElements();
         for (WarningFileElement warningElement : warningElements) {
             refactoringElements.add(refactoring, warningElement);
