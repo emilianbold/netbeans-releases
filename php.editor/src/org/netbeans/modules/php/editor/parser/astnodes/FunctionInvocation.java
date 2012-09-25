@@ -64,7 +64,7 @@ public class FunctionInvocation extends VariableBase {
     }
 
     public FunctionInvocation(int start, int end, FunctionName functionName, List<Expression> parameters) {
-        this(start, end, functionName, parameters == null ? null : (Expression[]) parameters.toArray(new Expression[parameters.size()]));
+        this(start, end, functionName, parameters == null ? new Expression[0] : (Expression[]) parameters.toArray(new Expression[parameters.size()]));
     }
 
     /**

@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
  */
 public class TokenFormatter {
 
-    protected static String TEMPLATE_HANDLER_PROPERTY = "code-template-insert-handler";
+    protected static final String TEMPLATE_HANDLER_PROPERTY = "code-template-insert-handler";
     private static String EMPTY_STRING = "";
     private static final Logger LOGGER = Logger.getLogger(TokenFormatter.class.getName());
     // it's for testing

@@ -89,14 +89,16 @@ public class ModifiersCheckHint extends AbstractRule {
         this.hints = hints;
         this.doc = context.doc;
         FileScope fileScope = context.fileScope;
-        fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
-        Collection<? extends ClassScope> declaredClasses = ModelUtils.getDeclaredClasses(fileScope);
-        for (ClassScope classScope : declaredClasses) {
-            processClassScope(classScope);
-        }
-        Collection<? extends InterfaceScope> declaredInterfaces = ModelUtils.getDeclaredInterfaces(fileScope);
-        for (InterfaceScope interfaceScope : declaredInterfaces) {
-            processInterfaceScope(interfaceScope);
+        if (fileScope != null) {
+            fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
+            Collection<? extends ClassScope> declaredClasses = ModelUtils.getDeclaredClasses(fileScope);
+            for (ClassScope classScope : declaredClasses) {
+                processClassScope(classScope);
+            }
+            Collection<? extends InterfaceScope> declaredInterfaces = ModelUtils.getDeclaredInterfaces(fileScope);
+            for (InterfaceScope interfaceScope : declaredInterfaces) {
+                processInterfaceScope(interfaceScope);
+            }
         }
     }
 

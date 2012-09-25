@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.netbeans.modules.php.editor.parser.astnodes;
 
+import java.util.Arrays;
+
 public class StateStack implements Cloneable {
 
     private byte[] stack;
@@ -90,6 +92,14 @@ public class StateStack implements Cloneable {
         return true;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Arrays.hashCode(this.stack);
+        hash = 53 * hash + this.lastIn;
+        return hash;
+    }
+
     public void copyFrom(StateStack s) {
         while (s.lastIn >= this.stack.length) {
             this.multiplySize();
@@ -113,10 +123,11 @@ public class StateStack implements Cloneable {
         return stack[index];
     }
 
+    @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer(50);
+        StringBuilder sb = new StringBuilder(50);
         for (int i = 0; i <= lastIn; i++) {
-            sb.append(" stack[" + i + "]= " + stack[i]); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(" stack[").append(i).append("]= ").append(stack[i]); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return sb.toString();
     }
