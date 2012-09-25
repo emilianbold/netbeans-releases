@@ -42,8 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javascript2.editor.formatter.ui;
+package org.netbeans.modules.javascript2.editor.formatter.ui.json;
 
+import org.netbeans.modules.javascript2.editor.formatter.ui.*;
 import java.awt.Dimension;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -112,11 +113,11 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     public static PreferencesCustomizer.Factory getController() {
         String preview = "";
         try {
-            preview = Utils.loadPreviewText(FmtWrapping.class.getClassLoader().getResourceAsStream("org/netbeans/modules/javascript2/editor/formatter/ui/Wrapping.js"));
+            preview = Utils.loadPreviewText(FmtWrapping.class.getClassLoader().getResourceAsStream("org/netbeans/modules/javascript2/editor/formatter/ui/json/Wrapping.json"));
         } catch (IOException ex) {
             // TODO log it
         }
-        return new CategorySupport.Factory(JsTokenId.JAVASCRIPT_MIME_TYPE, "wrapping", FmtWrapping.class, //NOI18N
+        return new CategorySupport.Factory(JsTokenId.JSON_MIME_TYPE, "wrapping", FmtWrapping.class, //NOI18N
                 preview);
     }
 
