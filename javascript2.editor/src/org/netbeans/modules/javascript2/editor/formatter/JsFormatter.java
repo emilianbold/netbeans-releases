@@ -734,7 +734,8 @@ public class JsFormatter implements Formatter {
                 if (previous == null || previous.getKind() != FormatToken.Kind.BEFORE_OBJECT) {
                     return false;
                 }
-            } else if (JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(nextText)) {
+            } else if (JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(nextText)
+                    || JsTokenId.BRACKET_RIGHT_BRACKET.fixedText().equals(nextText)) {
                 return false;
             }
         }
@@ -771,9 +772,7 @@ public class JsFormatter implements Formatter {
         String text = result.getText().toString();
         return !(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
                 || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)
-                || formatContext.isGenerated(result)
-                // this is just safeguard literal offsets should be fixed
-                /*|| JsTokenId.OPERATOR_SEMICOLON.fixedText().equals(text)*/);
+                || formatContext.isGenerated(result));
 
     }
 
