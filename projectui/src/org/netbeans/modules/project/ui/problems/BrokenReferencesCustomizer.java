@@ -45,6 +45,8 @@
 package org.netbeans.modules.project.ui.problems;
 
 import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -83,6 +85,17 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         errorList.setModel(model);
         errorList.setSelectedIndex(0);
         errorList.setCellRenderer(new ListCellRendererImpl());
+        errorList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(@NonNull final MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    final int index = errorList.locationToIndex(evt.getPoint());
+                    if (index != -1 && fix.isEnabled()) {
+                        fixActionImpl(errorList.getModel().getElementAt(index));
+                    }
+                }
+            }
+        });
     }
     
     /** This method is called from within the constructor to
@@ -179,7 +192,10 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
 
     
     private void fixActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixActionPerformed
-        final Object value = errorList.getSelectedValue();
+        fixActionImpl(errorList.getSelectedValue());
+    }//GEN-LAST:event_fixActionPerformed
+
+    private void fixActionImpl(@NonNull final Object value) {
         if (!(value instanceof BrokenReferencesModel.ProblemReference)) {
             return;
         }
@@ -229,7 +245,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
             }
         }
         
-    }//GEN-LAST:event_fixActionPerformed
+    }
 
     private void updateAfterResolve(@NullAllowed final ProjectProblemsProvider.Result result) {
         if (!SwingUtilities.isEventDispatchThread()) {
