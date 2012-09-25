@@ -61,28 +61,27 @@ import org.netbeans.spi.editor.hints.Severity;
 
 public class TwigSyntaxValidationTask extends ParserResultTask {
 
-    boolean cancelled = false;
-
     @Override
     public void run(Result r, SchedulerEvent se) {
         TwigParserResult result = (TwigParserResult) r;
         Document document = result.getSnapshot().getSource().getDocument(false);
-        List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
-        for (TwigParserResult.Error error : result.getErrors()) {
-            try {
-                errors.add(ErrorDescriptionFactory.createErrorDescription(
-                        Severity.ERROR,
-                        error.getDescription(),
-                        document,
-                        document.createPosition(error.getOffset()),
-                        document.createPosition(error.getOffset() + error.getLength())));
+        if (document != null) {
+            List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
+            for (TwigParserResult.Error error : result.getErrors()) {
+                try {
+                    errors.add(ErrorDescriptionFactory.createErrorDescription(
+                            Severity.ERROR,
+                            error.getDescription(),
+                            document,
+                            document.createPosition(error.getOffset()),
+                            document.createPosition(error.getOffset() + error.getLength())));
 
-            } catch (BadLocationException ex) {
+                } catch (BadLocationException ex) {
+                }
+
             }
-
+            HintsController.setErrors(document, "Twig", errors); //NOI18N
         }
-        HintsController.setErrors(document, "Twig", errors); //NOI18N
-        cancelled = false;
     }
 
     @Override
@@ -97,7 +96,6 @@ public class TwigSyntaxValidationTask extends ParserResultTask {
 
     @Override
     public void cancel() {
-        cancelled = true;
     }
 
     static public class Factory extends TaskFactory {

@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-
 /**
  *
  * @author Petr Pisl
@@ -52,7 +50,7 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public JsCodeCompletionTest(String testName) {
         super(testName);
     }
-  
+
     public void testPrefix1() throws Exception {
         checkPrefix("testfiles/completion/cc-prefix1.js");
     }

@@ -111,6 +111,7 @@ public class JPQLExecutor {
             PersistenceUnit pu,
             final PersistenceEnvironment pe,
             HashMap<String, String> props,
+            Provider provider,
             int maxRowCount,
             ProgressHandle ph,
             boolean execute) {
@@ -136,8 +137,6 @@ public class JPQLExecutor {
                 }
             });
             Query query = em.createQuery(jpql);
-            //
-            Provider provider = ProviderUtil.getProvider(pu);
             String queryStr = null;
             if (provider.equals(ProviderUtil.ECLIPSELINK_PROVIDER)) {//NOI18N
                 Class qClass = Thread.currentThread().getContextClassLoader().loadClass(ECLIPSELINK_QUERY);
