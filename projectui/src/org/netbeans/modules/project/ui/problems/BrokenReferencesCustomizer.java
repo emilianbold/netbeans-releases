@@ -115,7 +115,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         jScrollPane2 = new javax.swing.JScrollPane();
         description = new javax.swing.JTextArea();
 
-        setPreferredSize(new java.awt.Dimension(450, 300));
+        setPreferredSize(new java.awt.Dimension(550, 350));
         setLayout(new java.awt.GridBagLayout());
 
         errorListLabel.setLabelFor(errorList);
@@ -140,7 +140,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.weighty = 1.5;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
@@ -179,6 +179,8 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.ipady = 60;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jScrollPane2, gridBagConstraints);
 
@@ -265,8 +267,13 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         if (value instanceof BrokenReferencesModel.ProblemReference) {
             final BrokenReferencesModel.ProblemReference reference = (BrokenReferencesModel.ProblemReference) value;
             if (!reference.resolved) {
-                description.setText(reference.problem.getDescription());
+                description.setText(reference.problem.getDescription());                
                 fix.setEnabled(true);
+                javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                   public void run() {
+                       jScrollPane2.getVerticalScrollBar().setValue(0);
+                   }
+                });
             } else {
                 description.setText(Bundle.LBL_BrokenLinksCustomizer_Problem_Was_Resolved());
                 // Leave the button always enabled so that user can alter 
