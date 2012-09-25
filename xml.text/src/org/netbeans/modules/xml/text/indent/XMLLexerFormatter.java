@@ -570,7 +570,7 @@ public class XMLLexerFormatter {
                                     tokenId.name(), 
                                     tokenSequence.offset(), 
                                     tokenSequence.offset() + token.length(), indentLevel);
-                            TokenIndent ti = new TokenIndent(tag, preserveWhitespace, tokenSequence.offset(), indentLevel);
+                            TokenIndent ti = new TokenIndent(preserveWhitespace, tokenSequence.offset(), indentLevel);
                             ti.markNoNewline();
                             tags.add(ti);
                         }
@@ -647,10 +647,6 @@ public class XMLLexerFormatter {
                             
                             if ((currentOffset >= startOffset || currentOffset + lineSizes[lno] > endOffset) && currentOffset < endOffset) {
                                 tags.add(new TokenIndent(
-                                    new TokenElement(TokenType.TOKEN_CHARACTER_DATA, 
-                                            tokenId.name(), 
-                                            currentOffset, lineEnd,
-                                            Math.max(0, desiredIndent)), 
                                     false,
                                     currentOffset, Math.max(0, desiredIndent)
                                 ));
@@ -728,33 +724,20 @@ public class XMLLexerFormatter {
         
         private CharSequence tagName;
         
-        public TokenIndent(TokenElement token, boolean preserveIndent) {
-            this.token = token;
-            this.preserveIndent = preserveIndent;
-        }
-        
         public TokenIndent(TokenElement token, boolean preserveIndent, int startOffset, int indentLevel) {
-            this(null, preserveIndent);
-            this.startOffset = startOffset;
-            this.indentLevel = indentLevel;
+            this(preserveIndent, startOffset, indentLevel);
         }
         
         public TokenIndent(boolean preserveIndent, int startOffset, int indentLevel) {
-            this(null, preserveIndent);
+            this.preserveIndent = preserveIndent;
             this.startOffset = startOffset;
-            this.indentLevel = indentLevel;
+            this.indentLevel = Math.max(0, indentLevel);
         }
         
         public TokenIndent(CharSequence tagName, boolean preserveIndent, int startOffset, int indentLevel) {
-            this(null, preserveIndent);
+            this(preserveIndent, startOffset, indentLevel);
             this.tagName = tagName;
-            this.startOffset = startOffset;
-            this.indentLevel = indentLevel;
         }                
-        
-        public void setIndentLevel(int indentLevel) {
-            this.indentLevel = indentLevel;
-        }
         
         public int getIndentLevel() {
             return indentLevel;
