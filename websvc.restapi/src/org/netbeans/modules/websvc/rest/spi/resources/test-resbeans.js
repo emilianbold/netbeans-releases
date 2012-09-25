@@ -166,7 +166,10 @@ TestSupport.prototype = {
           var childs = parent.childNodes;
           for(var i=0;i<childs.length;i++) {
             var child = childs[i];
-            if(name == child.nodeName) {
+            var nodeName = child.nodeName;
+            if(name == nodeName || nodeName.indexOf(":"+name, 
+                nodeName.length-name.length-1)!==-1) 
+            {
                 results.push(child);
             }
           }
