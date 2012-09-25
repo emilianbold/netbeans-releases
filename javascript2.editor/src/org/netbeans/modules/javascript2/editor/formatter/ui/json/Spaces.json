@@ -1,0 +1,6 @@
+{
+    "name": "item",
+    "balance": -1,
+    "available" : false,
+    "types" : ["good","bad"]
+}
