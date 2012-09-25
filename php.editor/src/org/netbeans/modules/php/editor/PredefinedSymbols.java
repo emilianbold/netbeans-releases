@@ -46,6 +46,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -170,7 +171,7 @@ public class PredefinedSymbols {
             } while (count > 0);
 
             is.close();
-            String text = baos.toString();
+            String text = baos.toString(Charset.defaultCharset().name());
             baos.close();
             return text;
         } catch (java.io.IOException e) {
