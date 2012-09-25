@@ -1202,6 +1202,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return memberTypedef;
         }
 
+        private MemberTypedef(CsmType type, CharSequence name, CsmVisibility visibility, CsmClass containingClass, CsmFile file, int startOffset, int endOffset) {
+            super(type, name, containingClass, file, startOffset, endOffset);
+            this.visibility = visibility;
+        }
+        
         @Override
         public boolean isStatic() {
             return false;
@@ -1217,6 +1222,33 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return (CsmClass) getScope();
         }
 
+        public static class MemberTypedefBuilder extends TypedefBuilder implements CsmObjectBuilder {
+        
+            @Override
+            public MemberTypedef create() {
+                CsmClass cls = (CsmClass) getScope();
+                
+                CsmType type = null;
+                if(getTypeBuilder() != null) {
+                    getTypeBuilder().setScope(getScope());
+                    type = getTypeBuilder().create();
+                }
+                if(type == null) {
+                    type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), getFile(), getStartOffset(), getStartOffset()); // NOI18N
+                }
+
+                MemberTypedef td = new MemberTypedef(type, getName(), CsmVisibility.PUBLIC, cls, getFile(), getStartOffset(), getEndOffset());
+
+                if (!isGlobal()) {
+                    Utils.setSelfUID(td);
+                }
+
+                addDeclaration(td);
+
+                return td;
+            }
+        }            
+        
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
         @Override

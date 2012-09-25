@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberTypedef.MemberTypedefBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
@@ -72,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl.NamespaceAliasB
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl.ParameterBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl.TypedefBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl.UsingDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl.UsingDirectiveBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl.VariableBuilder;
@@ -544,7 +546,21 @@ public class CppParserActionImpl implements CppParserActionEx {
         if(kind == SIMPLE_DECLARATION__SEMICOLON) {
             SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
             
-            if(declBuilder.isFunction()) {
+            if(declBuilder.hasTypedefSpecifier()) {
+                TypedefBuilder builder = new TypedefBuilder();
+
+                CsmObjectBuilder parent = builderContext.top(1);
+                builder.setParent(parent);
+                builder.setFile(currentContext.file);
+
+                builder.setStartOffset(declBuilder.getStartOffset());
+                builder.setEndOffset(((APTToken)token).getOffset());
+
+                builder.setName(declBuilder.getDeclaratorBuilder().getName());
+                builder.setTypeBuilder(declBuilder.getTypeBuilder());
+
+                builder.create();                
+            } else if(declBuilder.isFunction()) {
                 FunctionBuilder builder = new FunctionBuilder();
 
                 CsmObjectBuilder parent = builderContext.top(1);
@@ -1561,7 +1577,22 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void member_declaration(int kind, Token token){
         if(kind == MEMBER_DECLARATION__SEMICOLON) {
             SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
-            if(declBuilder.isFunction()) {
+            if(declBuilder.hasTypedefSpecifier()) {
+                MemberTypedefBuilder builder = new MemberTypedefBuilder();
+
+                CsmObjectBuilder parent = builderContext.top(1);
+                
+                builder.setParent(parent);
+                builder.setFile(currentContext.file);
+
+                builder.setStartOffset(declBuilder.getStartOffset());
+                builder.setEndOffset(((APTToken)token).getOffset());
+
+                builder.setName(declBuilder.getDeclaratorBuilder().getName());
+                builder.setTypeBuilder(declBuilder.getTypeBuilder());
+
+                ((ClassBuilder)parent).addChild(builder);
+            } else if(declBuilder.isFunction()) {
                 MethodBuilder builder = new MethodBuilder();
 
                 CsmObjectBuilder parent = builderContext.top(1);

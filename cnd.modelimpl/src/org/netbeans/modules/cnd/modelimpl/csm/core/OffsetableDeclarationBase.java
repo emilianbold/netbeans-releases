@@ -253,6 +253,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     
     public static abstract class ScopedDeclarationBuilder extends OffsetableIdentifiableBuilder {
 
+        private boolean global = true;
         private CsmObjectBuilder parent;
         private CsmScope scope;
         
@@ -292,7 +293,14 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 ((NamespaceImpl)getScope()).addDeclaration(decl);
             }
         }        
-        
+
+        public boolean isGlobal() {
+            return global;
+        }
+
+        public void setLocal() {
+            this.global = false;
+        }
     }
     
     public static class SimpleDeclarationBuilder extends ScopedDeclarationBuilder {
