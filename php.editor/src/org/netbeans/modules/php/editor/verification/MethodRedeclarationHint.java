@@ -74,11 +74,13 @@ public class MethodRedeclarationHint extends AbstractRule {
             return;
         }
         FileScope fileScope = context.fileScope;
-        fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
-        this.hints = hints;
-        checkTypeScopes(ModelUtils.getDeclaredClasses(fileScope));
-        checkTypeScopes(ModelUtils.getDeclaredInterfaces(fileScope));
-        checkDeclaredFunctions(ModelUtils.getDeclaredFunctions(fileScope));
+        if (fileScope != null) {
+            fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
+            this.hints = hints;
+            checkTypeScopes(ModelUtils.getDeclaredClasses(fileScope));
+            checkTypeScopes(ModelUtils.getDeclaredInterfaces(fileScope));
+            checkDeclaredFunctions(ModelUtils.getDeclaredFunctions(fileScope));
+        }
     }
 
     private void checkTypeScopes(Collection<? extends TypeScope> typeScopes) {

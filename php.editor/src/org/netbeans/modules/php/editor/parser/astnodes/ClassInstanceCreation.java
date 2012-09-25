@@ -65,7 +65,7 @@ public class ClassInstanceCreation extends Expression {
     }
 
     public ClassInstanceCreation(int start, int end, ClassName className, List<Expression> ctorParams) {
-		this(start, end, className, ctorParams == null ? null : (Expression[]) ctorParams.toArray(new Expression[ctorParams.size()]));
+		this(start, end, className, ctorParams == null ? new Expression[0] : (Expression[]) ctorParams.toArray(new Expression[ctorParams.size()]));
 	}
 
     /**

@@ -109,10 +109,13 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
         "ImplementAbstractMethodsHintDesc={0} is not abstract and does not override abstract method {1} in {2}"
     })
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
-        Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(context.fileScope);
-        FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
-        for (FixInfo fixInfo : checkHints(allClasses, context)) {
-            hints.add(new Hint(ImplementAbstractMethodsHint.this, Bundle.ImplementAbstractMethodsHintDesc(fixInfo.className, fixInfo.lastMethodDeclaration, fixInfo.lastMethodOwnerName), fileObject, fixInfo.classNameRange, createHintFixes(context.doc, fixInfo), 500));
+        FileScope fileScope = context.fileScope;
+        if (fileScope != null) {
+            Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(fileScope);
+            FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
+            for (FixInfo fixInfo : checkHints(allClasses, context)) {
+                hints.add(new Hint(ImplementAbstractMethodsHint.this, Bundle.ImplementAbstractMethodsHintDesc(fixInfo.className, fixInfo.lastMethodDeclaration, fixInfo.lastMethodOwnerName), fileObject, fixInfo.classNameRange, createHintFixes(context.doc, fixInfo), 500));
+            }
         }
     }
 
