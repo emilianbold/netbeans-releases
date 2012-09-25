@@ -327,87 +327,82 @@ outer:      for(MultiKeyBinding mkb : m.getShortcuts()) {
         }
 
         private void runMacro(JTextComponent component, BaseDocument doc, BaseKit kit, MacroDescription macro) {
-            StringBuffer actionName = new StringBuffer();
+            StringBuilder actionName = new StringBuilder();
             char[] command = macro.getCode().toCharArray();
             int len = command.length;
 
-            doc.atomicLock();
-            try {
-                for (int i = 0; i < len; i++) {
-                    if (Character.isWhitespace(command[i])) {
-                        continue;
-                    }
-                    if (command[i] == '"') { //NOI18N
-                        while (++i < len && command[i] != '"') { //NOI18N
-                            char ch = command[i];
-                            if (ch == '\\') { //NOI18N
-                                if (++i >= len) { // '\' at the end
-                                    error(component, "macro-malformed", macro.getName()); // NOI18N
-                                    return;
-                                }
-                                ch = command[i];
-                                if (ch != '"' && ch != '\\') { // neither \\ nor \" // NOI18N
-                                    error(component, "macro-malformed", macro.getName()); // NOI18N
-                                    return;
-                                } // else fall through
+            for (int i = 0; i < len; i++) {
+                if (Character.isWhitespace(command[i])) {
+                    continue;
+                }
+                if (command[i] == '"') { //NOI18N
+                    while (++i < len && command[i] != '"') { //NOI18N
+                        char ch = command[i];
+                        if (ch == '\\') { //NOI18N
+                            if (++i >= len) { // '\' at the end
+                                error(component, "macro-malformed", macro.getName()); // NOI18N
+                                return;
                             }
-                            Action a = component.getKeymap().getDefaultAction();
+                            ch = command[i];
+                            if (ch != '"' && ch != '\\') { // neither \\ nor \" // NOI18N
+                                error(component, "macro-malformed", macro.getName()); // NOI18N
+                                return;
+                            } // else fall through
+                        }
+                        Action a = component.getKeymap().getDefaultAction();
 
-                            if (a != null) {
-                                ActionEvent newEvt = new ActionEvent(component, 0, new String(new char[]{ch}));
-                                if (a instanceof BaseAction) {
-                                    ((BaseAction) a).updateComponent(component);
-                                    ((BaseAction) a).actionPerformed(newEvt, component);
-                                } else {
-                                    a.actionPerformed(newEvt);
-                                }
-                            }
-                        }
-                    } else { // parse the action name
-                        actionName.setLength(0);
-                        while (i < len && !Character.isWhitespace(command[i])) {
-                            char ch = command[i++];
-                            if (ch == '\\') { //NOI18N
-                                if (i >= len) { // macro ending with single '\'
-                                    error(component, "macro-malformed", macro.getName()); // NOI18N
-                                    return;
-                                }
-                                ch = command[i++];
-                                if (ch != '\\' && !Character.isWhitespace(ch)) { //NOI18N
-                                    error(component, "macro-malformed", macro.getName()); // neither "\\" nor "\ " // NOI18N
-                                    return;
-                                } // else fall through
-                            }
-                            actionName.append(ch);
-                        }
-                        // execute the action
-                        Action a = kit.getActionByName(actionName.toString());
                         if (a != null) {
-                            ActionEvent fakeEvt = new ActionEvent(component, 0, ""); //NOI18N
+                            ActionEvent newEvt = new ActionEvent(component, 0, new String(new char[]{ch}));
                             if (a instanceof BaseAction) {
                                 ((BaseAction) a).updateComponent(component);
-                                ((BaseAction) a).actionPerformed(fakeEvt, component);
+                                ((BaseAction) a).actionPerformed(newEvt, component);
                             } else {
-                                a.actionPerformed(fakeEvt);
+                                a.actionPerformed(newEvt);
                             }
-                            if (DefaultEditorKit.insertBreakAction.equals(actionName.toString())) {
-                                Action def = component.getKeymap().getDefaultAction();
-                                ActionEvent fakeEvt10 = new ActionEvent(component, 0, new String(new byte[]{10}));
-                                if (def instanceof BaseAction) {
-                                    ((BaseAction) def).updateComponent(component);
-                                    ((BaseAction) def).actionPerformed(fakeEvt10, component);
-                                } else {
-                                    def.actionPerformed(fakeEvt10);
-                                }
-                            }
-                        } else {
-                            error(component, "macro-unknown-action", macro.getName(), actionName.toString()); // NOI18N
-                            return;
                         }
                     }
+                } else { // parse the action name
+                    actionName.setLength(0);
+                    while (i < len && !Character.isWhitespace(command[i])) {
+                        char ch = command[i++];
+                        if (ch == '\\') { //NOI18N
+                            if (i >= len) { // macro ending with single '\'
+                                error(component, "macro-malformed", macro.getName()); // NOI18N
+                                return;
+                            }
+                            ch = command[i++];
+                            if (ch != '\\' && !Character.isWhitespace(ch)) { //NOI18N
+                                error(component, "macro-malformed", macro.getName()); // neither "\\" nor "\ " // NOI18N
+                                return;
+                            } // else fall through
+                        }
+                        actionName.append(ch);
+                    }
+                    // execute the action
+                    Action a = kit.getActionByName(actionName.toString());
+                    if (a != null) {
+                        ActionEvent fakeEvt = new ActionEvent(component, 0, ""); //NOI18N
+                        if (a instanceof BaseAction) {
+                            ((BaseAction) a).updateComponent(component);
+                            ((BaseAction) a).actionPerformed(fakeEvt, component);
+                        } else {
+                            a.actionPerformed(fakeEvt);
+                        }
+                        if (DefaultEditorKit.insertBreakAction.equals(actionName.toString())) {
+                            Action def = component.getKeymap().getDefaultAction();
+                            ActionEvent fakeEvt10 = new ActionEvent(component, 0, new String(new byte[]{10}));
+                            if (def instanceof BaseAction) {
+                                ((BaseAction) def).updateComponent(component);
+                                ((BaseAction) def).actionPerformed(fakeEvt10, component);
+                            } else {
+                                def.actionPerformed(fakeEvt10);
+                            }
+                        }
+                    } else {
+                        error(component, "macro-unknown-action", macro.getName(), actionName.toString()); // NOI18N
+                        return;
+                    }
                 }
-            } finally {
-                doc.atomicUnlock();
             }
         }
     } // End of RunMacroAction class
