@@ -97,9 +97,7 @@ public class Utils {
     public static File[] convertStringsToNormalizedFiles(Collection<String> strings) {
         File[] fos = new File[strings.size()];
         int index = 0;
-        Iterator it = strings.iterator();
-        while (it.hasNext()) {
-            String str = (String)it.next();
+        for (String str : strings) {
             File fil = new File(str);
             fil = FileUtil.normalizeFile(fil);
             fos[index] = fil;
@@ -125,7 +123,7 @@ public class Utils {
         }
         return toRet;
     }
-    static Set<String> collectSourceRoots(Project prj) {
+    private static Set<String> collectSourceRoots(Project prj) {
         Set<String> toRet = new HashSet<String>();
         NbMavenProject watcher = prj.getLookup().lookup(NbMavenProject.class);
         MavenProject mproject = watcher.getMavenProject();
@@ -134,6 +132,7 @@ public class Utils {
         //for poms also include all module projects recursively..
         boolean isPom = NbMavenProject.TYPE_POM.equals(watcher.getPackagingType());
         if (isPom) {
+            //only for pom is correct use of subprojectprovider
             SubprojectProvider subs = prj.getLookup().lookup(SubprojectProvider.class);
             Set<? extends Project> subProjects = subs.getSubprojects();
             for (Project pr : subProjects) {
@@ -144,7 +143,7 @@ public class Utils {
     }
     
     static ClassPath createSourcePath(Project project) {
-        File[] roots = new File[0];
+        File[] roots;
         ClassPath cp;
         try {
             Set<String> col = collectClasspaths(project);

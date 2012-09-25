@@ -82,6 +82,7 @@ public class IDEOutputListenerProvider implements OutputProcessor {
         ProjectSourcesClassPathProvider cpp = prj.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         ClassPath[] cp = cpp.getProjectClassPaths(ClassPath.EXECUTE);
         list.addAll(Arrays.asList(cp));
+        //for pom packaging projects subprojects/modules matter
         SubprojectProvider spp = prj.getLookup().lookup(SubprojectProvider.class);
         if (spp != null) {
             for (Project sub : spp.getSubprojects()) {
