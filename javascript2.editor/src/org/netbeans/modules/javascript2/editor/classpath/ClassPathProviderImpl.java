@@ -54,6 +54,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -64,6 +65,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ClassPathProvider.class)
 public class ClassPathProviderImpl implements ClassPathProvider {
+
+    private static final RequestProcessor RP = new RequestProcessor(ClassPathProviderImpl.class);
 
     private static final Logger LOG = Logger.getLogger(ClassPathProviderImpl.class.getName());
     public static final String BOOT_CP = "classpath/javascript-boot"; //NOI18N
@@ -126,7 +129,8 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     public static synchronized void registerJsClassPathIfNeeded() {
         if(!JS_CLASSPATH_REGISTERED.get()) {
             JS_CLASSPATH_REGISTERED.set(true);
-            SwingUtilities.invokeLater(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     ClassPath cp = ClassPathProviderImpl.getBootClassPath();
                     if (cp != null) {

@@ -54,7 +54,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JsCodeCompletionSimpleMethodChainTest extends JsTestBase {
+public class JsCodeCompletionSimpleMethodChainTest extends JsCodeComplationBase {
     
     public JsCodeCompletionSimpleMethodChainTest(String testName) {
         super(testName);
