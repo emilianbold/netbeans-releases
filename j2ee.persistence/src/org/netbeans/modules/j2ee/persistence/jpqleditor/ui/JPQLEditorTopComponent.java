@@ -61,6 +61,7 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -77,10 +78,14 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
@@ -89,7 +94,11 @@ import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLEditorController;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLExecutor;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLResult;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -127,6 +136,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
     private RequestProcessor requestProcessor;
     private RequestProcessor.Task hqlParserTask;
     private boolean isSqlTranslationProcessDone = false;
+    private DatabaseConnection dbconn = null;
 
     private static int getNextWindowCount() {
         int count = 0;
@@ -140,8 +150,8 @@ public final class JPQLEditorTopComponent extends TopComponent {
     public static JPQLEditorTopComponent getInstance() {
         return new JPQLEditorTopComponent(null);
     }
-    
-    public PUDataObject getDataObject(){
+
+    public PUDataObject getDataObject() {
         return puObject;
     }
 
@@ -153,10 +163,8 @@ public final class JPQLEditorTopComponent extends TopComponent {
             public void actionPerformed(ActionEvent e) {
                 puComboboxActionPerformed();
             }
-
-
         });
-        
+
         this.thisWindowCount = getNextWindowCount();
         setName(NbBundle.getMessage(JPQLEditorTopComponent.class, "CTL_JPQLEditorTopComponent") + thisWindowCount);
         setToolTipText(NbBundle.getMessage(JPQLEditorTopComponent.class, "HINT_JPQLEditorTopComponent"));
@@ -170,7 +178,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
             }
         });
         jpqlEditor.addMouseListener(new JPQLEditorPopupMouseAdapter());
-        
+
     }
 
     private class JPQLEditorPopupMouseAdapter extends PopupMouseAdapter {
@@ -326,20 +334,56 @@ public final class JPQLEditorTopComponent extends TopComponent {
                     if (Thread.interrupted() || isSqlTranslationProcessDone) {
                         return;    // Cancel the task
                     }
-                    ph2 = ProgressHandleFactory.createHandle(                                                  
-                                    NbBundle.getMessage(JPQLEditorTopComponent.class, "progressTaskname"));
+                    ph2 = ProgressHandleFactory.createHandle(
+                            NbBundle.getMessage(JPQLEditorTopComponent.class, "progressTaskname"));
                     ph2.start(100);
                     FileObject pXml = puObject.getPrimaryFile();
                     Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
                     PersistenceEnvironment pe = project != null ? project.getLookup().lookup(PersistenceEnvironment.class) : null;
                     ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
                     final List<URL> localResourcesURLList = new ArrayList<URL>();
+                    final HashMap<String, String> props = new HashMap<String, String>();
+                    final boolean containerManaged = Util.isSupportedJavaEEVersion(pe.getProject());
+                    final Provider provider = ProviderUtil.getProvider(selectedConfigObject.getProvider(), pe.getProject());
+                    if (containerManaged) {
+                        props.put("javax.persistence.provider", provider.getProviderClass());
+                        props.put("javax.persistence.transactionType", "RESOURCE_LOCAL");
+                        if (dbconn != null) {
+                            props.put(provider.getJdbcUrl(), dbconn.getDatabaseURL());
+                            props.put(provider.getJdbcDriver(), dbconn.getDriverClass());
+                            props.put(provider.getJdbcUsername(), dbconn.getUser());
+                            props.put(provider.getJdbcPassword(), dbconn.getPassword());
+                        }
+                    }
                     try {
                         localResourcesURLList.addAll(pe.getProjectClassPath(pe.getLocation()));
                         localResourcesURLList.add(pe.getLocation().getParent().toURL());
                         localResourcesURLList.add(pe.getLocation().toURL());
                         localResourcesURLList.add(pe.getLocation().getFileObject("persistence.xml").toURL());
-
+                        if (containerManaged) {
+                            Library library = PersistenceLibrarySupport.getLibrary(provider);
+                            if (library != null) {
+                                localResourcesURLList.addAll(library.getContent("classpath"));//NOI18N
+                            }
+                        }
+                        if (dbconn != null) {
+                            ////autoadd driver classpath
+                            String driverClassName = dbconn.getDriverClass();
+                            ClassPath cp = ClassPath.getClassPath(pe.getLocation(), ClassPath.EXECUTE);
+                            if(cp == null){
+                                cp = ClassPath.getClassPath(pe.getLocation(), ClassPath.COMPILE);
+                            }
+                            String resourceName = driverClassName.replace('.', '/') + ".class"; // NOI18N
+                            if(cp!=null){
+                                FileObject fob = cp.findResource(resourceName); // NOI18N
+                                if (fob == null) {
+                                    JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(driverClassName);
+                                    if (driver != null && driver.length > 0) {
+                                        localResourcesURLList.addAll(Arrays.asList(driver[0].getURLs()));
+                                    }
+                                }
+                            }
+                        }
                         ClassLoader customClassLoader = pe.getProjectClassLoader(
                                 localResourcesURLList.toArray(new URL[]{}));
                         Thread.currentThread().setContextClassLoader(customClassLoader);
@@ -348,10 +392,10 @@ public final class JPQLEditorTopComponent extends TopComponent {
                         try {
                             // Parse POJOs from JPQL
                             // Check and if required compile POJO files mentioned in JPQL
- 
+
                             ph2.progress(50);
                             ph2.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryParsingPassControlToProvider"));
-                            jpqlResult = queryExecutor.execute(jpql, selectedConfigObject, pe, new HashMap(), 0, ph2, false);
+                            jpqlResult = queryExecutor.execute(jpql, selectedConfigObject, pe, props, provider, 0, ph2, false);
                             ph2.progress(80);
                             ph2.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryParsingProcessResults"));
 
@@ -359,15 +403,15 @@ public final class JPQLEditorTopComponent extends TopComponent {
                             logger.log(Level.INFO, "Problem in executing JPQL", e);
                             jpqlResult.getExceptions().add(e);
                         }
-                    
+
                         if (Thread.interrupted() || isSqlTranslationProcessDone) {
                             return;    // Cancel the task
                         }
-                        if(jpqlResult.getExceptions() != null && jpqlResult.getExceptions().size()>0){
+                        if (jpqlResult.getExceptions() != null && jpqlResult.getExceptions().size() > 0) {
                             logger.log(Level.INFO, "", jpqlResult.getExceptions());
-                            showSQLError( "GeneralError", jpqlResult.getQueryProblems());//NOI18N
+                            showSQLError("GeneralError", jpqlResult.getQueryProblems());//NOI18N
                         } else {
-                            if(jpqlResult.getSqlQuery() == null || jpqlResult.getSqlQuery().length()==0){
+                            if (jpqlResult.getSqlQuery() == null || jpqlResult.getSqlQuery().length() == 0) {
                                 showSQLError("UnsupportedProvider", jpqlResult.getQueryProblems());//NOI18N
                             } else {
                                 showSQL(jpqlResult.getSqlQuery());
@@ -376,7 +420,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
 
                     } catch (Exception e) {
                         logger.log(Level.INFO, "", e);
-                        showSQLError( "GeneralError", null);//NOI18N
+                        showSQLError("GeneralError", null);//NOI18N
                     } finally {
                         isSqlTranslationProcessDone = true;
                         ph2.finish();
@@ -394,7 +438,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
     }
 
     private void showSQLError(String errorResourceKey, String queryProblems) {
-        if(queryProblems!=null){
+        if (queryProblems != null) {
             sqlEditorPane.setText(queryProblems);
         } else {
             //use default error message
@@ -495,7 +539,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
         Thread.currentThread().setContextClassLoader(ccl);
         if (result.getSqlQuery() != null) {
             sqlEditorPane.setText(result.getSqlQuery());
-        } 
+        }
         if (result.getExceptions().isEmpty()) {
             // logger.info(r.getQueryResults().toString());
             switchToResultView();
@@ -556,7 +600,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
                         removePersistenceModuleCodelines(sWriter.toString()));
 
             }
-            if(result.getQueryProblems() != null){
+            if (result.getQueryProblems() != null) {
                 sqlEditorPane.setText(result.getQueryProblems());
             }
         }
@@ -590,7 +634,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
         for (Object oneObject : rowObject) {
             if (oneObject == null) {
                 oneRow.add("NULL");//NOI18N
-            } else if(oneObject.getClass().getName().startsWith("java.lang") || oneObject.getClass().getName().startsWith("java.math")) {
+            } else if (oneObject.getClass().getName().startsWith("java.lang") || oneObject.getClass().getName().startsWith("java.math")) {
                 //case for Long, String etc
                 oneRow.add(oneObject.toString());
             } else {
@@ -947,7 +991,7 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                 NbBundle.getMessage(JPQLEditorTopComponent.class, "progressTaskname"));//GEN-LAST:event_runJPQLButtonActionPerformed
             isSqlTranslationProcessDone = true;//will be reparsed in execution thread
             if (hqlParserTask != null && !hqlParserTask.isFinished() && (hqlParserTask.getDelay() != 0)) {
-                            hqlParserTask.cancel();
+                hqlParserTask.cancel();
             }
             FileObject pXml = puObject.getPrimaryFile();
             Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
@@ -1019,15 +1063,15 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         resultToggleButton.setSelected(true);
         ((CardLayout) resultsOrErrorPanel.getLayout()).first(resultsOrErrorPanel);
     }
-    
+
     private void puComboboxActionPerformed() {
-        if(puComboBox.getSelectedItem() != null) {
+        if (puComboBox.getSelectedItem() != null) {
             FileObject pXml = puObject.getPrimaryFile();
             Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
             PersistenceEnvironment pe = project != null ? project.getLookup().lookup(PersistenceEnvironment.class) : null;
 
             PersistenceUnit pu = (PersistenceUnit) puConfigMap.get(puComboBox.getSelectedItem());
-            final DatabaseConnection dbconn = JPAEditorUtil.findDatabaseConnection(pu, pe.getProject());
+            dbconn = JPAEditorUtil.findDatabaseConnection(pu, pe.getProject());
             if (dbconn != null) {
                 if (dbconn.getJDBCConnection() == null) {
                     Mutex.EVENT.readAccess(new Mutex.Action<DatabaseConnection>() {
@@ -1040,5 +1084,5 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                 }
             }
         }
-    }    
+    }
 }
