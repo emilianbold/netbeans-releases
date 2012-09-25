@@ -48,16 +48,43 @@ package org.netbeans.modules.php.dbgp.packets;
 public class RequestedUrlEvalCommand extends EvalCommand {
 
     private static final String REQUEST_URI = "(isset($_SERVER['SSL']) ? 'https' : 'http').'://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']"; // NOI18N
-    static String LAST_USED_TRANSACTION_ID;
+    private static final LastUsedTransactionIdHolder LAST_USED_TRANSACTION_ID_HOLDER = LastUsedTransactionIdHolder.getInstance();
 
     public RequestedUrlEvalCommand(String transactionId) {
         super(transactionId);
-        LAST_USED_TRANSACTION_ID = transactionId;
+        LAST_USED_TRANSACTION_ID_HOLDER.setLastUsedTransactionId(transactionId);
     }
 
     @Override
     protected String getData() {
         return REQUEST_URI;
+    }
+
+    public static String getLastUsedTransactionId() {
+        return LAST_USED_TRANSACTION_ID_HOLDER.getLastUsedTransactionId();
+    }
+
+    private static final class LastUsedTransactionIdHolder {
+
+        private static LastUsedTransactionIdHolder INSTANCE = new LastUsedTransactionIdHolder();
+
+        private String lastUsedTransactionId;
+
+        private LastUsedTransactionIdHolder() {
+        }
+
+        public static LastUsedTransactionIdHolder getInstance() {
+            return INSTANCE;
+        }
+
+        public synchronized String getLastUsedTransactionId() {
+            return lastUsedTransactionId;
+        }
+
+        public synchronized void setLastUsedTransactionId(final String lastUsedTransactionId) {
+            this.lastUsedTransactionId = lastUsedTransactionId;
+        }
+
     }
 
 }

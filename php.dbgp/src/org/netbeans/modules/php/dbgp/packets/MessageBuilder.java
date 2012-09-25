@@ -123,7 +123,7 @@ class MessageBuilder {
             return new BreakResponse(node);
         } else if (EvalCommand.EVAL.equals(command)){
             String transactionId = DbgpMessage.getAttribute(node, DbgpResponse.TRANSACTION_ID);
-            if (transactionId.equals(RequestedUrlEvalCommand.LAST_USED_TRANSACTION_ID)) {
+            if (transactionId.equals(RequestedUrlEvalCommand.getLastUsedTransactionId())) {
                 return new RequestedUrlEvalResponse(node);
             }
             return new EvalResponse(node);
