@@ -90,11 +90,10 @@ public final class CodeStyle {
     }
 
     private static CodeStyle get(Document doc, boolean embedded) {
-        // TODO should we have a separate setting for JSON
-        //if (embedded) {
+        if (embedded) {
             return new CodeStyle(CodeStylePreferences.get(doc, JsTokenId.JAVASCRIPT_MIME_TYPE).getPreferences());
-        //}
-        //return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
+        }
+        return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
     }
 
     // General tabs and indents ------------------------------------------------
