@@ -66,7 +66,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=ClassPathProvider.class)
 public class ClassPathProviderImpl implements ClassPathProvider {
 
-    private static final RequestProcessor RP = new RequestProcessor(ClassPathProviderImpl.class);
+    protected static final RequestProcessor RP = new RequestProcessor(ClassPathProviderImpl.class);
 
     private static final Logger LOG = Logger.getLogger(ClassPathProviderImpl.class.getName());
     public static final String BOOT_CP = "classpath/javascript-boot"; //NOI18N

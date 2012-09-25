@@ -383,11 +383,11 @@ public class ModelUtils {
             String functionName = type.getType().substring(7);
             int index = functionName.indexOf(":");
             if (index > 0) {
-                functionName = functionName.substring(0, index - 1);
+                String fqn = functionName.substring(0, index);
                 JsObject globalObject = ModelUtils.getGlobalObject(object);
-                JsObject function = ModelUtils.findJsObjectByName(globalObject, functionName);
+                JsObject function = ModelUtils.findJsObjectByName(globalObject, fqn);
                 if(function instanceof JsFunction) {
-                    JsObject param = ((JsFunction)function).getParameter(functionName.substring(index));
+                    JsObject param = ((JsFunction)function).getParameter(functionName.substring(index + 1));
                     if(param != null) {
                         result.addAll(param.getAssignments());
                     }

@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
@@ -59,6 +60,7 @@ import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -112,6 +114,19 @@ public class JsCodeComplationBase extends JsTestBase {
 
     public static enum Match {
         EXACT, CONTAINS, EMPTY, NOT_EMPTY, DOES_NOT_CONTAIN;
+    }
+
+    @Override
+    public void checkCompletion(String file, String caretLine, boolean includeModifiers) throws Exception {
+        // waits for registration into the GlobalPathRegistry
+        Future<?> future = ClasspathProviderImplAccessor.getRequestProcessor().submit(new Runnable() {
+            @Override
+            public void run() {
+                //NOOP
+            }
+        });
+        future.get();
+        super.checkCompletion(file, caretLine, includeModifiers);
     }
 
     public void assertComplete(String documentText, String expectedDocumentText, final String itemToComplete) throws ParseException, BadLocationException {
