@@ -54,18 +54,17 @@ public class Utils {
     private static final Logger LOG = Logger.getLogger(Utils.class.getName());
 
     public static byte[] chars2Bytes(char[] chars) {
-        byte[] bytes = new byte[chars.length * 2];
+        byte[] bytes = new byte[chars.length];
         for (int i = 0; i < chars.length; i++) {
-            bytes[i * 2] = (byte) (chars[i] / 256);
-            bytes[i * 2 + 1] = (byte) (chars[i] % 256);
+            bytes[i] = (byte) chars[i];            
         }
         return bytes;
     }
 
     public static char[] bytes2Chars(byte[] bytes) {
-        char[] result = new char[bytes.length / 2];
+        char[] result = new char[bytes.length];
         for (int i = 0; i < result.length; i++) {
-            result[i] = (char) (((int) bytes[i * 2]) * 256 + (int) bytes[i * 2 + 1]);
+            result[i] = (char) bytes[i];
         }
         return result;
     }
