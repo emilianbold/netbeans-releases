@@ -42,8 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javascript2.editor.formatter.ui;
+package org.netbeans.modules.javascript2.editor.formatter.ui.json;
 
+import org.netbeans.modules.javascript2.editor.formatter.ui.*;
 import java.io.IOException;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.javascript2.editor.formatter.FmtOptions;
@@ -73,11 +74,11 @@ public class FmtTabsIndents extends javax.swing.JPanel {
     public static PreferencesCustomizer.Factory getController() {
         String preview = "";
         try {
-            preview = Utils.loadPreviewText(FmtTabsIndents.class.getClassLoader().getResourceAsStream("org/netbeans/modules/javascript2/editor/formatter/ui/TabsIndents.js"));
+            preview = Utils.loadPreviewText(FmtTabsIndents.class.getClassLoader().getResourceAsStream("org/netbeans/modules/javascript2/editor/formatter/ui/json/TabsIndents.json"));
         } catch (IOException ex) {
             // TODO log it
         }
-        return new CategorySupport.Factory(JsTokenId.JAVASCRIPT_MIME_TYPE, PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class,
+        return new CategorySupport.Factory(JsTokenId.JSON_MIME_TYPE, PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class,
                 preview, 
                 new String[] { FmtOptions.rightMargin, "30" }, //NOI18N
                 new String[] { FmtOptions.initialIndent, "0" } //NOI18N
