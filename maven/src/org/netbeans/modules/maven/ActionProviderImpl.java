@@ -539,6 +539,7 @@ public class ActionProviderImpl implements ActionProvider {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    //mkleint: usage of subprojectprovider is correct here
                     SubprojectProvider subs = project.getLookup().lookup(SubprojectProvider.class);
                     Set<? extends Project> lst = subs.getSubprojects();
                     Project[] arr = lst.toArray(new Project[lst.size()]);
