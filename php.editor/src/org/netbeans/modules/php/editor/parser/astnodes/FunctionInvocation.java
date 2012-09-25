@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -59,9 +60,7 @@ public class FunctionInvocation extends VariableBase {
     private FunctionInvocation(int start, int end, FunctionName functionName, Expression[] parameters) {
         super(start, end);
         this.functionName = functionName;
-        for (Expression expression : parameters) {
-            this.parameters.add(expression);
-        }
+        this.parameters.addAll(Arrays.asList(parameters));
     }
 
     public FunctionInvocation(int start, int end, FunctionName functionName, List<Expression> parameters) {

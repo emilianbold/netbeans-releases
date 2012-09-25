@@ -54,6 +54,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -135,12 +136,12 @@ public class PredefinedSymbols {
         File file = InstalledFileLocator.getDefault().locate("docs/predefined_vars.zip", null, true); //NoI18N
         if (file != null) {
             try {
-                URL urll = file.toURI().toURL();
+                URL urll = Utilities.toURI(file).toURL();
                 urll = FileUtil.getArchiveRoot(urll);
                 docURLBase = urll.toString();
             } catch (java.net.MalformedURLException e) {
                 // nothing to do
-                }
+            }
         }
     }
 

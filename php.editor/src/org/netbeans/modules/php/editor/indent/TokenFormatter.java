@@ -843,9 +843,9 @@ public class TokenFormatter {
                                         }
                                         countSpaces = countSpaces + (docOptions.spaceAroundAssignOps ? 1 : 0);
                                         if (!docOptions.wrapAfterAssignOps) {
-                                            indentRule = true;
                                             switch (docOptions.wrapAssignOps) {
                                                 case WRAP_ALWAYS:
+                                                    indentRule = true;
                                                     newLines = 1;
                                                     countSpaces = indent;
                                                     break;
@@ -854,6 +854,7 @@ public class TokenFormatter {
                                                     break;
                                                 case WRAP_IF_LONG:
                                                     if (column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                        indentRule = true;
                                                         newLines = 1;
                                                         countSpaces = indent;
                                                     } else {
@@ -872,9 +873,9 @@ public class TokenFormatter {
                                         }
                                         countSpaces = countSpaces + (docOptions.spaceAroundAssignOps ? 1 : 0);
                                         if (docOptions.wrapAfterAssignOps) {
-                                            indentRule = true;
                                             switch (docOptions.wrapAssignOps) {
                                                 case WRAP_ALWAYS:
+                                                    indentRule = true;
                                                     newLines = 1;
                                                     countSpaces = indent;
                                                     break;
@@ -883,6 +884,7 @@ public class TokenFormatter {
                                                     break;
                                                 case WRAP_IF_LONG:
                                                     if (column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                        indentRule = true;
                                                         newLines = 1;
                                                         countSpaces = indent;
                                                     } else {

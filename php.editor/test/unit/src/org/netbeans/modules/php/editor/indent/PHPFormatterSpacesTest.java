@@ -288,7 +288,7 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/spaces/issue188810_01.php", options);
     }
 
-    public void testIssue19893_01() throws Exception {
+    public void testIssue191893_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/spaces/issue191893_01.php", options);
     }
