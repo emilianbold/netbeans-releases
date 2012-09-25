@@ -373,9 +373,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case INHERITANCE:
                     autoCompleteKeywords(completionResult, request, INHERITANCE_KEYWORDS);
                     break;
-                case THROW_CATCH:
+                case THROW:
                     autoCompleteNamespaces(completionResult, request);
-                    autoCompleteExceptions(completionResult, request);
+                    autoCompleteExceptions(completionResult, request, true);
+                    break;
+                case CATCH:
+                    autoCompleteNamespaces(completionResult, request);
+                    autoCompleteExceptions(completionResult, request, false);
                     break;
                 case CLASS_MEMBER_IN_STRING:
                     autoCompleteClassFields(completionResult, request);
@@ -521,13 +525,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
     }
 
-    private void autoCompleteExceptions(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
+    private void autoCompleteExceptions(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, boolean withConstructors) {
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix, isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
         final Set<ClassElement> classes = request.index.getClasses(nameQuery);
+        final Model model = request.result.getModel();
+        final Set<QualifiedName> constructorClassNames = new HashSet<QualifiedName>();
         for (ClassElement classElement : classes) {
             if (isExceptionClass(classElement)) {
                 completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, false, null));
+                if (withConstructors) {
+                    constructorClassNames.add(classElement.getFullyQualifiedName());
+                }
                 continue;
             }
             if (classElement.getSuperClassName() != null) {
@@ -535,10 +544,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 for (ClassElement inheritedClass : inheritedClasses) {
                     if (isExceptionClass(inheritedClass)) {
                         completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, false, null));
+                        if (withConstructors) {
+                            constructorClassNames.add(inheritedClass.getFullyQualifiedName());
+                        }
                         break;
                     }
                 }
             }
+        }
+        for (QualifiedName qualifiedName : constructorClassNames) {
+            autoCompleteConstructors(completionResult, request, model, NameKind.exact(qualifiedName));
         }
     }
 
