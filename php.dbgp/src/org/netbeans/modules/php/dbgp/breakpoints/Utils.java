@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.php.dbgp.breakpoints;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
@@ -149,14 +148,6 @@ public class Utils {
         session.sendCommandLater( removeCommand );
     }
 
-    public static void log( Throwable exception ){
-        exception.printStackTrace();
-    }
-
-    public static void log( InvocationTargetException exception ){
-        log( exception.getCause() );
-    }
-
     public static boolean isPhpFile(FileObject fileObject) {
         if (fileObject == null) {
             return false;
@@ -186,7 +177,7 @@ public class Utils {
                 return null;
             }
 
-            LineCookie lineCookie = (LineCookie) dataObject.getCookie(LineCookie.class);
+            LineCookie lineCookie = (LineCookie) dataObject.getLookup().lookup(LineCookie.class);
             if (lineCookie == null) {
                 return null;
             }
