@@ -46,8 +46,10 @@ package org.netbeans.modules.php.dbgp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -314,9 +316,11 @@ public class DebugSession extends SingleThread {
                 );
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
-            illegalStateException.printStackTrace(new PrintStream(bos));
+            illegalStateException.printStackTrace(new PrintStream(bos, false, Charset.defaultCharset().name()));
             Logger.getLogger(DebugSession.class.getName()).log(Level.WARNING,
-                    bos.toString());
+                    bos.toString(Charset.defaultCharset().name()));
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
         } finally {
             try {
                 bos.close();
