@@ -42,8 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javascript2.editor.formatter.ui;
+package org.netbeans.modules.javascript2.editor.formatter.ui.json;
 
+import org.netbeans.modules.javascript2.editor.formatter.ui.*;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -114,7 +115,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
             public PreferencesCustomizer create(Preferences preferences) {
                 String preview = "";
                 try {
-                    preview = Utils.loadPreviewText(FmtTabsIndents.class.getClassLoader().getResourceAsStream("org/netbeans/modules/javascript2/editor/formatter/ui/Spaces.js"));
+                    preview = Utils.loadPreviewText(FmtTabsIndents.class.getClassLoader().getResourceAsStream("org/netbeans/modules/javascript2/editor/formatter/ui/json/Spaces.json"));
                 } catch (IOException ex) {
                     // TODO log it
                 }
@@ -252,74 +253,17 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
     private DefaultTreeModel createModel() {
 
         Item[] categories = new Item[] {
-            new Item("BeforeKeywords",                          // NOI18N
-                new Item(spaceBeforeWhile),
-                new Item(spaceBeforeElse),
-                new Item(spaceBeforeCatch),
-                new Item(spaceBeforeFinally)),
-
-            new Item("BeforeParentheses",                       // NOI18N
-                new Item(spaceBeforeMethodDeclParen),
-                new Item(spaceBeforeMethodCallParen),
-                new Item(spaceBeforeIfParen),
-                new Item(spaceBeforeForParen),
-                new Item(spaceBeforeWhileParen),
-                new Item(spaceBeforeCatchParen),
-                new Item(spaceBeforeSwitchParen),
-                new Item(spaceBeforeWithParen)
-                ),
 
             new Item("AroundOperators",                         // NOI18N
-                new Item(spaceAroundUnaryOps),
-                new Item(spaceAroundBinaryOps),
-                new Item(spaceAroundTernaryOps),
-//		new Item(spaceAroundStringConcatOps),
-//		new Item(spaceAroundKeyValueOps),
-                new Item(spaceAroundAssignOps)),
-//		new Item(spaceAroundObjectOps)),
-
-            new Item("BeforeLeftBraces",                        // NOI18N
-//                new Item(spaceBeforeClassDeclLeftBrace),
-                new Item(spaceBeforeMethodDeclLeftBrace),
-                new Item(spaceBeforeIfLeftBrace),
-                new Item(spaceBeforeElseLeftBrace),
-                new Item(spaceBeforeWhileLeftBrace),
-                new Item(spaceBeforeForLeftBrace),
-                new Item(spaceBeforeDoLeftBrace),
-                new Item(spaceBeforeSwitchLeftBrace),
-                new Item(spaceBeforeTryLeftBrace),
-                new Item(spaceBeforeCatchLeftBrace),
-                new Item(spaceBeforeFinallyLeftBrace),
-                new Item(spaceBeforeWithLeftBrace)
-//                new Item(spaceBeforeSynchronizedLeftBrace),
-//                new Item(spaceBeforeStaticInitLeftBrace),
-//                new Item(spaceBeforeArrayInitLeftBrace) ),
-                ),
+                new Item(spaceAroundUnaryOps)),
 
             new Item("WithinParentheses",                       // NOI18N
-                new Item(spaceWithinParens),
-                new Item(spaceWithinMethodDeclParens),
-                new Item(spaceWithinMethodCallParens),
-                new Item(spaceWithinIfParens),
-                new Item(spaceWithinForParens),
-                new Item(spaceWithinWhileParens),
-                new Item(spaceWithinSwitchParens),
-                new Item(spaceWithinCatchParens),
-                new Item(spaceWithinWithParens),
-//                new Item(spaceWithinSynchronizedParens),
-//		new Item(spaceWithinArrayDeclParens),
-//                new Item(spaceWithinTypeCastParens),
-//                new Item(spaceWithinAnnotationParens),
                 new Item(spaceWithinBraces),
-                new Item(spaceWithinArrayBrackets)
-		),
-
+                new Item(spaceWithinArrayBrackets)),
 
              new Item("Other",                                  // NOI18N
                 new Item(spaceBeforeComma),
                 new Item(spaceAfterComma),
-                new Item(spaceBeforeSemi),
-                new Item(spaceAfterSemi),
                 new Item(spaceBeforeColon),
                 new Item(spaceAfterColon))
 
@@ -395,7 +339,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
         public SpacesCategorySupport(Preferences preferences, FmtSpaces panel, String preview) {
 
-            super(JsTokenId.JAVASCRIPT_MIME_TYPE, preferences, "spaces", panel, //NOI18N
+            super(JsTokenId.JSON_MIME_TYPE, preferences, "spaces", panel, //NOI18N
                   preview);//,
 //                  new String[] {FmtOptions.placeCatchOnNewLine, Boolean.FALSE.toString()},
 //                  new String[] {FmtOptions.placeElseOnNewLine, Boolean.FALSE.toString()},

@@ -462,7 +462,10 @@ public class FmtOptions {
         private final Preferences preferences;
         private final Preferences previewPrefs;
 
-        protected CategorySupport(Preferences preferences, String id, JPanel panel, String previewText, String[]... forcedOptions) {
+        private final String mimeType;
+
+        protected CategorySupport(String mimeType, Preferences preferences, String id, JPanel panel, String previewText, String[]... forcedOptions) {
+            this.mimeType = mimeType;
             this.preferences = preferences;
             this.id = id;
             this.panel = panel;
@@ -541,7 +544,7 @@ public class FmtOptions {
                 previewPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FmtOptions.class, "AN_Preview")); //NOI18N
                 previewPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FmtOptions.class, "AD_Preview")); //NOI18N
                 //previewPane.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
-                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(JsTokenId.JAVASCRIPT_MIME_TYPE));
+                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(mimeType));
                 previewPane.setEditable(false);
             }
             return previewPane;
@@ -616,12 +619,14 @@ public class FmtOptions {
 
         public static final class Factory implements PreferencesCustomizer.Factory {
 
+            private final String mimeType;
             private final String id;
             private final Class<? extends JPanel> panelClass;
             private final String previewText;
             private final String[][] forcedOptions;
 
-            public Factory(String id, Class<? extends JPanel> panelClass, String previewText, String[]... forcedOptions) {
+            public Factory(String mimeType, String id, Class<? extends JPanel> panelClass, String previewText, String[]... forcedOptions) {
+                this.mimeType = mimeType;
                 this.id = id;
                 this.panelClass = panelClass;
                 this.previewText = previewText;
@@ -631,7 +636,7 @@ public class FmtOptions {
             @Override
             public PreferencesCustomizer create(Preferences preferences) {
                 try {
-                    return new CategorySupport(preferences, id, panelClass.newInstance(), previewText, forcedOptions);
+                    return new CategorySupport(mimeType, preferences, id, panelClass.newInstance(), previewText, forcedOptions);
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Exception during creating formatter customiezer", e);
                     return null;

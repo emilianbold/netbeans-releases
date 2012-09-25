@@ -4059,9 +4059,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    MIResult result = (MIResult) results.get(tx);
             if (result.matches(MI_BKPT) || result.matches(MI_WPT)) {
                 newHandler(rt, result, bp);
-                break;  // In order to avoid errors in multiple locations breakpoints
+                return;  // In order to avoid errors in multiple locations breakpoints
             }
 	}
+        newHandler(rt, (MIResult) results.get(0), bp);
     }
 
     private void newHandler(int rt, MIResult result, BreakpointPlan bp) {
@@ -4190,7 +4191,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         assert targetHandler == bp.originalHandler();
 
         Handler replacementHandler =
-            handlerExpert.replaceHandler(targetBreakpoint, targetHandler, result);
+            handlerExpert.replaceHandler(targetBreakpoint, targetHandler, result, bp.template());
 
         handlerExpert.addAnnotations(replacementHandler, null, targetBreakpoint, result);
 
@@ -4400,7 +4401,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 // See comment for isEmpty
                 onError(record);
 	    } else {
-		newHandlers(newRT == 0? routingToken(): newRT, record, null);
+ 		newHandlers(newRT == 0? routingToken(): newRT, record, null);
 		manager().bringDownDialog();
 	    }
             finish();
