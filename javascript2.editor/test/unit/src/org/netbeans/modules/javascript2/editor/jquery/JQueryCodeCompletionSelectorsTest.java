@@ -123,14 +123,13 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
 
     public void testCodeCompletionSelectorInsert() throws Exception {
         assertComplete("$(':b|')", "$(':button|')", ":button");
-        assertComplete("$(h|)", "$(':has(|)')", ":has()");
-        assertComplete("$(:|)", "$(':focus|')", ":focus");
-        assertComplete("$(|)", "$(':odd|')", ":odd");
+        assertComplete("$('h|')", "$(':has(|)')", ":has()");
+        assertComplete("$(':|')", "$(':focus|')", ":focus");
+        assertComplete("$('|')", "$(':odd|')", ":odd");
     }
 
     public void testIssue217013_1() throws Exception {
         // complete $(di|)
-        assertComplete("$(di|)", "$('div'|)", "div");
         assertComplete("$('di|')", "$('div|')", "div");
         assertComplete("$('di|)", "$('div|)", "div");
     }
@@ -149,10 +148,6 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
 
     public void testIssue211769_2() throws Exception {
         checkAppliedCompletion("testfiles/completion/jQuery/selectors/basic/issue211769_1.js", "$('^')", "$('.notMe^')", ".notMe", false);
-    }
-
-    public void testIssue211769_3() throws Exception {
-        checkAppliedCompletion("testfiles/completion/jQuery/selectors/basic/issue211769_2.js", "$(^)", "$('.notMe'^)", ".notMe", false);
     }
 
     @Override
