@@ -238,7 +238,7 @@ public class AddUseImportHint extends AbstractRule {
             final QualifiedName indexedName = idxElement.getFullyQualifiedName();//getQualifiedName() used before
             QualifiedName importName = QualifiedName.getPrefix( indexedName, nodeName, true);
 
-            if (importName != null) {
+            if (importName != null && context.fileScope != null) {
                 final String retvalStr = importName.toString();
                 NamespaceScope currentScope = ModelUtils.getNamespaceScope(currenNamespace, context.fileScope);
 
