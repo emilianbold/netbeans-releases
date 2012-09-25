@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.common.api;
 
 import java.awt.Color;
+import java.net.URL;
 import java.util.*;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
@@ -193,6 +194,16 @@ public class WebUtilsTest extends CslTestBase {
         getResultIteratorAndCheckMimePath(source, mimeType + "/text/x-php[4,5]/" + HTML_MIME_TYPE);
     }
 
+    public void testStringToUrl() throws Exception {
+        URL u = WebUtils.stringToUrl("http://localhost:1234/some path with spaces/zemědělství?more spaces#mě dě");
+        assertEquals("http://localhost:1234/some%20path%20with%20spaces/zemědělství?more%20spaces#mě%20dě", u.toExternalForm());
+    }
+    
+    public void testUrlToString() throws Exception {
+        String s = WebUtils.urlToString(new URL("http://localhost:1234/some%20path%20with%20spaces/zem%C4%9Bd%C4%9Blstv%C3%AD?more%20spaces#m%C4%9B%20d%C4%9B"));
+        assertEquals("http://localhost:1234/some path with spaces/zemědělství?more spaces#mě dě", s);
+    }
+    
     private void setEmbeddingProviderIntoMockLookup(String forMimeType, final Set<String> embeddedMimeTypes) {
         MockMimeLookup.setInstances(MimePath.parse(forMimeType), new TaskFactory() {
             public @Override Collection<? extends SchedulerTask> create(Snapshot snapshot) {

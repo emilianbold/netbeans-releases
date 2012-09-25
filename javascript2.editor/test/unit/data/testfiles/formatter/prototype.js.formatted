@@ -721,14 +721,14 @@ var Ajax = {
     getTransport: function() {
         return Try.these(
                 function() {
-            return new XMLHttpRequest()
-        },
+                    return new XMLHttpRequest()
+                },
                 function() {
-            return new ActiveXObject('Msxml2.XMLHTTP')
-        },
+                    return new ActiveXObject('Msxml2.XMLHTTP')
+                },
                 function() {
-            return new ActiveXObject('Microsoft.XMLHTTP')
-        }
+                    return new ActiveXObject('Microsoft.XMLHTTP')
+                }
         ) || false;
     },
     activeRequestCount: 0
@@ -1512,8 +1512,8 @@ if (document.all && !window.opera) {
 
             $A(div.childNodes).each(
                     function(node) {
-                element.appendChild(node)
-            });
+                        element.appendChild(node)
+                    });
         } else {
             element.innerHTML = html.stripScripts();
         }

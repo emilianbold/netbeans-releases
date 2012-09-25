@@ -44,19 +44,23 @@ package org.netbeans.modules.web.common.api;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -340,4 +344,51 @@ public class WebUtils {
         return link.toString();
     }
 
+    /**
+     * Converts given string into URL with all values properly encoded. May
+     * return null if conversion fails.
+     */
+    public static URL stringToUrl(String urlString) {
+        try {
+            // #216436:
+            // use URL to split the string into individual URI parts first:
+            URL u = new URL(urlString);
+            // and now use URI to properly encode spaces in path:
+            return new URI(u.getProtocol(), u.getAuthority(), u.getPath(), u.getQuery(), u.getRef()).toURL();
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+    
+    /**
+     * Converts given URL into a String with all values decoded.
+     */
+    public static String urlToString(URL url) {
+        URI uri;
+        try {
+            uri = url.toURI();
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+            // fallback:
+            return url.toExternalForm();
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(uri.getScheme());
+        sb.append("://"); // NOI18N
+        sb.append(uri.getAuthority());
+        sb.append(uri.getPath());
+        if (uri.getQuery() != null) {
+            sb.append("?"); // NOI18N
+            sb.append(uri.getQuery());
+        }
+        if (uri.getFragment() != null) {
+            sb.append("#"); // NOI18N
+            sb.append(uri.getFragment());
+        }
+        return sb.toString();
+    }
+    
 }

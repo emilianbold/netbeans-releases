@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -60,9 +61,7 @@ public class ClassInstanceCreation extends Expression {
     public ClassInstanceCreation(int start, int end, ClassName className, Expression[] ctorParams) {
         super(start, end);
         this.className = className;
-        for (Expression expression : ctorParams) {
-            this.ctorParams.add(expression);
-        }
+        this.ctorParams.addAll(Arrays.asList(ctorParams));
     }
 
     public ClassInstanceCreation(int start, int end, ClassName className, List<Expression> ctorParams) {

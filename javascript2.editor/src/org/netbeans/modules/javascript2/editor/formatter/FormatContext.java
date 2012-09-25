@@ -478,10 +478,13 @@ public final class FormatContext {
 
         private final int indentationLevel;
 
-        public LineWrap(FormatToken token, int offsetDiff, int indentationLevel) {
+        private final int continuationLevel;
+
+        public LineWrap(FormatToken token, int offsetDiff, int indentationLevel, int continuationLevel) {
             this.token = token;
             this.offsetDiff = offsetDiff;
             this.indentationLevel = indentationLevel;
+            this.continuationLevel = continuationLevel;
         }
 
         public FormatToken getToken() {
@@ -495,6 +498,11 @@ public final class FormatContext {
         public int getIndentationLevel() {
             return indentationLevel;
         }
+
+        public int getContinuationLevel() {
+            return continuationLevel;
+        }
+
     }
 
     public static class ContinuationBlock {

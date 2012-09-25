@@ -958,6 +958,7 @@ public class FormatVisitor extends DefaultVisitor {
             isCurly = false;
             while (ts.moveNext() && ts.offset() < body.getStartOffset()) {
                 if (ts.token().id() == PHPTokenId.PHP_ELSE || ts.token().id() == PHPTokenId.PHP_ELSEIF) {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ELSE_WITHOUT_CURLY, ts.offset()));
                     formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 } else {
                     addFormatToken(formatTokens);
@@ -1476,9 +1477,9 @@ public class FormatVisitor extends DefaultVisitor {
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
                 } else if ("=".equals(text)) {
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ASSIGN_OP, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset() + ts.token().length()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_ASSIGN_OP, ts.offset() + ts.token().length()));
                 } else {
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 }

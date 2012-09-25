@@ -93,6 +93,11 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         // Bug 217858 - C++11 parser fails on u8 in static_assert
         performStaticTest("bug217858.cpp");
     }     
+
+    public void testBug217827() throws Exception {
+        // Bug 217827 - Parser fails on const auto (C++11)
+        performStaticTest("bug217827.cpp");
+    }     
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

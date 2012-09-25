@@ -74,7 +74,9 @@ class DiffTreeTable extends OutlineView {
     private List<RepositoryRevision> results;
     private final SearchHistoryPanel master;
 
+    @NbBundle.Messages("LBL_DiffView.TreeColumnLabel=Revision")
     public DiffTreeTable(SearchHistoryPanel master) {
+        super(Bundle.LBL_DiffView_TreeColumnLabel());
         this.master = master;
         getOutline().setShowHorizontalLines(true);
         getOutline().setShowVerticalLines(false);

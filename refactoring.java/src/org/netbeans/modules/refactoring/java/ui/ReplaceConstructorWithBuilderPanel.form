@@ -63,13 +63,8 @@
       <SubComponents>
         <Component class="javax.swing.JTable" name="paramTable">
           <Properties>
-            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-              <Table columnCount="4" rowCount="0">
-                <Column editable="false" title="Parameter" type="java.lang.String"/>
-                <Column editable="true" title="Setter Name" type="java.lang.String"/>
-                <Column editable="true" title="Default Value" type="java.lang.String"/>
-                <Column editable="true" title="Optional Setter" type="java.lang.Boolean"/>
-              </Table>
+            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new javax.swing.table.DefaultTableModel(&#xa;                new Object[][]{}, columnNames) {&#xa;            public Class getColumnClass(int columnIndex) {&#xa;                return columnTypes[columnIndex];&#xa;            }&#xa;&#xa;            public boolean isCellEditable(int rowIndex, int columnIndex) {&#xa;                return columnCanEdit[columnIndex];&#xa;            }&#xa;        }" type="code"/>
             </Property>
           </Properties>
         </Component>

@@ -209,7 +209,22 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
                 if (property != null) {
-                    Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(binaryNode.rhs());
+                    String parameter = null;
+                    if(binaryNode.rhs() instanceof IdentNode) {
+                        IdentNode rhs = (IdentNode)binaryNode.rhs();
+                        JsFunction function = (JsFunction)modelBuilder.getCurrentDeclarationScope();
+                        if(function.getProperty(rhs.getName()) == null && function.getParameter(rhs.getName()) != null) {
+                            parameter = "@param;" + ModelUtils.createFQN(function) + ":" + rhs.getName();
+                        }
+                    }
+                    Collection<TypeUsage> types; 
+                    if (parameter == null) {
+                            types =  ModelUtils.resolveSemiTypeOfExpression(binaryNode.rhs());
+                    } else {
+                        types = new ArrayList<TypeUsage>();
+                        types.add(new TypeUsageImpl(parameter, binaryNode.rhs().getStart(), false));
+                    }
+
                     for (TypeUsage type : types) {
                         // plus 5 due to the this.
                         property.addAssignment(type, binaryNode.getStart() + 5);
@@ -984,7 +999,8 @@ public class ModelVisitor extends PathNodeVisitor {
         if (comment != null) {
             for (DocParameter docParameter : comment.getParameters()) {
                 DocIdentifier paramName = docParameter.getParamName();
-                if (paramName.getName().equals(jsObject.getName())) {
+                String name = (docParameter.getParamName() == null) ? "" : docParameter.getParamName().getName(); //NOI18N
+                if (name.equals(jsObject.getName())) {
                     jsObject.addOccurrence(DocumentationUtils.getOffsetRange(paramName));
                 }
             }

@@ -69,6 +69,7 @@ import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.javascript2.editor.formatter.FmtOptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.*;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**
  *
@@ -309,7 +310,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 //		new Item(spaceWithinArrayDeclParens),
 //                new Item(spaceWithinTypeCastParens),
 //                new Item(spaceWithinAnnotationParens),
-//                new Item(spaceWithinBraces),
+                new Item(spaceWithinBraces),
                 new Item(spaceWithinArrayBrackets)
 		),
 
@@ -394,7 +395,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
         public SpacesCategorySupport(Preferences preferences, FmtSpaces panel, String preview) {
 
-            super(preferences, "spaces", panel, //NOI18N
+            super(JsTokenId.JAVASCRIPT_MIME_TYPE, preferences, "spaces", panel, //NOI18N
                   preview);//,
 //                  new String[] {FmtOptions.placeCatchOnNewLine, Boolean.FALSE.toString()},
 //                  new String[] {FmtOptions.placeElseOnNewLine, Boolean.FALSE.toString()},

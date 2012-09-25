@@ -61,6 +61,7 @@ import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -140,7 +141,7 @@ public final class WebServer {
             if (pair != null) {
                 String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                         FileUtil.getRelativePath(pair.siteRoot, projectFile);
-                return toURL("http://localhost:"+PORT+path); //NOI18N
+                return WebUtils.stringToUrl("http://localhost:"+PORT+path); //NOI18N
             }
         } else {
             // fallback if project was not found:
@@ -150,7 +151,7 @@ public final class WebServer {
                 if (relPath != null) {
                     String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                             relPath;
-                    return toURL("http://localhost:"+PORT+path); //NOI18N
+                    return WebUtils.stringToUrl("http://localhost:"+PORT+path); //NOI18N
                 }
             }
         }
@@ -158,30 +159,19 @@ public final class WebServer {
     }
 
     /**
-     * Converts given string into URL and properly encodes the path.
-     */
-    public static URL toURL(String urlString) {
-        try {
-            // #216436:
-            // use URL to split the string into individual URI parts first:
-            URL u = new URL(urlString);
-            // and now use URI to properly encode spaces in path:
-            return new URI(u.getProtocol(), u.getAuthority(), u.getPath(), u.getQuery(), null).toURL();
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
-    /**
      * Converts server URL back into project's source file.
      */
     public FileObject fromServer(URL serverURL) {
-        return fromServer(serverURL.getPath());
+        String path;
+        try {
+            path = serverURL.toURI().getPath();
+        } catch (URISyntaxException ex) {
+            path = serverURL.getPath(); // fallback
+        }
+        return fromServer(path);
     }
 
-    private FileObject fromServer(String serverURL) {
+    private FileObject fromServer(String serverURLPath) {
         Map.Entry<Project, Pair> rootEntry = null;
         for (Map.Entry<Project, Pair> entry : deployedApps.entrySet()) {
             if ("/".equals(entry.getValue().webContextRoot)) { //NOI18N
@@ -189,12 +179,12 @@ public final class WebServer {
                 // process this one as last one:
                 continue;
             }
-            if (serverURL.startsWith(entry.getValue().webContextRoot+"/")) { //NOI18N
-                return findFile(entry, serverURL);
+            if (serverURLPath.startsWith(entry.getValue().webContextRoot+"/")) { //NOI18N
+                return findFile(entry, serverURLPath);
             }
         }
         if (rootEntry != null) {
-            return findFile(rootEntry, serverURL);
+            return findFile(rootEntry, serverURLPath);
         }
         return null;
     }

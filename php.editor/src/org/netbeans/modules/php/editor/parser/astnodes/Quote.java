@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -68,10 +69,7 @@ public class Quote extends Expression {
 
     public Quote(int start, int end, Expression[] expressions, Quote.Type type) {
         super(start, end);
-
-        for (Expression expression : expressions) {
-            this.expressions.add(expression);
-        }
+        this.expressions.addAll(Arrays.asList(expressions));
         this.quoteType = type;
     }
 

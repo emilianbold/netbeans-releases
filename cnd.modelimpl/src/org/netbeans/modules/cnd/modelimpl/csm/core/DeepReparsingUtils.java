@@ -118,21 +118,12 @@ public final class DeepReparsingUtils {
      * Reparse including/included files at fileImpl content changed.
      */
     public static void tryPartialReparseOnChangedFile(final ProjectBase changedFileProject, final FileImpl fileImpl) {
-        if (TraceFlags.USE_PARTIAL_REPARSE) {
-            if (TRACE) {
-                LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
-            }
-            changedFileProject.markAsParsingPreprocStates(fileImpl);
-            fileImpl.markReparseNeeded(false);
-            ParserQueue.instance().addForPartialReparse(fileImpl);
-        } else {
-            if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
-                if (TRACE) LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
-                reparseOnlyOneFile(changedFileProject, fileImpl);
-            } else {
-                reparseOnChangedFileImpl(changedFileProject, fileImpl, true);
-            }
+        if (TRACE) {
+            LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
         }
+        changedFileProject.markAsParsingPreprocStates(fileImpl);
+        fileImpl.markReparseNeeded(false);
+        ParserQueue.instance().addForPartialReparse(fileImpl);
     }
 
     static boolean finishPartialReparse(FileImpl fileImpl, FileContentSignature lastFileBasedSignature, FileContentSignature newSignature) {
