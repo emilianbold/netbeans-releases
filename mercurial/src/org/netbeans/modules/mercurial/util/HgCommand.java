@@ -278,6 +278,7 @@ public class HgCommand {
     public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in "; // NOI18N
     public static final String HG_MERGE_FAILED1_ERR = "merging"; // NOI18N
     public static final String HG_MERGE_FAILED2_ERR = "failed!"; // NOI18N
+    public static final String HG_MERGE_FAILED3_ERR = "incomplete!"; // NOI18N
     private static final String HG_MERGE_MULTIPLE_HEADS_ERR = "abort: repo has "; // NOI18N
     private static final String HG_MERGE_UNCOMMITTED_ERR = "abort: outstanding uncommitted merges"; // NOI18N
 
@@ -4023,7 +4024,8 @@ public class HgCommand {
     }
 
     public static boolean isMergeFailedMsg (String msg) {
-        return (msg.indexOf(HG_MERGE_FAILED1_ERR) > -1) && (msg.indexOf(HG_MERGE_FAILED2_ERR) > -1);
+        return (msg.indexOf(HG_MERGE_FAILED1_ERR) > -1) 
+                && (msg.indexOf(HG_MERGE_FAILED2_ERR) > -1 || msg.indexOf(HG_MERGE_FAILED3_ERR) > -1);
     }
 
     public static boolean isConflictDetectedInMsg (String msg) {
