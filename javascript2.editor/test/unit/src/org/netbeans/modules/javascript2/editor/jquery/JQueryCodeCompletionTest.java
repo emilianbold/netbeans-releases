@@ -52,21 +52,20 @@ public class JQueryCodeCompletionTest extends JsCodeComplationBase {
     public JQueryCodeCompletionTest(String testName) {
         super(testName);
     }
-    
+
     public void testMethods01() throws Exception {
         checkCompletion("testfiles/completion/jQuery/simple.js", "jQuery('#test').a^ddClass('.myClass');", false);
     }
-    
+
     public void testMethods02() throws Exception {
         checkCompletion("testfiles/completion/jQuery/simple.js", "$('#test').ad^dClass('.myClass');", false);
     }
-    
+
     public void testNewFile() throws Exception {
         checkCompletion("testfiles/completion/jQuery/newFile.js", "jQuery('#f-emblem').a^ddClass('.has-menu');", false);
     }
-    
+
     public void testNewFile02() throws Exception {
         checkCompletion("testfiles/completion/jQuery/newFile.js", "jQuery('#f-emblem').addClass('.has-menu').a^dd(':checked');", false);
     }
-    
 }

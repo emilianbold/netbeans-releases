@@ -49,19 +49,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -69,6 +66,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.test.MockLookup;
 
@@ -82,20 +80,22 @@ public class JsCodeComplationBase extends JsTestBase {
         super(testName);
     }
 
+    static {
+        MockServices.setServices(IFL.class);
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.init();
         List lookupAll = new ArrayList();
         lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
-        lookupAll.add(new IFL());
+        MockLookup.setInstances(new ClassPathProviderImpl());
         MockLookup.setInstances(lookupAll.toArray());
         OpenProjects.getDefault().getOpenProjects();
     }
 
     public static final class IFL extends InstalledFileLocator {
-
-        public IFL() {
-        }
 
         @Override
         public File locate(String relativePath, String codeNameBase, boolean localized) {
@@ -111,7 +111,6 @@ public class JsCodeComplationBase extends JsTestBase {
     }
 
     public static enum Match {
-
         EXACT, CONTAINS, EMPTY, NOT_EMPTY, DOES_NOT_CONTAIN;
     }
 
