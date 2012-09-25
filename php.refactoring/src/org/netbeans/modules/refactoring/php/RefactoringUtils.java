@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -114,7 +113,7 @@ public class RefactoringUtils {
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return RefactoringUtils.findCloneableEditorSupport(dob);
+        return dob == null ? null : RefactoringUtils.findCloneableEditorSupport(dob);
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
@@ -259,39 +258,6 @@ public class RefactoringUtils {
         return FileUtils.isPhpFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
     }
 
-    public static String getPackageName(FileObject folder) {
-        assert folder.isFolder() : "argument must be folder";
-        return ClassPath.getClassPath(
-                folder, ClassPath.SOURCE).getResourceName(folder, '.', false);
-    }
-
-    public static String getPackageName(URL url) {
-        File f = null;
-        try {
-            f = FileUtil.normalizeFile(Utilities.toFile(url.toURI()));
-        } catch (URISyntaxException uRISyntaxException) {
-            throw new IllegalArgumentException("Cannot create package name for url " + url);
-        }
-        String suffix = "";
-
-        do {
-            FileObject fo = FileUtil.toFileObject(f);
-            if (fo != null) {
-                if ("".equals(suffix)) {
-                    return getPackageName(fo);
-                }
-                String prefix = getPackageName(fo);
-                return prefix + ("".equals(prefix) ? "" : ".") + suffix;
-            }
-            if (!"".equals(suffix)) {
-                suffix = "." + suffix;
-            }
-            suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar) + 1)) + suffix;
-            f = f.getParentFile();
-        } while (f != null);
-        throw new IllegalArgumentException("Cannot create package name for url " + url);
-    }
-
     /**
      * creates or finds FileObject according to
      * @param url
@@ -312,47 +278,6 @@ public class RefactoringUtils {
         }
     }
 
-//    public static ClasspathInfo getClasspathInfoFor(FileObject... files) {
-//        assert files.length > 0;
-//        Set<URL> dependentRoots = new HashSet<URL>();
-//        for (FileObject fo : files) {
-//            Project p = null;
-//            if (fo != null) {
-//                p = FileOwnerQuery.getOwner(fo);
-//            }
-//            if (p != null) {
-//                assert fo != null;
-//                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-//                if (classPath == null) {
-//                    Logger.getLogger(RefactoringUtils.class.getName()).log(
-//                            Level.WARNING, "ClassPath.getClassPath(fo, ClassPath.SOURCE) == null for fo: " + fo.getPath());//NOI18N
-//                    continue;
-//                }
-//                URL sourceRoot = URLMapper.findURL(classPath.findOwnerRoot(fo), URLMapper.INTERNAL);
-//                dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
-//                for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
-//                    dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
-//                }
-//            } else {
-//                for (ClassPath cp : GlobalPathRegistry.getDefault().getPaths(PhpProject.SOURCE_CP)) {
-//                    for (FileObject root : cp.getRoots()) {
-//                        dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
-//                    }
-//                }
-//            }
-//        }
-//
-//        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
-//        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
-//        ClassPath boot = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.BOOT) : nullPath;
-//        ClassPath compile = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.COMPILE) : nullPath;
-//        if (boot == null || compile == null) { // 146499
-//            return null;
-//        }
-//
-//        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
-//        return cpInfo;
-//    }
     public static boolean isOutsidePhp(Lookup lookup, FileObject fo) {
         return isOutsideLanguage(lookup, fo, PHPTokenId.language());
     }
