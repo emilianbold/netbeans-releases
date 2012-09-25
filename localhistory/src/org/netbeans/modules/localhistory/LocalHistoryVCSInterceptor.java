@@ -118,6 +118,9 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     @Override
     public void afterDelete(File file) {
         LOG.log(Level.FINE, "afterDelete {0}", file); // NOI18N
+        if(!accept(file)) {
+            return;
+        } 
         if(!toBeDeleted.remove(file)) {
             // do nothing if the file wasn't marked
             // as to be deleted
@@ -160,6 +163,9 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     @Override
     public void afterMove(File from, File to) {
         LOG.log(Level.FINE, "afterMove {0} to {1}", new Object[] {from, to}); // NOI18N
+        if(!accept(from)) {
+            return;
+        } 
         String key = to.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
@@ -180,6 +186,9 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     @Override
     public boolean beforeCreate(File file, boolean isDirectory) {
         LOG.log(Level.FINE, "beforeCreate {0}", file); // NOI18N
+        if(!accept(file)) {
+            return false;
+        } 
         toBeCreated.add(file);
         return false;
     }
@@ -187,6 +196,9 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     @Override
     public void afterCreate(File file) {
         LOG.log(Level.FINE, "afterCreate {0}", file); // NOI18N
+        if(!accept(file)) {
+            return;
+        } 
         if(LocalHistory.getInstance().isManagedByParent(file) == null) {
             // XXX: the VCS interceptor doesn't filter afterCreate because
             // of a workaround for caching problems in other VCS systems. 
@@ -237,12 +249,18 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         LOG.log(Level.FINE, "afterChange {0}", file); // NOI18N
         // just in case
         wasJustCreated.remove(file);
+        if(!accept(file)) {
+            return;
+        } 
         LocalHistory.getInstance().touch(file);
     }
 
     @Override
     public void beforeEdit(File file) {
         LOG.log(Level.FINE, "beforeEdit {0}", file); // NOI18N
+        if(!accept(file)) {
+            return;
+        } 
         getStore().fileChange(file, file.lastModified());
     }
     
