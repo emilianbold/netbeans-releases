@@ -656,43 +656,44 @@ public class CppParserActionImpl implements CppParserActionEx {
 //            builderContext.getSimpleDeclarationBuilderIfExist().setTypeSpecifier();
 //        }
 //        
-//        if(kind == SIMPLE_TYPE_SPECIFIER__ID) {
-//            builderContext.push(new NameBuilder());
-//        }
-//        
-//        
-//        if (kind == SIMPLE_TYPE_SPECIFIER__CHAR
-//                || kind == SIMPLE_TYPE_SPECIFIER__WCHAR_T
-//                || kind == SIMPLE_TYPE_SPECIFIER__CHAR16_T
-//                || kind == SIMPLE_TYPE_SPECIFIER__CHAR32_T
-//                || kind == SIMPLE_TYPE_SPECIFIER__BOOL
-//                || kind == SIMPLE_TYPE_SPECIFIER__SHORT
-//                || kind == SIMPLE_TYPE_SPECIFIER__INT
-//                || kind == SIMPLE_TYPE_SPECIFIER__LONG
-//                || kind == SIMPLE_TYPE_SPECIFIER__SIGNED
-//                || kind == SIMPLE_TYPE_SPECIFIER__UNSIGNED
-//                || kind == SIMPLE_TYPE_SPECIFIER__FLOAT
-//                || kind == SIMPLE_TYPE_SPECIFIER__DOUBLE
-//                || kind == SIMPLE_TYPE_SPECIFIER__VOID) {
-//            CsmObjectBuilder top = builderContext.top();
-//            if(top instanceof TypeBuilder) {
-//                ((TypeBuilder)top).setSimpleTypeSpecifier(((APTToken)token).getTextID());
-//            }
-//            
-//        }
+        if(kind == SIMPLE_TYPE_SPECIFIER__ID) {
+            CsmObjectBuilder top = builderContext.top();
+            if(top instanceof TypeBuilder) {
+                builderContext.push(new NameBuilder());
+            }
+        }
+
+        if (kind == SIMPLE_TYPE_SPECIFIER__CHAR
+                || kind == SIMPLE_TYPE_SPECIFIER__WCHAR_T
+                || kind == SIMPLE_TYPE_SPECIFIER__CHAR16_T
+                || kind == SIMPLE_TYPE_SPECIFIER__CHAR32_T
+                || kind == SIMPLE_TYPE_SPECIFIER__BOOL
+                || kind == SIMPLE_TYPE_SPECIFIER__SHORT
+                || kind == SIMPLE_TYPE_SPECIFIER__INT
+                || kind == SIMPLE_TYPE_SPECIFIER__LONG
+                || kind == SIMPLE_TYPE_SPECIFIER__SIGNED
+                || kind == SIMPLE_TYPE_SPECIFIER__UNSIGNED
+                || kind == SIMPLE_TYPE_SPECIFIER__FLOAT
+                || kind == SIMPLE_TYPE_SPECIFIER__DOUBLE
+                || kind == SIMPLE_TYPE_SPECIFIER__VOID) {
+            CsmObjectBuilder top = builderContext.top();
+            if(top instanceof TypeBuilder) {
+                ((TypeBuilder)top).setSimpleTypeSpecifier(((APTToken)token).getTextID());
+            }
+        }
         
     }
 
     @Override
     public void end_simple_type_specifier(Token token) {
-//        CsmObjectBuilder top = builderContext.top();
-//        if(top instanceof NameBuilder) {
-//            builderContext.pop();
-//            if(builderContext.top() instanceof TypeBuilder) {
-//                TypeBuilder builder = (TypeBuilder)builderContext.top();
-//                builder.setNameBuilder((NameBuilder)top);
-//            }
-//        }
+        CsmObjectBuilder top = builderContext.top();
+        if(top instanceof NameBuilder && builderContext.top(1) instanceof TypeBuilder) {
+            builderContext.pop();
+            if(builderContext.top() instanceof TypeBuilder) {
+                TypeBuilder builder = (TypeBuilder)builderContext.top();
+                builder.setNameBuilder((NameBuilder)top);
+            }
+        }
     }    
 
     @Override
