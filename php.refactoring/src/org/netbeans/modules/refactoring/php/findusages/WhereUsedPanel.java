@@ -220,8 +220,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             case TYPE_CONSTANT:
                 bundleKey = "DSC_ClassConstantUsages"; //NOI18N
                 break;
-                default:
-                    assert false : usage.getKind();
+            case USE_ALIAS:
+                bundleKey = "DSC_UseAliasUsages"; //NOI18N
+                break;
+            default:
+                assert false : usage.getKind();
         }
 
         return bundleKey;
