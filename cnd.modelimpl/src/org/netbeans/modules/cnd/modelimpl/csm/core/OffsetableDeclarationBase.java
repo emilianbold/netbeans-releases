@@ -311,7 +311,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private DeclaratorBuilder declaratorBuilder;
         private TypeBuilder typeBuilder;
         private CsmObjectBuilder parametersListBuilder;
-        
+        private TemplateDescriptor.TemplateDescriptorBuilder templateDescriptorBuilder;
         
         private boolean _static = false;
         private boolean _extern = false;
@@ -374,6 +374,14 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             this.declaratorBuilder = declaratorBuilder;
         }
 
+        public void setTemplateDescriptorBuilder(TemplateDescriptor.TemplateDescriptorBuilder templateDescriptorBuilder) {
+            this.templateDescriptorBuilder = templateDescriptorBuilder;
+        }
+
+        public TemplateDescriptor.TemplateDescriptorBuilder getTemplateDescriptorBuilder() {
+            return templateDescriptorBuilder;
+        }
+        
         public void setTypeBuilder(TypeBuilder typeBuilder) {
             this.typeBuilder = typeBuilder;
         }

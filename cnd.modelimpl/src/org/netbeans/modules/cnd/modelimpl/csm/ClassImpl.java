@@ -53,10 +53,10 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl.MethodBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor.TemplateDescriptorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl.UsingDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -457,6 +457,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         
         private List<CsmObjectBuilder> children = new ArrayList<CsmObjectBuilder>();
 
+        private TemplateDescriptorBuilder templateDescriptorBuilder;
+        
         public ClassBuilder(FileContent fileContent) {
             assert fileContent != null;
             this.fileContent = fileContent;
@@ -501,6 +503,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         public void addMember(CsmMember member) {
             this.instance.addMember(member, true);
         }        
+
+        public void setTemplateDescriptorBuilder(TemplateDescriptorBuilder templateDescriptorBuilder) {
+            this.templateDescriptorBuilder = templateDescriptorBuilder;
+        }
         
         public ClassImpl getClassDefinitionInstance() {
             if(instance != null) {
@@ -549,6 +555,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 nameHolder = NameHolder.createName(name, nameStartOffset, nameEndOffset);
                 cls = new ClassImpl(nameHolder, kind, file, startOffset, endOffset);
                 cls.init3(s, true);
+                
+                if(templateDescriptorBuilder != null) {
+                    templateDescriptorBuilder.setScope(cls);
+                    cls.setTemplateDescriptor(templateDescriptorBuilder.create());
+                }
+                
                 instance = cls;
                 if (nameHolder != null) {
                     nameHolder.addReference(fileContent, cls);
@@ -582,6 +594,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     if(builder instanceof MethodBuilder) {
                         ((MethodBuilder)builder).setScope(cls);
                         ((MethodBuilder)builder).create();
+                    }
+                    if(builder instanceof SimpleDeclarationBuilder) {
+                        ((SimpleDeclarationBuilder)builder).setScope(cls);
+                        ((SimpleDeclarationBuilder)builder).create();
                     }
                 }                
             }
@@ -1243,10 +1259,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     Utils.setSelfUID(td);
                 }
 
-                addDeclaration(td);
+                if (getParent() instanceof ClassImpl.ClassBuilder) {
+                    ((ClassImpl.ClassBuilder) getParent()).addMember(td);
+                }
 
                 return td;
             }
+            
         }            
         
         ////////////////////////////////////////////////////////////////////////////

@@ -72,6 +72,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl.MethodBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl.NamespaceAliasBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl.ParameterBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor.TemplateDescriptorBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl.TemplateParameterBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl.TypedefBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl.UsingDeclarationBuilder;
@@ -375,8 +377,12 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
         classBuilder.setParent(parent);
         classBuilder.setFile(currentContext.file);
-        if(token instanceof APTToken) {
-            classBuilder.setStartOffset(((APTToken)token).getOffset());
+        classBuilder.setStartOffset(((APTToken)token).getOffset());
+        
+        SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder)builderContext.top(1);
+        if(declBuilder.getTemplateDescriptorBuilder() != null) {
+            classBuilder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
+            classBuilder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
         }
         builderContext.push(classBuilder);
     }
@@ -538,6 +544,15 @@ public class CppParserActionImpl implements CppParserActionEx {
     public void simple_declaration(Token token) {
         SimpleDeclarationBuilder builder = new SimpleDeclarationBuilder();
         builder.setStartOffset(((APTToken)token).getOffset());
+        if(builderContext.top() instanceof TemplateDescriptorBuilder) {
+            TemplateDescriptorBuilder descriptorBuilder = (TemplateDescriptorBuilder)builderContext.top();
+            builder.setStartOffset(descriptorBuilder.getStartOffset());
+            builder.setTemplateDescriptorBuilder(descriptorBuilder);
+            builderContext.pop();
+        }
+        if(builderContext.top() instanceof TemplateDescriptorBuilder) {
+            builderContext.pop();
+        }        
         builderContext.push(builder);        
     }
 
@@ -793,6 +808,9 @@ public class CppParserActionImpl implements CppParserActionEx {
     public void template_declaration(int kind, Token token) {
         if(kind == TEMPLATE_DECLARATION__TEMPLATE_ARGUMENT_LIST) {
             templateLevel++;
+            TemplateDescriptorBuilder builder = new TemplateDescriptorBuilder();
+            builder.setStartOffset(((APTToken)token).getOffset());
+            builderContext.push(builder);
         }        
         if(kind == TEMPLATE_DECLARATION__END_TEMPLATE_ARGUMENT_LIST) {
             templateLevel--;
@@ -943,7 +961,10 @@ public class CppParserActionImpl implements CppParserActionEx {
     public void type_parameter(int kind, Token token, Token token2, Token token3) {
         if(kind == TYPE_PARAMETER__CLASS ||
                 kind == TYPE_PARAMETER__TYPENAME) {
+            TemplateParameterBuilder builder = (TemplateParameterBuilder) builderContext.top();            
             if(token3 != null) {
+                builder.setName(((APTToken) token3).getText());
+                
                 APTToken aToken = (APTToken) token3;
                 final CharSequence name = aToken.getTextID();
                 SymTabEntry classEntry = globalSymTab.lookupLocal(name);
@@ -954,7 +975,10 @@ public class CppParserActionImpl implements CppParserActionEx {
             }
         } else if(kind == TYPE_PARAMETER__CLASS_ASSIGNEQUAL ||
                 kind == TYPE_PARAMETER__TYPENAME_ASSIGNEQUAL) {
+            TemplateParameterBuilder builder = (TemplateParameterBuilder) builderContext.top();            
             if(token2 != null) {
+                builder.setName(((APTToken) token2).getText());                
+                
                 APTToken aToken = (APTToken) token2;
                 final CharSequence name = aToken.getTextID();
                 SymTabEntry classEntry = globalSymTab.lookupLocal(name);
@@ -1683,18 +1707,37 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void template_parameter_list(Token token) {}
     @Override public void template_parameter_list(int kind, Token token) {}
     @Override public void end_template_parameter_list(Token token) {}
-    @Override public void template_parameter(Token token) {}
-    @Override public void end_template_parameter(Token token) {}
+    @Override public void template_parameter(Token token) {
+        TemplateParameterBuilder builder = new TemplateParameterBuilder();
+        builder.setFile(currentContext.file);
+        builder.setStartOffset(((APTToken)token).getOffset());
+        builderContext.push(builder);            
+    }
+    @Override public void end_template_parameter(Token token) {
+        TemplateParameterBuilder builder = (TemplateParameterBuilder) builderContext.top();
+        builder.setEndOffset(((APTToken)token).getEndOffset());
+        builderContext.pop();
+        TemplateDescriptorBuilder descriptorBuilder = (TemplateDescriptorBuilder) builderContext.top();
+        descriptorBuilder.addParameterBuilder(builder);
+    }
     @Override public void type_parameter(int kind, Token token) {}
     @Override public void template_argument_list(Token token) {}
     @Override public void template_argument_list(int kind, Token token) {}
     @Override public void end_template_argument_list(Token token) {}
     @Override public void template_argument(Token token) {}
     @Override public void end_template_argument(Token token) {}
-    @Override public void explicit_instantiation(Token token) {}
+    @Override public void explicit_instantiation(Token token) {
+        if(builderContext.top() instanceof TemplateDescriptorBuilder) {
+            builderContext.pop();
+        }    
+    }
     @Override public void explicit_instantiation(int kind, Token token) {}
     @Override public void end_explicit_instantiation(Token token) {}
-    @Override public void explicit_specialization(Token templateToken, Token lessthenToken, Token greaterthenToken) {}
+    @Override public void explicit_specialization(Token templateToken, Token lessthenToken, Token greaterthenToken) {
+        if(builderContext.top() instanceof TemplateDescriptorBuilder) {
+            builderContext.pop();
+        }        
+    }
     @Override public void end_explicit_specialization(Token token) {}
     @Override public void try_block(Token token) {}
     @Override public void end_try_block(Token token) {}
