@@ -695,6 +695,7 @@ public final class NbMavenProjectImpl implements Project {
                     UILookupMergerSupport.createProjectOpenHookMerger(null),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
+                    UILookupMergerSupport.createProjectProblemsProviderMerger(),
                     LookupProviderSupport.createSourcesMerger(),
                     ProjectClassPathModifier.extenderForModifier(this),
                     LookupMergerSupport.createClassPathModifierMerger());
