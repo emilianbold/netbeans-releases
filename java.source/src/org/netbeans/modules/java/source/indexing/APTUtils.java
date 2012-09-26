@@ -45,6 +45,7 @@ import com.sun.tools.javac.util.Context;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
@@ -66,6 +67,7 @@ import java.util.logging.Logger;
 import javax.annotation.processing.Processor;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
@@ -313,7 +315,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 //no need to check further:
                 return vote;
             }
-            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, processorPath.toString(), checkOnly)) {
+            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, pathToString(processorPath), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
@@ -331,6 +333,27 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             Exceptions.printStackTrace(ioe);
         }
         return vote;
+    }
+
+    @NonNull
+    private static String pathToString(@NonNull final ClassPath cp) {
+        final StringBuilder b = new StringBuilder();
+        for (FileObject fo : cp.getRoots()) {
+            final URL u = fo.toURL();
+            final File f = FileUtil.archiveOrDirForURL(u);
+            if (f != null) {
+                if (b.length() > 0) {
+                    b.append(File.pathSeparatorChar);
+                }
+                b.append(f.getAbsolutePath());
+            } else {
+                if (b.length() > 0) {
+                    b.append(File.pathSeparatorChar);
+                }
+                b.append(u);
+            }
+        }
+        return b.toString();
     }
 
     private String encodeToStirng(Iterable<? extends String> strings) {
