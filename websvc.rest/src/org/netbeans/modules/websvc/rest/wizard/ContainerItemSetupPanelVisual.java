@@ -818,6 +818,17 @@ private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRS
     public SourceGroup getSourceGroup() {
         return (SourceGroup) locationComboBox.getSelectedItem();
     }
+    
+    public double getRenderedHeight(){
+        return selectClassButton1.getLocation().getY()+
+                selectClassButton1.getSize().getHeight()+getGap();
+    }
+    
+    private double getGap(){
+        double gap = containerRepresentationClassTextField.getLocation().getY();
+        gap = gap - (representationClassTextField.getLocation().getY() +representationClassTextField.getHeight());
+        return gap;
+    }
 
     private void updateSourceGroupPackages() {
         SourceGroup sourceGroup = (SourceGroup)locationComboBox.getSelectedItem();

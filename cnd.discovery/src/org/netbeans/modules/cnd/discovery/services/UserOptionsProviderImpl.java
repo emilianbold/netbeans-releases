@@ -190,8 +190,8 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                         options.indexOf("-std=gnu++0x") >= 0 || // NOI18N
                         options.indexOf("-std=gnu++11") >= 0) { // NOI18N
                     return LanguageFlavor.CPP11;
-                } else {
-                    return LanguageFlavor.CPP;
+                //} else {
+                //    return LanguageFlavor.CPP;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.FortranCompiler) {
                 // TODO

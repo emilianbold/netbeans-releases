@@ -186,7 +186,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
             ppointProjectCombo.setSelectedItem(project);
         }
         
-        if ((project == null || !project.equals(ppointProjectCombo.getSelectedItem())) && (ppointProjectCombo.getItemAt(0) != Bundle.WizardPanel1UI_SelectProjectString())) {
+        if ((project == null || !project.equals(ppointProjectCombo.getSelectedItem())) && (!Bundle.WizardPanel1UI_SelectProjectString().equals(ppointProjectCombo.getItemAt(0)))) {
             ppointProjectCombo.insertItemAt(Bundle.WizardPanel1UI_SelectProjectString(), 0);
             ppointProjectCombo.setSelectedItem(Bundle.WizardPanel1UI_SelectProjectString());
         }
@@ -442,7 +442,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
     }
 
     private void refresh() {
-        if (ppointProjectCombo.getSelectedItem() instanceof Lookup.Provider && (ppointProjectCombo.getItemAt(0) == Bundle.WizardPanel1UI_SelectProjectString())) {
+        if (ppointProjectCombo.getSelectedItem() instanceof Lookup.Provider && (Bundle.WizardPanel1UI_SelectProjectString().equals(ppointProjectCombo.getItemAt(0)))) {
             ppointProjectCombo.removeItem(Bundle.WizardPanel1UI_SelectProjectString());
         }
 

@@ -44,14 +44,22 @@
 
 package org.netbeans.modules.websvc.rest.wizard;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Point;
+import java.awt.Window;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
@@ -153,6 +161,60 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
             jerseyPanel = new JerseyPanel( this );
             mainPanel.addChangeListener(jerseyPanel );
             add( jerseyPanel );
+	    // Fix for BZ#214951 - Hidden Text Box during REST endpoint creation
+            addHierarchyListener( new HierarchyListener(){
+
+                @Override
+                public void hierarchyChanged( HierarchyEvent e ) {
+                    final HierarchyListener listener = this; 
+                    SwingUtilities.invokeLater( new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            double height = 0;
+                            Component[] components = getComponents();
+                            for (Component component : components) {
+                                if ( component instanceof SingletonSetupPanelVisual ){
+                                    double renderedHeight = 
+                                            ((SingletonSetupPanelVisual)component).
+                                                getRenderedHeight();
+                                    height+=renderedHeight;
+                                    resize(component, renderedHeight);
+                                }
+                                else if (component instanceof ContainerItemSetupPanelVisual ){
+                                    double renderedHeight = 
+                                            ((ContainerItemSetupPanelVisual)component).
+                                                getRenderedHeight();
+                                    height+=renderedHeight;
+                                    resize(component, renderedHeight);
+                                } 
+                                else if ( component instanceof JerseyPanel ){
+                                    double renderedHeight = 
+                                            ((JerseyPanel)component).
+                                                getRenderedHeight();
+                                    height+=renderedHeight;
+                                    resize(component, renderedHeight);
+                                }
+                            }
+                            Dimension dim = getSize();
+                            int newHeight = (int)height;
+                            if ( dim.height < newHeight ) {
+                                setPreferredSize( new Dimension( dim.width, newHeight ));
+                                Window window = SwingUtilities.
+                                        getWindowAncestor(PatternPanel.this);
+                                if ( window!= null ){
+                                    window.pack();
+                                }
+                            }
+                            removeHierarchyListener(listener);
+                        }
+
+                    });   
+                     
+              }
+                
+            });
+
         }
         
         @Override
@@ -225,6 +287,15 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
             mainPanel.addChangeListener(l);
             if ( hasJerseyPanel() ){
                 jerseyPanel.addChangeListener(l);
+            }
+        }
+
+        private void resize( Component component, double height )
+        {
+            Dimension size = component.getSize();
+            if ( size.height < height ){
+                component.setPreferredSize(
+                        new Dimension(size.width, (int)height));
             }
         }
         

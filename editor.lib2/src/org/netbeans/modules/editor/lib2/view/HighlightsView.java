@@ -109,11 +109,12 @@ public class HighlightsView extends EditorView {
     @Override
     public float getPreferredSpan(int axis) {
         checkTextLayoutValid();
-        float span = (axis == View.X_AXIS)
-            ? getWidth()
-            : TextLayoutUtils.getHeight(textLayout);
-        // Round to integer to avoid visual artifacts (one of several lines smaller than others etc.)
-        return (int) Math.ceil(span);
+        if (axis == View.X_AXIS) {
+            return getWidth();
+        } else {
+            EditorView.Parent parent = (EditorView.Parent) getParent();
+            return (parent != null) ? parent.getViewRenderContext().getDefaultRowHeight() : 0f;
+        }
     }
     
     float getWidth() {

@@ -48,7 +48,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,7 +57,6 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.View;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
 /**
  * Base class for views in editor view hierarchy.
@@ -526,26 +524,12 @@ public abstract class EditorView extends View {
          * @return real offset.
          */
         int getViewEndOffset(int rawChildEndOffset);
-
-        /**
-         * Get font rendering context that for example may be used for text layout creation.
-         * @return font rendering context.
-         */
-        FontRenderContext getFontRenderContext();
         
         /**
-         * Get special highlighting sequence that is a merge of attributes
-         * of the view with top painting highlights.
-         * <br/>
-         * It's only allowed to call this method (and use the returned value)
-         * during view's paint() methods execution.
-         *
-         * @param view non-null child editor view.
-         * @param shift &gt;=0 shift inside the view (first highlight will start at view.getStartOffset() + shift).
-         * @return special highlights sequence that covers whole requested area (has getAttributes() == null
-         *  in areas without highlights).
+         * Get view's rendering context
+         * @return 
          */
-        HighlightsSequence getPaintHighlights(EditorView view, int shift);
+        ViewRenderContext getViewRenderContext();
 
     }
 

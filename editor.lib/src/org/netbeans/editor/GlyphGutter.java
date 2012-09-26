@@ -353,21 +353,23 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         else
             foreColor = defaultColoring.getForeColor();
     
+        Font lineFont;
         if (lineColoring.getFont() != null) {
-            Font lineFont = lineColoring.getFont();
-            font = (lineFont != null) ? lineFont.deriveFont((float)lineFont.getSize()-1) : null;
+            Font f = lineColoring.getFont();
+            lineFont = (f != null) ? f.deriveFont((float)f.getSize()-1) : null;
         } else {
-            font = defaultColoring.getFont();
-            font = new Font("Monospaced", Font.PLAIN, font.getSize()-1); //NOI18N
+            lineFont = defaultColoring.getFont();
+            lineFont = new Font("Monospaced", Font.PLAIN, lineFont.getSize()-1); //NOI18N
         }
         
         JTextComponent tc = eui.getComponent();
         if (tc != null) {
             Integer textZoom = (Integer) tc.getClientProperty(TEXT_ZOOM_PROPERTY);
             if (textZoom != null && textZoom != 0) {
-                font = new Font(font.getFamily(), font.getStyle(), Math.max(font.getSize() + textZoom, 2));
+                lineFont = new Font(lineFont.getFamily(), lineFont.getStyle(), Math.max(lineFont.getSize() + textZoom, 2));
             }
         }
+        font = lineFont;
 
         showLineNumbers = eui.lineNumberVisibleSetting;
         drawOverLineNumbers = AnnotationTypes.getTypes().isGlyphsOverLineNumbers().booleanValue();
@@ -377,8 +379,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         // initialize the value with current number of lines
         highestLineNumber = getLineCount();
         
-        repaint();
         resize();
+//        repaint();
     }
     
    

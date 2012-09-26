@@ -425,8 +425,9 @@ public class LayersBridge extends KeymapManager {
             GlobalAction a1 = (GlobalAction) shortcutToAction.get (dataObject.getName ());
             if (a1 != null) {
                 GlobalAction action = createAction (dataObject, null);
-                if (action == null) continue;
-                if (action.equals (a1)) {
+                if (action == null) {
+                    LOG.log(Level.FINEST, "Broken action shortcut will be removed: {0}, will replace by {1}", new Object[] { dataObject.getName(), a1.getId() });
+                } else if (action.equals (a1)) {
                     // shortcut already saved
                     LOG.log(Level.FINEST, "Found same binding: {0} -> {1}", new Object[] { dataObject.getName(), action.getId()});
                     shortcutToAction.remove (dataObject.getName ());

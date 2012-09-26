@@ -344,7 +344,7 @@ public class Utilities {
 
     private static void createVisibleModulesDependecyMap(Collection<UpdateUnit> allUnits, Map <UpdateUnit, List<UpdateElement>> result) {
         for (UpdateUnit u : allUnits) {
-            if (u.getInstalled() != null && !u.isPending() && !result.containsKey(u)) {
+            if (u.getInstalled() != null && !u.isPending() && u.getInstalled().isEnabled() && !result.containsKey(u)) {
 
                 OperationContainer<InstallSupport> container = u.getAvailableUpdates().isEmpty() ? 
                     OperationContainer.createForInternalUpdate() :

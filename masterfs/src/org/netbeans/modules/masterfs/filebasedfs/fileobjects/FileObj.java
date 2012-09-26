@@ -382,6 +382,13 @@ public class FileObj extends BaseFileObj {
         }
     }
 
+    @Override
+    public final boolean isLocked() {
+        final File me = getFileName().getFile();
+        final LockForFile l = LockForFile.findValid(me);
+        return l != null && l.isValid();
+    }
+
     final boolean checkLock(final FileLock lock) throws IOException {
         final File f = getFileName().getFile();
         return ((lock instanceof LockForFile) && Utils.equals(((LockForFile) lock).getFile(), f));
