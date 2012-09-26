@@ -171,7 +171,7 @@ public final class NbMavenProjectImpl implements Project {
             public Lookup getLookup() {
                 if (completeLookup == null) {
                     //not fully initialized constructor
-                    LOG.log(Level.FINE, "accessing project's lookup before the instance is fully initialized", new Exception());
+                    LOG.log(Level.FINE, "accessing project's lookup before the instance is fully initialized at " + projectFile, new Exception());
                     assert basicLookup != null;
                     return basicLookup;
                 } else {
@@ -189,8 +189,8 @@ public final class NbMavenProjectImpl implements Project {
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
         // @PSP's and the like, and PackagingProvider impls, may check project lookup for e.g. NbMavenProject, so init lookup in two stages:
         basicLookup = createBasicLookup(projectState, auxiliary);
-        //here we akways load the MavenProject instance because we need to touch the packaging from pom.
-        completeLookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");//NOI18N
+        //here we always load the MavenProject instance because we need to touch the packaging from pom.
+        completeLookup = new PackagingTypeDependentLookup(watcher, basicLookup);
     }
 
     public File getPOMFile() {
@@ -646,13 +646,16 @@ public final class NbMavenProjectImpl implements Project {
     private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {
 
         private final NbMavenProject watcher;
-        private final Lookup lookup;
+        private final Lookup baseLookup;
         private String packaging;
+        private final Lookup general;
 
         @SuppressWarnings("LeakingThisInConstructor")
-        PackagingTypeDependentLookup(NbMavenProject watcher, Lookup lookup) {
+        PackagingTypeDependentLookup(NbMavenProject watcher, Lookup baseLookup) {
             this.watcher = watcher;
-            this.lookup = lookup;
+            this.baseLookup = baseLookup;
+            general = Lookups.forPath("Projects/org-netbeans-modules-maven/Lookup"); //NOI18N
+
             check();
             watcher.addPropertyChangeListener(this);
         }
@@ -664,7 +667,8 @@ public final class NbMavenProjectImpl implements Project {
             }
             if (!newPackaging.equals(packaging)) {
                 packaging = newPackaging;
-                setLookups(LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-maven/" + packaging + "/Lookup"));
+                Lookup pack = Lookups.forPath("Projects/org-netbeans-modules-maven/" + packaging + "/Lookup");
+                setLookups(LookupProviderSupport.createCompositeLookup(baseLookup, new ProxyLookup(general, pack)));
             }
         }
 
