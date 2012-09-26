@@ -39,42 +39,19 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.remote;
 
-import java.io.File;
+package org.netbeans.modules.web.common.spi;
+
+import java.io.IOException;
 import java.net.URL;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Assures serialization and de-serialization of file objects from RemoteFS.
- * Serves only files, that are cached already.
- * 
- * @author Martin
+ * Plugable implementation of remote file caching. See API version for JavaDoc.
  */
-@ServiceProvider(service=URLMapper.class)
-public class RemoteURLMapper extends URLMapper {
-    
-    @Override
-    public URL getURL(FileObject fo, int type) {
-        URL url = RemoteFilesCache.getDefault().isRemoteFile(fo);
-        return url;
-    }
+public interface RemoteFileCacheImplementation {
 
-    @Override
-    public FileObject[] getFileObjects(URL url) {
-        String protocol = url.getProtocol();
-        if ("http".equals(protocol) || "https".equals(protocol)) {      // NOI18N
-            File cachedFile = RemoteFilesCache.getCachedFileName(url);
-            if (cachedFile.exists()) {
-                FileObject fo = RemoteFS.getDefault().getFileForURL(url);
-                if (fo != null) {
-                    return new FileObject[] { fo };
-                }
-            }
-        }
-        return null;
-    }
+    FileObject getRemoteFile(URL file) throws IOException;
     
+    URL isRemoteFile(FileObject fo);
 }

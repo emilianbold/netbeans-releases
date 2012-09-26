@@ -40,18 +40,46 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.spi;
+package org.netbeans.modules.web.common.api;
 
 import java.io.IOException;
 import java.net.URL;
+import org.netbeans.modules.web.common.spi.RemoteFileCacheImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
- * Plugable implementation of remote file caching. See API version for JavaDoc.
+ * This class retrieves given URL and stores it in IDE's cache directory and returns
+ * local FileObject representing the URL.
  */
-public interface RemoteFileCacheImplementation {
+public final class RemoteFileCache {
 
-    FileObject getRemoteFile(URL file) throws IOException;
+    /**
+     * Returns local image of remote file. If the file is not in cache the method
+     * may return FileObject which is empty and later update its content.
+     */
+    public static FileObject getRemoteFile(URL url) throws IOException {
+        for (RemoteFileCacheImplementation impl : Lookup.getDefault().lookupAll(RemoteFileCacheImplementation.class)) {
+            FileObject fo = impl.getRemoteFile(url);
+            if (fo != null) {
+                return fo;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Translates local image of remote file back to its original URL.
+     * @return null or URL of the remote file
+     */
+    public static URL isRemoteFile(FileObject fo) {
+        for (RemoteFileCacheImplementation impl : Lookup.getDefault().lookupAll(RemoteFileCacheImplementation.class)) {
+            URL url = impl.isRemoteFile(fo);
+            if (url != null) {
+                return url;
+            }
+        }
+        return null;
+    }
     
-    URL isRemoteFile(FileObject fo);
 }

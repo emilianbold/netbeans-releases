@@ -39,44 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.common.remote;
 
-package org.netbeans.modules.web.clientproject.api;
-
-import java.io.IOException;
+import java.io.File;
 import java.net.URL;
-import org.netbeans.modules.web.clientproject.spi.RemoteFileCacheImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * This class retrieves given URL and stores it in IDE's cache directory and returns
- * local FileObject representing the URL.
+ * Assures serialization and de-serialization of file objects from RemoteFS.
+ * Serves only files, that are cached already.
+ * 
+ * @author Martin
  */
-public final class RemoteFileCache {
-
-    /**
-     * Returns local image of remote file. If the file is not in cache the method
-     * may return FileObject which is empty and later update its content.
-     */
-    public static FileObject getRemoteFile(URL url) throws IOException {
-        for (RemoteFileCacheImplementation impl : Lookup.getDefault().lookupAll(RemoteFileCacheImplementation.class)) {
-            FileObject fo = impl.getRemoteFile(url);
-            if (fo != null) {
-                return fo;
-            }
-        }
-        return null;
+@ServiceProvider(service=URLMapper.class)
+public class RemoteURLMapper extends URLMapper {
+    
+    @Override
+    public URL getURL(FileObject fo, int type) {
+        URL url = RemoteFilesCache.getDefault().isRemoteFile(fo);
+        return url;
     }
 
-    /**
-     * Translates local image of remote file back to its original URL.
-     * @return null or URL of the remote file
-     */
-    public static URL isRemoteFile(FileObject fo) {
-        for (RemoteFileCacheImplementation impl : Lookup.getDefault().lookupAll(RemoteFileCacheImplementation.class)) {
-            URL url = impl.isRemoteFile(fo);
-            if (url != null) {
-                return url;
+    @Override
+    public FileObject[] getFileObjects(URL url) {
+        String protocol = url.getProtocol();
+        if ("http".equals(protocol) || "https".equals(protocol)) {      // NOI18N
+            File cachedFile = RemoteFilesCache.getCachedFileName(url);
+            if (cachedFile.exists()) {
+                FileObject fo = RemoteFS.getDefault().getFileForURL(url);
+                if (fo != null) {
+                    return new FileObject[] { fo };
+                }
             }
         }
         return null;
