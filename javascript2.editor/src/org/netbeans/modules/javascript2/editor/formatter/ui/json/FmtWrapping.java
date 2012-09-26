@@ -71,8 +71,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         arrayInitCombo.addFocusListener(this);
         objectsCombo.putClientProperty(OPTION_ID, wrapObjects);
         objectsCombo.addFocusListener(this);
-        propertiesCheckBox.putClientProperty(OPTION_ID, wrapProperties);
-        propertiesCheckBox.addFocusListener(this);
+        propertiesCombo.putClientProperty(OPTION_ID, wrapProperties);
+        propertiesCombo.addFocusListener(this);
 
         Dimension dimension = new Dimension((int) panel1.getPreferredSize().getWidth() + Utils.POSSIBLE_SCROLL_BAR_WIDTH, (int) scrollPane.getMinimumSize().getHeight());
         scrollPane.setMinimumSize(dimension);
@@ -110,7 +110,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         arrayInitCombo = new javax.swing.JComboBox();
         objectsLabel = new javax.swing.JLabel();
         objectsCombo = new javax.swing.JComboBox();
-        propertiesCheckBox = new javax.swing.JCheckBox();
+        propertiesLabel = new javax.swing.JLabel();
+        propertiesCombo = new javax.swing.JComboBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_Wrapping")); // NOI18N
         setOpaque(false);
@@ -130,7 +131,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
             }//end getFirstComponent
 
             public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
-                return propertiesCheckBox;
+                return propertiesCombo;
             }//end getLastComponent
 
             public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
@@ -138,7 +139,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     return objectsCombo;
                 }
                 if(aComponent ==  objectsCombo){
-                    return propertiesCheckBox;
+                    return propertiesCombo;
                 }
                 return arrayInitCombo;//end getComponentAfter
             }
@@ -146,10 +147,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 if(aComponent ==  objectsCombo){
                     return arrayInitCombo;
                 }
-                if(aComponent ==  propertiesCheckBox){
+                if(aComponent ==  propertiesCombo){
                     return objectsCombo;
                 }
-                return propertiesCheckBox;//end getComponentBefore
+                return propertiesCombo;//end getComponentBefore
 
             }});
             panel1.setOpaque(false);
@@ -164,10 +165,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
             objectsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-            org.openide.awt.Mnemonics.setLocalizedText(propertiesCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesCheckBox.text")); // NOI18N
-            propertiesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-            propertiesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-            propertiesCheckBox.setOpaque(false);
+            propertiesLabel.setLabelFor(propertiesCombo);
+            org.openide.awt.Mnemonics.setLocalizedText(propertiesLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesLabel.text")); // NOI18N
+
+            propertiesCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
             javax.swing.GroupLayout panel1Layout = new javax.swing.GroupLayout(panel1);
             panel1.setLayout(panel1Layout);
@@ -181,12 +182,13 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 138, Short.MAX_VALUE)
                             .addComponent(arrayInitCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
-                            .addComponent(propertiesCheckBox)
-                            .addGap(0, 0, Short.MAX_VALUE))
-                        .addGroup(panel1Layout.createSequentialGroup()
                             .addComponent(objectsLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(objectsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(objectsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(panel1Layout.createSequentialGroup()
+                            .addComponent(propertiesLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(propertiesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addContainerGap())
             );
             panel1Layout.setVerticalGroup(
@@ -201,8 +203,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                         .addComponent(objectsLabel)
                         .addComponent(objectsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                    .addComponent(propertiesCheckBox)
-                    .addContainerGap(406, Short.MAX_VALUE))
+                    .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(propertiesLabel)
+                        .addComponent(propertiesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(397, Short.MAX_VALUE))
             );
 
             arrayInitLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.arrayInitLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -213,8 +217,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
             objectsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.objectsLabel.AccessibleContext.accessibleDescription")); // NOI18N
             objectsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.objectsCombo.AccessibleContext.accessibleName")); // NOI18N
             objectsCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.objectsCombo.AccessibleContext.accessibleDescription")); // NOI18N
-            propertiesCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesCheckBox.AccessibleContext.accessibleName")); // NOI18N
-            propertiesCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+            propertiesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesLabel.AccessibleContext.accessibleName")); // NOI18N
+            propertiesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+            propertiesCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesCombo.AccessibleContext.accessibleName")); // NOI18N
+            propertiesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesCombo.AccessibleContext.accessibleDescription")); // NOI18N
 
             scrollPane.setViewportView(panel1);
             panel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.panel1.AccessibleContext.accessibleName")); // NOI18N
@@ -234,7 +240,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JComboBox objectsCombo;
     private javax.swing.JLabel objectsLabel;
     private javax.swing.JPanel panel1;
-    private javax.swing.JCheckBox propertiesCheckBox;
+    private javax.swing.JComboBox propertiesCombo;
+    private javax.swing.JLabel propertiesLabel;
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
