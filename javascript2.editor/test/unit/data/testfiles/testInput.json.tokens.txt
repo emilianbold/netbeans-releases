@@ -49,6 +49,17 @@ OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "  ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
 STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
+STRING          "q", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
+WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
+OPERATOR_MINUS  "-", st=LexerState{zzState=19, zzLexicalState=0}
+NUMBER          "7", la=1, st=LexerState{zzState=8, zzLexicalState=0}
+OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
+EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
+WHITESPACE      "  ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
+STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
 STRING          "popup", la=1, st=LexerState{zzState=23, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
 OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
