@@ -523,6 +523,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
         @Override public @CheckForNull NbMavenProject find(@NonNull Project root) {
             // XXX EventSpy (#194090) would make this more reliable and efficient
+            //mkleint: usage of subprojectprovider is correct here
             for (Project module : root.getLookup().lookup(SubprojectProvider.class).getSubprojects()) {
                 if (Thread.interrupted()) {
                     break;

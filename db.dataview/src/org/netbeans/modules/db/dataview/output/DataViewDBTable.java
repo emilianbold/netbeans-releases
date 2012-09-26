@@ -114,7 +114,7 @@ public class DataViewDBTable {
         return columns.size();
     }
 
-    public synchronized Map getColumns() {
+    public synchronized Map<String,DBColumn> getColumns() {
         Map<String, DBColumn> colMap = new HashMap<String, DBColumn>();
         for (DBTable tbl : dbTables) {
             colMap.putAll(tbl.getColumns());
@@ -138,6 +138,7 @@ public class DataViewDBTable {
         private ColumnOrderComparator() {
         }
 
+        @Override
         public int compare(DBColumn col1, DBColumn col2) {
             return col1.getOrdinalPosition() - col2.getOrdinalPosition();
         }

@@ -57,6 +57,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.dataview.spi.DBConnectionProviderImpl;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -68,18 +69,18 @@ public class DbUtil {
     public static String USER = "user";
     public static String PASSWORD = "password";
     public static final String AXION_DRIVER = "org.axiondb.jdbc.AxionDriver";
-    private static List localConnectionList = new ArrayList();
+    private static List<Connection> localConnectionList = new ArrayList<Connection>();
 
     public static DatabaseConnection getDBConnection() {
         try {
             TestCaseContext context = getContext();
             Properties prop = context.getProperties();
             File[] jars = context.getJars();
-            ArrayList list = new java.util.ArrayList();
+            ArrayList<URL> list = new java.util.ArrayList<URL>();
             for (int i = 0; i < jars.length; i++) {
-                list.add((URL)jars[i].toURI().toURL());
+                list.add(Utilities.toURI(jars[i]).toURL());
             }
-            URL[] urls = (URL[]) list.toArray(new URL[0]);
+            URL[] urls = list.toArray(new URL[0]);
             Class.forName(AXION_DRIVER);
             JDBCDriver driver = JDBCDriver.create(AXION_DRIVER, "MashupDB", AXION_DRIVER, urls);
             DatabaseConnection dbconn = DatabaseConnection.create(driver, prop.getProperty("url"), prop.getProperty("user"),
@@ -153,12 +154,10 @@ public class DbUtil {
     public static Connection createConnection(String driverName, String url, String username, String password) throws Exception {
         // Try to get the connection directly. Dont go through DB Explorer.
         // It may pop up a window asking for password.
-        JDBCDriver drv = null;
         Connection conn = null;
         try {
-           
-                //url = adjustDatabaseURL(url);
-            drv = registerDriver(driverName);
+            //url = adjustDatabaseURL(url);
+            JDBCDriver drv  = registerDriver(driverName);
 
             conn = getConnection(drv, driverName, url, username, password);
             if (conn == null) { // get from db explorer
@@ -208,12 +207,9 @@ public class DbUtil {
 
     public static DatabaseConnection createDatabaseConnection(String driverName, String url, String username, String password) throws Exception {
         DatabaseConnection dbconn = null;
-        JDBCDriver drv = null;
-        String schema = null;
         try {
-            
-                //url = adjustDatabaseURL(url);
-            drv = registerDriver(driverName);
+            //url = adjustDatabaseURL(url);
+            JDBCDriver drv = registerDriver(driverName);
 
             // check if connection exists in DB Explorer. Else add the connection to DB Explorer.
 
@@ -227,6 +223,7 @@ public class DbUtil {
 
             // dont add instance db and monitor db and local dbs connections to db explorer.
             if (dbconn == null) {
+                String schema;
                 if (url.startsWith(AXION_URL_PREFIX)) {
                     schema = "";
                 } else {
@@ -284,11 +281,11 @@ public class DbUtil {
             // if axion db driver not available in db explorer, add it.
             //URL[] url = new URL[1];
             File[] jars = cxt.getJars();
-            ArrayList list = new java.util.ArrayList();
+            ArrayList<URL> list = new java.util.ArrayList<URL>();
             for (int i = 0; i < jars.length; i++) {
-                list.add((URL)jars[i].toURI().toURL());
+                list.add(Utilities.toURI(jars[i]).toURL());
             }
-            URL[] url = (URL[]) list.toArray(new URL[0]);
+            URL[] url = list.toArray(new URL[0]);
             driver = JDBCDriver.create(driverName, "Mashup DB", driverName, url);
             JDBCDriverManager.getDefault().addDriver(driver);
         }

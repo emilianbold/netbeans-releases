@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.dataview.util;
 
-package org.netbeans.modules.keyring.impl;
-
-import java.io.File;
+import java.util.logging.Filter;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 
-public class Utils {
+public class DBTestUtil {
 
-    private Utils() {}
-
-    private static final Logger LOG = Logger.getLogger(Utils.class.getName());
-
-    public static byte[] chars2Bytes(char[] chars) {
-        byte[] bytes = new byte[chars.length * 2];
-        for (int i = 0; i < chars.length; i++) {
-            bytes[i * 2] = (byte) ((int)chars[i] / 256);
-            bytes[i * 2 + 1] = (byte) (chars[i] % 256);
+    /**
+     * Disable logging of logging messages from DatabaseMetaDataQuoter.
+     *
+     * This method is a workaround of problems in the database modules and can
+     * be removed, when the problem is really fixed.
+     *
+     */
+    public static void suppressSuperfluousLogging() {
+        // TODO: Remove this code and fix the core problem
+        for (Handler h : Logger.getLogger("").getHandlers()) {
+            h.setFilter(new Filter() {
+                @Override
+                public boolean isLoggable(LogRecord lr) {
+                    if (lr.getSourceClassName().equals(
+                            "org.netbeans.api.db.sql.support.SQLIdentifiers$DatabaseMetaDataQuoter")) {
+                        if (lr.getSourceMethodName().equals("getExtraNameChars")
+                                && lr.getLevel() == Level.WARNING
+                                && lr.getMessage().startsWith(
+                                "DatabaseMetaData.getExtraNameCharacters() failed")) {
+                            return false;
+                        } else if (lr.getSourceMethodName().equals("needToQuote")
+                                && lr.getLevel().intValue() <= Level.INFO.intValue()) {
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
+                }
+            });
         }
-        return bytes;
     }
-
-    public static char[] bytes2Chars(byte[] bytes) {
-        char[] result = new char[bytes.length / 2];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = (char) (((bytes[i * 2] & 0x00ff) * 256) + (bytes[i * 2 + 1] & 0x00ff));
-        }
-        return result;
-    }
-
-    /** Tries to set permissions on preferences storage file to -rw------- */
-    public static void goMinusR(Preferences p) {
-        File props = new File(System.getProperty("netbeans.user"), ("config/Preferences" + p.absolutePath()).replace('/', File.separatorChar) + ".properties");
-        if (props.isFile()) {
-            props.setReadable(false, false); // seems to be necessary, not sure why
-            props.setReadable(true, true);
-            LOG.log(Level.FINE, "chmod go-r {0}", props);
-        } else {
-            LOG.log(Level.FINE, "no such file to chmod: {0}", props);
-        }
-    }
-
 }

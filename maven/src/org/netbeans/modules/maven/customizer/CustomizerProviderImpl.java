@@ -421,7 +421,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     writer.write(mapping, doc, outStr, form);
                 } catch (JDOMException exc){
                     //throw (IOException) new IOException("Cannot parse the nbactions.xml by JDOM.").initCause(exc); //NOI18N
-                    ProblemReporterImpl impl = project != null ? project.getLookup().lookup(ProblemReporterImpl.class) : null;
+                    //TODO this would need it's own problem provider, but how to access it in project lookup if all are merged into one?
+                    NbMavenProjectImpl prj = project != null ? project.getLookup().lookup(NbMavenProjectImpl.class) : null;
+                    ProblemReporterImpl impl = prj != null ? prj.getProblemReporter() : null;
                     if (impl != null && !impl.hasReportWithId(BROKEN_NBACTIONS)) {
                         ProblemReport rep = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                                 TXT_Problem_Broken_Actions(),

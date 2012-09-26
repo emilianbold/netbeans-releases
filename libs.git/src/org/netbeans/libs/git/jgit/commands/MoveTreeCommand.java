@@ -107,7 +107,7 @@ abstract class MoveTreeCommand extends GitCommand {
                     DirCacheEntry e = treeWalk.getTree(0, DirCacheBuildIterator.class).getDirCacheEntry();
                     if (e != null) {
                         if (targetFilter.include(treeWalk)) {
-                            if (Utils.isUnderOrEqual(treeWalk, Collections.singletonList(sourceFilter))) {
+                            if (Utils.isUnderOrEqual(treeWalk, Collections.singletonList(targetFilter))) {
                                 monitor.notifyWarning(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Warning_IndexEntryExists"), path)); //NOI18N
                             } else {
                                 // keep in index the files not directly under the path filter (as symlinks e.g.)
