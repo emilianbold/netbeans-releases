@@ -39,17 +39,58 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.spi;
+package org.netbeans.modules.web.common.api;
 
+import org.netbeans.modules.web.common.spi.DependentFileQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
- * See DependentFileQuery API for more info.
+ * An API entry point to query dependency relationships between files. 
+ * None SPI is really implemented at this stage - see comments below.
  */
-public interface DependentFileQueryImplementation {
+public class DependentFileQuery {
+
+    private static Lookup.Result<DependentFileQueryImplementation> lookup = 
+            Lookup.getDefault().lookupResult(DependentFileQueryImplementation.class);
     
-    Boolean isDependent(FileObject master, FileObject dependent);
+    /**
+     * Does "master" FileObject depends on "dependent" FileObject? Typical usage will
+     * be to answer questions like "does foo.html depends on style.css?"
+     */
+    public static boolean isDependent(FileObject master, FileObject dependent) {
+        if (dependent.equals(master)) {
+            return true;
+        }
+        for (DependentFileQueryImplementation impl : lookup.allInstances()) {
+            if (Boolean.TRUE.equals(impl.isDependent(master, dependent))) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
     
-    //Set<FileObject> getDependent( FileObject fileObject );
-    
+    /*
+     * Find collection of files whose change affects changes in the view of <code>fileObject</code>.
+     * F.e. if <code>fileObject</code> is html file then its view is affected 
+     * by changes in included JS or CSS files. Related to {@link #isDependent} .
+     * @param fileObject
+     * @return collection of files from which <code>fileObject</code> depends on
+     *
+    public static Set<FileObject> getDependent(FileObject fileObject) {
+        Collection<? extends DependentFileQueryImplementation> impls = lookup.allInstances();
+        if ( impls.isEmpty() ){
+            return Collections.emptySet();
+        }
+        if ( impls.size() == 1){
+            return impls.iterator().next().getDependent(fileObject);
+        }
+        HashSet<FileObject> result = new HashSet<FileObject>();
+        for( DependentFileQueryImplementation impl : lookup.allInstances()){
+            Set<FileObject> set = impl.getDependent(fileObject);
+            result.addAll(set);
+        }
+        return result;
+    }*/
 }
