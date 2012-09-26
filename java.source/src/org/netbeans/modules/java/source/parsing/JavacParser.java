@@ -176,9 +176,10 @@ public class JavacParser extends Parser {
     static JavaFileObjectProvider jfoProvider = new DefaultJavaFileObjectProvider ();
     //No output writer like /dev/null
     private static final PrintWriter DEV_NULL = new PrintWriter(new NullWriter(), false);
-
     //Max number of dump files
-    private static final int MAX_DUMPS = Integer.getInteger("org.netbeans.modules.java.source.parsing.JavacParser.maxDumps", 255);
+    private static final int MAX_DUMPS = Integer.getInteger("org.netbeans.modules.java.source.parsing.JavacParser.maxDumps", 255);  //NOI18N
+    //Command line switch disabling partial reparse
+    private static final boolean DISABLE_PARTIAL_REPARSE = Boolean.getBoolean("org.netbeans.modules.java.source.parsing.JavacParser.no_reparse");   //NOI18N
 
     /**
      * Helper map mapping the {@link Phase} to message for performance logger
@@ -240,10 +241,11 @@ public class JavacParser extends Parser {
     JavacParser (final Collection<Snapshot> snapshots, boolean privateParser) {
         this.privateParser = privateParser;
         this.sourceCount = snapshots.size();
-        this.supportsReparse = this.sourceCount == 1 && MIME_TYPE.equals(snapshots.iterator().next().getSource().getMimeType());
+        final boolean singleJavaFile = this.sourceCount == 1 && MIME_TYPE.equals(snapshots.iterator().next().getSource().getMimeType());
+        this.supportsReparse = singleJavaFile && !DISABLE_PARTIAL_REPARSE;
         EditorCookie.Observable ec = null;
         JavaFileFilterImplementation filter = null;
-        if (this.supportsReparse) {
+        if (singleJavaFile) {
             final Source source = snapshots.iterator().next().getSource();
             FileObject fo = source.getFileObject();
             if (fo != null) {
