@@ -179,6 +179,8 @@ public final class Doctrine2CommandsXmlParser extends DefaultHandler {
                 assert currentHelp != null;
                 currentHelp.append(ch, start, length);
                 break;
+            default:
+                assert false : "Unknown content: " + content;
         }
     }
 
