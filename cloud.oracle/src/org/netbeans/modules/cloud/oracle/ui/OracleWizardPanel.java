@@ -75,6 +75,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     public static final String USERNAME = "username"; // String
     public static final String PASSWORD = "password"; // String
     public static final String ADMIN_URL = "admin-url"; // List<Node>
+    public static final String DATA_CENTER = "data-center"; // String - full name of datacenter
     public static final String IDENTITY_DOMAIN = "identity-domain"; // List<Node>
     public static final String JAVA_SERVICE_NAME = "java-service-name"; // List<Node>
     public static final String DB_SERVICE_NAME = "db-service-name"; // List<Node>
@@ -120,6 +121,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             settings.putProperty(USERNAME, component.getUserName());
             settings.putProperty(PASSWORD, component.getPassword());
             settings.putProperty(ADMIN_URL, component.getAdminUrl());
+            settings.putProperty(DATA_CENTER, component.getDataCenter());
             settings.putProperty(IDENTITY_DOMAIN, component.getIdentityDomain());
             settings.putProperty(JAVA_SERVICE_NAME, component.getJavaServiceName());
             settings.putProperty(DB_SERVICE_NAME, component.getDatabaseServiceName());
@@ -157,6 +159,8 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
         if (component == null || wd == null) {
             // ignore this case
             return "";
+        } else if (component.getDataCenter().trim().length() == 0) {
+            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingDataCenter");
         } else if (component.getJavaServiceName().trim().length() == 0) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingServiceInstance");
         } else if (component.getIdentityDomain().trim().length() == 0) {
@@ -210,7 +214,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             
             servers = new ArrayList<ServerResourceDescriptor>();
             OracleInstance ai = new OracleInstance("Oracle Cloud", OracleWizardComponent.getPrefixedUserName(component.getIdentityDomain(), component.getUserName()), 
-                    component.getPassword(), component.getAdminUrl(),
+                    component.getPassword(), component.getAdminUrl(), component.getDataCenter(), 
                     component.getIdentityDomain(), component.getJavaServiceName(), component.getDatabaseServiceName(), null, component.getSDKFolder());
             Authenticator auth = resetCurrentAuthenticator();
             try {
@@ -248,7 +252,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             String adminURL, String sdkFolder) {
         OracleInstance ai = new OracleInstance("Oracle Cloud", 
                 OracleWizardComponent.getPrefixedUserName(identityDomain, user), 
-                pwd, adminURL, identityDomain, javaServiceName, "", null, sdkFolder);
+                pwd, adminURL, "data center not needed", identityDomain, javaServiceName, "", null, sdkFolder); // NOI18N
         Authenticator auth = resetCurrentAuthenticator();
         try {
             ai.testConnection();

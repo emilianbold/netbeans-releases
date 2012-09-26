@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import oracle.cloud.paas.internal.ServiceInstanceLogCriteriaImpl;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManager;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.*;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.model.*;
@@ -116,24 +117,6 @@ public class ApplicationManagerImpl implements ApplicationManager {
     public Job stopApplication(String s, String s1, String s2) {
         try {
             return convertJob(realApplicationManager.stopApplication(s, s1, s2));
-        } catch (oracle.cloud.paas.exception.ManagerException ex) {
-            throw wrapException(ex);
-        }
-    }
-
-    @Override
-    public List<Log> listServiceInstanceLogs(String s, String s1) {
-        try {
-            return convertLogList(realApplicationManager.listServiceInstanceLogs(s, s1));
-        } catch (oracle.cloud.paas.exception.ManagerException ex) {
-            throw wrapException(ex);
-        }
-    }
-
-    @Override
-    public void fetchServiceInstanceLog(String s, String s1, String s2, OutputStream outputstream) {
-        try {
-            realApplicationManager.fetchServiceInstanceLog(s, s1, s2, outputstream);
         } catch (oracle.cloud.paas.exception.ManagerException ex) {
             throw wrapException(ex);
         }
@@ -274,4 +257,14 @@ public class ApplicationManagerImpl implements ApplicationManager {
         }
         return new ManagerException(ex);
     }
+
+    @Override
+    public InputStream queryServiceInstanceLogs(String s, String s1) {
+        try {
+            return realApplicationManager.queryServiceInstanceLogs(s, s1, new ServiceInstanceLogCriteriaImpl());
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
+    }
+
 }

@@ -65,8 +65,6 @@ public interface ApplicationManager extends JobManager {
 
     public Job stopApplication(String s, String s1, String s2);
 
-    public List<Log> listServiceInstanceLogs(String s, String s1);
-
-    public void fetchServiceInstanceLog(String s, String s1, String s2, OutputStream outputstream);
-
+    public InputStream queryServiceInstanceLogs(String s, String s1);
+    
 }

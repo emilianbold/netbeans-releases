@@ -64,6 +64,7 @@ public class OracleInstanceManager {
     static final String PASSWORD = "password"; // NOI18N
     private static final String NAME = "name"; // NOI18N
     private static final String ADMIN_URL = "admin-url"; // NOI18N
+    private static final String DATA_CENTER = "data-center"; // NOI18N
     private static final String IDENTITY_DOMAIN = "identity-domain"; // NOI18N
     private static final String JAVA_SERVICE_NAME = "java-service-name"; // NOI18N
     private static final String DATABASE_SERVICE_NAME = "db-service-name"; // NOI18N
@@ -111,6 +112,7 @@ public class OracleInstanceManager {
         InstanceProperties props = InstancePropertiesManager.getInstance().createProperties(ORACLE_IP_NAMESPACE);
         saveUsernameAndPassword(ai);
         props.putString(ADMIN_URL, ai.getAdminURL());
+        props.putString(DATA_CENTER, ai.getDataCenter());
         props.putString(IDENTITY_DOMAIN, ai.getIdentityDomain());
         props.putString(JAVA_SERVICE_NAME, ai.getJavaServiceName());
         props.putString(DATABASE_SERVICE_NAME, ai.getDatabaseServiceName());
@@ -125,6 +127,7 @@ public class OracleInstanceManager {
             String name = props.getString(NAME, null); // NOI18N
             if (name.equals(ai.getName())) {
                 props.putString(ADMIN_URL, ai.getAdminURL());
+                props.putString(DATA_CENTER, ai.getDataCenter());
                 props.putString(IDENTITY_DOMAIN, ai.getIdentityDomain());
                 props.putString(JAVA_SERVICE_NAME, ai.getJavaServiceName());
                 props.putString(DATABASE_SERVICE_NAME, ai.getDatabaseServiceName());
@@ -170,8 +173,9 @@ public class OracleInstanceManager {
             String javaServiceName = props.getString(JAVA_SERVICE_NAME, "undefined"); // NOI18N
             String databaseServiceName = props.getString(DATABASE_SERVICE_NAME, ""); // NOI18N
             String onPremise = props.getString(ON_PREMISE_SERVICE_INSTANCE_ID, null); // NOI18N
+            String dataCenter = props.getString(DATA_CENTER, "us1"); // NOI18N
             String sdkFolder = CloudSDKHelper.getSDKFolder();
-            result.add(new OracleInstance(name, adminURL, identityDomain, javaServiceName, databaseServiceName, onPremise, sdkFolder));
+            result.add(new OracleInstance(name, adminURL, dataCenter, identityDomain, javaServiceName, databaseServiceName, onPremise, sdkFolder));
         }
         return result;
     }
