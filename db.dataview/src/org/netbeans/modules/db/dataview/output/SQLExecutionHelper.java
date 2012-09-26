@@ -207,7 +207,7 @@ class SQLExecutionHelper {
             }
         }
         Loader l = new Loader();
-        Future f = rp.submit(l);
+        Future<?> f = rp.submit(l);
         try {
             f.get();
         } catch (InterruptedException ex) {
@@ -409,11 +409,6 @@ class SQLExecutionHelper {
                 pstmt = conn.prepareStatement(updateStmt);
                 int pos = 1;
                 for (Object val : values) {
-                    // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-                    if (DataViewUtils.isSQLConstantString(val)) {
-                        continue;
-                    }
-
                     DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
                     pos++;
                 }
@@ -654,7 +649,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Could not get total row count " + ex); // NOI18N
+            LOGGER.log(Level.SEVERE, "Could not get total row count ", ex); // NOI18N
         }
     }
 
@@ -682,7 +677,7 @@ class SQLExecutionHelper {
                 stmt.setFetchSize(pageSize);
             } catch (SQLException e) {
                 // ignore -  used only as a hint to the driver to optimize
-                LOGGER.log(Level.WARNING, "Unable to set Fetch size" + e); // NOI18N
+                LOGGER.log(Level.WARNING, "Unable to set Fetch size", e); // NOI18N
             }
 
             try {
@@ -692,7 +687,7 @@ class SQLExecutionHelper {
                     stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
                 }
             } catch (SQLException exc) {
-                LOGGER.log(Level.WARNING, "Unable to set Max row size" + exc); // NOI18N
+                LOGGER.log(Level.WARNING, "Unable to set Max row size", exc); // NOI18N
             }
         } else {
             stmt = conn.createStatement();
@@ -701,7 +696,7 @@ class SQLExecutionHelper {
     }
 
     private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
-        LOGGER.log(Level.FINE, "Statement: " + sql); // NOI18N
+        LOGGER.log(Level.FINE, "Statement: {0}", sql); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executestmt") + sql);
 
         long startTime = System.currentTimeMillis();
@@ -712,13 +707,13 @@ class SQLExecutionHelper {
             try {
                 isResultSet = stmt.execute(appendLimitIfRequired(sql));
             } catch (NullPointerException ex) {
-                LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [" + sql + "], cause: " + ex);
+                LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[] {sql, ex});
                 throw new SQLException(ex);
             } catch (SQLException sqlExc) {
                 if (sqlExc.getErrorCode() == 1064 && sqlExc.getSQLState().equals("37000")) {
                     isResultSet = stmt.execute(sql);
                 } else {
-                    LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [" + sql + "], cause: " + sqlExc);
+                    LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[] {sql, sqlExc});
                     throw sqlExc;
                 }
             }

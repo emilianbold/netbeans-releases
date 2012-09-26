@@ -79,7 +79,8 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
                 }
             });
             charsetSelect = new JComboBox();
-            charsetSelect.setModel(new DefaultComboBoxModel(charset.toArray()));
+            charsetSelect.setModel(new DefaultComboBoxModel(
+                    charset.toArray(new Charset[charset.size()])));
             charsetSelect.setSelectedItem(Charset.defaultCharset());
             this.add(charsetSelect);
         }
