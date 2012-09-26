@@ -308,7 +308,7 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     }
     
     public String getDataCenter() {
-        String s = ((JTextField)jDataCenterComboBox.getEditor()).getText().trim();
+        String s = ((JTextField)jDataCenterComboBox.getEditor().getEditorComponent()).getText().trim();
         return s;
     }
     
