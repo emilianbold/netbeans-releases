@@ -163,7 +163,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             }
             if( !Switches.isCtrlTabWindowSwitchingInJTableEnabled() ) {
                 Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-                if( c instanceof JComponent ) {
+                if( c instanceof JComponent && !(c instanceof JEditorPane)) {
                     JComponent jc = ( JComponent ) c;
                     if( jc.getFocusTraversalKeysEnabled() ) {
                         Set<AWTKeyStroke> keys = jc.getFocusTraversalKeys( KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS );
