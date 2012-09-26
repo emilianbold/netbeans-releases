@@ -667,11 +667,14 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
     </target>
     
     <target name="findbugs" depends="build-init,jar,findbugs-init">
-        <property name="findbugs.continue.after.error" value="false"/>
         <property name="report.dir" location="${nb.build.dir}/findbugs"/>
         <mkdir dir="${report.dir}"/>
         <property name="report.file" location="${report.dir}/${code.name.base.dashes}.xml"/>
         <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="${findbugs.home}/lib/findbugs-ant.jar"/>
+
+        <condition property="findbugs.failOnError" value="false" else="true">
+            <istrue value="${findbugs.continue.after.error}"/>
+        </condition>
 
         <path id="findbugs.class.path.ref">
             <path path="${module.run.classpath}"/> <!-- XXX or module.processor.classpath? -->
@@ -684,7 +687,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <findbugs home="${findbugs.home}"
               output="xml"
               outputFile="${report.file}"
-              failOnError="${findbugs.continue.after.error}"
+              failOnError="${findbugs.failOnError}"
               jvmargs="-Xmx800m">
             <auxClasspath path="${findbugs.class.path}" />
             <sourcePath path="${src.dir}" />
