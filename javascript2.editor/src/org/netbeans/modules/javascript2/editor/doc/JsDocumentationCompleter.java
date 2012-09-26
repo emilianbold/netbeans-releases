@@ -127,6 +127,10 @@ public class JsDocumentationCompleter {
                                 String fqn = getFqnName(jsParserResult, nearestNode);
                                 jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), fqn);
                             }
+                            // when no code/object for doc comment found, generate just empty doc comment - issue #218945
+                            if (jsObject == null) {
+                                return;
+                            }
                             if (isField(jsObject)) {
                                 generateFieldComment(doc, offset, indent, jsParserResult, jsObject);
                             } else if (isFunction(jsObject)) {
