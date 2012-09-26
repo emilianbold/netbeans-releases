@@ -152,7 +152,7 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
         buffer.append(" [displayName: "); // NOI18N
         buffer.append(displayName);
         buffer.append(", commands: "); // NOI18N
-        buffer.append(commands);
+        buffer.append(Arrays.toString(commands));
         buffer.append(", description: "); // NOI18N
         buffer.append(description);
         buffer.append(", help: "); // NOI18N

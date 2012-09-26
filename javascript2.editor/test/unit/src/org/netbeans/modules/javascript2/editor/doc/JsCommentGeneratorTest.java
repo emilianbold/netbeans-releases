@@ -121,6 +121,14 @@ public class JsCommentGeneratorTest extends JsTestBase {
         insertBreak(getOriginalContent(), getExpectedContent());
     }
 
+    public void testIssue218411_1() throws Exception {
+        insertBreak(getOriginalContent(), getExpectedContent());
+    }
+
+    public void testIssue218411_2() throws Exception {
+        insertBreak(getOriginalContent(), getExpectedContent());
+    }
+
     @Override
     public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         int sourcePos = source.indexOf('^');
@@ -194,10 +202,6 @@ public class JsCommentGeneratorTest extends JsTestBase {
 
     private String getTestName(boolean expected) {
         String name = getName();
-        int indexOf = name.indexOf("_");
-        if (indexOf != -1) {
-            name = name.substring(0, indexOf);
-        }
         if (expected) {
             return name + "-expected";
         } else {
