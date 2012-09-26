@@ -90,6 +90,22 @@ public final class LookupProviderSupport {
     public static Lookup createCompositeLookup(Lookup baseLookup, String folderPath) {
         return new DelegatingLookupImpl(baseLookup, Lookups.forPath(folderPath), folderPath);
     }
+    /**
+     * Creates a project lookup instance that combines the content from multiple sources. 
+     * A convenience factory method for implementors of Project.
+     * <p>The pattern {@code Projects/TYPE/Lookup} is conventional for the folder path, and required if
+     * {@link org.netbeans.spi.project.LookupProvider.Registration},
+     * {@link org.netbeans.spi.project.LookupMerger.Registration}, or
+     * {@link org.netbeans.spi.project.ProjectServiceProvider} are used.
+     * 
+     * @param baseLookup initial, base content of the project lookup created by the project owner
+     * @param providers lookup containing the {@link LookupProvider} instances, typically created by aggregating multiple folder paths (see {@link Lookups#forPath})
+     * @return a lookup to be used in project
+     * @since 1.49
+     */
+    public static Lookup createCompositeLookup(Lookup baseLookup, Lookup providers) {
+        return new DelegatingLookupImpl(baseLookup, providers, "<multiplePaths>");
+    }
     
     /**
      * Factory method for creating {@link org.netbeans.spi.project.LookupMerger} instance that merges

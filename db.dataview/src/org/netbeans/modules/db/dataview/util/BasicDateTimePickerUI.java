@@ -166,11 +166,8 @@ public class BasicDateTimePickerUI  extends ComponentUI {
         
         popupButton = createPopupButton();
         if (popupButton != null) {
-            // this is a trick to get hold of the client prop which
-            // prevents closing of the popup
-            JComboBox box = new JComboBox();
-            Object preventHide = box.getClientProperty("doNotCancelPopup");
-            popupButton.putClientProperty("doNotCancelPopup", preventHide);
+            popupButton.putClientProperty("doNotCancelPopup",
+                    createDoNotCancelPopupClientProperty());
             datePicker.add(popupButton);
         }
             updateChildLocale(datePicker.getLocale());
@@ -252,8 +249,9 @@ public class BasicDateTimePickerUI  extends ComponentUI {
      * PRE: keybindings installed on picker.
      */
     protected void installLinkPanelKeyboardActions() {
-        if (datePicker.getLinkPanel() == null)
+        if (datePicker.getLinkPanel() == null)  {
             return;
+        }
         ActionMap map = datePicker.getLinkPanel().getActionMap();
         map.put(JXDateTimePicker.HOME_COMMIT_KEY, datePicker.getActionMap().get(
                 JXDateTimePicker.HOME_COMMIT_KEY));
@@ -277,7 +275,9 @@ public class BasicDateTimePickerUI  extends ComponentUI {
      * 
      */
     protected void uninstallLinkPanelKeyboardActions(JComponent panel) {
-        if (panel == null) return;
+        if (panel == null) {
+            return;
+        }
         ActionMap map = panel.getActionMap();
         map.remove(JXDateTimePicker.HOME_COMMIT_KEY); 
         map.remove(JXDateTimePicker.HOME_NAVIGATE_KEY); 
@@ -705,7 +705,9 @@ public class BasicDateTimePickerUI  extends ComponentUI {
      *    is intermediate
      */
     protected void updateFromSelectionChanged(EventType eventType, boolean adjusting) {
-        if (adjusting) return;
+        if (adjusting) {
+            return;
+        }
         updateEditorValue();
     }
 
@@ -755,11 +757,8 @@ public class BasicDateTimePickerUI  extends ComponentUI {
             oldEditor.putClientProperty("doNotCancelPopup", null);
         }
         datePicker.add(datePicker.getEditor());
-        // this is a trick to get hold of the client prop which
-        // prevents closing of the popup
-        JComboBox box = new JComboBox();
-        Object preventHide = box.getClientProperty("doNotCancelPopup");
-        datePicker.getEditor().putClientProperty("doNotCancelPopup", preventHide);
+        datePicker.getEditor().putClientProperty("doNotCancelPopup",
+                createDoNotCancelPopupClientProperty());
 
         updateEditorValue();
         if (updateListeners) {
@@ -942,7 +941,9 @@ public class BasicDateTimePickerUI  extends ComponentUI {
      * control popup visibility?
      */
     public void hidePopup() {
-        if (popup != null) popup.setVisible(false);
+        if (popup != null) {
+            popup.setVisible(false);
+        }
     }
 
     public boolean isPopupVisible() {
@@ -980,7 +981,7 @@ public class BasicDateTimePickerUI  extends ComponentUI {
      */
     private Action createCommitAction() {
         Action action = new AbstractAction() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 commit();
             }
@@ -997,7 +998,7 @@ public class BasicDateTimePickerUI  extends ComponentUI {
      */
     private Action createCancelAction() {
         Action action = new AbstractAction() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 cancel();
             }
@@ -1008,7 +1009,7 @@ public class BasicDateTimePickerUI  extends ComponentUI {
 
     private Action createHomeAction(final boolean commit) {
         Action action = new AbstractAction( ) {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 home(commit);
                 
@@ -1054,6 +1055,7 @@ public class BasicDateTimePickerUI  extends ComponentUI {
             editor.getActionMap().put(TEXT_CANCEL_KEY, this);
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             cancelAction.actionPerformed(null);
             cancel();
@@ -1088,6 +1090,7 @@ public class BasicDateTimePickerUI  extends ComponentUI {
             datePicker.getEditor().requestFocusInWindow();
 //            datePicker.requestFocusInWindow();
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     popup.show(datePicker,
                             0, datePicker.getHeight());
@@ -1114,6 +1117,7 @@ public class BasicDateTimePickerUI  extends ComponentUI {
             super("TogglePopup");
         }
 
+        @Override
         public void actionPerformed(ActionEvent ev) {
             toggleShowPopup();
         }
@@ -1165,9 +1169,11 @@ public class BasicDateTimePickerUI  extends ComponentUI {
 //------------- implement Mouse/MotionListener        
         private boolean _forwardReleaseEvent = false;
 
+        @Override
         public void mouseClicked(MouseEvent ev) {
         }
 
+        @Override
         public void mousePressed(MouseEvent ev) {
             if (!datePicker.isEnabled()) {
                 return;
@@ -1181,6 +1187,7 @@ public class BasicDateTimePickerUI  extends ComponentUI {
             toggleShowPopup();
         }
 
+        @Override
         public void mouseReleased(MouseEvent ev) {
             if (!datePicker.isEnabled() || !datePicker.isEditable()) {
                 return;
@@ -1196,12 +1203,15 @@ public class BasicDateTimePickerUI  extends ComponentUI {
             }
         }
 
+        @Override
         public void mouseEntered(MouseEvent ev) {
         }
 
+        @Override
         public void mouseExited(MouseEvent ev) {
         }
 
+        @Override
         public void mouseDragged(MouseEvent ev) {
             if (!datePicker.isEnabled() || !datePicker.isEditable()) {
                 return;
@@ -1219,10 +1229,11 @@ public class BasicDateTimePickerUI  extends ComponentUI {
             monthView.dispatchEvent(ev);
         }
 
+        @Override
         public void mouseMoved(MouseEvent ev) {
         }
 //------------------ implement DateSelectionListener
-        
+        @Override
         public void valueChanged(DateSelectionEvent ev) {
             updateFromSelectionChanged(ev.getEventType(), ev.isAdjusting());
         }
@@ -1231,6 +1242,7 @@ public class BasicDateTimePickerUI  extends ComponentUI {
         /**
          * {@inheritDoc}
          */
+        @Override
         public void propertyChange(PropertyChangeEvent e) {
             if (e.getSource() == datePicker) {
                 datePickerPropertyChange(e);
@@ -1259,8 +1271,7 @@ public class BasicDateTimePickerUI  extends ComponentUI {
          */
         private void editorPropertyChange(PropertyChangeEvent evt) {
             if ("value".equals(evt.getPropertyName())) {
-                ;
-                
+
                 Object oldVal = evt.getOldValue();
                 Object newVal = evt.getNewValue();
                 
@@ -1353,19 +1364,23 @@ public class BasicDateTimePickerUI  extends ComponentUI {
         }
 
 //-------------- implement LayoutManager
-        
+        @Override
         public void addLayoutComponent(String name, Component comp) { }
 
+        @Override
         public void removeLayoutComponent(Component comp) { }
 
+        @Override
         public Dimension preferredLayoutSize(Container parent) {
             return parent.getPreferredSize();
         }
 
+        @Override
         public Dimension minimumLayoutSize(Container parent) {
             return parent.getMinimumSize();
         }
 
+        @Override
         public void layoutContainer(Container parent) {
             Insets insets = datePicker.getInsets();
             int width = datePicker.getWidth() - insets.left - insets.right;
@@ -1389,9 +1404,11 @@ public class BasicDateTimePickerUI  extends ComponentUI {
         }
 
 // ------------- implement actionListener (listening to monthView actionEvent)
-        
+        @Override
         public void actionPerformed(ActionEvent e) {
-            if (e == null) return;
+            if (e == null) {
+                return;
+            }
             if (e.getSource() == datePicker.getMonthView()) {
                 monthViewActionPerformed(e);
             } else if (e.getSource() == datePicker.getEditor()) {
@@ -1430,8 +1447,11 @@ public class BasicDateTimePickerUI  extends ComponentUI {
          * Do the same as combo: manually pass-on the focus to the editor.
          * 
          */
+        @Override
         public void focusGained(FocusEvent e) {
-            if (e.isTemporary()) return;
+            if (e.isTemporary()) {
+                return;
+            }
             popupRemover.load();
             if (e.getSource() == datePicker) {
                datePicker.getEditor().requestFocusInWindow(); 
@@ -1460,6 +1480,7 @@ public class BasicDateTimePickerUI  extends ComponentUI {
          * 
          * listen to keyboardFocusManager?
          */
+        @Override
         public void focusLost(FocusEvent e) {
             
         }
@@ -1498,6 +1519,7 @@ public class BasicDateTimePickerUI  extends ComponentUI {
             unload(true);
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (!isPopupVisible()) {
                 unload(false);
@@ -1606,5 +1628,10 @@ public class BasicDateTimePickerUI  extends ComponentUI {
     
 //------------ utility methods
 
-
+    private Object createDoNotCancelPopupClientProperty() {
+        // this is a trick to get hold of the client prop which
+        // prevents closing of the popup
+        JComboBox box = new JComboBox();
+        return box.getClientProperty("doNotCancelPopup");
+    }
 }

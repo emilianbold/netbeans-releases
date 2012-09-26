@@ -632,7 +632,7 @@ public class RuleEditorPanel extends JPanel {
     public Rule getRule() {
         return rule;
     }
-
+    
     public void setRule(final Rule rule) {
         LOG.log(Level.FINE, "setRule({0})", rule);
 

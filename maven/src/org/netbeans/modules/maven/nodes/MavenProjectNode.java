@@ -50,17 +50,15 @@ import java.util.Collection;
 import java.util.StringTokenizer;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.problem.ProblemReport;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
-import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider.ProjectProblem;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.filesystems.FileUtil;
@@ -81,7 +79,6 @@ public class MavenProjectNode extends AbstractNode {
 
      private NbMavenProjectImpl project;
      private final ProjectInformation info;
-     private ProblemReporterImpl reporter;
 
      public MavenProjectNode(Lookup lookup, NbMavenProjectImpl proj) {
         super(NodeFactorySupport.createCompositeChildren(proj, "Projects/org-netbeans-modules-maven/Nodes"), lookup); //NOI18N
@@ -100,22 +97,22 @@ public class MavenProjectNode extends AbstractNode {
                 }
             }
         });
-        reporter = proj.getLookup().lookup(ProblemReporterImpl.class);
-        reporter.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        fireIconChange();
-                        fireOpenedIconChange();
-                        fireNameChange(null, getName());
-                        fireDisplayNameChange(null, getDisplayName());
-                        fireShortDescriptionChange(null, getShortDescription());
-                    }
-                });
-            }
-        });
+        proj.getLookup().lookup(ProjectProblemsProvider.class).addPropertyChangeListener(new PropertyChangeListener() {
+             @Override
+             public void propertyChange(PropertyChangeEvent evt) {
+                 if (ProjectProblemsProvider.PROP_PROBLEMS.equals(evt.getPropertyName())) {
+                     SwingUtilities.invokeLater(new Runnable() {
+                         @Override
+                         public void run() {
+                             fireNameChange(null, getName());
+                             fireDisplayNameChange(null, getDisplayName());
+                             fireShortDescriptionChange(null, getShortDescription());
+                         }
+                     });
+
+                 }
+             }
+         });
     }
 
     public @Override String getName() {
@@ -144,14 +141,12 @@ public class MavenProjectNode extends AbstractNode {
 
     @Override
     public Image getIcon(int param) {
-        Image img = ImageUtilities.icon2Image(info.getIcon());
-        return img;
+        return ImageUtilities.icon2Image(info.getIcon());
     }
 
     @Override
     public Image getOpenedIcon(int param) {
-        Image img = ImageUtilities.icon2Image(info.getIcon());
-        return img;
+        return ImageUtilities.icon2Image(info.getIcon());
     }
 
     public @Override Action[] getActions(boolean param) {
@@ -193,11 +188,11 @@ public class MavenProjectNode extends AbstractNode {
             buf.append(DESC_Project5()).append("</i><b> ").append(mp.getPackaging()).append("</b><br><i>");//NOI18N
         }
         buf.append(DESC_Project6()).append("</i> ").append(breakPerLine(desc, DESC_Project5().length()));//NOI18N
-        Collection<ProblemReport> problems = reporter.getReports();
+        Collection<? extends ProjectProblem> problems = project.getLookup().lookup(ProjectProblemsProvider.class).getProblems();
         if (!problems.isEmpty()) {
             buf.append("<br><b>").append(DESC_Project7()).append("</b><br><ul>");//NOI18N
-            for (ProblemReport elem : problems) {
-                buf.append("<li>").append(elem.getShortDescription()).append("</li>");//NOI18N
+            for (ProjectProblem elem : problems) {
+                buf.append("<li>").append(elem.getDisplayName()).append("</li>");//NOI18N
             }
             buf.append("</ul>");//NOI18N
         }

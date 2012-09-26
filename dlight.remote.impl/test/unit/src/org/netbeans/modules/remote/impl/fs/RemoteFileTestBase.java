@@ -46,14 +46,10 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -70,11 +66,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 
 /**
  *
@@ -87,74 +79,6 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         System.setProperty("socket.connection.timeout", "30000");
         System.setProperty("remote.throw.assertions", "true");
     }
-
-    protected static class FCL implements FileChangeListener {
-
-        private final String listenerName;
-        private final String prefixToStrip;
-        private final PrintStream out; 
-        private final boolean checkExpected;
-
-        public FCL(String name, String prefixToStrip, PrintStream out, boolean checkExpected) {
-            this.listenerName = name;
-            this.prefixToStrip = prefixToStrip;
-            this.out = out;
-            this.checkExpected = checkExpected;
-        }
-
-        private void register(String eventKind, FileEvent fe) {
-            String src = stripPrefix(((FileObject) fe.getSource()).getPath());
-            String obj = stripPrefix(fe.getFile().getPath());
-            String exp = checkExpected ? ("exp=" + Boolean.toString(fe.isExpected())) : "";
-            out.printf("FileEvent[%-20s] %-20s SRC %-20s OBJ %-20s %s\n", listenerName, eventKind, src, obj, exp);
-        }
-        
-        private String stripPrefix(String path) {
-            if (path.startsWith(prefixToStrip)) {
-                path = path.substring(prefixToStrip.length());
-                if (path.startsWith("/")) {
-                    path =path.substring(1);
-                }
-            }
-            if (path.length() == 0) {
-                path = ".";
-            }
-            return path;
-        }
-        
-        @Override
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            register("fileAttributeChanged", fe);
-        }
-
-        @Override
-        public void fileChanged(FileEvent fe) {
-            register("fileChanged", fe);
-        }
-
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            register("fileDataCreated", fe);
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            register("fileDeleted", fe);
-        }
-
-        @Override
-        public void fileFolderCreated(FileEvent fe) {
-            register("fileFolderCreated", fe);
-        }
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            String src = stripPrefix(((FileObject) fe.getSource()).getPath());
-            String obj = stripPrefix(fe.getFile().getPath());
-            out.printf("FileEvent[%s]: %s src=%s obj=%s oldName=%s oldExt=%s exp=%b\n", listenerName, "fileRenamed", src, obj, fe.getName(), fe.getExt(), fe.isExpected());
-        }        
-    }
-
     
     protected RemoteFileSystem fs;
     protected RemoteFileObject rootFO;
@@ -223,67 +147,6 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         }
     }
 
-    /**
-     * Creates a directory structure described by parameters
-     * @param env execution environment
-     * @param baseDir base directory; of not exists, it is created ; if exists, the content is removed
-     * @param creationData array of strings, a string per file; a string should have format below,
-     *        for plain file, directory and link resprctively:
-     *         "- plain-filen-name"
-     *         "d directory-name"
-     *         "l link-target link-name"
-     * @throws Exception 
-     */
-    public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData) throws IOException {
-        if (baseDir == null || baseDir.length() == 0 || baseDir.equals("/")) {
-            throw new IllegalArgumentException("Illegal base dir: " + baseDir);
-        }
-        StringBuilder script = new StringBuilder();
-        try {
-            script.append("mkdir -p \"").append(baseDir).append("\";\n");
-            script.append("cd \"").append(baseDir).append("\";\n");
-            script.append("rm -rf *").append(";\n");
-            Set<String> checkedPaths = new HashSet<String>();
-            for (String data : creationData) {
-                if (data.length() < 3 || data.charAt(1) != ' ') {
-                    throw new IllegalArgumentException("wrong format: " + data);
-                }
-                String[] parts = data.split(" ");
-                String path = parts[1];
-                int slashPos = path.lastIndexOf('/');
-                if (slashPos > 0) {
-                    String dir = path.substring(0, slashPos);
-                    if (!checkedPaths.contains(dir)) {
-                        checkedPaths.add(dir);
-                        script.append("mkdir -p \"").append(dir).append("\";\n");
-                    }
-                }
-                switch(data.charAt(0)) {
-                    case '-':
-                        script.append("touch \"").append(path).append("\";\n");
-                        break;
-                    case 'd':
-                        script.append("mkdir -p \"").append(path).append("\";\n");
-                        break;
-                    case 'l':
-                        String link = parts[2];
-                        script.append("ln -s \"").append(path).append("\" \"").append(link).append("\";\n");
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unexpected 1-st char: " + data);
-                }
-            }
-        } catch (Throwable thr) {
-            throw new IllegalArgumentException("Error creating script", thr);
-        }
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "sh", "-c", script.toString());
-        if (res.exitCode != 0) {
-            assertTrue("script failed at " + env.getDisplayName() + " rc=" + res.exitCode + " err=" + res.error, false);
-        } else if (res.error != null && res.error.length() > 0) {
-            assertTrue("script failed at " + env.getDisplayName() + " rc=" + res.exitCode + " err=" + res.error, false);
-        }
-    }
-    
     protected String mkTempAndRefreshParent() throws Exception {
         return mkTempAndRefreshParent(false);
     }
@@ -305,14 +168,14 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         return res.output;
     }
 
-    protected String executeInDir(String dir, String command, String... args) {
-        return executeInDir(dir, execEnv, command, args);
-    }
-
     protected static String executeInDir(String dir, ExecutionEnvironment env, String command, String... args) {
         ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(dir, env, command, args);
         assertEquals(command + ' ' + args + " at " + env.getDisplayName() + " failed: " + res.error, 0, res.exitCode);
         return res.output;
+    }
+    
+    protected String executeInDir(String dir, String command, String... args) {
+        return executeInDir(dir, execEnv, command, args);
     }
 
     protected RemoteFileObject getFileObject(String path) throws Exception {
