@@ -438,7 +438,27 @@ public final class FormatToken {
                 return false;
             }
         },
-        AFTER_ARRAY_LITERAL {
+        AFTER_ARRAY_LITERAL_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BEFORE_ARRAY_LITERAL_END {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_ARRAY_LITERAL_ITEM {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
@@ -468,7 +488,6 @@ public final class FormatToken {
                 return false;
             }
         },
-
         // a bit special tokens to detect proper continuation
         AFTER_PROPERTY {
             @Override

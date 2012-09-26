@@ -59,7 +59,7 @@
           <Properties>
             <Property name="focusCycleRoot" type="boolean" value="true"/>
             <Property name="focusTraversalPolicy" type="java.awt.FocusTraversalPolicy" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new java.awt.FocusTraversalPolicy() {&#xa;            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){&#xa;                return variablesCombo;&#xa;            }//end getDefaultComponent&#xa;&#xa;            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){&#xa;                return variablesCombo;&#xa;            }//end getFirstComponent&#xa;&#xa;            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){&#xa;                return assignOpsCombo;&#xa;            }//end getLastComponent&#xa;&#xa;            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){&#xa;                if(aComponent ==  chainedMethodCallsCombo){&#xa;                    return afterDotCheckBox;&#xa;                }&#xa;                if(aComponent ==  afterDotCheckBox){&#xa;                    return arrayInitCombo;&#xa;                }&#xa;                if(aComponent ==  methodCallArgsCombo){&#xa;                    return chainedMethodCallsCombo;&#xa;                }&#xa;                if(aComponent ==  methodParamsCombo){&#xa;                    return methodCallArgsCombo;&#xa;                }&#xa;                if(aComponent ==  variablesCombo){&#xa;                    return methodParamsCombo;&#xa;                }&#xa;                if(aComponent ==  doWhileStatementCombo){&#xa;                    return withStatementCombo;&#xa;                }&#xa;                if(aComponent ==  withStatementCombo){&#xa;                    return objectsCombo;&#xa;                }&#xa;                if(aComponent ==  objectsCombo){&#xa;                    return propertiesCombo;&#xa;                }&#xa;                if(aComponent ==  propertiesCombo){&#xa;                    return binaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  ternaryOpsCombo){&#xa;                    return afterTernaryOpsCheckBox;&#xa;                }&#xa;                if(aComponent ==  afterTernaryOpsCheckBox){&#xa;                    return assignOpsCombo;&#xa;                }&#xa;                if(aComponent ==  binaryOpsCombo){&#xa;                    return afterBinaryOpsCheckBox;&#xa;                }&#xa;                if(aComponent ==  afterBinaryOpsCheckBox){&#xa;                    return ternaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  whileStatementComboBox){&#xa;                    return doWhileStatementCombo;&#xa;                }&#xa;                if(aComponent ==  forStatementCombo){&#xa;                    return ifStatementCombo;&#xa;                }&#xa;                if(aComponent ==  ifStatementCombo){&#xa;                    return whileStatementComboBox;&#xa;                }&#xa;                if(aComponent ==  arrayInitCombo){&#xa;                    return forCombo;&#xa;                }&#xa;                if(aComponent ==  forCombo){&#xa;                    return forStatementCombo;&#xa;                }&#xa;                return variablesCombo;//end getComponentAfter&#xa;            }&#xa;            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){&#xa;                if(aComponent ==  afterDotCheckBox){&#xa;                    return chainedMethodCallsCombo;&#xa;                }&#xa;                if(aComponent ==  arrayInitCombo){&#xa;                    return afterDotCheckBox;&#xa;                }&#xa;                if(aComponent ==  chainedMethodCallsCombo){&#xa;                    return methodCallArgsCombo;&#xa;                }&#xa;                if(aComponent ==  methodCallArgsCombo){&#xa;                    return methodParamsCombo;&#xa;                }&#xa;                if(aComponent ==  methodParamsCombo){&#xa;                    return variablesCombo;&#xa;                }&#xa;                if(aComponent ==  binaryOpsCombo){&#xa;                    return propertiesCombo;&#xa;                }&#xa;                if(aComponent ==  propertiesCombo){&#xa;                    return objectsCombo;&#xa;                }&#xa;                if(aComponent ==  objectsCombo){&#xa;                    return withStatementCombo;&#xa;                }&#xa;                if(aComponent ==  assignOpsCombo){&#xa;                    return afterTernaryOpsCheckBox;&#xa;                }&#xa;                if(aComponent ==  afterTernaryOpsCheckBox){&#xa;                    return ternaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  afterBinaryOpsCheckBox){&#xa;                    return binaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  ternaryOpsCombo){&#xa;                    return afterBinaryOpsCheckBox;&#xa;                }&#xa;                if(aComponent ==  doWhileStatementCombo){&#xa;                    return whileStatementComboBox;&#xa;                }&#xa;                if(aComponent ==  ifStatementCombo){&#xa;                    return forStatementCombo;&#xa;                }&#xa;                if(aComponent ==  whileStatementComboBox){&#xa;                    return ifStatementCombo;&#xa;                }&#xa;                if(aComponent ==  forCombo){&#xa;                    return arrayInitCombo;&#xa;                }&#xa;                if(aComponent ==  forStatementCombo){&#xa;                    return forCombo;&#xa;                }&#xa;                return assignOpsCombo;//end getComponentBefore&#xa;&#xa;            }}" type="code"/>
+              <Connection code="new java.awt.FocusTraversalPolicy() {&#xa;            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){&#xa;                return variablesCombo;&#xa;            }//end getDefaultComponent&#xa;&#xa;            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){&#xa;                return variablesCombo;&#xa;            }//end getFirstComponent&#xa;&#xa;            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){&#xa;                return assignOpsCombo;&#xa;            }//end getLastComponent&#xa;&#xa;            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){&#xa;                if(aComponent ==  chainedMethodCallsCombo){&#xa;                    return afterDotCheckBox;&#xa;                }&#xa;                if(aComponent ==  afterDotCheckBox){&#xa;                    return arrayInitCombo;&#xa;                }&#xa;                if(aComponent ==  methodCallArgsCombo){&#xa;                    return chainedMethodCallsCombo;&#xa;                }&#xa;                if(aComponent ==  methodParamsCombo){&#xa;                    return methodCallArgsCombo;&#xa;                }&#xa;                if(aComponent ==  variablesCombo){&#xa;                    return methodParamsCombo;&#xa;                }&#xa;                if(aComponent ==  doWhileStatementCombo){&#xa;                    return withStatementCombo;&#xa;                }&#xa;                if(aComponent ==  withStatementCombo){&#xa;                    return objectsCombo;&#xa;                }&#xa;                if(aComponent ==  objectsCombo){&#xa;                    return propertiesCombo;&#xa;                }&#xa;                if(aComponent ==  propertiesCombo){&#xa;                    return binaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  ternaryOpsCombo){&#xa;                    return afterTernaryOpsCheckBox;&#xa;                }&#xa;                if(aComponent ==  afterTernaryOpsCheckBox){&#xa;                    return assignOpsCombo;&#xa;                }&#xa;                if(aComponent ==  binaryOpsCombo){&#xa;                    return afterBinaryOpsCheckBox;&#xa;                }&#xa;                if(aComponent ==  afterBinaryOpsCheckBox){&#xa;                    return ternaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  whileStatementComboBox){&#xa;                    return doWhileStatementCombo;&#xa;                }&#xa;                if(aComponent ==  forStatementCombo){&#xa;                    return ifStatementCombo;&#xa;                }&#xa;                if(aComponent ==  ifStatementCombo){&#xa;                    return whileStatementComboBox;&#xa;                }&#xa;                if(aComponent ==  arrayInitCombo){&#xa;                    return arrayInitItemsCombo;&#xa;                }&#xa;                if(aComponent ==  arrayInitItemsCombo){&#xa;                    return forCombo;&#xa;                }&#xa;                if(aComponent ==  forCombo){&#xa;                    return forStatementCombo;&#xa;                }&#xa;                return variablesCombo;//end getComponentAfter&#xa;            }&#xa;            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){&#xa;                if(aComponent ==  afterDotCheckBox){&#xa;                    return chainedMethodCallsCombo;&#xa;                }&#xa;                if(aComponent ==  arrayInitCombo){&#xa;                    return afterDotCheckBox;&#xa;                }&#xa;                if(aComponent ==  chainedMethodCallsCombo){&#xa;                    return methodCallArgsCombo;&#xa;                }&#xa;                if(aComponent ==  methodCallArgsCombo){&#xa;                    return methodParamsCombo;&#xa;                }&#xa;                if(aComponent ==  methodParamsCombo){&#xa;                    return variablesCombo;&#xa;                }&#xa;                if(aComponent ==  binaryOpsCombo){&#xa;                    return propertiesCombo;&#xa;                }&#xa;                if(aComponent ==  propertiesCombo){&#xa;                    return objectsCombo;&#xa;                }&#xa;                if(aComponent ==  objectsCombo){&#xa;                    return withStatementCombo;&#xa;                }&#xa;                if(aComponent ==  assignOpsCombo){&#xa;                    return afterTernaryOpsCheckBox;&#xa;                }&#xa;                if(aComponent ==  afterTernaryOpsCheckBox){&#xa;                    return ternaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  afterBinaryOpsCheckBox){&#xa;                    return binaryOpsCombo;&#xa;                }&#xa;                if(aComponent ==  ternaryOpsCombo){&#xa;                    return afterBinaryOpsCheckBox;&#xa;                }&#xa;                if(aComponent ==  doWhileStatementCombo){&#xa;                    return whileStatementComboBox;&#xa;                }&#xa;                if(aComponent ==  ifStatementCombo){&#xa;                    return forStatementCombo;&#xa;                }&#xa;                if(aComponent ==  whileStatementComboBox){&#xa;                    return ifStatementCombo;&#xa;                }&#xa;                if(aComponent ==  forCombo){&#xa;                    return arrayInitItemsCombo;&#xa;                }&#xa;                if(aComponent ==  arrayInitItemsCombo){&#xa;                    return arrayInitCombo;&#xa;                }&#xa;                if(aComponent ==  forStatementCombo){&#xa;                    return forCombo;&#xa;                }&#xa;                return assignOpsCombo;//end getComponentBefore&#xa;&#xa;            }}" type="code"/>
             </Property>
             <Property name="opaque" type="boolean" value="false"/>
           </Properties>
@@ -104,6 +104,11 @@
                               <Component id="arrayInitCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
+                              <Component id="arrayInitItemsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="arrayInitItemsCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
                               <Component id="forLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="forCombo" min="-2" max="-2" attributes="0"/>
@@ -129,7 +134,7 @@
                               <Component id="doWhileStatementCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                              <Component id="withStatementLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="withStatementCombo" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -203,6 +208,11 @@
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="arrayInitItemsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="arrayInitItemsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="forLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="forCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -228,7 +238,7 @@
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="withStatementLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="withStatementCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -760,7 +770,7 @@
                 </Property>
               </AccessibilityProperties>
             </Component>
-            <Component class="javax.swing.JLabel" name="jLabel1">
+            <Component class="javax.swing.JLabel" name="withStatementLabel">
               <Properties>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="withStatementCombo"/>
@@ -943,6 +953,44 @@
                 </Property>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.propertiesCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="arrayInitItemsLabel">
+              <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="arrayInitItemsCombo"/>
+                </Property>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.arrayInitItemsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.arrayInitItemsLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.arrayInitItemsLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="arrayInitItemsCombo">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="4">
+                    <StringItem index="0" value="Item 1"/>
+                    <StringItem index="1" value="Item 2"/>
+                    <StringItem index="2" value="Item 3"/>
+                    <StringItem index="3" value="Item 4"/>
+                  </StringArray>
+                </Property>
+              </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.arrayInitItemsCombo.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/javascript2/editor/formatter/ui/Bundle.properties" key="FmtWrapping.arrayInitItemsCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
             </Component>
