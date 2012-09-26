@@ -575,7 +575,9 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                                     fireShortDescriptionChange();
 
                                     // replace nonJSR109 entries
-                                    if (!WSUtils.isJsr109Supported(project)) {
+                                    if (!WSUtils.isJsr109Supported(project) 
+                                            && WSUtils.generateNonJsr109Artifacts(project)) 
+                                    {
                                         JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(implBean);
                                         FileObject ddFolder = jaxWsSupport.getDeploymentDescriptorFolder();
                                         if (ddFolder != null) {
