@@ -69,6 +69,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
         arrayInitCombo.putClientProperty(OPTION_ID, wrapArrayInit);
         arrayInitCombo.addFocusListener(this);
+        arrayInitItemsCombo.putClientProperty(OPTION_ID, wrapArrayInitItems);
+        arrayInitItemsCombo.addFocusListener(this);
         objectsCombo.putClientProperty(OPTION_ID, wrapObjects);
         objectsCombo.addFocusListener(this);
         propertiesCombo.putClientProperty(OPTION_ID, wrapProperties);
@@ -112,6 +114,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         objectsCombo = new javax.swing.JComboBox();
         propertiesLabel = new javax.swing.JLabel();
         propertiesCombo = new javax.swing.JComboBox();
+        arrayInitItemsLabel = new javax.swing.JLabel();
+        arrayInitItemsCombo = new javax.swing.JComboBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_Wrapping")); // NOI18N
         setOpaque(false);
@@ -136,6 +140,9 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
             public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
                 if(aComponent ==  arrayInitCombo){
+                    return arrayInitItemsCombo;
+                }
+                if(aComponent ==  arrayInitItemsCombo){
                     return objectsCombo;
                 }
                 if(aComponent ==  objectsCombo){
@@ -144,8 +151,11 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 return arrayInitCombo;//end getComponentAfter
             }
             public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  objectsCombo){
+                if(aComponent ==  arrayInitItemsCombo){
                     return arrayInitCombo;
+                }
+                if(aComponent ==  objectsCombo){
+                    return arrayInitItemsCombo;
                 }
                 if(aComponent ==  propertiesCombo){
                     return objectsCombo;
@@ -170,6 +180,11 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
             propertiesCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+            arrayInitItemsLabel.setLabelFor(arrayInitItemsCombo);
+            org.openide.awt.Mnemonics.setLocalizedText(arrayInitItemsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.arrayInitItemsLabel.text")); // NOI18N
+
+            arrayInitItemsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
             javax.swing.GroupLayout panel1Layout = new javax.swing.GroupLayout(panel1);
             panel1.setLayout(panel1Layout);
             panel1Layout.setHorizontalGroup(
@@ -181,6 +196,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                             .addComponent(arrayInitLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 138, Short.MAX_VALUE)
                             .addComponent(arrayInitCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(panel1Layout.createSequentialGroup()
+                            .addComponent(arrayInitItemsLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(arrayInitItemsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
                             .addComponent(objectsLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -200,13 +219,17 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                         .addComponent(arrayInitCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(arrayInitItemsLabel)
+                        .addComponent(arrayInitItemsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(objectsLabel)
                         .addComponent(objectsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(propertiesLabel)
                         .addComponent(propertiesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(397, Short.MAX_VALUE))
+                    .addContainerGap(361, Short.MAX_VALUE))
             );
 
             arrayInitLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.arrayInitLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -221,6 +244,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
             propertiesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesLabel.AccessibleContext.accessibleDescription")); // NOI18N
             propertiesCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesCombo.AccessibleContext.accessibleName")); // NOI18N
             propertiesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.propertiesCombo.AccessibleContext.accessibleDescription")); // NOI18N
+            arrayInitItemsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.arrayInitLabel.AccessibleContext.accessibleName")); // NOI18N
+            arrayInitItemsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.arrayInitLabel.AccessibleContext.accessibleDescription")); // NOI18N
+            arrayInitItemsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.arrayInitCombo.AccessibleContext.accessibleName")); // NOI18N
+            arrayInitItemsCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.arrayInitCombo.AccessibleContext.accessibleDescription")); // NOI18N
 
             scrollPane.setViewportView(panel1);
             panel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.panel1.AccessibleContext.accessibleName")); // NOI18N
@@ -236,6 +263,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox arrayInitCombo;
+    private javax.swing.JComboBox arrayInitItemsCombo;
+    private javax.swing.JLabel arrayInitItemsLabel;
     private javax.swing.JLabel arrayInitLabel;
     private javax.swing.JComboBox objectsCombo;
     private javax.swing.JLabel objectsLabel;
