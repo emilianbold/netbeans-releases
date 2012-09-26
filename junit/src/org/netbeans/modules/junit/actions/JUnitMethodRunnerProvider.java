@@ -71,6 +71,9 @@ public class JUnitMethodRunnerProvider extends TestMethodRunnerProvider {
         SingleMethod sm = null;
         if (doc != null){
             JavaSource js = JavaSource.forDocument(doc);
+            if(js == null) {
+                return null;
+            }
             TestClassInfoTask task = new TestClassInfoTask(cursor);
             try {
                 Future<Void> f = js.runWhenScanFinished(task, true);
