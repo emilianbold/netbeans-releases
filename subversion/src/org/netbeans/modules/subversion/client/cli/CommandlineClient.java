@@ -563,13 +563,13 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public ISVNLogMessage[] getLogMessages(SVNUrl url, String[] paths, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath) throws SVNClientException {
-        LogCommand cmd = new LogCommand(url, paths, revStart, revEnd, stopOnCopy, fetchChangePath, 0);
+        LogCommand cmd = new LogCommand(url, paths, revStart, revEnd, SVNRevision.HEAD, stopOnCopy, fetchChangePath, 0);
         return getLog(cmd);
     }
 
     @Override
     public ISVNLogMessage[] getLogMessages(SVNUrl url, SVNRevision revPeg, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath, long limit) throws SVNClientException {
-        LogCommand cmd = new LogCommand(url, null, revStart, revEnd, stopOnCopy, fetchChangePath, limit);
+        LogCommand cmd = new LogCommand(url, null, revStart, revEnd, revPeg, stopOnCopy, fetchChangePath, limit);
         return getLog(cmd);
     }
 
@@ -590,14 +590,19 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public ISVNLogMessage[] getLogMessages(File file, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath, long limit) throws SVNClientException {
+        return getLogMessages(file, SVNRevision.HEAD, revStart, revEnd, stopOnCopy, fetchChangePath, limit, false);
+    }
+
+    @Override
+    public ISVNLogMessage[] getLogMessages(File file, SVNRevision pegRevision, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath, long limit, boolean includeMergedRevisions) throws SVNClientException {
         LogCommand logCmd;
         ISVNInfo info = getInfoFromWorkingCopy(file);
         if (info.getSchedule().equals(SVNScheduleKind.ADD) &&
             info.getCopyUrl() != null)
         {
-            logCmd = new LogCommand(info.getCopyUrl(), null, revStart, revEnd, stopOnCopy, fetchChangePath, limit);
+            logCmd = new LogCommand(info.getCopyUrl(), null, revStart, revEnd, pegRevision, stopOnCopy, fetchChangePath, limit);
         } else {
-            logCmd = new LogCommand(file, revStart, revEnd, stopOnCopy, fetchChangePath, limit);
+            logCmd = new LogCommand(file, revStart, revEnd, pegRevision, stopOnCopy, fetchChangePath, limit);
         }
         return getLog(logCmd);
     }
@@ -1319,11 +1324,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public long update(File arg0, SVNRevision arg1, int arg2, boolean arg3, boolean arg4, boolean arg5) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public ISVNLogMessage[] getLogMessages(File arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, boolean arg4, boolean arg5, long arg6, boolean arg7) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
