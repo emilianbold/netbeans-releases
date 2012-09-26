@@ -41,7 +41,7 @@
  */
 {
   "name": "__MSG__pluginName__",
-  "version": "0.4.25",
+  "version": "0.4.26",
 
   "background_page": "html/main.html",
 
