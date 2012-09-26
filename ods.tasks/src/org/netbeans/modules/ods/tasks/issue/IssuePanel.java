@@ -42,6 +42,7 @@
 package org.netbeans.modules.ods.tasks.issue;
 
 import com.tasktop.c2c.server.tasks.domain.Keyword;
+import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
@@ -60,6 +61,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -125,6 +127,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private static final String STATUS_FIXED = "FIXED";                         // NOI18N
     private static final String STATUS_UNCONFIRMED = "UNCONFIRMED";             // NOI18N
     private static final String RESOLUTION_DUPLICATE = "DUPLICATE";             // NOI18N
+    private static final String DEFAULT_PRIORITY = "Normal";                    // NOI18N
+    private static final String DEFAULT_SEVERITY = "normal";                    // NOI18N
 
     private C2CIssue issue;
     
@@ -352,14 +356,19 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         resolutionCombo.setModel(toComboModel(cd.getResolutions()));
         resolutionCombo.setRenderer(new ClientDataRenderer());
         
-        priorityCombo.setModel(toComboModel(cd.getPriorities()));
-        priorityCombo.setRenderer(new ClientDataRenderer());
+        initPriorityCombo(cd);
         
-        severityCombo.setModel(toComboModel(cd.getSeverities()));
-        severityCombo.setRenderer(new ClientDataRenderer());
+        initSeverityCombo(cd);
 
         ownerCombo.setModel(toComboModel(cd.getUsers()));
         ownerCombo.setRenderer(new ClientDataRenderer());
+
+        iterationCombo.setModel(toComboModel(new ArrayList<String>(issue.isNew() 
+                ? cd.getActiveIterations() 
+                : cd.getAllIterations())));
+        iterationCombo.setRenderer(new ClientDataRenderer());
+
+        issueTypeCombo.setModel(toComboModel(new ArrayList<String>(cd.getTaskTypes())));
         
         // statusCombo and resolution fields are filled in reloadForm
     }
@@ -383,14 +392,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         boolean isNew = issue.isNew();
         
         headerField.setVisible(!isNew);
-        statusCombo.setEnabled(!isNew);
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
         reportedLabel.setVisible(!isNew);
         reportedField.setVisible(!isNew);
         modifiedLabel.setVisible(!isNew);
         modifiedField.setVisible(!isNew);
-        statusLabel.setVisible(!isNew);
-        statusCombo.setVisible(!isNew);
         resolutionLabel.setVisible(!isNew);
         resolutionCombo.setVisible(!isNew);
         separator.setVisible(!isNew);
@@ -412,10 +418,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         externalField.setVisible(!isNew);
         externalButton.setVisible(!isNew);
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
+        descriptionLabel.setVisible(!isNew);
+        descriptionPanel.setVisible(!isNew);
         if (isNew && force) {
             // Preselect the first product
             selectProduct();
-            initStatusCombo(STATUS_UNCONFIRMED); // NOI18N
+            initStatusCombo(STATUS_UNCONFIRMED, null);
         } else {
             String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
             String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
@@ -431,7 +439,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, resolutionCombo, IssueField.RESOLUTION, resolutionWarning, "resolution"); // NOI18N
             reloadField(force, descriptionPanel, IssueField.DESCRIPTION, descriptionPanel.getWarningLabel(), descriptionLabel); // NOI18N
             String status = reloadField(force, statusCombo, IssueField.STATUS, statusWarning, statusLabel);
-            initStatusCombo(status);
+            initStatusCombo(status, issue.getFieldValue(IssueField.STATUS));
             String initialResolution = initialValues.get(IssueField.RESOLUTION.getKey());
             if (RESOLUTION_DUPLICATE.equals(initialResolution)) { // NOI18N // XXX no string gvalues
                 duplicateField.setEditable(false);
@@ -445,7 +453,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
             reloadField(force, priorityCombo, IssueField.PRIORITY, priorityWarning, priorityLabel);
             reloadField(force, severityCombo, IssueField.SEVERITY, severityWarning, priorityLabel);
-            reloadField(force, iterationCombo, IssueField.MILESTONE, iterationWarning, iterationLabel);
+            reloadField(force, iterationCombo, IssueField.ITERATION, iterationWarning, iterationLabel);
             reloadField(force, tagsField, IssueField.TAGS, tagsWarning, tagsLabel);
 
             if (!isNew) {
@@ -647,36 +655,19 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             return false;
         }
   
-        // XXX looks like we do not need this
-//        for (int i = 0; i < combo.getItemCount(); i++) {
-//            Object item = combo.getItemAt(i);
-//            
-//            String itemValue = null;
-//            if(item instanceof Priority) {
-//                itemValue = ((Priority) item).getValue();
-//            } else if(item instanceof TaskSeverity) {
-//                itemValue = ((TaskSeverity) item).getValue();
-//            } else if(item instanceof TaskResolution) {
-//                itemValue = ((TaskResolution) item).getValue();
-//            } else if(item instanceof Product) {
-//                itemValue = ((Product) item).getName();
-//            } else if(item instanceof TaskUserProfile) {
-//                itemValue = ((TaskUserProfile) item).getRealname();
-//            } else if(value instanceof TaskStatus) {
-//                itemValue = ((TaskStatus) value).getValue();
-//            } else if(value instanceof com.tasktop.c2c.server.tasks.domain.Component) {
-//                itemValue = ((com.tasktop.c2c.server.tasks.domain.Component) value).getName();
-//            } else {
-//                assert value instanceof String : "Wrong value";                 // NOI18N
-//            }
-//            
-//            if(value.equals(itemValue)) {
-//                break;
-//            }
-//        }
         combo.setSelectedItem(value);
+        if (!value.equals(combo.getSelectedItem())) {
+            ComboBoxModel model = combo.getModel();
+            for (int i = 0; i < model.getSize(); ++i) {
+                Object item = model.getElementAt(i);
+                if (value.toString().equals(convertItem(item))) {
+                    combo.setSelectedItem(item);
+                    break;
+                }
+            }
+        }
         
-        if (forceInModel && !value.equals("") && !value.equals(getSelectedValue(combo))) { // NOI18N
+        if (forceInModel && !value.toString().isEmpty() && !value.toString().equals(getSelectedValue(combo))) { // NOI18N
             // Reload of server attributes is needed - workarounding it
             ComboBoxModel model = combo.getModel();
             if (model instanceof DefaultComboBoxModel) {
@@ -684,7 +675,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 combo.setSelectedIndex(0);
             }
         }
-        return value.equals(getSelectedValue(combo));
+        return value.toString().equals(getSelectedValue(combo));
     }    
 
     private String getSelectedValue(JComboBox combo) {
@@ -692,6 +683,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if(item == null) {
             return null;
         }
+        String value = convertItem(item);
+        return value;
+    }
+
+    private String convertItem (Object item) {
         if(item instanceof Priority) {
             return ((Priority) item).getValue();
         } else if(item instanceof TaskSeverity) {
@@ -706,25 +702,28 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             return ((TaskStatus) item).getValue();
         } else if(item instanceof com.tasktop.c2c.server.tasks.domain.Component) {
             return ((com.tasktop.c2c.server.tasks.domain.Component) item).getName();
+        } else if (item instanceof Milestone) {
+            return ((Milestone) item).getValue();
         } else {
             assert item instanceof String : "Wrong value";                 // NOI18N
         }
-        return null;
+        return item.toString();
     }
     
-    private void initStatusCombo(String status) {
+    private void initStatusCombo(String status, String initialValue) {
         // Init statusCombo - allowed transitions (heuristics):
         // Open -> Open-Unconfirmed-Reopened+Resolved
         // Resolved -> Reopened+Close
         // Close-Resolved -> Reopened+Resolved+(Close with higher index)
         C2CData cd = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository());
         
-        List<TaskStatus> statuses = cd.getStatuses();
+        List<TaskStatus> statuses = cd.computeValidStatuses(initialValue == null ? null : cd.getStatusByValue(initialValue));
         
         // XXX evaluate statuses for open and active
+        resolvedIndex = statuses.size(); // if there is no RESOLVED
         for (int i = 0; i < statuses.size(); i++) {
             TaskStatus s = statuses.get(i);
-            if(s.getValue().equals("RESOLVED")) {
+            if(s.getValue().equals(RESOLUTION_RESOLVED)) {
                 resolvedIndex = i;
                 break;
             }
@@ -885,6 +884,36 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
 
+    private void initPriorityCombo (C2CData cd) {
+        List<Priority> priorities = cd.getPriorities();
+        Priority defaultPriority = null;
+        for (Priority p : priorities) {
+            if (DEFAULT_PRIORITY.equals(p.getValue())) {
+                defaultPriority = p;
+            }
+        }
+        priorityCombo.setModel(toComboModel(priorities));
+        priorityCombo.setRenderer(new ClientDataRenderer());
+        if (defaultPriority != null) {
+            priorityCombo.setSelectedItem(defaultPriority);
+        }
+    }
+
+    private void initSeverityCombo (C2CData cd) {
+        List<TaskSeverity> severities = cd.getSeverities();
+        TaskSeverity defaultSeverity = null;
+        for (TaskSeverity s : severities) {
+            if (DEFAULT_SEVERITY.equals(s.getValue())) {
+                defaultSeverity = s;
+            }
+        }
+        severityCombo.setModel(toComboModel(severities));
+        severityCombo.setRenderer(new ClientDataRenderer());
+        if (defaultSeverity != null) {
+            severityCombo.setSelectedItem(defaultSeverity);
+        }
+    }
+
     private static class ClientDataRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -1027,7 +1056,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
     
     private void updateNoDuplicateId() {
-        boolean newNoDuplicateId = "DUPLICATE".equals(resolutionCombo.getSelectedItem()) && "".equals(duplicateField.getText().trim());
+        boolean newNoDuplicateId = "DUPLICATE".equals(getSelectedValue(resolutionCombo)) && "".equals(duplicateField.getText().trim());
         if(newNoDuplicateId != noDuplicateId) {
             noDuplicateId = newNoDuplicateId;
             updateMessagePanel();
@@ -1561,7 +1590,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                             .addComponent(dueDateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(releaseLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(releaseLabel, javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addComponent(iterationLabel, javax.swing.GroupLayout.Alignment.TRAILING))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1818,7 +1847,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addComponent(submitButton)
                     .addComponent(cancelButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(messagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(messagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1978,22 +2007,23 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         Product product = (Product) o;
         
         // Reload componentCombo, versionCombo and targetMilestoneCombo
-        C2CData cd = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository());
         
         Object component = componentCombo.getSelectedItem();
         Object version = releaseCombo.getSelectedItem();
         componentCombo.setModel(toComboModel(product.getComponents()));
-        releaseCombo.setModel(toComboModel(product.getReleaseTags()));
+        releaseCombo.setModel(toComboModel(product.getMilestones()));
         
         // Attempt to keep selection
         boolean isNew = issue.isNew();
         if (!isNew && !selectInCombo(componentCombo, component, false) && (componentCombo.getModel().getSize()>1)) {
-            componentCombo.setSelectedItem(null);
+            componentCombo.setSelectedItem(product.getDefaultComponent());
         }
         if (!isNew && !selectInCombo(releaseCombo, version, false) && (releaseCombo.getModel().getSize() > 1)) {
-            releaseCombo.setSelectedItem(null);
+            releaseCombo.setSelectedItem(product.getDefaultMilestone());
         }
         if (issue.isNew()) {
+            releaseCombo.setSelectedItem(product.getDefaultMilestone());
+            componentCombo.setSelectedItem(product.getDefaultComponent());
             issue.setFieldValue(IssueField.PRODUCT, product.getName());
             AbstractRepositoryConnector connector = C2C.getInstance().getRepositoryConnector();
             
@@ -2012,8 +2042,24 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_productComboActionPerformed
 
     private void componentComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_componentComboActionPerformed
-//        cancelHighlight(componentLabel);
-//        updateNoComponent();
+        cancelHighlight(componentLabel);
+        
+        // Reload component owner
+        
+        Object component = componentCombo.getSelectedItem();
+        Object owner = ownerCombo.getSelectedItem();
+        
+        // Attempt to keep selection
+        boolean isNew = issue.isNew();
+        if (isNew || !isNew && (component instanceof com.tasktop.c2c.server.tasks.domain.Component) 
+                && !selectInCombo(ownerCombo, owner, false) && (ownerCombo.getModel().getSize() > 1)) {
+            TaskUserProfile userProfile = ((com.tasktop.c2c.server.tasks.domain.Component) component).getInitialOwner();
+            if (userProfile != null) {
+                ownerCombo.setSelectedItem(userProfile);
+            }
+        }
+        
+        updateNoComponent();
     }//GEN-LAST:event_componentComboActionPerformed
 
     private void releaseComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_releaseComboActionPerformed
@@ -2176,7 +2222,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-//        reloadForm(true);
+        reloadForm(true);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void tagsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tagsButtonActionPerformed
