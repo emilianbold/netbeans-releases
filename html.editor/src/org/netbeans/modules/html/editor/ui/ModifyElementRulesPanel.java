@@ -223,14 +223,16 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
         if(getNewClassAttributeValue() == null) {
             return true;
         }
-        return files2classes.get(getSelectedStyleSheet()).contains(clzName);
+        Collection<String> classes = files2classes.get(getSelectedStyleSheet());
+        return classes != null && classes.contains(clzName);
     }
     
     public boolean idExistsInSelectedStyleSheet() {
         if(getNewIdAttributeValue() == null) {
             return true;
         }
-        return files2ids.get(getSelectedStyleSheet()).contains(getNewIdAttributeValue());
+        Collection<String> ids = files2ids.get(getSelectedStyleSheet());
+        return ids != null && ids.contains(getNewIdAttributeValue());
     }
     
     public FileObject getSelectedStyleSheet() {
