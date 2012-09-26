@@ -407,7 +407,7 @@ public class FmtOptions {
             { wrapBlockBraces, TRUE},
             { wrapStatementsOnTheLine, TRUE},
             { wrapObjects, WRAP_NEVER},
-            { wrapProperties, TRUE},
+            { wrapProperties, WRAP_NEVER},
 
             { preferFullyQualifiedNames, FALSE},
             { preferMultipleUseStatementsCombined, FALSE},
