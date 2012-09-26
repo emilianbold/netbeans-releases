@@ -301,7 +301,8 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node enter(CallNode callNode) {
         if (callNode.getFunction() instanceof IdentNode) {
-            addOccurence((IdentNode)callNode.getFunction(), false);
+            IdentNode iNode = (IdentNode)callNode.getFunction();
+            addOccurence(iNode, false, true, callNode.getArgs().size());
         }
         for (Node argument : callNode.getArgs()) {
             if (argument instanceof IdentNode) {
@@ -954,6 +955,10 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     private void addOccurence(IdentNode iNode, boolean leftSite) {
+        addOccurence(iNode, leftSite, false, 0);
+    }
+
+    private void addOccurence(IdentNode iNode, boolean leftSite, boolean isFunction, int countParam) {
         if ("this".equals(iNode.getName())) {
             // don't process this node.
             return;
@@ -988,7 +993,14 @@ public class ModelVisitor extends PathNodeVisitor {
             // it's a new global variable?
             IdentifierImpl name = ModelElementFactory.create(parserResult, iNode);
             if (name != null) {
-                modelBuilder.getGlobal().addProperty(name.getName(), new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange(), leftSite));
+                JsObject newObject;
+                if (!isFunction) {
+                    newObject = new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange(), leftSite);
+                } else {
+                    FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
+                    newObject = new JsFunctionImpl(fo, modelBuilder.getGlobal(), name, Collections.EMPTY_LIST);
+                }
+                modelBuilder.getGlobal().addProperty(name.getName(), newObject);
             }
         }
     }

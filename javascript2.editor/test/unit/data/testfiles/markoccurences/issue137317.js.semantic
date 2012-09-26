@@ -2,5 +2,5 @@ function |>METHOD:testik<|(url) {
     var |>CLASS:od<| = {
         |>FIELD:url<|: url
     };
-    |>GLOBAL:alert<|(od.|>FIELD:url<|)
+    alert(od.|>FIELD:url<|)
 }
