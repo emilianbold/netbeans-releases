@@ -9,8 +9,8 @@
                 <subpackages>com.oracle.nashorn</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/nashorn.jar</runtime-relative-path>
-                <binary-origin>external/nashorn.jar</binary-origin>
+                <runtime-relative-path>ext/jre1.8.0/lib/nashorn.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jre1.8.0/lib/nashorn.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
