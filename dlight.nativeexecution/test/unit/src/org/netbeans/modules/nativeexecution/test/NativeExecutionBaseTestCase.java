@@ -59,7 +59,9 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -76,6 +78,11 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroE
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -118,6 +125,73 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
 
     }
 
+    protected static class DumpingFileChangeListener implements FileChangeListener {
+
+        private final String listenerName;
+        private final String prefixToStrip;
+        private final PrintStream out;
+        private final boolean checkExpected;
+
+        public DumpingFileChangeListener(String name, String prefixToStrip, PrintStream out, boolean checkExpected) {
+            this.listenerName = name;
+            this.prefixToStrip = prefixToStrip;
+            this.out = out;
+            this.checkExpected = checkExpected;
+        }
+
+        private void register(String eventKind, FileEvent fe) {
+            String src = stripPrefix(((FileObject) fe.getSource()).getPath());
+            String obj = stripPrefix(fe.getFile().getPath());
+            String exp = checkExpected ? ("exp=" + Boolean.toString(fe.isExpected())) : "";
+            out.printf("FileEvent[%-20s] %-20s SRC %-20s OBJ %-20s %s\n", listenerName, eventKind, src, obj, exp);
+        }
+
+        private String stripPrefix(String path) {
+            if (path.startsWith(prefixToStrip)) {
+                path = path.substring(prefixToStrip.length());
+                if (path.startsWith("/")) {
+                    path = path.substring(1);
+                }
+            }
+            if (path.length() == 0) {
+                path = ".";
+            }
+            return path;
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            register("fileAttributeChanged", fe);
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            register("fileChanged", fe);
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            register("fileDataCreated", fe);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            register("fileDeleted", fe);
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            register("fileFolderCreated", fe);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            String src = stripPrefix(((FileObject) fe.getSource()).getPath());
+            String obj = stripPrefix(fe.getFile().getPath());
+            out.printf("FileEvent[%s]: %s src=%s obj=%s oldName=%s oldExt=%s exp=%b\n", listenerName, "fileRenamed", src, obj, fe.getName(), fe.getExt(), fe.isExpected());
+        }
+    }
+    
     static {
         Logger log = org.netbeans.modules.nativeexecution.support.Logger.getInstance();
         org.netbeans.modules.nativeexecution.support.Logger.getInstance().addHandler(new TestLogHandler(log));
@@ -284,6 +358,67 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         return res.output;
     }
     
+    /**
+     * Creates a directory structure described by parameters
+     *
+     * @param env execution environment
+     * @param baseDir base directory; of not exists, it is created ; if exists,
+     * the content is removed
+     * @param creationData array of strings, a string per file; a string should
+     * have format below, for plain file, directory and link resprctively: "-
+     * plain-filen-name" "d directory-name" "l link-target link-name"
+     * @throws Exception
+     */
+    public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData) throws IOException {
+        if (baseDir == null || baseDir.length() == 0 || baseDir.equals("/")) {
+            throw new IllegalArgumentException("Illegal base dir: " + baseDir);
+        }
+        StringBuilder script = new StringBuilder();
+        try {
+            script.append("mkdir -p \"").append(baseDir).append("\";\n");
+            script.append("cd \"").append(baseDir).append("\";\n");
+            script.append("rm -rf *").append(";\n");
+            Set<String> checkedPaths = new HashSet<String>();
+            for (String data : creationData) {
+                if (data.length() < 3 || data.charAt(1) != ' ') {
+                    throw new IllegalArgumentException("wrong format: " + data);
+                }
+                String[] parts = data.split(" ");
+                String path = parts[1];
+                int slashPos = path.lastIndexOf('/');
+                if (slashPos > 0) {
+                    String dir = path.substring(0, slashPos);
+                    if (!checkedPaths.contains(dir)) {
+                        checkedPaths.add(dir);
+                        script.append("mkdir -p \"").append(dir).append("\";\n");
+                    }
+                }
+                switch (data.charAt(0)) {
+                    case '-':
+                        script.append("touch \"").append(path).append("\";\n");
+                        break;
+                    case 'd':
+                        script.append("mkdir -p \"").append(path).append("\";\n");
+                        break;
+                    case 'l':
+                        String link = parts[2];
+                        script.append("ln -s \"").append(path).append("\" \"").append(link).append("\";\n");
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unexpected 1-st char: " + data);
+                }
+            }
+        } catch (Throwable thr) {
+            throw new IllegalArgumentException("Error creating script", thr);
+        }
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "sh", "-c", script.toString());
+        if (res.exitCode != 0) {
+            assertTrue("script failed at " + env.getDisplayName() + " rc=" + res.exitCode + " err=" + res.error, false);
+        } else if (res.error != null && res.error.length() > 0) {
+            assertTrue("script failed at " + env.getDisplayName() + " rc=" + res.exitCode + " err=" + res.error, false);
+        }
+    }
+    
     private String stringArrayToString(String[] args) {
         StringBuilder sb = new StringBuilder();
         for (String arg : args) {
@@ -369,10 +504,14 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
             }
             return lines;
         } finally {
-            if (r != null) try { r.close(); } catch (IOException e) {}
+            if (r != null) { 
+                try { 
+                    r.close(); 
+                } catch (IOException e) {}
+            }
         }
     }
-    
+
     public String readFile(File file) throws IOException {
         BufferedReader rdr = new BufferedReader(new FileReader(file));
         StringBuilder sb = new StringBuilder();
