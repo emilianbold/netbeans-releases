@@ -195,6 +195,16 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
         return isClassNameOK() && isIdNameOK();
     }
     
+    public boolean isModified() {
+        boolean classModified = originalClzName == null && clzName != null 
+                || originalClzName != null && !originalClzName.equals(clzName);
+        
+        boolean idModified = originalIdName == null && idName != null 
+                || originalIdName != null && !originalIdName.equals(idName);
+        
+        return classModified || idModified;
+    }
+    
     public Attribute getOriginalClassAttribute() {
         return clz;
     }
