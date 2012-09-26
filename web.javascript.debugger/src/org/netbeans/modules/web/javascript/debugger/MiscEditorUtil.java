@@ -65,7 +65,7 @@ import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.web.clientproject.api.RemoteFileCache;
-import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;

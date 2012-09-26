@@ -212,6 +212,7 @@
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsfapi</friend>
+                <friend>org.netbeans.modules.web.livehtml</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.common.api</package>
                 <package>org.netbeans.modules.web.common.refactoring</package>
