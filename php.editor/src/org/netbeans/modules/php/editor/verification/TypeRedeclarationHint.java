@@ -51,9 +51,9 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
@@ -74,31 +74,33 @@ public class TypeRedeclarationHint extends AbstractRule {
             return;
         }
         FileScope fileScope = context.fileScope;
-        Collection<? extends TypeScope> declaredTypes = ModelUtils.getDeclaredTypes(fileScope);
-        Set<String> typeNames = new HashSet<String>();
-        for (TypeScope typeScope : declaredTypes) {
-            final QualifiedName qualifiedName = typeScope.getNamespaceName().append(typeScope.getName()).toFullyQualified();
-            final String name = qualifiedName.toString();
-            if (typeNames.contains(name)) {
-                continue;
-            }
-            typeNames.add(name);
-            List<? extends TypeScope> instances = ModelUtils.filter(declaredTypes, qualifiedName);
-            if (instances.size() > 1) {
-                TypeScope firstDeclaredInstance = null;
-                for (TypeScope typeInstance : instances) {
-                    if (firstDeclaredInstance == null) {
-                        firstDeclaredInstance = typeInstance;
-                    } else if (firstDeclaredInstance.getOffset() > typeInstance.getOffset()) {
-                        firstDeclaredInstance = typeInstance;
-                    }
+        if (fileScope != null) {
+            Collection<? extends TypeScope> declaredTypes = ModelUtils.getDeclaredTypes(fileScope);
+            Set<String> typeNames = new HashSet<String>();
+            for (TypeScope typeScope : declaredTypes) {
+                final QualifiedName qualifiedName = typeScope.getNamespaceName().append(typeScope.getName()).toFullyQualified();
+                final String name = qualifiedName.toString();
+                if (typeNames.contains(name)) {
+                    continue;
                 }
-                for (TypeScope typeInstance : instances) {
-                    if (typeInstance != firstDeclaredInstance) {
-                        hints.add(new Hint(this, Bundle.TypeRedeclarationDesc(firstDeclaredInstance.getName()),
-                                context.parserResult.getSnapshot().getSource().getFileObject(),
-                                typeInstance.getNameRange(), Collections.<HintFix>emptyList(), 500));
+                typeNames.add(name);
+                List<? extends TypeScope> instances = ModelUtils.filter(declaredTypes, qualifiedName);
+                if (instances.size() > 1) {
+                    TypeScope firstDeclaredInstance = null;
+                    for (TypeScope typeInstance : instances) {
+                        if (firstDeclaredInstance == null) {
+                            firstDeclaredInstance = typeInstance;
+                        } else if (firstDeclaredInstance.getOffset() > typeInstance.getOffset()) {
+                            firstDeclaredInstance = typeInstance;
+                        }
+                    }
+                    for (TypeScope typeInstance : instances) {
+                        if (typeInstance != firstDeclaredInstance) {
+                            hints.add(new Hint(this, Bundle.TypeRedeclarationDesc(firstDeclaredInstance.getName()),
+                                    context.parserResult.getSnapshot().getSource().getFileObject(),
+                                    typeInstance.getNameRange(), Collections.<HintFix>emptyList(), 500));
 
+                        }
                     }
                 }
             }

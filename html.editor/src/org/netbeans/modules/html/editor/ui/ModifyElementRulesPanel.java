@@ -195,6 +195,16 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
         return isClassNameOK() && isIdNameOK();
     }
     
+    public boolean isModified() {
+        boolean classModified = originalClzName == null && clzName != null 
+                || originalClzName != null && !originalClzName.equals(clzName);
+        
+        boolean idModified = originalIdName == null && idName != null 
+                || originalIdName != null && !originalIdName.equals(idName);
+        
+        return classModified || idModified;
+    }
+    
     public Attribute getOriginalClassAttribute() {
         return clz;
     }
@@ -223,14 +233,16 @@ public class ModifyElementRulesPanel extends javax.swing.JPanel {
         if(getNewClassAttributeValue() == null) {
             return true;
         }
-        return files2classes.get(getSelectedStyleSheet()).contains(clzName);
+        Collection<String> classes = files2classes.get(getSelectedStyleSheet());
+        return classes != null && classes.contains(clzName);
     }
     
     public boolean idExistsInSelectedStyleSheet() {
         if(getNewIdAttributeValue() == null) {
             return true;
         }
-        return files2ids.get(getSelectedStyleSheet()).contains(getNewIdAttributeValue());
+        Collection<String> ids = files2ids.get(getSelectedStyleSheet());
+        return ids != null && ids.contains(getNewIdAttributeValue());
     }
     
     public FileObject getSelectedStyleSheet() {

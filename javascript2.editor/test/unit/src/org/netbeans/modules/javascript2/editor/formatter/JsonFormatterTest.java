@@ -62,4 +62,8 @@ public class JsonFormatterTest extends JsonTestBase {
         reformatFileContents("testfiles/formatter/basic2.json",new IndentPrefs(4, 4));
     }
 
+    public void testBasic3() throws Exception {
+        reformatFileContents("testfiles/formatter/basic3.json",new IndentPrefs(4, 4));
+    }
+
 }

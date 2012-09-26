@@ -140,10 +140,12 @@ public class OccurrencesMarkProvider extends MarkProvider {
         
         doc.render(new Runnable() {
             public void run() {
+                int docLen = doc.getLength();
                 for (int[] span : bag) {
                     try {
-                        if (span[0] < doc.getLength()) {
-                            result.add(new MarkImpl(doc, doc.createPosition(span[0]), color, tooltip));
+                        int offset = span[0];
+                        if (offset >= 0 && offset <= docLen) {
+                            result.add(new MarkImpl(doc, doc.createPosition(offset), color, tooltip));
                         }
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);

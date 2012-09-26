@@ -717,7 +717,7 @@ public class JsFormatter implements Formatter {
         for (FormatToken current = next; current != null && current.isVirtual(); current = current.next()) {
             if (current.getKind() == FormatToken.Kind.AFTER_STATEMENT
                     || current.getKind() == FormatToken.Kind.AFTER_PROPERTY
-                    || current.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL
+                    || current.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM
                     || current.getKind() == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
                     || current.getKind().isIndentationMarker()) {
@@ -734,7 +734,8 @@ public class JsFormatter implements Formatter {
                 if (previous == null || previous.getKind() != FormatToken.Kind.BEFORE_OBJECT) {
                     return false;
                 }
-            } else if (JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(nextText)) {
+            } else if (JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(nextText)
+                    || JsTokenId.BRACKET_RIGHT_BRACKET.fixedText().equals(nextText)) {
                 return false;
             }
         }
@@ -749,7 +750,7 @@ public class JsFormatter implements Formatter {
                     || kind == FormatToken.Kind.TEXT
                     || kind == FormatToken.Kind.AFTER_STATEMENT
                     || kind == FormatToken.Kind.AFTER_PROPERTY
-                    || kind == FormatToken.Kind.AFTER_ARRAY_LITERAL
+                    || kind == FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM
                     || kind == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
                     || kind.isIndentationMarker()) {
@@ -761,7 +762,7 @@ public class JsFormatter implements Formatter {
                 || result.getKind() == FormatToken.Kind.SOURCE_START
                 || result.getKind() == FormatToken.Kind.AFTER_STATEMENT
                 || result.getKind() == FormatToken.Kind.AFTER_PROPERTY
-                || result.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL
+                || result.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM
                 || result.getKind() == FormatToken.Kind.AFTER_CASE
                 // do not suppose continuation when indentation is changed
                 || result.getKind().isIndentationMarker()) {
@@ -771,9 +772,7 @@ public class JsFormatter implements Formatter {
         String text = result.getText().toString();
         return !(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
                 || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)
-                || formatContext.isGenerated(result)
-                // this is just safeguard literal offsets should be fixed
-                /*|| JsTokenId.OPERATOR_SEMICOLON.fixedText().equals(text)*/);
+                || formatContext.isGenerated(result));
 
     }
 
@@ -941,12 +940,12 @@ public class JsFormatter implements Formatter {
             case BEFORE_OBJECT_END:
                 return CodeStyle.get(context).wrapObjects();
             case AFTER_PROPERTY:
-                if (CodeStyle.get(context).wrapProperties()) {
-                    return CodeStyle.get(context).wrapObjects();
-                }
-                return null;
-            case AFTER_ARRAY_LITERAL:
+                return CodeStyle.get(context).wrapProperties();
+            case AFTER_ARRAY_LITERAL_START:
+            case BEFORE_ARRAY_LITERAL_END:
                 return CodeStyle.get(context).wrapArrayInit();
+            case AFTER_ARRAY_LITERAL_ITEM:
+                return CodeStyle.get(context).wrapArrayInitItems();
             default:
                 return null;
         }

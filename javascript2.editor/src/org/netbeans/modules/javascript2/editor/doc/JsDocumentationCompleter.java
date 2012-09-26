@@ -58,12 +58,14 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
@@ -122,10 +124,19 @@ public class JsDocumentationCompleter {
                             int examinedOffset = nearestNode instanceof VarNode ? nearestNode.getStart() : nearestNode.getFinish();
                             JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), examinedOffset);
                             assert jsObject != null;
-                            boolean wrapperObject = isWrapperObject(jsParserResult, jsObject, nearestNode);
-                            if (jsObject.getJSKind() == Kind.FILE || wrapperObject) {
+                            if (jsObject.getJSKind() == Kind.FILE || isWrapperObject(jsParserResult, jsObject, nearestNode)) {
                                 String fqn = getFqnName(jsParserResult, nearestNode);
                                 jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), fqn);
+                            }
+                            JsObject wrapperScope = getWrapperScope(jsParserResult, jsObject, nearestNode, examinedOffset);
+                            if (wrapperScope != null) {
+                                jsObject = wrapperScope;
+                            }
+                            // when no code/object for doc comment found, generate just empty doc comment - issue #218945
+                            if (jsObject == null
+                            // do not generate doc comment when the object offset is lower than the current caret offset
+                                    || jsObject.getOffsetRange().getStart() < offset) {
+                                return;
                             }
                             if (isField(jsObject)) {
                                 generateFieldComment(doc, offset, indent, jsParserResult, jsObject);
@@ -142,6 +153,21 @@ public class JsDocumentationCompleter {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+
+    private static JsObject getWrapperScope(JsParserResult jsParserResult, JsObject jsObject, Node nearestNode, int offset) {
+        JsObject result = null;
+        if (jsObject instanceof JsFunctionImpl) {
+            result = jsObject;
+            for (DeclarationScope declarationScope : ((JsFunctionImpl) jsObject).getDeclarationsScope()) {
+                if (declarationScope instanceof JsFunctionImpl) {
+                    if (((JsFunctionImpl) declarationScope).getOffsetRange(jsParserResult).containsInclusive(offset)) {
+                        result = getWrapperScope(jsParserResult, (JsFunctionImpl) declarationScope, nearestNode, offset);
+                    }
+                }
+            }
+        }
+        return result;
     }
     
     private static boolean isWrapperObject(JsParserResult jsParserResult, JsObject jsObject, Node nearestNode) {

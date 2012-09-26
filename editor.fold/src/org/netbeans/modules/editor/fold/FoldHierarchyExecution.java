@@ -618,7 +618,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
             releaseOnly = true;
         }
         
-        releaseOnly &= doRelease;
+        releaseOnly |= doRelease;
         
         if (adoc != null) {
             adoc.readLock();

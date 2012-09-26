@@ -10,7 +10,7 @@
             this.|>FIELD:par1<| = par1; // par1 after = is marked green as member variable
         },
         |>METHOD:test2<|: function(par1) { // par1 is underlined as unused
-            var |>UNUSED:object<| = new |>GLOBAL:Test<|({
+            var |>UNUSED:object<| = new Test({
                 |>FIELD:par1<|: par1 // par1 after : is marked green as member variable
             });
         }

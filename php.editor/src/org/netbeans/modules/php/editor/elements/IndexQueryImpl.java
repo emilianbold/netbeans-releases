@@ -1551,7 +1551,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
                 for (IndexResult r : results) {
                     LOG.log(Level.FINER, "Fields in {0} ({1}):", new Object[]{r, r.getFile().getPath()}); //NOI18N
-                    for (String field : PHPIndexer.ALL_FIELDS) {
+                    for (String field : PHPIndexer.getAllFields()) {
                         String value = r.getValue(field);
                         if (value != null) {
                             LOG.log(Level.FINEST, " <{0}> = <{1}>", new Object[]{field, value}); //NOI18N

@@ -111,6 +111,7 @@ public class OracleInstance {
     private String dbServiceName;
     private String onPremiseServerInstanceId;
     private String sdkFolder;
+    private String dataCenter;
     
     private ServerInstance serverInstance;
     
@@ -119,21 +120,22 @@ public class OracleInstance {
     /* GuardedBy(this) */
     private OracleJ2EEInstance j2eeInstance;
 
-    public OracleInstance(String name, String user, String password, String adminURL, String identityDomain, 
+    public OracleInstance(String name, String user, String password, String adminURL, String dataCenter, String identityDomain, 
           String javaServiceName, String dbServiceName, String onPremiseServerInstanceId,
           String sdkFolder) {
-        this(name, adminURL, identityDomain, javaServiceName, dbServiceName, onPremiseServerInstanceId, sdkFolder);
+        this(name, adminURL, dataCenter, identityDomain, javaServiceName, dbServiceName, onPremiseServerInstanceId, sdkFolder);
         this.userLoaded = true;
         this.user = user;
         this.passwordLoaded = true;
         this.password = password;
     }
     
-    public OracleInstance(String name, String adminURL, String identityDomain, 
+    public OracleInstance(String name, String adminURL, String dataCenter, String identityDomain, 
           String javaServiceName, String dbServiceName, String onPremiseServerInstanceId,
           String sdkFolder) {
         this.name = name;
         this.adminURL = adminURL;
+        this.dataCenter = dataCenter;
         this.identityDomain = identityDomain;
         this.javaServiceName = javaServiceName;
         this.dbServiceName = dbServiceName;
@@ -579,6 +581,10 @@ public class OracleInstance {
             }
         }
         return sb.toString();
+    }
+
+    public String getDataCenter() {
+        return dataCenter;
     }
     
 }

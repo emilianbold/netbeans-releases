@@ -88,11 +88,12 @@ public final class SourceUtils {
         if (mainFileObject == null) {
             throw new IllegalStateException();
         }
-        String mainElementName = mainFileObject.getName();
+        //String mainElementName = mainFileObject.getName();
         List<? extends TypeElement> elements = controller.getTopLevelElements();
         if (elements != null) {
             for (TypeElement element : elements) {
-                if (element.getModifiers().contains(Modifier.PUBLIC) && element.getSimpleName().contentEquals(mainElementName)) {
+                //if (element.getModifiers().contains(Modifier.PUBLIC) && element.getSimpleName().contentEquals(mainElementName)) {
+                if (element.getModifiers().contains(Modifier.PUBLIC) ){
                     return element;
                 }
             }

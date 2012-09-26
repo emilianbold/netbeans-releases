@@ -56,16 +56,16 @@ import org.netbeans.modules.php.editor.PHPCompletionItem.MethodDeclarationItem;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
-import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.elements.MethodElementImpl;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -153,8 +153,8 @@ public class IntroduceHint extends AbstractRule {
                     classes = index.getClasses(NameKind.exact(clzName));
                 }
                 if (clzName != null && classes.isEmpty()) {
-                    ClassElement clz = clzName != null ? getIndexedClass(clzName) : null;
-                    if (clz == null && clzName != null) {
+                    ClassElement clz = getIndexedClass(clzName);
+                    if (clz == null) {
                         fix = IntroduceClassFix.getInstance(clzName, model, instanceCreation);
                     }
                 }

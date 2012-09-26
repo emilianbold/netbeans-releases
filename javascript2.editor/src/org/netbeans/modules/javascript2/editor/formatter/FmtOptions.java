@@ -78,7 +78,6 @@ import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.netbeans.modules.javascript2.editor.formatter.CodeStyle.WrapStyle;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -214,6 +213,7 @@ public class FmtOptions {
     public static final String wrapChainedMethodCalls = "wrapChainedMethodCalls"; //NOI18N
     public static final String wrapAfterDotInChainedMethodCalls = "wrapAfterDotInChainedMethodCalls"; //NOI18N
     public static final String wrapArrayInit = "wrapArrayInit"; //NOI18N
+    public static final String wrapArrayInitItems = "wrapArrayInitItems"; //NOI18N
     public static final String wrapFor = "wrapFor"; //NOI18N
     public static final String wrapForStatement = "wrapForStatement"; //NOI18N
     public static final String wrapIfStatement = "wrapIfStatement"; //NOI18N
@@ -393,6 +393,7 @@ public class FmtOptions {
             { wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N
             { wrapAfterDotInChainedMethodCalls, TRUE}, //NOI18N
             { wrapArrayInit, WRAP_NEVER}, //NOI18N
+            { wrapArrayInitItems, WRAP_NEVER}, //NOI18N
             { wrapFor, WRAP_NEVER}, //NOI18N
             { wrapForStatement, WRAP_ALWAYS}, //NOI18N
             { wrapIfStatement, WRAP_ALWAYS}, //NOI18N
@@ -407,7 +408,7 @@ public class FmtOptions {
             { wrapBlockBraces, TRUE},
             { wrapStatementsOnTheLine, TRUE},
             { wrapObjects, WRAP_NEVER},
-            { wrapProperties, TRUE},
+            { wrapProperties, WRAP_NEVER},
 
             { preferFullyQualifiedNames, FALSE},
             { preferMultipleUseStatementsCombined, FALSE},

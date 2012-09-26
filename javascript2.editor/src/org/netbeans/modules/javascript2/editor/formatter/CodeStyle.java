@@ -582,6 +582,11 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public WrapStyle wrapArrayInitItems() {
+        String wrap = preferences.get(wrapArrayInitItems, getDefaultAsString(wrapArrayInitItems));
+        return WrapStyle.valueOf(wrap);
+    }
+
     public WrapStyle wrapFor() {
         String wrap = preferences.get(wrapFor, getDefaultAsString(wrapFor));
         return WrapStyle.valueOf(wrap);
@@ -648,8 +653,9 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
-    public boolean wrapProperties() {
-        return preferences.getBoolean(wrapProperties, getDefaultAsBoolean(wrapProperties));
+    public WrapStyle wrapProperties() {
+        String wrap = preferences.get(wrapProperties, getDefaultAsString(wrapProperties));
+        return WrapStyle.valueOf(wrap);
     }
 
     // Uses

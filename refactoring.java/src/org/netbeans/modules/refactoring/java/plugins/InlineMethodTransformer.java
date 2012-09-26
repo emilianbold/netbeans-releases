@@ -150,8 +150,9 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     @Override
     public Tree visitMethodInvocation(MethodInvocationTree node, Element methodElement) {
         final TreePath methodInvocationPath = getCurrentPath();
-        ExecutableElement el = (ExecutableElement) trees.getElement(methodInvocationPath);
-        if (methodElement.equals(el)) {
+        Element el = trees.getElement(methodInvocationPath);
+        if (el.getKind() == ElementKind.METHOD && methodElement.equals(el)) {
+            ExecutableElement method = (ExecutableElement) el;
             List<StatementTree> newStatementList = new LinkedList<StatementTree>();
             final HashMap<Tree, Tree> original2TranslatedBody = new HashMap<Tree, Tree>();
 
@@ -173,7 +174,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             }
 
             if (hasParameters) {
-                replaceParametersWithArguments(original2TranslatedBody, el, node, body);
+                replaceParametersWithArguments(original2TranslatedBody, method, node, body);
             }
 
             body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2TranslatedBody);
@@ -193,7 +194,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             for (int i = 0; i < body.getStatements().size() - 1; i++) {
                 StatementTree statement = body.getStatements().get(i);
                 if (!inSameClass || inStatic) {
-                    statement = (StatementTree) fixReferences(statement, new TreePath(bodyPath, statement), el, scope, methodSelect);
+                    statement = (StatementTree) fixReferences(statement, new TreePath(bodyPath, statement), method, scope, methodSelect);
                     if (!inSameClass) {
                         statement = GeneratorUtilities.get(workingCopy).importFQNs(statement);
                     }
@@ -229,7 +230,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 lastStatement = null;
             }
             if (lastStatement != null && (!inSameClass || inStatic)) {
-                lastStatement = fixReferences(lastStatement, new TreePath(bodyPath, lastStatement), el, scope, methodSelect);
+                lastStatement = fixReferences(lastStatement, new TreePath(bodyPath, lastStatement), method, scope, methodSelect);
                 if (!inSameClass) {
                     lastStatement = GeneratorUtilities.get(workingCopy).importFQNs(lastStatement);
                 }

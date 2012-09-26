@@ -173,8 +173,10 @@ public final class WhereUsedSupport {
 
     void collectUsages(FileObject fileObject) {
         Collection<Occurence> occurences = usageSupport.occurences(fileObject);
-        for (Occurence occurence : occurences) {
-            results.addEntry(fileObject, occurence);
+        if (occurences != null) {
+            for (Occurence occurence : occurences) {
+                results.addEntry(fileObject, occurence);
+            }
         }
     }
 

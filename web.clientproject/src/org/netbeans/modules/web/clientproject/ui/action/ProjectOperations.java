@@ -88,6 +88,7 @@ public class ProjectOperations implements DeleteOperationImplementation, CopyOpe
             return;
         }
         project.setName(nueName);
+        project.getReferenceHelper().fixReferences(originalPath);
     }
 
     @Override
@@ -101,8 +102,8 @@ public class ProjectOperations implements DeleteOperationImplementation, CopyOpe
             project.getProjectHelper().notifyDeleted();
             return;
         }
-        // XXX fix references to site root etc.
         project.setName(nueName);
+        project.getReferenceHelper().fixReferences(originalPath);
     }
 
     @Override

@@ -279,13 +279,14 @@ FormattingToken{kind=AFTER_UNARY_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=269, text=[}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_ARRAY_LITERAL_BRACKET, offset=-1, text=null}
+FormattingToken{kind=AFTER_ARRAY_LITERAL_START, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=270, text='}
 FormattingToken{kind=TEXT, offset=271, text=button}
 FormattingToken{kind=TEXT, offset=277, text='}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=278, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
-FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
+FormattingToken{kind=AFTER_ARRAY_LITERAL_ITEM, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=279, text= }
 FormattingToken{kind=TEXT, offset=280, text='}
 FormattingToken{kind=TEXT, offset=281, text=reset}
@@ -293,13 +294,14 @@ FormattingToken{kind=TEXT, offset=286, text='}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=287, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
-FormattingToken{kind=AFTER_ARRAY_LITERAL, offset=-1, text=null}
+FormattingToken{kind=AFTER_ARRAY_LITERAL_ITEM, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=288, text= }
 FormattingToken{kind=TEXT, offset=289, text='}
 FormattingToken{kind=TEXT, offset=290, text=submit}
 FormattingToken{kind=TEXT, offset=296, text='}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=BEFORE_ARRAY_LITERAL_BRACKET, offset=-1, text=null}
+FormattingToken{kind=BEFORE_ARRAY_LITERAL_END, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=297, text=]}
 FormattingToken{kind=BEFORE_DOT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=298, text=.}

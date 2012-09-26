@@ -342,6 +342,12 @@ final class SheetCellEditor implements TableCellEditor, ActionListener {
     //opens while the property is being updated (causing the editor to loose input focus)
     private boolean inStopCellEditing = false;
     
+    /* 
+     * Flag which prevents the SheetCellEditor from stopping the editing mode
+     * when one explicitly calls InlineEditor.setValue(...)
+     */
+    static boolean ignoreStopCellEditing = false;
+    
     public boolean stopCellEditing() {
         if (PropUtils.isLoggable(SheetCellEditor.class)) {
             PropUtils.log(SheetCellEditor.class, "SheetCellEditor.StopCellEditing", true); //NOI18N
@@ -419,14 +425,18 @@ final class SheetCellEditor implements TableCellEditor, ActionListener {
                     PropUtils.log(SheetCellEditor.class, "  SheetCellEditor Firing editing stopped"); //NOI18N
                 }
 
-                fireEditingStopped();
+                if(!ignoreStopCellEditing) {
+                    fireEditingStopped();
+                }
 
                 //            if (lastUpdateSuccess) {
                 tryPostSetAction(mdl);
 
                 //            }
             } finally {
-                setInplaceEditor(null);
+                if(!ignoreStopCellEditing) {
+                    setInplaceEditor(null);
+                }
                 inStopCellEditing = false;
             }
 

@@ -118,6 +118,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private Rectangle actualViewPort;
     private boolean highlightCanceled = false;
     private boolean whenOpenedWasNotVisible = false;
+    private boolean lastIncrementalSearchWasSuccessful = true;
 
     public static SearchBar getInstance() {
         if (searchbarInstance == null) {
@@ -751,6 +752,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
                 org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
                 changeHighlightCheckboxName(getCountFindMatches(findSupport));
+                lastIncrementalSearchWasSuccessful = true;
             } else {
                 // text not found - indicate error in incremental search
                 // text field with red foreground
@@ -758,7 +760,10 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), NbBundle.getMessage(
                         SearchBar.class, "incremental-search-not-found", incrementalSearchText),
                         StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND); //NOI18N
-                Toolkit.getDefaultToolkit().beep();
+                if (lastIncrementalSearchWasSuccessful) {
+                    Toolkit.getDefaultToolkit().beep();
+                    lastIncrementalSearchWasSuccessful = false;
+                }
                 changeHighlightCheckboxName(0);
             }
         }

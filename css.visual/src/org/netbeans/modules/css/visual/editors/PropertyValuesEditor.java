@@ -43,9 +43,13 @@ package org.netbeans.modules.css.visual.editors;
 
 import java.awt.Component;
 import java.beans.PropertyEditorSupport;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.TreeSet;
+import javax.swing.SpinnerModel;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
 import org.netbeans.modules.css.visual.RuleNode;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -56,12 +60,10 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  * @author marekfukala
  */
 public class PropertyValuesEditor extends PropertyEditorSupport implements ExPropertyEditor {
-    
+
     private Collection<UnitGrammarElement> unitElements;
     private Collection<FixedTextGrammarElement> fixedElements;
-    
     private boolean addNoneProperty;
-    
     private String[] tags;
 
     public PropertyValuesEditor(Collection<FixedTextGrammarElement> fixedElements, Collection<UnitGrammarElement> unitElements, boolean addNoneProperty) {
@@ -72,18 +74,18 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
     @Override
     public synchronized String[] getTags() {
-        if(tags == null) {
+        if (tags == null) {
             Collection<String> fixedElementNames = new TreeSet<String>();
-            for(FixedTextGrammarElement element: fixedElements) {
+            for (FixedTextGrammarElement element : fixedElements) {
                 String value = element.getValue();
-                if(Character.isLetter(value.charAt(0))) { //filter operators & similar
+                if (Character.isLetter(value.charAt(0))) { //filter operators & similar
                     fixedElementNames.add(value);
                 }
             }
-            if(addNoneProperty) {
+            if (addNoneProperty) {
                 fixedElementNames.add(RuleNode.NONE_PROPERTY_NAME);
             }
-            
+
             tags = fixedElementNames.toArray(new String[0]);
         }
 
@@ -92,30 +94,30 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
     @Override
     public void setAsText(String str) {
-        if(str == null) {
-            return ;
+        if (str == null) {
+            return;
         }
-        
-        if(str.isEmpty() || RuleNode.NONE_PROPERTY_NAME.equals(str)) {
+
+        if (str.isEmpty() || RuleNode.NONE_PROPERTY_NAME.equals(str)) {
             setValue(str); //pass the empty value to the Property
-            return ;
+            return;
         }
-        
+
         //first match fixed elements
-        for(FixedTextGrammarElement element : fixedElements) {
-            if(element.accepts(str)) {
+        for (FixedTextGrammarElement element : fixedElements) {
+            if (element.accepts(str)) {
                 setValue(str);
-                return ;
+                return;
             }
         }
         //then units
-        for(UnitGrammarElement element : unitElements) {
-            if(element.accepts(str)) {
+        for (UnitGrammarElement element : unitElements) {
+            if (element.accepts(str)) {
                 setValue(str);
-                return ;
+                return;
             }
         }
-        
+
         //report error
         throw new IllegalArgumentException(str);
     }
@@ -129,6 +131,72 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     public void attachEnv(PropertyEnv env) {
         //if there's at least one unit element, then the text field needs to be editable
         env.getFeatureDescriptor().setValue("canEditAsText", Boolean.TRUE);
-    }
 
+        env.getFeatureDescriptor().setValue("valueIncrement", new SpinnerModel() {
+            private String getNextValue(boolean forward) {
+                String value = getAsText();
+                for (TokenAcceptor genericAcceptor : TokenAcceptor.ACCEPTORS) {
+
+                    if(genericAcceptor instanceof TokenAcceptor.NumberPostfixAcceptor) {
+                        TokenAcceptor.NumberPostfixAcceptor acceptor = (TokenAcceptor.NumberPostfixAcceptor)genericAcceptor;
+                        if (acceptor.accepts(value)) {
+                            int i = acceptor.getNumberValue(value).intValue();
+                            String postfix = acceptor.getPostfix(value).toString();
+
+                            StringBuilder newVal = new StringBuilder();
+                            newVal.append(i + (forward ? 1 : -1));
+                            newVal.append(postfix);
+
+                            return newVal.toString();
+                        }
+                    } else if(genericAcceptor instanceof TokenAcceptor.Number) {
+                        TokenAcceptor.Number acceptor = (TokenAcceptor.Number)genericAcceptor;
+                        if (acceptor.accepts(value)) {
+                            int i = acceptor.getNumberValue(value).intValue();
+
+                            StringBuilder newVal = new StringBuilder();
+                            newVal.append(i + (forward ? 1 : -1));
+
+                            return newVal.toString();
+                        }
+                    }
+
+                }
+                
+                //not acceptable token
+                return null;
+            }
+
+            @Override
+            public Object getValue() {
+                //no-op
+                return null;
+            }
+
+            @Override
+            public void setValue(Object value) {
+                //no-op
+            }
+
+            @Override
+            public Object getNextValue() {
+                return getNextValue(true);
+            }
+
+            @Override
+            public Object getPreviousValue() {
+                return getNextValue(false);
+            }
+
+            @Override
+            public void addChangeListener(ChangeListener l) {
+                //no-op
+            }
+
+            @Override
+            public void removeChangeListener(ChangeListener l) {
+                //no-op
+            }
+        });
+    }
 }
