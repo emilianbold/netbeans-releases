@@ -1586,6 +1586,13 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/issue218328.js",new IndentPrefs(4, 4));
     }
 
+    public void testIssue219046() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapObjects, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/issue219046.js", options);
+    }
+
     // test from original formatter
 
     public void testSemi01() throws Exception {

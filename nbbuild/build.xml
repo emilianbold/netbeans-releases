@@ -1672,8 +1672,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
   <target name="findbugs-cluster" depends="init">
     <echo message="Running findbugs for ${cluster.config} modules"/>
-    <property name="findbugs.continue.after.error" value="true"/>
-    <subant target="findbugs" buildpath="${modules.fullpath}"/>
+    <subant target="findbugs" buildpath="${modules.fullpath}">
+        <property name="findbugs.continue.after.error" value="true"/>
+    </subant>
   </target>
 
   <target name="findbugs" depends="init" description="Runs findbugs target in modules specified by ${findbugs.modules}.">

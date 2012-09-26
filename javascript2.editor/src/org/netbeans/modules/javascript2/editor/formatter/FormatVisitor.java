@@ -56,6 +56,7 @@ import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.ObjectNode;
 import com.oracle.nashorn.ir.PropertyNode;
+import com.oracle.nashorn.ir.ReferenceNode;
 import com.oracle.nashorn.ir.SwitchNode;
 import com.oracle.nashorn.ir.TernaryNode;
 import com.oracle.nashorn.ir.TryNode;
@@ -485,16 +486,20 @@ public class FormatVisitor extends NodeVisitor {
 
         int objectFinish = getFinish(objectNode);
         for (Node property : objectNode.getElements()) {
-            int finish = getFinish(property);
-
             property.accept(this);
 
-            // mark property end
-            formatToken = getNextToken(finish, JsTokenId.OPERATOR_COMMA, objectFinish);
-            if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken,
-                        FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY));
+            PropertyNode propertyNode = (PropertyNode) property;
+            if (propertyNode.getGetter() != null) {
+                ReferenceNode getter = (ReferenceNode) propertyNode.getGetter();
+                markPropertyFinish(getFinish(getter.getReference()), objectFinish, false);
             }
+            if (propertyNode.getSetter() != null) {
+                ReferenceNode setter = (ReferenceNode) propertyNode.getSetter();
+                markPropertyFinish(getFinish(setter.getReference()), objectFinish, false);
+            }
+
+            // mark property end
+            markPropertyFinish(getFinish(property), objectFinish, true);
         }
 
         // put indentation mark after non white token preceeding curly bracket
@@ -997,6 +1002,14 @@ public class FormatVisitor extends NodeVisitor {
             if (previous != null) {
                 appendToken(previous, FormatToken.forFormat(mark));
             }
+        }
+    }
+
+    private void markPropertyFinish(int finish, int objectFinish, boolean checkDuplicity) {
+        FormatToken formatToken = getNextToken(finish, JsTokenId.OPERATOR_COMMA, objectFinish);
+        if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken,
+                    FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY), checkDuplicity);
         }
     }
 
