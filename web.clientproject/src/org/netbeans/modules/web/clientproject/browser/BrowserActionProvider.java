@@ -48,7 +48,7 @@ import org.netbeans.modules.javascript.jstestdriver.api.RunTests;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
-import org.netbeans.modules.web.clientproject.spi.webserver.WebServer;
+import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi.webserver;
+package org.netbeans.modules.web.common.api;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;

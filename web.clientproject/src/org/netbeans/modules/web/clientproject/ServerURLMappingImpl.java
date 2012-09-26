@@ -50,7 +50,7 @@ import java.net.URLDecoder;
 import org.netbeans.modules.javascript.jstestdriver.api.JsTestDriver;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
-import org.netbeans.modules.web.clientproject.spi.webserver.WebServer;
+import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
