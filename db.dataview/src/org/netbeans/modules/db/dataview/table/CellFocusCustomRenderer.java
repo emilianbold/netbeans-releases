@@ -65,8 +65,10 @@ public class CellFocusCustomRenderer extends DefaultTableCellRenderer {
             setForeground(Color.BLACK);
         } else if (isSelected) {
             setBackground(table.getSelectionBackground());
+            setForeground(table.getSelectionForeground());
         } else {
             setBackground(table.getBackground());
+            setForeground(table.getForeground());
         }
         this.putClientProperty("html.disable", Boolean.TRUE);
         return this;
