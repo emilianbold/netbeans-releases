@@ -75,6 +75,7 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements HelpCt
         
         this.instance = instance;
         serviceInstanceField.setText(instance.getJavaServiceName());
+        jDataCenterTextField.setText(instance.getDataCenter());
         identityDomainField.setText(instance.getIdentityDomain());
         adminUrlField.setText(instance.getAdminURL());
         usernameField.setText(OracleWizardComponent.getUnprefixedUserName(instance.getIdentityDomain(), instance.getUser()));
@@ -165,6 +166,8 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements HelpCt
         configureButton = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         dbServiceNameTextField = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jDataCenterTextField = new javax.swing.JTextField();
 
         adminUrlLabel.setLabelFor(adminUrlField);
         org.openide.awt.Mnemonics.setLocalizedText(adminUrlLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.adminUrlLabel.text")); // NOI18N
@@ -201,6 +204,10 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements HelpCt
 
         dbServiceNameTextField.setText(org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.dbServiceNameTextField.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.jLabel3.text")); // NOI18N
+
+        jDataCenterTextField.setEditable(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -213,7 +220,8 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements HelpCt
                     .addComponent(serviceInstanceLabel)
                     .addComponent(identityDomainLabel)
                     .addComponent(jLabel1)
-                    .addComponent(jLabel2))
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -223,17 +231,21 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements HelpCt
                     .addComponent(adminUrlField)
                     .addComponent(serviceInstanceField)
                     .addComponent(identityDomainField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .addComponent(dbServiceNameTextField)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(usernameField, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
                             .addComponent(passwordField))
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(dbServiceNameTextField)))
+                    .addComponent(jDataCenterTextField)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(0, 0, 0)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(jDataCenterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(3, 3, 3)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(identityDomainLabel)
                     .addComponent(identityDomainField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -280,8 +292,10 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements HelpCt
     private javax.swing.JTextField dbServiceNameTextField;
     private javax.swing.JTextField identityDomainField;
     private javax.swing.JLabel identityDomainLabel;
+    private javax.swing.JTextField jDataCenterTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JTextField sdkTextField;
