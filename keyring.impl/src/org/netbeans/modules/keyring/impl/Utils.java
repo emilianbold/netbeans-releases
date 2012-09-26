@@ -65,7 +65,7 @@ public class Utils {
     public static char[] bytes2Chars(byte[] bytes) {
         char[] result = new char[bytes.length / 2];
         for (int i = 0; i < result.length; i++) {
-            result[i] = (char) ((bytes[i * 2]) * 256 + bytes[i * 2 + 1] & 0x00ff);
+            result[i] = (char) (((bytes[i * 2] & 0x00ff) * 256) + (bytes[i * 2 + 1] & 0x00ff));
         }
         return result;
     }
