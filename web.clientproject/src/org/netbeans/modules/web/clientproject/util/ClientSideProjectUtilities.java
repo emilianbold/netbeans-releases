@@ -245,6 +245,7 @@ public final class ClientSideProjectUtilities {
         return failed;
     }
 
+    // XXX remove and call ClientSideProjectProperties
     private static void saveProjectProperties(final AntProjectHelper projectHelper, final Map<String, String> properties) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
