@@ -370,6 +370,9 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
      * @throws Exception
      */
     public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData) throws IOException {
+        createDirStructure(env, baseDir, creationData, true);
+    }
+    public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData, boolean cleanOld) throws IOException {
         if (baseDir == null || baseDir.length() == 0 || baseDir.equals("/")) {
             throw new IllegalArgumentException("Illegal base dir: " + baseDir);
         }
@@ -377,7 +380,9 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         try {
             script.append("mkdir -p \"").append(baseDir).append("\";\n");
             script.append("cd \"").append(baseDir).append("\";\n");
-            script.append("rm -rf *").append(";\n");
+            if (cleanOld) {
+                script.append("rm -rf *").append(";\n");
+            }
             Set<String> checkedPaths = new HashSet<String>();
             for (String data : creationData) {
                 if (data.length() < 3 || data.charAt(1) != ' ') {
