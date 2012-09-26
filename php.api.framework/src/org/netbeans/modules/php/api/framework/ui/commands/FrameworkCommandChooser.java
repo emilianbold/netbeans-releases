@@ -359,9 +359,6 @@ public final class FrameworkCommandChooser extends JPanel {
             return Collections.<String>emptyList();
         }
         final Map<FrameworkCommand, ParameterContainer> tasksToParams = getTasksToParams();
-        if (tasksToParams == null) {
-            return Collections.<String>emptyList();
-        }
         ParameterContainer stored = tasksToParams.get(task);
         if (stored == null) {
             return Collections.<String>emptyList();
