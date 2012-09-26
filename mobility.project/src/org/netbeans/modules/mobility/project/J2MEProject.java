@@ -442,6 +442,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(J2MEProject.class, "LBL_J2MEProject_Source_Packages"), null, null); //NOI18N
         final SubprojectProvider spp = refHelper.createSubprojectProvider();
         
+        J2MEActionProvider actionProvider = new J2MEActionProvider( this, helper );
         Object stdLookups[]=new Object[] {
             new Info(),
             rp,
@@ -452,7 +453,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             midletsCacheHelper,
             refHelper,
             new FileBuiltQueryImpl(helper, configHelper),
-            new J2MEActionProvider( this, helper ),
+            actionProvider,
             new J2MEPhysicalViewProvider(this, helper, refHelper, configHelper),
             new J2MECustomizerProvider( this, helper, refHelper, configHelper),
             new J2MEClassPathProvider(helper),
@@ -466,7 +467,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             new RecommendedTemplatesImpl(),
             new SourceLevelQueryImpl(helper),
             new J2MEProjectClassPathExtender(this, helper, refHelper, configHelper),
-            new J2MEProjectOperations(this, helper, refHelper),
+            new J2MEProjectOperations(this, helper, refHelper, actionProvider),
             new PreprocessorFileFilterImplementation(configHelper, helper),
             new FileEncodingQueryImpl(helper),
             LookupProviderSupport.createActionProviderMerger()

@@ -68,11 +68,14 @@ public class J2MEProjectOperations implements DeleteOperationImplementation, Cop
     final private J2MEProject project;
     final private AntProjectHelper helper;
     final private ReferenceHelper refHelper;
+    final private String[] cleanTargetNames;
     
-    public J2MEProjectOperations(J2MEProject project, AntProjectHelper helper, ReferenceHelper refHelper) {
+    public J2MEProjectOperations(J2MEProject project, AntProjectHelper helper, ReferenceHelper refHelper, J2MEActionProvider actionProvider) {
         this.project = project;
         this.helper = helper;
         this.refHelper = refHelper;
+        assert actionProvider != null;
+        cleanTargetNames = actionProvider.getTargetNames(J2MEActionProvider.COMMAND_CLEAN_ALL);
     }
     
     private static void addFile(final FileObject projectDirectory, final String fileName, final List<FileObject> result) {
@@ -105,18 +108,13 @@ public class J2MEProjectOperations implements DeleteOperationImplementation, Cop
     }
     
     public void notifyDeleting() throws IOException {
-        final J2MEActionProvider ap = project.getLookup().lookup(J2MEActionProvider.class);
-        
-        assert ap != null;
-        
         final Properties p = new Properties();
-        final String[] targetNames = ap.getTargetNames(J2MEActionProvider.COMMAND_CLEAN_ALL);
         final FileObject buildXML = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         
-        assert targetNames != null;
-        assert targetNames.length > 0;
+        assert cleanTargetNames != null;
+        assert cleanTargetNames.length > 0;
         
-        ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
+        ActionUtils.runTarget(buildXML, cleanTargetNames, p).waitFinished();
     }
     
     public void notifyDeleted() {
