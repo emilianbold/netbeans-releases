@@ -83,6 +83,10 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
     Issue getIssue() {
         return qs.getIssue();
     }
+    
+    Repository getRepository() {
+        return (Repository) repositoryComboBox.getSelectedItem();
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
