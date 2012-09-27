@@ -229,7 +229,7 @@ public class RuleEditorPanel extends JPanel {
                 });
             } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
                 //refresh the PS content
-                node.fireContextChanged();
+                node.fireContextChanged(false);
                 
                 if(createdDeclaration != null) {
                     //select & edit the property corresponding to the created declaration
@@ -509,7 +509,7 @@ public class RuleEditorPanel extends JPanel {
             return; //no change
         }
         this.sortMode = mode;
-        node.fireContextChanged();
+        node.fireContextChanged(true);
     }
 
     public boolean isShowAllProperties() {
@@ -521,7 +521,7 @@ public class RuleEditorPanel extends JPanel {
             return; //no change
         }
         this.showAllProperties = showAllProperties;
-        node.fireContextChanged();
+        node.fireContextChanged(true);
     }
 
     public boolean isShowCategories() {
@@ -533,7 +533,7 @@ public class RuleEditorPanel extends JPanel {
             return; //no change
         }
         this.showCategories = showCategories;
-        node.fireContextChanged();
+        node.fireContextChanged(true);
     }
 
     public Model getModel() {
@@ -664,7 +664,7 @@ public class RuleEditorPanel extends JPanel {
         }
         northWestPanel.revalidate();
 
-        node.fireContextChanged();
+        node.fireContextChanged(false);
 
         final AtomicReference<String> ruleNameRef = new AtomicReference<String>();
         model.runReadTask(new Model.ModelTask() {
@@ -693,7 +693,7 @@ public class RuleEditorPanel extends JPanel {
         
         addPropertyButton.setEnabled(false);
         addPropertyCB.setEnabled(false);
-        node.fireContextChanged();
+        node.fireContextChanged(false);
     }
 
     public void setDeclarationInfo(Declaration declaration, DeclarationInfo declarationInfo) {
