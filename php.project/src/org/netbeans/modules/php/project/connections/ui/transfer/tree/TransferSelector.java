@@ -74,6 +74,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
+@org.netbeans.api.annotations.common.SuppressWarnings({"SE_BAD_FIELD_STORE", "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE"})
 public final class TransferSelector extends TransferFilesChooserPanel implements ExplorerManager.Provider {
 
     private static final long serialVersionUID = 875487456455313L;
@@ -393,9 +394,11 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
         }
     }
 
-    private class CheckAllItemListener implements ItemListener {
+    private static final class CheckAllItemListener implements ItemListener {
+
         private final TransferSelectorModel model;
         private final CheckTreeView treeView;
+
 
         public CheckAllItemListener(TransferSelectorModel model, CheckTreeView treeView) {
             this.model = model;
@@ -412,5 +415,7 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
                 treeView.repaintTree();
             }
         }
+
     }
+
 }
