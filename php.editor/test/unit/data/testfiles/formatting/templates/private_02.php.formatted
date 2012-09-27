@@ -3,11 +3,11 @@
 class Test {
     private $bla = "fladsfa";
     private 
-    function __construct() {
+    public function __construct() {
 
     }
 
-    function method1($param) {
+    public function method1($param) {
 
     }
 

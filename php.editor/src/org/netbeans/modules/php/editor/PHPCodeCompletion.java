@@ -1053,7 +1053,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         if (element instanceof ModelElement) {
             ModelElement mElem = (ModelElement) element;
             ModelElement parentElem = mElem.getInScope();
-            String fName = mElem.getFileObject().getNameExt();
+            FileObject fileObject = mElem.getFileObject();
+            String fName = fileObject == null ? "?" : fileObject.getNameExt(); //NOI18N
             String tooltip = null;
             if (parentElem instanceof TypeScope) {
                 tooltip = mElem.getPhpElementKind() + ": " + parentElem.getName() + "<b> " + mElem.getName() + " </b>" + "(" + fName + ")";//NOI18N
@@ -1223,39 +1224,41 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         int diff = ts.move(offset);
         if (diff > 0 && ts.moveNext() || ts.movePrevious()) {
             Token t = ts.token();
-            if (OptionsUtils.autoCompletionTypes()) {
-                if (lastChar == ' ' || lastChar == '\t') {
-                    if (ts.movePrevious()
-                            && TOKENS_TRIGGERING_AUTOPUP_TYPES_WS.contains(ts.token().id())) {
+            if (t != null) {
+                if (OptionsUtils.autoCompletionTypes()) {
+                    if (lastChar == ' ' || lastChar == '\t') {
+                        if (ts.movePrevious()
+                                && TOKENS_TRIGGERING_AUTOPUP_TYPES_WS.contains(ts.token().id())) {
 
+                            return QueryType.ALL_COMPLETION;
+                        } else {
+                            return QueryType.STOP;
+                        }
+                    }
+
+                    if (t.id() == PHPTokenId.PHP_OBJECT_OPERATOR || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
                         return QueryType.ALL_COMPLETION;
-                    } else {
-                        return QueryType.STOP;
                     }
                 }
-
-                if (t.id() == PHPTokenId.PHP_OBJECT_OPERATOR || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
+                if (OptionsUtils.autoCompletionVariables()) {
+                    if ((t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$')
+                            || (t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$')) {
+                        return QueryType.ALL_COMPLETION;
+                    }
+                }
+                if (OptionsUtils.autoCompletionNamespaces()) {
+                    if (t.id() == PHPTokenId.PHP_NS_SEPARATOR) {
+                        return isPhp_53(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
+                    }
+                }
+                if (t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
                     return QueryType.ALL_COMPLETION;
                 }
-            }
-            if (OptionsUtils.autoCompletionVariables()) {
-                if ((t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$')
-                        || (t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$')) {
-                    return QueryType.ALL_COMPLETION;
-                }
-            }
-            if (OptionsUtils.autoCompletionNamespaces()) {
-                if (t.id() == PHPTokenId.PHP_NS_SEPARATOR) {
-                    return isPhp_53(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
-                }
-            }
-            if (t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
-                return QueryType.ALL_COMPLETION;
-            }
-            if (OptionsUtils.autoCompletionFull() && t != null) {
-                TokenId id = t.id();
-                if ((id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_VARIABLE)) && t.length() > 0) {
-                    return QueryType.ALL_COMPLETION;
+                if (OptionsUtils.autoCompletionFull()) {
+                    TokenId id = t.id();
+                    if ((id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_VARIABLE)) && t.length() > 0) {
+                        return QueryType.ALL_COMPLETION;
+                    }
                 }
             }
         }

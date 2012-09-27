@@ -64,7 +64,7 @@ public class JsDocDocumentationProvider implements JsDocumentationProvider {
 
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
-        return new JsDocDocumentationHolder(snapshot);
+        return new JsDocDocumentationHolder(this, snapshot);
     }
 
     @Override

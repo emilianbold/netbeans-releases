@@ -48,7 +48,6 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.*;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -196,7 +195,10 @@ public class IdenticalComparisonHint extends AbstractRule {
         private String getCastableType(Collection<? extends String> typeNames) {
             String retval = ""; //NOI18N
             if (typeNames != null && typeNames.size() == 1) {
-                retval = resolveCastableType(ModelUtils.getFirst(typeNames)); //NOI18N
+                String typeName = ModelUtils.getFirst(typeNames);
+                if (typeName != null) {
+                    retval = resolveCastableType(typeName); //NOI18N
+                }
             }
             return retval;
         }
@@ -281,7 +283,7 @@ public class IdenticalComparisonHint extends AbstractRule {
 
     }
 
-    private class FixInfo {
+    private static class FixInfo {
         private final String typeName;
         private final int length;
         private final int start;

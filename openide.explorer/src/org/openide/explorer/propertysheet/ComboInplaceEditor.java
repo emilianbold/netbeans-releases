@@ -213,12 +213,27 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             if(SheetTable.isValueIncrementEnabled(env)) {
                 disable_VK_UP_VK_DOWN_Keystrokes(this);
                 disable_VK_UP_VK_DOWN_Keystrokes(((JComponent)getEditor().getEditorComponent()));
+                
+                Object incrementSupport = env.getFeatureDescriptor().getValue( SheetTable.VALUE_INCREMENT );
+                if( null != incrementSupport && incrementSupport instanceof SpinnerModel ) {
+                    this.incrementSupport = (SpinnerModel)incrementSupport;
+                }
+                
             }
+            
+            
+            
             
             reset();
         } finally {
             connecting = false;
         }
+    }
+    
+    private SpinnerModel incrementSupport;
+    
+    SpinnerModel getIncrementSupport() {
+        return incrementSupport;
     }
 
     private void log(String s) {
@@ -271,12 +286,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             }
 
             if( isAutoComplete() && isPopupVisible()) {
-                if(!SheetTable.isValueIncrementEnabled(env)) {
-                    //allow the increment support to work even if popup is opened
-                    //since now there's a bug that the key events are not propagated 
-                    //to the popup.
-                    return;
-                }
+                return;
             }
 
             if ("comboBoxEdited".equals(getActionCommand())) {

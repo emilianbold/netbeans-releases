@@ -12,7 +12,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.Arrays;
 
-public class StateStack implements Cloneable {
+public class StateStack {
 
     private byte[] stack;
     private int lastIn = -1;

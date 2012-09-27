@@ -118,7 +118,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
         result.addLookupListener( listener );
         LOG.log(Level.INFO, "Lookup listener is added into the Maven project");// NOI18N
 
-        MAVEN_WS_RP.post(new Runnable() {
+        Runnable runnable = new Runnable() {
 
             @Override
             public void run() {
@@ -126,11 +126,17 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
                 LOG.log(Level.INFO, "Inside Maven WS request processor");   // NOI18N
                 
                 synchronized (result) {
-                    while (lookup.lookup(J2eeModuleProvider.class) == null) {
+                    boolean wait = true;
+                    while (lookup.lookup(J2eeModuleProvider.class) == null ) {
+                        if ( !wait ){
+                            MAVEN_WS_RP.post(this);
+                            return;
+                        }
                         try {
                             LOG.log(Level.INFO, 
                                     "Wait in cycle for J2eeModuleProvider instance in Maven lookup");// NOI18N
                             result.wait(1000);
+                            wait = false;
                         }
                         catch( InterruptedException e ){
                             LOG.log(Level.INFO, "Lookup change wait is interrupted", e); //NOI18N
@@ -153,7 +159,8 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
                 //wsModel = model;
             }
 
-        });
+        };
+        MAVEN_WS_RP.post(runnable);
     }
 
     @Override

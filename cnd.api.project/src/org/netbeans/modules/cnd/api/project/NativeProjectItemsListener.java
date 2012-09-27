@@ -47,11 +47,6 @@ package org.netbeans.modules.cnd.api.project;
 import java.util.List;
 
 public interface NativeProjectItemsListener {
-     /**
-      * Called when a file is added to the project.
-      * @param fileItem the file item that was added.
-      */
-     public void fileAdded(NativeFileItem fileItem);
 
      /**
       * Called when multiple files are added to the project.
@@ -60,23 +55,10 @@ public interface NativeProjectItemsListener {
      public void filesAdded(List<NativeFileItem> fileItems);
      
      /**
-      * Called when a file is removed from the project.
-      * @param fileItem the file item that was removed.
-      */
-     public void fileRemoved(NativeFileItem fileItem);
-
-     /**
       * Called when multiple files are removed from the project.
       * @param fileItems the list of file items that was added.
       */
      public void filesRemoved(List<NativeFileItem> fileItems);
-     
-     /**
-      * Called when include paths or macro definitions have changed (and
-      * the file needs to be re-parsed).
-      * @param fileItem the file item that has changed.
-      */
-     public void filePropertiesChanged(NativeFileItem fileItem);
      
      /**
       * Called when include paths or macro definitions have changed (and

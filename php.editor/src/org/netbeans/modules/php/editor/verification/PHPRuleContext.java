@@ -42,21 +42,18 @@
 
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.List;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
 class PHPRuleContext extends RuleContext {
-    List<ASTNode> path;
     private ElementQuery.Index index;
     @NullAllowed
     FileScope fileScope;

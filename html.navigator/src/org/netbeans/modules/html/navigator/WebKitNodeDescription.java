@@ -51,6 +51,7 @@ import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node.Attribute;
+import org.openide.nodes.Children;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
@@ -205,28 +206,33 @@ public class WebKitNodeDescription extends DOMNodeDescription {
     @Override
     public synchronized Collection<WebKitNodeDescription> getChildren() {
         if (children == null) {
-            List<Node> wkChildren = webKitNode.getChildren();
+            final List<Node> wkChildren = webKitNode.getChildren();
             if (wkChildren == null || wkChildren.isEmpty()) {
                 return Collections.emptyList();
             }
             children = new ArrayList<WebKitNodeDescription>();
-            org.openide.nodes.Node[] nodes = nbNode.getChildren().getNodes();
-            for (Node child : wkChildren) {
-                int i=0;
-                while (i<nodes.length && Utils.getWebKitNode(nodes[i])!=child) {
-                    i++;
-                };
-                if (i>=nodes.length) {
-                    //netbeans fake node
-                    continue;
+            Children.MUTEX.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    org.openide.nodes.Node[] nodes = nbNode.getChildren().getNodes();
+                    for (Node child : wkChildren) {
+                        int i = 0;
+                        while (i < nodes.length && Utils.getWebKitNode(nodes[i]) != child) {
+                            i++;
+                        };
+                        if (i >= nodes.length) {
+                            //netbeans fake node
+                            continue;
+                        }
+                        switch (child.getNodeType()) {
+                            case org.w3c.dom.Node.ELEMENT_NODE:
+                            case org.w3c.dom.Node.DOCUMENT_NODE:
+                                children.add(new WebKitNodeDescription(WebKitNodeDescription.this, child, nodes[i]));
+                                break;
+                        }
+                    }
                 }
-                switch (child.getNodeType()) {
-                    case org.w3c.dom.Node.ELEMENT_NODE:
-                    case org.w3c.dom.Node.DOCUMENT_NODE:
-                        children.add(new WebKitNodeDescription(this, child, nodes[i]));
-                        break;
-                }
-            }
+            });
         }
         return children==null?Collections.EMPTY_LIST:children;
     }

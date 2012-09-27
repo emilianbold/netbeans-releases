@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.utils;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.LinkedList;
 import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
@@ -50,47 +51,203 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
 
 /**
  *
  * @author Vladimir Voskresensky
+ * @author Vladimir Kvashin
  */
 public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCase {
-
+    private static final boolean TRACE = false;
+    
     public SuspendableFileChangeListenerTest(String name) {
         super(name, ExecutionEnvironmentFactory.getLocal());
     }
 
-    @Test
-    public void testNonSuspended1() throws Throwable {
-        test1(false);
+    private static final class FCL extends DumpingFileChangeListener {
+        private final static class EventPair {
+            private final String kind;
+            private final FileEvent event;
+
+            public EventPair(String kind, FileEvent event) {
+                this.kind = kind;
+                this.event = event;
+            }
+            
+        }
+        
+        private final LinkedList<EventPair> events = new LinkedList<EventPair>();
+        public FCL(String name, String prefixToStrip, PrintStream out, boolean checkExpected) {
+            super(name, prefixToStrip, out, checkExpected);
+        }
+
+        @Override
+        protected void register(String eventKind, FileEvent fe) {
+            events.addLast(new EventPair(eventKind, fe));
+            super.register(eventKind, fe);
+        }
     }
     
     @Test
-    public void testSuspended1() throws Throwable {
-        test1(false);
-    }
-
-    private void test1(boolean suspend) throws Throwable {
-        String[] dirStruct = new String[] {
+    public void testRemoveThenCreateAsChange() throws Throwable {
+        String[] dirStruct = new String[]{
             "d real_dir_1",
-            "d real_dir_1/subdir_1",
-            "d real_dir_1/subdir_1/subsub_a",
-        };        
-        String[] filesStruct1 = new String[]{
-            "d real_dir_2",
-        };
-        String[] filesStruct2 = new String[]{
             "- real_dir_1/file_1",
-            "- real_dir_1/file_2"
         };
-        FileObject tempFO = mkTempFO("testNonSuspended", "tmp");
+        String[] removeFile = new String[]{
+            "R real_dir_1/file_1",};
+        String[] addFile = new String[]{
+            "- real_dir_1/file_1"
+        };
+        FileObject tempFO = mkTempFO(getName(), "tmp");
         final File tempFile = FileUtil.toFile(tempFO);
         try {
             createDirStructure(getTestExecutionEnvironment(), tempFO.getPath(), dirStruct);
             File workDir = getWorkDir();
             File testLog = new File(workDir, "test.dat");
-            File referenceLog = new File(workDir, "reference.dat");   
+            File referenceLog = new File(workDir, "reference.dat");
+            FCL golden = new FCL(getName(), "", new PrintStream(referenceLog), true);
+            FCL delegate = new FCL(getName(), "", new PrintStream(testLog), true);
+            SuspendableFileChangeListener suspendableListener = new SuspendableFileChangeListener(delegate);
+
+            FileSystemProvider.addRecursiveListener(golden, tempFO.getFileSystem(), tempFO.getPath());
+            FileSystemProvider.addRecursiveListener(suspendableListener, tempFO.getFileSystem(), tempFO.getPath());
+
+            suspendableListener.suspendRemoves();
+            createDirStructure(getTestExecutionEnvironment(), tempFO.getPath(), removeFile, false);
+            FileUtil.refreshFor(tempFile);
+            createDirStructure(getTestExecutionEnvironment(), tempFO.getPath(), addFile, false);
+            FileUtil.refreshFor(tempFile);
+            suspendableListener.resumeRemoves();
+            suspendableListener.flush();
+
+            if (TRACE) {
+                printFile(referenceLog, "Casual ", System.out);
+                printFile(testLog, "Suspend", System.out);
+            }
+            assertEquals("golden: ", 2, golden.events.size());
+            assertEquals("golden 1:", DumpingFileChangeListener.FILE_DELETED, golden.events.get(0).kind);
+            assertEquals("golden 2:", DumpingFileChangeListener.FILE_DATA_CREATED, golden.events.get(1).kind);
+            assertEquals("delegated: ", 1, delegate.events.size());
+            assertEquals("delegate 1:", DumpingFileChangeListener.FILE_CHANGED, delegate.events.get(0).kind);
+            assertEquals("golden vs delegate ", golden.events.get(1).event.getFile(), delegate.events.get(0).event.getFile());
+            assertEquals("golden vs delegate ", golden.events.get(1).event.getTime(), delegate.events.get(0).event.getTime());
+        } finally {
+            removeDirectory(tempFile);
+        }
+    }
+        
+    @Test
+    public void testRenameAsRemoveAddNotSuspended() throws Throwable {
+        doTestRenameAsRemoveAdd(false);
+    }
+    
+    @Test
+    public void testRenameAsRemoveAddSuspended() throws Throwable {
+        doTestRenameAsRemoveAdd(true);
+    }
+    
+    private void doTestRenameAsRemoveAdd(boolean suspend) throws Throwable {
+        FileObject tempFO = mkTempFO(getName(), "tmp");
+        final File tempFile = FileUtil.toFile(tempFO);
+        try {
+            File workDir = getWorkDir();
+            File testLog = new File(workDir, "test.dat");
+            File referenceLog = new File(workDir, "reference.dat");
+            FCL golden = new FCL(getName(), "", new PrintStream(referenceLog), true);
+            FCL delegate = new FCL(getName(), "", new PrintStream(testLog), true);
+            SuspendableFileChangeListener suspendableListener = new SuspendableFileChangeListener(delegate);
+            
+            FileObject fo = tempFO.createData("toMove", "txt");
+            String oldPath = fo.getPath();
+            FileSystemProvider.addRecursiveListener(golden, tempFO.getFileSystem(), tempFO.getPath());
+            FileSystemProvider.addRecursiveListener(suspendableListener, tempFO.getFileSystem(), tempFO.getPath());
+
+            if (suspend) {
+                suspendableListener.suspendRemoves();
+            }
+            FileLock lock = fo.lock();
+            try {
+                fo.rename(lock, "newName", "newExt");
+            } finally {
+                lock.releaseLock();
+            }
+            if (suspend) {
+                suspendableListener.resumeRemoves();
+            }
+            suspendableListener.flush();
+
+            if (TRACE) {
+                printFile(referenceLog, "Casual ", System.out);
+                printFile(testLog, "Suspend", System.out);
+            }
+            assertEquals("golden: ", 1, golden.events.size());
+            FCL.EventPair renameEvent = golden.events.get(0);
+            assertEquals("golden 1:", DumpingFileChangeListener.FILE_RENAMED, renameEvent.kind);
+            assertEquals("delegated: ", 2, delegate.events.size());
+            FCL.EventPair createEvent, deleteEvent;
+            // in suspend we don't know exact order, find it
+            if (suspend && DumpingFileChangeListener.FILE_DATA_CREATED.equals(delegate.events.get(0).kind)) {
+                deleteEvent = delegate.events.get(1);
+                createEvent = delegate.events.get(0);
+            } else {
+                deleteEvent = delegate.events.get(0);
+                createEvent = delegate.events.get(1);
+            }
+            assertEquals("create :" + createEvent, DumpingFileChangeListener.FILE_DATA_CREATED, createEvent.kind);
+            assertEquals("golden vs delegate file " + createEvent, renameEvent.event.getFile(), createEvent.event.getFile());
+            assertEquals("golden vs delegate time " + createEvent, renameEvent.event.getTime(), createEvent.event.getTime());
+            assertEquals("delete :" + deleteEvent, DumpingFileChangeListener.FILE_DELETED, deleteEvent.kind);
+            assertEquals("delete :" + deleteEvent, oldPath, deleteEvent.event.getFile().getPath());
+            assertEquals("golden vs delegate source " + createEvent, renameEvent.event.getSource(), createEvent.event.getSource());
+        } finally {
+            removeDirectory(tempFile);
+        }
+    }
+    
+    @Test
+    public void testParityNotSuspended() throws Throwable {
+        doTestParity(false);
+    }
+
+    @Test
+    public void testParitySuspended() throws Throwable {
+        doTestParity(true);
+    }
+
+    @Test
+    public void testCreateThenRemoveAsTwoEvents() throws Throwable {
+        String[] dirStruct = new String[]{"d real_dir_1"};
+        String[] removeFile = new String[]{
+            "R real_dir_1/file_1",};
+        String[] addFile = new String[]{
+            "- real_dir_1/file_1"
+        };
+        doTestParityImpl(true, dirStruct, removeFile, addFile);
+    }
+
+    private void doTestParity(boolean suspend) throws Throwable {
+        String[] init = new String[]{
+            "d real_dir_1",
+            "d real_dir_1/subdir_1",
+            "d real_dir_1/subdir_1/subsub_a",};
+        String[] filesStruct = new String[]{
+            "- real_dir_1/file_1",
+            "- real_dir_1/file_2"
+        };
+        doTestParityImpl(suspend, init, filesStruct);
+    }
+
+    private void doTestParityImpl(boolean suspend, String[] init, String[]... actions) throws Throwable {
+        FileObject tempFO = mkTempFO(getName(), "tmp");
+        final File tempFile = FileUtil.toFile(tempFO);
+        try {
+            createDirStructure(getTestExecutionEnvironment(), tempFO.getPath(), init);
+            File workDir = getWorkDir();
+            File testLog = new File(workDir, "test.dat");
+            File referenceLog = new File(workDir, "reference.dat");
             FileChangeListener golden = new DumpingFileChangeListener(getName(), "", new PrintStream(referenceLog), true);
             SuspendableFileChangeListener suspendableListener = new SuspendableFileChangeListener(new DumpingFileChangeListener(getName(), "", new PrintStream(testLog), true));
             if (suspend) {
@@ -99,16 +256,19 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
             FileSystemProvider.addRecursiveListener(golden, tempFO.getFileSystem(), tempFO.getPath());
             FileSystemProvider.addRecursiveListener(suspendableListener, tempFO.getFileSystem(), tempFO.getPath());
 
-            createDirStructure(getTestExecutionEnvironment(), tempFO.getPath(), filesStruct1, false);
-            createDirStructure(getTestExecutionEnvironment(), tempFO.getPath(), filesStruct2, false);
-            FileUtil.refreshFor(tempFile);
+            for (String[] action : actions) {
+                createDirStructure(getTestExecutionEnvironment(), tempFO.getPath(), action, false);
+                FileUtil.refreshFor(tempFile);
+            }
             if (suspend) {
                 suspendableListener.resumeRemoves();
             }
             suspendableListener.flush();
-            
-            printFile(referenceLog, "referenceLog ", System.out);
-            printFile(testLog, "testLog", System.out);
+
+            if (TRACE) {
+                printFile(referenceLog, "Gold", System.out);
+                printFile(testLog, "Test", System.out);
+            }
             File diff = new File(workDir, "diff.diff");
             try {
                 assertFile("Wrapped and Golden events differ, see diff " + testLog.getAbsolutePath() + " " + referenceLog.getAbsolutePath(), testLog, referenceLog, diff);
@@ -117,10 +277,9 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
                     printFile(diff, null, System.err);
                 }
                 throw ex;
-            }     
+            }
         } finally {
             removeDirectory(tempFile);
-//            tempFO.delete();
         }
     }
     

@@ -323,8 +323,13 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                                             AnnotationMirror webMethodAnn = 
                                                 getWebMethodAnnotation(webMethod);
                                             java.util.Map<? extends ExecutableElement, 
-                                                    ? extends AnnotationValue> expressions = 
-                                                        webMethodAnn.getElementValues();
+                                                    ? extends AnnotationValue> expressions; 
+                                            if ( webMethodAnn == null ){
+                                                expressions = Collections.emptyMap();
+                                            }
+                                            else {
+                                                expressions = webMethodAnn.getElementValues();
+                                            }
                                             for(Entry<? extends ExecutableElement, 
                                                     ? extends AnnotationValue> entry: 
                                                         expressions.entrySet()) 

@@ -200,7 +200,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 monitor = new RemoteProgressMonitor(handle);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
+                assert false : "Unknown wizard type: " + wizardType;
         }
 
         final AntProjectHelper helper = PhpProjectGenerator.createProject(createProperties, monitor);
@@ -221,6 +221,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             case REMOTE:
                 downloadRemoteFiles(createProperties, monitor);
                 break;
+            case EXISTING:
+                // noop
+                break;
+            default:
+                assert false : "Unknown wizard type: " + wizardType;
         }
 
         try {
@@ -448,6 +453,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return indexName;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
     private Boolean isCopyFiles() {
         PhpProjectProperties.RunAsType runAs = getRunAsType();
         if (runAs == null) {
@@ -583,7 +589,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                         FileObject frameworkIndex = properties.getIndexFile();
                         if (frameworkIndex != null) {
                             indexFile = PropertyUtils.relativizeFile(createProperties.getSourcesDirectory(), FileUtil.toFile(frameworkIndex));
-                            assert !indexFile.startsWith("../");
+                            assert indexFile != null && !indexFile.startsWith("../") : "Unexpected index file: " + indexFile;
                             break; // 1st wins
                         }
                     }
@@ -593,6 +599,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 // try to find index file for downloaded files
                 indexFile = getIndexFile(null);
                 break;
+            case EXISTING:
+                // noop
+                break;
+            default:
+                assert false : "Unknown wizard type: " + wizardType;
         }
 
         if (indexFile == null) {

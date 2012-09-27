@@ -39,12 +39,37 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.api.project;
 
-console.log('Sending actual viewport margins');
-chrome.extension.sendMessage({
-    type: 'VIEWPORT',
-    width: window.innerWidth,
-    height: window.innerHeight,
-    marginWidth: window.outerWidth - window.innerWidth,
-    marginHeight: window.outerHeight - window.innerHeight
-});
+import java.util.List;
+
+/**
+ *
+ * @author Vladimir Voskresensky
+ */
+public class NativeProjectItemsAdapter implements NativeProjectItemsListener {
+
+    @Override
+    public void filesAdded(List<NativeFileItem> fileItems) {
+    }
+
+    @Override
+    public void filesRemoved(List<NativeFileItem> fileItems) {
+    }
+
+    @Override
+    public void filesPropertiesChanged(List<NativeFileItem> fileItems) {
+    }
+
+    @Override
+    public void filesPropertiesChanged() {
+    }
+
+    @Override
+    public void fileRenamed(String oldPath, NativeFileItem newFileIetm) {
+    }
+
+    @Override
+    public void projectDeleted(NativeProject nativeProject) {
+    }
+}

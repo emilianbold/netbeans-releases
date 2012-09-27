@@ -286,7 +286,7 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
 
     }
 
-    private class AssignmentVisitor extends DefaultVisitor {
+    private static class AssignmentVisitor extends DefaultVisitor {
 
         private final List<Assignment> accidentalAssignments = new LinkedList<Assignment>();
 
@@ -321,6 +321,7 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
             return Bundle.ChangeAssignmentDisp(getCorrectedAssignmentText());
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings({"DLS_DEAD_LOCAL_STORE"})
         private String getCorrectedAssignmentText() {
             StringBuilder sb = new StringBuilder();
             try {

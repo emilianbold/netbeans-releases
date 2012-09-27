@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
@@ -117,9 +118,8 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
         }
 
         private void checkNamesInScope(Map<String, List<Variable>> names) {
-            for (String name : names.keySet()) {
-                List<Variable> variables = names.get(name);
-                checkAllowedAssignments(variables);
+            for (Entry<String, List<Variable>> entry : names.entrySet()) {
+                checkAllowedAssignments(entry.getValue());
             }
         }
 
@@ -141,7 +141,9 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
                 int start = variable.getStartOffset() + 1;
                 int end = variable.getEndOffset();
                 OffsetRange offsetRange = new OffsetRange(start, end);
-                hints.add(new Hint(ImmutableVariablesHint.this, Bundle.ImmutableVariablesHintCustom(numberOfAllowedAssignments, variables.size(), getIdentifier(variable).getName()), fileObject, offsetRange, null, 500));
+                Identifier variableIdentifier = getIdentifier(variable);
+                String variableName = variableIdentifier == null ? "?" : variableIdentifier.getName(); //NOI18N
+                hints.add(new Hint(ImmutableVariablesHint.this, Bundle.ImmutableVariablesHintCustom(numberOfAllowedAssignments, variables.size(), variableName), fileObject, offsetRange, null, 500));
             }
         }
 

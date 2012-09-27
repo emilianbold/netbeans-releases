@@ -334,12 +334,14 @@ public class SymfonyScript {
         }
         List<SymfonyCommandVO> commandsVO = new ArrayList<SymfonyCommandVO>();
         try {
-            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile)));
+            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile), "UTF-8")); // NOI18N
             SymfonyCommandsXmlParser.parse(reader, commandsVO);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         } finally {
-            tmpFile.delete();
+            if (!tmpFile.delete()) {
+                LOGGER.info("Cannot delete temporary file");
+            }
         }
         if (commandsVO.isEmpty()) {
             // error

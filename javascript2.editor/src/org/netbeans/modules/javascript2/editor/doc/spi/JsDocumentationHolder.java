@@ -68,9 +68,12 @@ public abstract class JsDocumentationHolder {
 
     private final Snapshot snapshot;
 
+    private final JsDocumentationProvider provider;
+
     private Map<String, List<OffsetRange>> occurencesMap = null;
 
-    public JsDocumentationHolder(Snapshot snapshot) {
+    public JsDocumentationHolder(JsDocumentationProvider provider, Snapshot snapshot) {
+        this.provider = provider;
         this.snapshot = snapshot;
     }
 
@@ -106,6 +109,14 @@ public abstract class JsDocumentationHolder {
             occurencesMap.put(type.getType(), new LinkedList<OffsetRange>());
         }
         occurencesMap.get(type.getType()).add(DocumentationUtils.getOffsetRange(type));
+    }
+
+    /**
+     * Gets the {@link JsDocumentationProvider} which creates this holder.
+     * @return JsDocumentationProvider
+     */
+    public JsDocumentationProvider getProvider() {
+        return provider;
     }
 
     /**

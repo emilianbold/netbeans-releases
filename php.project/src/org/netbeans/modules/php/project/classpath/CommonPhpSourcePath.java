@@ -56,6 +56,8 @@ import org.openide.filesystems.FileUtil;
  */
 public final class CommonPhpSourcePath {
 
+    private static final Logger LOGGER = Logger.getLogger(CommonPhpSourcePath.class.getName());
+
     // GuardedBy(CommonPhpSourcePath.class)
     private static List<FileObject> internalFolders = null;
 
@@ -76,13 +78,12 @@ public final class CommonPhpSourcePath {
         // XXX disabled, unit tests failures
         //assert !preindexedFolders.contains(null) : "Preindexed folders contains null";
         FileObject sfsFolder = FileUtil.getConfigFile("PHP/RuntimeLibraries"); // NOI18N
-        assert sfsFolder != null : "SFS folder is null";
         List<FileObject> folders = new ArrayList<FileObject>(preindexedFolders.size() + 1);
         // #210578
         if (sfsFolder != null) {
             folders.add(sfsFolder);
         } else {
-            Logger.getLogger(CommonPhpSourcePath.class.getName()).info("SFS folder PHP/RuntimeLibraries not found");
+            LOGGER.info("SFS folder PHP/RuntimeLibraries not found");
         }
         folders.addAll(preindexedFolders);
         return folders;
