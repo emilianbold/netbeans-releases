@@ -2336,8 +2336,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public abstract void onFileRemoved(List<NativeFileItem> items);
 
-    public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
-
     public abstract void onFilePropertyChanged(List<NativeFileItem> items, boolean invalidateLibs);
 
     protected abstract ParserQueue.Position getIncludedFileParserQueuePosition();
