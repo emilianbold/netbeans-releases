@@ -377,8 +377,13 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
      * @param baseDir base directory; of not exists, it is created ; if exists,
      * the content is removed
      * @param creationData array of strings, a string per file; a string should
-     * have format below, for plain file, directory and link resprctively: "-
-     * plain-filen-name" "d directory-name" "l link-target link-name"
+     * have format below:
+     * "- plain-filen-name" for plain file
+     * "d directory-name" for directory
+     * "l link-target link-name" for link
+     * "R file-or-dir-name" for removal
+     * "T file-name" for touch
+     * "M dir-or-file-name new-name" for move
      * @throws Exception
      */
     public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData) throws Exception {
@@ -426,6 +431,13 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
                         break;
                     case 'R':
                         script.append("rm -rf \"").append(path).append("\";\n");
+                        break;
+                    case 'T':
+                        script.append("touch \"").append(path).append("\";\n");
+                        break;
+                    case 'M':
+                        String dst = parts[2];
+                        script.append("mv \"").append(path).append("\" \"").append(dst).append("\";\n");
                         break;
                     default:
                         throw new IllegalArgumentException("Unexpected 1-st char: " + data);
