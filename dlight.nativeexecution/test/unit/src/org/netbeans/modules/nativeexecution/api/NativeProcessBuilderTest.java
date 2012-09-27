@@ -65,6 +65,7 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.UserQuestionException;
 
 public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
@@ -258,6 +259,27 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
     @ForAllEnvironments(section = "remote.platforms")
     public void testSetCommandLine() throws Exception {
         doTestSetCommandLine(getTestExecutionEnvironment());
+    }
+    
+    public void testAsksForconnection() {
+        ExecutionEnvironment ee = ExecutionEnvironmentFactory.createNew("never", "existed.com");
+        NativeProcessBuilder b = NativeProcessBuilder.newProcessBuilder(ee);
+        b.setExecutable("ade");
+        b.setArguments("lsviews");
+        try {
+            b.call();
+            fail("The previous call should thrown an exception");
+        } catch (UserQuestionException ex) {
+            // OK, expected
+            assertEquals(
+                "Localized message as expected",
+                Bundle.EXC_NotConnectedQuestion(ee.getDisplayName()), 
+                ex.getLocalizedMessage()
+            );
+            assertEquals("No connection to never@existed.com", ex.getMessage());
+        } catch (IOException ex) {
+            fail("we should not get IOException: " + ex);
+        }
     }
 
     private void doTestSetCommandLine(ExecutionEnvironment execEnv) throws Exception {
