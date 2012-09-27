@@ -389,6 +389,8 @@ public class JavaElementFoldManager extends JavaFoldManager {
 
                                 if (end > start &&
                                         (end - start) > (currentNew.template.getStartGuardedLength() + currentNew.template.getEndGuardedLength())) {
+                                    // copy for this FoldManager
+                                    currentNew = currentNew.copy();
                                     Fold f = operation.addToHierarchy(currentNew.template.getType(),
                                             currentNew.template.getDescription(),
                                             mergeSpecialFoldState(currentNew),
@@ -398,7 +400,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                                             currentNew.template.getEndGuardedLength(),
                                             currentNew,
                                             tr);
-
+                                    
                                     currentNew.fold = f;
 
                                     if (currentNew.template == IMPORTS_FOLD_TEMPLATE) {
@@ -669,6 +671,17 @@ public class JavaElementFoldManager extends JavaFoldManager {
             this.end   = doc.createPosition(end);
             this.template = template;
             this.collapseByDefault = collapseByDefault;
+        }
+        
+        private FoldInfo(Position start, Position end, FoldTemplate template, boolean collapseByDefault) {
+            this.start = start;
+            this.end = end;
+            this.template = template;
+            this.collapseByDefault = collapseByDefault;
+        }
+        
+        FoldInfo copy() throws BadLocationException {
+            return new FoldInfo(start, end, template, collapseByDefault);
         }
         
         public int compareTo(Object o) {
