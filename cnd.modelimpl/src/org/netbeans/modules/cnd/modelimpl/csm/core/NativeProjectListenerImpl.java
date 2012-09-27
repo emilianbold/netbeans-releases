@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -69,16 +68,6 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         this.nativeProject = nativeProject;
         this.projectBase = project;
     }
-    
-    @Override
-    public void fileAdded(NativeFileItem fileItem) {
-        if (TRACE) {
-            new Exception().printStackTrace(System.err);
-            System.err.println("Native event fileAdded:"); // NOI18N
-            System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
-        }
-	itemsAddedImpl(Collections.singletonList(fileItem));
-    }
 
     @Override
     public void filesAdded(List<NativeFileItem> fileItems) {
@@ -90,16 +79,6 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             }
         }
         itemsAddedImpl(fileItems);
-    }
-
-    @Override
-    public void fileRemoved(NativeFileItem fileItem) {
-        if (TRACE) {
-            new Exception().printStackTrace(System.err);
-            System.err.println("Native event fileRemoved:"); // NOI18N
-            System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
-        }
-	itemsRemovedImpl(Collections.singletonList(fileItem));
     }
 
     @Override
@@ -132,23 +111,6 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                     nativeProject.getProjectDisplayName());
         }
         enabledEventsHandling = enable;
-    }
-    
-    @Override
-    public void filePropertiesChanged(NativeFileItem fileItem) {
-        if (TRACE) {
-            new Exception().printStackTrace(System.err);
-            System.err.println("Native event filePropertiesChanged:"); // NOI18N
-            System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
-        }
-        if (enabledEventsHandling) {
-            itemsPropertiesChangedImpl(Collections.singletonList(fileItem), false);
-        } else {
-            if (TraceFlags.TIMING) {
-                System.err.printf("\nskipped filePropertiesChanged(item) %s...\n",
-                        nativeProject.getProjectDisplayName());
-            }
-        }        
     }
 
     @Override

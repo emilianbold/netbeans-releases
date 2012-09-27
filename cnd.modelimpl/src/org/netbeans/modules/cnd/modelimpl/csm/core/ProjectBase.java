@@ -907,16 +907,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         NativeProjectItemsListener projectItemListener = new NativeProjectItemsListener() {
 
             @Override
-            public void fileAdded(NativeFileItem fileItem) {
-            }
-
-            @Override
             public void filesAdded(List<NativeFileItem> fileItems) {
-            }
-
-            @Override
-            public void fileRemoved(NativeFileItem fileItem) {
-                removedFileItems.add(fileItem);
             }
 
             @Override
@@ -926,10 +917,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
             @Override
             public void fileRenamed(String oldPath, NativeFileItem newFileIetm) {
-            }
-
-            @Override
-            public void filePropertiesChanged(NativeFileItem fileItem) {
             }
 
             @Override
