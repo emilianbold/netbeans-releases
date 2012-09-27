@@ -110,7 +110,8 @@ public class JFXProjectGenerator {
     enum Action {
         CREATE("USG_PROJECT_CREATE", "USG_PROJECT_CREATE_JFX"),   //NOI18N
         OPEN("USG_PROJECT_OPEN", "USG_PROJECT_OPEN_JFX"),       //NOI18N
-        CLOSE("USG_PROJECT_CLOSE", "USG_PROJECT_CLOSE_JFX");     //NOI18N
+        CLOSE("USG_PROJECT_CLOSE", "USG_PROJECT_CLOSE_JFX"),     //NOI18N
+        BUILD_NATIVE("USG_PROJECT_BUILD_NATIVE", "USG_PROJECT_BUILD_NATIVE_JFX");     //NOI18N
         
         private final String genericLogMessage;
         private final String specificLogMessage;
