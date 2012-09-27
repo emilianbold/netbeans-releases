@@ -68,7 +68,7 @@ public class ExtDocDocumentationProvider implements JsDocumentationProvider {
 
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
-        return new ExtDocDocumentationHolder(snapshot);
+        return new ExtDocDocumentationHolder(this, snapshot);
     }
 
     @Override

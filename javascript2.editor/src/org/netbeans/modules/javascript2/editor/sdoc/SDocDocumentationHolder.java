@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.sdoc;
 
 import java.util.Map;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -53,8 +54,8 @@ public class SDocDocumentationHolder extends JsDocumentationHolder {
 
     private final Map<Integer, SDocComment> blocks;
 
-    public SDocDocumentationHolder(Snapshot snapshot) {
-        super(snapshot);
+    public SDocDocumentationHolder(JsDocumentationProvider provider, Snapshot snapshot) {
+        super(provider, snapshot);
         blocks = SDocParser.parse(snapshot);
     }
 

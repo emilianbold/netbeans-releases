@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.extdoc;
 
 import java.util.Map;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -53,8 +54,8 @@ public class ExtDocDocumentationHolder extends JsDocumentationHolder {
 
     private final Map<Integer, ExtDocComment> blocks;
 
-    public ExtDocDocumentationHolder(Snapshot snapshot) {
-        super(snapshot);
+    public ExtDocDocumentationHolder(JsDocumentationProvider provider, Snapshot snapshot) {
+        super(provider, snapshot);
         blocks = ExtDocParser.parse(snapshot);
     }
 

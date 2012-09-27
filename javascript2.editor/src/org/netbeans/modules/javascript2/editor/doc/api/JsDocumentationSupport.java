@@ -94,9 +94,7 @@ public final class JsDocumentationSupport {
     }
 
     public static SyntaxProvider getSyntaxProvider(JsParserResult parserResult) {
-        // XXX - consider storing DocumentationProvider into DocumentationHolder
-        SyntaxProvider syntaxProvider = getDocumentationProvider(parserResult).getSyntaxProvider();
-        return syntaxProvider == null ? new JsDocumentationFallbackSyntaxProvider() : syntaxProvider;
+        return parserResult.getDocumentationHolder().getProvider().getSyntaxProvider();
     }
 
     public static JsComment getCommentForOffset(JsParserResult result, int offset) {
