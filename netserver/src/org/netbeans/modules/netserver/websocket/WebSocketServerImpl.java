@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.netserver.websocket;
 
+import org.netbeans.modules.netserver.api.WebSocketReadHandler;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -63,15 +64,15 @@ import org.netbeans.modules.netserver.SocketServer;
  * @author ads
  *
  */
-public class WebSocketServer extends SocketServer {
+public class WebSocketServerImpl extends SocketServer {
     
     protected static final Logger LOG = SocketServer.LOG;
     
-    public WebSocketServer( SocketAddress address ) throws IOException {
+    public WebSocketServerImpl( SocketAddress address ) throws IOException {
         this(address , true);
     }
     
-    protected WebSocketServer( SocketAddress address , boolean onlyWebSocket) 
+    protected WebSocketServerImpl( SocketAddress address , boolean onlyWebSocket) 
         throws IOException 
     {
         super(address);
@@ -253,21 +254,21 @@ public class WebSocketServer extends SocketServer {
          * Handshake for protocol version since 07
          */
         private void handshakeVersion7( SelectionKey key ) {
-            setHandler( new WebSocketHandler7(WebSocketServer.this, key ), key );
+            setHandler( new WebSocketHandler7(WebSocketServerImpl.this, key ), key );
         }
 
         /**
          * Handshake for protocol version 75
          */
         private void handshakeVersion75( SelectionKey key ) {
-            setHandler( new WebSocketHandler75(WebSocketServer.this, key ), key );            
+            setHandler( new WebSocketHandler75(WebSocketServerImpl.this, key ), key );            
         }
 
         /**
          * Handshake for protocol version 76
          */
         private void handshakeVersion76( SelectionKey key ) {
-            setHandler( new WebSocketHandler76(WebSocketServer.this, key ), key );            
+            setHandler( new WebSocketHandler76(WebSocketServerImpl.this, key ), key );            
         }
 
         protected boolean readHttpRequest(SocketChannel socketChannel, 

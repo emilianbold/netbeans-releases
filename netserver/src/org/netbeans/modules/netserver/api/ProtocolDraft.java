@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.netserver.websocket;
+package org.netbeans.modules.netserver.api;
 
 
 /**
@@ -113,15 +113,15 @@ public final class ProtocolDraft {
         }
     }
     
-    Draft getDraft(){
+    public Draft getDraft(){
         return draft;
     }
     
-    int getVersion(){
+    public int getVersion(){
         return version;
     }
     
-    boolean isRfc(){
+    public boolean isRFC(){
         return draft == null && version ==0;
     }
     

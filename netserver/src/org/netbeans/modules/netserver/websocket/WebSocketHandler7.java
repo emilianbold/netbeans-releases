@@ -52,10 +52,10 @@ import java.util.logging.Level;
  * @author ads
  *
  */
-class WebSocketHandler7 extends AbstractWSHandler7<WebSocketServer> {
+class WebSocketHandler7 extends AbstractWSHandler7<WebSocketServerImpl> {
     
     
-    public WebSocketHandler7( WebSocketServer webSocketServer, SelectionKey key ) {
+    public WebSocketHandler7( WebSocketServerImpl webSocketServer, SelectionKey key ) {
         super( webSocketServer ); 
         this.myKey=key;
     }
@@ -124,7 +124,7 @@ class WebSocketHandler7 extends AbstractWSHandler7<WebSocketServer> {
     @Override
     protected boolean verifyMask( boolean hasMask ) throws IOException {
         if ( !hasMask ){
-            WebSocketServer.LOG.log(Level.WARNING, 
+            WebSocketServerImpl.LOG.log(Level.WARNING, 
                     "Unexpected client data. Frame is not masked"); // NOI18N
             close();
             return false;

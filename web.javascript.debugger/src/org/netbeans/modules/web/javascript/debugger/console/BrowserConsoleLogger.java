@@ -53,7 +53,7 @@ import java.util.Date;
 import java.util.List;
 import javax.swing.UIManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.console.Console;

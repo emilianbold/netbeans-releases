@@ -39,61 +39,19 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi.platform;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfiguration;
+package org.netbeans.modules.web.common.spi;
+
+import java.io.IOException;
+import java.net.URL;
+import org.openide.filesystems.FileObject;
 
 /**
- * Implementation of project configuration and associated actions, customizer, etc.
+ * Plugable implementation of remote file caching. See API version for JavaDoc.
  */
-public interface ClientProjectConfigurationImplementation extends ProjectConfiguration {
+public interface RemoteFileCacheImplementation {
 
-    /**
-     * Configuration's unique ID used to persist selected configuration etc.
-     */
-    @NonNull String getId();
+    FileObject getRemoteFile(URL file) throws IOException;
     
-    /**
-     * Configuration's customizer.
-     * @return can return null if none
-     */
-    ProjectConfigurationCustomizer getProjectConfigurationCustomizer();
-
-    /**
-     * Persist changes done in configuration's customizer.
-     */
-    void save();
-    
-    /**
-     * Configuration's action provider.
-     * @return can return null
-     */
-    ActionProvider getActionProvider();
-
-    /**
-     * Can this platform be deleted?
-     */
-    boolean canBeDeleted();
-
-    /**
-     * Delete this configuration.
-     */
-    void delete();
-
-
-    /**
-     * Configuration's handler changes in project sources.
-     * @return can return null
-     */
-    RefreshOnSaveListener getRefreshOnSaveListener();
-
-    /**
-     * Notification that configuration is not active anymore.
-     */
-    void deactivate();
-
-    boolean isHighlightSelectionEnabled();
+    URL isRemoteFile(FileObject fo);
 }

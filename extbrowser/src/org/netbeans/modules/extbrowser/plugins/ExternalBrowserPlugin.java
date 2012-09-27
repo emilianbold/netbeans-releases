@@ -58,8 +58,8 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.extbrowser.ExtBrowserImpl;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.extbrowser.plugins.chrome.WebKitDebuggingTransport;
-import org.netbeans.modules.netserver.websocket.WebSocketReadHandler;
-import org.netbeans.modules.netserver.websocket.WebSocketServer;
+import org.netbeans.modules.netserver.api.WebSocketReadHandler;
+import org.netbeans.modules.netserver.api.WebSocketServer;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.api.ResizeOption;
 import org.netbeans.modules.web.browser.api.ResizeOptions;
@@ -96,16 +96,8 @@ public final class ExternalBrowserPlugin {
 
     private ExternalBrowserPlugin() {
         try {
-            server = new WebSocketServer(new InetSocketAddress(PORT)){
-
-                @Override
-                public void close(SelectionKey key) throws IOException {
-                    removeKey( key );
-                    super.close(key);
-                }
-            };
-            server.setWebSocketReadHandler( new BrowserPluginHandler() );
-            new Thread( server ).start();
+            server = new WebSocketServer(new InetSocketAddress(PORT), new BrowserPluginHandler());
+            server.start();
 
             Thread shutdown = new Thread(){
                 @Override
@@ -514,6 +506,7 @@ public final class ExternalBrowserPlugin {
 
         @Override
         public void closed(SelectionKey key) {
+            removeKey( key );
         }
 
     }
