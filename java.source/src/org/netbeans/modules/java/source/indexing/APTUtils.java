@@ -98,6 +98,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final Map<URL, APTUtils> knownSourceRootsMap = new HashMap<URL, APTUtils>();
     private static final Map<FileObject, Reference<APTUtils>> auxiliarySourceRootsMap = new WeakHashMap<FileObject, Reference<APTUtils>>();
     private static final Lookup HARDCODED_PROCESSORS = Lookups.forPath("Editors/text/x-java/AnnotationProcessors");
+    private static final boolean DISABLE_CLASSLOADER_CACHE = Boolean.getBoolean("java.source.aptutils.disable.classloader.cache");
     private final FileObject root;
     private final ClassPath processorPath;
     private final AnnotationProcessingQuery.Result aptOptions;
@@ -200,7 +201,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         final ClassLoaderRef cache = classLoaderCache;
         if (cache == null || (cl=cache.get(root)) == null) {
             cl = CachingArchiveClassLoader.forClassPath(processorPath, new BypassOpenIDEUtilClassLoader(Context.class.getClassLoader()));
-            classLoaderCache = new ClassLoaderRef(cl, root);
+            classLoaderCache = !DISABLE_CLASSLOADER_CACHE ? new ClassLoaderRef(cl, root) : null;
         }
         Collection<Processor> result = lookupProcessors(cl, onScan);
         return result;
