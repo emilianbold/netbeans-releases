@@ -184,21 +184,24 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
                 printFile(testLog, "Suspend", System.out);
             }
             assertEquals("golden: ", 1, golden.events.size());
-            assertEquals("golden 1:", DumpingFileChangeListener.FILE_RENAMED, golden.events.get(0).kind);
+            FCL.EventPair renameEvent = golden.events.get(0);
+            assertEquals("golden 1:", DumpingFileChangeListener.FILE_RENAMED, renameEvent.kind);
             assertEquals("delegated: ", 2, delegate.events.size());
-            if (suspend) {
-                assertEquals("delegate 1:", DumpingFileChangeListener.FILE_DATA_CREATED, delegate.events.get(0).kind);
-                assertEquals("golden vs delegate ", golden.events.get(0).event.getFile(), delegate.events.get(0).event.getFile());
-                assertEquals("golden vs delegate ", golden.events.get(0).event.getTime(), delegate.events.get(0).event.getTime());
-                assertEquals("delegate 2:", DumpingFileChangeListener.FILE_DELETED, delegate.events.get(1).kind);
-                assertEquals("delegate 2:", oldPath, delegate.events.get(1).event.getFile().getPath());
+            FCL.EventPair createEvent, deleteEvent;
+            // in suspend we don't know exact order, find it
+            if (suspend && DumpingFileChangeListener.FILE_DATA_CREATED.equals(delegate.events.get(0).kind)) {
+                deleteEvent = delegate.events.get(1);
+                createEvent = delegate.events.get(0);
             } else {
-                assertEquals("delegate 1:", DumpingFileChangeListener.FILE_DELETED, delegate.events.get(0).kind);
-                assertEquals("delegate 1:", oldPath, delegate.events.get(0).event.getFile().getPath());
-                assertEquals("delegate 2:", DumpingFileChangeListener.FILE_DATA_CREATED, delegate.events.get(1).kind);
-                assertEquals("golden vs delegate ", golden.events.get(0).event.getFile(), delegate.events.get(1).event.getFile());
-                assertEquals("golden vs delegate ", golden.events.get(0).event.getTime(), delegate.events.get(1).event.getTime());
+                deleteEvent = delegate.events.get(0);
+                createEvent = delegate.events.get(1);
             }
+            assertEquals("create :" + createEvent, DumpingFileChangeListener.FILE_DATA_CREATED, createEvent.kind);
+            assertEquals("golden vs delegate file " + createEvent, renameEvent.event.getFile(), createEvent.event.getFile());
+            assertEquals("golden vs delegate time " + createEvent, renameEvent.event.getTime(), createEvent.event.getTime());
+            assertEquals("delete :" + deleteEvent, DumpingFileChangeListener.FILE_DELETED, deleteEvent.kind);
+            assertEquals("delete :" + deleteEvent, oldPath, deleteEvent.event.getFile().getPath());
+            assertEquals("golden vs delegate source " + createEvent, renameEvent.event.getSource(), createEvent.event.getSource());
         } finally {
             removeDirectory(tempFile);
         }
