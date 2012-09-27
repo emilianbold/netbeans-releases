@@ -94,6 +94,7 @@ import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLEditorController;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLExecutor;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLResult;
+import org.netbeans.modules.j2ee.persistence.jpqleditor.Utils;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
@@ -345,77 +346,52 @@ public final class JPQLEditorTopComponent extends TopComponent {
                     final HashMap<String, String> props = new HashMap<String, String>();
                     final boolean containerManaged = Util.isSupportedJavaEEVersion(pe.getProject());
                     final Provider provider = ProviderUtil.getProvider(selectedConfigObject.getProvider(), pe.getProject());
+                    final List<String> initialProblems = new ArrayList<String>();
                     if (containerManaged) {
-                        props.put("javax.persistence.provider", provider.getProviderClass());
-                        props.put("javax.persistence.transactionType", "RESOURCE_LOCAL");
-                        if (dbconn != null) {
-                            props.put(provider.getJdbcUrl(), dbconn.getDatabaseURL());
-                            props.put(provider.getJdbcDriver(), dbconn.getDriverClass());
-                            props.put(provider.getJdbcUsername(), dbconn.getUser());
-                            props.put(provider.getJdbcPassword(), dbconn.getPassword());
-                        }
+                        Utils.substitutePersistenceProperties(pe, selectedConfigObject, dbconn, props);
                     }
                     try {
-                        localResourcesURLList.addAll(pe.getProjectClassPath(pe.getLocation()));
-                        localResourcesURLList.add(pe.getLocation().getParent().toURL());
-                        localResourcesURLList.add(pe.getLocation().toURL());
-                        localResourcesURLList.add(pe.getLocation().getFileObject("persistence.xml").toURL());
-                        if (containerManaged) {
-                            Library library = PersistenceLibrarySupport.getLibrary(provider);
-                            if (library != null) {
-                                localResourcesURLList.addAll(library.getContent("classpath"));//NOI18N
+                        initialProblems.addAll(Utils.collectClassPathURLs(pe, selectedConfigObject, dbconn, localResourcesURLList));
+                        if(initialProblems.size()==0) {
+                            ClassLoader customClassLoader = pe.getProjectClassLoader(
+                                    localResourcesURLList.toArray(new URL[]{}));
+                            Thread.currentThread().setContextClassLoader(customClassLoader);
+                            JPQLExecutor queryExecutor = new JPQLExecutor();
+                            JPQLResult jpqlResult = new JPQLResult();
+                            try {
+                                // Parse POJOs from JPQL
+                                // Check and if required compile POJO files mentioned in JPQL
+
+                                ph2.progress(50);
+                                ph2.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryParsingPassControlToProvider"));
+                                jpqlResult = queryExecutor.execute(jpql, selectedConfigObject, pe, props, provider, 0, ph2, false);
+                                ph2.progress(80);
+                                ph2.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryParsingProcessResults"));
+
+                            } catch (Exception e) {
+                                logger.log(Level.INFO, "Problem in executing JPQL", e);
+                                jpqlResult.getExceptions().add(e);
                             }
-                        }
-                        if (dbconn != null) {
-                            ////autoadd driver classpath
-                            String driverClassName = dbconn.getDriverClass();
-                            ClassPath cp = ClassPath.getClassPath(pe.getLocation(), ClassPath.EXECUTE);
-                            if(cp == null){
-                                cp = ClassPath.getClassPath(pe.getLocation(), ClassPath.COMPILE);
+
+                            if (Thread.interrupted() || isSqlTranslationProcessDone) {
+                                return;    // Cancel the task
                             }
-                            String resourceName = driverClassName.replace('.', '/') + ".class"; // NOI18N
-                            if(cp!=null){
-                                FileObject fob = cp.findResource(resourceName); // NOI18N
-                                if (fob == null) {
-                                    JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(driverClassName);
-                                    if (driver != null && driver.length > 0) {
-                                        localResourcesURLList.addAll(Arrays.asList(driver[0].getURLs()));
-                                    }
+                            if (jpqlResult.getExceptions() != null && jpqlResult.getExceptions().size() > 0) {
+                                logger.log(Level.INFO, "", jpqlResult.getExceptions());
+                                showSQLError("GeneralError", jpqlResult.getQueryProblems());//NOI18N
+                            } else {
+                                if (jpqlResult.getSqlQuery() == null || jpqlResult.getSqlQuery().length() == 0) {
+                                    showSQLError("UnsupportedProvider", jpqlResult.getQueryProblems());//NOI18N
+                                } else {
+                                    showSQL(jpqlResult.getSqlQuery());
                                 }
                             }
-                        }
-                        ClassLoader customClassLoader = pe.getProjectClassLoader(
-                                localResourcesURLList.toArray(new URL[]{}));
-                        Thread.currentThread().setContextClassLoader(customClassLoader);
-                        JPQLExecutor queryExecutor = new JPQLExecutor();
-                        JPQLResult jpqlResult = new JPQLResult();
-                        try {
-                            // Parse POJOs from JPQL
-                            // Check and if required compile POJO files mentioned in JPQL
-
-                            ph2.progress(50);
-                            ph2.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryParsingPassControlToProvider"));
-                            jpqlResult = queryExecutor.execute(jpql, selectedConfigObject, pe, props, provider, 0, ph2, false);
-                            ph2.progress(80);
-                            ph2.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryParsingProcessResults"));
-
-                        } catch (Exception e) {
-                            logger.log(Level.INFO, "Problem in executing JPQL", e);
-                            jpqlResult.getExceptions().add(e);
-                        }
-
-                        if (Thread.interrupted() || isSqlTranslationProcessDone) {
-                            return;    // Cancel the task
-                        }
-                        if (jpqlResult.getExceptions() != null && jpqlResult.getExceptions().size() > 0) {
-                            logger.log(Level.INFO, "", jpqlResult.getExceptions());
-                            showSQLError("GeneralError", jpqlResult.getQueryProblems());//NOI18N
                         } else {
-                            if (jpqlResult.getSqlQuery() == null || jpqlResult.getSqlQuery().length() == 0) {
-                                showSQLError("UnsupportedProvider", jpqlResult.getQueryProblems());//NOI18N
-                            } else {
-                                showSQL(jpqlResult.getSqlQuery());
+                            StringBuilder sb = new StringBuilder();
+                            for(String txt:initialProblems){
+                                sb.append(txt).append("\n");
                             }
+                            showSQLError(null, sb.toString());
                         }
 
                     } catch (Exception e) {
@@ -581,6 +557,8 @@ public final class JPQLEditorTopComponent extends TopComponent {
                     }
                 }
 
+            } else {
+                
             }
             resultsTable.clearSelection();
             resultsTable.setModel(new JPQLEditorResultTableModel(tableData, tableHeaders)); //new DefaultTableModel(tableData, tableHeaders));
@@ -1082,6 +1060,8 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                         }
                     });
                 }
+            } else {
+                showSQLError(null, NbBundle.getMessage(Utils.class, "DatabaseConnectionAbsent"));
             }
         }
     }
