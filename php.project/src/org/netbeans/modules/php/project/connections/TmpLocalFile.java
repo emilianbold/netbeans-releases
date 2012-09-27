@@ -191,7 +191,9 @@ public abstract class TmpLocalFile {
 
         @Override
         public void cleanup() {
-            file.delete();
+            if (!file.delete()) {
+                LOGGER.info("Cannot delete temporary file");
+            }
         }
 
         @Override

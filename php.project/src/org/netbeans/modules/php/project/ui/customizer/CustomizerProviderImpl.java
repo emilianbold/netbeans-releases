@@ -120,7 +120,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         });
     }
 
-    private class StoreListener implements ActionListener {
+    private static final class StoreListener implements ActionListener {
         private final PhpProjectProperties uiProperties;
 
         StoreListener(PhpProjectProperties uiProperties) {

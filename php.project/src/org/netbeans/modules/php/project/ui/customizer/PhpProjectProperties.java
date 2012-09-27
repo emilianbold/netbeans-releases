@@ -131,7 +131,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     public static final String DEBUG_PATH_MAPPING_SEPARATOR = "||NB||"; // NOI18N
 
-    public static final String[] CFG_PROPS = new String[] {
+    private static final String[] CFG_PROPS = new String[] {
         URL,
         INDEX_FILE,
         ARGS,
@@ -273,7 +273,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     @Override
     public String[] getConfigProperties() {
-        return CFG_PROPS;
+        return CFG_PROPS.clone();
     }
 
     @Override

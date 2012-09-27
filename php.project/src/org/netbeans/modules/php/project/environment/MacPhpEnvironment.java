@@ -80,6 +80,7 @@ final class MacPhpEnvironment extends PhpEnvironment {
     /**
      * {@link PhpEnvironment} implementation for MAMP.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     private static final class MampPhpEnvironment extends PhpEnvironment {
 
         @Override
