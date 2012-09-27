@@ -160,7 +160,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         setFlags(FLAGS_CONST, _const);
         setFlags(FLAGS_TYPE_WITH_CLASSIFIER, true);
         this.classifierText = classifier.getName();
-        instantiationParams.trimToSize();
+        trimInstantiationParams();
     }    
 
     // package-local - for facory only

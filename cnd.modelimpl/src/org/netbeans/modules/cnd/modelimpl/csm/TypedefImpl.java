@@ -50,12 +50,15 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -101,6 +104,20 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         this.name = QualifiedNameCache.getManager().getString(aName);
     }
 
+    protected TypedefImpl(CsmType type, CharSequence name, CsmObject container, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        if (UIDCsmConverter.isIdentifiable(container)) {
+            this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable) container);
+            assert (containerUID != null || container == null);
+            this.containerRef = null;
+        } else {
+            // yes, that's possible if it's somewhere within body
+            this.containerRef = container;
+        }
+        this.type = type;
+        this.name = name;
+    }    
+    
     public static TypedefImpl create(AST ast, CsmFile file, CsmObject container, CsmType type, CharSequence aName, boolean global) {
         TypedefImpl typedefImpl = new TypedefImpl(ast, file, container, type, aName);
         if (!global) {
@@ -311,6 +328,32 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         }
         return container;
     }
+    
+    public static class TypedefBuilder extends SimpleDeclarationBuilder implements CsmObjectBuilder {
+        
+        @Override
+        public TypedefImpl create() {
+            CsmType type = null;
+            if(getTypeBuilder() != null) {
+                getTypeBuilder().setScope(getScope());
+                type = getTypeBuilder().create();
+            }
+            if(type == null) {
+                type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), getFile(), getStartOffset(), getStartOffset()); // NOI18N
+            }
+
+            TypedefImpl td = new TypedefImpl(type, getName(), getScope(), getFile(), getStartOffset(), getEndOffset());
+            
+            if (!isGlobal()) {
+                Utils.setSelfUID(td);
+            }
+            
+            addDeclaration(td);
+        
+            return td;
+        }
+    }    
+    
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
