@@ -205,7 +205,16 @@ public class GotoOppositeAction extends CallableSystemAction {
                         @Override
                         public void foundLocation(FileObject fo, LocationResult location) {
                             if (location != null) {
-                                locationResults.put(location, location.getFileObject().getName());
+                                FileObject fileObject = location.getFileObject();
+                                if(fileObject == null) {
+                                    String msg = location.getErrorMessage();
+                                    if (msg != null) {
+                                        DialogDisplayer.getDefault().notify(
+                                                new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
+                                    }
+                                } else {
+                                    locationResults.put(location, fileObject.getName());
+                                }
                             }
                             lock.release();
                         }
@@ -214,7 +223,16 @@ public class GotoOppositeAction extends CallableSystemAction {
                     LocationResult opposite = locator.findOpposite(fo, caretOffset);
 
                     if (opposite != null) {
-                        locationResults.put(opposite, opposite.getFileObject().getName());
+                        FileObject fileObject = opposite.getFileObject();
+                        if (fileObject == null) {
+                            String msg = opposite.getErrorMessage();
+                            if (msg != null) {
+                                DialogDisplayer.getDefault().notify(
+                                        new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
+                            }
+                        } else {
+                            locationResults.put(opposite, fileObject.getName());
+                        }
                     }
                     lock.release();
                 }
