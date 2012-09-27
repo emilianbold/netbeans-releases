@@ -240,6 +240,12 @@ public class DeclarativeHintsParserTest extends NbTestCase {
 
         performParserSanityTest(code);
     }
+    
+    public void testCustomConditionSanity() throws Exception {
+        String code = "Thread.sleep($time) :: condition($time) ;;\n<? boolean condition(Variable var) { return false; } ?>\n";
+
+        performParserSanityTest(code);
+    }
 
     public void testError1() throws Exception {
         performErrorGatheringTest("$a + $b :: unknown($a, $b);;",
