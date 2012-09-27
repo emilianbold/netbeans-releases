@@ -63,6 +63,8 @@ import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -129,6 +131,7 @@ import org.openide.util.RequestProcessor;
  * @author tomas
  */
 public class IssuePanel extends javax.swing.JPanel implements Scrollable {
+    static final DateFormat DEFAULT_DATE_FORMAT = DateFormat.getDateInstance(DateFormat.MEDIUM);
     
     private static final String RESOLUTION_RESOLVED = "RESOLVED";               // NOI18N    
     private static final String STATUS_FIXED = "FIXED";                         // NOI18N
@@ -163,6 +166,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private WikiPanel addCommentPanel;
     private static String wikiLanguage = "";
     private static final RequestProcessor RP = new RequestProcessor("ODCS Task Panel", 5, false); //NOI18N
+    private Set<String> invalidDateFields = new HashSet<String>(2);
+    private static final Set<IssueField> DATE_FIELDS = new HashSet<IssueField>(Arrays.asList(IssueField.DUEDATE));
     
     
     /**
@@ -468,7 +473,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 // reported field
                 format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
                 Date creation = issue.getCreatedDate();
-                String creationTxt = creation != null ? DateFormat.getDateInstance(DateFormat.DEFAULT).format(creation) : ""; // NOI18N
+                String creationTxt = creation != null ? DEFAULT_DATE_FORMAT.format(creation) : ""; // NOI18N
                 
                 String reporter = issue.getFieldValue(IssueField.REPORTER);
                 String reporterName = issue.getPersonName(IssueField.REPORTER);
@@ -511,6 +516,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, ccField, IssueField.CC, ccWarning, ccLabel);
             reloadField(force, subtaskField, IssueField.SUBTASK, parentWarning, subtaskLabel);
             reloadField(force, parentField, IssueField.PARENT, parentWarning, parentLabel);
+            reloadField(force, dueDateField, IssueField.DUEDATE, dueDateWarning, dueDateLabel);
 //            reloadCustomFields(force); XXX
         }
         int newCommentCount = issue.getComments().length;
@@ -557,10 +563,18 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         boolean isNew = issue.isNew();
         if (!force) {
             if (component instanceof JComboBox) {
-                Object value = ((JComboBox)component).getSelectedItem();
-                currentValue  = (value == null) ? "" : value.toString(); // NOI18N
+                currentValue = getSelectedValue((JComboBox)component);
+                if (currentValue == null) {
+                    currentValue  = ""; // NOI18N
+                }
             } else if (component instanceof JTextComponent) {
                 currentValue = ((JTextComponent)component).getText();
+                if (DATE_FIELDS.contains(field) && !currentValue.trim().isEmpty()) {
+                    Date date = C2CUtil.parseDate(currentValue.trim());
+                    if (date != null) {
+                        currentValue = Long.toString(date.getTime());
+                    }
+                }
             } else if (component instanceof JList) {
                 JList list = (JList)component;
                 StringBuilder sb = new StringBuilder();
@@ -596,7 +610,18 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 JComboBox combo = (JComboBox)component;
                 selectInCombo(combo, newValue, true);
             } else if (component instanceof JTextComponent) {
-                ((JTextComponent)component).setText(newValue);
+                String value = newValue;
+                if (DATE_FIELDS.contains(field) && !newValue.isEmpty()) {
+                    Date date = C2CUtil.parseDate(newValue, new DateFormat[] { DEFAULT_DATE_FORMAT });
+                    if (date != null) {
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(date);
+                        boolean fullFormat = cal.get(Calendar.HOUR) > 0 || cal.get(Calendar.MINUTE) > 0 
+                                || cal.get(Calendar.SECOND) > 0 || cal.get(Calendar.MILLISECOND) > 0;
+                        value = (fullFormat ? C2CUtil.DATE_TIME_FORMAT_DEFAULT : DEFAULT_DATE_FORMAT).format(date);
+                    }
+                }
+                ((JTextComponent)component).setText(value);
             } else if (component instanceof JList) {
                 JList list = (JList)component;
                 list.clearSelection();
@@ -816,6 +841,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         parentField.getDocument().addDocumentListener(cyclicDependencyListener);
         subtaskField.getDocument().addDocumentListener(cyclicDependencyListener);
         duplicateField.getDocument().addDocumentListener(new DuplicateListener());
+        dueDateField.getDocument().addDocumentListener(new DateFieldListener(dueDateField, dueDateLabel));
     }
 
     private void updateFieldStatuses() {
@@ -1133,6 +1159,39 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             updateNoDuplicateId();
         }
     }
+
+    private class DateFieldListener implements DocumentListener {
+        private final JTextComponent comp;
+        private final JLabel fieldLabel;
+
+        public DateFieldListener (JTextComponent comp, JLabel fieldLabel) {
+            this.comp = comp;
+            this.fieldLabel = fieldLabel;
+        }
+        
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            invalidDateFields.remove(fieldName(fieldLabel));
+            String dateText = comp.getText().trim();
+            if (!dateText.isEmpty()) {
+                Date date = C2CUtil.parseDate(dateText, new DateFormat[] { DEFAULT_DATE_FORMAT });
+                if (date == null) {
+                    invalidDateFields.add(fieldName(fieldLabel));
+                }
+            }
+            updateMessagePanel();
+        }
+    }
     
     private void updateNoDuplicateId() {
         boolean newNoDuplicateId = "DUPLICATE".equals(getSelectedValue(resolutionCombo)) && "".equals(duplicateField.getText().trim());
@@ -1178,7 +1237,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             noDuplicateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
             messagePanel.add(noDuplicateLabel);
         }
-        if (noSummary || cyclicDependency || invalidTag || noComponent || noVersion || noTargetMilestione || noDuplicateId) {
+        if (!invalidDateFields.isEmpty()) {
+            JLabel invalidDateLabel = new JLabel();
+            invalidDateLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.invalidDateField", invalidDateFields.iterator().next())); // NOI18N
+            invalidDateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            messagePanel.add(invalidDateLabel);
+        }
+        if (noSummary || cyclicDependency || invalidTag || noComponent || noVersion || noTargetMilestione || noDuplicateId || !invalidDateFields.isEmpty()) {
             submitButton.setEnabled(false);
         } else {
             submitButton.setEnabled(true);
@@ -1193,7 +1258,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
             messagePanel.add(warningLabel);
         }
-        if (noSummary || cyclicDependency || invalidTag || noComponent || noVersion || noTargetMilestione || noDuplicateId || (fieldErrors.size() + fieldWarnings.size() > 0)) {
+        if (noSummary || cyclicDependency || invalidTag || noComponent || noVersion || noTargetMilestione || noDuplicateId || (fieldErrors.size() + fieldWarnings.size() > 0)
+                || !invalidDateFields.isEmpty()) {
             messagePanel.setVisible(true);
             messagePanel.revalidate();
         } else {
@@ -2181,6 +2247,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         storeFieldValue(IssueField.SEVERITY, severityCombo);
         storeFieldValue(IssueField.STATUS, statusCombo);
         storeFieldValue(IssueField.CC, ccField);
+        storeFieldValue(IssueField.DUEDATE, Long.toString(C2CUtil.parseDate(dueDateField.getText().trim(), 
+                new DateFormat[] { DEFAULT_DATE_FORMAT }).getTime()));
         storeFieldValue(IssueField.OWNER, ((TaskUserProfile) ownerCombo.getSelectedItem()).getLoginName());
         storeFieldValue(IssueField.PARENT, parentField);
         storeFieldValue(IssueField.SUBTASK, subtaskField);

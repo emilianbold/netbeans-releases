@@ -82,8 +82,9 @@ import org.openide.util.NbBundle;
  */
 public class C2CUtil {
     
+    public static final DateFormat DATE_TIME_FORMAT_DEFAULT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //NOI18N
     private static final DateFormat[] dateFormats = new DateFormat[] { 
-        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"), //NOI18N
+        DATE_TIME_FORMAT_DEFAULT,
         new SimpleDateFormat("yyyy-MM-dd HH:mm"), //NOI18N
         new SimpleDateFormat("yyyy-MM-dd") //NOI18N
     };
@@ -281,6 +282,10 @@ public class C2CUtil {
     }
 
     public static Date parseDate (String text) {
+        return parseDate(text, new DateFormat[0]);
+    }
+    
+    public static Date parseDate (String text, DateFormat[] additionalFormats) {
         Date date = null;
         try {
             date = new Date(Long.parseLong(text));
@@ -292,9 +297,18 @@ public class C2CUtil {
                 } catch (ParseException ex) {
                 }
             }
+            if (additionalFormats != null) {
+                for (DateFormat format : additionalFormats) {
+                    try {
+                        date = format.parse(text);
+                        break;
+                    } catch (ParseException ex) {
+                    }
+                }
+            }
         }
         if (date == null) {
-            C2C.LOG.log(Level.WARNING, "Cannot parse date: {0}", text);
+            C2C.LOG.log(Level.FINE, "Cannot parse date: {0}", text);
         }
         return date;
     }
