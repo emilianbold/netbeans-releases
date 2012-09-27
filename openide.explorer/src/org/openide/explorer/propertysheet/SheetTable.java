@@ -1806,26 +1806,27 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 }
 
         @Override
-        public void actionPerformed( ActionEvent e ) {
-            if( isEditing() ) {
+        public void actionPerformed(ActionEvent e) {
+            if (isEditing()) {
                 SheetCellEditor cellEditor = getEditor();
-                Object incrementor = cellEditor.reusableEnv.getFeatureDescriptor().getValue( VALUE_INCREMENT );
-                if( null != incrementor && incrementor instanceof SpinnerModel ) {
-                    SpinnerModel model = ( SpinnerModel ) incrementor;
-                    Object newValue = isIncrement ? model.getNextValue() : model.getPreviousValue();
-                    if( null != newValue ) {
-                        InplaceEditor inplaceEditor = cellEditor.getInplaceEditor();
-                        try {
-                            SheetCellEditor.ignoreStopCellEditing = true;
-                            inplaceEditor.setValue( newValue );
-                        } finally {
-                            SheetCellEditor.ignoreStopCellEditing = false;
+                InplaceEditor inplaceEditor = cellEditor.getInplaceEditor();
+                if (inplaceEditor instanceof ComboInplaceEditor) {
+                    SpinnerModel model = ((ComboInplaceEditor) inplaceEditor).getIncrementSupport();
+                    if (model != null) {
+                        Object newValue = isIncrement ? model.getNextValue() : model.getPreviousValue();
+                        if (null != newValue) {
+                            try {
+                                SheetCellEditor.ignoreStopCellEditing = true;
+                                inplaceEditor.setValue(newValue);
+                            } finally {
+                                SheetCellEditor.ignoreStopCellEditing = false;
+                            }
+                            return;
                         }
-                        return;
                     }
                 }
             }
-            changeRowAction.actionPerformed( e );
+            changeRowAction.actionPerformed(e);
         }
     }
     
