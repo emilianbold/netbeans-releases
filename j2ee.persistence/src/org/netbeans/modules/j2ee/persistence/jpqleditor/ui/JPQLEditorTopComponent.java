@@ -179,7 +179,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
             }
         });
         jpqlEditor.addMouseListener(new JPQLEditorPopupMouseAdapter());
-
+        showSQL(NbBundle.getMessage(JPQLEditorTopComponent.class, "BuildHint"));
     }
 
     private class JPQLEditorPopupMouseAdapter extends PopupMouseAdapter {
