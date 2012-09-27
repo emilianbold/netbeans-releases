@@ -91,24 +91,42 @@ public class PluginPropertyUtils {
     /**
      * tries to figure out if the property of the given plugin is customized in the
      * current project and returns it's value if so, otherwise null
+     * @deprecated use the variant with expressionProperty value
      */
-    public static @CheckForNull String getPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String goal) {
+    @Deprecated
+    public static @CheckForNull String getPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal) {
+       return getPluginProperty(prj, groupId, artifactId, parameter, goal, null);
+    }
+    
+    /**
+     * tries to figure out if the property of the given plugin is customized in the
+     * current project and returns it's value if so, otherwise null
+     * @param parameter the name of the plugin parameter to look for
+     * @param expressionProperty expression property that once defined (and plugin configuration is omited) is used.
+     */
+    public static @CheckForNull String getPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, property, goal);
-    }
+        return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, parameter, goal, expressionProperty);
+    }    
 
     /**
      * tries to figure out if the property of the given plugin is customized in the
      * current project and returns it's value if so, otherwise null
      * Please NOTE that if you have access to <code>Project</code> instance and your <code>MavenProject</code> is the project's own loaded one, then
      * the variant with <code>Project</code> as parameter is preferable. Faster and less prone to deadlock.     
+     * @deprecated use the variant with expressionProperty value
      */
-    public static @CheckForNull String getPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String goal) {
-        return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, property, goal);
+    @Deprecated
+    public static @CheckForNull String getPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal) {
+        return getPluginProperty(prj, groupId, artifactId, parameter, goal, null);
+    }
+    
+    public static @CheckForNull String getPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
+        return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, parameter, goal, expressionProperty);
     }
 
-    private static @CheckForNull String getPluginPropertyImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String goal) {
+    private static @CheckForNull String getPluginPropertyImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
         String toRet = null;
         if (prj.getBuildPlugins() == null) {
             return toRet;
@@ -117,13 +135,13 @@ public class PluginPropertyUtils {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 for (PluginExecution exe : getPluginExecutions(plug, goal)) {
-                    toRet = checkConfiguration(eval, exe.getConfiguration(), property);
+                    toRet = checkConfiguration(eval, exe.getConfiguration(), parameter);
                     if (toRet != null) {
                         break;
                     }
                 }
                 if (toRet == null) {
-                    toRet = checkConfiguration(eval, plug.getConfiguration(), property);
+                    toRet = checkConfiguration(eval, plug.getConfiguration(), parameter);
                 }
             }
         }
@@ -135,10 +153,16 @@ public class PluginPropertyUtils {
                 for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
-                        toRet = checkConfiguration(eval, plug.getConfiguration(), property);
+                        toRet = checkConfiguration(eval, plug.getConfiguration(), parameter);
                         break;
                     }
                 }
+            }
+        }
+        if (toRet == null && expressionProperty != null) {
+            Properties prop = prj.getProperties();
+            if (prop != null) {
+                toRet = prop.getProperty(expressionProperty);                
             }
         }
         return toRet;

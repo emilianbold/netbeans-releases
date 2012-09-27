@@ -138,7 +138,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         String file = PluginPropertyUtils.getPluginProperty(project, 
                 GROUPID_MOJO,
                 NBM_PLUGIN, //NOI18N
-                "descriptor", null); //NOI18N
+                "descriptor", null, null); //NOI18N
         if (file == null) {
             file = "src/main/nbm/module.xml"; //NOI18N
         }
@@ -537,7 +537,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     static @CheckForNull File findIDEInstallation(Project project) {
         String installProp = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getProperties().getProperty(PROP_NETBEANS_INSTALL);
         if (installProp == null) {
-            installProp = PluginPropertyUtils.getPluginProperty(project, GROUPID_MOJO, NBM_PLUGIN, "netbeansInstallation", "run-ide");
+            installProp = PluginPropertyUtils.getPluginProperty(project, GROUPID_MOJO, NBM_PLUGIN, "netbeansInstallation", "run-ide", "netbeans.installation");
         }
         if (installProp != null) {
             return FileUtilities.convertStringToFile(installProp);
@@ -597,13 +597,13 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                 return null; //not a maven project.
             }
             String outputDir = PluginPropertyUtils.getPluginProperty(appProject,
-                    GROUPID_MOJO, NBM_PLUGIN, "outputDirectory", "cluster-app"); //NOI18N
+                    GROUPID_MOJO, NBM_PLUGIN, "outputDirectory", "cluster-app", null); //NOI18N
             if( null == outputDir ) {
                 outputDir = "target"; //NOI18N
             }
 
             String brandingToken = PluginPropertyUtils.getPluginProperty(appProject,
-                    GROUPID_MOJO, NBM_PLUGIN, "brandingToken", "cluster-app"); //NOI18N
+                    GROUPID_MOJO, NBM_PLUGIN, "brandingToken", "cluster-app", "netbeans.branding.token"); //NOI18N
              return FileUtilities.resolveFilePath(FileUtil.toFile(appProject.getProjectDirectory()), outputDir + File.separator + brandingToken);
     }
 

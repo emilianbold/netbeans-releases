@@ -148,7 +148,7 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
     }
 
     private String brandingPath(Project mavenProject) {
-        String brandingPath = PluginPropertyUtils.getPluginProperty(mavenProject, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "brandingSources", "branding"); //NOI18N
+        String brandingPath = PluginPropertyUtils.getPluginProperty(mavenProject, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "brandingSources", "branding", null); //NOI18N
         return brandingPath != null ? brandingPath : "src/main/nbm-branding"; //NOI18N
     }
 
