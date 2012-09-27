@@ -647,9 +647,19 @@ public class RuleNode extends AbstractNode {
 
         /* called when updating the property sheet to the new css model */
         private void updateDeclaration(Declaration declaration) {
+            //update the declaration
+            String oldValue = getValue();
             this.declaration = declaration;
+            String newValue = getValue();
+            String propertyName = getPropertyName();
+            //and fire property change to the node
+            firePropertyChange(propertyName, oldValue, newValue);
         }
 
+        private String getPropertyName() {
+            return declaration.getProperty().getContent().toString();
+        }
+        
         @Override
         public PropertyEditor getPropertyEditor() {
             return editor;
@@ -712,7 +722,7 @@ public class RuleNode extends AbstractNode {
                 b.append(">"); //NOI18N
             }
 
-            b.append(declaration.getProperty().getContent());
+            b.append(getPropertyName());
 
             if (color != null) {
                 b.append("</font>"); //NOI18N
