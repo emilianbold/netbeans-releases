@@ -195,7 +195,7 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
         synchronized (eventsLock) {
             EventWrapper prevPathEvent = events.get(prevPath);
             FileObject removedFO = InvalidFileObjectSupport.getInvalidFileObject(prevPath.getFileSystem(), prevPath.getPath());
-            FileEvent deleteFE = new FileEvent(fe.getFile().getParent(), removedFO, fe.isExpected(), fe.getTime());
+            FileEvent deleteFE = new FileEvent((FileObject)fe.getSource(), removedFO, fe.isExpected(), fe.getTime());
             events.put(prevPath, convert(prevPathEvent, EventKind.FILE_DELETED, deleteFE));
             
             EventWrapper prevNewEvent = events.get(newPath);

@@ -190,14 +190,6 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFilePropertyChanged(NativeFileItem nativeFile) {
-        if (TraceFlags.DEBUG) {
-            Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getName()); //NOI18N
-        }
-        DeepReparsingUtils.reparseOnPropertyChanged(Collections.singletonList(nativeFile), this, false);
-    }
-
-    @Override
     public void onFilePropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {
         if (items.size() > 0) {
             DeepReparsingUtils.reparseOnPropertyChanged(items, this, invalidateLibs);
