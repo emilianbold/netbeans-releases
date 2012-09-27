@@ -45,30 +45,23 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmKnRName;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl.ParameterBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.openide.util.CharSequences;
 
 /**
  * parameter list of non K&R function
@@ -149,23 +142,14 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         return create(file, fileContent, lParen, rParen, paramList, krList, scope);
     }
     
-    public static class FunctionParameterListBuilder extends OffsetableBuilder {
+    public static class FunctionParameterListBuilder extends ScopedDeclarationBuilder {
                 
         private List<ParameterBuilder> parameterBuilsers = new ArrayList<ParameterBuilder>();
-        private CsmScope scope;
         
         public void addParameterBuilder(ParameterBuilder parameterBuilser) {
             parameterBuilsers.add(parameterBuilser);
         }
 
-        public void setScope(CsmScope scope) {
-            this.scope = scope;
-        }
-        
-        public CsmScope getScope() {
-            return scope;
-        }
-        
         public FunctionParameterListImpl create() {
             List<CsmParameter> parameters = new ArrayList<CsmParameter>();
             for (ParameterBuilder parameterBuilder : parameterBuilsers) {

@@ -253,6 +253,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     
     public static abstract class ScopedDeclarationBuilder extends OffsetableIdentifiableBuilder {
 
+        private boolean global = true;
         private CsmObjectBuilder parent;
         private CsmScope scope;
         
@@ -292,7 +293,14 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 ((NamespaceImpl)getScope()).addDeclaration(decl);
             }
         }        
-        
+
+        public boolean isGlobal() {
+            return global;
+        }
+
+        public void setLocal() {
+            this.global = false;
+        }
     }
     
     public static class SimpleDeclarationBuilder extends ScopedDeclarationBuilder {
@@ -303,7 +311,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private DeclaratorBuilder declaratorBuilder;
         private TypeBuilder typeBuilder;
         private CsmObjectBuilder parametersListBuilder;
-        
+        private TemplateDescriptor.TemplateDescriptorBuilder templateDescriptorBuilder;
         
         private boolean _static = false;
         private boolean _extern = false;
@@ -366,6 +374,14 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             this.declaratorBuilder = declaratorBuilder;
         }
 
+        public void setTemplateDescriptorBuilder(TemplateDescriptor.TemplateDescriptorBuilder templateDescriptorBuilder) {
+            this.templateDescriptorBuilder = templateDescriptorBuilder;
+        }
+
+        public TemplateDescriptor.TemplateDescriptorBuilder getTemplateDescriptorBuilder() {
+            return templateDescriptorBuilder;
+        }
+        
         public void setTypeBuilder(TypeBuilder typeBuilder) {
             this.typeBuilder = typeBuilder;
         }

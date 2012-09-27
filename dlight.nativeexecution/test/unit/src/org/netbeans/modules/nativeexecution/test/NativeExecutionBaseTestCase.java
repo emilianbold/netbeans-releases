@@ -71,12 +71,15 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -369,12 +372,15 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
      * plain-filen-name" "d directory-name" "l link-target link-name"
      * @throws Exception
      */
-    public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData) throws IOException {
+    public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData) throws Exception {
         createDirStructure(env, baseDir, creationData, true);
     }
-    public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData, boolean cleanOld) throws IOException {
+    public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData, boolean cleanOld) throws Exception {
         if (baseDir == null || baseDir.length() == 0 || baseDir.equals("/")) {
             throw new IllegalArgumentException("Illegal base dir: " + baseDir);
+        }
+        if (HostInfoUtils.getHostInfo(env).getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+            baseDir = WindowsSupport.getInstance().convertToCygwinPath(baseDir);
         }
         StringBuilder script = new StringBuilder();
         try {

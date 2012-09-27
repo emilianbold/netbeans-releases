@@ -161,7 +161,7 @@ public class DeclarativeHintsParser {
         while (nextToken()) {
             if (id() == JAVA_BLOCK) {
                 String text = token().text().toString();
-                text = text.substring(2, text.length() - 2);
+                text = text.substring(2, text.endsWith("?>") ? text.length() - 2 : text.length());
                 int[] span = new int[] {token().offset(null) + 2, token().offset(null) + token().length() - 2};
                 if (importsBlockCode == null && !wasFirstRule) {
                     importsBlockCode = text;
