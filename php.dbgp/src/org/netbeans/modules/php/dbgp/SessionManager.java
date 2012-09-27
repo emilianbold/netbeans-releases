@@ -84,7 +84,6 @@ public class SessionManager  {
             long started = System.currentTimeMillis();
             if (!sessionId.isInitialized(true)) {
                 ConnectionErrMessage.showMe(((int) (System.currentTimeMillis() - started) / 1000));
-                return;
             }
         }
     }
