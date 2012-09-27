@@ -622,9 +622,9 @@ public final class NavigatorController implements LookupListener, PropertyChange
     /** Installs user actions handling for NavigatorTC top component */
     public void installActions () {
         // ESC key handling - return focus to previous focus owner
-        KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
+        KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
         //JComponent contentArea = navigatorTC.getContentArea();
-        navigatorTC.getTopComponent().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(returnKey, "return"); //NOI18N
+        navigatorTC.getTopComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(returnKey, "return"); //NOI18N
         navigatorTC.getTopComponent().getActionMap().put("return", new ESCHandler()); //NOI18N
     }
 
