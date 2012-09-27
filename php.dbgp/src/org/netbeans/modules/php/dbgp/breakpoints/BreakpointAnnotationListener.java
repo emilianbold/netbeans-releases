@@ -126,8 +126,6 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
     private Map<Breakpoint, Annotation> myAnnotations
         = new HashMap<Breakpoint, Annotation>();
 
-    private String[] myProperties;
-
     @Override
     public void annotate(Set set, Lookup context) {
         DebuggerManager.getDebuggerManager().getBreakpoints();

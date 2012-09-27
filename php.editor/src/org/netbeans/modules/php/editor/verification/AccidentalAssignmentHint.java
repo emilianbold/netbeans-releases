@@ -321,6 +321,7 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
             return Bundle.ChangeAssignmentDisp(getCorrectedAssignmentText());
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings({"DLS_DEAD_LOCAL_STORE"})
         private String getCorrectedAssignmentText() {
             StringBuilder sb = new StringBuilder();
             try {

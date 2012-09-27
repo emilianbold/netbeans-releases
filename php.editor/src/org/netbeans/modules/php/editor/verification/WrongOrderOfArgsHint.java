@@ -130,7 +130,7 @@ public class WrongOrderOfArgsHint extends AbstractRule {
 
     }
 
-    private class RearrangeParametersFix implements HintFix {
+    private static class RearrangeParametersFix implements HintFix {
 
         private final FunctionDeclaration node;
         private final BaseDocument doc;
