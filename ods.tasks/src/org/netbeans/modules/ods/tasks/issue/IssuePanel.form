@@ -1060,7 +1060,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="separatorLabel3" min="-2" pref="2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="showInBrowserButton" min="-2" pref="104" max="-2" attributes="0"/>
+                  <Component id="showInBrowserButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>

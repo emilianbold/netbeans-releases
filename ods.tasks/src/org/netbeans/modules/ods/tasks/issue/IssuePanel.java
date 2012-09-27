@@ -50,6 +50,7 @@ import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -72,6 +73,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
@@ -103,19 +105,24 @@ import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue.Attachment;
+import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -155,6 +162,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private WikiPanel descriptionPanel;
     private WikiPanel addCommentPanel;
     private static String wikiLanguage = "";
+    private static final RequestProcessor RP = new RequestProcessor("ODCS Task Panel", 5, false); //NOI18N
     
     
     /**
@@ -697,7 +705,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         } else if(item instanceof Product) {
             return ((Product) item).getName();
         } else if(item instanceof TaskUserProfile) {
-            return ((TaskUserProfile) item).getRealname();
+            return ((TaskUserProfile) item).getLoginName();
         } else if(item instanceof TaskStatus) {
             return ((TaskStatus) item).getValue();
         } else if(item instanceof com.tasktop.c2c.server.tasks.domain.Component) {
@@ -964,7 +972,78 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             label.setOpaque(false);
             label.getParent().repaint();
         }
-    }    
+    }
+
+    private void storeFieldValue (IssueField field, JComboBox combo) {
+        Object value = combo.getSelectedItem();
+        // It (normally) should not happen that value is null, but issue 159804 shows that
+        // some strange configurations (or other bugs) can lead into this situation
+        if (value != null) {
+            storeFieldValue(field, value.toString());
+        }
+    }
+
+    private void storeFieldValue(IssueField field, JTextComponent textComponent) {
+        storeFieldValue(field, textComponent.getText());
+    }
+
+    private void storeFieldValue(IssueField field, JList list) {
+        List<String> values = new ArrayList<String>();
+        for (Object value : list.getSelectedValues()) {
+            values.add(value.toString());
+        }
+        issue.setFieldValues(field, values);
+    }
+
+    private void storeFieldValue(IssueField field, String value) {
+        if (issue.getTaskData().isNew() || !value.equals(initialValues.get(field.getKey()))) {
+//            if (field == IssueField.STATUS) {
+//                if (value.equals("CLOSED")) { // NOI18N
+//                    issue.close();
+//                } else if (value.equals("VERIFIED")) { // NOI18N
+//                    issue.verify();
+//                } else if (value.equals("REOPENED")) { // NOI18N
+//                    issue.reopen();
+//                } else if (value.equals("RESOLVED")) { // NOI18N
+//                    issue.resolve(resolutionCombo.getSelectedItem().toString());
+//                } else if (value.equals("ASSIGNED")) { // NOI18N
+//                    issue.accept();
+//                }
+//            } else if ((field == IssueField.ASSIGNED_TO) && !issue.isNew()) {
+//                issue.reassign(value);
+//            }
+            issue.setFieldValue(field, value);
+        }
+    }
+    
+    private Map<Component, Boolean> enableMap = new HashMap<Component, Boolean>();
+    private void enableComponents(boolean enable) {
+        enableComponents(this, enable);
+        if (enable) {
+            enableMap.clear();
+        }
+    }
+
+    private void enableComponents(Component comp, boolean enable) {
+        if (comp instanceof Container) {
+            for (Component subComp : ((Container)comp).getComponents()) {
+                enableComponents(subComp, enable);
+            }
+        }
+        if ((comp instanceof JComboBox)
+                || ((comp instanceof JTextComponent) && ((JTextComponent)comp).isEditable())
+                || (comp instanceof AbstractButton) || (comp instanceof JList)) {
+            if (enable) {
+                Boolean b = enableMap.get(comp);
+                if (b != null) {
+                    comp.setEnabled(b);
+                }
+            } else {
+                enableMap.put(comp, comp.isEnabled());
+                comp.setEnabled(false);
+            }
+        }
+    }
 
     class CyclicDependencyDocumentListener implements DocumentListener {
 
@@ -1468,7 +1547,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separatorLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(showInBrowserButton, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(showInBrowserButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -2089,57 +2168,35 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_externalFieldActionPerformed
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
-//        final boolean isNew = issue.getTaskData().isNew();
-//        if (isNew) {
-//            storeFieldValue(IssueField.DESCRIPTION, addCommentArea);
-//        }
-//        storeFieldValue(IssueField.SUMMARY, summaryField);
-//        storeFieldValue(IssueField.PRODUCT, productCombo);
-//        storeFieldValue(IssueField.COMPONENT, componentCombo);
-//        storeFieldValue(IssueField.VERSION, versionCombo);
-//        storeFieldValue(IssueField.PLATFORM, platformCombo);
-//        storeFieldValue(IssueField.OS, osCombo);
-//        storeFieldValue(IssueField.STATUS, statusCombo);
-//        if (resolutionCombo.isVisible()) {
-//            storeFieldValue(IssueField.RESOLUTION, resolutionCombo);
-//        } else if (!resolutionField.isVisible()) {
-//            storeFieldValue(IssueField.RESOLUTION, ""); // NOI18N
-//        }
+        final boolean isNew = issue.getTaskData().isNew();
+        storeFieldValue(IssueField.DESCRIPTION, isNew
+                ? addCommentPanel.getCodePane()
+                : descriptionPanel.getCodePane());
+        storeFieldValue(IssueField.SUMMARY, summaryField);
+        storeFieldValue(IssueField.PRODUCT, productCombo);
+        storeFieldValue(IssueField.COMPONENT, componentCombo);
+        storeFieldValue(IssueField.MILESTONE, releaseCombo);
+        storeFieldValue(IssueField.ITERATION, iterationCombo);
+        storeFieldValue(IssueField.PRIORITY, priorityCombo);
+        storeFieldValue(IssueField.SEVERITY, severityCombo);
+        storeFieldValue(IssueField.STATUS, statusCombo);
+        storeFieldValue(IssueField.CC, ccField);
+        storeFieldValue(IssueField.OWNER, ((TaskUserProfile) ownerCombo.getSelectedItem()).getLoginName());
+        storeFieldValue(IssueField.PARENT, parentField);
+        storeFieldValue(IssueField.SUBTASK, subtaskField);
+        storeFieldValue(IssueField.TAGS, tagsField);
+        storeFieldValue(IssueField.TASK_TYPE, issueTypeCombo);
+        if (resolutionCombo.isVisible()) {
+            storeFieldValue(IssueField.RESOLUTION, resolutionCombo);
+        } else {
+            storeFieldValue(IssueField.RESOLUTION, ""); //NOI18N
+        }
 //        if (duplicateField.isVisible() && duplicateField.isEditable()) {
-//            issue.duplicate(duplicateField.getText());
+//            storeFieldValue(IssueField., ""); //NOI18N
 //        }
-//        storeFieldValue(IssueField.PRIORITY, priorityCombo);
-//        if (BugzillaUtil.isNbRepository(issue.getRepository())) {
-//            storeFieldValue(IssueField.ISSUE_TYPE, issueTypeCombo);
-//        }
-//        storeFieldValue(IssueField.SEVERITY, severityCombo);
-//        if (usingTargetMilestones) {
-//            storeFieldValue(IssueField.MILESTONE, targetMilestoneCombo);
-//        }
-//        storeAssignToDefault();
-//        storeFieldValue(IssueField.URL, urlField);
-//        storeFieldValue(IssueField.WHITEBOARD, statusWhiteboardField);
-//        storeFieldValue(IssueField.KEYWORDS, keywordsField);
-//        if (assignedField.getParent() == null) {
-//            storeFieldValue(IssueField.ASSIGNED_TO, assignedCombo);
-//        } else {
-//            storeFieldValue(IssueField.ASSIGNED_TO, assignedField);
-//        }
-//        storeFieldValue(IssueField.QA_CONTACT, qaContactField);
-//        storeCCValue();
-//        storeFieldValue(IssueField.DEPENDS_ON, dependsField);
-//        storeFieldValue(IssueField.BLOCKS, blocksField);
-//        if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
-//            issue.addComment(addCommentArea.getText());
-//        }
-//        if (!isNew && issue.hasTimeTracking()) {
-//            storeFieldValue(IssueField.ESTIMATED_TIME, estimatedField);
-//            storeFieldValue(IssueField.WORK_TIME, workedField);
-//            storeFieldValue(IssueField.REMAINING_TIME, remainingField);
-//            if(!deadlineField.getText().trim().equals(YYYY_MM_DD)) {
-//                storeFieldValue(IssueField.DEADLINE, deadlineField);
-//            }
-//        }
+        if (!isNew && !"".equals(addCommentPanel.getCodePane().getText().trim())) { // NOI18N
+            issue.addComment(addCommentPanel.getCodePane().getText().trim());
+        }
 //        // Store custom fields
 //        for (CustomFieldInfo field : customFields) {
 //            if (field.comp instanceof JTextComponent) {
@@ -2152,24 +2209,24 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 //                Bugzilla.LOG.log(Level.INFO, "Custom field component {0} is not supported!", field.comp); // NOI18N
 //            }
 //        }
-//        String submitMessage;
-//        if (isNew) {
-//            submitMessage = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitNewMessage"); // NOI18N
-//        } else {
-//            String submitMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitMessage"); // NOI18N
-//            submitMessage = MessageFormat.format(submitMessageFormat, issue.getID());
-//        }
-//        final ProgressHandle handle = ProgressHandleFactory.createHandle(submitMessage);
-//        handle.start();
-//        handle.switchToIndeterminate();
-//        skipReload = true;
-//        enableComponents(false);
-//        RP.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                boolean ret = false;
-//                try {
-//                    ret = issue.submitAndRefresh();
+        String submitMessage;
+        if (isNew) {
+            submitMessage = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitNewMessage"); // NOI18N
+        } else {
+            String submitMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitMessage"); // NOI18N
+            submitMessage = MessageFormat.format(submitMessageFormat, issue.getID());
+        }
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(submitMessage);
+        handle.start();
+        handle.switchToIndeterminate();
+        skipReload = true;
+        enableComponents(false);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                boolean ret = false;
+                try {
+                    ret = issue.submitAndRefresh();
 //                    for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
 //                        if (attachment.file.exists() && attachment.file.isFile()) {
 //                            if (attachment.description.trim().length() == 0) {
@@ -2189,36 +2246,36 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 //                    } else {
 //                        BugzillaConfig.getInstance().putAttachLogFile(false);
 //                    }
-//                } finally {
-//                    EventQueue.invokeLater(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            enableComponents(true);
-//                            skipReload = false;
-//                        }
-//                    });
-//                    handle.finish();
-//                    if(ret) {
-//                        if (isNew) {
-//                            // Show all custom fields, not only the ones shown on bug creation
-//                            EventQueue.invokeLater(new Runnable() {
-//                                @Override
-//                                public void run() {
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            enableComponents(true);
+                            skipReload = false;
+                        }
+                    });
+                    handle.finish();
+                    if(ret) {
+                        if (isNew) {
+                            // Show all custom fields, not only the ones shown on bug creation
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
 //                                    initCustomFields();
-//                                }
-//                            });
-//                        }
-//                        reloadFormInAWT(true);
-//                    }
-//                }
-//            }
-//        });
-//        if (isNew) {
-//            BugzillaRepository repository = issue.getRepository();
-//            if (repository != null) {
-//                OwnerUtils.setLooseAssociation(BugzillaUtil.getRepository(repository), false);
-//            }
-//        }
+                                }
+                            });
+                        }
+                        reloadFormInAWT(true);
+                    }
+                }
+            }
+        });
+        if (isNew) {
+            C2CRepository repository = issue.getRepository();
+            if (repository != null) {
+                OwnerUtils.setLooseAssociation(C2CUtil.getRepository(repository), false);
+            }
+        }
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
