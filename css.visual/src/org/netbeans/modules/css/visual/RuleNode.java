@@ -572,7 +572,6 @@ public class RuleNode extends AbstractNode {
         protected abstract String convertToString(T val);
 
         protected abstract T getEmptyValue();
-        
     }
     private static String EMPTY = "";
 
@@ -647,7 +646,17 @@ public class RuleNode extends AbstractNode {
 
         /* called when updating the property sheet to the new css model */
         private void updateDeclaration(Declaration declaration) {
+            //update the declaration
+            String oldValue = getValue();
             this.declaration = declaration;
+            String newValue = getValue();
+            String propertyName = getPropertyName();
+            //and fire property change to the node
+            firePropertyChange(propertyName, oldValue, newValue);
+        }
+
+        private String getPropertyName() {
+            return declaration.getProperty().getContent().toString();
         }
 
         @Override
@@ -712,7 +721,7 @@ public class RuleNode extends AbstractNode {
                 b.append(">"); //NOI18N
             }
 
-            b.append(declaration.getProperty().getContent());
+            b.append(getPropertyName());
 
             if (color != null) {
                 b.append("</font>"); //NOI18N
@@ -735,7 +744,18 @@ public class RuleNode extends AbstractNode {
         @Override
         public void setValue(Object o) {
             String val = (String) o;
-            if (val.isEmpty() || NONE_PROPERTY_NAME.equals(val)) {
+
+            if (val == null || val.isEmpty()) {
+                return;
+            }
+
+            String currentValue = getValue();
+            if (currentValue.equals(val)) {
+                //same value, ignore
+                return;
+            }
+
+            if (NONE_PROPERTY_NAME.equals(val)) {
                 //remove the whole declaration
                 Declarations declarations = (Declarations) declaration.getParent();
                 declarations.removeDeclaration(declaration);

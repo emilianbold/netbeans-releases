@@ -271,12 +271,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             }
 
             if( isAutoComplete() && isPopupVisible()) {
-                if(!SheetTable.isValueIncrementEnabled(env)) {
-                    //allow the increment support to work even if popup is opened
-                    //since now there's a bug that the key events are not propagated 
-                    //to the popup.
-                    return;
-                }
+                return;
             }
 
             if ("comboBoxEdited".equals(getActionCommand())) {
