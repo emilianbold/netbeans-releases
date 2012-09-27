@@ -572,7 +572,6 @@ public class RuleNode extends AbstractNode {
         protected abstract String convertToString(T val);
 
         protected abstract T getEmptyValue();
-        
     }
     private static String EMPTY = "";
 
@@ -659,7 +658,7 @@ public class RuleNode extends AbstractNode {
         private String getPropertyName() {
             return declaration.getProperty().getContent().toString();
         }
-        
+
         @Override
         public PropertyEditor getPropertyEditor() {
             return editor;
@@ -745,7 +744,18 @@ public class RuleNode extends AbstractNode {
         @Override
         public void setValue(Object o) {
             String val = (String) o;
-            if (val.isEmpty() || NONE_PROPERTY_NAME.equals(val)) {
+
+            if (val == null || val.isEmpty()) {
+                return;
+            }
+
+            String currentValue = getValue();
+            if (currentValue.equals(val)) {
+                //same value, ignore
+                return;
+            }
+
+            if (NONE_PROPERTY_NAME.equals(val)) {
                 //remove the whole declaration
                 Declarations declarations = (Declarations) declaration.getParent();
                 declarations.removeDeclaration(declaration);

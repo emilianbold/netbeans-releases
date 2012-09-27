@@ -97,8 +97,17 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         if (str == null) {
             return;
         }
+        
+        if(str.isEmpty()) {
+            return ;
+        }
+        
+        //same value, ignore
+        if(str.equals(getValue())) {
+            return ;
+        }
 
-        if (str.isEmpty() || RuleNode.NONE_PROPERTY_NAME.equals(str)) {
+        if (RuleNode.NONE_PROPERTY_NAME.equals(str)) {
             setValue(str); //pass the empty value to the Property
             return;
         }
