@@ -337,7 +337,10 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 }
             }
             
-            if (exitStatus != 0 && !retried) {
+            // #219040 - Running page in Chrome shows warning dialog.
+            // Ignore exitStatus 23 to workaround it - it is a Chrome's bug
+            // http://code.google.com/p/chromium/issues/detail?id=146762
+            if (exitStatus != 0 && !retried && exitStatus != 23) {
                 DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message (
                     NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
