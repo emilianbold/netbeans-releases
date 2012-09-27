@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import static org.netbeans.modules.groovy.refactoring.rename.Bundle.*;
 import org.netbeans.modules.groovy.refactoring.ui.RenamePanel;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -70,7 +70,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     private RenamePanel panel;
 
 
-    public RenameRefactoringUI(GroovyRefactoringElement element) {
+    public RenameRefactoringUI(RefactoringElement element) {
         name = element.getName();
         Collection<Object> lookupContent = new ArrayList<Object>();
         lookupContent.add(element);

@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 
 /**
  * This strategy is used in refactoring other then Find Usages. 
@@ -62,7 +62,7 @@ import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
  */
 public class FindAllUsages extends AbstractFindUsages {
 
-    public FindAllUsages(GroovyRefactoringElement element) {
+    public FindAllUsages(RefactoringElement element) {
         super(element);
     }
 
@@ -77,7 +77,7 @@ public class FindAllUsages extends AbstractFindUsages {
         List<AbstractFindUsagesVisitor> visitors = new ArrayList<AbstractFindUsagesVisitor>();
 
         visitors.add(new FindTypeUsagesVisitor(moduleNode, defClass));
-        visitors.add(new FindMethodUsagesVisitor(moduleNode, element));
+        visitors.add(new FindConstructorUsagesVisitor(moduleNode, element));
         visitors.add(new FindClassDeclarationVisitor(moduleNode, defClass));
 
         return visitors;

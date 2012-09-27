@@ -49,7 +49,7 @@ import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 
 /**
  *
@@ -57,7 +57,7 @@ import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
  */
 public class FindVariableUsages extends AbstractFindUsages {
 
-    public FindVariableUsages(GroovyRefactoringElement element) {
+    public FindVariableUsages(RefactoringElement element) {
         super(element);
     }
 

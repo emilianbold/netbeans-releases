@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
@@ -50,8 +52,16 @@ import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.groovy.editor.api.ElementUtils;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.editor.api.GroovyIndex;
+import org.netbeans.modules.groovy.editor.api.Methods;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
+import org.netbeans.modules.groovy.refactoring.findusages.model.MethodRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
+import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 /**
  *
@@ -59,25 +69,52 @@ import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
  */
 public class FindMethodUsagesVisitor extends AbstractFindUsagesVisitor {
 
-    private final GroovyRefactoringElement element;
-    private final String declaringClassName;
-    private final String findingMethod;
+    private final MethodRefactoringElement element;
+    private final String methodType;
+    private final String methodName;
+    private final List<String> methodParams;
+    private final GroovyIndex index;
+    private IndexedMethod method;
 
 
-    public FindMethodUsagesVisitor(ModuleNode moduleNode, GroovyRefactoringElement element) {
+//    public FindMethodUsagesVisitor(ModuleNode moduleNode, String methodType, String methodName, List<String> methodParams) {
+//        super(moduleNode);
+//    }
+
+    public FindMethodUsagesVisitor(ModuleNode moduleNode, RefactoringElement refactoringElement) {
         super(moduleNode);
-        this.element = element;
-        this.declaringClassName = element.getDeclaringClassName();
-        this.findingMethod = element.getName();
+        assert (refactoringElement instanceof MethodRefactoringElement) : "It was: " + refactoringElement.getClass().getSimpleName();
+        this.element = (MethodRefactoringElement) refactoringElement;
+        this.methodType = element.getMethodTypeName();
+        this.methodName = element.getName();
+        this.methodParams = element.getMethodParameters();
+
+        ClasspathInfo cpInfo = GroovyProjectUtil.getClasspathInfoFor(element.getFileObject());
+        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+
+        this.index = GroovyIndex.get(Arrays.asList(cp.getRoots()));
+
+        // Find all methods with the same name and the same method type
+        final Set<IndexedMethod> possibleMethods = index.getMethods(methodName, methodType, QuerySupport.Kind.EXACT);
+        for (IndexedMethod indexedMethod : possibleMethods) {
+            final boolean sameName = methodName.equals(indexedMethod.getName());
+            final boolean sameParameters = Methods.isSameList(methodParams, indexedMethod.getParameters());
+
+            // Find the exact method we are looking for
+            if (sameName && sameParameters) {
+                this.method = indexedMethod;
+            }
+        }
     }
 
     @Override
     protected void visitConstructorOrMethod(MethodNode node, boolean isConstructor) {
-        String className = ElementUtils.getDeclaringClassName(node);
-        if (!node.hasNoRealSourcePosition() && declaringClassName.equals(className)) {
-            if (isConstructor && declaringClassName.endsWith(findingMethod)) {
+        final String className = ElementUtils.getDeclaringClassName(node);
+
+        if (!node.hasNoRealSourcePosition() && methodType.equals(className)) {
+            if (isConstructor && methodType.endsWith(methodName)) {
                 usages.add(node);
-            } else if (findingMethod.equals(node.getName())) {
+            } else if (methodName.equals(node.getName()) && Methods.hasSameParameters(method, node)) {
                 usages.add(node);
             }
         }
@@ -86,9 +123,9 @@ public class FindMethodUsagesVisitor extends AbstractFindUsagesVisitor {
 
     @Override
     public void visitConstructorCallExpression(ConstructorCallExpression constructorCall) {
-        String typeName = constructorCall.getType().getNameWithoutPackage();
+        final String typeName = constructorCall.getType().getNameWithoutPackage();
 
-        if (findingMethod.equals(typeName)) {
+        if (methodName.equals(typeName)) {
             usages.add(constructorCall);
         }
 
@@ -104,7 +141,11 @@ public class FindMethodUsagesVisitor extends AbstractFindUsagesVisitor {
             Variable variable = variableExpression.getAccessedVariable();
 
             if (variable != null) {
-                addVariableUsages(methodCall, variable);
+                if (variable.isDynamicTyped()) {
+                    addDynamicVarUsages(methodCall, variable);
+                } else {
+                    addStaticVarUsages(methodCall, variable);
+                }
             } else {
                 addThisUsages(methodCall);
             }
@@ -115,25 +156,30 @@ public class FindMethodUsagesVisitor extends AbstractFindUsagesVisitor {
         super.visitMethodCallExpression(methodCall);
     }
 
-    private void addVariableUsages(MethodCallExpression methodCall, Variable variable) {
-        if (declaringClassName.equals(variable.getType().getName())) {
+    private void addDynamicVarUsages(MethodCallExpression methodCall, Variable variable) {
+        // In method call on the dynamic type we want to add all references no matter on the runtime type
+        findAndAdd(variable.getType(), methodCall);
+    }
+
+    private void addStaticVarUsages(MethodCallExpression methodCall, Variable variable) {
+        if (methodType.equals(variable.getType().getName())) {
             findAndAdd(variable.getType(), methodCall);
         }
     }
 
     private void addThisUsages(MethodCallExpression methodCall) {
-        List<ClassNode> classes = moduleNode.getClasses(); //classes declared in current file
+        final List<ClassNode> classes = moduleNode.getClasses(); //classes declared in current file
         for (ClassNode classNode : classes) {
-            if (declaringClassName.equals(classNode.getName())) {
-                findAndAdd(element.getDeclaringClass(), methodCall);
+            if (methodType.equals(classNode.getName())) {
+                findAndAdd(element.getMethodType(), methodCall);
                 break;
             }
         }
     }
 
     private void addConstructorUsages(MethodCallExpression methodCall, ConstructorCallExpression constructorCallExpression) {
-        ClassNode type = constructorCallExpression.getType();
-        if (declaringClassName.equals(ElementUtils.getDeclaringClassName(type))) {
+        final ClassNode type = constructorCallExpression.getType();
+        if (methodType.equals(ElementUtils.getDeclaringClassName(type))) {
             findAndAdd(type, methodCall);
         }
     }
@@ -147,12 +193,7 @@ public class FindMethodUsagesVisitor extends AbstractFindUsagesVisitor {
      * @param methodCall
      */
     private void findAndAdd(ClassNode type, MethodCallExpression methodCall) {
-        Expression arguments = methodCall.getArguments();
-
-        if (!type.isResolved()) {
-            type = type.redirect();
-        }
-        if (type.hasPossibleMethod(findingMethod, arguments)) {
+        if (methodName.equals(methodCall.getMethodAsString()) && Methods.hasSameParameters(method, methodCall)) {
             usages.add(methodCall.getMethod());
         }
     }

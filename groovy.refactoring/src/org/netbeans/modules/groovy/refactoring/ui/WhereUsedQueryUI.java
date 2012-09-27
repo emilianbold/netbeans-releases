@@ -46,7 +46,7 @@ package org.netbeans.modules.groovy.refactoring.ui;
 import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -67,14 +67,14 @@ import org.openide.util.lookup.Lookups;
  */
 public class WhereUsedQueryUI implements RefactoringUI {
 
-    private final GroovyRefactoringElement element;
+    private final RefactoringElement element;
     private final WhereUsedQuery query;
     private final ElementKind kind;
     private final String name;
     private WhereUsedPanel panel;
 
     
-    public WhereUsedQueryUI(GroovyRefactoringElement element) {
+    public WhereUsedQueryUI(RefactoringElement element) {
         this.query = new WhereUsedQuery(Lookups.singleton(element));
         this.query.getContext().add(GroovyProjectUtil.getClasspathInfoFor(element.getFileObject()));
         this.element = element;

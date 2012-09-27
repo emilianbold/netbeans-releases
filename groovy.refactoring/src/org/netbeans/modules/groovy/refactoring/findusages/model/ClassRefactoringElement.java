@@ -40,28 +40,29 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring.move;
+package org.netbeans.modules.groovy.refactoring.findusages.model;
 
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringPlugin;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.codehaus.groovy.ast.ASTNode;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Martin Janicek
  */
-public class MoveRefactoringPlugin extends GroovyRefactoringPlugin {
+public class ClassRefactoringElement extends RefactoringElement {
 
-    public MoveRefactoringPlugin(FileObject fileObject, GroovyRefactoringElement element, AbstractRefactoring refactoring) {
-        super(element, fileObject, refactoring);
+    public ClassRefactoringElement(FileObject fileObject, ASTNode node) {
+        super(fileObject, node);
     }
 
     @Override
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        // TODO: Move class
-        return null;
+    public ElementKind getKind() {
+        return ElementKind.CLASS;
+    }
+
+    @Override
+    public String getShowcase() {
+        return getName();
     }
 }

@@ -46,6 +46,7 @@ import java.util.Collection;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.refactoring.RefactoringTask.NodeToElementTask;
 import org.netbeans.modules.groovy.refactoring.RefactoringTask.TextComponentTask;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.groovy.refactoring.move.MoveRefactoringUI;
 import org.netbeans.modules.groovy.refactoring.rename.RenameRefactoringUI;
 import org.netbeans.modules.groovy.refactoring.ui.WhereUsedQueryUI;
@@ -135,7 +136,7 @@ public class RefactoringTaskFactory {
         }
 
         @Override
-        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
+        protected RefactoringUI createRefactoringUI(RefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
             if (selectedElement != null && selectedElement.getName() != null) {
                 return new WhereUsedQueryUI(selectedElement);
             }
@@ -150,7 +151,7 @@ public class RefactoringTaskFactory {
         }
 
         @Override
-        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, GroovyParserResult info) {
+        protected RefactoringUI createRefactoringUI(RefactoringElement selectedElement, GroovyParserResult info) {
             if (selectedElement != null && selectedElement.getName() != null) {
                 return new WhereUsedQueryUI(selectedElement);
             }
@@ -165,7 +166,7 @@ public class RefactoringTaskFactory {
         }
 
         @Override
-        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
+        protected RefactoringUI createRefactoringUI(RefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
             if (selectedElement != null && selectedElement.getName() != null) {
                 return new RenameRefactoringUI(selectedElement);
             }
@@ -180,7 +181,7 @@ public class RefactoringTaskFactory {
         }
 
         @Override
-        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
+        protected RefactoringUI createRefactoringUI(RefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
             if (selectedElement != null && selectedElement.getFileObject() != null) {
                 return new MoveRefactoringUI(selectedElement);
             }
@@ -195,7 +196,7 @@ public class RefactoringTaskFactory {
         }
 
         @Override
-        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, GroovyParserResult info) {
+        protected RefactoringUI createRefactoringUI(RefactoringElement selectedElement, GroovyParserResult info) {
             if (selectedElement != null && selectedElement.getFileObject() != null) {
                 return new MoveRefactoringUI(selectedElement);
             }
