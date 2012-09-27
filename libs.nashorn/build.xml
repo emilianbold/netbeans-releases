@@ -5,7 +5,7 @@
 
     <target name="release" depends="projectized.release">
         <mkdir dir="${cluster}/modules/ext/"/>
-        <gunzip src="external/jre-8-ea-bin-linux-i586.tar.gz" dest="${build.dir}"/>
-        <untar src="${build.dir}/jre-8-ea-bin-linux-i586.tar" dest="${cluster}/modules/ext"/>
+        <gunzip src="external/jre-8-ea-bin-b57-linux-i586-19_sep_2012_nashorn.tar.gz" dest="${build.dir}"/>
+        <untar src="${build.dir}/jre-8-ea-bin-b57-linux-i586-19_sep_2012_nashorn.tar" dest="${cluster}/modules/ext"/>
     </target>
 </project>
