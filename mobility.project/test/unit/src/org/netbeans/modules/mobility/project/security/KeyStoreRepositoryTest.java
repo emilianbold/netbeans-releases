@@ -58,19 +58,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.core.startup.NbRepository;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.mobility.project.TestUtil;
-import org.netbeans.modules.mobility.project.security.KeyStoreRepository.KeyStoreBean.KeyAliasBean;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
-import sun.security.tools.KeyTool;
 
 /**
  *
