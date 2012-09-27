@@ -153,6 +153,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     
     // message panel 
     private boolean cyclicDependency = false;
+    private boolean sameParent = false;
     private boolean noSummary = false;
     private boolean invalidTag = false;
     private boolean noComponent = false;
@@ -514,7 +515,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, ownerCombo, IssueField.OWNER, ownerWarning, ownerLabel);
             
             reloadField(force, ccField, IssueField.CC, ccWarning, ccLabel);
-            reloadField(force, subtaskField, IssueField.SUBTASK, parentWarning, subtaskLabel);
+            reloadField(force, subtaskField, IssueField.SUBTASK, subtaskWarning, subtaskLabel);
             reloadField(force, parentField, IssueField.PARENT, parentWarning, parentLabel);
             reloadField(force, dueDateField, IssueField.DUEDATE, dueDateWarning, dueDateLabel);
 //            reloadCustomFields(force); XXX
@@ -560,6 +561,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     
     private String reloadField(boolean force, JComponent component, IssueField field, JLabel warningLabel, String fieldName) {
         String currentValue = null;
+        if (!issue.isFieldValueAvailable(field)) {
+            return currentValue;
+        }
         boolean isNew = issue.isNew();
         if (!force) {
             if (component instanceof JComboBox) {
@@ -1042,6 +1046,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
     
+    private void storeFieldValues(IssueField field, List<String> values) {
+        if (issue.getTaskData().isNew() || !values.toString().equals(initialValues.get(field.getKey()))) {
+            issue.setFieldValues(field, values);
+        }
+    }
+    
     private Map<Component, Boolean> enableMap = new HashMap<Component, Boolean>();
     private void enableComponents(boolean enable) {
         enableComponents(this, enable);
@@ -1085,33 +1095,50 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         @Override
         public void changedUpdate(DocumentEvent e) {
-            Set<Integer> bugs1 = bugs(parentField.getText());
-            Set<Integer> bugs2 = bugs(subtaskField.getText());
+            Set<String> bugs1 = new HashSet<String>(bugs(parentField.getText()));
+            Set<String> bugs2 = new HashSet<String>(bugs(subtaskField.getText()));
+            boolean change = false;
+            if (!issue.isNew()) {
+                if (bugs1.contains(issue.getID()) || bugs2.contains(issue.getID())) {
+                    if (!sameParent) {
+                        sameParent = true;
+                        change = true;
+                    }
+                } else {
+                    if (sameParent) {
+                        sameParent = false;
+                        change = true;
+                    }
+                }
+            }
             bugs1.retainAll(bugs2);
             if (bugs1.isEmpty()) {
                 if (cyclicDependency) {
                     cyclicDependency = false;
-                    updateMessagePanel();
+                    change = true;
                 }
             } else {
                 if (!cyclicDependency) {
                     cyclicDependency = true;
-                    updateMessagePanel();
+                    change = true;
                 }
             }
-        }
-
-        private Set<Integer> bugs(String values) {
-            Set<Integer> bugs = new HashSet<Integer>();
-            StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); // NOI18N
-            while (st.hasMoreTokens()) {
-                String token = st.nextToken();
-                try {
-                    bugs.add(Integer.parseInt(token));
-                } catch (NumberFormatException nfex) {}
+            if (change) {
+                updateMessagePanel();
             }
-            return bugs;
         }
+    }
+
+    private static List<String> bugs (String values) {
+        List<String> bugs = new LinkedList<String>();
+        StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); // NOI18N
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            try {
+                bugs.add(Integer.decode(token).toString());
+            } catch (NumberFormatException nfex) {}
+        }
+        return bugs;
     }
 
     class RevalidatingListener implements DocumentListener, Runnable {
@@ -1219,7 +1246,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
             messagePanel.add(noSummaryLabel);
         }
-        if (cyclicDependency) {
+        if (sameParent) {
+            JLabel sameParentLabel = new JLabel();
+            sameParentLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.sameParent")); // NOI18N
+            sameParentLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            messagePanel.add(sameParentLabel);
+        }
+        if (!sameParent && cyclicDependency) {
             JLabel cyclicDependencyLabel = new JLabel();
             cyclicDependencyLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.cyclicDependency")); // NOI18N
             cyclicDependencyLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
@@ -1243,7 +1276,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             invalidDateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
             messagePanel.add(invalidDateLabel);
         }
-        if (noSummary || cyclicDependency || invalidTag || noComponent || noVersion || noTargetMilestione || noDuplicateId || !invalidDateFields.isEmpty()) {
+        if (noSummary || sameParent || cyclicDependency || invalidTag || noComponent || noVersion || noTargetMilestione || noDuplicateId || !invalidDateFields.isEmpty()) {
             submitButton.setEnabled(false);
         } else {
             submitButton.setEnabled(true);
@@ -1258,7 +1291,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
             messagePanel.add(warningLabel);
         }
-        if (noSummary || cyclicDependency || invalidTag || noComponent || noVersion || noTargetMilestione || noDuplicateId || (fieldErrors.size() + fieldWarnings.size() > 0)
+        if (noSummary || sameParent || cyclicDependency || invalidTag || noComponent || noVersion || noTargetMilestione || noDuplicateId || (fieldErrors.size() + fieldWarnings.size() > 0)
                 || !invalidDateFields.isEmpty()) {
             messagePanel.setVisible(true);
             messagePanel.revalidate();
@@ -1706,14 +1739,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(parentButton, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(parentButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(parentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(subtaskButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(subtaskWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 80, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(ccLabel, javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(externalLabel, javax.swing.GroupLayout.Alignment.TRAILING))))
@@ -1949,7 +1982,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                                         .addComponent(parentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                                             .addComponent(parentField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                            .addComponent(parentButton, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                                            .addComponent(parentButton))))
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                     .addComponent(subtaskWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1992,7 +2025,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addComponent(submitButton)
                     .addComponent(cancelButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(messagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(messagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2234,6 +2267,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_externalFieldActionPerformed
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
+        assert !issue.getTaskData().isPartial();
         final boolean isNew = issue.getTaskData().isNew();
         storeFieldValue(IssueField.DESCRIPTION, isNew
                 ? addCommentPanel.getCodePane()
@@ -2250,8 +2284,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         storeFieldValue(IssueField.DUEDATE, Long.toString(C2CUtil.parseDate(dueDateField.getText().trim(), 
                 new DateFormat[] { DEFAULT_DATE_FORMAT }).getTime()));
         storeFieldValue(IssueField.OWNER, ((TaskUserProfile) ownerCombo.getSelectedItem()).getLoginName());
-        storeFieldValue(IssueField.PARENT, parentField);
-        storeFieldValue(IssueField.SUBTASK, subtaskField);
+        storeFieldValues(IssueField.PARENT, bugs(parentField.getText()));
+        storeFieldValues(IssueField.SUBTASK, bugs(subtaskField.getText()));
         storeFieldValue(IssueField.TAGS, tagsField);
         storeFieldValue(IssueField.TASK_TYPE, issueTypeCombo);
         if (resolutionCombo.isVisible()) {

@@ -82,7 +82,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
-                                      <Component id="parentButton" min="-2" pref="75" max="-2" attributes="0"/>
+                                      <Component id="parentButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="parentWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                   </Group>
@@ -92,7 +92,7 @@
                                       <Component id="subtaskWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="26" max="32767" attributes="0"/>
+                              <EmptySpace pref="80" max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="ccLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="externalLabel" alignment="1" min="-2" max="-2" attributes="0"/>
@@ -396,7 +396,7 @@
                                                       <Component id="parentWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                                       <Group type="103" groupAlignment="3" attributes="0">
                                                           <Component id="parentField" alignment="3" min="-2" max="-2" attributes="0"/>
-                                                          <Component id="parentButton" alignment="3" min="-2" pref="28" max="-2" attributes="0"/>
+                                                          <Component id="parentButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                                       </Group>
                                                   </Group>
                                               </Group>
@@ -460,7 +460,7 @@
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="messagePanel" min="-2" pref="27" max="-2" attributes="0"/>
+              <Component id="messagePanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="separator" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>

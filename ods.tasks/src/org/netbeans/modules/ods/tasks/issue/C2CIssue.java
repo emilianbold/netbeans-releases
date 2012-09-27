@@ -54,12 +54,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.JTable;
@@ -113,6 +113,9 @@ public class C2CIssue {
     
     private static final RequestProcessor parallelRP = new RequestProcessor("C2CIssue", 5); //NOI18N
     private C2CIssueNode node;
+    private static final Set<IssueField> UNAVAILABLE_FIELDS_IF_PARTIAL_DATA = new HashSet<IssueField>(Arrays.asList(
+            IssueField.SUBTASK
+    ));
     
     public C2CIssue(TaskData data, C2CRepository repo) {
         this.data = data;
@@ -529,30 +532,6 @@ public class C2CIssue {
         return sb.toString();
     }
 
-//    void setFieldValue(IssueField f, String value) {
-//        if(f.isReadOnly()) {
-//            assert false : "can't set value into IssueField " + f.getKey();       // NOI18N
-//            return;
-//        }
-//        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
-//        if(a == null) {
-//            a = new TaskAttribute(data.getRoot(), f.getKey());
-//        }
-//        if(f == IssueField.PRODUCT) {
-//            handleProductChange(a);
-//        }
-//        C2C.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
-//        a.setValue(value);
-//    }
-//
-//    void setFieldValues(IssueField f, List<String> ccs) {
-//        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
-//        if(a == null) {
-//            a = new TaskAttribute(data.getRoot(), f.getKey());
-//        }
-//        a.setValues(ccs);
-//    }
-
     public List<String> getFieldValues(IssueField f) {
         if(f.isSingleFieldAttribute()) {
             TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
@@ -566,6 +545,10 @@ public class C2CIssue {
             ret.add(getFieldValue(f));
             return ret;
         }
+    }
+
+    boolean isFieldValueAvailable (IssueField field) {
+        return !(data.isPartial() && UNAVAILABLE_FIELDS_IF_PARTIAL_DATA.contains(field));
     }
 
     private String getMappedValue(TaskAttribute a, String key) {

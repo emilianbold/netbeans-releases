@@ -49,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -199,12 +200,28 @@ public class ODSTaskTestCase extends AbstractC2CTestCase {
 
         taskData2 = rc.getTaskData(taskRepository, taskData2.getTaskId(), nullProgressMonitor);
         assertNotNull(taskData2);
+        assertEquals(taskData.getTaskId(), taskData2.getRoot().getMappedAttribute(C2CData.ATTR_PARENT).getValue());
         taskData = rc.getTaskData(taskRepository, taskData.getTaskId(), nullProgressMonitor);
+        assertEquals(taskData2.getTaskId(), taskData.getRoot().getMappedAttribute(C2CData.ATTR_SUBTASK).getValue());
         assertNotNull(taskData);
         
         printTaskData(taskData); 
         printTaskData(taskData2); 
-            
+        
+        // removing subtask
+        rta = taskData2.getRoot();
+        ta = rta.getMappedAttribute(C2CData.ATTR_PARENT);
+        ta.setValues(Collections.<String>emptyList());
+        rr = C2CUtil.postTaskData(rc, taskRepository, taskData2);
+        assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
+        
+        taskData2 = rc.getTaskData(taskRepository, taskData2.getTaskId(), nullProgressMonitor);
+        assertNotNull(taskData2);
+        assertEquals("", taskData2.getRoot().getMappedAttribute(C2CData.ATTR_PARENT).getValue());
+        taskData = rc.getTaskData(taskRepository, taskData.getTaskId(), nullProgressMonitor);
+        assertEquals("", taskData.getRoot().getMappedAttribute(C2CData.ATTR_SUBTASK).getValue());
+        assertNotNull(taskData);
+        
             // get history
 //            TaskHistory history = rc.getTaskHistory(taskRepository, new ITaskImpl(taskData), nullProgressMonitor);
 //            List<TaskRevision> revisions = history.getRevisions();
