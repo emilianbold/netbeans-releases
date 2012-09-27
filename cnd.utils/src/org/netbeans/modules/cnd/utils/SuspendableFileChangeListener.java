@@ -43,11 +43,13 @@ package org.netbeans.modules.cnd.utils;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.RequestProcessor;
 
@@ -64,10 +66,9 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
 
     private final RequestProcessor.Task task;
     private final FileChangeListener external;
-    private final AtomicInteger suspendCount = new AtomicInteger(0);
-    private int counter = 0;
+    private int suspendCount = 0;
     private final Object eventsLock = new Object();
-    private HashMap<FSPath, EventWrapper> events = new HashMap<FSPath, EventWrapper>();
+    private HashMap<FSPath, EventWrapper> events = new LinkedHashMap<FSPath, EventWrapper>();
 
     private final class Worker implements Runnable {
       
@@ -79,16 +80,17 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
                     if (events.isEmpty()) {
                         break;
                     }
-                    if (counter == 0) {
+                    if (suspendCount == 0) {
                         curEvents = events;
-                        events = new HashMap<FSPath, EventWrapper>();
+                        events = new LinkedHashMap<FSPath, EventWrapper>();
                     } else {
                         curEvents = events;
-                        HashMap<FSPath, EventWrapper> suspendedRemoves = new HashMap<FSPath, EventWrapper>();
+                        HashMap<FSPath, EventWrapper> suspendedRemoves = new LinkedHashMap<FSPath, EventWrapper>();
                         for (Iterator<Map.Entry<FSPath, EventWrapper>> it = curEvents.entrySet().iterator(); it.hasNext();) {
                             Map.Entry<FSPath, EventWrapper> entry = it.next();
-                            if (entry.getValue().kind == EventKind.FILE_DELETED) {
-                                suspendedRemoves.put(entry.getKey(), entry.getValue());
+                            EventWrapper value = entry.getValue();
+                            if (value.kind == EventKind.FILE_DELETED) {
+                                suspendedRemoves.put(entry.getKey(), value);
                                 it.remove();
                             }
                         }
@@ -135,16 +137,16 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
     
     public void suspendRemoves() {
         synchronized (eventsLock) {
-            CndUtils.assertTrue(counter >= 0, "suspendRemoves with " + counter);
-            counter++;
+            CndUtils.assertTrue(suspendCount >= 0, "suspendRemoves with " + suspendCount);
+            suspendCount++;
         }
     }
     
     public void resumeRemoves() {
         synchronized (eventsLock) {
-            CndUtils.assertTrue(counter >= 0, "resumeRemoves without suspendRemoves " + counter);
-            counter--;
-            if (counter==0) {
+            CndUtils.assertTrue(suspendCount >= 0, "resumeRemoves without suspendRemoves " + suspendCount);
+            suspendCount--;
+            if (suspendCount==0) {
                 task.schedule(0);
             }
         }
@@ -178,13 +180,17 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
     @Override
     public void fileRenamed(FileRenameEvent fe) {
         FSPath newPath = FSPath.toFSPath(fe.getFile());
-        String prevExt = (fe.getExt() == null || fe.getExt().isEmpty()) ? "" : "." + fe.getExt(); // NOI18N
-        String prevPath = CndPathUtilitities.getDirName(newPath.getPath()) + '/' + fe.getName() + prevExt; // NOI18N
+        String strPrevExt = (fe.getExt() == null || fe.getExt().isEmpty()) ? "" : "." + fe.getExt(); // NOI18N
+        String strPrevPath = CndPathUtilitities.getDirName(newPath.getPath()) + '/' + fe.getName() + strPrevExt; // NOI18N
+        FSPath prevPath = new FSPath(newPath.getFileSystem(), strPrevPath);
         synchronized (eventsLock) {
-            EventWrapper prevEvent = events.get(new FSPath(newPath.getFileSystem(), prevPath));
-            if (prevEvent != null) {
-                events.put(newPath, convert(prevEvent, EventKind.FILE_DELETED, fe));
-            }
+            EventWrapper prevPathEvent = events.get(prevPath);
+            FileObject removedFO = InvalidFileObjectSupport.getInvalidFileObject(prevPath.getFileSystem(), prevPath.getPath());
+            FileEvent deleteFE = new FileEvent(fe.getFile().getParent(), removedFO, fe.isExpected(), fe.getTime());
+            events.put(prevPath, convert(prevPathEvent, EventKind.FILE_DELETED, deleteFE));
+            
+            EventWrapper prevNewEvent = events.get(newPath);
+            events.put(newPath, convert(prevNewEvent, EventKind.FILE_CREATED, fe));
         }
         task.schedule(0);
     }
@@ -294,7 +300,7 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
             case FILE_CHANGED://<editor-fold defaultstate="collapsed" desc="...">
                 switch (prev.kind) {
                     case FILE_DELETED:          return doAssert(prev, cur);
-                    case FILE_CREATED:          return cur;
+                    case FILE_CREATED:          return prev;
                     case FILE_RENAMED_CREATED:  return prev;
                     case FILE_RENAMED_DELETED:  return doAssert(prev, cur);
                     case FOLDER_CREATED:        return prev;

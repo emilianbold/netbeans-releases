@@ -52,6 +52,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
 
 /**
  *
@@ -59,7 +60,7 @@ import org.openide.filesystems.FileEvent;
  * @author Vladimir Kvashin
  */
 public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCase {
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = true;
     
     public SuspendableFileChangeListenerTest(String name) {
         super(name, ExecutionEnvironmentFactory.getLocal());
@@ -138,6 +139,71 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
         }
     }
         
+    @Test
+    public void testRenameAsRemoveAddNotSuspended() throws Throwable {
+        doTestRenameAsRemoveAdd(false);
+    }
+    
+    @Test
+    public void testRenameAsRemoveAddSuspended() throws Throwable {
+        doTestRenameAsRemoveAdd(true);
+    }
+    
+    private void doTestRenameAsRemoveAdd(boolean suspend) throws Throwable {
+        FileObject tempFO = mkTempFO(getName(), "tmp");
+        final File tempFile = FileUtil.toFile(tempFO);
+        try {
+            File workDir = getWorkDir();
+            File testLog = new File(workDir, "test.dat");
+            File referenceLog = new File(workDir, "reference.dat");
+            FCL golden = new FCL(getName(), "", new PrintStream(referenceLog), true);
+            FCL delegate = new FCL(getName(), "", new PrintStream(testLog), true);
+            SuspendableFileChangeListener suspendableListener = new SuspendableFileChangeListener(delegate);
+            
+            FileObject fo = tempFO.createData("toMove", "txt");
+            String oldPath = fo.getPath();
+            FileSystemProvider.addRecursiveListener(golden, tempFO.getFileSystem(), tempFO.getPath());
+            FileSystemProvider.addRecursiveListener(suspendableListener, tempFO.getFileSystem(), tempFO.getPath());
+
+            if (suspend) {
+                suspendableListener.suspendRemoves();
+            }
+            FileLock lock = fo.lock();
+            try {
+                fo.rename(lock, "newName", "newExt");
+            } finally {
+                lock.releaseLock();
+            }
+            if (suspend) {
+                suspendableListener.resumeRemoves();
+            }
+            suspendableListener.flush();
+
+            if (TRACE) {
+                printFile(referenceLog, "Casual ", System.out);
+                printFile(testLog, "Suspend", System.out);
+            }
+            assertEquals("golden: ", 1, golden.events.size());
+            assertEquals("golden 1:", DumpingFileChangeListener.FILE_RENAMED, golden.events.get(0).kind);
+            assertEquals("delegated: ", 2, delegate.events.size());
+            if (suspend) {
+                assertEquals("delegate 1:", DumpingFileChangeListener.FILE_DATA_CREATED, delegate.events.get(0).kind);
+                assertEquals("golden vs delegate ", golden.events.get(0).event.getFile(), delegate.events.get(0).event.getFile());
+                assertEquals("golden vs delegate ", golden.events.get(0).event.getTime(), delegate.events.get(0).event.getTime());
+                assertEquals("delegate 2:", DumpingFileChangeListener.FILE_DELETED, delegate.events.get(1).kind);
+                assertEquals("delegate 2:", oldPath, delegate.events.get(1).event.getFile().getPath());
+            } else {
+                assertEquals("delegate 1:", DumpingFileChangeListener.FILE_DELETED, delegate.events.get(0).kind);
+                assertEquals("delegate 1:", oldPath, delegate.events.get(0).event.getFile().getPath());
+                assertEquals("delegate 2:", DumpingFileChangeListener.FILE_DATA_CREATED, delegate.events.get(1).kind);
+                assertEquals("golden vs delegate ", golden.events.get(0).event.getFile(), delegate.events.get(1).event.getFile());
+                assertEquals("golden vs delegate ", golden.events.get(0).event.getTime(), delegate.events.get(1).event.getTime());
+            }
+        } finally {
+            removeDirectory(tempFile);
+        }
+    }
+    
     @Test
     public void testParityNotSuspended() throws Throwable {
         doTestParity(false);
