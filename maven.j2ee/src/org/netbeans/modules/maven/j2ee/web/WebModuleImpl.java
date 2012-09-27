@@ -299,7 +299,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
             String webappLocation = PluginPropertyUtils.getPluginProperty(project,
                 Constants.GROUP_APACHE_PLUGINS,
                 Constants.PLUGIN_WAR,
-                "webappDirectory", "war"); //NOI18N
+                "webappDirectory", "war", null); //NOI18N
             if (webappLocation == null) {
                 webappLocation = mavenProject.getBuild().getDirectory() + File.separator + mavenProject.getBuild().getFinalName();
             }

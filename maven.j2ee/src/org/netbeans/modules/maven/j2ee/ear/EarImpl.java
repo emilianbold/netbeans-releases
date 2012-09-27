@@ -131,7 +131,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         }
         if (isApplicationXmlGenerated()) {
             version = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
-                    Constants.PLUGIN_EAR, "version", "generate-application-xml"); //NOI18N
+                    Constants.PLUGIN_EAR, "version", "generate-application-xml", null); //NOI18N
             // the default version in maven plugin is also 1.3
             //TODO what if the default changes?
             if (version != null) {
@@ -176,7 +176,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
     @Override
     public FileObject getMetaInf() {
         String appsrcloc =  PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
-                Constants.PLUGIN_EAR, "earSourceDirectory", "ear");//NOI18N
+                Constants.PLUGIN_EAR, "earSourceDirectory", "ear", null);//NOI18N
         if (appsrcloc == null) {
             appsrcloc = "src/main/application";//NOI18N
         }
@@ -208,7 +208,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
     public FileObject getDeploymentDescriptor() {
         if (isApplicationXmlGenerated()) {
             String generatedLoc = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
-                    Constants.PLUGIN_EAR, "generatedDescriptorLocation", "generate-application-xml");//NOI18N
+                    Constants.PLUGIN_EAR, "generatedDescriptorLocation", "generate-application-xml", null);//NOI18N
             if (generatedLoc == null) {
                 generatedLoc = mavenproject().getMavenProject().getBuild().getDirectory();
             }
@@ -221,7 +221,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
             }
         }
         String customLoc =  PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
-                Constants.PLUGIN_EAR, "applicationXml", "ear");//NOI18N
+                Constants.PLUGIN_EAR, "applicationXml", "ear", null);//NOI18N
         if (customLoc != null) {
             FileObject fo = FileUtilities.convertURItoFileObject(FileUtilities.getDirURI(project.getProjectDirectory(), customLoc));
             if (fo != null) {
@@ -258,7 +258,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         String str = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
                 Constants.PLUGIN_EAR,
                 "generateApplicationXml", //NOI18N
-                "generate-application-xml");//NOI18N
+                "generate-application-xml", null);//NOI18N
         //either the default or explicitly set generation of application.xml file
         return (str == null || Boolean.valueOf(str).booleanValue());
     }
@@ -400,7 +400,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         Set<Artifact> artifactSet = mp.getArtifacts();
         @SuppressWarnings("unchecked")
         List<Dependency> deps = mp.getRuntimeDependencies();
-        String fileNameMapping = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_EAR, "fileNameMapping", "ear"); //NOI18N
+        String fileNameMapping = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_EAR, "fileNameMapping", "ear", null); //NOI18N
         if (fileNameMapping == null) {
             fileNameMapping = "standard"; //NOI18N
         }

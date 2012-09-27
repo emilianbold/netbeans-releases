@@ -185,7 +185,7 @@ public class SourcesPanel extends JPanel {
         String enc = project.getOriginalMavenProject().getProperties().getProperty(Constants.ENCODING_PROP);
         if (enc == null) {
             enc = PluginPropertyUtils.getPluginProperty(project,
-                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.ENCODING_PARAM, null);
+                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.ENCODING_PARAM, null, Constants.ENCODING_PROP);
         }
         oldEncoding = enc;
         if (enc != null) {
