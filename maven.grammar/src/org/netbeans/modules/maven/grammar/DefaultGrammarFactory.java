@@ -52,6 +52,7 @@ import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * 
@@ -89,7 +90,7 @@ public class DefaultGrammarFactory extends GrammarFactory {
             }
             if (desc != null) {
                 URI uri = FileUtilities.getDirURI(owner.getProjectDirectory(), desc);
-                if (uri != null && new File(uri).equals(file)) {
+                if (uri != null && Utilities.toFile(uri).equals(file)) {
                     return new MavenAssemblyGrammar(env);
                 }
             }
@@ -100,7 +101,7 @@ public class DefaultGrammarFactory extends GrammarFactory {
             }
             if (desc != null) {
                 URI uri = FileUtilities.getDirURI(owner.getProjectDirectory(), desc);
-                if (uri != null && new File(uri).equals(file)) {
+                if (uri != null && Utilities.toFile(uri).equals(file)) {
                     return new MavenNbmGrammar(env);
                 }
             }
