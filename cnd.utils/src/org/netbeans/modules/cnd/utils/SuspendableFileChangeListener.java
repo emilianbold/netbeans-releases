@@ -150,12 +150,14 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
     }
     
     public void resumeRemoves() {
+        boolean schedule;
         synchronized (eventsLock) {
             CndUtils.assertTrue(suspendCount >= 0, "resumeRemoves without suspendRemoves " + suspendCount);
             suspendCount--;
-            if (suspendCount==0) {
-                taskScheduler.run();
-            }
+            schedule = (suspendCount == 0);
+        }
+        if (schedule) {
+            taskScheduler.run();
         }
     }
     
