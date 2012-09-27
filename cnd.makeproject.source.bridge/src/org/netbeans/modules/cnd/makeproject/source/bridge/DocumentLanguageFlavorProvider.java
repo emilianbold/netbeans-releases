@@ -206,27 +206,15 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         }
 
         @Override
-        public void fileAdded(NativeFileItem fileItem) {
-            filePropertiesChanged(fileItem);
-        }
-
-        @Override
         public void filesAdded(List<NativeFileItem> fileItems) {
-            for (NativeFileItem nativeFileItem : fileItems) {
-                filePropertiesChanged(nativeFileItem);
-            }
-        }
-
-        @Override
-        public void fileRemoved(NativeFileItem fileItem) {
+            filesPropertiesChanged(fileItems);
         }
 
         @Override
         public void filesRemoved(List<NativeFileItem> fileItems) {
         }
 
-        @Override
-        public void filePropertiesChanged(NativeFileItem fileItem) {
+        private void filePropertiesChanged(NativeFileItem fileItem) {
             if (fileItem != null && path.equals(fileItem.getAbsolutePath())) {
                 final StyledDocument doc = docRef.get();
                 if (doc == null) {
