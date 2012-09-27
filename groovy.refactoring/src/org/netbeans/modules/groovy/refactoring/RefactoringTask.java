@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.groovy.refactoring;
 
+import org.netbeans.modules.groovy.refactoring.utils.FindMethodUtils;
+import org.netbeans.modules.groovy.refactoring.utils.FindPossibleMethods;
 import java.util.Collection;
 import java.util.Set;
 import javax.swing.text.JTextComponent;

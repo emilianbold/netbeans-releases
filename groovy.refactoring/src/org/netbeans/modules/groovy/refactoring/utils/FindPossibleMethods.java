@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring;
+package org.netbeans.modules.groovy.refactoring.utils;
 
 import java.util.HashSet;
 import java.util.Set;

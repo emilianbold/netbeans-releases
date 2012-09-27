@@ -56,7 +56,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.groovy.editor.api.ElementUtils;
-import org.netbeans.modules.groovy.refactoring.FindPossibleMethods;
+import org.netbeans.modules.groovy.refactoring.utils.FindPossibleMethods;
 import org.netbeans.modules.groovy.refactoring.findusages.model.MethodRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.openide.filesystems.FileObject;
