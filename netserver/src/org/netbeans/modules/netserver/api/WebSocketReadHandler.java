@@ -40,91 +40,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.netserver.websocket;
+package org.netbeans.modules.netserver.api;
+
+import java.nio.channels.SelectionKey;
 
 
 /**
+ * Handler of data read (and connections accepted/closed)
+ * by a WebSocket server.
+ * 
  * @author ads
- *
+ * @author Jan Stola
  */
-public final class ProtocolDraft {
-    
-    public enum Draft {
-        Draft75,
-        Draft76,
-    }
+public interface WebSocketReadHandler {
 
-    private ProtocolDraft( Draft draft ){
-        this.draft = draft;
-        version = 0;
-    }
-    
-    private ProtocolDraft( int version){
-        draft = null;
-        this.version = version;
-    }
-    
-    private ProtocolDraft( ){
-        draft = null;
-        version = 0;
-    }
-    
-    public static ProtocolDraft getProtocol( int number ){
-        if ( number == 75 ){
-            return new ProtocolDraft( Draft.Draft75 );
-        }
-        else if ( number == 76 ){
-            return new ProtocolDraft( Draft.Draft76 );
-        }
-        else if ( number >=7 && number < 13){
-            return new ProtocolDraft(number);
-        }
-        else if (number >=13 && number <=17){
-            return new ProtocolDraft();
-        }
-        else {
-            throw new IllegalArgumentException();
-        }
-    }
-    
-    public static ProtocolDraft getRFC(){
-        return new ProtocolDraft();
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if ( obj instanceof ProtocolDraft){
-            ProtocolDraft protocol = (ProtocolDraft)obj;
-            return draft == protocol.draft && version == protocol.version;
-        }
-        return false;
-    }
-    
-    @Override
-    public int hashCode() {
-        if ( draft == Draft.Draft75){
-            return 75;
-        }
-        else if ( draft == Draft.Draft76){
-            return 76; 
-        }
-        else {
-            return version;
-        }
-    }
-    
-    Draft getDraft(){
-        return draft;
-    }
-    
-    int getVersion(){
-        return version;
-    }
-    
-    boolean isRfc(){
-        return draft == null && version ==0;
-    }
-    
-    private final Draft draft;
-    private final int version;
+    /**
+     * Invoked when a new connection is accepted.
+     * 
+     * @param key selection key corresponding to the connected channel/socket.
+     */
+    void accepted(SelectionKey key);
+
+    /**
+     * Invoked when some data are received from the peer.
+     * 
+     * @param key selection key corresponding to the channel/socket
+     * from which the data were read.
+     * @param message data received from the peer.
+     * @param dataType type of the data.
+     */
+    void read( SelectionKey key , byte[] message , Integer dataType );
+
+    /**
+     * Invoked when some connection is closed.
+     * 
+     * @param key selection key corresponding to the closed channel/socket.
+     */
+    void closed(SelectionKey key);
+
 }

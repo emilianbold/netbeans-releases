@@ -56,9 +56,9 @@ import javax.xml.bind.DatatypeConverter;
  * @author ads
  *
  */
-class WebSocketHandlerClient7 extends AbstractWSHandler7<WebSocketClient> {
+class WebSocketHandlerClient7 extends AbstractWSHandler7<WebSocketClientImpl> {
 
-    WebSocketHandlerClient7( WebSocketClient webSocketClient, int version ){
+    WebSocketHandlerClient7( WebSocketClientImpl webSocketClient, int version ){
         super(webSocketClient);
         this.version = version;
     }
