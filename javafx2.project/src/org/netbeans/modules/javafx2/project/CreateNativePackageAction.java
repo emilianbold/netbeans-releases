@@ -45,6 +45,9 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.swing.AbstractAction;
@@ -67,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -78,6 +82,15 @@ import org.openide.util.TaskListener;
 })
 @Messages("CTL_CreateNativePackageAction=Build Nati&ve Package")
 public final class CreateNativePackageAction extends AbstractAction implements ContextAwareAction {
+
+    // copies from JFXProjectGenerator
+    private static final String METRICS_LOGGER = "org.netbeans.ui.metrics.projects"; //NOI18N
+    private static final String JFX_METRICS_LOGGER = "org.netbeans.ui.metrics.jfx";  //NOI18N
+    private static final String PROJECT_TYPE = "org.netbeans.modules.javafx2.project.JFXProject";   //NOI18N
+    
+    private static final String BUILD_NATIVE = "USG_PROJECT_BUILD_NATIVE"; //NOI18N
+    private static final String BUILD_NATIVE_JFX = "USG_PROJECT_BUILD_NATIVE_JFX"; //NOI18N
+
     public @Override void actionPerformed(ActionEvent e) {assert false;}
     public @Override Action createContextAwareInstance(Lookup context) {
         return new ContextAction(context);
@@ -105,6 +118,7 @@ public final class CreateNativePackageAction extends AbstractAction implements C
         }
         
         public @Override void actionPerformed(ActionEvent e) {
+            logUsage();
             FileObject buildFo = findBuildXml();
             assert buildFo != null && buildFo.isValid();
             String noScript = isJavaScriptAvailable() ? "" : "-noscript"; // NOI18N
@@ -177,6 +191,29 @@ public final class CreateNativePackageAction extends AbstractAction implements C
                     (value.equalsIgnoreCase("true") ||  //NOI18N
                      value.equalsIgnoreCase("yes") ||   //NOI18N
                      value.equalsIgnoreCase("on"));     //NOI18N
+        }
+
+        /**
+         * Logs usage of this action.
+         * See: http://wiki.netbeans.org/UsageLoggingSpecification
+         */
+        static void logUsage() {
+            Logger logger = Logger.getLogger(METRICS_LOGGER);
+            LogRecord logRecord = new LogRecord(Level.INFO, BUILD_NATIVE); //NOI18N
+            logRecord.setLoggerName(logger.getName());
+            logRecord.setResourceBundle(NbBundle.getBundle(CreateNativePackageAction.class));
+            logRecord.setResourceBundleName(CreateNativePackageAction.class.getPackage().getName() + ".Bundle"); // NOI18N
+            logRecord.setParameters(new Object[]{
+                PROJECT_TYPE
+            });
+            logger.log(logRecord);
+
+            logger = Logger.getLogger(JFX_METRICS_LOGGER);
+            logRecord = new LogRecord(Level.INFO, BUILD_NATIVE_JFX); //NOI18N
+            logRecord.setLoggerName(logger.getName());
+            logRecord.setResourceBundle(NbBundle.getBundle(CreateNativePackageAction.class));
+            logRecord.setResourceBundleName(CreateNativePackageAction.class.getPackage().getName() + ".Bundle"); // NOI18N
+            logger.log(logRecord);
         }
 
     }
