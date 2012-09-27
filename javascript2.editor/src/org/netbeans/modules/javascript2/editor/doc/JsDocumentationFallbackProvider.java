@@ -65,7 +65,7 @@ public final class JsDocumentationFallbackProvider implements JsDocumentationPro
 
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
-        return new JsDocumentationFallbackHolder(snapshot);
+        return new JsDocumentationFallbackHolder(this, snapshot);
     }
 
     @Override
