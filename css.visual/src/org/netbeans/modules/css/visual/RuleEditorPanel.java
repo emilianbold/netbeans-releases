@@ -648,7 +648,12 @@ public class RuleEditorPanel extends JPanel {
         
         //refresh new AddPropertyComboBoxModel so the add property combobox doesn't contain 
         //already existing properties
-        ADD_PROPERTY_CB_MODEL.setExistingProperties(rule.getDeclarations().getDeclarations());
+        Declarations decls = rule.getDeclarations();
+        Collection<Declaration> declarations = decls == null 
+                ? Collections.<Declaration>emptyList() 
+                : decls.getDeclarations();
+                        
+        ADD_PROPERTY_CB_MODEL.setExistingProperties(declarations);
 
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), old, this.rule);
 
