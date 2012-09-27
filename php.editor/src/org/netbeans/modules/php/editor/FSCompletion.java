@@ -299,7 +299,6 @@ public class FSCompletion implements CompletionProvider {
         private FileObject file;
         private ImageIcon  icon;
         private int        anchor;
-        private String     toAdd;
         private String     prefix;
 
         public FSCompletionItem(FileObject file, String prefix, int anchor) throws IOException {

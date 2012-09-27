@@ -491,7 +491,7 @@ public class IntroduceHint extends AbstractRule {
         public String getDescription() {
             String clsName = type.getName();
             FileObject fileObject = type.getFileObject();
-            String fileName = fileObject == null ? UNKNOWN_FILE_NAME : type.getFileObject().getNameExt();
+            String fileName = fileObject == null ? UNKNOWN_FILE_NAME : fileObject.getNameExt();
             return Bundle.IntroduceHintStaticMethodDesc(item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);
         }
 

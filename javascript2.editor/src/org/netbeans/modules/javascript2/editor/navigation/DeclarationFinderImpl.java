@@ -83,7 +83,6 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         OccurrencesSupport os = model.getOccurrencesSupport();
         Occurrence occurrence = os.getOccurrence(caretOffset);
         if (occurrence != null) {
-
             JsObject object = occurrence.getDeclarations().iterator().next();
             JsObject parent = object.getParent();
             Collection<? extends TypeUsage> assignments = (parent == null) ? null : parent.getAssignmentForOffset(caretOffset);
@@ -140,7 +139,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             IndexResult iResult = indexResults.get(0);
             String value = iResult.getValue(JsIndex.FIELD_OFFSET);
             int offset = Integer.parseInt(value);
-            DeclarationLocation location = new DeclarationLocation(iResult.getFile(), offset);
+            DeclarationLocation location = new DeclarationLocation(iResult.getFile(), offset, IndexedElement.create(iResult));
             if (indexResults.size() > 1) {
                 for (int i = 0; i < indexResults.size(); i++) {
                     iResult = indexResults.get(i);
