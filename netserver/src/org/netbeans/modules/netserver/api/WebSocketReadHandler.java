@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,22 +39,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.spi;
+package org.netbeans.modules.netserver.api;
 
-import org.openide.filesystems.FileObject;
+import java.nio.channels.SelectionKey;
+
 
 /**
- * See DependentFileQuery API for more info.
+ * Handler of data read (and connections accepted/closed)
+ * by a WebSocket server.
+ * 
+ * @author ads
+ * @author Jan Stola
  */
-public interface DependentFileQueryImplementation {
-    
-    Boolean isDependent(FileObject master, FileObject dependent);
-    
-    //Set<FileObject> getDependent( FileObject fileObject );
-    
+public interface WebSocketReadHandler {
+
+    /**
+     * Invoked when a new connection is accepted.
+     * 
+     * @param key selection key corresponding to the connected channel/socket.
+     */
+    void accepted(SelectionKey key);
+
+    /**
+     * Invoked when some data are received from the peer.
+     * 
+     * @param key selection key corresponding to the channel/socket
+     * from which the data were read.
+     * @param message data received from the peer.
+     * @param dataType type of the data.
+     */
+    void read( SelectionKey key , byte[] message , Integer dataType );
+
+    /**
+     * Invoked when some connection is closed.
+     * 
+     * @param key selection key corresponding to the closed channel/socket.
+     */
+    void closed(SelectionKey key);
+
 }

@@ -52,9 +52,9 @@ import java.nio.charset.Charset;
  * @author ads
  *
  */
-class WebSocketHandler75 extends AbstractWSHandler75<WebSocketServer> {
+class WebSocketHandler75 extends AbstractWSHandler75<WebSocketServerImpl> {
     
-    public WebSocketHandler75( WebSocketServer webSocketServer, SelectionKey key ) {
+    public WebSocketHandler75( WebSocketServerImpl webSocketServer, SelectionKey key ) {
         super(webSocketServer);
         this.myKey = key;
     }

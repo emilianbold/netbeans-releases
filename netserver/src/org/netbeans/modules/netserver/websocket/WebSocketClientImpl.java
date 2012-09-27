@@ -42,6 +42,8 @@
  */
 package org.netbeans.modules.netserver.websocket;
 
+import org.netbeans.modules.netserver.api.ProtocolDraft;
+import org.netbeans.modules.netserver.api.WebSocketReadHandler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -54,31 +56,31 @@ import java.util.logging.Logger;
 import org.netbeans.modules.netserver.ReadHandler;
 import org.netbeans.modules.netserver.SocketClient;
 import org.netbeans.modules.netserver.SocketFramework;
-import org.netbeans.modules.netserver.websocket.ProtocolDraft.Draft;
+import org.netbeans.modules.netserver.api.ProtocolDraft.Draft;
 
 
 /**
  * @author ads
  *
  */
-public class WebSocketClient extends SocketClient {
+public class WebSocketClientImpl extends SocketClient {
     
     static final Logger LOG = SocketFramework.LOG; 
     
-    public WebSocketClient( URI uri , ProtocolDraft draft) throws IOException {
+    public WebSocketClientImpl( URI uri , ProtocolDraft draft) throws IOException {
         this(new InetSocketAddress( uri.getHost() , uri.getPort()), draft);
         this.uri = uri;
     }
     
-    public WebSocketClient( URI uri ) throws IOException {
+    public WebSocketClientImpl( URI uri ) throws IOException {
         this( uri , ProtocolDraft.getRFC());
     }
 
-    private WebSocketClient( SocketAddress address , ProtocolDraft draft) throws IOException {
+    private WebSocketClientImpl( SocketAddress address , ProtocolDraft draft) throws IOException {
         super(address);
         setReadHandler( new WebSocketClientHandler());
         
-        if ( draft.isRfc() || draft.getDraft() ==null ){
+        if ( draft.isRFC() || draft.getDraft() ==null ){
             setHandler( new WebSocketHandlerClient7(this, draft.getVersion() ));
         }
         else if ( draft.getDraft() == Draft.Draft75 ){

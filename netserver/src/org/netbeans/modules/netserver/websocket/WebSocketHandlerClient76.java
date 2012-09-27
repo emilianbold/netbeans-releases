@@ -57,7 +57,7 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
     
     private long MAX = 4294967295L;
 
-    WebSocketHandlerClient76( WebSocketClient webSocketClient ) {
+    WebSocketHandlerClient76( WebSocketClientImpl webSocketClient ) {
         super(webSocketClient);
         myRandom = new Random(hashCode());
     }

@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,7 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.remote.RemoteFS;
+import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.actions.FileSystemAction;
@@ -694,14 +695,16 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         protected Node[] createNodes(RemoteFile key) {
-            FileObject fo = RemoteFS.getDefault().getFileForURL(key.getUrl());
-            DataObject dobj;
             try {
-                dobj = DataObject.find(fo);
+                FileObject fo = RemoteFileCache.getRemoteFile(key.getUrl());
+                DataObject dobj = DataObject.find(fo);
+                return new Node[] { dobj.getNodeDelegate().cloneNode() };
             } catch (DataObjectNotFoundException ex) {
                 return new Node[] {};
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return new Node[] {};
             }
-            return new Node[] { dobj.getNodeDelegate().cloneNode() };
         }
 
         @Override
