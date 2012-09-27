@@ -141,7 +141,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
         if (hasPlugin(GROUP_JOCOCO, ARTIFACT_JOCOCO)) {
             String outputDirectory = PluginPropertyUtils.getReportPluginProperty(p, GROUP_JOCOCO, ARTIFACT_JOCOCO, "outputDirectory", null);
             if (outputDirectory == null) {
-                outputDirectory = PluginPropertyUtils.getPluginProperty(p, GROUP_JOCOCO, ARTIFACT_JOCOCO, "outputDirectory", null);
+                outputDirectory = PluginPropertyUtils.getPluginProperty(p, GROUP_JOCOCO, ARTIFACT_JOCOCO, "outputDirectory", null, null);
             }
             if (outputDirectory == null) {
                 try {
@@ -155,7 +155,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
         } else {
         String outputDirectory = PluginPropertyUtils.getReportPluginProperty(p, GROUP_COBERTURA, ARTIFACT_COBERTURA, "outputDirectory", null);
         if (outputDirectory == null) {
-            outputDirectory = PluginPropertyUtils.getPluginProperty(p, GROUP_COBERTURA, ARTIFACT_COBERTURA, "outputDirectory", null);
+            outputDirectory = PluginPropertyUtils.getPluginProperty(p, GROUP_COBERTURA, ARTIFACT_COBERTURA, "outputDirectory", null, null);
         }
         if (outputDirectory == null) {
             try {
