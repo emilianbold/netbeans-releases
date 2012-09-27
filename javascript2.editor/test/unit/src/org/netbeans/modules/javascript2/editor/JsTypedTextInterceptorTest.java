@@ -326,6 +326,11 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
     }
 
+    public void testIssue195515() throws Exception {
+        insertChar("function name() { {^}", '}', "function name() { {}^");
+    }
+
+
 //    public void testIssue150103() throws Exception {
 //        //    1. Create a new JS file
 //        //    2. type "/*" (without ") and press enter
