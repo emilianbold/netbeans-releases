@@ -69,7 +69,14 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
     private int suspendCount = 0;
     private final Object eventsLock = new Object();
     private HashMap<FSPath, EventWrapper> events = new LinkedHashMap<FSPath, EventWrapper>();
+    private final Runnable taskScheduler = new Runnable() {
 
+        @Override
+        public void run() {
+            task.schedule(0);
+        }
+    };
+            
     private final class Worker implements Runnable {
       
         @Override
@@ -147,7 +154,7 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
             CndUtils.assertTrue(suspendCount >= 0, "resumeRemoves without suspendRemoves " + suspendCount);
             suspendCount--;
             if (suspendCount==0) {
-                task.schedule(0);
+                taskScheduler.run();
             }
         }
     }
@@ -192,7 +199,7 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
             EventWrapper prevNewEvent = events.get(newPath);
             events.put(newPath, convert(prevNewEvent, EventKind.FILE_CREATED, fe));
         }
-        task.schedule(0);
+        fe.runWhenDeliveryOver(taskScheduler);
     }
 
     private void register(EventKind kind, FileEvent fe) {
@@ -201,7 +208,7 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
             EventWrapper prev = events.get(path);
             events.put(path, convert(prev, kind, fe));
         }
-        task.schedule(0);
+        fe.runWhenDeliveryOver(taskScheduler);
     }
     
     /*package*/void flush() {
