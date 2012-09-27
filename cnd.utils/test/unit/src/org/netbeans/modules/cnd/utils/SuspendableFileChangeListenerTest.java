@@ -60,7 +60,7 @@ import org.openide.filesystems.FileLock;
  * @author Vladimir Kvashin
  */
 public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCase {
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
     
     public SuspendableFileChangeListenerTest(String name) {
         super(name, ExecutionEnvironmentFactory.getLocal());
