@@ -47,7 +47,7 @@ package org.netbeans.modules.languages.apacheconf;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class StateStack implements Cloneable {
+public class StateStack {
 
     public byte[] stack;
     private int lastIn = -1;
