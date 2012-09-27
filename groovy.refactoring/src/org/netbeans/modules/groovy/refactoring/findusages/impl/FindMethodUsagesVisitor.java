@@ -77,10 +77,6 @@ public class FindMethodUsagesVisitor extends AbstractFindUsagesVisitor {
     private IndexedMethod method;
 
 
-//    public FindMethodUsagesVisitor(ModuleNode moduleNode, String methodType, String methodName, List<String> methodParams) {
-//        super(moduleNode);
-//    }
-
     public FindMethodUsagesVisitor(ModuleNode moduleNode, RefactoringElement refactoringElement) {
         super(moduleNode);
         assert (refactoringElement instanceof MethodRefactoringElement) : "It was: " + refactoringElement.getClass().getSimpleName();
