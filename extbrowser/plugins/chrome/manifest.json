@@ -41,7 +41,7 @@
  */
 {
   "name": "__MSG__pluginName__",
-  "version": "0.4.26",
+  "version": "0.4.27",
 
   "background_page": "html/main.html",
 
@@ -56,9 +56,7 @@
   "permissions": [
     "contextMenus",
     "tabs",
-    "debugger",
-    "http://*/*", // content scripts (maybe localhost could be enough)
-    "https://*/*" // content scripts  (maybe localhost could be enough)
+    "debugger"
   ],
 
   "icons": {
