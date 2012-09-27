@@ -2647,13 +2647,17 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     }
 
     final boolean isAlreadyModified() {
-        return alreadyModified;
+        synchronized (this) {
+            return alreadyModified;
+        }
     }
 
     final void setAlreadyModified(boolean alreadyModified) {
         ERR.log(Level.FINE, null, new Exception("Setting to modified: " + alreadyModified));
 
-        this.alreadyModified = alreadyModified;
+        synchronized (this) {
+            this.alreadyModified = alreadyModified;
+        }
         setStrong(alreadyModified, false);
     }
 
