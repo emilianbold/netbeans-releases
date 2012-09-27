@@ -298,7 +298,7 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
         }
     }
 
-    private class AbstractClassFix implements HintFix {
+    private static class AbstractClassFix implements HintFix {
         private final BaseDocument doc;
         private final FixInfo fixInfo;
 

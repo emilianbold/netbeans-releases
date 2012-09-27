@@ -260,20 +260,22 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
         }
 
         private void processAllFunctions(Set<BaseFunctionElement> allFunctions, List<Expression> invocationParametersExp) {
-            if (!allFunctions.isEmpty()) {
+            if (allFunctions != null && !allFunctions.isEmpty()) {
                 BaseFunctionElement methodElement = ModelUtils.getFirst(allFunctions);
-                List<ParameterElement> methodParameters = methodElement.getParameters();
-                if (methodParameters.size() == invocationParametersExp.size()) {
-                    for (int i = 0; i < methodParameters.size(); i++) {
-                        Expression invocationParameterExp = invocationParametersExp.get(i);
-                        if (methodParameters.get(i).isReference()) {
-                            initializeExpression(invocationParameterExp);
-                        } else {
-                            scan(invocationParameterExp);
+                if (methodElement != null) {
+                    List<ParameterElement> methodParameters = methodElement.getParameters();
+                    if (methodParameters.size() == invocationParametersExp.size()) {
+                        for (int i = 0; i < methodParameters.size(); i++) {
+                            Expression invocationParameterExp = invocationParametersExp.get(i);
+                            if (methodParameters.get(i).isReference()) {
+                                initializeExpression(invocationParameterExp);
+                            } else {
+                                scan(invocationParameterExp);
+                            }
                         }
+                    } else {
+                        scan(invocationParametersExp);
                     }
-                } else {
-                    scan(invocationParametersExp);
                 }
             } else {
                 scan(invocationParametersExp);
