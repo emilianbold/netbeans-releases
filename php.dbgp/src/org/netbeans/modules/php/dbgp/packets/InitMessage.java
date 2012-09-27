@@ -121,7 +121,7 @@ public class InitMessage extends DbgpMessage {
             response = session.sendSynchronCommand(setCommand);
             assert response instanceof FeatureSetResponse;
             FeatureSetResponse setResponse = (FeatureSetResponse) response;
-            if (setResponse != null &&  !setResponse.isSuccess() ) {
+            if (!setResponse.isSuccess() ) {
                 DbgpMessage.setMaxDataSize( maxSize );
             }
         }
