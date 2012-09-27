@@ -58,7 +58,7 @@ import org.openide.util.NbBundle.Messages;
 @Messages("CTL_CreateSiteTemplateAction=Save as Template")
     @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.CreateSiteTemplateAction", category = "Project")
     @ActionRegistration(displayName = "#CTL_CreateSiteTemplateAction", lazy=false)
-    @ActionReference(position = 600, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
+    @ActionReference(position = 3080, path = "Projects/org-netbeans-modules-web-clientproject/Actions")
 public final class CreateSiteTemplateAction extends AbstractAction implements ContextAwareAction {
 
     private ClientSideProject p;
