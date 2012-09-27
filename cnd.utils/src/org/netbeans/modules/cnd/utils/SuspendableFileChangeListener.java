@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.utils;
 
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.openide.filesystems.FileAttributeEvent;
@@ -65,6 +65,7 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
     private final RequestProcessor.Task task;
     private final FileChangeListener external;
     private final AtomicInteger suspendCount = new AtomicInteger(0);
+    private int counter = 0;
     private final Object eventsLock = new Object();
     private HashMap<FSPath, EventWrapper> events = new HashMap<FSPath, EventWrapper>();
 
@@ -78,8 +79,21 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
                     if (events.isEmpty()) {
                         break;
                     }
-                    curEvents = events;
-                    events = new HashMap<FSPath, EventWrapper>();
+                    if (counter == 0) {
+                        curEvents = events;
+                        events = new HashMap<FSPath, EventWrapper>();
+                    } else {
+                        curEvents = events;
+                        HashMap<FSPath, EventWrapper> suspendedRemoves = new HashMap<FSPath, EventWrapper>();
+                        for (Iterator<Map.Entry<FSPath, EventWrapper>> it = curEvents.entrySet().iterator(); it.hasNext();) {
+                            Map.Entry<FSPath, EventWrapper> entry = it.next();
+                            if (entry.getValue().kind == EventKind.FILE_DELETED) {
+                                suspendedRemoves.put(entry.getKey(), entry.getValue());
+                                it.remove();
+                            }
+                        }
+                        events = suspendedRemoves;
+                    }
                 }
                 for (EventWrapper eventWrapper : curEvents.values()) {
                     FileEvent fe = eventWrapper.event;
@@ -120,14 +134,19 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
     }
     
     public void suspendRemoves() {
-        suspendCount.incrementAndGet();
+        synchronized (eventsLock) {
+            CndUtils.assertTrue(counter >= 0, "suspendRemoves with " + counter);
+            counter++;
+        }
     }
     
     public void resumeRemoves() {
-        final int val = suspendCount.decrementAndGet();
-        CndUtils.assertTrue(val >= 0, "resumeRemoves without suspendRemoves");
-        if (val == 0) {
-            task.schedule(0);
+        synchronized (eventsLock) {
+            CndUtils.assertTrue(counter >= 0, "resumeRemoves without suspendRemoves " + counter);
+            counter--;
+            if (counter==0) {
+                task.schedule(0);
+            }
         }
     }
     
