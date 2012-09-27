@@ -548,7 +548,7 @@ public final class NbMavenProjectImpl implements Project {
         String prop = PluginPropertyUtils.getPluginProperty(this, Constants.GROUP_APACHE_PLUGINS,
                 Constants.PLUGIN_WAR, //NOI18N
                 "warSourceDirectory", //NOI18N
-                "war"); //NOI18N
+                "war", null); //NOI18N
 
         prop = prop == null ? "src/main/webapp" : prop; //NOI18N
 
@@ -560,7 +560,7 @@ public final class NbMavenProjectImpl implements Project {
         String prop = PluginPropertyUtils.getPluginProperty(this, Constants.GROUP_APACHE_PLUGINS,
                 Constants.PLUGIN_SITE, //NOI18N
                 "siteDirectory", //NOI18N
-                "site"); //NOI18N
+                "site", null); //NOI18N
 
         prop = prop == null ? "src/site" : prop; //NOI18N
 
@@ -572,7 +572,7 @@ public final class NbMavenProjectImpl implements Project {
         String prop = PluginPropertyUtils.getPluginProperty(this, Constants.GROUP_APACHE_PLUGINS,
                 Constants.PLUGIN_EAR, //NOI18N
                 "earSourceDirectory", //NOI18N
-                "ear"); //NOI18N
+                "ear", null); //NOI18N
 
         prop = prop == null ? "src/main/application" : prop; //NOI18N
 

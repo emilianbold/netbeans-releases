@@ -188,7 +188,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
     }
 
     private String[] getBootClasspath() {
-        String carg = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", "compile");
+        String carg = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", "compile", null);
         if (carg != null) {
             //TODO
         }
