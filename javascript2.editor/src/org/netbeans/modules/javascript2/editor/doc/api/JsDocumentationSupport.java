@@ -41,7 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.api;
 
-import org.netbeans.modules.javascript2.editor.doc.JsDocumentationFallbackSyntaxProvider;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationResolver;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -59,7 +60,7 @@ public final class JsDocumentationSupport {
     /** Path of the documentation providers in the layer. */
     public static final String DOCUMENTATION_PROVIDER_PATH = "javascript/doc/providers"; //NOI18N
 
-//    private static Map<Snapshot, String> providers = new WeakHashMap<Snapshot, String>();
+    private static Map<JsParserResult, JsDocumentationHolder> providers = new WeakHashMap<JsParserResult, JsDocumentationHolder>();
 
     private JsDocumentationSupport() {
     }
@@ -71,21 +72,13 @@ public final class JsDocumentationSupport {
      * @param result {@code JsParserResult}
      * @return {@code JsDocumentationProvider} for given {@code JsParserResult}
      */
-    //XXX This should not be called for the result. This implementation allows 
-    // to call the getDocumentationHolder many times for the same result. Which
-    // causes that the same snapshot is parsed manytimes (whenewer is called this method). 
-    // Or the JsDocumentationProvider should be somehow cached here.
-    public static JsDocumentationHolder getDocumentationHolder(JsParserResult result) {
-        //        if (!providers.containsKey(snapshot)) {
-        //            System.err.println("===== CACHING: " + snapshot.getSource().getFileObject().getName());
-        //            providers.put(snapshot, "cache");
-        //        } else {
-        //            System.err.println("===== EXISTS: " + snapshot.getSource().getFileObject().getName());
-        //        }
-        //        System.err.println("SIZE = " + providers.size());
-        // XXX - complete caching of documentation tool provider
-        JsDocumentationProvider provider = getDocumentationProvider(result);
-        return provider.createDocumentationHolder(result.getSnapshot());
+    public static synchronized JsDocumentationHolder getDocumentationHolder(JsParserResult result) {
+        if (!providers.containsKey(result)) {
+            // XXX - complete caching of documentation tool provider
+            JsDocumentationProvider provider = getDocumentationProvider(result);
+            providers.put(result, provider.createDocumentationHolder(result.getSnapshot()));
+        }
+        return providers.get(result);
     }
 
     public static JsDocumentationProvider getDocumentationProvider(JsParserResult result) {
