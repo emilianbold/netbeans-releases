@@ -140,7 +140,7 @@ public class PHP54UnhandledError extends DefaultVisitor {
         super.visit(node);
     }
 
-    private class PHP54VersionError extends PHPVerificationError {
+    private static class PHP54VersionError extends PHPVerificationError {
 
         private static final String KEY = "Php.Version.54"; //NOI18N
 

@@ -73,6 +73,7 @@ public class ZendPhpModuleExtender extends PhpModuleExtender {
         } catch (InvalidPhpExecutableException ex) {
             // should not happen, must be handled in the wizard
             Exceptions.printStackTrace(ex);
+            throw new ExtendingException(ex.getLocalizedMessage(), ex);
         }
 
         if (!zendScript.initProject(phpModule)) {

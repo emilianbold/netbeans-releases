@@ -114,7 +114,7 @@ NetBeans_PresetMenu._putPresets = function() {
     menu.innerHTML = '';
     for (p in this._presets) {
         var preset = this._presets[p];
-        var activePreset = NetBeans_ViewPort.width == preset.width && NetBeans_ViewPort.height == preset.height;
+        var activePreset = NetBeans_ViewPort.has(preset.width, preset.height);
         // item
         var item = document.createElement('a');
         item.setAttribute('href', '#');
@@ -181,12 +181,8 @@ NetBeans_PresetMenu._updateSelectionMode = function(switchCheckBoxValue) {
 
 // run!
 window.addEventListener('load', function() {
-    NetBeans.detectViewPort(function() {
-        NetBeans.getWindowInfo(function(window) {
-            if (window.state === 'maximized') {
-                NetBeans_PresetMenu.setAutoPresetActive();
-            }
-        });
-        NetBeans_PresetMenu.show(NetBeans_Presets.getPresets());
-    });
+    if (NetBeans_ViewPort.has(0, 0)) {
+        NetBeans_PresetMenu.setAutoPresetActive();
+    }
+    NetBeans_PresetMenu.show(NetBeans_Presets.getPresets());
 }, false);

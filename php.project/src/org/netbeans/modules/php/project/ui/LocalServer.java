@@ -183,16 +183,16 @@ public class LocalServer implements Comparable<LocalServer> {
             return false;
         }
         final LocalServer other = (LocalServer) obj;
-        if (virtualHost != other.virtualHost && (virtualHost == null || !virtualHost.equals(other.virtualHost))) {
+        if ((this.virtualHost == null) ? (other.virtualHost != null) : !this.virtualHost.equals(other.virtualHost)) {
             return false;
         }
-        if (documentRoot != other.documentRoot && (documentRoot == null || !documentRoot.equals(other.documentRoot))) {
+        if ((this.documentRoot == null) ? (other.documentRoot != null) : !this.documentRoot.equals(other.documentRoot)) {
             return false;
         }
-        if (editable != other.editable) {
+        if (this.editable != other.editable) {
             return false;
         }
-        if (srcRoot != other.srcRoot && (srcRoot == null || !srcRoot.equals(other.srcRoot))) {
+        if ((this.srcRoot == null) ? (other.srcRoot != null) : !this.srcRoot.equals(other.srcRoot)) {
             return false;
         }
         return true;

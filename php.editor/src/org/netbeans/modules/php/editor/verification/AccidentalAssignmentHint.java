@@ -286,7 +286,7 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
 
     }
 
-    private class AssignmentVisitor extends DefaultVisitor {
+    private static class AssignmentVisitor extends DefaultVisitor {
 
         private final List<Assignment> accidentalAssignments = new LinkedList<Assignment>();
 

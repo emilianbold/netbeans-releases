@@ -177,27 +177,12 @@ public class Property extends BaseMessageChildElement {
     public byte[] getValue() throws UnsufficientValueException {
         String value = DbgpMessage.getNodeValue( getNode() );
         byte[] result = null;
-        if ( value == null ){
-            result =  new byte[0];
+        BASE64Decoder decoder = new BASE64Decoder();
+        try {
+            result = decoder.decodeBuffer( value );
         }
-        else {
-            Encoding enc = getEncoding();
-            if ( Encoding.NONE.equals( enc ) || enc == null ){
-                try {
-                    result = value.getBytes( DbgpMessage.ISO_CHARSET );
-                }
-                catch (UnsupportedEncodingException e) {
-                    assert false;
-                    result= new byte[0];
-                }
-            }
-            BASE64Decoder decoder = new BASE64Decoder();
-            try {
-                result = decoder.decodeBuffer( value );
-            }
-            catch( IOException e ){
-                result = new byte[0];
-            }
+        catch( IOException e ){
+            result = new byte[0];
         }
         return getValue( result );
     }

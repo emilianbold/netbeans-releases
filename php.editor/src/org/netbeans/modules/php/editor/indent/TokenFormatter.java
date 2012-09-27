@@ -940,6 +940,15 @@ public class TokenFormatter {
 //                                        countSpaces = docOptions.spaceAfterSemi ? 1 : 0;
                                         afterSemi = true;
                                         break;
+                                    case WHITESPACE_AFTER_MODIFIERS:
+                                        if (docOptions.placeNewLineAfterModifiers || countOfNewLines(oldText) > 0) {
+                                            indentRule = true;
+                                            newLines = 1;
+                                            countSpaces = indent + docOptions.continualIndentSize;
+                                        } else {
+                                            countSpaces = 1;
+                                        }
+                                        break;
                                     case WHITESPACE_WITHIN_ARRAY_DECL_PARENS:
                                         int hIndex = index - 1;
                                         FormatToken token;

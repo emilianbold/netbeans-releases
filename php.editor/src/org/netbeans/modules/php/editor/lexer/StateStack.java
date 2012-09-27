@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.php.editor.lexer;
 
-public class StateStack implements Cloneable {
+public class StateStack {
 
 	public byte[] stack;
 	private int lastIn = -1;

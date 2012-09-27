@@ -132,22 +132,8 @@ NetBeans.showInfoBar = function(tabId) {
 NetBeans.getWindowInfo = function(callback) {
     chrome.windows.getLastFocused(callback);
 }
-NetBeans.detectViewPort = function(callback) {
-    chrome.tabs.executeScript(null, {file: 'js/viewport.js'}, function() {
-        if (callback) {
-            callback();
-        }
-    });
-}
 NetBeans.resetPageSize = function(callback) {
-    chrome.windows.getLastFocused(function(win) {
-        var opt = {};
-        opt.state = 'maximized';
-        chrome.windows.update(win.id, opt);
-        if (callback) {
-            callback();
-        }
-    });
+    NetBeans.resizeViewPort(0, 0, callback);
 };
 NetBeans.resizePage = function(preset, callback) {
     if (preset === null) {
@@ -163,20 +149,38 @@ NetBeans.resizePage = function(preset, callback) {
 };
 // resize actual page
 NetBeans._resizePage = function(width, height, callback) {
-    this.detectViewPort(function() {
-        // resize
-        chrome.windows.getLastFocused(function(win) {
-            var opt = {};
-            opt.state = 'normal';
-            opt.width = parseInt(width) + NetBeans_ViewPort.marginWidth;
-            opt.height = parseInt(height) + NetBeans_ViewPort.marginHeight;
-            chrome.windows.update(win.id, opt);
+    NetBeans.resizeViewPort(width, height, callback);
+};
+/**
+ * Resize Chrome "viewport" and remember its dimensions in NetBeans_ViewPort object.
+ * To reset viewport dimensions, set width and height to zero (0).
+ */
+NetBeans.resizeViewPort = function(width, height, callback) {
+    NetBeans.runInCurrentTab(function(tab) {
+        var params = {
+            width: parseInt(width),
+            height: parseInt(height),
+            fontScaleFactor: 1,
+            fitWindow: !width && !height
+        };
+        chrome.debugger.sendCommand({tabId : tab.id}, 'Page.setDeviceMetricsOverride', params, function(result) {
+            NetBeans_ViewPort.set(width, height);
             if (callback) {
                 callback();
             }
         });
+    })
+}
+// run task in the current tab
+NetBeans.runInCurrentTab = function(callback) {
+    var query = {
+        currentWindow: true,
+        active: true
+    };
+    chrome.tabs.query(query, function(tabs) {
+        callback(tabs[0]);
     });
-};
+}
 // show preset customizer
 NetBeans.showPresetCustomizer = function() {
     chrome.tabs.create({'url': 'html/options.html'});
@@ -249,14 +253,7 @@ chrome.tabs.onRemoved.addListener(function(tabId) {
 // register content script listener
 chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
     var type = message.type;
-    if (type === 'VIEWPORT') {
-        console.log('Setting new viewport margins (' + message.marginWidth + ' x ' + message.marginHeight + ')');
-        NetBeans_ViewPort.width = message.width;
-        NetBeans_ViewPort.height = message.height;
-        NetBeans_ViewPort.marginWidth = message.marginWidth;
-        NetBeans_ViewPort.marginHeight = message.marginHeight;
-        sendResponse();
-    } else if (type === 'switchSelectionMode') {
+    if (type === 'switchSelectionMode') {
         NetBeans.setSelectionMode(!NetBeans.getSelectionMode());
     }
 });

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -55,6 +56,8 @@ import org.openide.util.Lookup;
  * @author Radek Matous, Tomas Mysik
  */
 public abstract class Command {
+
+    protected final Logger logger = Logger.getLogger(getClass().getName());
 
     private final PhpProject project;
 

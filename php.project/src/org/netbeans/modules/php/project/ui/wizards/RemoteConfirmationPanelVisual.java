@@ -64,6 +64,7 @@ import org.openide.util.NbBundle;
 /**
  * All the methods must be invoked in AWT thread.
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("SE_BAD_FIELD_STORE")
 public final class RemoteConfirmationPanelVisual extends JPanel {
     static enum State { FETCHING, NO_FILES, FILES };
 

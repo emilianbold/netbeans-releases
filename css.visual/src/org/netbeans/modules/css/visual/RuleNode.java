@@ -133,64 +133,69 @@ public class RuleNode extends AbstractNode {
     //called by the RuleEditorPanel when user types into the filter text field
     void setFilterPrefix(String prefix) {
         this.filterPrefix = prefix;
-        fireContextChanged(); //recreate the property sets
+        fireContextChanged(true); //recreate the property sets
     }
 
     //called by the RuleEditorPanel when any of the properties affecting 
     //the PropertySet-s generation changes.
-    void fireContextChanged() {
+    void fireContextChanged(boolean forceRefresh) {
         PropertyCategoryPropertySet[] oldSets = getCachedPropertySets();
         PropertyCategoryPropertySet[] newSets = createPropertySets();
+        
+        if(!forceRefresh) {
+            //the client doesn't require the property sets to be really recreated,
+            //we may try to update them only if possible
 
-        //compare old and new sets, if they contain same sets with same properties,
-        //then update the PropertyDefinition-s so they contain reference to the current
-        //css model vertion.
-        //
-        //if there's a new PropertySet or one of the PropertySets contains more or less
-        //properties than the original, then do not do the incremental update but
-        //refresh the PropertySets completely.
-        update:
-        {
-            //old DeclarationProperty to new value map
-            if (oldSets.length == newSets.length) {
-                for (int i = 0; i < oldSets.length; i++) {
-                    PropertyCategoryPropertySet o = oldSets[i];
-                    PropertyCategoryPropertySet n = newSets[i];
+            //compare old and new sets, if they contain same sets with same properties,
+            //then update the PropertyDefinition-s so they contain reference to the current
+            //css model vertion.
+            //
+            //if there's a new PropertySet or one of the PropertySets contains more or less
+            //properties than the original, then do not do the incremental update but
+            //refresh the PropertySets completely.
+            update:
+            {
+                //old DeclarationProperty to new value map
+                if (oldSets.length == newSets.length) {
+                    for (int i = 0; i < oldSets.length; i++) {
+                        PropertyCategoryPropertySet o = oldSets[i];
+                        PropertyCategoryPropertySet n = newSets[i];
 
-                    Map<Declaration, DeclarationProperty> om = o.declaration2PropertyMap;
-                    Map<Declaration, DeclarationProperty> nm = n.declaration2PropertyMap;
+                        Map<Declaration, DeclarationProperty> om = o.declaration2PropertyMap;
+                        Map<Declaration, DeclarationProperty> nm = n.declaration2PropertyMap;
 
-                    if (om.size() != nm.size()) {
-                        break update;
+                        if (om.size() != nm.size()) {
+                            break update;
+                        }
+                        //same number of declarations
+
+                        //create declaration name -> declaration maps se we may compare 
+                        //(as the css source model elements do not comparable by equals/hashcode)
+                        Map<String, Declaration> oName2DeclarationMap = new HashMap<String, Declaration>();
+                        for (Declaration d : om.keySet()) {
+                            oName2DeclarationMap.put(d.getProperty().getContent().toString(), d);
+                        }
+                        Map<String, Declaration> nName2DeclarationMap = new HashMap<String, Declaration>();
+                        for (Declaration d : nm.keySet()) {
+                            nName2DeclarationMap.put(d.getProperty().getContent().toString(), d);
+                        }
+
+                        for (String declarationName : oName2DeclarationMap.keySet()) {
+                            Declaration oldD = oName2DeclarationMap.get(declarationName);
+                            Declaration newD = nName2DeclarationMap.get(declarationName);
+
+                            //update the existing DeclarationProperty with the fresh
+                            //Declaration object from the new model instance
+                            DeclarationProperty declarationProperty = om.get(oldD);
+                            declarationProperty.updateDeclaration(newD);
+                        }
+
                     }
-                    //same number of declarations
 
-                    //create declaration name -> declaration maps se we may compare 
-                    //(as the css source model elements do not comparable by equals/hashcode)
-                    Map<String, Declaration> oName2DeclarationMap = new HashMap<String, Declaration>();
-                    for (Declaration d : om.keySet()) {
-                        oName2DeclarationMap.put(d.getProperty().getContent().toString(), d);
-                    }
-                    Map<String, Declaration> nName2DeclarationMap = new HashMap<String, Declaration>();
-                    for (Declaration d : nm.keySet()) {
-                        nName2DeclarationMap.put(d.getProperty().getContent().toString(), d);
-                    }
-
-                    for (String declarationName : oName2DeclarationMap.keySet()) {
-                        Declaration oldD = oName2DeclarationMap.get(declarationName);
-                        Declaration newD = nName2DeclarationMap.get(declarationName);
-
-                        //update the existing DeclarationProperty with the fresh
-                        //Declaration object from the new model instance
-                        DeclarationProperty declarationProperty = om.get(oldD);
-                        declarationProperty.updateDeclaration(newD);
-                    }
-
+                    return;
                 }
 
-                return;
             }
-
         }
 
         //refresh the sets completely
@@ -565,14 +570,13 @@ public class RuleNode extends AbstractNode {
             } else {
                 //add property mode - just refresh the content
                 addedDeclarations.put(def, newDeclaration); //remember what we've added during this dialog cycle
-                fireContextChanged();
+                fireContextChanged(true);
             }
         }
 
         protected abstract String convertToString(T val);
 
         protected abstract T getEmptyValue();
-        
     }
     private static String EMPTY = "";
 
@@ -647,7 +651,17 @@ public class RuleNode extends AbstractNode {
 
         /* called when updating the property sheet to the new css model */
         private void updateDeclaration(Declaration declaration) {
+            //update the declaration
+            String oldValue = getValue();
             this.declaration = declaration;
+            String newValue = getValue();
+            String propertyName = getPropertyName();
+            //and fire property change to the node
+            firePropertyChange(propertyName, oldValue, newValue);
+        }
+
+        private String getPropertyName() {
+            return declaration.getProperty().getContent().toString();
         }
 
         @Override
@@ -712,7 +726,7 @@ public class RuleNode extends AbstractNode {
                 b.append(">"); //NOI18N
             }
 
-            b.append(declaration.getProperty().getContent());
+            b.append(getPropertyName());
 
             if (color != null) {
                 b.append("</font>"); //NOI18N
@@ -735,7 +749,18 @@ public class RuleNode extends AbstractNode {
         @Override
         public void setValue(Object o) {
             String val = (String) o;
-            if (val.isEmpty() || NONE_PROPERTY_NAME.equals(val)) {
+
+            if (val == null || val.isEmpty()) {
+                return;
+            }
+
+            String currentValue = getValue();
+            if (currentValue.equals(val)) {
+                //same value, ignore
+                return;
+            }
+
+            if (NONE_PROPERTY_NAME.equals(val)) {
                 //remove the whole declaration
                 Declarations declarations = (Declarations) declaration.getParent();
                 declarations.removeDeclaration(declaration);
@@ -747,7 +772,7 @@ public class RuleNode extends AbstractNode {
             if (!isAddPropertyMode()) {
                 applyModelChanges();
             } else {
-                fireContextChanged();
+                fireContextChanged(false);
             }
         }
     }
