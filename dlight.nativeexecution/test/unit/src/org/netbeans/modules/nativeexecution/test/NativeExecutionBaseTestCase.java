@@ -129,6 +129,12 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     }
 
     protected static class DumpingFileChangeListener implements FileChangeListener {
+        public static final String FILE_ATTRIBUTE_CHANGED = "fileAttributeChanged";
+        public static final String FILE_CHANGED = "fileChanged";
+        public static final String FILE_DATA_CREATED = "fileDataCreated";
+        public static final String FILE_DELETED = "fileDeleted";
+        public static final String FILE_FOLDER_CREATED = "fileFolderCreated";
+        public static final String FILE_RENAMED = "fileRenamed";
 
         private final String listenerName;
         private final String prefixToStrip;
@@ -142,11 +148,16 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
             this.checkExpected = checkExpected;
         }
 
-        private void register(String eventKind, FileEvent fe) {
+        protected void register(String eventKind, FileEvent fe) {
             String src = stripPrefix(((FileObject) fe.getSource()).getPath());
             String obj = stripPrefix(fe.getFile().getPath());
             String exp = checkExpected ? ("exp=" + Boolean.toString(fe.isExpected())) : "";
-            out.printf("FileEvent[%-20s] %-20s SRC %-20s OBJ %-20s %s\n", listenerName, eventKind, src, obj, exp);
+            String extra = "";
+            if (fe instanceof FileRenameEvent) {
+                FileRenameEvent fre = (FileRenameEvent) fe;
+                extra = "oldName="+fre.getName()+" oldExt="+fre.getExt();
+            }
+            out.printf("%-20s: %-20s SRC %-20s OBJ %-20s %s %s\n", listenerName, eventKind, src, obj, exp, extra);
         }
 
         private String stripPrefix(String path) {
@@ -164,34 +175,32 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            register("fileAttributeChanged", fe);
+            register(FILE_ATTRIBUTE_CHANGED, fe);
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            register("fileChanged", fe);
+            register(FILE_CHANGED, fe);
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            register("fileDataCreated", fe);
+            register(FILE_DATA_CREATED, fe);
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            register("fileDeleted", fe);
+            register(FILE_DELETED, fe);
         }
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
-            register("fileFolderCreated", fe);
+            register(FILE_FOLDER_CREATED, fe);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            String src = stripPrefix(((FileObject) fe.getSource()).getPath());
-            String obj = stripPrefix(fe.getFile().getPath());
-            out.printf("FileEvent[%s]: %s src=%s obj=%s oldName=%s oldExt=%s exp=%b\n", listenerName, "fileRenamed", src, obj, fe.getName(), fe.getExt(), fe.isExpected());
+            register(FILE_RENAMED, fe);
         }
     }
     
@@ -368,8 +377,13 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
      * @param baseDir base directory; of not exists, it is created ; if exists,
      * the content is removed
      * @param creationData array of strings, a string per file; a string should
-     * have format below, for plain file, directory and link resprctively: "-
-     * plain-filen-name" "d directory-name" "l link-target link-name"
+     * have format below:
+     * "- plain-filen-name" for plain file
+     * "d directory-name" for directory
+     * "l link-target link-name" for link
+     * "R file-or-dir-name" for removal
+     * "T file-name" for touch
+     * "M dir-or-file-name new-name" for move
      * @throws Exception
      */
     public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData) throws Exception {
@@ -414,6 +428,16 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
                     case 'l':
                         String link = parts[2];
                         script.append("ln -s \"").append(path).append("\" \"").append(link).append("\";\n");
+                        break;
+                    case 'R':
+                        script.append("rm -rf \"").append(path).append("\";\n");
+                        break;
+                    case 'T':
+                        script.append("touch \"").append(path).append("\";\n");
+                        break;
+                    case 'M':
+                        String dst = parts[2];
+                        script.append("mv \"").append(path).append("\" \"").append(dst).append("\";\n");
                         break;
                     default:
                         throw new IllegalArgumentException("Unexpected 1-st char: " + data);
