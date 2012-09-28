@@ -2340,6 +2340,101 @@ public class FileObjectTestHid extends TestBaseHid {
         } finally {
         }
     }
+    
+    public void testNestedRecursiveListener() throws IOException {
+        doNestedRecursiveListener(false);
+    }
+
+    public void testNestedRecursiveListenerReversed() throws IOException {
+        doNestedRecursiveListener(true);
+    }
+    
+    private void doNestedRecursiveListener(boolean reverse) throws IOException {
+        checkSetUp();
+
+        FileObject folder1 = getTestFolder1 (root);
+        /** delete first time*/
+        try {
+            FileObject obj = FileUtil.createData(folder1, "my/sub/children/children.java");
+            final FileObject children = obj.getParent();
+            final FileObject sub = children.getParent();
+            final FileObject my = sub.getParent();
+
+            class L implements FileChangeListener {
+                StringBuilder sb = new StringBuilder();
+
+                public void fileFolderCreated(FileEvent fe) {
+                    sb.append("FolderCreated");
+                }
+
+                public void fileDataCreated(FileEvent fe) {
+                    sb.append("DataCreated");
+                }
+
+                public void fileChanged(FileEvent fe) {
+                    sb.append("Changed");
+                }
+
+                public void fileDeleted(FileEvent fe) {
+                    sb.append("Deleted");
+                }
+
+                public void fileRenamed(FileRenameEvent fe) {
+                    sb.append("Renamed");
+                }
+
+                public void fileAttributeChanged(FileAttributeEvent fe) {
+                    sb.append("AttributeChanged");
+                }
+
+                public void assertMessages(String txt, String msg) {
+                    assertEquals(txt, msg, sb.toString());
+                    sb.setLength(0);
+                }
+            }
+            L recursive = new L();
+
+            my.addRecursiveListener(recursive);
+            sub.addRecursiveListener(recursive);
+            children.addRecursiveListener(recursive);
+
+            FileObject fo = obj.getParent().createData("sibling.java");
+
+            recursive.assertMessages("3x of Creation", "DataCreatedDataCreatedDataCreated");
+            
+            FileObject[] removalOrder = { my, sub, children };
+            if (reverse) {
+                Collections.reverse(Arrays.asList(removalOrder));
+            }
+            
+            removalOrder[0].removeRecursiveListener(recursive);
+            
+            FileLock lck = fo.lock();
+            fo.rename(lck, "ibling", "stava");
+            lck.releaseLock();
+            
+            recursive.assertMessages("2x renames", "RenamedRenamed");
+            
+            removalOrder[1].removeRecursiveListener(recursive);
+
+            lck = fo.lock();
+            fo.rename(lck, "dibling", "trava");
+            lck.releaseLock();
+            
+            recursive.assertMessages("1x rename", "Renamed");
+            
+            removalOrder[2].removeRecursiveListener(recursive);
+            
+            fo.delete();
+            
+            recursive.assertMessages("Nothing", "");
+            
+        } catch (IOException iex) {
+            if (fs.isReadOnly() || root.isReadOnly()) return;
+            throw iex;
+        } finally {
+        }
+    }
 
     
     /** Test of delete method, of class org.openide.filesystems.FileObject. */    
