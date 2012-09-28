@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
  */
 // package-local
 class NativeProjectListenerImpl implements NativeProjectItemsListener {
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = true;
 
     private final NativeProject nativeProject;
     private final ProjectBase projectBase;
@@ -72,8 +72,9 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     @Override
     public void filesAdded(List<NativeFileItem> fileItems) {
         if (TRACE) {
-            new Exception().printStackTrace(System.err);
-            System.err.println("Native event filesAdded:"); // NOI18N
+            String title = "Native event filesAdded:" + fileItems.size(); // NOI18N
+            new Exception(title).printStackTrace(System.err);
+            System.err.println(title); // NOI18N
             for(NativeFileItem fileItem: fileItems){
                 System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
             }
@@ -84,8 +85,9 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     @Override
     public void filesRemoved(List<NativeFileItem> fileItems) {
         if (TRACE) {
-            new Exception().printStackTrace(System.err);
-            System.err.println("Native event filesRemoved:"); // NOI18N
+            String title = "Native event filesRemoved:" + fileItems.size(); // NOI18N
+            new Exception(title).printStackTrace(System.err);
+            System.err.println(title); // NOI18N
             for(NativeFileItem fileItem: fileItems){
                 System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
             }
@@ -116,8 +118,9 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     @Override
     public void filesPropertiesChanged(final List<NativeFileItem> fileItems) {
         if (TRACE) {
-            new Exception().printStackTrace(System.err);
-            System.err.println("Native event filesPropertiesChanged:"); // NOI18N
+            String title = "Native event filesPropertiesChanged:" + fileItems.size(); // NOI18N
+            System.err.println(title); 
+            new Exception(title).printStackTrace(System.err);
             for(NativeFileItem fileItem: fileItems){
                 System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
             }
@@ -134,16 +137,18 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     @Override
     public void filesPropertiesChanged() {
+        List<NativeFileItem> allFiles = nativeProject.getAllFiles();
         if (TRACE) {
-            new Exception().printStackTrace(System.err);
-            System.err.println("Native event projectPropertiesChanged:"); // NOI18N
-            for(NativeFileItem fileItem : nativeProject.getAllFiles()){
+            String title = "Native event projectPropertiesChanged:" + allFiles.size(); // NOI18N
+            new Exception(title).printStackTrace(System.err);
+            System.err.println(title); 
+            for(NativeFileItem fileItem : allFiles){
                 System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
             }
         }
         if (enabledEventsHandling) {
             ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
-            for(NativeFileItem item : nativeProject.getAllFiles()){
+            for(NativeFileItem item : allFiles){
                 if (!item.isExcluded()) {
                     switch(item.getLanguage()){
                         case C:
@@ -166,6 +171,9 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     @Override
     public void projectDeleted(NativeProject nativeProject) {
+        if (TRACE) {
+            System.err.println("projectDeleted " + nativeProject);  // NOI18N
+        }
 	RepositoryUtils.onProjectDeleted(nativeProject);
     }
 
