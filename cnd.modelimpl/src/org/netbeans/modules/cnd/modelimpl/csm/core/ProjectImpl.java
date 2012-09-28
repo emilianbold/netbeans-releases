@@ -48,10 +48,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -200,8 +202,10 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFileImplRemoved(Collection<FileImpl> files) {
+    public void onFileImplRemoved(Collection<FileImpl> physicallyRemoved, Collection<FileImpl> excluded) {
         try {
+            Set<FileImpl> files = new HashSet<FileImpl>(physicallyRemoved);
+            files.addAll(excluded);
             synchronized (editedFiles) {
                 for (FileImpl impl : files) {
                     EditingTask task = editedFiles.remove(impl);
@@ -237,14 +241,15 @@ public final class ProjectImpl extends ProjectBase {
     public void onFileItemsRemoved(List<NativeFileItem> items) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(this);
-            List<FileImpl> toReparse = new ArrayList<FileImpl>();
-            for (NativeFileItem item : items) {
-                FileImpl impl = getFile(item.getAbsolutePath(), false);
-                if (impl != null) {
-                    toReparse.add(impl);
-                }
-            }
-            onFileImplRemoved(toReparse);
+//            List<FileImpl> toReparse = new ArrayList<FileImpl>();
+//            for (NativeFileItem item : items) {
+//                FileImpl impl = getFile(item.getAbsolutePath(), false);
+//                if (impl != null) {
+//                    toReparse.add(impl);
+//                }
+//            }
+//            onFileImplRemoved(toReparse);            
+            checkForRemoved();
         } finally {
             ParserQueue.instance().onEndAddingProjectFiles(this);
         }
@@ -258,12 +263,12 @@ public final class ProjectImpl extends ProjectBase {
 
     @Override
     public void onFileItemRenamed(String oldPath, NativeFileItem newFileIetm) {
-        FileImpl fileImpl = getFile(oldPath, false);
-        if (fileImpl != null) {
-            onFileImplRemoved(Collections.singletonList(fileImpl));
-        }
-        // FIX: we want to pass false here
-        onFileAddedImpl(newFileIetm, true);
+//        FileImpl fileImpl = getFile(oldPath, false);
+//        if (fileImpl != null) {
+//            onFileImplRemoved(Collections.singletonList(fileImpl));
+//        }
+        checkForRemoved();
+        onFileAddedImpl(newFileIetm, false);
     }
     
     private NativeFileItem onFileAddedImpl(NativeFileItem nativeFile, boolean deepReparse) {

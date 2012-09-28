@@ -1229,68 +1229,120 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * is called when 1-st time parsed.
      * Checks whether there are files in code model, that are removed from the project system
      */
-    private void checkForRemoved() {
+    protected final void checkForRemoved() {
 
         NativeProject nativeProject = (platformProject instanceof NativeProject) ? (NativeProject) platformProject : null;
 
         // we might just ask NativeProject to find file,
         // but it's too ineffective; so we have to create a set of project files paths
-        Set<String> projectFiles = null;
+        Set<String> prjNotExcludedSourceFileItems = Collections.emptySet();
+        Set<String> prjNotExcludedHeaderFileItems = Collections.emptySet();
         if (nativeProject != null) {
-            projectFiles = new HashSet<String>();
+            prjNotExcludedSourceFileItems = new HashSet<String>();
+            prjNotExcludedHeaderFileItems = new HashSet<String>();
             for (NativeFileItem item : nativeProject.getAllFiles()) {
                 if (!item.isExcluded()) {
                     switch (item.getLanguage()) {
                         case C:
                         case CPP:
                         case FORTRAN:
-                        case C_HEADER:
-                            projectFiles.add(item.getAbsolutePath());
+                            prjNotExcludedSourceFileItems.add(item.getAbsolutePath());
                             //this would be a workaround for #116706 Code assistance do not recognize changes in file
                             //projectFiles.add(item.getFile().getCanonicalPath());
                             break;
-                        default:
+                        case C_HEADER:
+                            prjNotExcludedHeaderFileItems.add(item.getAbsolutePath());
                             break;
+                        case OTHER:
+                            break;
+                        default: throw new AssertionError(item.getLanguage());
                     }
                 }
             }
         }
 
-        Set<FileImpl> candidates = new HashSet<FileImpl>();
-        Set<FileImpl> removedPhysically = new HashSet<FileImpl>();
-        for (FileImpl file : getAllFileImpls()) {
+        LinkedList<FileImpl> liveStartFiles = new LinkedList<FileImpl>();
+        Collection<FileImpl> prjFileImpls = getAllFileImpls();
+        Map<FileImpl, Boolean> allFileImpls = new HashMap<FileImpl, Boolean>(prjFileImpls.size());
+        boolean hasChanges = false;
+        for (FileImpl file : prjFileImpls) {
+            allFileImpls.put(file, null); // register file without any information
             FileObject fo = file.getFileObject();
             if (fo == null || !fo.isValid()) {
-                removedPhysically.add(file);
-            } else if (projectFiles != null) { // they might be null for library
-                if (!projectFiles.contains(file.getAbsolutePath().toString())) {
-                    candidates.add(file);
+                // special marker for physically removed
+                allFileImpls.put(file, Boolean.FALSE);
+                hasChanges = true;
+            } else if (nativeProject != null) {
+                // all non-excluded project files are live
+                if (prjNotExcludedSourceFileItems.contains(file.getAbsolutePath().toString())) {
+                    liveStartFiles.addLast(file);
+                    allFileImpls.put(file, Boolean.TRUE);
+                } else if (prjNotExcludedHeaderFileItems.contains(file.getAbsolutePath().toString())) {
+                    // TODO: for now we consider project to be clever 
+                    // so if header file is marked as not excluded it is really live
+                    liveStartFiles.addLast(file);
+                    allFileImpls.put(file, Boolean.TRUE);
+                } else {
+                    hasChanges = true;
+                }
+            } else {
+                liveStartFiles.addLast(file);
+                allFileImpls.put(file, Boolean.TRUE);
+            }
+        }
+        
+        if (!hasChanges) {
+            if (CndUtils.isDebugMode() || CndUtils.isUnitTestMode()) {
+                for (Map.Entry<FileImpl, Boolean> entry : allFileImpls.entrySet()) {
+                    CndUtils.assertTrue(entry.getValue() == Boolean.TRUE);
+                }
+            }
+            return;
+        }
+        // find live and dead files
+        while (!liveStartFiles.isEmpty()) {
+            // remove head
+            FileImpl curLiveFile = liveStartFiles.removeFirst();
+            // get directly included files
+            for (CsmFile csmFile : getGraph().getOutLinks(curLiveFile)) {
+                FileImpl includedFileImpl = (FileImpl) csmFile;
+                if (includedFileImpl.getProjectUID().equals(this.getUID())) {
+                    CndUtils.assertTrueInConsole(allFileImpls.containsKey(includedFileImpl), "no record for: ", includedFileImpl); // NOI18N
+                    // check if file was already handled
+                    Boolean result = allFileImpls.get(includedFileImpl);
+                    if (result == null) {
+                        // mark as live
+                        allFileImpls.put(includedFileImpl, Boolean.TRUE);
+                        // add new live file to the tail
+                        liveStartFiles.addLast(includedFileImpl);
+                    }
                 }
             }
         }
-        final ArrayList<FileImpl> removedFiles = new ArrayList<FileImpl>(removedPhysically);
-        if (TraceFlags.TRACE_VALIDATION) {
-            for (FileImpl file : removedPhysically) {
-                System.err.printf("Validation: removing (physically deleted) %s\n", file.getAbsolutePath()); //NOI18N
-            }
-        }
-        for (FileImpl file : candidates) {
-            boolean remove = true;
-            Set<CsmFile> parents = getParentFiles(file);
-            for (CsmFile parent : parents) {
-                if (!candidates.contains((FileImpl)parent)) {
-                    remove = false;
-                    break;
+            
+        Set<FileImpl> removedPhysically = new HashSet<FileImpl>();
+        Set<FileImpl> removedOrAbsentInProject = new HashSet<FileImpl>();
+        for (Map.Entry<FileImpl, Boolean> entry : allFileImpls.entrySet()) {
+            Boolean value = entry.getValue();
+            FileImpl fileImpl = entry.getKey();
+            if (value == null) {
+                // check for absence of includes from dependent projects
+                if (getGraph().getInLinksUids(fileImpl).isEmpty()) {
+                    removedOrAbsentInProject.add(fileImpl);
+                    if (TraceFlags.TRACE_VALIDATION) {
+                        System.err.printf("Validation: removing (removed from project) %s\n", fileImpl.getAbsolutePath());//NOI18N
+                    }
                 }
-            }
-            if (remove) {
+            } else if (value == Boolean.FALSE) {
+                removedPhysically.add(fileImpl);
                 if (TraceFlags.TRACE_VALIDATION) {
-                    System.err.printf("Validation: removing (removed from project) %s\n", file.getAbsolutePath());//NOI18N
+                    System.err.printf("Validation: removing (physically deleted) %s\n", fileImpl.getAbsolutePath()); //NOI18N
                 }
-                removedFiles.add(file);
             }
         }
-        onFileImplRemoved(removedFiles);
+        if (!removedPhysically.isEmpty() || !removedOrAbsentInProject.isEmpty()) {
+            onFileImplRemoved(removedPhysically, removedOrAbsentInProject);
+        }
     }
 
     protected final APTPreprocHandler createEmptyPreprocHandler(CharSequence absPath) {
@@ -2349,7 +2401,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected abstract void clearNativeFileContainer();
 
-    public void onFileImplRemoved(Collection<FileImpl> files) {}
+    public void onFileImplRemoved(Collection<FileImpl> physicallyRemoved, Collection<FileImpl> excluded) {}
 
     public final void onFileObjectExternalCreate(FileObject file) {
         CndFileUtils.clearFileExistenceCache();

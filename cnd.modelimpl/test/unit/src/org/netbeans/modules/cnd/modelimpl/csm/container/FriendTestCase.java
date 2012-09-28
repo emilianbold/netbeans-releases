@@ -103,7 +103,7 @@ public class FriendTestCase extends TraceModelTestBase {
         checkFriend();
         FileImpl fileImpl = project.getFile(testFile.getAbsolutePath(), false);
         assertNotNull(fileImpl);
-        project.onFileImplRemoved(Collections.singleton(fileImpl));
+        project.onFileImplRemoved(Collections.<FileImpl>emptyList(), Collections.singleton(fileImpl));
         checkEmpty();
     }
 
