@@ -202,7 +202,9 @@ public class PersistenceCfgProperties {
     
     
     public static Object  getPossiblePropertyValue( Provider provider, String propName ) {
-        if(provider == null) provider = ProviderUtil.ECLIPSELINK_PROVIDER;//TODO, some logic to add, either search for all providers or some other
+        if(provider == null) {
+            provider = ProviderUtil.ECLIPSELINK_PROVIDER;
+        }//TODO, some logic to add, either search for all providers or some other
         Map<String, String[]> firstMap = possiblePropertyValues.get(provider);
         return firstMap != null ? firstMap.get(propName) : null;
     }
@@ -216,8 +218,12 @@ public class PersistenceCfgProperties {
     public static List<String> getKeys(Provider provider){
         //TODO: cache lists?
         ArrayList<String> ret = new ArrayList<String>();
-        if(provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider)))ret.addAll(possiblePropertyValues.get(null).keySet());
-        if(provider !=null )ret.addAll(possiblePropertyValues.get(provider).keySet());
+        if(provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider))) {
+            ret.addAll(possiblePropertyValues.get(null).keySet());
+        }
+        if(provider !=null ) {
+            ret.addAll(possiblePropertyValues.get(provider).keySet());
+        }
         return ret;
     }
     
