@@ -704,6 +704,34 @@ public class ModelSupport implements PropertyChangeListener {
             }
         }
 
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                System.err.printf("External updates: fileDeleted %s\n", fe);
+            }
+            final ModelImpl model = theModel;
+            if (model != null) {
+                final FileObject fo = fe.getFile();
+                if (true || isCOrCpp(fo)) {
+                    synchronized (this) {
+                        model.enqueueModelTask(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                CsmFile[] files = model.findFiles(FSPath.toFSPath(fo), false, false);
+                                for (int i = 0; i < files.length; ++i) {
+                                    FileImpl file = (FileImpl) files[i];
+                                    ProjectBase project = file.getProjectImpl(true);
+                                    project.checkForRemoved();
+                                }
+                            }
+                        }, "External File Updater: fileDeleted"); // NOI18N
+                    }
+                }
+            }
+        }
+
+        
         private void scheduleUpdate(FileObject fo, long eventTime, boolean isCreated) {
             ModelImpl model = theModel;
             if (model != null) {

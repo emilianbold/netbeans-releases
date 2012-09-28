@@ -50,7 +50,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -204,36 +203,20 @@ public final class ProjectImpl extends ProjectBase {
     @Override
     public void onFileImplRemoved(Collection<FileImpl> physicallyRemoved, Collection<FileImpl> excluded) {
         try {
-            Set<FileImpl> files = new HashSet<FileImpl>(physicallyRemoved);
-            files.addAll(excluded);
             synchronized (editedFiles) {
-                for (FileImpl impl : files) {
-                    EditingTask task = editedFiles.remove(impl);
-                    if (task != null) {
-                        task.cancelTask();
+                if (!editedFiles.isEmpty()) {
+                    Set<FileImpl> files = new HashSet<FileImpl>(physicallyRemoved);
+                    files.addAll(excluded);
+                    for (FileImpl impl : files) {
+                        ProjectImpl.EditingTask task = editedFiles.remove(impl);
+                        if (task != null) {
+                            task.cancelTask();
+                        }
                     }
                 }
             }
-            LinkedList<FileImpl> toReparse = new LinkedList<FileImpl>();
-            for (FileImpl impl : files) {
-                if (impl != null) {
-                    NativeFileItem removedNativeFileItem = removeNativeFileItem(impl.getUID());
-                    // this is analogue of synchronization if method was called from different threads,
-                    // because removeNativeFileItem is thread safe and removes only once
-                    if (removedNativeFileItem != null) {
-                        toReparse.addLast(impl);
-                        impl.dispose();
-                        removeFile(impl.getAbsolutePath());
-                        final FileBuffer buf = impl.getBuffer();
-                        APTDriver.invalidateAPT(buf);
-                        APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
-                        ParserQueue.instance().remove(impl);
-                    }
-                }
-            }
-            DeepReparsingUtils.reparseOnRemoved(toReparse, this);
         } finally {
-            Notificator.instance().flush();
+            super.onFileImplRemoved(physicallyRemoved, excluded);
         }
     }
 

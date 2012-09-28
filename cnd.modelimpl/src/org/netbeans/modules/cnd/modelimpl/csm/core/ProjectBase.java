@@ -89,7 +89,9 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
@@ -1229,7 +1231,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * is called when 1-st time parsed.
      * Checks whether there are files in code model, that are removed from the project system
      */
-    protected final void checkForRemoved() {
+    public final void checkForRemoved() {
 
         NativeProject nativeProject = (platformProject instanceof NativeProject) ? (NativeProject) platformProject : null;
 
@@ -2401,8 +2403,34 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected abstract void clearNativeFileContainer();
 
-    public void onFileImplRemoved(Collection<FileImpl> physicallyRemoved, Collection<FileImpl> excluded) {}
-
+    public void onFileImplRemoved(Collection<FileImpl> physicallyRemoved, Collection<FileImpl> excluded) {
+        try {
+            DeepReparsingUtils.reparseOnRemoved(removeFileImplsFromProjectInternal(physicallyRemoved), removeFileImplsFromProjectInternal(excluded), this);
+        } finally {
+            Notificator.instance().flush();
+        }
+    }
+    
+    private LinkedList<FileImpl> removeFileImplsFromProjectInternal(Collection<FileImpl> files) {
+        LinkedList<FileImpl> removedFromProject = new LinkedList<FileImpl>();
+        for (FileImpl impl : files) {
+            if (impl != null) {
+                removeNativeFileItem(impl.getUID());
+                if (removeFile(impl.getAbsolutePath())) {
+                    // this is analogue of synchronization if method was called from different threads,
+                    // because removeFile is thread safe and removes only once                    
+                    removedFromProject.addLast(impl);
+                    impl.dispose();
+                    final FileBuffer buf = impl.getBuffer();
+                    APTDriver.invalidateAPT(buf);
+                    APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
+                    ParserQueue.instance().remove(impl);
+                }
+            }
+        }
+        return removedFromProject;
+    }
+    
     public final void onFileObjectExternalCreate(FileObject file) {
         CndFileUtils.clearFileExistenceCache();
         // #196664 - Code Model ignores the generated files"
@@ -2636,24 +2664,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getFileContainer().getFileUID(absPath, treatSymlinkAsSeparateFile);
     }
 
-    protected final void removeFile(CharSequence file) {
+    protected final boolean removeFile(CharSequence file) {
         FileContainer fileContainer = getFileContainer();
-        FileEntry entry = fileContainer.getEntry(file);
-        if (entry != null) {
-            assert file.toString().contentEquals(UIDUtilities.getFileName(entry.getTestFileUID()));
-            Object lock = entry.getLock();
-            Collection<ProjectBase> dependentProjects = getDependentProjects();
-            synchronized (lock) {
-                includedFileContainer.remove(lock, this, file);
-                for (ProjectBase prj : dependentProjects) {
-                    prj.includedFileContainer.remove(lock, this, file);
-                }
-                synchronized (fileContainerLock) {
-                    fileContainer.removeFile(file);
-                }
-            }
-            putContainers(dependentProjects, fileContainer);
+        FileEntry entry = fileContainer.getEntry(file);        
+        if (entry == null) {
+            return false;
         }
+        assert file.toString().contentEquals(UIDUtilities.getFileName(entry.getTestFileUID()));
+        Object lock = entry.getLock();
+        Collection<ProjectBase> dependentProjects = getDependentProjects();
+        synchronized (lock) {
+            includedFileContainer.remove(lock, this, file);
+            for (ProjectBase prj : dependentProjects) {
+                prj.includedFileContainer.remove(lock, this, file);
+            }
+            synchronized (fileContainerLock) {
+                fileContainer.removeFile(file);
+            }
+        }
+        putContainers(dependentProjects, fileContainer);
+        return true;
     }
 
     private void putFile(FileImpl impl, APTPreprocHandler.State state) {
