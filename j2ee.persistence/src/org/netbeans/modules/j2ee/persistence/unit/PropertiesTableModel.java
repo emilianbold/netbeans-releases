@@ -152,7 +152,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         // Get all the properties in this catetory
         List<String> allPropsOfThisCat = Util.getPropsNamesExceptGeneral(propParam.getProvider());
       
-        if (propParam.getPU() != null) {
+        if (propParam.getPU() != null && propParam.getPU().getProperties()!=null) {
             for (int i = 0; i < propParam.getPU().getProperties().sizeProperty2(); i++) {
 
                 String propName = propParam.getPU().getProperties().getProperty2(i).getName();
