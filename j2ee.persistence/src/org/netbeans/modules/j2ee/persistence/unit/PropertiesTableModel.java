@@ -41,16 +41,10 @@
  */
 package org.netbeans.modules.j2ee.persistence.unit;
 
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
-//import org.netbeans.modules.hibernate.cfg.HibernateCfgProperties;
-//import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
-import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.dd.common.Property;
-import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,8 +58,6 @@ public class PropertiesTableModel extends AbstractTableModel {
         NbBundle.getMessage(PropertiesTableModel.class, "LBL_Name"),
         NbBundle.getMessage(PropertiesTableModel.class, "LBL_Value")
     };
-    // Matches the attribute name used in org.netbeans.modules.hibernate.cfg.model.SessionFactory
-    private static final String attrName = "Name"; // NOI18N
     private static final String jpa_prefix = "javax.persistence."; // NO18N
     private PropertiesPanel.PropertiesParamHolder propParam;
     private ArrayList<PropertyData> propsData;
