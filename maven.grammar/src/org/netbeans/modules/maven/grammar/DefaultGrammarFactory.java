@@ -52,6 +52,7 @@ import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * 
@@ -82,25 +83,22 @@ public class DefaultGrammarFactory extends GrammarFactory {
             if ("src/main/resources/META-INF/archetype.xml".equals(FileUtil.getRelativePath(owner.getProjectDirectory(), env.getFileObject()))) {//NOI18N
                 return new MavenArchetypeGrammar(env);
             }
-            String desc = PluginPropertyUtils.getPluginProperty(owner, "org.apache.maven.plugins", "maven-assembly-plugin", "descriptor", "assembly");//NOI18N
-            //NOI18N
-            if (desc == null) {
-                desc = PluginPropertyUtils.getPluginProperty(owner, "org.apache.maven.plugins", "maven-assembly-plugin", "descriptor", "directory");//NOI18N
-            }
+            String desc = PluginPropertyUtils.getPluginProperty(owner, "org.apache.maven.plugins", "maven-assembly-plugin", "descriptor", null, null);//NOI18N
             if (desc != null) {
                 URI uri = FileUtilities.getDirURI(owner.getProjectDirectory(), desc);
-                if (uri != null && new File(uri).equals(file)) {
+                if (uri != null && Utilities.toFile(uri).equals(file)) {
                     return new MavenAssemblyGrammar(env);
                 }
             }
-            desc = PluginPropertyUtils.getPluginProperty(owner, "org.codehaus.mojo", "nbm-maven-plugin", "descriptor", "jar");//NOI18N
+            //TODO delete this, descriptor is deprecated
+            desc = PluginPropertyUtils.getPluginProperty(owner, "org.codehaus.mojo", "nbm-maven-plugin", "descriptor", null, null);//NOI18N
             //NOI18N
             if (desc == null) {
-                desc = PluginPropertyUtils.getPluginProperty(owner, "org.codehaus.mevenide.plugins", "maven-nbm-plugin", "descriptor", "jar");//NOI18N
+                desc = PluginPropertyUtils.getPluginProperty(owner, "org.codehaus.mevenide.plugins", "maven-nbm-plugin", "descriptor", null, null);//NOI18N
             }
             if (desc != null) {
                 URI uri = FileUtilities.getDirURI(owner.getProjectDirectory(), desc);
-                if (uri != null && new File(uri).equals(file)) {
+                if (uri != null && Utilities.toFile(uri).equals(file)) {
                     return new MavenNbmGrammar(env);
                 }
             }

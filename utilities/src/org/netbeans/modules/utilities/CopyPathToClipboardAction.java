@@ -49,7 +49,10 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -103,13 +106,14 @@ public final class CopyPathToClipboardAction implements ActionListener,
     @Override
     public void actionPerformed(ActionEvent ev) {
         String lineSeparator = System.getProperty("line.separator");    //NOI18N
+        Collection<String> paths = getSelectedPaths();
         StringBuilder sb = new StringBuilder();
         int items = 0;
-        for (DataObject dataObject : context) {
+        for (String path : paths) {
             if (items > 0) {
                 sb.append(lineSeparator);
             }
-            sb.append(getAbsolutePath(dataObject));
+            sb.append(path);
             items++;
         }
         if (items > 0) {
@@ -118,6 +122,19 @@ public final class CopyPathToClipboardAction implements ActionListener,
                 setClipboardContents(pathListString, items);
             }
         }
+    }
+
+    /**
+     * Get paths of selected DataObjects. Prevent duplicates, see #219014.
+     *
+     * @return Sorted collection of unique paths.
+     */
+    Collection<String> getSelectedPaths() {
+        Set<String> paths = new TreeSet<String>();
+        for (DataObject dataObject : context) {
+            paths.add(getAbsolutePath(dataObject));
+        }
+        return paths;
     }
 
     @Override

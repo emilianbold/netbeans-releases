@@ -106,7 +106,7 @@ public class UnusedUsesHint extends AbstractRule {
         return HintSeverity.WARNING;
     }
 
-    private class RemoveUnusedUseFix implements HintFix {
+    private static class RemoveUnusedUseFix implements HintFix {
         private final BaseDocument baseDocument;
         private final UnusedOffsetRanges unusedOffsetRanges;
 
@@ -133,13 +133,15 @@ public class UnusedUsesHint extends AbstractRule {
         private int getOffsetWithoutLeadingWhitespaces(final int startOffset) {
             int result = startOffset;
             TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(baseDocument, startOffset);
-            ts.move(startOffset);
-            while (ts.movePrevious() && ts.token().id().equals(PHPTokenId.WHITESPACE)) {
-                result = ts.offset();
-            }
-            // don't skip WS after "use" and before first NamespaceName in multiple use statement
-            if (ts.token().id().equals(PHPTokenId.PHP_USE)) {
-                result = startOffset;
+            if (ts != null) {
+                ts.move(startOffset);
+                while (ts.movePrevious() && ts.token().id().equals(PHPTokenId.WHITESPACE)) {
+                    result = ts.offset();
+                }
+                // don't skip WS after "use" and before first NamespaceName in multiple use statement
+                if (ts.token().id().equals(PHPTokenId.PHP_USE)) {
+                    result = startOffset;
+                }
             }
             return result;
         }

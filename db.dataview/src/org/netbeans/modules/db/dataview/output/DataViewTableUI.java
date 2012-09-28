@@ -108,10 +108,11 @@ final class DataViewTableUI extends ResultSetJXTable {
     }
 
     @Override
+    @SuppressWarnings({"unchecked"})
     public void setModel(TableModel dataModel) {
-        RowFilter oldFilter = getRowFilter();
+        RowFilter<?, ?> oldFilter = getRowFilter();
         super.setModel(dataModel);
-        setRowFilter(oldFilter);
+        setRowFilter((RowFilter) oldFilter);
     }
     
     @Override

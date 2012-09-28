@@ -158,7 +158,7 @@ public class PhpModuleImpl extends PhpModule {
         } else {
             paths = Arrays.asList(PropertyUtils.tokenizePath(includePath));
         }
-        properties.setIncludePath(paths);
+        properties = properties.setIncludePath(paths);
         return properties;
     }
 

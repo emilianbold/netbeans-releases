@@ -104,7 +104,7 @@ public class AbstractClassInstantiationHint extends AbstractRule {
             Set<ClassElement> classes = index.getClasses(NameKind.exact(info.getQualifiedName()));
             if (!classes.isEmpty()) {
                 ClassElement classElement = ModelUtils.getFirst(classes);
-                if (classElement.isAbstract()) {
+                if (classElement != null && classElement.isAbstract()) {
                     OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
                     hints.add(new Hint(AbstractClassInstantiationHint.this, Bundle.AbstractClassInstantiationDesc(classElement.getFullyQualifiedName().toString()), fileObject, offsetRange, null, 500));
                 }

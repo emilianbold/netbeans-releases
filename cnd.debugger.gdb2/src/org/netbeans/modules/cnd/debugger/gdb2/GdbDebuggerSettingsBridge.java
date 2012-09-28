@@ -176,7 +176,16 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
 
     @Override
     protected void applyRunargs() {
-	String runargs = getArgsFlatEx();
+        // Temp fix. Begin
+        DebugTarget debugTarget = debugger.getNDI().getDebugTarget();
+        String runargs;
+        if (debugTarget != null) {
+            runargs = debugTarget.getUnparsedArgs();
+        } else {
+            // Temp fix. End
+            runargs = getArgsFlatEx();
+        }
+        
 	if (runargs == null) {
 	    runargs = "";
         }

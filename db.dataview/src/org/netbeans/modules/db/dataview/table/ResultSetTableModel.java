@@ -64,7 +64,7 @@ public class ResultSetTableModel extends DefaultTableModel {
     private Class[] collumnClasses;
     protected ResultSetJXTable table;
 
-    public static Class getTypeClass(DBColumn col) {
+    public static Class<? extends Object> getTypeClass(DBColumn col) {
         int colType = col.getJdbcType();
 
         if (colType == Types.BIT && col.getPrecision() <= 1) {
@@ -116,6 +116,7 @@ public class ResultSetTableModel extends DefaultTableModel {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public ResultSetTableModel(ResultSetJXTable table) {
         super();
         this.table = table;
@@ -155,7 +156,8 @@ public class ResultSetTableModel extends DefaultTableModel {
     }
 
     @Override
-    public Class getColumnClass(int columnIndex) {
+    @SuppressWarnings("unchecked")
+    public Class<? extends Object> getColumnClass(int columnIndex) {
         if (collumnClasses[columnIndex] == null) {
             return super.getColumnClass(columnIndex);
         } else {

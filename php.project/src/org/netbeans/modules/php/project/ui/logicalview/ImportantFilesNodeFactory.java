@@ -303,6 +303,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         };
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
     private static final class ImportantFileNode extends FilterNode {
         private final Pair<PhpFrameworkProvider, FileObject> pair;
         private final FileObject sourceDir;

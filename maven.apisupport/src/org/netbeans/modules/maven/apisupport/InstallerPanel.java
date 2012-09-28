@@ -283,7 +283,7 @@ public class InstallerPanel extends JPanel {
             super(comp);
             this.property = property;
             this.dflt = dflt;
-            pomValue = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, property, GOAL);
+            pomValue = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, property, GOAL, null);
         }
 
         @org.netbeans.api.annotations.common.SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
@@ -337,7 +337,7 @@ public class InstallerPanel extends JPanel {
         StringPropUpdater(String property, JTextComponent comp, JLabel label) {
             super(comp, label);
             this.property = property;
-            pomValue = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, property, GOAL);
+            pomValue = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, property, GOAL, null);
         }
 
         @Override public String getValue() {

@@ -114,6 +114,9 @@ public class ModifyElementRulesAction extends AbstractSourceElementAction {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             if (e.getSource().equals(DialogDescriptor.OK_OPTION)) {
+                                if(!panel.isModified()) {
+                                    return ;
+                                }
                                 if(panel.isPanelContentValid()) {
                                     applyChanges(panel, handle);
                                 } else {

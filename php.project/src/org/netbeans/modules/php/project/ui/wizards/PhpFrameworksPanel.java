@@ -65,7 +65,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
 
     static final String VALID = "PhpFrameworksPanel.valid"; // NOI18N // used in the previous steps while validating
-    static final String EXTENDERS = "frameworks";
+    static final String EXTENDERS = "frameworks"; // NOI18N
 
     private final String[] steps;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -74,7 +74,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
     private WizardDescriptor descriptor = null;
 
     public PhpFrameworksPanel(String[] steps) {
-        this.steps = steps;
+        this.steps = steps.clone();
     }
 
     String[] getSteps() {

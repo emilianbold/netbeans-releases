@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.apisupport;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
@@ -80,9 +81,8 @@ public class IDEOutputListenerProvider implements OutputProcessor {
         List<ClassPath> list = new ArrayList<ClassPath>();
         ProjectSourcesClassPathProvider cpp = prj.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         ClassPath[] cp = cpp.getProjectClassPaths(ClassPath.EXECUTE);
-        for (ClassPath c : cp) {
-            list.add(c);
-        }
+        list.addAll(Arrays.asList(cp));
+        //for pom packaging projects subprojects/modules matter
         SubprojectProvider spp = prj.getLookup().lookup(SubprojectProvider.class);
         if (spp != null) {
             for (Project sub : spp.getSubprojects()) {

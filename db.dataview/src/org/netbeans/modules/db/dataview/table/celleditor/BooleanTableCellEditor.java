@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.db.dataview.table.celleditor;
 
+import org.netbeans.modules.db.dataview.table.ResultSetTableCellEditor;
 import java.awt.Component;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;

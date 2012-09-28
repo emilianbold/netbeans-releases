@@ -1419,19 +1419,19 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testArrays2Always() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_ALWAYS);
         reformatFileContents("testfiles/formatter/arrays2.js", options, ".wrapAlways.formatted");
     }
 
     public void testArrays2Never() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_NEVER);
         reformatFileContents("testfiles/formatter/arrays2.js", options, ".wrapNever.formatted");
     }
 
     public void testArrays2IfLong() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_IF_LONG);
         reformatFileContents("testfiles/formatter/arrays2.js", options, ".wrapIfLong.formatted");
     }
 
@@ -1449,6 +1449,69 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testArrays3Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/arrays3.js");
+    }
+
+    public void testArrays4Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/arrays4.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testArrays4Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/arrays4.js", options, ".wrapNever.formatted");
+    }
+
+    public void testArrays4IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/arrays4.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testArrays4InitializerOnlyAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/arrays4.js", options, ".initializerOnlyWrapAlways.formatted");
+    }
+
+    public void testArrays4InitializerOnlyNever() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/arrays4.js", options, ".initializerOnlyWrapNever.formatted");
+    }
+
+    public void testArrays4InitializerOnlyIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/arrays4.js", options, ".initializerOnlyWrapIfLong.formatted");
+    }
+
+    public void testArrays4ItemsOnlyAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/arrays4.js", options, ".itemsOnlyWrapAlways.formatted");
+    }
+
+    public void testArrays4ItemsOnlyNever() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/arrays4.js", options, ".itemsOnlyWrapNever.formatted");
+    }
+
+    public void testArrays4ItemsOnlyIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/arrays4.js", options, ".itemsOnlyWrapIfLong.formatted");
     }
 
     public void testPartialFormat1() throws Exception {

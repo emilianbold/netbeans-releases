@@ -39,12 +39,47 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.dataview.util;
 
-console.log('Sending actual viewport margins');
-chrome.extension.sendMessage({
-    type: 'VIEWPORT',
-    width: window.innerWidth,
-    height: window.innerHeight,
-    marginWidth: window.outerWidth - window.innerWidth,
-    marginHeight: window.outerHeight - window.innerHeight
-});
+import java.util.logging.Filter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
+public class DBTestUtil {
+
+    /**
+     * Disable logging of logging messages from DatabaseMetaDataQuoter.
+     *
+     * This method is a workaround of problems in the database modules and can
+     * be removed, when the problem is really fixed.
+     *
+     */
+    public static void suppressSuperfluousLogging() {
+        // TODO: Remove this code and fix the core problem
+        for (Handler h : Logger.getLogger("").getHandlers()) {
+            h.setFilter(new Filter() {
+                @Override
+                public boolean isLoggable(LogRecord lr) {
+                    if (lr.getSourceClassName().equals(
+                            "org.netbeans.api.db.sql.support.SQLIdentifiers$DatabaseMetaDataQuoter")) {
+                        if (lr.getSourceMethodName().equals("getExtraNameChars")
+                                && lr.getLevel() == Level.WARNING
+                                && lr.getMessage().startsWith(
+                                "DatabaseMetaData.getExtraNameCharacters() failed")) {
+                            return false;
+                        } else if (lr.getSourceMethodName().equals("needToQuote")
+                                && lr.getLevel().intValue() <= Level.INFO.intValue()) {
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
+                }
+            });
+        }
+    }
+}

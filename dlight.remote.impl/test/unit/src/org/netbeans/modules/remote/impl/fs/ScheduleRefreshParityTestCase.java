@@ -128,7 +128,7 @@ public class ScheduleRefreshParityTestCase extends RemoteFileTestBase {
             recurse(baseDirFO, bag);
             
             String prefix = baseDirFO.getPath();
-            FCL fcl = new FCL("baseDir", prefix, out, false);
+            DumpingFileChangeListener fcl = new DumpingFileChangeListener("baseDir", prefix, out, false);
             if (recursive) {
                 FileSystemProvider.addRecursiveListener(fcl, baseDirFO.getFileSystem(), baseDirFO.getPath());
             } else {

@@ -442,10 +442,6 @@ public class VariablesModel extends ViewModelSupport
         refresh();
     }
 
-    private void fireTreeChanged( ModelEvent event) {
-        fireChangeEvents( new ModelEvent[] { event });
-    }
-
     private void fireTableUpdate(Collection<ModelEvent> events) {
         fireChangeEvents(events);
     }

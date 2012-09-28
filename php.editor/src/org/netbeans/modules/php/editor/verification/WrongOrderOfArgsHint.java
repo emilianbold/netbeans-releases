@@ -130,7 +130,7 @@ public class WrongOrderOfArgsHint extends AbstractRule {
 
     }
 
-    private class RearrangeParametersFix implements HintFix {
+    private static class RearrangeParametersFix implements HintFix {
 
         private final FunctionDeclaration node;
         private final BaseDocument doc;
@@ -206,7 +206,7 @@ public class WrongOrderOfArgsHint extends AbstractRule {
 
     }
 
-    private class RearrangedFunctionDeclaration extends FunctionDeclaration {
+    private static class RearrangedFunctionDeclaration extends FunctionDeclaration {
 
         public RearrangedFunctionDeclaration(FunctionDeclaration node) {
             super(node.getStartOffset(), node.getEndOffset(), node.getFunctionName(), node.getFormalParameters(), node.getBody(), node.isReference());

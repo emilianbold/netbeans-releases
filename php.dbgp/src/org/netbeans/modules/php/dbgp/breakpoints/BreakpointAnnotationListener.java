@@ -48,7 +48,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -75,10 +74,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
 
     @Override
     public String[] getProperties() {
-        if ( myProperties == null ) {
-            myProperties = new String[] { DebuggerManager.PROP_BREAKPOINTS }; 
-        }
-        return myProperties;
+        return new String[] { DebuggerManager.PROP_BREAKPOINTS };
     }
 
     @Override
@@ -116,21 +112,19 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
     }
 
     private void removeAnnotation(Breakpoint breakpoint) {
-        Annotation annotation = 
+        Annotation annotation =
             myAnnotations.remove(breakpoint);
-        
+
         if (annotation == null) {
             return;
         }
-        
+
         annotation.detach();
         breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
     }
-    
-    private Map<Breakpoint, Annotation> myAnnotations 
-        = new HashMap<Breakpoint, Annotation>();
 
-    private String[] myProperties;
+    private Map<Breakpoint, Annotation> myAnnotations
+        = new HashMap<Breakpoint, Annotation>();
 
     @Override
     public void annotate(Set set, Lookup context) {

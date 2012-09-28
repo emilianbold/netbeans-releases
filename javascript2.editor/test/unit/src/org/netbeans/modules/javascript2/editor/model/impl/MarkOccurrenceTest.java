@@ -383,6 +383,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue218561.js", "                par1: pa^r1 // par1 after : is marked green as member variable", true);
     }
 
+    public void testIssue219067() throws Exception {
+        checkOccurrences("testfiles/coloring/issue219027.html", "                        product = generate^Product(element);", true);
+    }
+
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }

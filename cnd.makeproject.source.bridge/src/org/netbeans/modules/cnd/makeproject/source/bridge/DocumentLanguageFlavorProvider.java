@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
@@ -151,7 +151,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
     }
 
-    private final static class ListenerImpl implements NativeProjectItemsListener, PropertyChangeListener {
+    private final static class ListenerImpl extends NativeProjectItemsAdapter implements PropertyChangeListener {
         private static final boolean TRACE = false;
         private final Reference<StyledDocument> docRef;
         private final String path;
@@ -206,27 +206,11 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         }
 
         @Override
-        public void fileAdded(NativeFileItem fileItem) {
-            filePropertiesChanged(fileItem);
-        }
-
-        @Override
         public void filesAdded(List<NativeFileItem> fileItems) {
-            for (NativeFileItem nativeFileItem : fileItems) {
-                filePropertiesChanged(nativeFileItem);
-            }
+            filesPropertiesChanged(fileItems);
         }
 
-        @Override
-        public void fileRemoved(NativeFileItem fileItem) {
-        }
-
-        @Override
-        public void filesRemoved(List<NativeFileItem> fileItems) {
-        }
-
-        @Override
-        public void filePropertiesChanged(NativeFileItem fileItem) {
+        private void filePropertiesChanged(NativeFileItem fileItem) {
             if (fileItem != null && path.equals(fileItem.getAbsolutePath())) {
                 final StyledDocument doc = docRef.get();
                 if (doc == null) {
@@ -275,10 +259,6 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             } else {
                 unregister();
             }
-        }
-
-        @Override
-        public void fileRenamed(String oldPath, NativeFileItem newFileIetm) {
         }
 
         @Override
