@@ -170,8 +170,8 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @throws UserQuestionException in case the system is not yet connected
      */
     @NbBundle.Messages({
-        "#{0} - display name of execution environment",
-        "EXC_NotConnectedQuestion=No connection to {0}. Connect now?"
+        "#{0} - display name of execution environment", // NOI18N
+        "EXC_NotConnectedQuestion=No connection to {0}. Connect now?" // NOI18N
     })
     @Override
     public NativeProcess call() throws IOException {
@@ -184,7 +184,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
         }
 
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            throw new UserQuestionException("No connection to " + execEnv.getDisplayName()) {
+            throw new UserQuestionException(NbBundle.getMessage(NativeProcessBuilder.class, "EXC_NotConnectedQuestion", execEnv.getDisplayName())) {// NOI18N
                 @Override
                 public void confirmed() throws IOException {
                     try {

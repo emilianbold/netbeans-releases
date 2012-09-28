@@ -488,7 +488,7 @@ public final class DeepReparsingUtils {
         }
     }
     
-    private static String toString(Collection<?> files) {
+    static String toString(Collection<?> files) {
         StringBuilder out = new StringBuilder();
         for (Object elem : files) {
             if (elem instanceof FileImpl) {
