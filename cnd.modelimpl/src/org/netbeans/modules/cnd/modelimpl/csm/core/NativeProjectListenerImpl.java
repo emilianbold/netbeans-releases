@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
@@ -58,7 +60,8 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
  */
 // package-local
 class NativeProjectListenerImpl implements NativeProjectItemsListener {
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
+    private static final Logger LOG = Logger.getLogger("NativeProjectListenerImpl"); // NOI18N
 
     private final NativeProject nativeProject;
     private final ProjectBase projectBase;
@@ -73,11 +76,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     public void filesAdded(List<NativeFileItem> fileItems) {
         if (TRACE) {
             String title = "Native event filesAdded:" + fileItems.size(); // NOI18N
-            new Exception(title).printStackTrace(System.err);
-            System.err.println(title); // NOI18N
-            for(NativeFileItem fileItem: fileItems){
-                System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
-            }
+            LOG.log(Level.INFO, title + "\n" +DeepReparsingUtils.toString(fileItems), new Exception(title));
         }
         itemsAddedImpl(fileItems);
     }
@@ -86,11 +85,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     public void filesRemoved(List<NativeFileItem> fileItems) {
         if (TRACE) {
             String title = "Native event filesRemoved:" + fileItems.size(); // NOI18N
-            new Exception(title).printStackTrace(System.err);
-            System.err.println(title); // NOI18N
-            for(NativeFileItem fileItem: fileItems){
-                System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
-            }
+            LOG.log(Level.INFO, title + "\n" +DeepReparsingUtils.toString(fileItems), new Exception(title));
         }
         itemsRemovedImpl(fileItems);
     }
@@ -98,10 +93,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     @Override
     public void fileRenamed(String oldPath, NativeFileItem newFileIetm){
         if (TRACE) {
-            new Exception().printStackTrace(System.err);
-            System.err.println("Native event fileRenamed:"); // NOI18N
-            System.err.println("\tOld Name:"+oldPath); // NOI18N
-            System.err.println("\tNew Name:"+newFileIetm.getAbsolutePath()); // NOI18N
+            LOG.log(Level.INFO, "Native event fileRenamed:\tOld Name:"+oldPath+ "\tNew Name:"+newFileIetm.getAbsolutePath(), new Exception("fileRenamed"));
         }
 	itemRenamedImpl(oldPath, newFileIetm);
     }
@@ -109,8 +101,8 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     /*package*/
     final void enableListening(boolean enable) {
         if (TraceFlags.TIMING) {
-            System.err.printf("\n%s ProjectListeners %s...\n", enable ? "enable" : "disable",
-                    nativeProject.getProjectDisplayName());
+            LOG.log(Level.INFO, "\n%{0} ProjectListeners {1}...", new Object[] {enable ? "enable" : "disable",
+                    nativeProject.getProjectDisplayName()});
         }
         enabledEventsHandling = enable;
     }
@@ -119,18 +111,13 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     public void filesPropertiesChanged(final List<NativeFileItem> fileItems) {
         if (TRACE) {
             String title = "Native event filesPropertiesChanged:" + fileItems.size(); // NOI18N
-            System.err.println(title); 
-            new Exception(title).printStackTrace(System.err);
-            for(NativeFileItem fileItem: fileItems){
-                System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
-            }
+            LOG.log(Level.INFO, title + "\n" +DeepReparsingUtils.toString(fileItems), new Exception(title));
         }
         if (enabledEventsHandling) {
             itemsPropertiesChangedImpl(fileItems, false);
         } else {
             if (TraceFlags.TIMING) {
-                System.err.printf("\nskipped filesPropertiesChanged(list) %s...\n",
-                        nativeProject.getProjectDisplayName());
+                LOG.log(Level.INFO, "skipped filesPropertiesChanged(list) {0}...", nativeProject.getProjectDisplayName());
             }
         }
     }
@@ -140,11 +127,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         List<NativeFileItem> allFiles = nativeProject.getAllFiles();
         if (TRACE) {
             String title = "Native event projectPropertiesChanged:" + allFiles.size(); // NOI18N
-            new Exception(title).printStackTrace(System.err);
-            System.err.println(title); 
-            for(NativeFileItem fileItem : allFiles){
-                System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
-            }
+            LOG.log(Level.INFO, title, new Exception(title));
         }
         if (enabledEventsHandling) {
             ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
@@ -164,7 +147,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             itemsPropertiesChangedImpl(list, true);
         } else {
             if (TraceFlags.TIMING) {
-                System.err.printf("\nskipped filesPropertiesChanged %s...\n", nativeProject.getProjectDisplayName());
+                LOG.log(Level.INFO, "skipped filesPropertiesChanged {0}...", nativeProject.getProjectDisplayName());
             }
         }
     }
@@ -172,7 +155,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     @Override
     public void projectDeleted(NativeProject nativeProject) {
         if (TRACE) {
-            System.err.println("projectDeleted " + nativeProject);  // NOI18N
+            LOG.log(Level.INFO, "projectDeleted {0}", nativeProject);  // NOI18N
         }
 	RepositoryUtils.onProjectDeleted(nativeProject);
     }
