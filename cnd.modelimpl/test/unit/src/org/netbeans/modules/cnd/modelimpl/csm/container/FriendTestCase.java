@@ -95,15 +95,15 @@ public class FriendTestCase extends TraceModelTestBase {
         assertTrue("File not found " + testFile.getAbsolutePath(), testFile.exists()); // NOI18N
         performModelTest(testFile, System.out, System.err);
         checkFriend();
-        for (FileImpl file : getProject().getAllFileImpls()) {
+        ProjectBase project = getProject();
+        for (FileImpl file : project.getAllFileImpls()) {
             file.markReparseNeeded(true);
             file.scheduleParsing(true);
         }
         checkFriend();
-        FileImpl fileImpl = (FileImpl) getProject().findFile(testFile.getAbsolutePath(), false, false);
+        FileImpl fileImpl = project.getFile(testFile.getAbsolutePath(), false);
         assertNotNull(fileImpl);
-        assertNotNull(fileImpl.getNativeFileItem());
-        getProject().onFileRemoved(Collections.singletonList(fileImpl.getNativeFileItem()));
+        project.onFileImplRemoved(Collections.singleton(fileImpl));
         checkEmpty();
     }
 
