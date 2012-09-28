@@ -669,7 +669,9 @@ public class RuleEditorPanel extends JPanel {
         }
         northWestPanel.revalidate();
 
-        node.fireContextChanged(false);
+        //force property sets refresh if the rule is erroneous or 
+        //the rule is valid, but the previous was erroneous.
+        node.fireContextChanged(old == null || !(old.isValid() && rule.isValid())); 
 
         final AtomicReference<String> ruleNameRef = new AtomicReference<String>();
         model.runReadTask(new Model.ModelTask() {
