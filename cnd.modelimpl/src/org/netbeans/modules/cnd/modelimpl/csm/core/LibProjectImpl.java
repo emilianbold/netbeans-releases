@@ -132,31 +132,6 @@ public final class LibProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFileRemoved(List<NativeFileItem> file) {
-    }
-
-    @Override
-    public void onFileImplRemoved(Collection<FileImpl> files) {
-    }
-
-    @Deprecated
-    @Override
-    public void onFileExternalAdded(NativeFileItem file) {
-    }
-
-    @Override
-    public void onFileAdded(List<NativeFileItem> file) {
-    }
-    
-    @Override
-    public void onFileRenamed(String oldPath, NativeFileItem newFileIetm) {
-    }
-
-    @Override
-    public void onFilePropertyChanged(List<NativeFileItem> nativeFiles, boolean invalidateLibs) {
-    }
-
-    @Override
     protected final ParserQueue.Position getIncludedFileParserQueuePosition() {
         return ParserQueue.Position.TAIL;
     }

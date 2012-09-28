@@ -2327,16 +2327,18 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getProjectRoots().isMySource(includePath);
     }
 
-    @Deprecated public abstract void onFileExternalAdded(NativeFileItem nativeFile);
+    @Deprecated public void onFileExternalAdded(NativeFileItem nativeFile) {}
     
-    public abstract void onFileRenamed(String oldPath, NativeFileItem newFileIetm);
+    //// were extracted into NativeProjectListener methods
+    public void onFileItemRenamed(String oldPath, NativeFileItem newFileIetm) {}
 
-    public abstract void onFileAdded(List<NativeFileItem> items);
+    public void onFileItemsAdded(List<NativeFileItem> items) {}
 
-    public abstract void onFileRemoved(List<NativeFileItem> items);
+    public void onFileItemsRemoved(List<NativeFileItem> items) {}
 
-    public abstract void onFilePropertyChanged(List<NativeFileItem> items, boolean invalidateLibs);
+    public void onFileItemsPropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {}
 
+    ////
     protected abstract ParserQueue.Position getIncludedFileParserQueuePosition();
 
     public abstract NativeFileItem getNativeFileItem(CsmUID<CsmFile> file);
@@ -2347,7 +2349,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected abstract void clearNativeFileContainer();
 
-    public abstract void onFileImplRemoved(Collection<FileImpl> files);
+    public void onFileImplRemoved(Collection<FileImpl> files) {}
 
     public final void onFileObjectExternalCreate(FileObject file) {
         CndFileUtils.clearFileExistenceCache();

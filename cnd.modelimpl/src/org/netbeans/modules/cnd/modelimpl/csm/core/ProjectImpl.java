@@ -190,7 +190,10 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFilePropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {
+    public void onFileItemsPropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {
+        if (!this.isValid()) {
+            return;
+        }
         if (items.size() > 0) {
             DeepReparsingUtils.reparseOnPropertyChanged(items, this, invalidateLibs);
         }
@@ -231,7 +234,7 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFileRemoved(List<NativeFileItem> items) {
+    public void onFileItemsRemoved(List<NativeFileItem> items) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(this);
             List<FileImpl> toReparse = new ArrayList<FileImpl>();
@@ -254,7 +257,7 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFileRenamed(String oldPath, NativeFileItem newFileIetm) {
+    public void onFileItemRenamed(String oldPath, NativeFileItem newFileIetm) {
         FileImpl fileImpl = getFile(oldPath, false);
         if (fileImpl != null) {
             onFileImplRemoved(Collections.singletonList(fileImpl));
@@ -282,7 +285,7 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFileAdded(List<NativeFileItem> items) {
+    public void onFileItemsAdded(List<NativeFileItem> items) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(this);
             List<NativeFileItem> toReparse = new ArrayList<NativeFileItem>();

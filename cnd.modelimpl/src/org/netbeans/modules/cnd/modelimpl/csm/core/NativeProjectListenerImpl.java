@@ -167,7 +167,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 @Override
                 public void run() {
                     try {
-                        projectBase.onFileAdded(items);
+                        projectBase.onFileItemsAdded(items);
                     } catch( Exception e ) {
                         e.printStackTrace(System.err);
                     }
@@ -183,7 +183,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 @Override
                 public void run() {
                     try {
-                        projectBase.onFileRemoved(items);
+                        projectBase.onFileItemsRemoved(items);
                     } catch( Exception e ) {
                         e.printStackTrace(System.err);
                     }
@@ -198,7 +198,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             @Override
             public void run() {
                 try {
-                    projectBase.onFileRenamed(oldPath, newFileIetm);
+                    projectBase.onFileItemRenamed(oldPath, newFileIetm);
                 } catch( Exception e ) {
                     //TODO: FIX (most likely in Makeproject: path == null in this situation,
                     //this cause NPE
@@ -215,9 +215,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 @Override
                 public void run() {
                     try {
-                        if (projectBase.isValid()) {
-                            projectBase.onFilePropertyChanged(items, invalidateLibraries);
-                        }
+                        projectBase.onFileItemsPropertyChanged(items, invalidateLibraries);
                     } catch (Exception e) {
                         e.printStackTrace(System.err);
                     }
