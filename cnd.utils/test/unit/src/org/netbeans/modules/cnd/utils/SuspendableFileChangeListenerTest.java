@@ -75,7 +75,11 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
                 this.kind = kind;
                 this.event = event;
             }
-            
+
+            @Override
+            public String toString() {
+                return "EventPair{" + "kind=" + kind + ", event=" + event + '}';
+            }
         }
         
         private final LinkedList<EventPair> events = new LinkedList<EventPair>();
