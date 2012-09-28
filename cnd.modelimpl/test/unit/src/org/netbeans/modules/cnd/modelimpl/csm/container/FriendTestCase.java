@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.container;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -99,7 +100,10 @@ public class FriendTestCase extends TraceModelTestBase {
             file.scheduleParsing(true);
         }
         checkFriend();
-        getProject().onFileRemoved(FileUtil.normalizeFile(testFile).getAbsolutePath());
+        FileImpl fileImpl = (FileImpl) getProject().findFile(testFile.getAbsolutePath(), false, false);
+        assertNotNull(fileImpl);
+        assertNotNull(fileImpl.getNativeFileItem());
+        getProject().onFileRemoved(Collections.singletonList(fileImpl.getNativeFileItem()));
         checkEmpty();
     }
 
