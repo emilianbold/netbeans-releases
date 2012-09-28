@@ -73,11 +73,13 @@ public class Util {
 
     public static List<String> getPropsNamesExceptGeneral(Provider propCat) {
         List<String> propsList = getAllPropNames(propCat);
-        propsList.remove(propCat.getJdbcDriver());
-        propsList.remove(propCat.getJdbcUsername());
-        propsList.remove(propCat.getJdbcUrl());
-        propsList.remove(propCat.getJdbcPassword());
-        propsList.remove(propCat.getTableGenerationPropertyName());
+        if(propCat != null){
+            propsList.remove(propCat.getJdbcDriver());
+            propsList.remove(propCat.getJdbcUsername());
+            propsList.remove(propCat.getJdbcUrl());
+            propsList.remove(propCat.getJdbcPassword());
+            propsList.remove(propCat.getTableGenerationPropertyName());
+        }
         return propsList;
     }
 
