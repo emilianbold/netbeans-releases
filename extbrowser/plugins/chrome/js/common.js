@@ -388,7 +388,6 @@ NetBeans.tabUpdated = function(tab) {
         } else if (status === this.STATUS_MANAGED) {
             // Navigation in a managed tab => send "urlchange" message
             this.sendUrlChangeMessage(tab.id, tab.url);
-            NetBeans_ViewPort.reset();
             this.showPageIcon(tab.id);
             this.createContextMenu(tab.id, tab.url);
             this.initShortcuts(tab.id);
@@ -409,7 +408,6 @@ NetBeans.tabRemoved = function(tabId) {
     } else if (status === this.STATUS_MANAGED) {
         // Managed tab was closed => send "closed" message
         this.sendCloseMessage(tabId);
-        NetBeans_ViewPort.reset();
     }
     if (status !== this.STATUS_UNCONFIRMED) {
         // Remove the tab from the set of managed tabs (if it was there)
@@ -571,22 +569,14 @@ NetBeans_Presets._savePresets = function() {
 };
 
 /**
- * Viewport - information about current viewport dimensions.
+ * Viewport (so browser window can be correctly resized).
  */
-NetBeans_ViewPort = {};
-NetBeans_ViewPort.width = 0;
-NetBeans_ViewPort.height = 0;
-NetBeans_ViewPort.set = function(width, height) {
-    this.width = width;
-    this.height = height;
-}
-NetBeans_ViewPort.reset = function() {
-    this.set(0, 0);
-}
-NetBeans_ViewPort.has = function(width, height) {
-    return this.width == width
-            &&  this.height == height;
-}
+NetBeans_ViewPort = {
+    width: -1,
+    height: -1,
+    marginWidth: 0,
+    marginHeight: 0
+};
 
 /**
  * Resize options (a.k.a. Windows Presets from NetBeans).
