@@ -139,14 +139,19 @@ public final class LibProjectImpl extends ProjectBase {
     public void onFileImplRemoved(Collection<FileImpl> files) {
     }
 
+    @Deprecated
     @Override
-    public void onFileAdded(NativeFileItem file) {
+    public void onFileExternalAdded(NativeFileItem file) {
     }
 
     @Override
     public void onFileAdded(List<NativeFileItem> file) {
     }
     
+    @Override
+    public void onFileRenamed(String oldPath, NativeFileItem newFileIetm) {
+    }
+
     @Override
     public void onFilePropertyChanged(List<NativeFileItem> nativeFiles, boolean invalidateLibs) {
     }

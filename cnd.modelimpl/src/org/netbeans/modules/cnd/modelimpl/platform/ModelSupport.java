@@ -761,7 +761,7 @@ public class ModelSupport implements PropertyChangeListener {
                             if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
                                 System.err.printf("External updates: project %s found for %s\n", project, fo);
                             }
-                            project.onFileExternalCreate(fo);
+                            project.onFileObjectExternalCreate(fo);
                         } else {
                             if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
                                 System.err.printf("External updates: No CsmProject found for %s\n", fo);
@@ -779,7 +779,7 @@ public class ModelSupport implements PropertyChangeListener {
                         for (int i = 0; i < files.length; ++i) {
                             FileImpl file = (FileImpl) files[i];
                             ProjectBase project = file.getProjectImpl(true);
-                            project.onFileExternalChange(file);
+                            project.onFileImplExternalChange(file);
                         }
                     }
                 }

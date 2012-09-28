@@ -2327,12 +2327,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getProjectRoots().isMySource(includePath);
     }
 
-    public abstract void onFileAdded(NativeFileItem nativeFile);
+    @Deprecated public abstract void onFileExternalAdded(NativeFileItem nativeFile);
+    
+    public abstract void onFileRenamed(String oldPath, NativeFileItem newFileIetm);
 
     public abstract void onFileAdded(List<NativeFileItem> items);
-    //public abstract void onFileRemoved(NativeFileItem nativeFile);
-
-    public abstract void onFileImplRemoved(Collection<FileImpl> files);
 
     public abstract void onFileRemoved(List<NativeFileItem> items);
 
@@ -2348,11 +2347,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected abstract void clearNativeFileContainer();
 
-    public final void onFileRemoved(CharSequence absPath) {
-        onFileImplRemoved(Collections.singletonList(getFile(absPath, false)));
-    }
+    public abstract void onFileImplRemoved(Collection<FileImpl> files);
 
-    public final void onFileExternalCreate(FileObject file) {
+    public final void onFileObjectExternalCreate(FileObject file) {
         CndFileUtils.clearFileExistenceCache();
         // #196664 - Code Model ignores the generated files"
         // when external file was created and assigned to this project => 
@@ -2369,13 +2366,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         // or use FO as fallback, it can be helpful for header files not included into
         // project, but used in include directives which were broken so far
         if (nativeFileItem != null) {
-            onFileAdded(nativeFileItem);
+            onFileExternalAdded(nativeFileItem);
         } else {
             DeepReparsingUtils.reparseOnAdded(file, this);
         }
     }
 
-    public final void onFileExternalChange(FileImpl file) {
+    public final void onFileImplExternalChange(FileImpl file) {
         DeepReparsingUtils.tryPartialReparseOnChangedFile(this, file);
     }
 

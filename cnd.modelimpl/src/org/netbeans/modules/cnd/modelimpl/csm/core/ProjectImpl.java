@@ -247,11 +247,22 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
+    @Deprecated
     @Override
-    public void onFileAdded(NativeFileItem nativeFile) {
+    public void onFileExternalAdded(NativeFileItem nativeFile) {
         onFileAddedImpl(nativeFile, true);
     }
 
+    @Override
+    public void onFileRenamed(String oldPath, NativeFileItem newFileIetm) {
+        FileImpl fileImpl = getFile(oldPath, false);
+        if (fileImpl != null) {
+            onFileImplRemoved(Collections.singletonList(fileImpl));
+        }
+        // FIX: we want to pass false here
+        onFileAddedImpl(newFileIetm, true);
+    }
+    
     private NativeFileItem onFileAddedImpl(NativeFileItem nativeFile, boolean deepReparse) {
         if (Utils.acceptNativeItem(nativeFile)) {
             CndFileUtils.clearFileExistenceCache();

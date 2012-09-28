@@ -198,8 +198,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             @Override
             public void run() {
                 try {
-                    projectBase.onFileRemoved(oldPath);
-                    projectBase.onFileAdded(newFileIetm);
+                    projectBase.onFileRenamed(oldPath, newFileIetm);
                 } catch( Exception e ) {
                     //TODO: FIX (most likely in Makeproject: path == null in this situation,
                     //this cause NPE
