@@ -367,6 +367,55 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void test217589a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public static void processThrowable(@NullAllowed Object obj) {\n" +
+                       "        if (obj != null) {\n" +
+                       "            if (obj instanceof Integer) {\n" +
+                       "            } else {\n" +
+                       "                String s = obj.toString();\n" +
+                       "            }\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "@interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test217589b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public static void processThrowable(@NullAllowed Object obj) {\n" +
+                       "        if (obj instanceof Integer) {\n" +
+                       "        } else {\n" +
+                       "            String s = obj.toString();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "@interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("5:27-5:35:verifier:Possibly Dereferencing null");
+    }
+    
+    public void test217589c() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public static void processThrowable(@NonNull Object obj) {\n" +
+                       "            if (!(obj instanceof Integer)) {\n" +
+                       "                String s = obj.toString();\n" +
+                       "            }\n" +
+                       "    }\n" +
+                       "@interface NonNull {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
