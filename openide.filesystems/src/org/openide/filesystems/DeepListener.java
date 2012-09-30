@@ -74,10 +74,10 @@ implements FileChangeListener, Runnable, Callable<Boolean>, FileFilter {
         this.path = path;
         this.stop = stop;
         this.filter = ff;
-        keep.add(this);
     }
     
     final void init() {
+        keep.add(this);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, null, new Throwable("listening to " + path));
         }
