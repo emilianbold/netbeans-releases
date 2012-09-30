@@ -54,9 +54,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
-import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
-import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.Folder;
@@ -65,9 +63,9 @@ import org.netbeans.modules.java.hints.spiimpl.batch.ProgressHandleWrapper;
 import org.netbeans.modules.java.hints.spiimpl.batch.Scopes;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsPanel;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
+import org.netbeans.modules.java.hints.spiimpl.refactoring.Utilities;
 import org.netbeans.modules.java.hints.spiimpl.refactoring.Utilities.ClassPathBasedHintWrapper;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.Hint.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -84,9 +82,11 @@ public class AnalyzerImpl implements Analyzer {
 
     private final AtomicBoolean cancel = new AtomicBoolean();
     private final Context ctx;
+    private final ClassPathBasedHintWrapper cpHints;
 
     private AnalyzerImpl(Context ctx) {
         this.ctx = ctx;
+        cpHints = new ClassPathBasedHintWrapper();
     }
 
     @Override
@@ -103,10 +103,7 @@ public class AnalyzerImpl implements Analyzer {
         ProgressHandleWrapper w = new ProgressHandleWrapper(ctx, 10, 90);
         Collection<HintDescription> hints = new ArrayList<HintDescription>();
 
-        for (Entry<HintMetadata, ? extends Collection<? extends HintDescription>> e : RulesManager.getInstance().readHints(null, null, cancel).entrySet()) {
-            //XXX: should check settings, whether this hint is enabled or not
-            if (e.getKey().kind != Kind.INSPECTION) continue;
-            if (e.getKey().options.contains(Options.NO_BATCH)) continue;
+        for (Entry<? extends HintMetadata, ? extends Collection<? extends HintDescription>> e : Utilities.getBatchSupportedHints(new ClassPathBasedHintWrapper()).entrySet()) {
             if (singleWarning != null) {
                 if (!singleWarning.equals(e.getKey().id)) continue;
             } else if (ctx.getSettings() != null) {
@@ -162,9 +159,7 @@ public class AnalyzerImpl implements Analyzer {
         public Iterable<? extends WarningDescription> getWarnings() {
             List<WarningDescription> result = new ArrayList<WarningDescription>();
 
-            for (Entry<HintMetadata, ? extends Collection<? extends HintDescription>> e : RulesManager.getInstance().readHints(null, null, new AtomicBoolean()).entrySet()) {
-                if (e.getKey().options.contains(Options.NO_BATCH)) continue;
-                if (e.getKey().kind != Kind.INSPECTION) continue;
+            for (Entry<? extends HintMetadata, ? extends Collection<? extends HintDescription>> e : Utilities.getBatchSupportedHints(new ClassPathBasedHintWrapper()).entrySet()) {
                 String displayName = e.getKey().displayName;
                 String category = e.getKey().category;
                 FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + category);
@@ -211,7 +206,7 @@ public class AnalyzerImpl implements Analyzer {
                         return new HintsPanel(context.getSettings(), context.getData());
                     } else {
                         HintMetadata toSelect = null;
-                        for (HintMetadata hm : RulesManager.getInstance().readHints(null, null, new AtomicBoolean()).keySet()) {
+                        for (HintMetadata hm : Utilities.getBatchSupportedHints(context.getData()).keySet()) {
                             if (context.getPreselectId().equals(ID_JAVA_HINTS_PREFIX + hm.id)) {
                                 toSelect = hm;
                                 break;
