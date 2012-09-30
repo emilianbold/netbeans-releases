@@ -112,6 +112,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -120,9 +121,13 @@ import org.openide.util.NbPreferences;
 public final class RunAnalysisPanel extends javax.swing.JPanel implements LookupListener {
 
     private static final String COMBO_PROTOTYPE = "999999999999999999999999999999999999999999999999999999999999";
+    private static final RequestProcessor WORKER = new RequestProcessor(RunAnalysisPanel.class.getName(), 1, false, false);
     private final JPanel progress;
     private final RequiredPluginsPanel requiredPlugins;
+    //GuardedBy(AWT)
     private       Collection<? extends AnalyzerFactory> analyzers;
+    //GuardedBy(AWT)
+    private       Map<? extends AnalyzerFactory, Iterable<? extends WarningDescription>> analyzer2Warnings;
     private final Lookup.Result<AnalyzerFactory> analyzersResult;
     private final Map<String, AnalyzerAndWarning> warningId2Description = new HashMap<String, AnalyzerAndWarning>();
     private final JButton runAnalysis;
@@ -295,9 +300,10 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         }
     }
 
-    @Messages({"LBL_Predefined=Predefined", "LBL_Custom=Custom"})
-    public void updateConfigurations(DialogState state) {
+    @Messages({"LBL_Predefined=Predefined", "LBL_Custom=Custom", "LBL_PleaseWait=Computing..."})
+    public void updateConfigurations(final DialogState state) {
         analyzers = analyzersResult.allInstances();
+        analyzer2Warnings = Collections.emptyMap();
         
         Object selectedConfiguration = null;
         DefaultComboBoxModel configurationModel = new DefaultComboBoxModel();
@@ -327,15 +333,55 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         configurationCombo.setRenderer(new ConfigurationRenderer(true));
 
         DefaultComboBoxModel inspectionModel = new DefaultComboBoxModel();
+        
+        inspectionModel.addElement(Bundle.LBL_PleaseWait());
+        
+        inspectionCombo.setModel(inspectionModel);
+        inspectionCombo.setRenderer(new InspectionRenderer());
+        inspectionCombo.setSelectedItem(0);
+        singleInspectionRadio.setSelected(!state.configurationsSelected);
+
+        updatePlugins();
+        
+        final Collection<? extends AnalyzerFactory> analyzersCopy = new ArrayList<AnalyzerFactory>(analyzers);
+        
+        WORKER.post(new Runnable() {
+            @Override public void run() {
+                final Map<AnalyzerFactory, Iterable<? extends WarningDescription>> analyzer2Warnings = new HashMap<AnalyzerFactory, Iterable<? extends WarningDescription>>();
+                
+                for (AnalyzerFactory a : analyzersCopy) {
+                    List<WarningDescription> warnings = new ArrayList<WarningDescription>();
+                    
+                    for (WarningDescription wd : a.getWarnings()) {
+                        warnings.add(wd);
+                    }
+                    
+                    analyzer2Warnings.put(a, warnings);
+                }
+                
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        fillInspectionCombo(state, analyzer2Warnings);
+                        updatePlugins();
+                    }
+                });
+            }
+        });
+    }
+    
+    private void fillInspectionCombo(DialogState state, Map<? extends AnalyzerFactory, Iterable<? extends WarningDescription>> analyzer2Warnings) {
+        this.analyzer2Warnings = analyzer2Warnings;
+        
+        DefaultComboBoxModel inspectionModel = new DefaultComboBoxModel();
         AnalyzerAndWarning firstInspection = null;
         AnalyzerAndWarning preselectInspection = null;
 
-        for (AnalyzerFactory a : analyzers) {
-            inspectionModel.addElement(SPIAccessor.ACCESSOR.getAnalyzerDisplayName(a));
+        for (Entry<? extends AnalyzerFactory, Iterable<? extends WarningDescription>> e : analyzer2Warnings.entrySet()) {
+            inspectionModel.addElement(SPIAccessor.ACCESSOR.getAnalyzerDisplayName(e.getKey()));
 
             Map<String, Collection<WarningDescription>> cat2Warnings = new TreeMap<String, Collection<WarningDescription>>();
 
-            for (WarningDescription wd : a.getWarnings()) {
+            for (WarningDescription wd : e.getValue()) {
                 String cat = SPIAccessor.ACCESSOR.getWarningCategoryDisplayName(wd); //TODO: should be based on the id rather than on the display name
                 Collection<WarningDescription> warnings = cat2Warnings.get(cat);
 
@@ -354,7 +400,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                 inspectionModel.addElement("  " + catE.getKey());
 
                 for (WarningDescription wd : catE.getValue()) {
-                    AnalyzerAndWarning aaw = new AnalyzerAndWarning(a, wd);
+                    AnalyzerAndWarning aaw = new AnalyzerAndWarning(e.getKey(), wd);
                     inspectionModel.addElement(aaw);
                     warningId2Description.put(SPIAccessor.ACCESSOR.getWarningId(wd), aaw);
                     
@@ -367,11 +413,8 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         }
 
         inspectionCombo.setModel(inspectionModel);
-        inspectionCombo.setRenderer(new InspectionRenderer());
         inspectionCombo.setSelectedItem(preselectInspection != null ? preselectInspection : firstInspection);
-        singleInspectionRadio.setSelected(!state.configurationsSelected);
-
-        updatePlugins();
+        
     }
 
     private void updatePlugins() {
@@ -657,6 +700,22 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                                selectedConfiguration instanceof AnalyzerFactory ? SPIAccessor.ACCESSOR.getAnalyzerId((AnalyzerFactory) selectedConfiguration) : null,
                                selectedConfiguration instanceof Configuration ? ((Configuration) selectedConfiguration).id() : null,
                                selectedInspection instanceof AnalyzerAndWarning ? SPIAccessor.ACCESSOR.getWarningId(((AnalyzerAndWarning) selectedInspection).wd) : null);
+    }
+
+    Map<AnalyzerFactory, Map<String, WarningDescription>> getAnalyzerId2Description() {
+        Map<AnalyzerFactory, Map<String, WarningDescription>> result = new HashMap<AnalyzerFactory, Map<String, WarningDescription>>();
+        
+        for (Entry<? extends AnalyzerFactory, Iterable<? extends WarningDescription>> e : analyzer2Warnings.entrySet()) {
+            Map<String, WarningDescription> perAnalyzer = new HashMap<String, WarningDescription>();
+            
+            result.put(e.getKey(), perAnalyzer);
+            
+            for (WarningDescription wd : e.getValue()) {
+                perAnalyzer.put(SPIAccessor.ACCESSOR.getWarningId(wd), wd);
+            }
+        }
+        
+        return result;
     }
 
     public static final class ConfigurationRenderer extends DefaultListCellRenderer {

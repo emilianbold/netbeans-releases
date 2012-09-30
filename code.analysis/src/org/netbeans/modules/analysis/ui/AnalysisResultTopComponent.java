@@ -50,6 +50,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -64,6 +65,7 @@ import org.netbeans.modules.analysis.DescriptionReader;
 import org.netbeans.modules.analysis.RunAnalysis;
 import org.netbeans.modules.analysis.RunAnalysisPanel.DialogState;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
+import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -125,7 +127,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         prevAction.addPropertyChangeListener(l);
         nextAction.addPropertyChangeListener(l);
 
-        setData(Lookup.EMPTY, null, new AnalysisResult(Collections.<AnalyzerFactory, List<ErrorDescription>>emptyMap(), Collections.<Node>emptyList()));
+        setData(Lookup.EMPTY, null, new AnalysisResult(Collections.<AnalyzerFactory, List<ErrorDescription>>emptyMap(), Collections.<AnalyzerFactory, Map<String, WarningDescription>>emptyMap(), Collections.<Node>emptyList()));
 
         getActionMap().put("jumpNext", nextAction);
         getActionMap().put("jumpPrev", prevAction);
