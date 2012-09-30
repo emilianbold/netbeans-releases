@@ -94,7 +94,7 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
     private final CountDownLatch waitForTaskAssignment = new CountDownLatch(1);
     private RunOffEDTImpl.CancellableFutureTask<T> future;
     private final boolean showCancel;
-     private static final RequestProcessor RP = new RequestProcessor(AbstractWindowRunner.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(AbstractWindowRunner.class.getName(), 10);
 
     AbstractWindowRunner(ProgressHandle handle, boolean includeDetail, boolean showCancel) {
         this.includeDetail = includeDetail;
