@@ -743,7 +743,8 @@ public class RuleNode extends AbstractNode {
 
         @Override
         public String getValue() {
-            return declaration.getPropertyValue().getExpression().getContent().toString();
+            PropertyValue propertyValue = declaration.getPropertyValue();
+            return propertyValue == null ? null : propertyValue.getExpression().getContent().toString();
         }
 
         @Override
@@ -755,7 +756,7 @@ public class RuleNode extends AbstractNode {
             }
 
             String currentValue = getValue();
-            if (currentValue.equals(val)) {
+            if (val.equals(currentValue)) {
                 //same value, ignore
                 return;
             }
