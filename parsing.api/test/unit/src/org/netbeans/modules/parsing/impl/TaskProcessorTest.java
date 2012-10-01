@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -77,7 +75,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -89,6 +86,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTestSupport;
 import org.netbeans.modules.parsing.impl.indexing.Util;
@@ -180,7 +178,8 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         final CountDownLatch start_b = new CountDownLatch(1);
         final CountDownLatch end = new CountDownLatch(1);
         final CountDownLatch taskEnded = new CountDownLatch(1);
-        final Collection<SchedulerTask> tasks = Collections.<SchedulerTask>singleton(
+        final Collection<Pair<SchedulerTask,Class<? extends Scheduler>>> tasks = Collections.<Pair<SchedulerTask,Class<? extends Scheduler>>>singleton(
+                Pair.<SchedulerTask,Class<? extends Scheduler>>of(
             new ParserResultTask<Parser.Result>() {
                 @Override
                 public void run(Result result, SchedulerEvent event) {
@@ -200,12 +199,11 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
                 @Override
                 public void cancel() {
                 }                    
-            });
+            }, null));
         TaskProcessor.addPhaseCompletionTasks(
                 tasks,
                 SourceAccessor.getINSTANCE().getCache(src),
-                true,
-                null);
+                true);
         taskEnded.await();
         final Thread t = new Thread () {
             @Override
@@ -231,7 +229,7 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
             start_b.countDown();
             start_a.await();
             SourceAccessor.getINSTANCE().getCache(src).invalidate();
-            TaskProcessor.removePhaseCompletionTasks(tasks, src);
+            TaskProcessor.removePhaseCompletionTasks(Collections.<SchedulerTask>singleton(tasks.iterator().next().first), src);
         }
         end.countDown();
     }
@@ -563,10 +561,11 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
             }
         };
         TaskProcessor.addPhaseCompletionTasks(
-                Arrays.asList(task1, task2),
+                Arrays.asList(
+                    Pair.<SchedulerTask,Class<? extends Scheduler>>of(task1,task1.getSchedulerClass()),
+                    Pair.<SchedulerTask,Class<? extends Scheduler>>of(task2,task2.getSchedulerClass())),
                 cache,
-                false,
-                task1.getSchedulerClass());
+                false);
         assertTrue(taskStarted.await(5000, TimeUnit.MILLISECONDS));
         runLoop(source, true);
         try {
@@ -613,10 +612,9 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         runLoop(source, true);
         try {
             TaskProcessor.addPhaseCompletionTasks(
-                Arrays.asList(task),
+                Arrays.asList(Pair.<SchedulerTask,Class<? extends Scheduler>>of(task,task.getSchedulerClass())),
                 cache,
-                false,
-                task.getSchedulerClass());
+                false);
             assertFalse(taskCalled.await(2000, TimeUnit.MILLISECONDS));
         } finally {
             runLoop(source, false);
@@ -667,10 +665,9 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
             SlowCancelTask sct = new SlowCancelTask(runCB, cancelCB);
             mockProfiler.expect(EnumSet.noneOf(MockProfiler.Event.class));
             TaskProcessor.addPhaseCompletionTasks(
-                    Arrays.<SchedulerTask>asList(sct),
+                    Arrays.<Pair<SchedulerTask,Class<? extends Scheduler>>>asList(Pair.<SchedulerTask,Class<? extends Scheduler>>of(sct,sct.getSchedulerClass())),
                     SourceAccessor.getINSTANCE().getCache(source),
-                    false,
-                    sct.getSchedulerClass());
+                    false);
             assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
             ParserManager.parse(Arrays.asList(source), new UserTask() {
                 @Override
@@ -684,10 +681,9 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
             sct = new SlowCancelTask(runCB, cancelCB);
             mockProfiler.expect(EnumSet.of(MockProfiler.Event.STARTED, MockProfiler.Event.CANCELED));
             TaskProcessor.addPhaseCompletionTasks(
-                    Arrays.<SchedulerTask>asList(sct),
+                    Arrays.<Pair<SchedulerTask,Class<? extends Scheduler>>>asList(Pair.<SchedulerTask,Class<? extends Scheduler>>of(sct,sct.getSchedulerClass())),
                     SourceAccessor.getINSTANCE().getCache(source),
-                    false,
-                    sct.getSchedulerClass());
+                    false);
             assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
             ParserManager.parse(Arrays.asList(source), new UserTask() {
                 @Override
@@ -701,10 +697,9 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
             sct = new SlowCancelTask(runCB, cancelCB);
             mockProfiler.expect(EnumSet.of(MockProfiler.Event.STARTED, MockProfiler.Event.LOGGED));
             TaskProcessor.addPhaseCompletionTasks(
-                    Arrays.<SchedulerTask>asList(sct),
+                    Arrays.<Pair<SchedulerTask,Class<? extends Scheduler>>>asList(Pair.<SchedulerTask,Class<? extends Scheduler>>of(sct,sct.getSchedulerClass())),
                     SourceAccessor.getINSTANCE().getCache(source),
-                    false,
-                    sct.getSchedulerClass());
+                    false);
             assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
             ParserManager.parse(Arrays.asList(source), new UserTask() {
                 @Override

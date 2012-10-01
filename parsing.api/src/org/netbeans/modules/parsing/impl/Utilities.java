@@ -50,9 +50,11 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.util.Parameters;
 
@@ -154,8 +156,11 @@ public class Utilities {
     public static void addParserResultTask (final ParserResultTask<?> task, final Source source) {
         Parameters.notNull ("task", task);
         Parameters.notNull ("source", source);
-        SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
-        TaskProcessor.addPhaseCompletionTasks (Collections.<SchedulerTask>singleton (task), cache, true, null);
+        final SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
+        TaskProcessor.addPhaseCompletionTasks (
+            Collections.<Pair<SchedulerTask,Class<? extends Scheduler>>>singleton(Pair.<SchedulerTask,Class<? extends Scheduler>>of(task,null)),
+            cache,
+            true);
     }
     
     public static void removeParserResultTask (final ParserResultTask<?> task, final Source source) {
