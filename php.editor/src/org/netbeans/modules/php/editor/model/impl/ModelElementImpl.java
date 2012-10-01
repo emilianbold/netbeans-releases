@@ -107,7 +107,13 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
                     + name + " | " + file + " | " + kind);//NOI18N
         }
         assert file.hasFirst() || file.hasSecond();
-        this.filenameUrl = (file.hasFirst()) ? file.first() : null;
+        if (file.hasFirst()) {
+            this.filenameUrl = file.first();
+        } else if (file.hasSecond()) {
+            this.filenameUrl = file.second().getNameExt();
+        } else {
+            this.filenameUrl = "";
+        }
         this.inScope = inScope;
         this.name = name;
         this.offsetRange = offsetRange;
