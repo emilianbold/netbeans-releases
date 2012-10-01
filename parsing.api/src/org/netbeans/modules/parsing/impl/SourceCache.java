@@ -557,15 +557,11 @@ retry:  while (true) {
         SourceModificationEvent sourceModificationEvent = SourceAccessor.getINSTANCE ().getSourceModificationEvent (source);
         if (sourceModificationEvent == null)
             return;
-        Map<Class<? extends Scheduler>,SchedulerEvent> schedulerEvents = new HashMap<Class<? extends Scheduler>, SchedulerEvent> ();
-        for (Scheduler scheduler : Schedulers.getSchedulers ()) {
-            SchedulerEvent schedulerEvent = SchedulerAccessor.get ().createSchedulerEvent (scheduler, sourceModificationEvent);
-            if (schedulerEvent != null)
-                schedulerEvents.put (scheduler.getClass (), schedulerEvent);
-        }
-        SourceAccessor.getINSTANCE ().setSchedulerEvents (source, schedulerEvents);
-        if (schedulerEvents.isEmpty ())
+        final Map<Class<? extends Scheduler>,? extends SchedulerEvent> schedulerEvents =
+                SourceAccessor.getINSTANCE ().createSchedulerEvents (source, Schedulers.getSchedulers (), sourceModificationEvent);
+        if (schedulerEvents.isEmpty ()) {
             return;
+        }
         final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
         Collection<SchedulerTask> tsks = createTasks();
