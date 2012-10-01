@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import static org.netbeans.modules.groovy.refactoring.move.Bundle.*;
 import org.netbeans.modules.groovy.refactoring.ui.MoveClassPanel;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -72,7 +72,7 @@ public class MoveRefactoringUI  implements RefactoringUI, RefactoringUIBypass {
     private MoveClassPanel panel;
 
 
-    public MoveRefactoringUI(GroovyRefactoringElement element) {
+    public MoveRefactoringUI(RefactoringElement element) {
         fo = element.getFileObject();
         Collection<Object> lookupContent = new ArrayList<Object>();
         lookupContent.add(element);

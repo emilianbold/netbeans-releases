@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.editor.utils;
+package org.netbeans.modules.groovy.refactoring.utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +64,14 @@ public final class FindMethodUtils {
     private FindMethodUtils() {
     }
 
-    public static MethodNode findMethod(AstPath path, MethodCallExpression methodCall) {
+    public static boolean isDynamicCall(AstPath path, MethodCallExpression methodCall) {
+        if (findMethodType(path, methodCall) == null) {
+            return true;
+        }
+        return false;
+    }
+
+    public static ClassNode findMethodType(AstPath path, MethodCallExpression methodCall) {
         Expression expression = methodCall.getObjectExpression();
 
         if (expression instanceof VariableExpression) {
@@ -73,61 +80,33 @@ public final class FindMethodUtils {
 
             if (variable != null) {
                 if (variable.isDynamicTyped()) {
-                    return getDynamicTypeMethodNode();
+                    return null;
                 }
-                return findMethod(variable.getOriginType(), methodCall);
+                return variable.getOriginType();
 
             } else {
-                return getThisMethodNode(path, methodCall);
+                // Situations like: "this.destroyWorldMethod()" or only "destroyWorldMethod()"
+                return ASTUtils.getOwningClass(path);
             }
         } else if (expression instanceof ClassExpression) {
             // Situations like: "GroovySupportObject.println()"
-            return findMethod(((ClassExpression) expression).getType(), methodCall);
+            return ((ClassExpression) expression).getType();
         } else if (expression instanceof ConstructorCallExpression) {
             // Situations like: "new GalacticMaster().destroyWorldMethod()"
-            return findMethod(((ConstructorCallExpression) expression).getType(), methodCall);
+            return ((ConstructorCallExpression) expression).getType();
         }
+
+        assert false; // Should not happened!
         return null;
     }
 
-    // Situations like: "this.destroyWorldMethod()" or only "destroyWorldMethod()"
-    private static MethodNode getThisMethodNode(AstPath path, MethodCallExpression methodCall) {
-        String findingMethod = methodCall.getMethodAsString();
-        Expression arguments = methodCall.getArguments();
-        ClassNode owningClass = ASTUtils.getOwningClass(path);
-
-        if (owningClass != null) {
-            MethodNode findedMethod = owningClass.tryFindPossibleMethod(findingMethod, arguments);
-            if (findedMethod != null) {
-                return findedMethod;
-            }
-
-            List<MethodNode> possibleMethods = new ArrayList<MethodNode>();
-            for (MethodNode method : owningClass.getMethods()) {
-                if (Methods.isSameMethod(method, methodCall)) {
-                    possibleMethods.add(method);
-                }
-            }
-            if (possibleMethods.size() > 1) {
-                // In the future we should distinguish between 'size == 1' and 'size > 1'
-                // If the size is more than 1, it means we are dealing with more methods
-                // with the same name and the same number of parameters. In that case we
-                // should either try to interfere parameter types or show some user dialog
-                // with selection box and let the user to choose what he want to find
-                return possibleMethods.get(0);
-            }
+    public static MethodNode findMethod(AstPath path, MethodCallExpression methodCall) {
+        final ClassNode methodType = findMethodType(path, methodCall);
+        if (methodType != null) {
+            return findMethod(methodType, methodCall);
+        } else {
+            return findDynamicMethodType();
         }
-        return null;
-    }
-
-    // Situations like:
-    // 1. def master = new GalacaticMaster()
-    // 2. master.destroyWorldMethod()
-    private static MethodNode getDynamicTypeMethodNode() {
-        // FIXME: we should try to guess real dynamic type even if the declaration
-        // is using 'def' and it's not clear what's the exact type (maybe it's possible
-        // to find that from exact line declaration)
-        return null;
     }
 
     /**
@@ -145,13 +124,43 @@ public final class FindMethodUtils {
     private static MethodNode findMethod(ClassNode type, MethodCallExpression methodCall) {
         String findingMethod = methodCall.getMethodAsString();
         Expression arguments = methodCall.getArguments();
-        MethodNode method;
         
-        if (type.isResolved()) {
-            method = type.tryFindPossibleMethod(findingMethod, arguments);
-        } else {
-            method = type.redirect().tryFindPossibleMethod(findingMethod, arguments);
+        if (!type.isResolved()) {
+            type = type.redirect();
         }
-        return method;
+
+        MethodNode method = type.tryFindPossibleMethod(findingMethod, arguments);
+        if (method != null) {
+            return method;
+        }
+        return findMostAccurateMethod(methodCall, type.getMethods(findingMethod));
+    }
+
+    private static MethodNode findMostAccurateMethod(MethodCallExpression methodCall, List<MethodNode> methods) {
+        final List<MethodNode> possibleMethods = new ArrayList<MethodNode>();
+        for (MethodNode methodNode : methods) {
+            if (Methods.isSameMethod(methodNode, methodCall)) {
+                possibleMethods.add(methodNode);
+            }
+        }
+        if (possibleMethods.size() > 0) {
+            // In the future we should distinguish between 'size == 1' and 'size > 1'
+            // If the size is more than 1, it means we are dealing with more methods
+            // with the same name and the same number of parameters. In that case we
+            // should either try to interfere parameter types or show some user dialog
+            // with selection box and let the user to choose what he want to find
+            return possibleMethods.get(0);
+        }
+        return null;
+    }
+
+    // Situations like:
+    // 1. def master = new GalacaticMaster()
+    // 2. master.destroyWorldMethod()
+    private static MethodNode findDynamicMethodType() {
+        // FIXME: we should try to guess real dynamic type even if the declaration
+        // is using 'def' and it's not clear what's the exact type (maybe it's possible
+        // to find that from exact line declaration)
+        return null;
     }
 }

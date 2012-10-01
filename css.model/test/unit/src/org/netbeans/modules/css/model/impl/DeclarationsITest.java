@@ -42,7 +42,7 @@
 package org.netbeans.modules.css.model.impl;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.model.ModelTestBase;
+import org.netbeans.modules.css.model.api.ModelTestBase;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 

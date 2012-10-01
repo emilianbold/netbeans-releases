@@ -147,11 +147,12 @@ import org.openide.util.actions.Presenter;
     "titleLabel.text.no.selected.rule=No Rule Selected",
     "titleLabel.tooltip.no.selected.rule=Select a css rule in editor or CSS Styles Window to activate the Rule Editor",
     "titleLabel.no.selected.rule=No Rule Selected",
-    "label.rule.error.tooltip=The selected rule contains error(s), the listed properties are read only"
+    "label.rule.error.tooltip=The selected rule contains error(s), the listed properties are read only",
+    "addPropertyCB.initial.text=Add Property ..."
 })
 public class RuleEditorPanel extends JPanel {
 
-    private RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
+    static RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
     public static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
     private static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
     private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
@@ -182,21 +183,17 @@ public class RuleEditorPanel extends JPanel {
     private AddPropertyComboBoxModel ADD_PROPERTY_CB_MODEL = new AddPropertyComboBoxModel();
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (Model.CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
-                Mutex.EVENT.readAccess(new Runnable() {
-                    @Override
-                    public void run() {
+        public void propertyChange(final PropertyChangeEvent evt) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    if (Model.CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
                         northWestPanel.add(APPLIED_LABEL);
                         northWestPanel.revalidate();
                         northWestPanel.repaint();
-                    }
-                });
-                //re-set the css model as the CssCaretAwareSourceTask won't work 
-                //if the modified file is not opened in editor
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
+
+                        //re-set the css model as the CssCaretAwareSourceTask won't work 
+                        //if the modified file is not opened in editor
                         Model model = getModel();
                         if (model != null) {
                             Document doc = model.getLookup().lookup(Document.class);
@@ -210,13 +207,8 @@ public class RuleEditorPanel extends JPanel {
                                             if (resultIterator != null) {
                                                 CssCslParserResult result = (CssCslParserResult) resultIterator.getParserResult();
                                                 final Model model = result.getModel();
-                                                SwingUtilities.invokeLater(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        LOG.info("Setting new model upon Model.applyChanges()");
-                                                        setModel(model);
-                                                    }
-                                                });
+                                                LOG.info("Setting new model upon Model.applyChanges()");
+                                                setModel(model);
                                             }
                                         }
                                     });
@@ -225,17 +217,16 @@ public class RuleEditorPanel extends JPanel {
                                 }
                             }
                         }
+                    } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
+                        //refresh the PS content
+                        node.fireContextChanged(false);
+                        if (createdDeclaration != null) {
+                            //select & edit the property corresponding to the created declaration
+                            editCreatedDeclaration();
+                        }
                     }
-                });
-            } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
-                //refresh the PS content
-                node.fireContextChanged(false);
-                
-                if(createdDeclaration != null) {
-                    //select & edit the property corresponding to the created declaration
-                    editCreatedDeclaration();
                 }
-            }
+            });
         }
     };
 
@@ -830,7 +821,7 @@ public class RuleEditorPanel extends JPanel {
     private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables
     private static Object INITIAL_TEXT_OBJECT = new Object();
-    private static String ADD_PROPERTY_CB_TEXT = "Add Property ...";
+    private static String ADD_PROPERTY_CB_TEXT = Bundle.addPropertyCB_initial_text();
 
     private static class AddPropertyComboBoxModel extends DefaultComboBoxModel {
 

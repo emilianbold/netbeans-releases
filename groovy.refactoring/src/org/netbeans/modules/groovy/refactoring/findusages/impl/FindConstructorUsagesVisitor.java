@@ -39,30 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
-import java.util.List;
+import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 
 /**
  *
  * @author Martin Janicek
  */
-public class FindMethodUsages extends AbstractFindUsages {
+public class FindConstructorUsagesVisitor extends AbstractFindUsagesVisitor {
 
-    public FindMethodUsages(RefactoringElement element) {
-        super(element);
+    private final String name;
+
+
+    public FindConstructorUsagesVisitor(ModuleNode moduleNode, RefactoringElement element) {
+        super(moduleNode);
+        this.name = element.getDeclaringClassName();
     }
 
     @Override
-    protected List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass) {
-        return singleVisitor(new FindMethodUsagesVisitor(moduleNode, element));
-    }
+    public void visitConstructor(ConstructorNode constructor) {
+        final String constructorName = ElementUtils.getDeclaringClassName(constructor);
 
-    @Override
-    protected ElementKind getElementKind() {
-        return ElementKind.METHOD;
+        if (!constructor.hasNoRealSourcePosition() && name.equals(constructorName)) {
+            usages.add(constructor);
+        }
+        super.visitConstructor(constructor);
     }
 }

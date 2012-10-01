@@ -43,7 +43,6 @@ package org.netbeans.modules.css.model.api;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.model.ModelTestBase;
 import org.netbeans.modules.css.model.api.ElementListener.Event;
 import org.netbeans.modules.parsing.spi.ParseException;
 

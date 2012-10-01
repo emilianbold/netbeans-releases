@@ -308,4 +308,25 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
             + "    }"
             + "}");
     }
+
+    public void testBreakInsideObject() throws Exception {
+        insertBreak("function Synergy() { \n"
+                + "/**^\n"
+                + "this.endpoints = {};\n"
+                + "this.session = {};\n"
+                + "this.labels = {};\n"
+                + "}\n"
+                + "/** */\n"
+                + "window.SYNERGY = new Synergy();",
+                "function Synergy() { \n"
+                + "/**\n"
+                + " * ^\n"
+                + " */\n"
+                + "this.endpoints = {};\n"
+                + "this.session = {};\n"
+                + "this.labels = {};\n"
+                + "}\n"
+                + "/** */\n"
+                + "window.SYNERGY = new Synergy();");
+    }
 }

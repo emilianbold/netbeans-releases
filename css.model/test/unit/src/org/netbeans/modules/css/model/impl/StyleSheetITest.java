@@ -47,7 +47,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.model.ModelTestBase;
+import org.netbeans.modules.css.model.api.ModelTestBase;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 
@@ -62,7 +62,7 @@ public class StyleSheetITest extends ModelTestBase {
     }
     
     public void testCreateStyleSheet() throws IOException, InterruptedException {
-        Model model = new Model();
+        Model model = createModel();
         StyleSheet styleSheet = getStyleSheet(model);
 
         ElementFactory factory = model.getElementFactory();
@@ -94,8 +94,7 @@ public class StyleSheetITest extends ModelTestBase {
                 + "     color: green;\n"
                 + " } \n";
 
-        CssParserResult result = TestUtil.parse(code);
-        Model model = new Model(code, NodeUtil.query(result.getParseTree(), "styleSheet"));
+        Model model = createModel(code);
         StyleSheet styleSheet = getStyleSheet(model);
         assertNotNull(styleSheet);
 
