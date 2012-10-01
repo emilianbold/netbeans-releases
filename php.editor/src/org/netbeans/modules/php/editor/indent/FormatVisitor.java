@@ -72,7 +72,6 @@ public class FormatVisitor extends DefaultVisitor {
     private LinkedList<ASTNode> path;
     private int indentLevel;
     private final int tsTokenCount;
-    private final int maxFormattingRules;
     private DocumentOptions options;
     private boolean includeWSBeforePHPDoc;
     private boolean isCurly; // whether the last visited block is curly or standard syntax.
@@ -93,7 +92,6 @@ public class FormatVisitor extends DefaultVisitor {
         includeWSBeforePHPDoc = true;
         tsTokenCount = ts == null ? 1 : ts.tokenCount();
         formatTokens = new ArrayList<FormatToken>(tsTokenCount * 2);
-        maxFormattingRules = tsTokenCount * 3;
         this.caretOffset = caretOffset;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
@@ -105,28 +103,10 @@ public class FormatVisitor extends DefaultVisitor {
         return formatTokens;
     }
 
-    private void showAssertionFor185063() {
-        boolean showAssertFor185063 = false;
-        assert showAssertFor185063 = true;
-        if (showAssertFor185063) {
-            try {
-                assert false : "Too many formatting rules.\nPlease report this to help fix issue 185063.\n\n" // sNOI18N
-                        + document.getText(0, document.getLength() - 1);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        assert false;
-    }
-
     @Override
     public void scan(ASTNode node) {
         if (node == null) {
             return;
-        }
-
-        if (formatTokens.size() > maxFormattingRules) {
-            showAssertionFor185063();
         }
 
         // find comment before the node.
@@ -1000,7 +980,7 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(MethodDeclaration node) {
         while (ts.moveNext() && (ts.token().id() == PHPTokenId.WHITESPACE
-                || isComment(ts.token()))) {
+                || isComment(ts.token())) && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
         if (includeWSBeforePHPDoc) {
@@ -1008,7 +988,9 @@ public class FormatVisitor extends DefaultVisitor {
         } else {
             includeWSBeforePHPDoc = true;
         }
-        addFormatToken(formatTokens);
+        if (lastIndex < ts.index()) {
+            addFormatToken(formatTokens);
+        }
         while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_STRING) {
             switch (ts.token().id()) {
                 case PHP_FUNCTION:
@@ -1628,7 +1610,7 @@ public class FormatVisitor extends DefaultVisitor {
                 && ts.token().id() != PHPTokenId.PHP_LINE_COMMENT
                 && ((ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) == 0)
                 || isComment(ts.token())
-                || ts.token().id() == PHPTokenId.PHP_SEMICOLON)) {
+                || ts.token().id() == PHPTokenId.PHP_SEMICOLON) && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
         if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
