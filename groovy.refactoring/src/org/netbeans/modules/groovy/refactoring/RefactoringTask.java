@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.groovy.refactoring;
 
-import org.netbeans.modules.groovy.refactoring.utils.FindMethodUtils;
-import org.netbeans.modules.groovy.refactoring.utils.FindPossibleMethods;
 import java.util.Collection;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
@@ -65,7 +63,8 @@ import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.findusages.model.ClassRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.MethodRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
-import org.netbeans.modules.groovy.refactoring.findusages.model.VariableRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.utils.FindMethodUtils;
+import org.netbeans.modules.groovy.refactoring.utils.FindPossibleMethods;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
