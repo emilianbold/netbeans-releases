@@ -143,15 +143,12 @@ public final class Model {
         return model;
     }
 
-    /**
-     * Creates a new model with empty stylesheet
-     */
-    public Model() {
+    /* package visibility for unit tests */ Model() {
         MODEL_LOOKUP = Lookups.fixed(
                 getElementFactory().createStyleSheet());
     }
 
-    public Model(CssParserResult parserResult) {
+    /* package visibility for unit tests */ Model(CssParserResult parserResult) {
         Node styleSheetNode = NodeUtil.query(parserResult.getParseTree(), NodeType.styleSheet.name());
 
         Collection<Object> lookupContent = new ArrayList<Object>();
@@ -179,22 +176,6 @@ public final class Model {
         }
 
         MODEL_LOOKUP = Lookups.fixed(lookupContent.toArray());
-    }
-
-    /**
-     * Creates a model instance of given source and parser node
-     *
-     * @param snapshot
-     * @param styleSheetNode
-     */
-    public Model(CharSequence source, Node styleSheetNode) {
-        StyleSheet styleSheet = (StyleSheet) getElementFactoryImpl(this).createElement(this, styleSheetNode);
-
-        MODEL_LOOKUP = Lookups.fixed(
-                source,
-                styleSheetNode,
-                styleSheet);
-
     }
 
     public Lookup getLookup() {
