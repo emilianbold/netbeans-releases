@@ -117,6 +117,7 @@ public final class NodeOperation2 extends BeanTreeView implements PropertyChange
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.getAccessibleContext().setAccessibleDescription(acsd);
+        tree.requestFocusInWindow();
         dialog.setVisible(true);
 
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {

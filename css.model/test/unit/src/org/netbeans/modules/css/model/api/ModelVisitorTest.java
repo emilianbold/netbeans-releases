@@ -45,7 +45,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
-import org.netbeans.modules.css.model.ModelTestBase;
 
 /**
  *

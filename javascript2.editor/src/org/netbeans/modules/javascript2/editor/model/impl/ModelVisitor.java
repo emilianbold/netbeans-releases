@@ -76,7 +76,6 @@ public class ModelVisitor extends PathNodeVisitor {
 
     public ModelVisitor(JsParserResult parserResult) {
         FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
-        Snapshot snapshot = parserResult.getSnapshot();
         this.modelBuilder = new ModelBuilder(JsFunctionImpl.createGlobal(fileObject, Integer.MAX_VALUE));
         this.functionStack = new ArrayList<List<FunctionNode>>();
         this.parserResult = parserResult;

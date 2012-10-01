@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
+import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.nodes.Node;
 
@@ -55,10 +56,12 @@ import org.openide.nodes.Node;
 public class AnalysisResult {
 
     public final Map<AnalyzerFactory, List<ErrorDescription>> provider2Hints;
+    public final Map<AnalyzerFactory, Map<String, WarningDescription>> analyzerId2Description;
     public final Collection<Node> extraNodes;
 
-    public AnalysisResult(Map<AnalyzerFactory, List<ErrorDescription>> provider2Hints, Collection<Node> extraNodes) {
+    public AnalysisResult(Map<AnalyzerFactory, List<ErrorDescription>> provider2Hints, Map<AnalyzerFactory, Map<String, WarningDescription>> analyzerId2Description, Collection<Node> extraNodes) {
         this.provider2Hints = provider2Hints;
+        this.analyzerId2Description = analyzerId2Description;
         this.extraNodes = extraNodes;
     }
     

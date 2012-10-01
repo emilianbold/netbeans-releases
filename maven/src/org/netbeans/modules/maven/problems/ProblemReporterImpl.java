@@ -633,7 +633,11 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                                        if (action != null) {
                                            action.actionPerformed(null);
                                            String text = (String) action.getValue(ACT_START_MESSAGE);
-                                           return ProjectProblemsProvider.Result.create(Status.RESOLVED, text);
+                                           if (text != null) {
+                                               return ProjectProblemsProvider.Result.create(Status.RESOLVED, text);
+                                           } else {
+                                               return ProjectProblemsProvider.Result.create(Status.RESOLVED);
+                                           }
                                        } else {
                                            return ProjectProblemsProvider.Result.create(Status.UNRESOLVED, TXT_No_Res());
                                        }

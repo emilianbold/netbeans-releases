@@ -323,6 +323,10 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
                 }
                 
             }
+            //release handle reference if it is the last one
+            if (model.getSize() == 0 && event.getSource().equals(handle)) {
+                handle = null;
+            }
         }
         
     }

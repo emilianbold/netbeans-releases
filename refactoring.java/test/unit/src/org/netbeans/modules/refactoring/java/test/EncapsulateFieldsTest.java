@@ -69,11 +69,48 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
     public EncapsulateFieldsTest(String name) {
         super(name);
     }
+    
+    public void test219140() throws Exception { // #219140 - Encapsulate Field setter with PCS does not throw property changes
+        writeFilesAndWaitForScan(src,
+                new File("encap/A.java", "package encap;\n"
+                + "public class A {\n"
+                + "    public int i;\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        i = 5;\n"
+                + "        System.out.println(i);\n"
+                + "    }\n"
+                + "}\n"));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC), true);
+        verifyContent(src,
+                new File("encap/A.java", "package encap;\n"
+                + "import java.beans.PropertyChangeSupport;\n"
+                + "public class A {\n"
+                + "    public static final String PROP_I = \"PROP_I\";\n"
+                + "    private int i;\n"
+                + "    private final transient PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        setI(5);\n"
+                + "        System.out.println(getI());\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getI() {\n"
+                + "        return i;\n"
+                + "    }\n"
+                + "\n"
+                + "    public void setI(int i) {\n"
+                + "        int oldI = this.i;\n"
+                + "        this.i = i;\n"
+                + "        propertyChangeSupport.firePropertyChange(PROP_I, oldI, i);\n"
+                + "    }\n"
+                + "}\n"));
+    }
 
     public void testEncapsulateFields() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("encap/A.java", "package encap; public class A { public int i; public int j; }"));
-        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0, 1}, EnumSet.of(Modifier.PUBLIC));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0, 1}, EnumSet.of(Modifier.PUBLIC), false);
         verifyContent(src,
                 new File("encap/A.java", "package encap; public class A { private int i; private int j;\n"
                 + "public int getI() { return i; }\n"
@@ -85,7 +122,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
     public void testEncapsulateStaticFields() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("encap/A.java", "package encap; public class A { public Object i; public static Object j; }"));
-        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0, 1}, EnumSet.of(Modifier.PUBLIC));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0, 1}, EnumSet.of(Modifier.PUBLIC), false);
         verifyContent(src,
                 new File("encap/A.java", "package encap; public class A {\n"
                 + "public static Object getJ() { return j; }\n"
@@ -108,7 +145,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "        System.out.println(i);\n"
                 + "    }\n"
                 + "}\n"));
-        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC), false);
         verifyContent(src,
                 new File("encap/A.java", "package encap;\n"
                 + "public class A {\n"
@@ -147,7 +184,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "        System.out.println(a.i);\n"
                 + "    }\n"
                 + "}\n"));
-        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC), false);
         verifyContent(src,
                 new File("encap/A.java", "package encap;\n"
                 + "public class A {\n"
@@ -189,7 +226,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "        System.out.println(i);\n"
                 + "    }\n"
                 + "}\n"));
-        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC), false);
         verifyContent(src,
                 new File("encap/A.java", "package encap;\n"
                 + "public class A {\n"
@@ -228,7 +265,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "        System.out.println(i);\n"
                 + "    }\n"
                 + "}\n"));
-        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC), false);
         verifyContent(src,
                 new File("encap/A.java", "package encap;\n"
                 + "public class A {\n"
@@ -268,7 +305,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "        System.out.println(i);\n"
                 + "    }\n"
                 + "}\n"));
-        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC), false);
         verifyContent(src,
                 new File("encap/A.java", "package encap;\n"
                 + "public class A {\n"
@@ -308,7 +345,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "        System.out.println(i);\n"
                 + "    }\n"
                 + "}\n"));
-        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC), false);
         verifyContent(src,
                 new File("encap/A.java", "package encap;\n"
                 + "public class A {\n"
@@ -348,7 +385,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "        }\n"
                 + "    }\n"
                 + "}\n"));
-        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC), new Problem(false, "ERR_EncapsulateAccessOverGetter"));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC), false, new Problem(false, "ERR_EncapsulateAccessOverGetter"));
         verifyContent(src, new File("encap/A.java", "package encap;\n"
                 + "public class A {\n"
                 + "    private String theField;\n"
@@ -386,7 +423,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}\n"
                 + "\n"));
-        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PROTECTED), new Problem(false, "ERR_EncapsulateAccessGetter"));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PROTECTED), false, new Problem(false, "ERR_EncapsulateAccessGetter"));
         verifyContent(src, new File("encap/A.java", "package encap;\n"
                 + "public class A extends B {\n"
                 + "    private String theField;\n"
@@ -412,7 +449,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
     public void test217262() throws Exception { // #217262
         writeFilesAndWaitForScan(src,
                 new File("encap/A.java", "package encap; import java.util.List; public class A { public List<String> i; public List<Double> j; public void setI(List<String> i) { this.i = i; } }"));
-        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0, 1}, EnumSet.of(Modifier.PUBLIC));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0, 1}, EnumSet.of(Modifier.PUBLIC), false);
         verifyContent(src,
                 new File("encap/A.java", "package encap; import java.util.List; public class A { private List<String> i; private List<Double> j;\n"
                 + "public void setI(List<String> i) { this.i = i; }\n"
@@ -441,7 +478,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "        return 2;\n"
                 + "    }\n"
                 + "}\n"));
-        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC), false);
         verifyContent(src,
                 new File("encap/A.java", "package encap;\n"
                 + "public class A {\n"
@@ -466,7 +503,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "}\n"));
     }
 
-    private void performEncapsulate(FileObject source, final int[] position, final EnumSet<Modifier> methodModifiers, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
+    private void performEncapsulate(FileObject source, final int[] position, final EnumSet<Modifier> methodModifiers, final boolean isGeneratePropertyChangeSupport, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final EncapsulateFieldsRefactoring[] r = new EncapsulateFieldsRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
@@ -493,6 +530,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 r[0].setRefactorFields(fields);
                 r[0].setFieldModifiers(EnumSet.of(Modifier.PRIVATE));
                 r[0].setMethodModifiers(methodModifiers);
+                r[0].setGeneratePropertyChangeSupport(isGeneratePropertyChangeSupport);
             }
         }, true);
 

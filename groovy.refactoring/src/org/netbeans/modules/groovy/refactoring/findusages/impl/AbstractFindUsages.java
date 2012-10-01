@@ -50,11 +50,11 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
-import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.FindUsagesElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.ClassRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -71,11 +71,11 @@ import org.openide.util.Exceptions;
  */
 public abstract class AbstractFindUsages {
 
-    protected final GroovyRefactoringElement element;
+    protected final RefactoringElement element;
     protected final List<FindUsagesElement> usages;
 
     
-    protected AbstractFindUsages(GroovyRefactoringElement element) {
+    protected AbstractFindUsages(RefactoringElement element) {
         this.element = element;
         this.usages = new ArrayList<FindUsagesElement>();
     }
@@ -94,7 +94,7 @@ public abstract class AbstractFindUsages {
      */
     public final void findUsages(FileObject fo) {
         try {
-            SourceUtils.runUserActionTask(fo, new AddFindUsagesElementsTask(fo, element.getDeclaringClassName()));
+            SourceUtils.runUserActionTask(fo, new AddFindUsagesElementsTask(fo));
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -121,9 +121,9 @@ public abstract class AbstractFindUsages {
          * @param defClass fully qualified name of the class for which we are
          * trying to find usages
          */
-        public AddFindUsagesElementsTask(FileObject fo, String defClass) {
+        public AddFindUsagesElementsTask(FileObject fo) {
             this.fo = fo;
-            this.defClass = defClass;
+            this.defClass = element.getDeclaringClassName();
         }
 
         @Override
@@ -135,7 +135,7 @@ public abstract class AbstractFindUsages {
             for (AbstractFindUsagesVisitor visitor : getVisitors(moduleNode, defClass)) {
                 for (ASTNode node : visitor.findUsages()) {
                     if (node.getLineNumber() != -1 && node.getColumnNumber() != -1) {
-                        usages.add(new FindUsagesElement(new GroovyRefactoringElement(result, node, fo, getElementKind()), doc));
+                        usages.add(new FindUsagesElement(new ClassRefactoringElement(fo, node), doc));
                     }
                 }
             }

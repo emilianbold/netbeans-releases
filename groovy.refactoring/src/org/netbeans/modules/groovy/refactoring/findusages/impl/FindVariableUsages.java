@@ -43,13 +43,15 @@
 package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
 import java.util.List;
+import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.VariableRefactoringElement;
 
 /**
  *
@@ -57,7 +59,7 @@ import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
  */
 public class FindVariableUsages extends AbstractFindUsages {
 
-    public FindVariableUsages(GroovyRefactoringElement element) {
+    public FindVariableUsages(RefactoringElement element) {
         super(element);
     }
 
@@ -80,6 +82,7 @@ public class FindVariableUsages extends AbstractFindUsages {
         
         public FindVariableUsagesVisitor(ModuleNode moduleNode, String declaringClass) {
            super(moduleNode);
+           assert (element instanceof VariableRefactoringElement) : "Expected VariableRefactoringElement but it was: " + element.getClass().getSimpleName();
            this.declaringClassName = element.getDeclaringClassName();
            this.variableName = element.getName();
         }
@@ -87,32 +90,36 @@ public class FindVariableUsages extends AbstractFindUsages {
         @Override
         public void visitField(FieldNode field) {
             if (!field.isSynthetic() && variableName.equals(field.getName())) {
-                usages.add(field);
+                addIfEqual(field, field.getName());
             }
             super.visitField(field);
         }
 
         @Override
         public void visitProperty(PropertyNode property) {
-            if (!property.isSynthetic() && variableName.equals(property.getName())) {
-                usages.add(property.getField());
+            if (!property.isSynthetic()) {
+                addIfEqual(property.getField(), property.getName());
             }
             super.visitProperty(property);
         }
 
         @Override
         public void visitVariableExpression(VariableExpression expression) {
-            VariableExpression variableExpression = ((VariableExpression) expression);
-            Variable variable = variableExpression.getAccessedVariable();
+            final VariableExpression variableExpression = ((VariableExpression) expression);
+            final Variable variable = variableExpression.getAccessedVariable();
             if (variable != null) {
-                // FIXME: we have to check also variable declaration type somehow
-                // So far if there are two classes containing both field with the
-                // same name, the result won't be correct
-                if (variableName.equals(variable.getName())) {
-                    usages.add(expression);
-                }
+                addIfEqual(expression, variable.getName());
             }
             super.visitVariableExpression(expression);
+        }
+
+        private void addIfEqual(ASTNode nodeToAdd, String name) {
+            // FIXME: we have to check also variable declaration type somehow
+            // So far if there are two classes containing both field with the
+            // same name, the result won't be correct
+            if (variableName.equals(name)) {
+                usages.add(nodeToAdd);
+            }
         }
     }
 }

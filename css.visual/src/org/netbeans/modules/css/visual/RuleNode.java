@@ -48,13 +48,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
@@ -76,7 +76,10 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * A node representing a CSS rule with no children. The node properties
@@ -141,8 +144,8 @@ public class RuleNode extends AbstractNode {
     void fireContextChanged(boolean forceRefresh) {
         PropertyCategoryPropertySet[] oldSets = getCachedPropertySets();
         PropertyCategoryPropertySet[] newSets = createPropertySets();
-        
-        if(!forceRefresh) {
+
+        if (!forceRefresh) {
             //the client doesn't require the property sets to be really recreated,
             //we may try to update them only if possible
 
@@ -634,6 +637,8 @@ public class RuleNode extends AbstractNode {
         private DeclarationInfo info;
         private PropertyEditor editor;
         private boolean markAsModified;
+        
+        private String valueSet;
 
         public DeclarationProperty(Declaration declaration, boolean markAsModified, PropertyEditor editor) {
             super(declaration.getProperty().getContent().toString(),
@@ -649,7 +654,6 @@ public class RuleNode extends AbstractNode {
             return declaration;
         }
 
-        /* called when updating the property sheet to the new css model */
         private void updateDeclaration(Declaration declaration) {
             //update the declaration
             String oldValue = getValue();
@@ -661,7 +665,16 @@ public class RuleNode extends AbstractNode {
         }
 
         private String getPropertyName() {
-            return declaration.getProperty().getContent().toString();
+            Model model = getModel();
+            final AtomicReference<String> ret_ref = new AtomicReference<String>();
+            model.runReadTask(new Model.ModelTask() {
+                @Override
+                public void run(StyleSheet styleSheet) {
+                    ret_ref.set(declaration.getProperty().getContent().toString());
+
+                }
+            });
+            return ret_ref.get();
         }
 
         @Override
@@ -743,39 +756,91 @@ public class RuleNode extends AbstractNode {
 
         @Override
         public String getValue() {
-            PropertyValue propertyValue = declaration.getPropertyValue();
-            return propertyValue == null ? null : propertyValue.getExpression().getContent().toString();
+            if(valueSet != null) {
+                return valueSet;
+            }
+            
+            Model model = getModel();
+            final AtomicReference<String> ret_ref = new AtomicReference<String>();
+            model.runReadTask(new Model.ModelTask() {
+                @Override
+                public void run(StyleSheet styleSheet) {
+                    PropertyValue propertyValue = declaration.getPropertyValue();
+                    ret_ref.set(propertyValue == null ? null : propertyValue.getExpression().getContent().toString());
+                }
+            });
+            return ret_ref.get();
         }
+        
 
         @Override
-        public void setValue(Object o) {
-            String val = (String) o;
-
-            if (val == null || val.isEmpty()) {
+        public void setValue(final Object o) {
+            final String asString = (String) o;
+            if (asString == null || asString.isEmpty()) {
                 return;
             }
-
             String currentValue = getValue();
-            if (val.equals(currentValue)) {
+            if (asString.equals(currentValue)) {
                 //same value, ignore
                 return;
             }
 
-            if (NONE_PROPERTY_NAME.equals(val)) {
-                //remove the whole declaration
-                Declarations declarations = (Declarations) declaration.getParent();
-                declarations.removeDeclaration(declaration);
-            } else {
-                //update the value
-                declaration.getPropertyValue().getExpression().setContent(val);
-            }
+            this.valueSet = asString;
+            SAVE_CHANGE_TASK.schedule(200);
 
-            if (!isAddPropertyMode()) {
-                applyModelChanges();
-            } else {
-                fireContextChanged(false);
-            }
         }
+        
+        private Task SAVE_CHANGE_TASK = RuleEditorPanel.RP.create(new Runnable() {
+            @Override
+            public void run() {
+                Mutex.EVENT.readAccess(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        final String val = valueSet;
+                        valueSet = null;
+                        
+                        Model model = getModel();
+                        model.runWriteTask(new Model.ModelTask() {
+                            @Override
+                            public void run(StyleSheet styleSheet) {
+                                if (NONE_PROPERTY_NAME.equals(val)) {
+                                    //remove the whole declaration
+                                    Declarations declarations = (Declarations) declaration.getParent();
+                                    declarations.removeDeclaration(declaration);
+                                } else {
+                                    //update the value
+                                    System.out.println("updating property to " + val);
+                                    declaration.getPropertyValue().getExpression().setContent(val);
+                                }
+                            }
+                        });
+
+                        //the fireContextChanged(false) resp. updateDeclaration(...) 
+                        //will be called automatically
+                        //via RuleEditorPanel's css model listener - the event
+                        //is fired synchronously once the model write task above finishes
+
+                        if (!isAddPropertyMode()) {
+                            //save changes
+                            applyModelChanges();
+
+                            //the model save request will cause the source model's 
+                            //Model.CHANGES_APPLIED_TO_DOCUMENT property change event fired
+                            //and the RuleEditorPanel's listener will ASYNCHRONOUSLY
+                            //refresh the css source model.
+
+                        } else {
+                            //for addPropertyMode only
+                            fireContextChanged(false); //will also trigger the updateDeclaration(...) method synchronously 
+                        }
+
+                    }
+                    
+                });
+
+            }
+        });
     }
 
     /**

@@ -48,7 +48,7 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
 import org.netbeans.modules.groovy.editor.api.ElementUtils;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 
 /**
  * Find only direct subtypes for the given declaration class.
@@ -57,7 +57,7 @@ import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
  */
 public class FindDirectSubtypesOnly extends AbstractFindUsages {
 
-    public FindDirectSubtypesOnly(GroovyRefactoringElement element) {
+    public FindDirectSubtypesOnly(RefactoringElement element) {
         super(element);
     }
 

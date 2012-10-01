@@ -53,17 +53,14 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArrayExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.groovy.editor.utils.FindMethodUtils;
 
 /**
  * Utility class for "find type usages". It provides some method for the correct
@@ -192,11 +189,6 @@ public final class FindTypeUtils {
         } else if (leaf instanceof ArrayExpression) {
             if (isCaretOnArrayExpressionType(((ArrayExpression) leaf), doc, caret)) {
                 return ElementUtils.getType(leaf);
-            }
-        } else if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
-            MethodNode method = FindMethodUtils.findMethod(path, (MethodCallExpression) leafParent);
-            if (method != null) {
-                return method;
             }
         } else if (leaf instanceof ConstructorCallExpression) {
             ClassNode constructorType = ((ConstructorCallExpression) leaf).getType();

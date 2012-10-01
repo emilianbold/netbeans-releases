@@ -53,7 +53,6 @@ import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.model.ModelTestBase;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -111,8 +110,7 @@ public class ModelTest extends ModelTestBase {
                 + " } \n"
                 + "a { padding: 2px }\n";
 
-        CssParserResult result = TestUtil.parse(code);
-        Model model = new Model(code, NodeUtil.query(result.getParseTree(), "styleSheet"));
+        Model model = createModel(code);
         ElementFactory factory = model.getElementFactory();
         StyleSheet styleSheet = model.getStyleSheet();
         assertNotNull(styleSheet);
@@ -144,8 +142,7 @@ public class ModelTest extends ModelTestBase {
                 + " } \n"
                 + "a { padding: 2px }\n";
 
-        CssParserResult result = TestUtil.parse(code);
-        Model model = new Model(code, NodeUtil.query(result.getParseTree(), "styleSheet"));
+        Model model = createModel(code);
         StyleSheet styleSheet = model.getStyleSheet();
         assertNotNull(styleSheet);
 

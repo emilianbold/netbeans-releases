@@ -120,7 +120,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         // Insert a missing }
         boolean insertRightBrace = isEndMissing(doc, offset);
 
-        if (!id.isError() && insertMatching && insertRightBrace) {
+        if (!id.isError() && insertMatching && insertRightBrace && !isDocToken(id)) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
 
             int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
@@ -513,6 +513,10 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         }
 
         return false;
+    }
+
+    private boolean isDocToken(JsTokenId id) {
+        return id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT;
     }
 
     @MimeRegistrations({

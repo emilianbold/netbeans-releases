@@ -47,7 +47,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 
 /**
  *
@@ -55,7 +55,7 @@ import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
  */
 public class FindAllSubtypes extends AbstractFindUsages {
 
-    public FindAllSubtypes(GroovyRefactoringElement element) {
+    public FindAllSubtypes(RefactoringElement element) {
         super(element);
     }
 
