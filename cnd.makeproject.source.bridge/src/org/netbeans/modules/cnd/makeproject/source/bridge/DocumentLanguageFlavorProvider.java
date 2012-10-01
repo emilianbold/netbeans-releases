@@ -166,7 +166,11 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             NativeProject nativeProject = nativeFileItem.getNativeProject();
             this.prjRef = new WeakReference<NativeProject>(nativeProject);
             this.languageFlavor = nativeFileItem.getLanguageFlavor();
-            nativeProject.addProjectItemsListener(ListenerImpl.this);
+            if (nativeProject != null) {
+                nativeProject.addProjectItemsListener(ListenerImpl.this);
+            } else {
+                System.err.println("no native project for " + nativeFileItem); 
+            }
             EditorRegistry.addPropertyChangeListener(ListenerImpl.this);
             if (TRACE) System.err.println(path + " created Listener " + System.identityHashCode(ListenerImpl.this));
         }
