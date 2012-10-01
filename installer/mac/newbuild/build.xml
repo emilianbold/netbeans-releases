@@ -621,7 +621,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="sign-installer" description="Sign an OS X Installer product archive '${mpkg.name}'" if="do.sign-app">
         <echo message="Sign an OS X Installer '${mpkg.file}'"/>
         <property name="signed.mpkg.file" value="${basedir}/dist_dmg/signed-${mpkg.name}.mpkg"/>   
-        <exec executable="sh" failonerror="no">
+        <exec executable="sh" failonerror="yes">
             <arg value="-cv"/>
             <arg value="productsign --sign '${signing_identity}' '${mpkg.file}' '${signed.mpkg.file}'"/>
         </exec>
