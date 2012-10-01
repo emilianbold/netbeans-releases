@@ -1877,8 +1877,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
     // fix for unknown specifiers
     unknown_pretype_declaration_specifiers
 
-    (   ( (LITERAL_constexpr | LITERAL_static | literal_inline | LITERAL_friend)* LITERAL_auto declarator[declOther, 0]) => 
-        (LITERAL_constexpr | LITERAL_static | literal_inline | LITERAL_friend)*
+    (   ( (LITERAL_constexpr | cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)* LITERAL_auto declarator[declOther, 0]) => 
+        (LITERAL_constexpr | tq = cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)*
     |
         (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
         |   tq = cv_qualifier 
@@ -3218,10 +3218,11 @@ protected template_template_parameter
  */
 assigned_type_name
 	{/*TypeSpecifier*/int ts;
-         TypeQualifier tq;}
+         TypeQualifier tq;
+         DeclSpecifier ds = dsInvalid;}
 	:
             (options {greedy=true;}: tq=cv_qualifier)? (LITERAL_typename)?
-            ts = simple_type_specifier[false] (postfix_cv_qualifier)?
+            ts = type_specifier[ds, false] (postfix_cv_qualifier)?
             abstract_declarator
 	;
 

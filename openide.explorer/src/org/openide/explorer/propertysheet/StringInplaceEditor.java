@@ -101,6 +101,10 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
     public void connect(PropertyEditor p, PropertyEnv env) {
         setActionCommand(COMMAND_SUCCESS);
         this.env = env;
+        
+        if(SheetTable.isValueIncrementEnabled(env)) {
+            ComboInplaceEditor.disable_VK_UP_VK_DOWN_Keystrokes(this);
+        }
 
         if (editor == p) {
             return;

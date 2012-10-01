@@ -248,6 +248,10 @@ public final class NavigatorController implements LookupListener, PropertyChange
      * not available for activation.
      */
     public void activatePanel (NavigatorPanel panel) {
+        String iaeText = "Panel is not available for activation: "; //NOI18N
+        if (currentPanels == null) {
+            throw new IllegalArgumentException(iaeText + panel);
+        }
         NavigatorPanel toActivate = null;
         boolean contains = false;
         for (NavigatorPanel navigatorPanel : currentPanels) {
@@ -261,8 +265,8 @@ public final class NavigatorController implements LookupListener, PropertyChange
                 break;
             }
         }
-        if (currentPanels == null || !contains) {
-            throw new IllegalArgumentException("Panel is not available for activation: " + panel); //NOI18N
+        if (!contains) {
+            throw new IllegalArgumentException(iaeText + panel);
         }
         NavigatorPanel oldPanel = navigatorTC.getSelectedPanel();
         if (!toActivate.equals(oldPanel)) {
@@ -618,9 +622,9 @@ public final class NavigatorController implements LookupListener, PropertyChange
     /** Installs user actions handling for NavigatorTC top component */
     public void installActions () {
         // ESC key handling - return focus to previous focus owner
-        KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
+        KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
         //JComponent contentArea = navigatorTC.getContentArea();
-        navigatorTC.getTopComponent().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(returnKey, "return"); //NOI18N
+        navigatorTC.getTopComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(returnKey, "return"); //NOI18N
         navigatorTC.getTopComponent().getActionMap().put("return", new ESCHandler()); //NOI18N
     }
 

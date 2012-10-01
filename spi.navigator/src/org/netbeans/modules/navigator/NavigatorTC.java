@@ -274,7 +274,7 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
             contentArea.removeAll();
             panelSelector.removeAllItems();
             // #63777: hide panel selector when only one panel available
-            holderPanel.setVisible(panelsCount != 1);
+            holderPanel.setVisible(panelsCount != 1 || (select instanceof NavigatorPanelWithToolbar && ((NavigatorPanelWithToolbar)select).getToolbarComponent() != null));
             boolean selectFound = false;
             for (NavigatorPanel curPanel : panels) {
                 panelSelector.addItem(curPanel.getDisplayName());

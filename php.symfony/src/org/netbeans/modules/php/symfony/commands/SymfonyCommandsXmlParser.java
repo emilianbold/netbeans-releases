@@ -130,10 +130,8 @@ public final class SymfonyCommandsXmlParser extends DefaultHandler {
 
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        switch (content) {
-            case DESCRIPTION:
-                currentDescription = new String(ch, start, length);
-                break;
+        if (content == Content.DESCRIPTION) {
+            currentDescription = new String(ch, start, length);
         }
     }
 }

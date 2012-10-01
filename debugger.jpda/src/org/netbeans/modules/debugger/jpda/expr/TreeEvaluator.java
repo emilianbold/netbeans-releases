@@ -115,10 +115,22 @@ public class TreeEvaluator {
     {
         //StackFrame frame = evaluationContext.getFrame();
         ThreadReference frameThread = StackFrameWrapper.thread(evaluationContext.getFrame());
-        int frameIndex;
+        int frameIndex = -1;
         try {
-            StackFrame currentFrame = evaluationContext.getFrame();
-            frameIndex = indexOf(ThreadReferenceWrapper.frames(frameThread), currentFrame);
+            StackFrame currentFrame;
+            int numTries = 100; // Not nice at all, but what can we do when we're randomly invalidated?
+            do {
+                currentFrame = evaluationContext.getFrame();
+                try {
+                    frameIndex = indexOf(ThreadReferenceWrapper.frames(frameThread), currentFrame);
+                } catch (InvalidStackFrameExceptionWrapper isfex) {
+                    if (numTries-- > 0) {
+                        continue;
+                    } else {
+                        throw isfex;
+                    }
+                }
+            } while (false);
         } catch (ObjectCollectedExceptionWrapper ocex) {
             throw new InvalidExpressionException(NbBundle.getMessage(
                 TreeEvaluator.class, "CTL_EvalError_collected_context"));
@@ -229,11 +241,11 @@ public class TreeEvaluator {
         //return null;
     }
 
-    private int indexOf(List<StackFrame> frames, StackFrame frame) {
+    private int indexOf(List<StackFrame> frames, StackFrame frame) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper {
         int n = frames.size();
-        Location loc = frame.location();
+        Location loc = StackFrameWrapper.location(frame);
         for (int i = 0; i < n; i++) {
-            if (loc.equals(frames.get(i).location())) return i;
+            if (loc.equals(StackFrameWrapper.location(frames.get(i)))) return i;
         }
         return -1;
     }

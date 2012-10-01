@@ -62,7 +62,6 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbModuleSuite;
 
 /** Test of web application debugging. Manual test specification is here:
  * http://wiki.netbeans.org/TS_70_WebEnterpriseDebug
@@ -85,7 +84,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
     }
 
     public static Test suite() {
-        return addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(ServletDebuggingTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, ServletDebuggingTest.class,
                 "testSetBreakpoint",
                 "testDebugProject",
                 // testStepOut must be before testStepInto to prevent stopping debugger at JDK sources
@@ -93,8 +92,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
                 "testStepInto",
                 "testStepOver",
                 "testApplyCodeChanges",
-                "testStopServer").
-                enableModules(".*").clusters(".*").suite();
+                "testStopServer");
     }
 
     /** Print test name and initialize status bar tracer. */

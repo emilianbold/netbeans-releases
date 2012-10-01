@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.sql.Types;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -74,7 +73,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
-    private static List<String> GLOBAL_TYPES = Arrays.asList(Type.ARRAY, Type.STRING, Type.BOOLEAN, Type.NUMBER);
+    private static List<String> GLOBAL_TYPES = Arrays.asList(Type.ARRAY, Type.STRING, Type.BOOLEAN, Type.NUMBER, Type.UNDEFINED);
 
     public JsSemanticAnalyzer() {
         this.cancelled = false;
@@ -177,7 +176,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                             highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         }
                     } else {
-                        if (object.getOccurrences().isEmpty()) {
+                        if (object.getOccurrences().isEmpty() && !GLOBAL_TYPES.contains(object.getName())) {
                             OffsetRange range = object.getDeclarationName().getOffsetRange();
                             if (range.getStart() < range.getEnd()) {
                                 // some virtual variables (like arguments) doesn't have to be declared, but are in the model

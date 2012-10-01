@@ -83,6 +83,21 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         // Bug 217052 - unexpected token: override in editor
         performStaticTest("bug217052.cpp");
     }        
+
+    public void testBug217470() throws Exception {
+        // Bug 217470 - Unexpected token: struct in simple template
+        performStaticTest("bug217470.cpp");
+    }        
+    
+    public void testBug217858() throws Exception {
+        // Bug 217858 - C++11 parser fails on u8 in static_assert
+        performStaticTest("bug217858.cpp");
+    }     
+
+    public void testBug217827() throws Exception {
+        // Bug 217827 - Parser fails on const auto (C++11)
+        performStaticTest("bug217827.cpp");
+    }     
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

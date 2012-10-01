@@ -45,6 +45,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,6 +69,30 @@ public class RenameTest extends RefactoringTestBase {
 
     public RenameTest(String name) {
         super(name);
+    }
+    
+    public void test218766() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}"));
+        writeFilesAndWaitForScan(test,
+                new File("t/ATest.java", "package t;\n"
+                + "import junit.framework.TestCase;\n"
+                + "\n"
+                + "public class ATest extends TestCase {\n"
+                + "}"));
+        performRenameFolder(src.getFileObject("t"), "u");
+        verifyContent(src,
+                new File("u/A.java", "package u;\n"
+                + "public class A {\n"
+                + "}"));
+        verifyContent(test,
+                new File("t/ATest.java", "package t;\n"
+                + "import junit.framework.TestCase;\n"
+                + "\n"
+                + "public class ATest extends TestCase {\n"
+                + "}"));
     }
 
     public void testRenameProp() throws Exception {
@@ -602,6 +627,24 @@ public class RenameTest extends RefactoringTestBase {
             }
         }, true);
         
+        RefactoringSession rs = RefactoringSession.create("Rename");
+        List<Problem> problems = new LinkedList<Problem>();
+
+        addAllProblems(problems, r[0].preCheck());
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, r[0].prepare(rs));
+        }
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, rs.doRefactoring(true));
+        }
+
+        assertProblems(Arrays.asList(expectedProblems), problems);
+    }
+    
+    private void performRenameFolder(FileObject source, final String newname, Problem... expectedProblems) throws Exception {
+        final RenameRefactoring[] r = new RenameRefactoring[1];
+        r[0] = new RenameRefactoring(Lookups.singleton(source));
+        r[0].setNewName(newname);
         RefactoringSession rs = RefactoringSession.create("Rename");
         List<Problem> problems = new LinkedList<Problem>();
 

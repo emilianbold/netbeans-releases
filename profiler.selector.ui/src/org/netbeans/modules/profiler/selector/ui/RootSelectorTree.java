@@ -301,7 +301,7 @@ public class RootSelectorTree extends JPanel {
         }
 
         private void closeProgress() {
-            if (pd != null && pd.isOpened()) {
+            if (pd != null) {
                 pd.close();
                 pd = null;
             }                

@@ -78,7 +78,6 @@ import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.netbeans.modules.javascript2.editor.formatter.CodeStyle.WrapStyle;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -187,8 +186,8 @@ public class FmtOptions {
     public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
     public static final String spaceBeforeSemi = "spaceBeforeSemi"; //NOI18N
     public static final String spaceAfterSemi = "spaceAfterSemi"; //NOI18N
-//    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
-//    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
+    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
+    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
 
     public static final String placeElseOnNewLine = "placeElseOnNewLine"; //NOI18N
     public static final String placeWhileOnNewLine = "placeWhileOnNewLine"; //NOI18N
@@ -214,6 +213,7 @@ public class FmtOptions {
     public static final String wrapChainedMethodCalls = "wrapChainedMethodCalls"; //NOI18N
     public static final String wrapAfterDotInChainedMethodCalls = "wrapAfterDotInChainedMethodCalls"; //NOI18N
     public static final String wrapArrayInit = "wrapArrayInit"; //NOI18N
+    public static final String wrapArrayInitItems = "wrapArrayInitItems"; //NOI18N
     public static final String wrapFor = "wrapFor"; //NOI18N
     public static final String wrapForStatement = "wrapForStatement"; //NOI18N
     public static final String wrapIfStatement = "wrapIfStatement"; //NOI18N
@@ -227,6 +227,7 @@ public class FmtOptions {
     public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
     public static final String wrapBlockBraces = "wrapBlockBraces";  //NOI18N
     public static final String wrapStatementsOnTheLine = "wrapStateMentsOnTheLine"; // NOI18N
+    public static final String wrapObjects = "wrapObjects"; // NOI18N
     public static final String wrapProperties = "wrapProperties"; // NOI18N
 
     public static final String preferFullyQualifiedNames = "preferFullyQualifiedNames"; //NOI18N
@@ -365,8 +366,8 @@ public class FmtOptions {
             { spaceAfterComma, TRUE},
             { spaceBeforeSemi, FALSE},
             { spaceAfterSemi, TRUE},
-//            { spaceBeforeColon, TRUE},
-//            { spaceAfterColon, TRUE},
+            { spaceBeforeColon, FALSE},
+            { spaceAfterColon, TRUE},
 
 	    { alignMultilineMethodParams, FALSE}, //NOI18N
             { alignMultilineCallArgs, FALSE}, //NOI18N
@@ -392,6 +393,7 @@ public class FmtOptions {
             { wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N
             { wrapAfterDotInChainedMethodCalls, TRUE}, //NOI18N
             { wrapArrayInit, WRAP_NEVER}, //NOI18N
+            { wrapArrayInitItems, WRAP_NEVER}, //NOI18N
             { wrapFor, WRAP_NEVER}, //NOI18N
             { wrapForStatement, WRAP_ALWAYS}, //NOI18N
             { wrapIfStatement, WRAP_ALWAYS}, //NOI18N
@@ -405,6 +407,7 @@ public class FmtOptions {
             { wrapAssignOps, WRAP_NEVER},
             { wrapBlockBraces, TRUE},
             { wrapStatementsOnTheLine, TRUE},
+            { wrapObjects, WRAP_NEVER},
             { wrapProperties, WRAP_NEVER},
 
             { preferFullyQualifiedNames, FALSE},
@@ -460,7 +463,10 @@ public class FmtOptions {
         private final Preferences preferences;
         private final Preferences previewPrefs;
 
-        protected CategorySupport(Preferences preferences, String id, JPanel panel, String previewText, String[]... forcedOptions) {
+        private final String mimeType;
+
+        protected CategorySupport(String mimeType, Preferences preferences, String id, JPanel panel, String previewText, String[]... forcedOptions) {
+            this.mimeType = mimeType;
             this.preferences = preferences;
             this.id = id;
             this.panel = panel;
@@ -539,7 +545,7 @@ public class FmtOptions {
                 previewPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FmtOptions.class, "AN_Preview")); //NOI18N
                 previewPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FmtOptions.class, "AD_Preview")); //NOI18N
                 //previewPane.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
-                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(JsTokenId.JAVASCRIPT_MIME_TYPE));
+                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(mimeType));
                 previewPane.setEditable(false);
             }
             return previewPane;
@@ -614,12 +620,14 @@ public class FmtOptions {
 
         public static final class Factory implements PreferencesCustomizer.Factory {
 
+            private final String mimeType;
             private final String id;
             private final Class<? extends JPanel> panelClass;
             private final String previewText;
             private final String[][] forcedOptions;
 
-            public Factory(String id, Class<? extends JPanel> panelClass, String previewText, String[]... forcedOptions) {
+            public Factory(String mimeType, String id, Class<? extends JPanel> panelClass, String previewText, String[]... forcedOptions) {
+                this.mimeType = mimeType;
                 this.id = id;
                 this.panelClass = panelClass;
                 this.previewText = previewText;
@@ -629,7 +637,7 @@ public class FmtOptions {
             @Override
             public PreferencesCustomizer create(Preferences preferences) {
                 try {
-                    return new CategorySupport(preferences, id, panelClass.newInstance(), previewText, forcedOptions);
+                    return new CategorySupport(mimeType, preferences, id, panelClass.newInstance(), previewText, forcedOptions);
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Exception during creating formatter customiezer", e);
                     return null;
@@ -640,16 +648,19 @@ public class FmtOptions {
         // Private methods -----------------------------------------------------
 
         private void performOperation(int operation, JComponent jc, String optionID, Preferences p) {
-            switch(operation) {
-            case LOAD:
-                loadData(jc, optionID, p);
-                break;
-            case STORE:
-                storeData(jc, optionID, p);
-                break;
-            case ADD_LISTENERS:
-                addListener(jc);
-                break;
+            switch (operation) {
+                case LOAD:
+                    loadData(jc, optionID, p);
+                    break;
+                case STORE:
+                    storeData(jc, optionID, p);
+                    break;
+                case ADD_LISTENERS:
+                    addListener(jc);
+                    break;
+                default:
+                    LOGGER.log(Level.WARNING, "Unknown operation value {0}", operation);
+                    break;
             }
         }
 

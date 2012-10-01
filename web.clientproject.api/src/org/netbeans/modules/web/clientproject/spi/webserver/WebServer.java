@@ -51,6 +51,8 @@ import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Map;
@@ -59,6 +61,7 @@ import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -138,11 +141,7 @@ public final class WebServer {
             if (pair != null) {
                 String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                         FileUtil.getRelativePath(pair.siteRoot, projectFile);
-                try {
-                    return new URL("http://localhost:"+PORT+path); //NOI18N
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                return WebUtils.stringToUrl("http://localhost:"+PORT+path); //NOI18N
             }
         } else {
             // fallback if project was not found:
@@ -152,11 +151,7 @@ public final class WebServer {
                 if (relPath != null) {
                     String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                             relPath;
-                    try {
-                        return new URL("http://localhost:"+PORT+path); //NOI18N
-                    } catch (MalformedURLException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    return WebUtils.stringToUrl("http://localhost:"+PORT+path); //NOI18N
                 }
             }
         }
@@ -167,10 +162,16 @@ public final class WebServer {
      * Converts server URL back into project's source file.
      */
     public FileObject fromServer(URL serverURL) {
-        return fromServer(serverURL.getPath());
+        String path;
+        try {
+            path = serverURL.toURI().getPath();
+        } catch (URISyntaxException ex) {
+            path = serverURL.getPath(); // fallback
+        }
+        return fromServer(path);
     }
 
-    private FileObject fromServer(String serverURL) {
+    private FileObject fromServer(String serverURLPath) {
         Map.Entry<Project, Pair> rootEntry = null;
         for (Map.Entry<Project, Pair> entry : deployedApps.entrySet()) {
             if ("/".equals(entry.getValue().webContextRoot)) { //NOI18N
@@ -178,12 +179,12 @@ public final class WebServer {
                 // process this one as last one:
                 continue;
             }
-            if (serverURL.startsWith(entry.getValue().webContextRoot+"/")) { //NOI18N
-                return findFile(entry, serverURL);
+            if (serverURLPath.startsWith(entry.getValue().webContextRoot+"/")) { //NOI18N
+                return findFile(entry, serverURLPath);
             }
         }
         if (rootEntry != null) {
-            return findFile(rootEntry, serverURL);
+            return findFile(rootEntry, serverURLPath);
         }
         return null;
     }

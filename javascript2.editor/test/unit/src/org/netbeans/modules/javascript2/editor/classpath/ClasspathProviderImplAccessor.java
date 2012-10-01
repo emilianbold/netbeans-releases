@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.classpath;
 
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -51,5 +52,9 @@ public class ClasspathProviderImplAccessor {
     
     public static FileObject getJsStubs() {
         return ClassPathProviderImpl.getJsStubs();
+    }
+
+    public static RequestProcessor getRequestProcessor() {
+        return ClassPathProviderImpl.RP;
     }
 }

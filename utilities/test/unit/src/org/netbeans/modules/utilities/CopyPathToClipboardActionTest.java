@@ -42,8 +42,10 @@
 package org.netbeans.modules.utilities;
 
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -101,8 +103,19 @@ public class CopyPathToClipboardActionTest extends NbTestCase {
     }
 
     @Override
-    public void tearDown() {
+    public void tearDown() throws IOException {
         dataObjects = null;
+        FileObject configRoot = FileUtil.getConfigRoot();
+        FileObject shadowFile = configRoot.getFileObject(
+                "testDataShadows/testShadowFile");
+        if (shadowFile != null) {
+            shadowFile.delete();
+        }
+        FileObject testDataShadowsFolder = configRoot.getFileObject(
+                "testDataShadows");
+        if (testDataShadowsFolder != null) {
+            testDataShadowsFolder.delete();
+        }
     }
 
     /**
@@ -115,7 +128,8 @@ public class CopyPathToClipboardActionTest extends NbTestCase {
         assertTrue(action.getAbsolutePath(dataObjects.get(1)).matches(
                 ".*test2[/\\\\]data\\.txt$")); // data.txt
         assertTrue(action.getAbsolutePath(dataObjects.get(2)).matches(
-                ".*test2[/\\\\]archive.zip:b\\.txt$")); // ZIP file
+                ".*test2[/\\\\]archive.zip" + File.pathSeparator
+                + "b\\.txt$")); // ZIP file
         assertTrue(action.getAbsolutePath(dataObjects.get(3)).matches(
                 ".*test2[/\\\\]data\\.txt$")); // Shadow File for data.txt
     }
@@ -152,5 +166,16 @@ public class CopyPathToClipboardActionTest extends NbTestCase {
         DataObject testShadowFile = DataShadow.create(testDataShodowsFldr,
                 "testShadowFile", DataObject.find(referencedFile));
         return testShadowFile;
+    }
+
+    public void testGetSelectedPaths() {
+        Collection<String> paths = action.getSelectedPaths();
+        assertEquals("Duplicate shadow file should be ignored",
+                3, paths.size());
+        String[] pathsArray = paths.toArray(new String[paths.size()]);
+        // check that collection is sorted
+        assertTrue(pathsArray[0].contains("test1")); //test1/A/TestClass.java
+        assertTrue(pathsArray[1].contains("archive.zip")); //test2/archive.zip?
+        assertTrue(pathsArray[2].contains("data.txt")); //test2/data.txt
     }
 }

@@ -54,7 +54,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JsCodeCompletionParamTypesTest extends JsTestBase {
+public class JsCodeCompletionParamTypesTest extends JsCodeComplationBase {
     
     public JsCodeCompletionParamTypesTest(String testName) {
         super(testName);

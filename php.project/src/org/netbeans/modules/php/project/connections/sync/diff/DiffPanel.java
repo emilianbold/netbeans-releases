@@ -332,14 +332,10 @@ public final class DiffPanel extends JPanel {
     void rememberEncoding(TmpLocalFile tmpLocalFile) {
         if (tmpLocalFile != null) {
             String path = tmpLocalFile.getAbsolutePath();
-            assert path != null;
-            if (path != null) {
-                FileObject fo = FileUtil.toFileObject(new File(path));
-                assert fo != null;
-                if (fo != null) {
-                    DiffFileEncodingQueryImpl.addCharset(fo, Charset.forName(charsetName));
-                }
-            }
+            assert path != null : "Path for local tmp file should be present";
+            FileObject fo = FileUtil.toFileObject(new File(path));
+            assert fo != null : "Fileobject for " + path + " should exist";
+            DiffFileEncodingQueryImpl.addCharset(fo, Charset.forName(charsetName));
         }
     }
 

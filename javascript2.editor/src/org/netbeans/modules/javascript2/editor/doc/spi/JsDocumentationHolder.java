@@ -68,9 +68,12 @@ public abstract class JsDocumentationHolder {
 
     private final Snapshot snapshot;
 
+    private final JsDocumentationProvider provider;
+
     private Map<String, List<OffsetRange>> occurencesMap = null;
 
-    public JsDocumentationHolder(Snapshot snapshot) {
+    public JsDocumentationHolder(JsDocumentationProvider provider, Snapshot snapshot) {
+        this.provider = provider;
         this.snapshot = snapshot;
     }
 
@@ -106,6 +109,14 @@ public abstract class JsDocumentationHolder {
             occurencesMap.put(type.getType(), new LinkedList<OffsetRange>());
         }
         occurencesMap.get(type.getType()).add(DocumentationUtils.getOffsetRange(type));
+    }
+
+    /**
+     * Gets the {@link JsDocumentationProvider} which creates this holder.
+     * @return JsDocumentationProvider
+     */
+    public JsDocumentationProvider getProvider() {
+        return provider;
     }
 
     /**
@@ -219,9 +230,15 @@ public abstract class JsDocumentationHolder {
 
             // get to first EOL
             while (ts.movePrevious()
-                    && ts.token().id() != JsTokenId.EOL
+                    && ts.token().id() != JsTokenId.DOC_COMMENT
+                    && ts.token().id() != JsTokenId.BLOCK_COMMENT
+                    && ts.token().id() != JsTokenId.BRACKET_RIGHT_CURLY
                     && ts.token().id() != JsTokenId.OPERATOR_SEMICOLON) {
                 // do nothing - just search for interesting tokens
+            }
+
+            if (ts.token() != null && ts.token().id() == JsTokenId.DOC_COMMENT) {
+                return ts.token().offset(tokenHierarchy) + ts.token().length();
             }
 
             // search for DOC_COMMENT

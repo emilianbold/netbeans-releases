@@ -351,7 +351,7 @@ class CompletionContextFinder {
         EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
         CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL, NAMESPACE_KEYWORD,
-        USE_KEYWORD, DEFAULT_PARAMETER_VALUE, OPEN_TAG, THROW_CATCH, CLASS_MEMBER_IN_STRING,
+        USE_KEYWORD, DEFAULT_PARAMETER_VALUE, OPEN_TAG, THROW, CATCH, CLASS_MEMBER_IN_STRING,
         INTERFACE_CONTEXT_KEYWORDS, USE_TRAITS
     };
 
@@ -397,7 +397,7 @@ class CompletionContextFinder {
             return clsIfaceDeclContext;
         }
         if (acceptTokenChains(tokenSequence, THROW_NEW_TOKEN_CHAINS, moveNextSucces)) {
-            return CompletionContext.THROW_CATCH;
+            return CompletionContext.THROW;
         } else if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS, moveNextSucces)) {
             // has to be checked AFTER: THROW_NEW_TOKEN_CHAINS
             return CompletionContext.NEW_CLASS;
@@ -415,7 +415,7 @@ class CompletionContextFinder {
         } else if (acceptTokenChains(tokenSequence, PHPDOC_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.PHPDOC;
         } else if (acceptTokenChains(tokenSequence, CATCH_TOKENCHAINS, moveNextSucces)) {
-            return CompletionContext.THROW_CATCH;
+            return CompletionContext.CATCH;
         } else if (acceptTokenChains(tokenSequence, USE_TRAIT_KEYWORD_TOKENS, moveNextSucces)) {
             return CompletionContext.USE_TRAITS;
         } else if (acceptTokenChains(tokenSequence, USE_KEYWORD_TOKENS, moveNextSucces)) {

@@ -44,20 +44,22 @@ package org.netbeans.modules.web.clientproject.ui;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.remote.RemoteFS;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -65,6 +67,9 @@ import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.ToolsAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -82,10 +87,17 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
+@ActionReferences({
+    @ActionReference(
+        id=@ActionID(id="org.netbeans.modules.project.ui.problems.BrokenProjectActionFactory", category="Project"),
+        position=2950,
+        path="Projects/org-netbeans-modules-web-clientproject/Actions")
+})
 public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     private ClientSideProject project;
@@ -220,7 +232,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean arg0) {
-            return CommonProjectActions.forType(ClientSideProjectType.TYPE);
+            return CommonProjectActions.forType("org-netbeans-modules-web-clientproject"); // NOI18N
         }
 
         @Override
@@ -279,6 +291,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         // XXX threading! for all fields
         private ClientSideProject project;
+        private final FileObject nbprojectFolder;
         private FileObject siteRootFolder;
         private FileObject testsFolder;
         private FileObject configFolder;
@@ -288,6 +301,8 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         public ClientSideProjectChildren(ClientSideProject p) {
             this.project = p;
+            nbprojectFolder = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+            assert nbprojectFolder != null : "Folder nbproject must exist for project " + project.getName();
             updateKeys();
             project.getRemoteFiles().addChangeListener(new ChangeListener() {
                 @Override
@@ -308,10 +323,20 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                         refreshKeyInAWT(BasicNodes.Sources);
                     }
                     if (ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName())) {
+                        // XXX refactor
+                        testsFolder = project.getTestsFolder();
+                        testsFolderEmpty = testsFolder != null && testsFolder.getChildren().length == 0;
                         refreshKeyInAWT(BasicNodes.Tests);
+                        // refresh sources as well, they can contain tests
+                        refreshKeyInAWT(BasicNodes.Sources);
                     }
                     if (ClientSideProjectConstants.PROJECT_CONFIG_FOLDER.equals(evt.getPropertyName())) {
-                        refreshKeyInAWT(BasicNodes.Tests);
+                        // XXX refactor
+                        configFolder = project.getConfigFolder();
+                        configFolderEmpty = configFolder != null && configFolder.getChildren().length == 0;
+                        refreshKeyInAWT(BasicNodes.Configuration);
+                        // refresh sources as well, they can contain config
+                        refreshKeyInAWT(BasicNodes.Sources);
                     }
                 }
             });
@@ -439,19 +464,58 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         protected Node[] createNodes(BasicNodes k) {
             switch (k) {
                 case Sources:
-                    return createNodeForFolder(k, project.getSiteRootFolder(), new String[]{"nbproject", "build"}); //NOI18N
+                    return createNodeForFolder(k, project.getSiteRootFolder(), getIgnoredFiles(k));
                 case Tests:
-                    return createNodeForFolder(k, project.getTestsFolder(), new String[]{"nbproject", "build"}); //NOI18N
+                    return createNodeForFolder(k, project.getTestsFolder(), getIgnoredFiles(k));
                 case RemoteFiles:
                     return new Node[]{new RemoteFilesNode(project)};
                 case Configuration:
-                    return createNodeForFolder(k, project.getConfigFolder(), new String[0]);
+                    return createNodeForFolder(k, project.getConfigFolder(), getIgnoredFiles(k));
                 default:
                     return new Node[0];
             }
         }
 
-        private Node[] createNodeForFolder(BasicNodes type, FileObject root, String[] ignoreList) {
+        private List<File> getIgnoredFiles(BasicNodes basicNodes) {
+            List<File> ignoredFiles = new ArrayList<File>();
+            FileObject buildFolder = project.getProjectDirectory().getFileObject("build"); // NOI18N
+            switch (basicNodes) {
+                case Sources:
+                    addIgnoredFile(ignoredFiles, nbprojectFolder);
+                    addIgnoredFile(ignoredFiles, testsFolder);
+                    addIgnoredFile(ignoredFiles, configFolder);
+                    addIgnoredFile(ignoredFiles, buildFolder);
+                    break;
+                case Tests:
+                    addIgnoredFile(ignoredFiles, nbprojectFolder);
+                    addIgnoredFile(ignoredFiles, configFolder);
+                    addIgnoredFile(ignoredFiles, buildFolder);
+                    break;
+                case Configuration:
+                    addIgnoredFile(ignoredFiles, nbprojectFolder);
+                    addIgnoredFile(ignoredFiles, testsFolder);
+                    addIgnoredFile(ignoredFiles, buildFolder);
+                    break;
+                case RemoteFiles:
+                    // noop
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown BasicNodes: " + basicNodes);
+            }
+            return ignoredFiles;
+        }
+
+        private void addIgnoredFile(List<File> ignoredFiles, FileObject fileObject) {
+            if (fileObject == null) {
+                return;
+            }
+            File file = FileUtil.toFile(fileObject);
+            if (file != null) {
+                ignoredFiles.add(file);
+            }
+        }
+
+        private Node[] createNodeForFolder(BasicNodes type, FileObject root, List<File> ignoreList) {
             if (root != null && root.isValid()) {
                 DataFolder df = DataFolder.findFolder(root);
                 if (df.getChildren().length > 0 || type == BasicNodes.Sources) {
@@ -484,7 +548,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private static final Image TESTS_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/tests-badge.gif", true); // NOI18N
         private static final Image CONFIGS_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/config-badge.gif", true); // NOI18N
 
-        public FolderFilterNode(BasicNodes nodeType, Node folderNode, String[] ignoreList) {
+        public FolderFilterNode(BasicNodes nodeType, Node folderNode, List<File> ignoreList) {
             super(folderNode, folderNode.isLeaf() ? Children.LEAF :
                     new FolderFilterChildren(folderNode, ignoreList));
             this.nodeType = nodeType;
@@ -564,19 +628,29 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     private static class FolderFilterChildren extends FilterNode.Children {
 
-        private String[] ignoreList;
+        private final Set<File> ignoreList = new WeakSet<File>();
 
-        public FolderFilterChildren(Node n, String[] ignoreList) {
+        public FolderFilterChildren(Node n, List<File> ignoreList) {
             super(n);
-            this.ignoreList = ignoreList;
+            this.ignoreList.addAll(ignoreList);
         }
 
         @Override
         protected Node[] createNodes(Node key) {
-            for (String ignore : ignoreList) {
-                if (key.getDisplayName().equals(ignore)) {
-                    return new Node[0];
-                }
+            FileObject fo = key.getLookup().lookup(FileObject.class);
+            if (fo == null) {
+                return super.createNodes(key);
+            }
+            File file = FileUtil.toFile(fo);
+            if (file == null) {
+                // XX add logging
+                return super.createNodes(key);
+            }
+            if (!VisibilityQuery.getDefault().isVisible(fo)) {
+                return new Node[0];
+            }
+            if (ignoreList.contains(file)) {
+                return new Node[0];
             }
             return super.createNodes(key);
         }
@@ -627,7 +701,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             } catch (DataObjectNotFoundException ex) {
                 return new Node[] {};
             }
-            return new Node[] { dobj.getNodeDelegate() };
+            return new Node[] { dobj.getNodeDelegate().cloneNode() };
         }
 
         @Override
@@ -663,7 +737,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
     }
-    
+
     public static class RemoteFile {
         private URL url;
         private String name;
@@ -689,7 +763,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         public String getDescription() {
             return urlAsString;
         }
-        
+
         @Override
         public int hashCode() {
             int hash = 3;
@@ -711,7 +785,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
             return true;
         }
-        
+
     }
 
 }

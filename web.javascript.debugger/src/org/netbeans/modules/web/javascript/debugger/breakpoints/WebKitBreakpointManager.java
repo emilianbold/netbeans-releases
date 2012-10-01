@@ -156,10 +156,13 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             if (b != null) {
                 return ;
             }
-            String url = lb.getURLString(pc.getProject(), d.getConnectionURL());
-            url = reformatFileURL(url);
-            b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
-            d.addListener(this);
+            URL curl = d.getConnectionURL();
+            if (curl != null) {
+                String url = lb.getURLString(pc.getProject(), curl);
+                url = reformatFileURL(url);
+                b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                d.addListener(this);
+            }
         }
 
         @Override
@@ -177,9 +180,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         private void resubmit() {
             if (b != null) {
                 d.removeLineBreakpoint(b);
-                String url = lb.getURLString(pc.getProject(), d.getConnectionURL());
-                url = reformatFileURL(url);
-                b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                URL curl = d.getConnectionURL();
+                if (curl != null) {
+                    String url = lb.getURLString(pc.getProject(), curl);
+                    url = reformatFileURL(url);
+                    b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                }
             }
         }
         
@@ -235,7 +241,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         private final ProjectContext pc;
         private final DOMBreakpoint db;
         private Node node;
-        private Set<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint> bps;
+        private Map<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint, DOMBreakpoint.Type> bps;
         
         public WebKitDOMBreakpointManager(WebKitDebugging wd, ProjectContext pc, DOMBreakpoint db) {
             super(wd.getDebugger(), db);
@@ -285,12 +291,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             if (types.isEmpty()) {
                 return ;
             }
-            bps = new HashSet<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint>(types.size());
+            bps = new HashMap<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint, DOMBreakpoint.Type>(types.size());
             for (DOMBreakpoint.Type type : types) {
                 org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
                         d.addDOMBreakpoint(node, type.getTypeString());
                 if (b != null) {
-                    bps.add(b);
+                    bps.put(b, type);
                 }
             }
         }
@@ -304,13 +310,24 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         }
         
         private void removeBreakpoints() {
+            Node theNode = this.node;
             this.node = null;
+            if (theNode != null) {
+                removeBreakpoints(theNode);
+            }
+        }
+        
+        private void removeBreakpoints(Node theNode) {
             if (bps == null) {
                 return ;
             }
             if (d.isEnabled()) {
-                for (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b : bps) {
-                    d.removeLineBreakpoint(b);
+                for (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b : bps.keySet()) {
+                    if (b.getBreakpointID() != null) {
+                        d.removeLineBreakpoint(b);
+                    } else {
+                        d.removeDOMBreakpoint(theNode, bps.get(b).getTypeString());
+                    }
                 }
             }
             bps = null;
@@ -343,9 +360,15 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             } else if (DOMBreakpoint.PROP_TYPES.equals(propertyName)) {
                 Node theNode = node;
                 if (theNode != null) {
-                    removeBreakpoints();
+                    removeBreakpoints(theNode);
                     addTo(theNode);
                 }
+            } else if (DOMBreakpoint.PROP_NODE.equals(propertyName)) {
+                DOMNode oldNode = (DOMNode) event.getOldValue();
+                oldNode.unbind();
+                oldNode.removePropertyChangeListener(this);
+                removeBreakpoints();
+                add();
             } else {
                 super.propertyChange(event);
             }
@@ -391,8 +414,19 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 return ;
             }
             if (d.isEnabled()) {
+                boolean removed = true;
                 for (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b : bps.values()) {
-                    d.removeLineBreakpoint(b);
+                    if (b.getBreakpointID() != null) {
+                        d.removeLineBreakpoint(b);
+                    } else {
+                        removed = false;
+                    }
+                }
+                if (!removed) {
+                    Set<String> events = eb.getEvents();
+                    for (String event : events) {
+                        d.removeEventBreakpoint(event);
+                    }
                 }
             }
             bps = null;
@@ -463,7 +497,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 return ;
             }
             if (d.isEnabled()) {
-                d.removeLineBreakpoint(b);
+                if (b.getBreakpointID() != null) {
+                    d.removeLineBreakpoint(b);
+                } else {
+                    String urlSubstring = xb.getUrlSubstring();
+                    d.removeXHRBreakpoint(urlSubstring);
+                }
             }
             b = null;
         }

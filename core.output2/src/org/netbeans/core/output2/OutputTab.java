@@ -216,7 +216,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     }
 
     public void hasSelectionChanged(boolean val) {
-        if (isShowing()) {
+        if (isShowing() && actionsLoaded) {
             actions.get(ACTION.COPY).setEnabled(val);
             actions.get(ACTION.SELECT_ALL).setEnabled(!getOutputPane().isAllSelected());
         }

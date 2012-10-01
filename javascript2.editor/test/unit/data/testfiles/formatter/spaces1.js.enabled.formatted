@@ -1,5 +1,5 @@
 var engine = {
-    cylinders : 8,
+    cylinders: 8,
     power: "22k",
     getDescription: function() {
         with (this) {

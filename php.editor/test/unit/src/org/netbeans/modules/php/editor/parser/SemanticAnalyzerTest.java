@@ -209,8 +209,16 @@ public class SemanticAnalyzerTest extends PHPCodeCompletionTestBase {
     public void testIssue213533() throws Exception {
         checkSemantic("testfiles/issue213533.php");
     }
-    
+
     public void testIssue217239() throws Exception {
         checkSemantic("testfiles/issue217239.php");
+    }
+
+    public void testIssue216840() throws Exception {
+        checkSemantic("testfiles/issue216840.php");
+    }
+
+    public void testIssue216840_02() throws Exception {
+        checkSemantic("testfiles/issue216840_02.php");
     }
 }

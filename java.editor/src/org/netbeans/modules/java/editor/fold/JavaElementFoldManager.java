@@ -55,6 +55,7 @@ import com.sun.source.util.TreePath;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
@@ -100,26 +101,45 @@ public class JavaElementFoldManager extends JavaFoldManager {
     private FileObject    file;
     private JavaElementFoldTask task;
     
-    // Folding presets
-    private boolean foldImportsPreset = false;
-    private boolean foldInnerClassesPreset = false;
-    private boolean foldJavadocsPreset = false;
-    private boolean foldCodeBlocksPreset = false;
-    private boolean foldInitialCommentsPreset = false;
-    
-    /** Creates a new instance of JavaElementFoldManager */
-    public JavaElementFoldManager() {
+    /**
+     * Default folding of individual fold types. New instance is created
+     * when a new FoldManager opens (= editor appears).
+     */
+    private static class Presets {
+        // Folding presets
+        private boolean foldImportsPreset = false;
+        private boolean foldInnerClassesPreset = false;
+        private boolean foldJavadocsPreset = false;
+        private boolean foldCodeBlocksPreset = false;
+        private boolean foldInitialCommentsPreset = false;
+
+        public Presets() {
+            Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+            foldInitialCommentsPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT, foldInitialCommentsPreset);
+            foldImportsPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_IMPORT, foldImportsPreset);
+            foldCodeBlocksPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_METHOD, foldCodeBlocksPreset);
+            foldInnerClassesPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_INNERCLASS, foldInnerClassesPreset);
+            foldJavadocsPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_JAVADOC, foldJavadocsPreset);
+        }
+
+        private static volatile Presets CURRENT;
+
+        static void refresh() {
+            CURRENT = null;
+        }
+
+        static Presets get() {
+            Presets p = CURRENT;
+            if (p != null) {
+                return p;
+            }
+            return CURRENT = new Presets();
+        }
     }
 
     public void init(FoldOperation operation) {
         this.operation = operation;
-        
-        Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
-        foldInitialCommentsPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT, foldInitialCommentsPreset);
-        foldImportsPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_IMPORT, foldImportsPreset);
-        foldCodeBlocksPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_METHOD, foldCodeBlocksPreset);
-        foldInnerClassesPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_INNERCLASS, foldInnerClassesPreset);
-        foldJavadocsPreset = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_COLLAPSE_JAVADOC, foldJavadocsPreset);
+        Presets.refresh();
     }
 
     public synchronized void initFolds(FoldHierarchyTransaction transaction) {
@@ -163,7 +183,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
 
     public synchronized void release() {
         if (task != null)
-            task.setJavaElementFoldManager(null, null);
+            task.setJavaElementFoldManager(this, null);
         
         task         = null;
         file         = null;
@@ -194,36 +214,71 @@ public class JavaElementFoldManager extends JavaFoldManager {
             }
         }
         
-        private Reference<JavaElementFoldManager> manager;
+        /**
+         * All managers attched to this fold task
+         */
+        private Collection<Reference<JavaElementFoldManager>> managers = 
+                new ArrayList<Reference<JavaElementFoldManager>>(2);
 
         synchronized void setJavaElementFoldManager(JavaElementFoldManager manager, FileObject file) {
-            this.manager = new WeakReference<JavaElementFoldManager>(manager);
-
-            if (file != null) {
+            if (file == null) {
+                for (Iterator<Reference<JavaElementFoldManager>> it = managers.iterator(); it.hasNext(); ) {
+                    Reference<JavaElementFoldManager> ref = it.next();
+                    JavaElementFoldManager fm = ref.get();
+                    if (fm == null || fm == manager) {
+                        it.remove();
+                        break;
+                    }
+                }
+            } else {
+                managers.add(new WeakReference<JavaElementFoldManager>(manager));
                 JavaElementFoldManagerTaskFactory.doRefresh(file);
             }
+        }
+        
+        private synchronized Object findLiveManagers() {
+            JavaElementFoldManager oneMgr = null;
+            List<JavaElementFoldManager> result = null;
+            
+            for (Iterator<Reference<JavaElementFoldManager>> it = managers.iterator(); it.hasNext(); ) {
+                Reference<JavaElementFoldManager> ref = it.next();
+                JavaElementFoldManager fm = ref.get();
+                if (fm == null) {
+                    it.remove();
+                    continue;
+                }
+                if (result != null) {
+                    result.add(fm);
+                } else if (oneMgr != null) {
+                    result = new ArrayList<JavaElementFoldManager>(2);
+                    result.add(oneMgr);
+                    result.add(fm);
+                } else {
+                    oneMgr = fm;
+                }
+            }
+            return result != null ? result : oneMgr;
         }
         
         public void run(final CompilationInfo info) {
             resume();
             
-            JavaElementFoldManager jefm;
+            final Object mgrs = findLiveManagers();            
             
-            //the synchronized section should be as limited as possible here
-            //in particular, "scan" should not be called in the synchronized section
-            //or a deadlock could appear: sy(this)+document read lock against
-            //document write lock and this.cancel/sy(this)
-            synchronized (this) {
-                jefm = this.manager != null ? this.manager.get() : null;
-            }
-            
-            if (jefm == null)
+            if (mgrs == null) {
                 return ;
+            }
             
             long startTime = System.currentTimeMillis();
 
             final CompilationUnitTree cu = info.getCompilationUnit();
-            final JavaElementFoldVisitor v = jefm.new JavaElementFoldVisitor(info, cu, info.getTrees().getSourcePositions());
+            Document doc = info.getSnapshot().getSource().getDocument(false);
+            if (doc == null) {
+                return;
+            }
+            
+            final JavaElementFoldVisitor v = new JavaElementFoldVisitor(info, 
+                    cu, info.getTrees().getSourcePositions(), doc, Presets.get());
             
             scan(v, cu, null);
             
@@ -237,7 +292,17 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 return ;
 
             Collections.sort(v.folds);
-            SwingUtilities.invokeLater(jefm.new CommitFolds(v.folds));
+            if (mgrs instanceof JavaElementFoldManager) {
+                SwingUtilities.invokeLater(((JavaElementFoldManager)mgrs).new CommitFolds(v.folds));
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    Collection<JavaElementFoldManager> jefms = (Collection<JavaElementFoldManager>)mgrs;
+                    public void run() {
+                        for (JavaElementFoldManager jefm : jefms) {
+                            jefm.new CommitFolds(v.folds).run();
+                        }
+                }});
+            }
             
             long endTime = System.currentTimeMillis();
             
@@ -255,6 +320,24 @@ public class JavaElementFoldManager extends JavaFoldManager {
         
         public CommitFolds(List<FoldInfo> infos) {
             this.infos = infos;
+        }
+        
+        /**
+         * For singular folds, if they exist in the FoldManager already
+         * ignores the default state, and takes it from the actual state of
+         * existing fold.
+         */
+        private boolean mergeSpecialFoldState(FoldInfo fi) {
+            if (fi.template == IMPORTS_FOLD_TEMPLATE) {
+                if (importsFold != null) {
+                    return importsFold.isCollapsed();
+                }
+            } else if (fi.template == INITIAL_COMMENT_FOLD_TEMPLATE) {
+                if (initialCommentFold != null) {
+                    return initialCommentFold.isCollapsed();
+                }
+            }
+            return fi.collapseByDefault;
         }
         
         public void run() {
@@ -306,16 +389,18 @@ public class JavaElementFoldManager extends JavaFoldManager {
 
                                 if (end > start &&
                                         (end - start) > (currentNew.template.getStartGuardedLength() + currentNew.template.getEndGuardedLength())) {
+                                    // copy for this FoldManager
+                                    currentNew = currentNew.copy();
                                     Fold f = operation.addToHierarchy(currentNew.template.getType(),
                                             currentNew.template.getDescription(),
-                                            currentNew.collapseByDefault,
+                                            mergeSpecialFoldState(currentNew),
                                             start,
                                             end,
                                             currentNew.template.getStartGuardedLength(),
                                             currentNew.template.getEndGuardedLength(),
                                             currentNew,
                                             tr);
-
+                                    
                                     currentNew.fold = f;
 
                                     if (currentNew.template == IMPORTS_FOLD_TEMPLATE) {
@@ -371,7 +456,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
     private Fold initialCommentFold;
     private Fold importsFold;
     
-    private final class JavaElementFoldVisitor extends CancellableTreePathScanner<Object, Object> {
+    private static final class JavaElementFoldVisitor extends CancellableTreePathScanner<Object, Object> {
         
         private List<FoldInfo> folds = new ArrayList<JavaElementFoldManager.FoldInfo>();
         private CompilationInfo info;
@@ -379,11 +464,15 @@ public class JavaElementFoldManager extends JavaFoldManager {
         private SourcePositions sp;
         private boolean stopped;
         private int initialCommentStopPos = Integer.MAX_VALUE;
+        private Document doc;
+        private Presets presets;
         
-        public JavaElementFoldVisitor(CompilationInfo info, CompilationUnitTree cu, SourcePositions sp) {
+        public JavaElementFoldVisitor(CompilationInfo info, CompilationUnitTree cu, SourcePositions sp, Document doc, Presets presets) {
             this.info = info;
             this.cu = cu;
             this.sp = sp;
+            this.doc = doc;
+            this.presets = presets;
         }
         
         public void checkInitialFold() {
@@ -398,13 +487,14 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     Token<JavaTokenId> token = ts.token();
                     
                     if (token.id() == JavaTokenId.BLOCK_COMMENT || token.id() == JavaTokenId.JAVADOC_COMMENT) {
-                        Document doc   = operation.getHierarchy().getComponent().getDocument();
                         int startOffset = ts.offset();
-                        boolean collapsed = foldInitialCommentsPreset;
-                        
+                        boolean collapsed = presets.foldInitialCommentsPreset;
+
+                        /*
                         if (initialCommentFold != null) {
                             collapsed = initialCommentFold.isCollapsed();
                         }
+                        */
                         
                         folds.add(new FoldInfo(doc, startOffset, startOffset + token.length(), INITIAL_COMMENT_FOLD_TEMPLATE, collapsed));
                         break;
@@ -439,9 +529,8 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 Token<JavaTokenId> token = ts.token();
                 
                 if (token.id() == JavaTokenId.JAVADOC_COMMENT) {
-                    Document doc   = operation.getHierarchy().getComponent().getDocument();
                     int startOffset = ts.offset();
-                    folds.add(new FoldInfo(doc, startOffset, startOffset + token.length(), JAVADOC_FOLD_TEMPLATE, foldJavadocsPreset));
+                    folds.add(new FoldInfo(doc, startOffset, startOffset + token.length(), JAVADOC_FOLD_TEMPLATE, presets.foldJavadocsPreset));
                     if (startOffset < initialCommentStopPos)
                         initialCommentStopPos = startOffset;
                 }
@@ -455,12 +544,11 @@ public class JavaElementFoldManager extends JavaFoldManager {
         private void handleTree(Tree node, Tree javadocTree, boolean handleOnlyJavadoc) {
             try {
                 if (!handleOnlyJavadoc) {
-                    Document doc = operation.getHierarchy().getComponent().getDocument();
                     int start = (int)sp.getStartPosition(cu, node);
                     int end   = (int)sp.getEndPosition(cu, node);
                     
                     if (start != (-1) && end != (-1))
-                        folds.add(new FoldInfo(doc, start, end, CODE_BLOCK_FOLD_TEMPLATE, foldCodeBlocksPreset));
+                        folds.add(new FoldInfo(doc, start, end, CODE_BLOCK_FOLD_TEMPLATE, presets.foldCodeBlocksPreset));
                 }
                 
                 handleJavadoc(javadocTree != null ? javadocTree : node);
@@ -485,12 +573,11 @@ public class JavaElementFoldManager extends JavaFoldManager {
             super.visitClass(node, Boolean.TRUE);
             try {
                 if (p == Boolean.TRUE) {
-                    Document doc = operation.getHierarchy().getComponent().getDocument();
                     int start = Utilities.findBodyStart(node, cu, sp, doc);
                     int end   = (int)sp.getEndPosition(cu, node);
                     
                     if (start != (-1) && end != (-1))
-                        folds.add(new FoldInfo(doc, start, end, CODE_BLOCK_FOLD_TEMPLATE, foldInnerClassesPreset));
+                        folds.add(new FoldInfo(doc, start, end, CODE_BLOCK_FOLD_TEMPLATE, presets.foldInnerClassesPreset));
                 }
                 
                 handleJavadoc(node);
@@ -547,12 +634,13 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     initialCommentStopPos = importsStart;
                 
                 try {
-                    Document doc   = operation.getHierarchy().getComponent().getDocument();
-                    boolean collapsed = foldImportsPreset;
+                    boolean collapsed = presets.foldImportsPreset;
                     
+                    /*
                     if (importsFold != null) {
                         collapsed = importsFold.isCollapsed();
                     }
+                    */
                     
                     importsStart += 7/*"import ".length()*/;
                     
@@ -583,6 +671,17 @@ public class JavaElementFoldManager extends JavaFoldManager {
             this.end   = doc.createPosition(end);
             this.template = template;
             this.collapseByDefault = collapseByDefault;
+        }
+        
+        private FoldInfo(Position start, Position end, FoldTemplate template, boolean collapseByDefault) {
+            this.start = start;
+            this.end = end;
+            this.template = template;
+            this.collapseByDefault = collapseByDefault;
+        }
+        
+        FoldInfo copy() throws BadLocationException {
+            return new FoldInfo(start, end, template, collapseByDefault);
         }
         
         public int compareTo(Object o) {

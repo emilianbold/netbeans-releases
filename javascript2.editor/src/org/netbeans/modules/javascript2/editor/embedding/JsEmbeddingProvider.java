@@ -70,6 +70,8 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  */
 public final class JsEmbeddingProvider extends EmbeddingProvider {
 
+    private static final int PRIORITY = 0;  //First one
+
     public static final String NETBEANS_IMPORT_FILE = "__netbeans_import__"; // NOI18N
     // ------------------------------------------------------------------------
     // EmbeddingProvider implementation
@@ -91,7 +93,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public int getPriority() {
-        return Integer.MAX_VALUE;
+        return PRIORITY;
     }
 
     @Override
@@ -129,11 +131,11 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     // Public implementation
     // ------------------------------------------------------------------------
     public static boolean isGeneratedIdentifier(String ident) {
-        return GENERATED_IDENTIFIER.equals(ident);
+        return GENERATED_IDENTIFIER.equals(ident) || ident.contains(NETBEANS_IMPORT_FILE);
     }
     
     public static boolean containsGeneratedIdentifier(String ident) {
-        return ident.contains(GENERATED_IDENTIFIER);
+        return ident.contains(GENERATED_IDENTIFIER) || ident.contains(NETBEANS_IMPORT_FILE);
     }
     // ------------------------------------------------------------------------
     // Private implementation

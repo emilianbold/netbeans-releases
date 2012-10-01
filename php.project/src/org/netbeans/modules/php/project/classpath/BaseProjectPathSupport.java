@@ -82,7 +82,7 @@ public abstract class BaseProjectPathSupport extends BasePathSupport {
         String[] pe = PropertyUtils.tokenizePath(propertyValue == null ? "" : propertyValue);
         List<Item> items = new ArrayList<Item>(pe.length);
         for (String p : pe) {
-            Item item = null;
+            Item item;
             if (isWellKnownPath(p)) {
                 // some well know classpath
                 item = Item.create(p);
@@ -92,7 +92,7 @@ public abstract class BaseProjectPathSupport extends BasePathSupport {
                 if (eval != null) {
                     f = antProjectHelper.resolveFile(eval);
                 }
-                if (!f.exists()) {
+                if (f == null || !f.exists()) {
                     item = Item.createBroken(eval, p);
                 } else {
                     item = Item.create(eval, p);
@@ -121,6 +121,11 @@ public abstract class BaseProjectPathSupport extends BasePathSupport {
                         item.property = reference;
                     }
                     break;
+                case CLASSPATH:
+                    // noop
+                    break;
+                default:
+                    assert false : "Unknown classpath type: " + item.getType();
             }
             if (reference != null) {
                 result.add(reference);

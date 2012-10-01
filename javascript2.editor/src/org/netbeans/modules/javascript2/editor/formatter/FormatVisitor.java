@@ -55,6 +55,8 @@ import com.oracle.nashorn.ir.IfNode;
 import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.ObjectNode;
+import com.oracle.nashorn.ir.PropertyNode;
+import com.oracle.nashorn.ir.ReferenceNode;
 import com.oracle.nashorn.ir.SwitchNode;
 import com.oracle.nashorn.ir.TernaryNode;
 import com.oracle.nashorn.ir.TryNode;
@@ -474,27 +476,38 @@ public class FormatVisitor extends NodeVisitor {
         FormatToken formatToken = getPreviousToken(getStart(objectNode), JsTokenId.BRACKET_LEFT_CURLY, true);
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_OBJECT_START));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_LEFT_BRACE));
             FormatToken previous = formatToken.previous();
             if (previous != null) {
                 appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_OBJECT));
             }
         }
 
+        int objectFinish = getFinish(objectNode);
         for (Node property : objectNode.getElements()) {
-            int finish = getFinish(property);
-
             property.accept(this);
 
-            formatToken = getPreviousToken(finish, null);
-            if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY));
+            PropertyNode propertyNode = (PropertyNode) property;
+            if (propertyNode.getGetter() != null) {
+                ReferenceNode getter = (ReferenceNode) propertyNode.getGetter();
+                markPropertyFinish(getFinish(getter.getReference()), objectFinish, false);
             }
+            if (propertyNode.getSetter() != null) {
+                ReferenceNode setter = (ReferenceNode) propertyNode.getSetter();
+                markPropertyFinish(getFinish(setter.getReference()), objectFinish, false);
+            }
+
+            // mark property end
+            markPropertyFinish(getFinish(property), objectFinish, true);
         }
 
         // put indentation mark after non white token preceeding curly bracket
         formatToken = getPreviousNonWhiteToken(getFinish(objectNode) - 1,
                 getStart(objectNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
         if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_RIGHT_BRACE));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_OBJECT_END));
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
         }
 
@@ -502,8 +515,17 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     @Override
-    public Node leave(ObjectNode objectNode) {
-        return null;
+    public Node enter(PropertyNode propertyNode) {
+        FormatToken colon = getNextToken(getFinish(propertyNode.getKey()),
+                JsTokenId.OPERATOR_COLON, getFinish(propertyNode));
+        if (colon != null) {
+            appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY_OPERATOR));
+            FormatToken before = colon.previous();
+            if (before != null) {
+                appendTokenAfterLastVirtual(before, FormatToken.forFormat(FormatToken.Kind.BEFORE_PROPERTY_OPERATOR));
+            }
+        }
+        return super.enter(propertyNode);
     }
 
     @Override
@@ -567,9 +589,8 @@ public class FormatVisitor extends NodeVisitor {
                     // remove around binary operator tokens added during token
                     // stream creation
                     if (TokenType.ADD.equals(type) || TokenType.SUB.equals(type)) {
-                        assert formatToken != null
-                                && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
-                                    || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText())) : formatToken;
+                        assert formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
+                                    || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText()) : formatToken;
                         // we remove blindly inserted binary op markers
                         FormatToken toRemove = findVirtualToken(formatToken,
                                 FormatToken.Kind.BEFORE_BINARY_OPERATOR, true);
@@ -664,12 +685,14 @@ public class FormatVisitor extends NodeVisitor {
             int finish = getFinish(literalNode);
             FormatToken leftBracket = getNextToken(start, JsTokenId.BRACKET_LEFT_BRACKET, finish);
             if (leftBracket != null) {
+                appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_START));
                 appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_BRACKET));
                 appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
                 FormatToken rightBracket = getPreviousToken(finish - 1, JsTokenId.BRACKET_RIGHT_BRACKET, start + 1);
                 if (rightBracket != null) {
                     FormatToken previous = rightBracket.previous();
                     if (previous != null) {
+                        appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY_LITERAL_END));
                         appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY_LITERAL_BRACKET));
                         appendToken(previous, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
                     }
@@ -688,7 +711,7 @@ public class FormatVisitor extends NodeVisitor {
                     if (comma != null) {
                         prevItemFinish = comma.getOffset();
                         appendTokenAfterLastVirtual(comma,
-                                FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL));
+                                FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM));
                     }
                 }
             }
@@ -842,9 +865,7 @@ public class FormatVisitor extends NodeVisitor {
         FormatToken formatToken = getPreviousToken(
                 statement.getStart() < finish ? finish - 1 : finish, null, true);
         if (formatToken != null && !isScript(block)) {
-            if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationDec));
-            }
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationDec));
         }
     }
 
@@ -983,6 +1004,14 @@ public class FormatVisitor extends NodeVisitor {
             if (previous != null) {
                 appendToken(previous, FormatToken.forFormat(mark));
             }
+        }
+    }
+
+    private void markPropertyFinish(int finish, int objectFinish, boolean checkDuplicity) {
+        FormatToken formatToken = getNextToken(finish, JsTokenId.OPERATOR_COMMA, objectFinish);
+        if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken,
+                    FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY), checkDuplicity);
         }
     }
 

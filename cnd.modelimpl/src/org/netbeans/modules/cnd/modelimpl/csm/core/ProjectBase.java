@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -85,6 +86,7 @@ import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
@@ -151,8 +153,10 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.CharSequences;
 import org.openide.util.Lookup.Provider;
@@ -181,6 +185,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.uniqueName = getUniqueName(fs, platformProject);
         RepositoryUtils.openUnit(key);
         unitId = key.getUnitId();
+        cacheLocation = RepositoryAccessor.getTranslator().getCacheLocation(unitId);
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         this.fileSystem = fs;
@@ -427,16 +432,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /*package*/ CacheLocation getCacheLocation() {
-        return RepositoryAccessor.getTranslator().getCacheLocation(unitId);
+        return cacheLocation;
     }
 
     public static CacheLocation getCacheLocation(NativeProject project) {
         assert project != null;
         Provider lp = project.getProject();
         if (lp != null) {
-            CacheLocation loc = lp.getLookup().lookup(CacheLocation.class);
+            CacheDirectoryProvider loc = lp.getLookup().lookup(CacheDirectoryProvider.class);
             if (loc != null) {
-                return loc;
+                try {
+                    FileObject cacheDir = loc.getCacheDirectory();
+                    if (cacheDir != null) {
+                        File cacheDirFile = FileUtil.toFile(cacheDir);
+                        if (cacheDirFile != null) {
+                            return new CacheLocation(cacheDirFile);
+                        }
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
         return CacheLocation.DEFAULT;
@@ -890,44 +905,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         long time = System.currentTimeMillis();
         final Set<NativeFileItem> removedFileItems = Collections.synchronizedSet(new HashSet<NativeFileItem>());
         final Set<NativeFileItem> readOnlyRemovedFilesSet = Collections.unmodifiableSet(removedFileItems);
-        NativeProjectItemsListener projectItemListener = new NativeProjectItemsListener() {
-
-            @Override
-            public void fileAdded(NativeFileItem fileItem) {
-            }
-
-            @Override
-            public void filesAdded(List<NativeFileItem> fileItems) {
-            }
-
-            @Override
-            public void fileRemoved(NativeFileItem fileItem) {
-                removedFileItems.add(fileItem);
-            }
-
+        NativeProjectItemsListener projectItemListener = new NativeProjectItemsAdapter() {
             @Override
             public void filesRemoved(List<NativeFileItem> fileItems) {
                 removedFileItems.addAll(fileItems);
-            }
-
-            @Override
-            public void fileRenamed(String oldPath, NativeFileItem newFileIetm) {
-            }
-
-            @Override
-            public void filePropertiesChanged(NativeFileItem fileItem) {
-            }
-
-            @Override
-            public void filesPropertiesChanged(List<NativeFileItem> fileItems) {
-            }
-
-            @Override
-            public void filesPropertiesChanged() {
-            }
-
-            @Override
-            public void projectDeleted(NativeProject nativeProject) {
             }
         };
         nativeProject.addProjectItemsListener(projectItemListener);
@@ -952,7 +933,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 switch (item.getLanguage()) {
                     case C:
                     case CPP:
-                    case C_HEADER:
                     case FORTRAN:
                         excluded.add(item);
                         break;
@@ -1354,7 +1334,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (aPlatformProject != null){
             searcher = APTFileSearch.get(KeyUtilities.createProjectKey(
                     ProjectBase.getUniqueName(fileSystem, aPlatformProject),
-                    ProjectBase.getCacheLocation(nativeFile.getNativeProject())));
+                    getCacheLocation()));
         }
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, searcher);
     }
@@ -2355,8 +2335,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public abstract void onFileImplRemoved(Collection<FileImpl> files);
 
     public abstract void onFileRemoved(List<NativeFileItem> items);
-
-    public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
 
     public abstract void onFilePropertyChanged(List<NativeFileItem> items, boolean invalidateLibs);
 
@@ -3422,6 +3400,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private final ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     private final CharSequence uniqueName;
     private final int unitId;
+    private final CacheLocation cacheLocation;
     private final Map<CharSequence, CsmUID<CsmNamespace>> namespaces;
     private final Key classifierStorageKey;
 
@@ -3481,6 +3460,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected ProjectBase(RepositoryDataInput aStream) throws IOException {        
         unitId = aStream.readUnitId();
+        cacheLocation = RepositoryAccessor.getTranslator().getCacheLocation(unitId);
         fileSystem = PersistentUtils.readFileSystem(aStream);
         sysAPTData = APTSystemStorage.getInstance();
         userPathStorage = new APTIncludePathStorage();

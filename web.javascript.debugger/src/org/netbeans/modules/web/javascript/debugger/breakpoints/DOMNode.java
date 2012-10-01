@@ -179,7 +179,8 @@ public final class DOMNode {
      */
     public static DOMNode create(String stringDefinition) {
         if (stringDefinition.charAt(0) != '[') {
-            throw new IllegalArgumentException("Missing opening bracket in '"+stringDefinition+"'");
+            return createFromPathNames(stringDefinition);
+            //throw new IllegalArgumentException("Missing opening bracket in '"+stringDefinition+"'");
         }
         if (stringDefinition.charAt(stringDefinition.length() - 1) != ']') {
             throw new IllegalArgumentException("Missing closing bracket in '"+stringDefinition+"'");
@@ -210,6 +211,44 @@ public final class DOMNode {
     }
     
     /**
+     * Create a DOMNode from strings like "html/body/ul[5]/li[2]".
+     * @param pathNames Slash-separated tag names with optional children order in brackets.
+     * @return 
+     */
+    private static DOMNode createFromPathNames(String pathNames) {
+        List<NodeId> path = new LinkedList<NodeId>();
+        int i1 = 0;
+        do {
+            int i2 = pathNames.indexOf('/', i1);
+            if (i2 < 0) {
+                i2 = pathNames.length();
+            }
+            String name;
+            int ch = -1;
+            int b1 = pathNames.indexOf('[', i1);
+            if (b1 > 0) {
+                name = pathNames.substring(i1, b1).trim();
+                int b2 = pathNames.indexOf(']', b1+1);
+                if (b2 > b1) {
+                    String chStr = pathNames.substring(b1 + 1, b2);
+                    try {
+                        ch = Integer.parseInt(chStr);
+                    } catch (NumberFormatException nfex) {}
+                }
+            } else {
+                name = pathNames.substring(i1, i2).trim();
+            }
+            path.add(new NodeId(name, ch));
+            i1 = i2 + 1;
+        } while (i1 < pathNames.length());
+        DOMNode dn = new DOMNode(path);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("new DOMNode("+dn.getNodePathNames()+") created from "+pathNames);
+        }
+        return dn;
+    }
+    
+    /**
      * Provide serializable string definition of this object.
      */
     public String getStringDefinition() {
@@ -234,6 +273,12 @@ public final class DOMNode {
         StringBuilder sb = new StringBuilder();
         for (NodeId ni : path) {
             sb.append(ni.name);
+            int cn = ni.childNumber;
+            if (0 <= cn) {
+                sb.append("[");
+                sb.append(Integer.toString(cn));
+                sb.append("]");
+            }
             sb.append("/");
         }
         sb.deleteCharAt(sb.length() - 1);
@@ -285,6 +330,12 @@ public final class DOMNode {
             NodeId ni = path.get(i);
             if (parent == null) {
                 if (!ni.name.equals(node.getLocalName())) {
+                    if (node.getLocalName().isEmpty()) { // an empty root
+                        nodePath.add(node);
+                        parent = node;
+                        i--;
+                        continue;
+                    }
                     throw new PathNotFoundException(ni.name, i, getNodePathNames());
                 }
                 nodePath.add(node);
@@ -304,6 +355,14 @@ public final class DOMNode {
                     if (chn != null && !ni.name.equals(chn.getLocalName())) {
                         chn = null;
                     }
+                } else if (c < 0) { // Accept also children when child number is undefined.
+                    for (Node nn : children) {
+                        if (acceptNode(nn) && ni.name.equals(nn.getLocalName())) {
+                            chn = nn;
+                            break;
+                        }
+                    }
+                    
                 }
                 /* Uncomment this if we should check sibling elements
                 if (chn == null) {

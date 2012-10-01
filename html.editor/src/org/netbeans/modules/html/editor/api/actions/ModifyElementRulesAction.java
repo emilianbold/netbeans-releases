@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.api.actions;
 
 import java.awt.Dialog;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -113,7 +114,14 @@ public class ModifyElementRulesAction extends AbstractSourceElementAction {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             if (e.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                                applyChanges(panel, handle);
+                                if(!panel.isModified()) {
+                                    return ;
+                                }
+                                if(panel.isPanelContentValid()) {
+                                    applyChanges(panel, handle);
+                                } else {
+                                    Toolkit.getDefaultToolkit().beep();
+                                }
                             }
                         }
                     });
@@ -163,7 +171,6 @@ public class ModifyElementRulesAction extends AbstractSourceElementAction {
                 return;
             }
 
-            if (!panel.classExistsInSelectedStyleSheet() || !panel.idExistsInSelectedStyleSheet()) {
                 final Model model = Utils.createCssSourceModel(Source.create(panel.getSelectedStyleSheet()));
                 final ElementFactory factory = model.getElementFactory();
 
@@ -178,10 +185,18 @@ public class ModifyElementRulesAction extends AbstractSourceElementAction {
                                 body = factory.createBody();
                                 styleSheet.setBody(body);
                             }
-
-                            if (!panel.classExistsInSelectedStyleSheet()) {
-                                Rule rule = createRule(factory, "." + panel.getNewClassAttributeValue());
-                                styleSheet.getBody().addRule(rule);
+                            
+                            //workaround: the current ModifyElementRulesPanel cannot handle 
+                            //multiple classes being specified in one class attribute.
+                            //so if such situation happen the modified/created class selectors
+                            //won't be created in the stylesheet/s!
+                            String[] classes = panel.getNewClasses();
+                            if(classes != null && classes.length == 1) {
+                                String justOne = classes[0];
+                                if (!panel.classExistsInSelectedStyleSheet(justOne)) {
+                                    Rule rule = createRule(factory, "." + justOne);
+                                    styleSheet.getBody().addRule(rule);
+                                }
                             }
                             if (!panel.idExistsInSelectedStyleSheet()) {
                                 Rule rule = createRule(factory, "#" + panel.getNewIdAttributeValue());
@@ -199,7 +214,6 @@ public class ModifyElementRulesAction extends AbstractSourceElementAction {
                     }
                 });
 
-            }
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }

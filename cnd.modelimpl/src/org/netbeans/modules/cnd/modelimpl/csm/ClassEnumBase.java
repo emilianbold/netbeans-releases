@@ -191,7 +191,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     /** Initializes scope */
     protected final void initScope(CsmScope scope) {
-        assert !this.equals(scope) : "scope can not be recursive";
+        assert !this.equals(scope) : "scope can not be recursive " + this + " vs. " + scope;
         if (UIDCsmConverter.isIdentifiable(scope)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (this.scopeUID != null || scope == null) : "null UID for class scope " + scope;

@@ -94,13 +94,11 @@ public class ConnectAction extends SingleHostAction {
     private void connect(ExecutionEnvironment env) {
         try {
             ConnectionManager.getInstance().connectTo(env);
+            RemoteUtil.checkSetupAfterConnection(env);
         } catch (IOException ex) {
             conectionFailed(env, ex);
         } catch (CancellationException ex) {
             conectionFailed(env, ex);
-        }
-        if (!HostNode.isOnline(env)) {
-            RemoteUtil.checkSetupAfterConnection(env);
         }
     }
 

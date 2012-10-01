@@ -14,32 +14,32 @@ METHOD     isExtensible(O: Object): Boole  [PUBLIC,   stub_CORE_Object.js
 METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
 METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   stub_CORE_Object.js
 METHOD     isSealed(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
-METHOD     javaEnabled(): Boolean          [PUBLIC]   stub_DOM_navigator.js
+METHOD     javaEnabled(): Boolean          [PUBLIC]   stub_DOM_Navigator.js
 METHOD     keys(O: Object): Array          [PUBLIC,   stub_CORE_Object.js
 METHOD     preventExtensions(O: Object):   [PUBLIC,   stub_CORE_Object.js
 METHOD     propertyIsEnumerable(V: String  [PUBLIC]   stub_CORE_Object.js
-METHOD     registerContentHandler(mimeTyp  [PUBLIC]   stub_DOM_navigator.js
-METHOD     registerProtocolHandler(protoc  [PUBLIC]   stub_DOM_navigator.js
+METHOD     registerContentHandler(mimeTyp  [PUBLIC]   stub_DOM_Navigator.js
+METHOD     registerProtocolHandler(protoc  [PUBLIC]   stub_DOM_Navigator.js
 METHOD     seal(O: Object): Object         [PUBLIC,   stub_CORE_Object.js
 METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
 METHOD     toString(): String              [PUBLIC]   stub_CORE_Object.js
 METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
-FIELD      appCodeName                     [PUBLIC]   stub_DOM_navigator.js
-FIELD      appName                         [PUBLIC]   stub_DOM_navigator.js
-FIELD      appVersion                      [PUBLIC]   stub_DOM_navigator.js
-FIELD      buildID                         [PUBLIC]   stub_DOM_navigator.js
-FIELD      constructor                     [PUBLIC]   stub_CORE_Object.js
-FIELD      cookieEnabled                   [PUBLIC]   stub_DOM_navigator.js
-FIELD      doNotTrack                      [PUBLIC]   stub_DOM_navigator.js
-FIELD      language                        [PUBLIC]   stub_DOM_navigator.js
-FIELD      mimeTypes                       [PUBLIC]   stub_DOM_navigator.js
-FIELD      onLine                          [PUBLIC]   stub_DOM_navigator.js
-FIELD      oscpu                           [PUBLIC]   stub_DOM_navigator.js
-FIELD      platform                        [PUBLIC]   stub_DOM_navigator.js
-FIELD      plugins                         [PUBLIC]   stub_DOM_navigator.js
-FIELD      product                         [PUBLIC]   stub_DOM_navigator.js
-FIELD      productSub                      [PUBLIC]   stub_DOM_navigator.js
-FIELD      prototype                       [PUBLIC]   stub_DOM_navigator.js
-FIELD      userAgent                       [PUBLIC]   stub_DOM_navigator.js
-FIELD      vendor                          [PUBLIC]   stub_DOM_navigator.js
-FIELD      vendorSub                       [PUBLIC]   stub_DOM_navigator.js
+FIELD      appCodeName: String             [PUBLIC]   stub_DOM_Navigator.js
+FIELD      appName: String                 [PUBLIC]   stub_DOM_Navigator.js
+FIELD      appVersion: String              [PUBLIC]   stub_DOM_Navigator.js
+FIELD      buildID: String                 [PUBLIC]   stub_DOM_Navigator.js
+FIELD      constructor: Function           [PUBLIC]   stub_CORE_Object.js
+FIELD      cookieEnabled: Boolean          [PUBLIC]   stub_DOM_Navigator.js
+FIELD      doNotTrack: String              [PUBLIC]   stub_DOM_Navigator.js
+FIELD      language: String                [PUBLIC]   stub_DOM_Navigator.js
+FIELD      mimeTypes: String               [PUBLIC]   stub_DOM_Navigator.js
+FIELD      onLine: Boolean                 [PUBLIC]   stub_DOM_Navigator.js
+FIELD      oscpu: String                   [PUBLIC]   stub_DOM_Navigator.js
+FIELD      platform: String                [PUBLIC]   stub_DOM_Navigator.js
+FIELD      plugins: Array                  [PUBLIC]   stub_DOM_Navigator.js
+FIELD      product: String                 [PUBLIC]   stub_DOM_Navigator.js
+FIELD      productSub: String              [PUBLIC]   stub_DOM_Navigator.js
+FIELD      prototype                       [PUBLIC]   stub_DOM_Navigator.js
+FIELD      userAgent: String               [PUBLIC]   stub_DOM_Navigator.js
+FIELD      vendor: String                  [PUBLIC]   stub_DOM_Navigator.js
+FIELD      vendorSub: String               [PUBLIC]   stub_DOM_Navigator.js

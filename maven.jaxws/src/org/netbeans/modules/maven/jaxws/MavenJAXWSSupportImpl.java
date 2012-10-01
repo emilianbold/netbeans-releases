@@ -97,14 +97,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         services.add(service);
 
         if (service.isServiceProvider() && !WSUtils.isJsr109Supported(prj)) {
-            boolean generateNonJsr109Stuff = false;
-            FileObject ddFolder = getDeploymentDescriptorFolder();
-            if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
-                // ask user if non jsr109 stuff should be generated
-                generateNonJsr109Stuff = WSUtils.generateNonJsr109Artifacts(prj);
-            } else {
-                generateNonJsr109Stuff = true;
-            }
+            boolean generateNonJsr109Stuff = WSUtils.needNonJsr109Artifacts(prj);
             if (generateNonJsr109Stuff) {
                 // modify web.xml file
                 try {

@@ -75,10 +75,7 @@ import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.FindSupport;
-import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.netbeans.editor.LocaleSupport;
-import org.netbeans.modules.editor.impl.ReformatBeforeSaveTask;
 import org.netbeans.modules.editor.impl.actions.clipboardhistory.ClipboardHistory;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
@@ -100,7 +97,6 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.datatransfer.ClipboardListener;
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -117,8 +113,8 @@ public class EditorModule extends ModuleInstall {
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
 
     private static class SearchHistoryUtility {
-        public static List convertFromSearchHistoryToEditorFindSupport(List<SearchPattern> searchPatterns) {
-            List history = new ArrayList<EditorFindSupport.SPW>();
+        public static List<EditorFindSupport.SPW> convertFromSearchHistoryToEditorFindSupport(List<SearchPattern> searchPatterns) {
+            List<EditorFindSupport.SPW> history = new ArrayList<EditorFindSupport.SPW>();
             for (int i = 0; i < searchPatterns.size(); i++) {
                 SearchPattern sptr = searchPatterns.get(i);
                 EditorFindSupport.SPW spwrap = new EditorFindSupport.SPW(sptr.getSearchExpression(),
@@ -137,9 +133,11 @@ public class EditorModule extends ModuleInstall {
 
         // register loader for annotation types
         AnnotationTypes.getTypes().registerLoader( new AnnotationTypes.Loader() {
+                @Override
                 public void loadTypes() {
                     AnnotationTypesFolder.getAnnotationTypesFolder();
                 }
+                @Override
                 public void loadSettings() {
                     // AnnotationType properties are stored in BaseOption, so let's read them now
                     Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
@@ -161,9 +159,11 @@ public class EditorModule extends ModuleInstall {
                     b = prefs.getBoolean(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER, true);
                     AnnotationTypes.getTypes().setShowGlyphGutter(b);
                 }
+                @Override
                 public void saveType(AnnotationType type) {
                     AnnotationTypesFolder.getAnnotationTypesFolder().saveAnnotationType(type);
                 }
+                @Override
                 public void saveSetting(String settingName, Object value) {
                     // AnnotationType properties are stored to BaseOption
                     Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
@@ -268,11 +268,6 @@ public class EditorModule extends ModuleInstall {
              return;
          }
          
-        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-        
-        if (prefs.get("enable.breadcrumbs", null) == null)
-            prefs.putBoolean("enable.breadcrumbs", true);
-        
         final ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
         if (clipboard != null) {
             clipboard.addClipboardListener(ClipboardHistory.getInstance());
@@ -280,6 +275,7 @@ public class EditorModule extends ModuleInstall {
 
          if (LOG.isLoggable(Level.FINE)) {
              WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         Field kitsField = BaseKit.class.getDeclaredField("kits");
@@ -307,8 +303,6 @@ public class EditorModule extends ModuleInstall {
                 }
             }
         });
-
-        ReformatBeforeSaveTask.ensureRegistered();
     }
     
     /** Called when module is uninstalled. Overrides superclass method. */
@@ -360,6 +354,7 @@ public class EditorModule extends ModuleInstall {
 
         // #42970 - Possible closing of opened editor top components must happen in AWT thread
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
 
                 // issue #16110

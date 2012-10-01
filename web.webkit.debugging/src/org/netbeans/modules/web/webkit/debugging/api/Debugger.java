@@ -345,7 +345,6 @@ public final class Debugger {
         transport.sendBlockingCommand(new Command("Debugger.removeBreakpoint", params));
     }
     
-    // TODO: this method is used only internally so far and it needs to be revisisted
     public Breakpoint addDOMBreakpoint(Node node, String type) {
         JSONObject params = new JSONObject();
         params.put("nodeId", node.getNodeId());
@@ -371,7 +370,6 @@ public final class Debugger {
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.removeDOMBreakpoint", params));
     }
     
-    // TODO: this method is used only internally so far and it needs to be revisisted
     public Breakpoint addXHRBreakpoint(String urlSubstring) {
         JSONObject params = new JSONObject();
         params.put("url", urlSubstring);
@@ -389,11 +387,16 @@ public final class Debugger {
         return null;
     }
     
+    public void removeXHRBreakpoint(String urlSubstring) {
+        JSONObject params = new JSONObject();
+        params.put("url", urlSubstring);
+        Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.removeXHRBreakpoint", params));
+    }
+    
     public static final String DOM_BREAKPOINT_SUBTREE = "subtree-modified";
     public static final String DOM_BREAKPOINT_ATTRIBUTE = "attribute-modified";
     public static final String DOM_BREAKPOINT_NODE = "node-removed";
 
-    // TODO: this method is used only internally so far and it needs to be revisisted
     public Breakpoint addEventBreakpoint(String event) {
         JSONObject params = new JSONObject();
         params.put("eventName", event);
@@ -411,7 +414,6 @@ public final class Debugger {
         return null;
     }
     
-    // TODO: this method is used only internally so far and it needs to be revisisted
     public void removeEventBreakpoint(String event) {
         JSONObject params = new JSONObject();
         params.put("eventName", event);

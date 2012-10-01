@@ -78,7 +78,7 @@ public class ResultsOutlineCellRenderer extends DefaultOutlineCellRenderer {
             boolean isSelected, boolean hasFocus, int row, int column) {
         Component renderer = null;
         if ((value instanceof Property)) {
-            Property property = (Property) value;
+            Property<?> property = (Property<?>) value;
             try {
                 String valueString = getDisplayValue(property);
                 if (property.getName().equals("path")) { //NOI18N
@@ -116,7 +116,7 @@ public class ResultsOutlineCellRenderer extends DefaultOutlineCellRenderer {
         return renderer;
     }
 
-    String getDisplayValue(Property p) throws IllegalAccessException,
+    String getDisplayValue(Property<?> p) throws IllegalAccessException,
             InvocationTargetException {
         Object value = p.getValue();
         return value != null ? value.toString() : ""; // NOI18N
@@ -191,7 +191,8 @@ public class ResultsOutlineCellRenderer extends DefaultOutlineCellRenderer {
         return c.getTimeInMillis();
     }
 
-    private void setToolTip(Component renderer, Property property) throws IllegalAccessException, InvocationTargetException {
+    private void setToolTip(Component renderer, Property<?> property)
+            throws IllegalAccessException, InvocationTargetException {
         if (renderer instanceof JLabel) {
             Object val = property.getValue();
             if (val != null) {

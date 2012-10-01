@@ -80,6 +80,7 @@ public class PHPHintsProvider implements HintsProvider {
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_LINE_HINTS);
         if (modelHints != null) {
+            assert (context instanceof PHPRuleContext);
             PHPRuleContext ruleContext = (PHPRuleContext) context;
             PHPParseResult result = (PHPParseResult) info;
             final Model model = result.getModel();
@@ -114,9 +115,12 @@ public class PHPHintsProvider implements HintsProvider {
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(true, context);
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_LINE_HINTS);
         if (modelHints != null) {
+            assert (context instanceof PHPRuleContext);
             PHPRuleContext ruleContext = (PHPRuleContext) context;
             ParserResult info = context.parserResult;
-            if (!(info instanceof PHPParseResult)) return;
+            if (!(info instanceof PHPParseResult)) {
+                return;
+            }
             PHPParseResult result = (PHPParseResult) info;
             final Model model = result.getModel();
             FileScope modelScope = model.getFileScope();

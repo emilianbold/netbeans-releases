@@ -54,7 +54,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JsCodeCompletionGeneralTest extends JsTestBase {
+public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
     
     public JsCodeCompletionGeneralTest(String testName) {
         super(testName);
@@ -75,6 +75,74 @@ public class JsCodeCompletionGeneralTest extends JsTestBase {
 
     public void testIssue215861_02() throws Exception {
         checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser2 \"+navigator.^);", false);
+    }
+
+    public void testIssue215777_01() throws Exception {
+        checkCompletion("testfiles/completion/issue215777.js", "var x= Math.^", false);
+    }
+
+    public void testIssue215777_02() throws Exception {
+        checkCompletion("testfiles/completion/issue215777.js", "var x=Math.^", false);
+    }
+
+    public void testIssue217100_01() throws Exception {
+        checkCompletion("testfiles/completion/issue217100_1.js", "v^", false);
+    }
+
+    public void testIssue217100_02() throws Exception {
+        checkCompletion("testfiles/completion/issue217100_2.js", "v^", false);
+    }
+
+    public void testIssue217100_03() throws Exception {
+        checkCompletion("testfiles/completion/issue217100_3.js", "v^", false);
+    }
+
+    public void testIssue215746_01() throws Exception {
+        checkCompletion("testfiles/completion/issue215746.js", "Math.E.M^IN_VALUE;", false);
+    }
+
+    public void testIssue215746_02() throws Exception {
+        checkCompletion("testfiles/completion/issue215746.js", "window.h^istory.state;", false);
+    }
+
+    public void testIssue215746_03() throws Exception {
+        checkCompletion("testfiles/completion/issue215746.js", "window.history.s^tate;", false);
+    }
+
+    public void testIssue218361_01() throws Exception {
+        checkCompletion("testfiles/completion/issue218361_1.js", "window.history.^;", false);
+    }
+
+    public void testIssue218361_02() throws Exception {
+        checkCompletion("testfiles/completion/issue218361_2.js", "window.history.^", false);
+    }
+
+    public void testIssue218361_03() throws Exception {
+        checkCompletion("testfiles/completion/issue218361_3.js", "window.history.^", false);
+    }
+
+    public void testIssue218361_04() throws Exception {
+        checkCompletion("testfiles/completion/issue218361_4.js", "window.history.^", false);
+    }
+
+    public void testIssue218361_05() throws Exception {
+        checkCompletion("testfiles/completion/issue218361_5.js", "window.history.b^", false);
+    }
+
+    public void testIssue215863_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "window.lo^cation.toString();", false);
+    }
+
+    public void testIssue215863_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "window.^location.toString();", false);
+    }
+
+    public void testIssue215863_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "h^istory", false);
+    }
+
+    public void testIssue215863_04() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "a^lert(\"Text\");", false);
     }
 
     @Override

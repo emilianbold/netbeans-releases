@@ -46,6 +46,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import org.netbeans.modules.db.dataview.table.ResultSetTableCellEditor;
 
 public class NumberFieldEditor extends ResultSetTableCellEditor {
 

@@ -78,7 +78,13 @@ public class Runtime {
         JSONObject params = new JSONObject();
         params.put("ownProperties", ownProperties); // NOI18N
         params.put("objectId", remoteObject.getObjectID()); // NOI18N
-        JSONObject response = transport.sendBlockingCommand(new Command("Runtime.getProperties", params)).getResponse(); // NOI18N
+        Response properties = transport.sendBlockingCommand(new Command("Runtime.getProperties", params));
+        if (properties == null) {
+            LOG.log(Level.WARNING, "no response from command: "+"Runtime.getProperties "+params.toJSONString() + // NOI18N
+                    ", remote object was: "+remoteObject.toString() + " and owning property :"+remoteObject.getOwningProperty()); // NOI18N
+            return Collections.emptyList();
+        }
+        JSONObject response = properties.getResponse(); // NOI18N
         JSONObject result = (JSONObject)response.get("result"); // NOI18N
         if (result == null) {
             LOG.log(Level.WARNING, "no result in response: "+response.toJSONString() + // NOI18N

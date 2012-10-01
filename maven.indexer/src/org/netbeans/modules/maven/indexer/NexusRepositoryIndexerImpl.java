@@ -59,7 +59,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.index.*;
 import org.apache.maven.index.artifact.ArtifactPackagingMapper;
-import org.apache.maven.index.context.DefaultIndexingContext;
 import org.apache.maven.index.context.IndexCreator;
 import org.apache.maven.index.context.IndexingContext;
 import org.apache.maven.index.expr.StringSearchExpression;
@@ -579,18 +578,13 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         }
                         File art = new File(absolutePath);
                         if (art.exists()) {
-                            lock(indexingContext, true);
-                            try {
-                                ArtifactContext ac = contextProducer.getArtifactContext(indexingContext, art);
+                            ArtifactContext ac = contextProducer.getArtifactContext(indexingContext, art);
 //                            System.out.println("ac gav=" + ac.getGav());
 //                            System.out.println("ac pom=" + ac.getPom());
 //                            System.out.println("ac art=" + ac.getArtifact());
 //                            System.out.println("ac info=" + ac.getArtifactInfo());
-                                assert indexingContext.getIndexSearcher() != null;
-                                indexer.addArtifactToIndex(ac, indexingContext);
-                            } finally {
-                                unlock(indexingContext, true);
-                            }
+//                                assert indexingContext.getIndexSearcher() != null;
+                            indexer.addArtifactToIndex(ac, indexingContext);
                         }
 
                     }
@@ -605,33 +599,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         fireChangeIndex(repo);
     }
     
-    /**
-     * issue 204706 related
-     * @param indexingContext
-     * @param exclusive 
-     */
-    private void lock(IndexingContext indexingContext, boolean exclusive) {
-        if (exclusive && indexingContext instanceof DefaultIndexingContext) {
-            ((DefaultIndexingContext) indexingContext).lockExclusively();
-        } else {
-            indexingContext.lock();
-        }
-
-    }
-
-    /**
-     * issue 204706 related
-     * @param indexingContext
-     * @param exclusive 
-     */
-    private void unlock(IndexingContext indexingContext, boolean exclusive) {
-        if (exclusive && indexingContext instanceof DefaultIndexingContext) {
-            ((DefaultIndexingContext) indexingContext).unlockExclusively();
-        } else {
-            indexingContext.unlock();
-        }
-    }    
-
     @Override
     public void deleteArtifactFromIndex(final RepositoryInfo repo, final Artifact artifact) {
         final ArtifactRepository repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
@@ -674,12 +641,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     pomPath += "pom"; //NOI18N
                     File pom = new File(pomPath);
                     if (pom.exists()) {
-                        lock(indexingContext, true);
-                        try {
-                            indexer.deleteArtifactFromIndex(contextProducer.getArtifactContext(indexingContext, pom), indexingContext);
-                        } finally {
-                            unlock(indexingContext, true);
-                        }
+                        indexer.deleteArtifactFromIndex(contextProducer.getArtifactContext(indexingContext, pom), indexingContext);
                     }
                     return null;
                 }
@@ -751,13 +713,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             actionSkip.run(repo, null);
                             return null;
                         }
-                        lock(context, false);
-                        try {
-                            action.run(repo, context);
-                        } 
-                        finally {
-                            unlock(context, false);
-                        }
+                        action.run(repo, context);
                     } catch (IOException x) {
                         LOGGER.log(Level.INFO, "could not process " + repo.getId(), x);
                     }

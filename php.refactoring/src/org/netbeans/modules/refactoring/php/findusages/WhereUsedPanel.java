@@ -53,35 +53,36 @@ import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
-import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-
 
 /**
  * Based on the WhereUsedPanel in Java refactoring by Jan Becicka.
+ *
  * @author Jan Becicka, Tor Norbye, Radek Matous
  */
 public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
     private final transient WhereUsedSupport usage;
-    private WhereUsedSupport newElement;
     private final transient ChangeListener parent;
 
-    /** Creates new form WhereUsedPanel */
+    /**
+     * Creates new form WhereUsedPanel
+     */
     public WhereUsedPanel(String name, WhereUsedSupport e, ChangeListener parent) {
         setName(NbBundle.getMessage(WhereUsedPanel.class, "LBL_WhereUsed")); // NOI18N
 
@@ -114,7 +115,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         initialized = true;
     }
 
-    
     private void setupPanels() {
         ModelElement elem = usage.getModelElement();
         assert elem != null;
@@ -122,7 +122,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         String clsName = null;
         if (usage.getModelElements().size() == 1) {
             if (elem instanceof FullyQualifiedElement && !(elem instanceof MethodScope)) {
-                name =  ((FullyQualifiedElement)elem).getFullyQualifiedName().toString();
+                name = ((FullyQualifiedElement) elem).getFullyQualifiedName().toString();
             }
             if (elem.getInScope() instanceof TypeScope) {
                 clsName = ((TypeScope) elem.getInScope()).getFullyQualifiedName().toString();
@@ -158,13 +158,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             if (methodDeclaringSuperClass != null) {
                 m_isBaseClass.setVisible(true);
                 m_isBaseClass.setSelected(true);
-            //Mnemonics.setLocalizedText(m_isBaseClass, isBaseClassText);
+                //Mnemonics.setLocalizedText(m_isBaseClass, isBaseClassText);
             } else {
                 m_isBaseClass.setVisible(false);
                 m_isBaseClass.setSelected(false);
             }
         } else if (usage.getKind() == PhpElementKind.CLASS) {
-            add(classesPanel, BorderLayout.CENTER);            
+            add(classesPanel, BorderLayout.CENTER);
             classesPanel.setVisible(true);
         } else if (usage.getKind() == PhpElementKind.IFACE) {
             add(classesPanel, BorderLayout.CENTER);
@@ -200,29 +200,27 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 break;
             case VARIABLE:
                 bundleKey = "DSC_VariableUsages"; // NOI18N
-
                 break;
             case FUNCTION:
                 bundleKey = "DSC_FuncUsages"; // NOI18N
-
                 break;
             case FIELD:
                 bundleKey = "DSC_FieldUsages"; //NOI18N
-
                 break;
             case METHOD:
                 bundleKey = "DSC_MethodUsages"; //NOI18N
-
                 break;
             case CONSTANT:
                 bundleKey = "DSC_ConstantUsages"; //NOI18N
-
                 break;
             case TYPE_CONSTANT:
                 bundleKey = "DSC_ClassConstantUsages"; //NOI18N
                 break;
-                default:
-                    assert false : usage.getKind();
+            case USE_ALIAS:
+                bundleKey = "DSC_UseAliasUsages"; //NOI18N
+                break;
+            default:
+                assert false : usage.getKind();
         }
 
         return bundleKey;
@@ -232,10 +230,10 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         return usage;
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -490,8 +488,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
 private void searchInCommentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchInCommentsActionPerformed
 // TODO add your handling code here://GEN-LAST:event_searchInCommentsActionPerformed
-}
-
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup;
     private javax.swing.JRadioButton c_directOnly;
@@ -539,8 +536,7 @@ private void searchInCommentsActionPerformed(java.awt.event.ActionEvent evt) {//
         return (ModelElement) elementComboBox.getSelectedItem();
     }
 
-    public
-    @Override
+    public @Override
     Dimension getPreferredSize() {
         Dimension orig = super.getPreferredSize();
         return new Dimension(orig.width + 30, orig.height + 80);
@@ -556,6 +552,7 @@ private void searchInCommentsActionPerformed(java.awt.event.ActionEvent evt) {//
     }
 
     private static final class ModelElementRenderer extends JLabel implements ListCellRenderer, UIResource {
+
         private static final long serialVersionUID = 87513687675643214L;
 
         public ModelElementRenderer() {
@@ -572,9 +569,9 @@ private void searchInCommentsActionPerformed(java.awt.event.ActionEvent evt) {//
                 ModelElement element = (ModelElement) value;
                 StringBuilder sb = new StringBuilder();
                 if (element instanceof FullyQualifiedElement) {
-                    sb.append(((FullyQualifiedElement)element).getFullyQualifiedName().toString());
+                    sb.append(((FullyQualifiedElement) element).getFullyQualifiedName().toString());
                 } else if (element.getInScope() instanceof FullyQualifiedElement) {
-                    sb.append(((FullyQualifiedElement)element.getInScope()).getFullyQualifiedName().toString());
+                    sb.append(((FullyQualifiedElement) element.getInScope()).getFullyQualifiedName().toString());
                 } else {
                     sb.append(element.getName());
                 }
@@ -597,4 +594,3 @@ private void searchInCommentsActionPerformed(java.awt.event.ActionEvent evt) {//
         }
     }
 }
-

@@ -457,7 +457,7 @@ public final class PhpExecutable {
      */
     @CheckForNull
     public Integer runAndWait(@NonNull ExecutionDescriptor executionDescriptor, @NonNull String progressMessage) throws ExecutionException {
-        return runAndWait(DEFAULT_EXECUTION_DESCRIPTOR, progressMessage);
+        return runAndWait(executionDescriptor, null, progressMessage);
     }
 
     /**

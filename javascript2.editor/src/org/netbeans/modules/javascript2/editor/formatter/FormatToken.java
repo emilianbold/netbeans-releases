@@ -438,7 +438,7 @@ public final class FormatToken {
                 return false;
             }
         },
-        AFTER_ARRAY_LITERAL {
+        AFTER_ARRAY_LITERAL_START {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
@@ -448,7 +448,46 @@ public final class FormatToken {
                 return false;
             }
         },
-
+        BEFORE_ARRAY_LITERAL_END {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_ARRAY_LITERAL_ITEM {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_OBJECT_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BEFORE_OBJECT_END {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
         // a bit special tokens to detect proper continuation
         AFTER_PROPERTY {
             @Override
@@ -476,6 +515,10 @@ public final class FormatToken {
         BEFORE_ASSIGNMENT_OPERATOR,
         AFTER_ASSIGNMENT_OPERATOR,
 
+        // around property
+        BEFORE_PROPERTY_OPERATOR,
+        AFTER_PROPERTY_OPERATOR,
+
         // around comma
         BEFORE_COMMA,
         AFTER_COMMA,
@@ -494,6 +537,7 @@ public final class FormatToken {
 
         // no parenthesis but we should handle that
         AFTER_VAR_KEYWORD,
+        AFTER_NEW_KEYWORD,
 
         // keywords with possible space before
         BEFORE_WHILE_KEYWORD,
@@ -541,6 +585,9 @@ public final class FormatToken {
 
         BEFORE_RIGHT_PARENTHESIS,
         AFTER_LEFT_PARENTHESIS,
+
+        BEFORE_RIGHT_BRACE,
+        AFTER_LEFT_BRACE,
 
         // before braces
         BEFORE_FUNCTION_DECLARATION_BRACE,

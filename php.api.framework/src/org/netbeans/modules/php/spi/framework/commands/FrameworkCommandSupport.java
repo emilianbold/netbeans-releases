@@ -250,7 +250,7 @@ public abstract class FrameworkCommandSupport {
         }
 
         public String[] getCommandParams() {
-            return params;
+            return params.clone();
         }
 
         public boolean isDebug() {

@@ -47,6 +47,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.TimeZone;
 import org.netbeans.junit.NbTestCase;
 
@@ -135,7 +136,10 @@ public class DateTypeTest extends NbTestCase {
         DateFormat fmt = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG,
                 TimestampType.LOCALE);
         fmt.setTimeZone(TimeZone.getDefault());
-        assertEquals("Make sure 'expected' is as expected", "01 August 2002 12:00:00 " + TimeZone.getDefault().getDisplayName(true, TimeZone.SHORT), fmt.format(expectedDate));
+        assertEquals("Make sure 'expected' is as expected",
+                "01 August 2002 12:00:00 "
+                + TimeZone.getDefault().getDisplayName(true, TimeZone.SHORT, TimestampType.LOCALE),
+                fmt.format(expectedDate));
 
         String toConvert = DATE_FORMAT.format(expectedDate);
         assertEquals("Check format", "2002-08-01", toConvert);

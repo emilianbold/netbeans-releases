@@ -591,7 +591,8 @@ public class TemplateWizard extends WizardDescriptor {
         return super.getTitleFormat();
     }
 
-    
+
+    private boolean isInstantiating = false;
     /** Calls iterator's instantiate. It is called when user selects
      * a option which is not CANCEL_OPTION or CLOSED_OPTION.
      * @throws IOException if the instantiation fails
@@ -599,7 +600,12 @@ public class TemplateWizard extends WizardDescriptor {
      * at least one)
      */
     protected Set<DataObject> handleInstantiate() throws IOException {
-        return iterator.getIterator ().instantiate (this);
+        try {
+            isInstantiating = true;
+            return iterator.getIterator ().instantiate (this);
+        } finally {
+            isInstantiating = false;
+        }
     }
     
     /** Method to attach a description to a data object.
@@ -743,6 +749,8 @@ public class TemplateWizard extends WizardDescriptor {
     @Override
     protected void updateState() {
         assert EventQueue.isDispatchThread();
+        if( isInstantiating )
+            return; //#209987 - don't enable wizard buttons while instantiating
         super.updateState();
         
         if (lastComp != null) {

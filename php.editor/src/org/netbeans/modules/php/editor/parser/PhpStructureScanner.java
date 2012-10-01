@@ -96,11 +96,13 @@ public class PhpStructureScanner implements StructureScanner {
 
     private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
 
-    private static final String FOLD_CLASS = "tags"; //NOI18N
+    private static final String FOLD_CLASS = "inner-classes"; //NOI18N
 
     private static final String FOLD_PHPDOC = "comments"; //NOI18N
 
     private static final String FOLD_COMMENT = "initial-comment"; //NOI18N
+
+    private static final String FOLD_OTHER_CODE_BLOCKS = "othercodeblocks"; //NOI18N
 
     private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
 
@@ -386,7 +388,7 @@ public class PhpStructureScanner implements StructureScanner {
         }
 
         private void addFold(final OffsetRange offsetRange) {
-            getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
+            getRanges(folds, FOLD_OTHER_CODE_BLOCKS).add(offsetRange);
         }
 
     }

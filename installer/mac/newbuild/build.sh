@@ -39,7 +39,7 @@ buildnumber=$3
 build_jdk7=$4
 signing_identity=$5
 if [ -n "$6" ] ; then
-  nb_locales="$6"
+  nb_locales=",$6"
 fi
 
 basename=`dirname "$0"`
@@ -63,10 +63,10 @@ if [ -z $en_build ] ; then
     en_build=1
 fi
 
-if [ 0 -eq "${signing_identity}" ] ; then
+if [ 0 = "${signing_identity}" ] ; then
     signing_identity=0
 fi
 
 rm -rf "$basename"/dist_en
-ant -f $basename/build.xml $target -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber  -Dsigning_identity="${signing_identity}" -Dbuild.jdk7=$build_jdk7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Djdk_builds_host=$JDK_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
+ant -f $basename/build.xml $target -Dlocales=$nb_locales -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber  -Dsigning_identity="${signing_identity}" -Dbuild.jdk7=$build_jdk7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Djdk_builds_host=$JDK_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
 mv -f "$basename"/dist "$basename"/dist_en

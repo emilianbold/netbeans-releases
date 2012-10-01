@@ -165,10 +165,10 @@ made subject to such option by the copyright holder.
             </file>
             <file name="Separator3.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	        <attr name="position" intvalue="2000"/>
+	        <attr name="position" intvalue="20000"/>
             </file>
             <folder name="ConfigureWindow">
-                <attr name="position" intvalue="2100"/>
+                <attr name="position" intvalue="20100"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.windows.resources.Bundle"/>
                 
                 <!-- maximize window -->
@@ -237,23 +237,23 @@ made subject to such option by the copyright holder.
             </folder>
             <file name="Separator4.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	        <attr name="position" intvalue="2300"/>
+	        <attr name="position" intvalue="20300"/>
             </file>
             <file name="CloseWindowAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
-                <attr name="position" intvalue="2400"/>
+                <attr name="position" intvalue="20400"/>
             </file>
             <file name="CloseAllDocumentsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
-                <attr name="position" intvalue="2500"/>
+                <attr name="position" intvalue="20500"/>
             </file>
             <file name="CloseAllButThisAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
-                <attr name="position" intvalue="2600"/>
+                <attr name="position" intvalue="20600"/>
             </file>
             <file name="DocumentsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
-                <attr name="position" intvalue="2700"/>
+                <attr name="position" intvalue="20700"/>
             </file>
             
         </folder>

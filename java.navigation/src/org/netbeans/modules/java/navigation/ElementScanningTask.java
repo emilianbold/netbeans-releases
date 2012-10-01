@@ -246,7 +246,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         final Element encElement = e.getEnclosingElement();
         Description d = new Description(
                 ui,
-                e.getSimpleName().toString(),
+                getSimpleName(e),
                 ElementHandle.create(e),
                 e.getKind(),
                 inherited,
@@ -277,6 +277,14 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             return -1;
          }
          return res.longValue();
+    }
+
+    private static String getSimpleName(@NonNull final Element e) {
+        if (e.getKind() == ElementKind.CONSTRUCTOR) {
+            return e.getEnclosingElement().getSimpleName().toString();
+        } else {
+            return e.getSimpleName().toString();
+        }
     }
         
    /** Creates HTML display name of the Executable element */

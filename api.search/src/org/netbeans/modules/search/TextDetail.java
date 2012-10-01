@@ -51,6 +51,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
@@ -63,6 +65,7 @@ import org.netbeans.api.search.SearchPattern;
 import org.netbeans.modules.search.ui.ReplaceCheckableNode;
 import org.netbeans.modules.search.ui.ResultsOutlineSupport;
 import org.netbeans.modules.search.ui.UiUtils;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -88,6 +91,8 @@ import org.openide.xml.XMLUtil;
  */
 public final class TextDetail implements Selectable {
 
+    private static final Logger LOG = Logger.getLogger(
+            TextDetail.class.getName());
     /** Property name which indicates this detail to show. */
     public static final int DH_SHOW = 1;
     /** Property name which indicates this detail to go to. */
@@ -140,6 +145,9 @@ public final class TextDetail implements Selectable {
      * @see #DH_GOTO 
      * @see #DH_SHOW 
      * @see #DH_HIDE */
+    @NbBundle.Messages({
+        "MSG_CannotShowTextDetai=The text match cannot be shown."
+    })
     public void showDetail(int how) {
         prepareLine();
         if (lineObj == null) {
@@ -175,8 +183,15 @@ public final class TextDetail implements Selectable {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        Caret caret = panes[0].getCaret(); // #23626
-                        caret.moveDot(caret.getDot() + markLength);
+                        try {
+                            Caret caret = panes[0].getCaret(); // #23626
+                            caret.moveDot(caret.getDot() + markLength);
+                        } catch (Exception e) { // #217038
+                            StatusDisplayer.getDefault().setStatusText(
+                                    Bundle.MSG_CannotShowTextDetai());
+                            LOG.log(Level.FINE,
+                                    Bundle.MSG_CannotShowTextDetai(), e);
+                        }
                     }
                 });
             }

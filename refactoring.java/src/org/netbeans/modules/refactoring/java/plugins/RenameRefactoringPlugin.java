@@ -75,8 +75,8 @@ import org.openide.util.Utilities;
 public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     
     private TreePathHandle treePathHandle = null;
-    private Collection<ExecutableElement> overriddenByMethods = null; // methods that override the method to be renamed
-    private Collection<ExecutableElement> overridesMethods = null; // methods that are overridden by the method to be renamed
+    private Integer overriddenByMethodsCount = null;
+    private Integer overridesMethodsCount = null;
     private boolean doCheckName = true;
     
     private RenameRefactoring refactoring;
@@ -157,7 +157,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         case METHOD:
             fireProgressListenerStep();
             fireProgressListenerStep();
+            Collection<ExecutableElement> overriddenByMethods; // methods that override the method to be renamed
             overriddenByMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement)el, info, cancelRequested);
+            overriddenByMethodsCount = overriddenByMethods.size();
             fireProgressListenerStep();
             if (el.getModifiers().contains(Modifier.NATIVE)) {
                 preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", el));
@@ -178,7 +180,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", e));
                 }
             }
+            Collection<ExecutableElement> overridesMethods; // methods that are overridden by the method to be renamed
             overridesMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)el, info);
+            overridesMethodsCount = overridesMethods.size();
             fireProgressListenerStep();
             if (!overridesMethods.isEmpty()) {
                 boolean fatal = false;
@@ -339,11 +343,11 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         
         Problem checkProblem = null;
         int steps = 0;
-        if (overriddenByMethods != null) {
-            steps += overriddenByMethods.size();
+        if (overriddenByMethodsCount != null) {
+            steps += overriddenByMethodsCount;
         }
-        if (overridesMethods != null) {
-            steps += overridesMethods.size();
+        if (overridesMethodsCount != null) {
+            steps += overridesMethodsCount;
         }
         
         fireProgressListenerStart(RenameRefactoring.PARAMETERS_CHECK, 8 + 3*steps);

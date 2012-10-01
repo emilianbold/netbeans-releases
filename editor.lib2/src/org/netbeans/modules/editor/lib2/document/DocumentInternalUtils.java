@@ -56,14 +56,15 @@ public class DocumentInternalUtils {
     }
 
     public static Element customElement(Document doc, int startOffset, int endOffset) {
-        return new CustomElement(doc, startOffset, endOffset);
+        return new CustomRootElement(doc, startOffset, endOffset);
     }
 
     private static final class CustomElement extends AbstractPositionElement {
 
-        CustomElement(Document doc, int startOffset, int endOffset) {
-            super(new CustomRootElement(doc), startOffset, endOffset);
-            CharSequenceUtilities.checkIndexesValid(startOffset, endOffset, doc.getLength() + 1);
+        CustomElement(Element parent, int startOffset, int endOffset) {
+            super(parent, startOffset, endOffset);
+            CharSequenceUtilities.checkIndexesValid(startOffset, endOffset,
+                    parent.getDocument().getLength() + 1);
         }
 
         @Override
@@ -76,13 +77,30 @@ public class DocumentInternalUtils {
 
     private static final class CustomRootElement extends AbstractRootElement<CustomElement> {
 
-        public CustomRootElement(Document doc) {
+        private final CustomElement customElement;
+
+        public CustomRootElement(Document doc, int startOffset, int endOffset) {
             super(doc);
+            customElement = new CustomElement(this, startOffset, endOffset);
         }
 
         @Override
         public String getName() {
             return "CustomRootElement";
+        }
+
+        @Override
+        public Element getElement(int index) {
+            if (index == 0) {
+                return customElement;
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public int getElementCount() {
+            return 1;
         }
 
     }

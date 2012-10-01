@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListResourceBundle;
 import java.util.Locale;
@@ -109,6 +110,8 @@ public class JPQLExecutor {
     public JPQLResult execute(String jpql,
             PersistenceUnit pu,
             final PersistenceEnvironment pe,
+            HashMap<String, String> props,
+            Provider provider,
             int maxRowCount,
             ProgressHandle ph,
             boolean execute) {
@@ -119,8 +122,8 @@ public class JPQLExecutor {
 
             Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");//NOI18N
             javax.persistence.Persistence p = (javax.persistence.Persistence) pClass.newInstance();
-
-            EntityManagerFactory emf = p.createEntityManagerFactory(pu.getName());
+            
+            EntityManagerFactory emf = p.createEntityManagerFactory(pu.getName(), props);
 
             EntityManager em = emf.createEntityManager();
 
@@ -134,8 +137,6 @@ public class JPQLExecutor {
                 }
             });
             Query query = em.createQuery(jpql);
-            //
-            Provider provider = ProviderUtil.getProvider(pu);
             String queryStr = null;
             if (provider.equals(ProviderUtil.ECLIPSELINK_PROVIDER)) {//NOI18N
                 Class qClass = Thread.currentThread().getContextClassLoader().loadClass(ECLIPSELINK_QUERY);

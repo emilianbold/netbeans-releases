@@ -280,7 +280,7 @@ public final class PhpUnitTestGroupsFetcher {
 
     //~ Inner classes
 
-    private class TestGroupsOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    private static final class TestGroupsOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
 
         private final Pattern testGroupName = Pattern.compile("^\\s-\\s(.*)$"); // NOI18N
         private final Collection<String> testGroups = Collections.synchronizedCollection(new ArrayList<String>());

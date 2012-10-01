@@ -53,6 +53,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
+import org.netbeans.lib.lexer.TokenList;
 
 /**
  * Default token which by default obtains text from its background storage.
@@ -135,12 +136,13 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
     public synchronized CharSequence text() { // synchronized due to tokenLengthOrCachedText mutability
         CharSequence text;
         if (tokenLengthOrCachedText.getClass() == TokenLength.class) {
+            TokenList<T> tList = tokenList;
             if (!isRemoved()) { // Updates status for EmbeddedTokenList; tokenList != null
                 int len = tokenLengthOrCachedText.length();
                 if (len >= INPUT_SOURCE_SUBSEQUENCE_THRESHOLD) {
                     // Create subsequence of input source text
-                    CharSequence inputSourceText = tokenList.inputSourceText();
-                    int tokenOffset = tokenList.tokenOffset(this);
+                    CharSequence inputSourceText = tList.inputSourceText();
+                    int tokenOffset = tList.tokenOffset(this);
                     text = new InputSourceSubsequence(this, inputSourceText,
                             tokenOffset, tokenOffset + len);
                 } else { // Small token
@@ -165,14 +167,15 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
                 "index=" + index + ", length=" + length() // NOI18N
             );
         }
-        if (tokenList == null) { // Should normally not happen
+        TokenList<T> tList = tokenList;
+        if (tList == null) { // Should normally not happen
             // A bit strange to throw IOOBE but it's more practical since
             // TokenHierarchy's dump can overcome IOOBE and deliver a useful debug but not NPEs etc.
             throw new IndexOutOfBoundsException("index=" + index + ", length=" + length() +
                     " but tokenList==null for token " + dumpInfo(null, null, false, true, 0));
         }
-        int tokenOffset = tokenList.tokenOffset(this);
-        return tokenList.inputSourceText().charAt(tokenOffset + index);
+        int tokenOffset = tList.tokenOffset(this);
+        return tList.inputSourceText().charAt(tokenOffset + index);
     }
 
     /**
@@ -189,10 +192,15 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
             // If calling this.subSequence() then this.text() was already called
             // so the status should be updated already and also the token is not removed.
             // For simplicity always make a subsequence of the input source text.
-            CharSequence inputSourceText = tokenList.inputSourceText();
-            int tokenOffset = tokenList.tokenOffset(this);
-            text = new InputSourceSubsequence(this, inputSourceText,
-                    tokenOffset + start, tokenOffset + end);
+            TokenList tList = tokenList;
+            if (tList != null) {
+                CharSequence inputSourceText = tList.inputSourceText();
+                int tokenOffset = tList.tokenOffset(this);
+                text = new InputSourceSubsequence(this, inputSourceText,
+                        tokenOffset + start, tokenOffset + end);
+            } else {
+                text = "<null>";
+            }
 
         } else { // tokenLength contains cached text
             text = tokenLengthOrCachedText.subSequence(start, end);
@@ -213,14 +221,15 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
             StackElementArray.logStackIfNew();
         }
         if (tokenLengthOrCachedText.getClass() == TokenLength.class) {
-            if (!isRemoved()) { // Updates status for EmbeddedTokenList; tokenList != null
+            TokenList<T> tList = tokenList;
+            if (tList != null && !isRemoved()) { // Updates status for EmbeddedTokenList; tokenList != null
                 TokenLength tokenLength = (TokenLength) tokenLengthOrCachedText;
-                CharSequence inputSourceText = tokenList.inputSourceText();
+                CharSequence inputSourceText = tList.inputSourceText();
                 int nextCacheFactor = tokenLength.nextCacheFactor();
                 int threshold = (inputSourceText.getClass() == String.class)
                             ? LexerUtilsConstants.INPUT_TEXT_STRING_THRESHOLD
                             : LexerUtilsConstants.CACHE_TOKEN_TO_STRING_THRESHOLD;
-                int tokenOffset = tokenList.tokenOffset(this);
+                int tokenOffset = tList.tokenOffset(this);
                 textStr = inputSourceText.subSequence(tokenOffset,
                         tokenOffset + tokenLength.length()).toString();
                 if (nextCacheFactor < threshold) {
@@ -239,14 +248,15 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
     }
     
     synchronized void tokenLengthNext() {
-        if (tokenLengthOrCachedText.getClass() == TokenLength.class && !isRemoved()) {
+        TokenList<T> tList = tokenList;
+        if (tList != null && tokenLengthOrCachedText.getClass() == TokenLength.class && !isRemoved()) {
             TokenLength tokenLength = (TokenLength) tokenLengthOrCachedText;
-            CharSequence inputSourceText = tokenList.inputSourceText();
+            CharSequence inputSourceText = tList.inputSourceText();
             int nextCacheFactor = tokenLength.nextCacheFactor();
             int threshold = (inputSourceText.getClass() == String.class)
                     ? LexerUtilsConstants.INPUT_TEXT_STRING_THRESHOLD
                     : LexerUtilsConstants.CACHE_TOKEN_TO_STRING_THRESHOLD;
-            int tokenOffset = tokenList.tokenOffset(this);
+            int tokenOffset = tList.tokenOffset(this);
             if (nextCacheFactor < threshold) {
                 tokenLengthOrCachedText = tokenLength.next(nextCacheFactor);
             } else { // Should become cached

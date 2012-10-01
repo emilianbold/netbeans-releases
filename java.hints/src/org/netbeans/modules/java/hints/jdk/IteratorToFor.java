@@ -126,6 +126,7 @@ public class IteratorToFor {
     private static boolean iterable(HintContext ctx, TreePath collection, TreePath type) {
         TypeMirror collectionType = ctx.getInfo().getTrees().getTypeMirror(collection);
         TypeElement iterable = ctx.getInfo().getElements().getTypeElement("java.lang.Iterable");
+        if (collectionType == null || iterable == null) return false;
         TypeMirror iterableType = ctx.getInfo().getTypes().getDeclaredType(iterable, ctx.getInfo().getTypes().getWildcardType(ctx.getInfo().getTrees().getTypeMirror(type), null));
         TypeMirror bogusIterableType = ctx.getInfo().getTypes().getDeclaredType(iterable, ctx.getInfo().getTypes().getNullType());
         return ctx.getInfo().getTypes().isAssignable(collectionType, iterableType) && !ctx.getInfo().getTypes().isAssignable(collectionType, bogusIterableType);

@@ -71,12 +71,12 @@
 
     <!-- JDK Properties-->    
     <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
-    <property name="mpkg.version_jdk" value=" 7 Update 07"/> 
-    <property name="jdk.bundle.files.prefix" value="jdk-7u7"/>
+    <property name="mpkg.version_jdk" value=" 7 Update 09"/> 
+    <property name="jdk.bundle.files.prefix" value="jdk-7u9"/>
     <property name="jdk.bundle.files.suffix" value="nb-dev"/>
     <property name="output.jdk7.dir" value="jdk/"/>
-    <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_07.jdk/Contents/Home"/>
-    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u7/promoted/fcs/b10/bundles/macosx-x64/jdk-7u7-macosx-x64.dmg"/>
-    <property name="jdk.package.name" value="JDK\ 7\ Update\ 07"/>
+    <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home"/>
+    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u9/promoted/fcs/b05/bundles/macosx-x64/jdk-7u9-macosx-x64.dmg"/>
+    <property name="jdk.package.name" value="JDK\ 7\ Update\ 09"/>
 
 </project>

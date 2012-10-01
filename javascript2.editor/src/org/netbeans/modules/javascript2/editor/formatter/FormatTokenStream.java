@@ -187,6 +187,10 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_VAR_KEYWORD));
                     break;
+                case KEYWORD_NEW:
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_NEW_KEYWORD));
+                    break;
                 case OPERATOR_SEMICOLON:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_SEMICOLON));
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
@@ -243,14 +247,16 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
      */
     public FormatToken getCoveringToken(int offset) {
         Map.Entry<Integer, FormatToken> entry = tokenPosition.floorEntry(offset);
-        FormatToken token = entry.getValue();
-        if (!token.isVirtual()) {
-            if (token.getOffset() == offset) {
-                return token;
-            }
-            int endPos = token.getOffset() + token.getText().length();
-            if (offset >= token.getOffset() && offset < endPos) {
-                return token;
+        if (entry != null) {
+            FormatToken token = entry.getValue();
+            if (!token.isVirtual()) {
+                if (token.getOffset() == offset) {
+                    return token;
+                }
+                int endPos = token.getOffset() + token.getText().length();
+                if (offset >= token.getOffset() && offset < endPos) {
+                    return token;
+                }
             }
         }
         return null;

@@ -489,10 +489,10 @@ var Enumerable = {
 }
 
 Object.extend(Enumerable, {
-    map:     Enumerable.collect,
-    find:    Enumerable.detect,
-    select:  Enumerable.findAll,
-    member:  Enumerable.include,
+    map: Enumerable.collect,
+    find: Enumerable.detect,
+    select: Enumerable.findAll,
+    member: Enumerable.include,
     entries: Enumerable.toArray
 });
 var $A = Array.from = function(iterable) {
@@ -721,14 +721,14 @@ var Ajax = {
     getTransport: function() {
         return Try.these(
                 function() {
-            return new XMLHttpRequest()
-        },
+                    return new XMLHttpRequest()
+                },
                 function() {
-            return new ActiveXObject('Msxml2.XMLHTTP')
-        },
+                    return new ActiveXObject('Msxml2.XMLHTTP')
+                },
                 function() {
-            return new ActiveXObject('Microsoft.XMLHTTP')
-        }
+                    return new ActiveXObject('Microsoft.XMLHTTP')
+                }
         ) || false;
     },
     activeRequestCount: 0
@@ -774,11 +774,11 @@ Ajax.Base = function() {
 Ajax.Base.prototype = {
     setOptions: function(options) {
         this.options = {
-            method:       'post',
+            method: 'post',
             asynchronous: true,
-            contentType:  'application/x-www-form-urlencoded',
-            encoding:     'UTF-8',
-            parameters:   ''
+            contentType: 'application/x-www-form-urlencoded',
+            encoding: 'UTF-8',
+            parameters: ''
         }
         Object.extend(this.options, options || {});
 
@@ -1436,16 +1436,16 @@ Object.extend(Element.Methods, {childOf: Element.Methods.descendantOf});
 Element._attributeTranslations = {};
 
 Element._attributeTranslations.names = {
-    colspan:   "colSpan",
-    rowspan:   "rowSpan",
-    valign:    "vAlign",
-    datetime:  "dateTime",
+    colspan: "colSpan",
+    rowspan: "rowSpan",
+    valign: "vAlign",
+    datetime: "dateTime",
     accesskey: "accessKey",
-    tabindex:  "tabIndex",
-    enctype:   "encType",
+    tabindex: "tabIndex",
+    enctype: "encType",
     maxlength: "maxLength",
-    readonly:  "readOnly",
-    longdesc:  "longDesc"
+    readonly: "readOnly",
+    longdesc: "longDesc"
 };
 
 Element._attributeTranslations.values = {
@@ -1466,9 +1466,9 @@ Element._attributeTranslations.values = {
 
 Object.extend(Element._attributeTranslations.values, {
     href: Element._attributeTranslations.values._getAttr,
-    src:  Element._attributeTranslations.values._getAttr,
+    src: Element._attributeTranslations.values._getAttr,
     disabled: Element._attributeTranslations.values._flag,
-    checked:  Element._attributeTranslations.values._flag,
+    checked: Element._attributeTranslations.values._flag,
     readonly: Element._attributeTranslations.values._flag,
     multiple: Element._attributeTranslations.values._flag
 });
@@ -1512,8 +1512,8 @@ if (document.all && !window.opera) {
 
             $A(div.childNodes).each(
                     function(node) {
-                element.appendChild(node)
-            });
+                        element.appendChild(node)
+                    });
         } else {
             element.innerHTML = html.stripScripts();
         }
@@ -2127,17 +2127,17 @@ if (!window.Event) {
 
 Object.extend(Event, {
     KEY_BACKSPACE: 8,
-    KEY_TAB:       9,
-    KEY_RETURN:   13,
-    KEY_ESC:      27,
-    KEY_LEFT:     37,
-    KEY_UP:       38,
-    KEY_RIGHT:    39,
-    KEY_DOWN:     40,
-    KEY_DELETE:   46,
-    KEY_HOME:     36,
-    KEY_END:      35,
-    KEY_PAGEUP:   33,
+    KEY_TAB: 9,
+    KEY_RETURN: 13,
+    KEY_ESC: 27,
+    KEY_LEFT: 37,
+    KEY_UP: 38,
+    KEY_RIGHT: 39,
+    KEY_DOWN: 40,
+    KEY_DELETE: 46,
+    KEY_HOME: 36,
+    KEY_END: 35,
+    KEY_PAGEUP: 33,
     KEY_PAGEDOWN: 34,
     element: function(event) {
         return event.target || event.srcElement;
@@ -2353,11 +2353,11 @@ var Position = {
     },
     clone: function(source, target) {
         var options = Object.extend({
-            setLeft:    true,
-            setTop:     true,
-            setWidth:   true,
-            setHeight:  true,
-            offsetTop:  0,
+            setLeft: true,
+            setTop: true,
+            setWidth: true,
+            setHeight: true,
+            offsetTop: 0,
             offsetLeft: 0
         }, arguments[2] || {})
 

@@ -59,20 +59,20 @@ import org.w3c.dom.Node;
  *
  */
 public class InitMessage extends DbgpMessage {
-    
+
     private static final String IDEKEY  = "idekey";         // NOI18N
-    
+
     private static final String FILE    = "fileuri";        // NOI18N
 
     InitMessage( Node node ) {
         super(node);
     }
-    
+
     public String getSessionId() {
         // accessor to idekey attribute
         return getAttribute(getNode(), IDEKEY );
     }
-    
+
     public String getFileUri() {
         return getAttribute(getNode(), FILE );
     }
@@ -87,19 +87,19 @@ public class InitMessage extends DbgpMessage {
         setMaxDepth(session);
         setMaxChildren(session);
         setMaxDataSize(session);
-        
+
         setBreakpoints( session );
         negotiateOutputStream(session);
         negotiateRequestedUrls(session);
-       
-        final String transactionId = session.getTransactionId();        
-        DbgpCommand startCommand = DebuggerOptions.getGlobalInstance().isDebuggerStoppedAtTheFirstLine() ? 
+
+        final String transactionId = session.getTransactionId();
+        DbgpCommand startCommand = DebuggerOptions.getGlobalInstance().isDebuggerStoppedAtTheFirstLine() ?
             new StepIntoCommand(transactionId) : new RunCommand(transactionId);
         session.sendCommandLater( startCommand );
     }
 
     private void setMaxDataSize( DebugSession session ) {
-        FeatureGetCommand command = new FeatureGetCommand( 
+        FeatureGetCommand command = new FeatureGetCommand(
                 session.getTransactionId() );
         command.setFeature( Feature.MAX_DATA );
         DbgpResponse response = session.sendSynchronCommand(command);
@@ -107,21 +107,21 @@ public class InitMessage extends DbgpMessage {
         FeatureGetResponse featureGetResponse = (FeatureGetResponse)response;
         Integer maxSize = 0;
         try {
-            maxSize = featureGetResponse != null ? Integer.parseInt(featureGetResponse.getDetails()) : 0;
+            maxSize = Integer.parseInt(featureGetResponse.getDetails());
         }
         catch( NumberFormatException e ) {
-            // just skip 
+            // just skip
         }
         int current = DbgpMessage.getMaxDataSize();
         if ( current > maxSize  ) {
-            FeatureSetCommand setCommand = new FeatureSetCommand( 
+            FeatureSetCommand setCommand = new FeatureSetCommand(
                     session.getTransactionId());
             setCommand.setFeature(Feature.MAX_DATA);
             setCommand.setValue( current +"");
             response = session.sendSynchronCommand(setCommand);
             assert response instanceof FeatureSetResponse;
             FeatureSetResponse setResponse = (FeatureSetResponse) response;
-            if (setResponse != null &&  !setResponse.isSuccess() ) {
+            if (!setResponse.isSuccess() ) {
                 DbgpMessage.setMaxDataSize( maxSize );
             }
         }
@@ -163,7 +163,7 @@ public class InitMessage extends DbgpMessage {
 
     private void setBreakpoints( DebugSession session ) {
         SessionId id = session.getSessionId();
-        Breakpoint[] breakpoints = 
+        Breakpoint[] breakpoints =
             DebuggerManager.getDebuggerManager().getBreakpoints();
         for (Breakpoint breakpoint : breakpoints) {
             if ( !(breakpoint instanceof AbstractBreakpoint)){
@@ -178,7 +178,7 @@ public class InitMessage extends DbgpMessage {
 
             session.sendCommandLater(command);
         }
-        
+
     }
 
     private void setId( DebugSession session ) {

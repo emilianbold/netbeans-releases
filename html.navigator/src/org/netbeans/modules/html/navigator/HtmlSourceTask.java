@@ -62,6 +62,7 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
 
     private HtmlParserResult last;
+    private int lastCaret;
     
     @Override
     public int getPriority() {
@@ -82,10 +83,16 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
         if(last != result) {
             //set new parser result to the UI
             HtmlNavigatorPanel.ui.setParserResult(result);
+            last = result;
+        } else {
+            //still the same parsing result
+            int caret = ((CursorMovedSchedulerEvent) event).getCaretOffset();
+            if(lastCaret != caret) {
+                //update the caret position
+                HtmlNavigatorPanel.ui.setCaretOffset(caret);
+                lastCaret = caret;
+            }
         }
-        last = result;
-        //update the caret position
-        HtmlNavigatorPanel.ui.setCaretOffset(((CursorMovedSchedulerEvent) event).getCaretOffset());
     }
 
     @MimeRegistration(mimeType = "text/html", service = TaskFactory.class)

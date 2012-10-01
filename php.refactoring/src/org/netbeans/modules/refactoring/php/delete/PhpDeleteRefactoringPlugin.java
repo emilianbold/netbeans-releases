@@ -125,7 +125,7 @@ public class PhpDeleteRefactoringPlugin extends ProgressProviderAdapter implemen
             fireProgressListenerStep();
             for (RefactoringElement refacElem : inner.getRefactoringElements()) {
                 if (file != refacElem.getParentFile()) {
-                    WhereUsedSupport support = whereUsedQuery.getRefactoringSource().lookup(WhereUsedSupport.class);                    ;
+                    WhereUsedSupport support = whereUsedQuery.getRefactoringSource().lookup(WhereUsedSupport.class);
                     final ProblemDetailsImplemen problemDetailsImplemen = new ProblemDetailsImplemen(new WhereUsedQueryUI(support), inner);
                     final ProblemDetails problemDetails = ProblemDetailsFactory.createProblemDetails(problemDetailsImplemen);
                     Problem problem = new Problem(false, NbBundle.getMessage(PhpDeleteRefactoringPlugin.class, "ERR_ReferencesFound"), problemDetails);
@@ -141,7 +141,7 @@ public class PhpDeleteRefactoringPlugin extends ProgressProviderAdapter implemen
     }
 
 
-    private class ProblemDetailsImplemen implements ProblemDetailsImplementation {
+    private static class ProblemDetailsImplemen implements ProblemDetailsImplementation {
 
         private RefactoringUI ui;
         private RefactoringSession rs;

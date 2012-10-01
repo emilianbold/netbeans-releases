@@ -164,6 +164,7 @@ import org.netbeans.lib.nbjavac.services.CancelService;
 import org.netbeans.lib.nbjavac.services.NBParserFactory.NBJavacParser;
 import org.netbeans.lib.nbjavac.services.NBParserFactory;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.AnnotationWildcard;
+import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.FakeBlock;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
@@ -382,15 +383,17 @@ public class Utilities {
             if (statements.size() == 1) {
                 currentPatternTree = statements.get(0);
             } else {
-                List<StatementTree> newStatements = new LinkedList<StatementTree>();
+                com.sun.tools.javac.util.List<JCStatement> newStatements = com.sun.tools.javac.util.List.<JCStatement>nil();
 
                 if (!statements.isEmpty() && !Utilities.isMultistatementWildcardTree(statements.get(0)))
-                    newStatements.add(make.ExpressionStatement(make.Identifier("$$1$")));
-                newStatements.addAll(statements);
+                    newStatements = newStatements.append((JCStatement) make.ExpressionStatement(make.Identifier("$$1$")));
+                for (StatementTree st : statements) {
+                    newStatements = newStatements.append((JCStatement) st);
+                }
                 if (!statements.isEmpty() && !Utilities.isMultistatementWildcardTree(statements.get(statements.size() - 1)))
-                    newStatements.add(make.ExpressionStatement(make.Identifier("$$2$")));
+                    newStatements = newStatements.append((JCStatement) make.ExpressionStatement(make.Identifier("$$2$")));
 
-                currentPatternTree = make.Block(newStatements, false);
+                currentPatternTree = new FakeBlock(0L, newStatements);
             }
 
             if (!currentPatternTreeErrors.isEmpty() || containsError(currentPatternTree)) {
@@ -1438,23 +1441,7 @@ public class Utilities {
     }
 
     public static boolean isFakeBlock(Tree t) {
-        if (!(t instanceof BlockTree)) {
-            return false;
-        }
-
-        BlockTree bt = (BlockTree) t;
-
-        if (bt.getStatements().isEmpty()) {
-            return false;
-        }
-
-        CharSequence wildcardTreeName = Utilities.getWildcardTreeName(bt.getStatements().get(0));
-
-        if (wildcardTreeName == null) {
-            return false;
-        }
-
-        return wildcardTreeName.toString().startsWith("$$");
+        return t instanceof FakeBlock;
     }
 
     public static boolean isFakeClass(Tree t) {

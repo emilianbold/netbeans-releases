@@ -568,9 +568,17 @@ public class Util {
     public static FileObject findBuildXml(Project project) {
         return project.getProjectDirectory().getFileObject(BUILD_XML_PATH);
     }
+    
+    public static DataObject createDataObjectFromTemplate(String template,
+            FileObject targetFolder, String targetName)  throws IOException 
+    {
+        return createDataObjectFromTemplate(template, targetFolder, targetName, null);
+    }
 
     public static DataObject createDataObjectFromTemplate(String template,
-            FileObject targetFolder, String targetName) throws IOException {
+            FileObject targetFolder, String targetName, Map<String,Object> map) 
+                    throws IOException 
+    {
         assert template != null;
         assert targetFolder != null;
 
@@ -588,7 +596,12 @@ public class Util {
             return DataFolder.find(targetFO);
         }
 
-        return templateDO.createFromTemplate(dataFolder, targetName);
+        if ( map == null ){
+            return templateDO.createFromTemplate(dataFolder, targetName);
+        }
+        else {
+            return templateDO.createFromTemplate(dataFolder, targetName, map);
+        }
     }
 
     public static String deriveResourceName(final String name) {

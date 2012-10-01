@@ -1,0 +1,51 @@
+Code completion result for source line:
+var x=Math.|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     abs(x: Number): Number          [PUBLIC]   stub_CORE_Math.js
+METHOD     acos(x: Number): Number         [PUBLIC]   stub_CORE_Math.js
+METHOD     asin(x: Number): Number         [PUBLIC]   stub_CORE_Math.js
+METHOD     atan(x: Number): Number         [PUBLIC]   stub_CORE_Math.js
+METHOD     atan2(y: Number, x: Number): N  [PUBLIC]   stub_CORE_Math.js
+METHOD     ceil(x: Number): Number         [PUBLIC]   stub_CORE_Math.js
+METHOD     cos(x: Number): Number          [PUBLIC]   stub_CORE_Math.js
+METHOD     create(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperties(O: Object, Pr  [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperty(O: Object, P: S  [PUBLIC,   stub_CORE_Object.js
+METHOD     exp(x: Number): Number          [PUBLIC]   stub_CORE_Math.js
+METHOD     floor(x: Number): Number        [PUBLIC]   stub_CORE_Math.js
+METHOD     freeze(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   stub_CORE_Object.js
+METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   stub_CORE_Object.js
+METHOD     isExtensible(O: Object): Boole  [PUBLIC,   stub_CORE_Object.js
+METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
+METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   stub_CORE_Object.js
+METHOD     isSealed(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
+METHOD     keys(O: Object): Array          [PUBLIC,   stub_CORE_Object.js
+METHOD     log(x: Number): Number          [PUBLIC]   stub_CORE_Math.js
+METHOD     max(): Number                   [PUBLIC]   stub_CORE_Math.js
+METHOD     min(): Number                   [PUBLIC]   stub_CORE_Math.js
+METHOD     pow(x: Number, y: Number): Num  [PUBLIC]   stub_CORE_Math.js
+METHOD     preventExtensions(O: Object):   [PUBLIC,   stub_CORE_Object.js
+METHOD     propertyIsEnumerable(V: String  [PUBLIC]   stub_CORE_Object.js
+METHOD     random(): Number                [PUBLIC]   stub_CORE_Math.js
+METHOD     round(x: Number): Number        [PUBLIC]   stub_CORE_Math.js
+METHOD     seal(O: Object): Object         [PUBLIC,   stub_CORE_Object.js
+METHOD     sin(x: Number): Number          [PUBLIC]   stub_CORE_Math.js
+METHOD     sqrt(x: Number): Number         [PUBLIC]   stub_CORE_Math.js
+METHOD     tan(x: Number): Number          [PUBLIC]   stub_CORE_Math.js
+METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
+METHOD     toString(): String              [PUBLIC]   stub_CORE_Object.js
+METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
+FIELD      E: Number                       [PUBLIC]   stub_CORE_Math.js
+FIELD      LN10: Number                    [PUBLIC]   stub_CORE_Math.js
+FIELD      LN2: Number                     [PUBLIC]   stub_CORE_Math.js
+FIELD      LOG10E: Number                  [PUBLIC]   stub_CORE_Math.js
+FIELD      LOG2E: Number                   [PUBLIC]   stub_CORE_Math.js
+FIELD      PI: Number                      [PUBLIC]   stub_CORE_Math.js
+FIELD      SQRT1_2: Number                 [PUBLIC]   stub_CORE_Math.js
+FIELD      SQRT2: Number                   [PUBLIC]   stub_CORE_Math.js
+FIELD      constructor: Function           [PUBLIC]   stub_CORE_Object.js
+FIELD      prototype                       [PUBLIC]   stub_CORE_Math.js

@@ -169,26 +169,34 @@ public final class PHPIndexer extends EmbeddingIndexer {
     /** This field is for fast access top level elemnts */
     public static final String FIELD_TOP_LEVEL = "top"; //NOI18N
 
-    public static final String [] ALL_FIELDS = new String [] {
-        FIELD_BASE,
-        FIELD_EXTEND,
-        FIELD_CLASS,
-        FIELD_IFACE,
-        FIELD_CONST,
-        FIELD_CLASS_CONST,
-        FIELD_FIELD,
-        FIELD_METHOD,
-        FIELD_CONSTRUCTOR,
-        FIELD_INCLUDE,
-        FIELD_IDENTIFIER,
-        FIELD_VAR,
-        FIELD_TOP_LEVEL,
-        FIELD_NAMESPACE,
-        FIELD_TRAIT,
-        FIELD_USED_TRAIT,
-        FIELD_TRAIT_CONFLICT_RESOLUTION,
-        FIELD_TRAIT_METHOD_ALIAS
-    };
+    private static final List<String> ALL_FIELDS = new LinkedList<String>(
+            Arrays.asList(
+                new String[] {
+                    FIELD_BASE,
+                    FIELD_EXTEND,
+                    FIELD_CLASS,
+                    FIELD_IFACE,
+                    FIELD_CONST,
+                    FIELD_CLASS_CONST,
+                    FIELD_FIELD,
+                    FIELD_METHOD,
+                    FIELD_CONSTRUCTOR,
+                    FIELD_INCLUDE,
+                    FIELD_IDENTIFIER,
+                    FIELD_VAR,
+                    FIELD_TOP_LEVEL,
+                    FIELD_NAMESPACE,
+                    FIELD_TRAIT,
+                    FIELD_USED_TRAIT,
+                    FIELD_TRAIT_CONFLICT_RESOLUTION,
+                    FIELD_TRAIT_METHOD_ALIAS
+                }
+            )
+    );
+
+    public static List<String> getAllFields() {
+        return new LinkedList<String>(ALL_FIELDS);
+    }
 
     public String getPersistentUrl(File file) {
         String url;

@@ -240,6 +240,7 @@ private void primarySchemaCheckBoxActionPerformed(java.awt.event.ActionEvent evt
         try {
                 DataFolder folder = templateWizard.getTargetFolder();
                 Project project = FileOwnerQuery.getOwner(folder.getPrimaryFile());
+                //mkleint: see subprojectprovider for official contract, see #210465
                 SubprojectProvider provider = (SubprojectProvider)project.getLookup().lookup(SubprojectProvider.class);
 
                 Set refProjects = null;

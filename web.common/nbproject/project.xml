@@ -202,6 +202,7 @@
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>
+                <friend>org.netbeans.modules.web.clientproject.api</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.web.el</friend>
                 <friend>org.netbeans.modules.web.flyingsaucer</friend>

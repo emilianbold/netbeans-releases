@@ -81,6 +81,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -160,14 +161,12 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-        if (icon != null) return icon;
-        return super.getIcon(type);
+        return icon;
     }
 
     @Override
     public Image getOpenedIcon(int type) {
-        if (icon != null) return icon;
-        return super.getOpenedIcon(type);
+        return icon;
     }
 
     private static final String CONSTRUCTOR_NAME = "<init>";
@@ -283,7 +282,7 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
         return null;
     }
     
-    private static final Image DEFAULT_ICON = ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/statement.png");
+    private static final Image DEFAULT_ICON = BreadcrumbsController.NO_ICON;
     
     private static Image iconFor(CompilationInfo info, TreePath path) {
         Element el = info.getTrees().getElement(path);

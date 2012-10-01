@@ -83,6 +83,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Radek Matous
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
 public class SrcNode extends FilterNode {
     static final Image PACKAGE_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
@@ -220,6 +221,7 @@ public class SrcNode extends FilterNode {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
     private static final class PackageNode extends FilterNode {
 
         private final PhpProject project;
@@ -303,6 +305,7 @@ public class SrcNode extends FilterNode {
 
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
     private static final class ObjectNode extends FilterNode {
         private final Node originalNode;
         private final boolean isTest;

@@ -69,6 +69,7 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -141,7 +142,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.textBackground"); // NOI18N
     
     private transient RequestProcessor requestProcessor = new RequestProcessor("DebuggingView Refresh Scheduler", 1);
-    private transient boolean refreshScheduled = false;
+    private transient AtomicBoolean refreshScheduled = new AtomicBoolean(false);
     private transient ExplorerManager manager = new ExplorerManager();
     private transient ViewLifecycle viewLifecycle;
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
@@ -346,7 +347,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     this.session = null;
                 }
             }
-            RequestProcessor.getDefault().post(new Runnable() {
+            requestProcessor.post(new Runnable() {
+                @Override
                 public void run() {
                     threadsListener.changeDebugger(deb);
                 }
@@ -360,9 +362,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 this.debugger = null;
                 this.session = null;
             }
-            if (threadsListener != null) {
-                threadsListener.changeDebugger(null);
-            }
+            requestProcessor.post(new Runnable() {
+                @Override
+                public void run() {
+                    threadsListener.changeDebugger(null);
+                }
+            });
         }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -397,6 +402,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         });
     }
     
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -504,6 +510,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         return NbBundle.getMessage (DebuggingView.class, "CTL_Debugging_tooltip"); // NOI18N
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
         if (ExplorerManager.PROP_ROOT_CONTEXT.equals(propertyName) || 
@@ -538,12 +545,15 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     private static boolean isJPDASession(Session s) {
         DebuggerEngine engine = s.getCurrentEngine ();
-        if (engine == null) return false;
+        if (engine == null) {
+            return false;
+        }
         return engine.lookupFirst(null, JPDADebugger.class) != null;
     }
     
     void updateSessionsComboBox() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 sessionComboBox.removeActionListener(sessionsComboListener);
                 sessionComboBox.removePopupMenuListener(sessionsComboListener);
@@ -593,7 +603,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     private void releaseTreeView() {
         synchronized (lock) {
-            if (treeView == null) return ;
+            if (treeView == null) {
+                return ;
+            }
             treeView.getTree().removeMouseWheelListener(this);
             treeView.removeTreeExpansionListener(this);
             TreeModel model = treeView.getTree().getModel();
@@ -613,26 +625,32 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // implementation of TreeExpansion and TreeModel listener
     // **************************************************************************
     
+    @Override
     public void treeExpanded(TreeExpansionEvent event) {
         refreshView();
     }
 
+    @Override
     public void treeCollapsed(TreeExpansionEvent event) {
         refreshView();
     }
 
+    @Override
     public void treeNodesChanged(TreeModelEvent e) {
         refreshView();
     }
 
+    @Override
     public void treeNodesInserted(TreeModelEvent e) {
         refreshView();
     }
 
+    @Override
     public void treeNodesRemoved(TreeModelEvent e) {
         refreshView();
     }
 
+    @Override
     public void treeStructureChanged(TreeModelEvent e) {
         refreshView();
     }
@@ -644,12 +662,31 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     }
     
     void refreshView() {
-        if (refreshScheduled) {
+        if (refreshScheduled.getAndSet(true)) {
             return;
         }
-        refreshScheduled = true;
         requestProcessor.post(new Runnable() {
+            @Override
             public void run() {
+                refreshScheduled.set(false);
+                JPDAThread currentThread;
+                ThreadsCollector tc;
+                synchronized (DebuggingView.this.lock) {
+                    currentThread = debugger != null ? debugger.getCurrentThread() : null;
+                    tc = debugger != null ? debugger.getThreadsCollector() : null;
+                }
+                // collect all deadlocked threads
+                Set<Deadlock> deadlocks = tc != null ? tc.getDeadlockDetector().getDeadlocks() : null;
+                Set<JPDAThread> deadlockedThreads;
+                if (deadlocks == null) {
+                    deadlockedThreads = Collections.EMPTY_SET;
+                } else {
+                    deadlockedThreads = new HashSet<JPDAThread>();
+                    for (Deadlock deadlock : deadlocks) {
+                        deadlockedThreads.addAll(deadlock.getThreads());
+                    }
+                }
+                viewRefresher.setup(currentThread, deadlockedThreads);
                 SwingUtilities.invokeLater(viewRefresher);
             }
         }, 20);
@@ -695,6 +732,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // connected to treeView)
     // **************************************************************************
     
+    @Override
     public void adjustmentValueChanged(AdjustmentEvent e) {
         DebugTreeView tView = getTreeView();
         if (tView == null) {
@@ -711,8 +749,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // implementation of ChangeListener on treeView
     // **************************************************************************
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 adjustTreeScrollBar(-1);
             }
@@ -723,6 +763,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // implementation of MouseWheelListener on treeView
     // **************************************************************************
     
+    @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         JScrollBar scrollBar = mainScrollPane.getVerticalScrollBar();
         if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
@@ -735,6 +776,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     // implementation of TreeSelectionListener
     // **************************************************************************
     
+    @Override
     public void valueChanged(TreeSelectionEvent e) {
         TreePath path = e.getNewLeadSelectionPath();
         DebugTreeView tView = getTreeView();
@@ -742,7 +784,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             JTree tree = tView.getTree();
             int row = tree.getRowForPath(path);
             Rectangle rect = tree.getRowBounds(row);
-            if (rect == null) return ;
+            if (rect == null) {
+                return ;
+            }
             JViewport viewport = mainScrollPane.getViewport();
             ((JComponent)viewport.getView()).scrollRectToVisible(rect);
         }
@@ -759,6 +803,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     
     private final class DebuggingPreferenceChangeListener implements PreferenceChangeListener {
 
+        @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
             if (FiltersDescriptor.SHOW_SUSPEND_TABLE.equals(key)) {
@@ -769,30 +814,22 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     }
 
     private final class ViewRefresher implements Runnable {
+        
+        private JPDAThread currentThread;
+        private Set<JPDAThread> deadlockedThreads;
+        
+        void setup(JPDAThread currentThread, Set<JPDAThread> deadlockedThreads) {
+            this.currentThread = currentThread;
+            this.deadlockedThreads = deadlockedThreads;
+        }
 
+        @Override
         public void run() {
             DebugTreeView tView = getTreeView();
-            refreshScheduled = false;
             leftPanel.clearBars();
             rightPanel.startReset();
             int sx = (rightPanel.getWidth() - ClickableIcon.CLICKABLE_ICON_WIDTH) / 2;
             int sy = 0;
-
-            JPDAThread currentThread;
-            ThreadsCollector tc;
-            synchronized (DebuggingView.this.lock) {
-                currentThread = debugger != null ? debugger.getCurrentThread() : null;
-                tc = debugger != null ? debugger.getThreadsCollector() : null;
-            }
-            // collect all deadlocked threads
-            Set<Deadlock> deadlocks = tc != null ? tc.getDeadlockDetector().getDeadlocks() : Collections.EMPTY_SET;
-            if (deadlocks == null) {
-                deadlocks = Collections.EMPTY_SET;
-            }
-            Set<JPDAThread> deadlockedThreads = new HashSet<JPDAThread>();
-            for (Deadlock deadlock : deadlocks) {
-                deadlockedThreads.addAll(deadlock.getThreads());
-            }
 
             JPDAThread threadToScroll = threadToScrollRef != null ? threadToScrollRef.get() : null;
             threadToScrollRef = null;
@@ -964,10 +1001,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             g.setColor(originalColor);
         }
 
+        @Override
         public void mouseDragged(MouseEvent e) {
             computeToolTipText(e);
         }
 
+        @Override
         public void mouseMoved(MouseEvent e) {
             computeToolTipText(e);
         }
@@ -1098,6 +1137,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         SessionItem selectedItem = null;
         boolean popupVisible = false;
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             SessionItem si = (SessionItem)sessionComboBox.getSelectedItem();
             if (popupVisible) {
@@ -1107,16 +1147,19 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             }
         }
 
+        @Override
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
             popupVisible = true;
         }
 
+        @Override
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
             changeSession(selectedItem);
             selectedItem = null;
             popupVisible = false;
         }
 
+        @Override
         public void popupMenuCanceled(PopupMenuEvent e) {
             selectedItem = null;
             popupVisible = false;

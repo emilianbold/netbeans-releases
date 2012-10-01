@@ -407,7 +407,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
 private void readlicenseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readlicenseButtonActionPerformed
         try {
             URLDisplayer.getDefault().showURL(
-                    new URL("https://glassfish.dev.java.net/public/CDDL+GPL.html")); //NOI18N
+                    new URL("http://glassfish.java.net/public/CDDL+GPL.html")); //NOI18N
         } catch (Exception ex){
             Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
         }

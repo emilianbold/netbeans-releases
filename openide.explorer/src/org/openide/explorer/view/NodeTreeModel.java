@@ -55,6 +55,7 @@ import java.util.Arrays;
 
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
@@ -200,6 +201,66 @@ public class NodeTreeModel extends DefaultTreeModel {
                 }
             }
         }
+    }
+
+    @Override
+    protected void fireTreeNodesChanged( final Object source, final Object[] path, final int[] childIndices, final Object[] children ) {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+
+                @Override
+                public void run() {
+                    fireTreeNodesChanged( source, path, childIndices, children );
+                }
+            });
+            return;
+        }
+        super.fireTreeNodesChanged( source, path, childIndices, children );
+    }
+
+    @Override
+    protected void fireTreeNodesInserted( final Object source, final Object[] path, final int[] childIndices, final Object[] children ) {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+
+                @Override
+                public void run() {
+                    fireTreeNodesInserted( source, path, childIndices, children );
+                }
+            });
+            return;
+        }
+        super.fireTreeNodesInserted( source, path, childIndices, children );
+    }
+
+    @Override
+    protected void fireTreeNodesRemoved( final Object source, final Object[] path, final int[] childIndices, final Object[] children ) {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+
+                @Override
+                public void run() {
+                    fireTreeNodesRemoved( source, path, childIndices, children );
+                }
+            });
+            return;
+        }
+        super.fireTreeNodesRemoved( source, path, childIndices, children );
+    }
+
+    @Override
+    protected void fireTreeStructureChanged( final Object source, final Object[] path, final int[] childIndices, final Object[] children ) {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+
+                @Override
+                public void run() {
+                    fireTreeStructureChanged( source, path, childIndices, children );
+                }
+            });
+            return;
+        }
+        super.fireTreeStructureChanged( source, path, childIndices, children );
     }
 
 

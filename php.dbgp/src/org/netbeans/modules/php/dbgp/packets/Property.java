@@ -45,6 +45,7 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -52,11 +53,9 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.SessionManager;
-
 import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
-
 import sun.misc.BASE64Decoder;
 
 
@@ -80,30 +79,30 @@ public class Property extends BaseMessageChildElement {
 
     private static final String PAGE        = "page";       // NOI18N
 
-    private static final String NAME        = "name";       // NOI18N     
-    
+    private static final String NAME        = "name";       // NOI18N
+
     private static final String FULL_NAME   = "fullname";   // NOI18N
-    
+
     private static final String TYPE        = "type";       // NOI18N
-    
+
     private static final String CLASS_NAME  = "classname";  // NOI18N
-    
+
     private static final String CONSTANT    = "constant";   // NOI18N
-    
+
     private static final String CHILDREN    = "children";   // NOI18N
-    
+
     private static final String FACET       = "facet";      // NOI18N
-    
+
     static final         String SIZE        = "size";       // NOI18N
-    
+
     Property( Node node ){
         super( node );
     }
-    
+
     public String getName(){
         return getAttribute( NAME );
     }
-    
+
     public void setName( String value ) {
         Node node = getNode().getAttributes().getNamedItem( NAME );
         if ( node == null ) {
@@ -112,60 +111,60 @@ public class Property extends BaseMessageChildElement {
         }
         node.setNodeValue(value );
     }
-    
+
     public String getFullName(){
         return getAttribute( FULL_NAME );
     }
-    
+
     public String getType(){
         return getAttribute( TYPE );
     }
-    
+
     public String getClassName(){
         return getAttribute(  CLASS_NAME );
     }
-    
+
     public boolean isConstant(){
         return getInt( CONSTANT ) >0;
     }
-    
+
     public boolean hasChildren(){
         return getInt( CHILDREN ) >0;
     }
-    
+
     public int getSize(){
         return getInt( SIZE );
     }
-    
+
     public int getPage(){
         return getInt( PAGE );
     }
-    
+
     public int getPageSize(){
         return getInt( PAGESIZE );
     }
-    
+
     public int getAddress(){
         return getInt( ADDRESS );
     }
-    
+
     public String getKey(){
         return getAttribute( KEY );
     }
-    
+
     public String getFacet() {
         return getAttribute( FACET );
     }
-    
+
     public Encoding getEncoding(){
         String enc = getAttribute( ENCODING );
         return Encoding.forString( enc );
     }
-    
+
     public int getChildrenSize(){
         return getInt( NUMCHILDREN );
     }
-    
+
     public List<Property> getChildren(){
         List<Node> nodes = getChildren( PROPERTY );
         List<Property> result = new ArrayList<Property>( nodes.size() );
@@ -174,35 +173,20 @@ public class Property extends BaseMessageChildElement {
         }
         return result;
     }
-    
+
     public byte[] getValue() throws UnsufficientValueException {
         String value = DbgpMessage.getNodeValue( getNode() );
         byte[] result = null;
-        if ( value == null ){
-            result =  new byte[0];
+        BASE64Decoder decoder = new BASE64Decoder();
+        try {
+            result = decoder.decodeBuffer( value );
         }
-        else {
-            Encoding enc = getEncoding();
-            if ( Encoding.NONE.equals( enc ) || enc == null ){
-                try {
-                    result = value.getBytes( DbgpMessage.ISO_CHARSET );
-                }
-                catch (UnsupportedEncodingException e) {
-                    assert false;
-                    result= new byte[0];
-                }
-            }
-            BASE64Decoder decoder = new BASE64Decoder();
-            try {
-                result = decoder.decodeBuffer( value );
-            }
-            catch( IOException e ){
-                result = new byte[0];
-            }
+        catch( IOException e ){
+            result = new byte[0];
         }
         return getValue( result );
     }
-    
+
     public String getStringValue() throws UnsufficientValueException {
         Encoding enc = getEncoding();
         if ( Encoding.BASE64.equals( enc )){
@@ -219,12 +203,12 @@ public class Property extends BaseMessageChildElement {
                     }
                 }
             }
-            return new String(getValue());
+            return new String(getValue(), Charset.defaultCharset());
         }
         String result =  DbgpMessage.getNodeValue( getNode() );
         try {
-            if( result != null && 
-                    result.getBytes( DbgpMessage.ISO_CHARSET ).length < getSize() ) 
+            if( result != null &&
+                    result.getBytes( DbgpMessage.ISO_CHARSET ).length < getSize() )
             {
                 throw new UnsufficientValueException();
             }
@@ -235,7 +219,7 @@ public class Property extends BaseMessageChildElement {
         }
         return result;
     }
-    
+
     public static boolean equals( Property one , Property two ) {
         if ( one == null ) {
             return two == null;
@@ -261,7 +245,7 @@ public class Property extends BaseMessageChildElement {
             return Arrays.equals(value, secondValue);
         }
     }
-    
+
     private byte[] getValue( byte[] bytes ) throws UnsufficientValueException {
         if ( bytes.length >= getSize() ) {
             return bytes;
@@ -270,11 +254,11 @@ public class Property extends BaseMessageChildElement {
             throw new UnsufficientValueException();
         }
     }
-    
+
     public enum Encoding {
         BASE64,
         NONE;
-        
+
         /* (non-Javadoc)
          * @see java.lang.Enum#toString()
          */
@@ -283,8 +267,8 @@ public class Property extends BaseMessageChildElement {
         {
             return super.toString().toLowerCase();
         }
-        
-        
+
+
         static Encoding forString( String str ){
             Encoding[] encodings = Encoding.values();
             for (Encoding encoding : encodings) {

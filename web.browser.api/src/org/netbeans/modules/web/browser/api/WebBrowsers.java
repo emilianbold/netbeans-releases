@@ -234,11 +234,18 @@ public final class WebBrowsers {
             if (item == null) {
                 continue;
             }
+            boolean isDefault;
+            if (IDESettings.getWWWBrowser() == null){
+                isDefault = false;
+            }
+            else {
+                isDefault = IDESettings.getWWWBrowser().equals(fact);
+            }
             browsers.add(
                 new WebBrowserFactoryDescriptor(
                     item.getId(), 
                     browserSetting, 
-                    IDESettings.getWWWBrowser().equals(fact),
+                    isDefault,
                     fact));
         }
         return browsers;

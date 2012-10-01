@@ -477,13 +477,13 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAfterSemi, getDefaultAsBoolean(spaceAfterSemi));
     }
 
-//    public boolean spaceBeforeColon() {
-//        return preferences.getBoolean(spaceBeforeColon, getDefaultAsBoolean(spaceBeforeColon));
-//    }
-//
-//    public boolean spaceAfterColon() {
-//        return preferences.getBoolean(spaceAfterColon, getDefaultAsBoolean(spaceAfterColon));
-//    }
+    public boolean spaceBeforeColon() {
+        return preferences.getBoolean(spaceBeforeColon, getDefaultAsBoolean(spaceBeforeColon));
+    }
+
+    public boolean spaceAfterColon() {
+        return preferences.getBoolean(spaceAfterColon, getDefaultAsBoolean(spaceAfterColon));
+    }
 
     // alignment
     public boolean alignMultilineMethodParams() {
@@ -582,6 +582,11 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public WrapStyle wrapArrayInitItems() {
+        String wrap = preferences.get(wrapArrayInitItems, getDefaultAsString(wrapArrayInitItems));
+        return WrapStyle.valueOf(wrap);
+    }
+
     public WrapStyle wrapFor() {
         String wrap = preferences.get(wrapFor, getDefaultAsString(wrapFor));
         return WrapStyle.valueOf(wrap);
@@ -641,6 +646,11 @@ public final class CodeStyle {
 
     public boolean wrapStatementsOnTheSameLine() {
         return preferences.getBoolean(wrapStatementsOnTheLine, getDefaultAsBoolean(wrapStatementsOnTheLine));
+    }
+
+    public WrapStyle wrapObjects() {
+        String wrap = preferences.get(wrapObjects, getDefaultAsString(wrapObjects));
+        return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapProperties() {

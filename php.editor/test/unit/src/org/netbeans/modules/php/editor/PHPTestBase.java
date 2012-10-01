@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.util.logging.Filter;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -59,6 +63,30 @@ public class PHPTestBase extends CslTestBase {
 
     public PHPTestBase(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        suppressUselessLogging();
+        super.setUp();
+    }
+
+    private static void suppressUselessLogging() {
+        for (Handler handler : Logger.getLogger("").getHandlers()) {
+            handler.setFilter(new Filter() {
+
+                @Override
+                public boolean isLoggable(LogRecord record) {
+                    boolean result = true;
+                    if (record.getSourceClassName().startsWith("org.netbeans.modules.parsing.impl.indexing.LogContext")
+                            || record.getSourceClassName().startsWith("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater")
+                            || record.getSourceClassName().startsWith("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage")) { //NOI18N
+                        result = false;
+                    }
+                    return result;
+                }
+            });
+        }
     }
 
     @Override

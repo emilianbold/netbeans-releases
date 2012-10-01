@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IdentNode;
 import com.oracle.nashorn.ir.LiteralNode;
@@ -51,9 +49,12 @@ import com.oracle.nashorn.ir.PropertyNode;
 import com.oracle.nashorn.parser.Token;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
@@ -63,7 +64,11 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  */
 class ModelElementFactory {
 
+    @CheckForNull
     static JsFunctionImpl create(JsParserResult parserResult, FunctionNode functionNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean isAnnonymous) {
+        if (JsEmbeddingProvider.containsGeneratedIdentifier(fqName.get(fqName.size() - 1).getName())) {
+            return null;
+        }
         JsObjectImpl inObject = modelBuilder.getCurrentObject();
         JsObject globalObject = modelBuilder.getGlobal();
         JsObject parentObject = isAnnonymous ? globalObject : inObject;
@@ -101,7 +106,8 @@ class ModelElementFactory {
         result.setAnonymous(isAnnonymous);
         return result;
     }
-    
+
+    @NonNull
     static JsFunctionImpl createVirtualFunction(JsParserResult parserResult, JsObject parentObject, Identifier name, int paramCount) {
         List<Identifier> params = new ArrayList<Identifier>(paramCount);
         if (paramCount == 1) {
@@ -113,16 +119,25 @@ class ModelElementFactory {
         }
         return new JsFunctionImpl(parserResult.getSnapshot().getSource().getFileObject(), parentObject, name, params);
     }
-    
+
+    @CheckForNull
     static IdentifierImpl create(JsParserResult parserResult, IdentNode node) {
+        if (JsEmbeddingProvider.containsGeneratedIdentifier(node.getName())) {
+            return null;
+        }
         return new IdentifierImpl(node.getName(), ModelUtils.documentOffsetRange(parserResult, node.getStart(), node.getFinish()));
     }
-    
+
+    @NonNull
     static IdentifierImpl create(JsParserResult parserResult, LiteralNode node) {
         return new IdentifierImpl(node.getString(), ModelUtils.documentOffsetRange(parserResult, node.getStart(), node.getFinish()));
     }
-    
+
+    @CheckForNull
     static JsObjectImpl create(JsParserResult parserResult, ObjectNode objectNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean belongsToParent) {
+        if (JsEmbeddingProvider.containsGeneratedIdentifier(fqName.get(fqName.size() - 1).getName())) {
+            return null;
+        }
         JsObjectImpl scope = modelBuilder.getCurrentObject();
         JsObject parent = scope;
         JsObject result = null;
@@ -146,7 +161,8 @@ class ModelElementFactory {
         parent.addProperty(name.getName(), newObject);
         return (JsObjectImpl)newObject;
     }
-    
+
+    @NonNull
     static JsObjectImpl createAnonymousObject(JsParserResult parserResult, ObjectNode objectNode, ModelBuilder modelBuilder) {
         String name = modelBuilder.getUnigueNameForAnonymObject();
         JsObjectImpl result = new AnonymousObject(modelBuilder.getCurrentDeclarationScope(),
@@ -156,8 +172,12 @@ class ModelElementFactory {
         result.setDocumentation(docHolder.getDocumentation(objectNode));
         return result;
     }
-    
+
+    @CheckForNull
     static JsObjectImpl create(JsParserResult parserResult, PropertyNode propertyNode, Identifier name, ModelBuilder modelBuilder, boolean belongsToParent) {
+        if (JsEmbeddingProvider.containsGeneratedIdentifier(name.getName())) {
+            return null;
+        }
         JsObjectImpl scope = modelBuilder.getCurrentObject();
         JsObjectImpl property = new JsObjectImpl(scope, name, name.getOffsetRange());
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();

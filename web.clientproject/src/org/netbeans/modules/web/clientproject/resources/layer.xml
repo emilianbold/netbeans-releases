@@ -131,7 +131,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
     </folder> -->
 
     <folder name="Projects">
-        <folder name="org.netbeans.modules.web.clientproject">
+        <folder name="org-netbeans-modules-web-clientproject">
             <folder name="Actions">
                 <file name="org-netbeans-modules-project-ui-NewFile$WithSubMenu.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile$WithSubMenu.instance"/>
@@ -141,8 +141,6 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="200"/>
                 </file>
-
-
                 <file name="org-netbeans-modules-project-ui-RunProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
                     <attr name="position" intvalue="700"/>

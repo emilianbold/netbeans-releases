@@ -44,7 +44,16 @@
                         <attr name="position" intvalue="4200"/>
                     </file>
                 </folder>
-                
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-javascript2-editor-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="org-netbeans-modules-javascript2-editor-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml">
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
             </folder>
             <folder name="x-json">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.resources.Bundle"/>
@@ -95,14 +104,6 @@
                         </folder>
                     </folder>
                 </folder>
-                                <folder name="Keybindings">
-                    <folder name="NetBeans">
-                        <folder name="Defaults">
-                            <file name="org-netbeans-modules-javascript-editing-keybindings.xml" url="DefaultKeyBindings.xml"/>
-                        </folder>
-                    </folder>
-                </folder>
-
                 <folder name="Popup">
                     <file name="SeparatorFolding.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -229,6 +230,26 @@
                         </file>
                         
                     </folder>
+                    <folder name="x-json">
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.formatter.ui.json.FmtTabsIndents.getController"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+
+                        <file name="Spaces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.formatter.ui.json.FmtSpaces.getController"/>
+                            <attr name="position" intvalue="700"/>
+                        </file>
+
+                        <file name="Wrapping.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.formatter.ui.json.FmtWrapping.getController"/>
+                            <attr name="position" intvalue="750"/>
+                        </file>
+
+                    </folder>
                 </folder>
             </folder>
         </folder>
@@ -272,10 +293,10 @@
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
                         <attr name="position" intvalue="1600"/>
                     </file>
-                    <!--                    <file name="RenameAction.shadow">
+                    <file name="RenameAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
                         <attr name="position" intvalue="900"/>
-                    </file>-->
+                    </file>
                     <file name="SaveAsTemplateAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
                         <attr name="position" intvalue="1100"/>

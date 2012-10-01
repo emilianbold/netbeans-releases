@@ -103,15 +103,6 @@ public class PropertyResolver extends FxNodeVisitor.ModelTreeTraversal implement
         
         currentInstance = decl;
         beanInfo = env.getBeanInfo(decl.getResolvedName());
-        /*
-        if (decl instanceof FxInstanceCopy) {
-            super.visitCopy((FxInstanceCopy)decl);
-        } else if (decl instanceof FxNewInstance) {
-            super.visitInstance((FxNewInstance)decl);
-        } else {
-            throw new UnsupportedOperationException();
-        }
-        */
         super.visitBaseInstance(decl);
         
         this.beanInfo = saveInfo;
@@ -278,6 +269,11 @@ public class PropertyResolver extends FxNodeVisitor.ModelTreeTraversal implement
         FxProperty pi = beanInfo.getProperty(propName);
         if (pi == null && beanInfo.getBuilder() != null) {
             pi = beanInfo.getBuilder().getProperty(propName);
+            if (pi == null && beanInfo.getBuilder().isMap()) {
+                // there's a chance that the Builder implements Map, and any property
+                // name is valid then:
+                return true;
+            }
         }
         int offs = env.getTreeUtilities().positions(p).getStart();
 

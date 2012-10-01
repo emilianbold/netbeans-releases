@@ -993,7 +993,11 @@ public class VariousUtils {
                         break;
                 }
             } else {
-                if (state.equals(State.CLASSNAME)) {
+                if (state.equals(State.VARBASE)) {
+                    metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.VAR_TYPE_PREFIX);
+                    state = State.STOP;
+                    break;
+                } else if (state.equals(State.CLASSNAME)) {
                     if (!metaAll.toString().startsWith("\\")) { //NOI18N
                         if (tokenSequence.moveNext()) { // return to last valid token
                             metaAll = transformToFullyQualifiedType(metaAll, tokenSequence, varScope);

@@ -51,6 +51,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.css.lib.api.*;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 

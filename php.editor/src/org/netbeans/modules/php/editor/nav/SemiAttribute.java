@@ -999,6 +999,14 @@ public class SemiAttribute extends DefaultVisitor {
             return this.name.equals(element.name) && this.k.equals(element.k);
         }
 
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 53 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 53 * hash + (this.k != null ? this.k.hashCode() : 0);
+            return hash;
+        }
+
         void addWrite(Union2<ASTNode, PhpElement> node, AttributedType type) {
             writes.add(node);
             writesTypes.add(type);

@@ -44,8 +44,6 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
@@ -153,7 +151,7 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
-    private class PHP53VersionError extends PHPVerificationError {
+    private static class PHP53VersionError extends PHPVerificationError {
 
         private static final String KEY = "php.ver"; //NOI18N
 

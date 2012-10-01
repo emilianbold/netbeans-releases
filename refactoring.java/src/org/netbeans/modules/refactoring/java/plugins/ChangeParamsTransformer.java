@@ -59,6 +59,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -97,10 +98,26 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     private final Javadoc javaDoc;
     private final TreePathHandle refactoringSource;
     private MethodTree origMethod;
+    private final String newName;
+    private boolean fromIntroduce = false;
+    
+    public ChangeParamsTransformer(ParameterInfo[] paramInfo,
+            Collection<? extends Modifier> newModifiers,
+            String returnType,
+            String newName,
+            boolean compatible,
+            Javadoc javaDoc,
+            Set<ElementHandle<ExecutableElement>> am,
+            TreePathHandle refactoringSource,
+            boolean fromIntroduce) {
+        this(paramInfo, newModifiers, returnType, newName, compatible, javaDoc, am, refactoringSource);
+        this.fromIntroduce = fromIntroduce;
+    }
 
     public ChangeParamsTransformer(ParameterInfo[] paramInfo,
             Collection<? extends Modifier> newModifiers,
             String returnType,
+            String newName,
             boolean compatible,
             Javadoc javaDoc,
             Set<ElementHandle<ExecutableElement>> am,
@@ -108,6 +125,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         this.paramInfos = paramInfo;
         this.newModifiers = newModifiers;
         this.returnType = returnType;
+        this.newName = newName;
         this.compatible = compatible;
         this.javaDoc = javaDoc;
         this.allMethods = am;
@@ -210,7 +228,37 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         final BlockTree oldBody = ((MethodTree)tree).getBody();
                         genutils.copyComments(oldBody, body, true);
                         genutils.copyComments(oldBody, body, false);
-                        MethodTree newMethod = make.Method(element, body);
+                        MethodTree newMethod;
+                        if (!fromIntroduce) {
+                            List<? extends TypeParameterElement> typeParameters = element.getTypeParameters();
+                            List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParameters.size());
+                            transformTypeParameters(typeParameters, make, genutils, newTypeParams);
+
+                            final List<? extends VariableElement> parameters = element.getParameters();
+                            List<VariableTree> newParameters = new ArrayList<VariableTree>(parameters.size());
+                            for (VariableElement variableElement : parameters) {
+                                newParameters.add(make.Variable(variableElement, null));
+                            }
+
+                            final List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
+                            List<ExpressionTree> newThrownTypes = new ArrayList<ExpressionTree>(thrownTypes.size());
+                            for (TypeMirror typeMirror : thrownTypes) {
+                                newThrownTypes.add((ExpressionTree) make.Type(typeMirror));
+                            }
+
+                            newMethod = make.Method(
+                                    make.Modifiers(element.getModifiers()),
+                                    newName == null ? element.getSimpleName() : newName,
+                                    make.Type(methodReturnType),
+                                    newTypeParams,
+                                    newParameters,
+                                    newThrownTypes,
+                                    body,
+                                    null,
+                                    element.isVarArgs());
+                        } else {
+                            newMethod = make.Method(element, body);
+                        }
                         genutils.copyComments(tree, newMethod, true);
                         genutils.copyComments(tree, newMethod, false);
 
@@ -344,7 +392,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     
                     MethodInvocationTree nju = make.MethodInvocation(
                             (List<ExpressionTree>)tree.getTypeArguments(),
-                            tree.getMethodSelect(),
+                            newName != null ? make.setLabel(tree.getMethodSelect(), newName) : tree.getMethodSelect(),
                             arguments);
                     
                     if (constructorRefactoring && workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
@@ -442,7 +490,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         typeTree = make.Identifier(newType); // NOI18N
                     }
                     vt = make.Variable(originalVt.getModifiers(),
-                            originalVt.getName(),
+                            fromIntroduce? originalVt.getName() : p[i].getName(),
                             typeTree,
                             originalVt.getInitializer());
                 }
@@ -512,16 +560,16 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     }
                 }
             }
-
+            final BlockTree body = translateBody(current.getBody(), current.getParameters(), (ExecutableElement)el);
 
             MethodTree nju = make.Method(
                     make.Modifiers(modifiers, current.getModifiers().getAnnotations()),
-                    current.getName(),
+                    newName != null ? newName : current.getName(),
                     applyNewReturnType? make.Type(this.returnType) : current.getReturnType(),
                     current.getTypeParameters(),
                     newParameters,
                     current.getThrows(),
-                    current.getBody(),
+                    fromIntroduce? current.getBody() : body,
                     (ExpressionTree) current.getDefaultValue(),
                     p.length > 0 && p[p.length-1].getType().endsWith("...")); //NOI18N
 
@@ -605,13 +653,66 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         }
         return false;
     }
+    
+    private BlockTree translateBody(BlockTree blockTree,  final List<? extends VariableTree> parameters, ExecutableElement p) {
+        final Map<ExpressionTree, ExpressionTree> original2Translated = new HashMap<ExpressionTree, ExpressionTree>();
+        boolean changed = false;
+        do {
+            original2Translated.clear();
+            TreeScanner<Void, Void> idScan = new TreeScanner<Void, Void>() {
+                @Override
+                public Void visitIdentifier(IdentifierTree node, Void p) {
+                    String name = node.getName().toString();
+                    if (getCurrentPath().getParentPath().getLeaf().getKind() != Kind.MEMBER_SELECT){
+                        for (int i = 0; i < paramInfos.length; i++) {
+                            ParameterInfo parameterInfo = paramInfos[i];
+                            if(parameterInfo.getOriginalIndex() >= 0 &&
+                                    parameters.get(parameterInfo.getOriginalIndex()).getName().contentEquals(name)) {
+                                original2Translated.put(node, make.Identifier(parameterInfo.getName()));
+                            }
+                        }
+                    }
+                    return super.visitIdentifier(node, p);
+                }
+            };
+            idScan.scan(blockTree, null);
+            blockTree = (BlockTree) workingCopy.getTreeUtilities().translate(blockTree, original2Translated);
+            
+            original2Translated.clear();
+            TreeScanner<Boolean, ExecutableElement> methodScanner = new TreeScanner<Boolean, ExecutableElement>() {
+                @Override
+                public Boolean visitMethodInvocation(MethodInvocationTree node, ExecutableElement p) {
+                    boolean changed = false;
+                    final TreePath path = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), node);
+                    if(path != null) {
+                        Element el = workingCopy.getTrees().getElement(path);
+                        if (el!=null) {
+                            if (isMethodMatch(el, p)) {
+                                List<ExpressionTree> arguments = getNewArguments(node.getArguments(), false, p);
+                                MethodInvocationTree nju = make.MethodInvocation(
+                                        (List<ExpressionTree>)node.getTypeArguments(),
+                                        newName != null ? make.setLabel(node.getMethodSelect(), newName) : node.getMethodSelect(),
+                                        arguments);
+                                original2Translated.put(node, nju);
+                                changed = true;
+                            }
+                        }
+                    }
+                    return super.visitMethodInvocation(node, p) || changed;
+                }
+                
+                @Override
+                public Boolean reduce(Boolean r1, Boolean r2) {
+                    return r1 == Boolean.TRUE || r2 == Boolean.TRUE;
+                }
+            };
+            changed = methodScanner.scan(blockTree, p) == Boolean.TRUE;
+            if(changed) {
+                blockTree = (BlockTree) workingCopy.getTreeUtilities().translate(blockTree, original2Translated);
+            }
+        } while(changed);
 
-    private String tagsToString(List<Tag> tags) {
-        StringBuilder sb = new StringBuilder();
-        for (Tag tag : tags) {
-            sb.append(tag.name()).append(" ").append(tag.text()).append("\n"); // NOI18N
-        }
-        return sb.toString();
+        return blockTree;
     }
 
     private ExpressionTree translateExpression(ExpressionTree expressionTree, final List<? extends ExpressionTree> currentArguments, ExecutableElement p) {
@@ -650,7 +751,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                                 List<ExpressionTree> arguments = getNewArguments(node.getArguments(), false, p);
                                 MethodInvocationTree nju = make.MethodInvocation(
                                         (List<ExpressionTree>)node.getTypeArguments(),
-                                        node.getMethodSelect(),
+                                        newName != null ? make.setLabel(node.getMethodSelect(), newName) : node.getMethodSelect(),
                                         arguments);
                                 original2Translated.put(node, nju);
                                 changed = true;
@@ -673,66 +774,23 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
 
         return expressionTree;
     }
-
-    private static class ParamTagImpl implements ParamTag {
-        private final String name;
-        private final String comment;
-        private final Doc holder;
-
-        public ParamTagImpl(String name, String comment, Doc holder) {
-            this.name = name;
-            this.comment = comment;
-            this.holder = holder;
-        }
-
-        @Override
-        public String parameterName() {
-            return name;
-        }
-
-        @Override
-        public String parameterComment() {
-            return comment;
-        }
-
-        @Override
-        public boolean isTypeParameter() {
-            return false; // Not important for the javadoc update
-        }
-
-        @Override
-        public String name() {
-            return "@param"; // NOI18N
-        }
-
-        @Override
-        public Doc holder() {
-            return holder;
-        }
-
-        @Override
-        public String kind() {
-            return name();
-        }
-
-        @Override
-        public String text() {
-            return parameterName() + " " + parameterComment(); // NOI18N
-        }
-
-        @Override
-        public Tag[] inlineTags() {
-            return null; // Not important for the javadoc update
-        }
-
-        @Override
-        public Tag[] firstSentenceTags() {
-            return null; // Not important for the javadoc update
-        }
-
-        @Override
-        public SourcePosition position() {
-            return null; // Not important for the javadoc update
+    
+    private void transformTypeParameters(List<? extends TypeParameterElement> source, TreeMaker make, GeneratorUtilities genUtils, List<TypeParameterTree> newTypeParams) {
+        for (TypeParameterElement typeParam : source) {
+            List<? extends TypeMirror> bounds = typeParam.getBounds();
+            List<ExpressionTree> newBounds = new ArrayList<ExpressionTree>(bounds.size());
+            for (TypeMirror typeMirror : bounds) {
+                TypeMirror typeObject = workingCopy.getElements().getTypeElement("java.lang.Object").asType();
+                if (!workingCopy.getTypes().isSameType(typeMirror, typeObject)) {
+                    ExpressionTree type = (ExpressionTree) make.Type(typeMirror);
+                    newBounds.add(type);
+                }
+            }
+            TypeParameterTree typeParameterTree = make.TypeParameter(typeParam.getSimpleName(), newBounds);
+            if (!typeParameterTree.getBounds().isEmpty()) {
+                typeParameterTree = (TypeParameterTree) genUtils.importFQNs(typeParameterTree);
+            }
+            newTypeParams.add(typeParameterTree);
         }
     }
 }

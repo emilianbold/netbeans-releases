@@ -46,6 +46,8 @@ package org.netbeans.modules.java.navigation.base;
 
 import java.io.CharConversionException;
 import javax.lang.model.element.TypeElement;
+import javax.swing.JComponent;
+import javax.swing.UIManager;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -96,5 +98,13 @@ public class Utils {
                     CLASS_EXTENSION));
         }
         return res;
+    }
+
+    @NonNull
+    public static <T extends JComponent> T updateBackground(@NonNull final T comp) {
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            comp.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        }
+        return comp;
     }
 }

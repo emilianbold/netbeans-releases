@@ -161,13 +161,13 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
                 assert rc != null;
                 rc.setPreExecution(RunUtils.createRunConfig(FileUtil.toFile(project.getProjectDirectory()), project, rc.getTaskDisplayName(), Collections.singletonList("package")));
                 MavenProject prj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
-                String nbmBuildDir = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "nbmBuildDir", "nbm");
+                String nbmBuildDir = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "nbmBuildDir", "nbm", null);
                 if (nbmBuildDir == null) {
                     Build build = prj.getBuild();
                     String directory = build != null ? build.getDirectory() : null;
                     nbmBuildDir = (directory != null ? directory : "target") + "/nbm";
                 }
-                String cluster = PluginPropertyUtils.getPluginProperty(prj, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "cluster", "nbm");
+                String cluster = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "cluster", "nbm", null);
                 if (cluster == null) {
                     cluster = "extra";
                 }

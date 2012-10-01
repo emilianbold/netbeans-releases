@@ -65,6 +65,7 @@ import java.util.zip.CRC32;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopScoreDocCollector;
@@ -184,12 +185,14 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
         Query refClassQuery = indexer.constructQuery(ClassDependencyIndexCreator.FLD_NB_DEPENDENCY_CLASS.getOntology(), new StringSearchExpression(searchString));
         TopScoreDocCollector collector = TopScoreDocCollector.create(NexusRepositoryIndexerImpl.MAX_RESULT_COUNT, true);
         for (IndexingContext context : contexts) {
-        context.getIndexSearcher().search(refClassQuery, collector);
+            IndexSearcher searcher = context.acquireIndexSearcher();
+            try {
+        searcher.search(refClassQuery, collector);
         ScoreDoc[] hits = collector.topDocs().scoreDocs;
         LOG.log(Level.FINER, "for {0} ~ {1} found {2} hits", new Object[] {className, searchString, hits.length});
         for (ScoreDoc hit : hits) {
             int docId = hit.doc;
-            Document d = context.getIndexSearcher().doc(docId);
+            Document d = searcher.doc(docId);
             String fldValue = d.get(ClassDependencyIndexCreator.NB_DEPENDENCY_CLASSES);
             LOG.log(Level.FINER, "{0} uses: {1}", new Object[] {className, fldValue});
             Set<String> refClasses = parseField(searchString, fldValue, d.get(ArtifactInfo.NAMES));
@@ -203,6 +206,9 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
                     }
                 }
             }
+        }
+        } finally {
+            context.releaseIndexSearcher(searcher);
         }
         }
     }

@@ -1359,6 +1359,7 @@ ID_LIKE:
      |  ('u' 'R' '"') => 'u' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
      |  ('U' 'R' '"') => 'U' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
      |  ('u' '8' 'R' '"') => 'u' '8' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
+     |  ('u' '8' '"') => 'u' '8' STRING_LITERAL {$setType(STRING_LITERAL);}
      |
         // We have checked opposite above
         //{isAfterPPDefined()}? 

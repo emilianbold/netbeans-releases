@@ -63,6 +63,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
+import org.netbeans.modules.db.dataview.table.ResultSetTableCellEditor;
 import org.openide.windows.WindowManager;
 
 public class StringTableCellEditor extends ResultSetTableCellEditor implements TableCellEditor, ActionListener {

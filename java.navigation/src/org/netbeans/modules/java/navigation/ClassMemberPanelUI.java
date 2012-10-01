@@ -65,6 +65,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.modules.java.navigation.base.TapPanel;
+import org.netbeans.modules.java.navigation.base.Utils;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -126,6 +127,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private long lastShowWaitNodeTime = -1;
     //@GuardedBy this
     private Toolbar toolbar;
+    private volatile boolean auto;
 
     private static final int JDOC_TIME = 500;
     private static final Logger LOG = Logger.getLogger(ClassMemberPanelUI.class.getName()); //NOI18N
@@ -161,8 +163,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         JComponent buttons = filters.getComponent();
         buttons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
         filtersPanel.add(buttons);
-        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
-            filtersPanel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        Utils.updateBackground(filtersPanel);
         
         actions = new Action[] {            
             SortActions.createSortByNameAction(filters),
@@ -283,7 +284,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     void refresh(
             @NonNull final Description description,
             final boolean userAction) {
-        
+        auto = !userAction;
         final ElementNode rootNode = getRootNode();
         
         if ( rootNode != null && rootNode.getDescritption().fileObject.equals( description.fileObject) ) {
@@ -331,6 +332,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             } );
             
         }
+    }
+
+    boolean isAuto() {
+        return auto;
     }
     
     public void sort() {
@@ -787,7 +792,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             c.weightx = 1;
             c.weighty = 0;
             add(toolbar,c);
-            updateBackground(this);
+            Utils.updateBackground(this);
         }
 
         @Override
@@ -858,15 +863,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             if (!history.getHistory().isEmpty()) {
                 historyCombo.setEnabled(true);
             }
-        }
-
-        @NonNull
-        private <T extends JComponent> T updateBackground(@NonNull final T comp) {
-            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-                comp.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-            }
-            return comp;
-        }
+        }        
 
     }
 }

@@ -62,7 +62,9 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -162,6 +164,32 @@ public final class TypeBasedSpecializationParameterImpl extends OffsetableBase i
         return type.toString();
     }
 
+    public static class TypeBasedSpecializationParameterBuilder extends ScopedDeclarationBuilder {
+
+        private TypeBuilder typeBuilder;
+
+        public void setTypeBuilder(TypeBuilder type) {
+            this.typeBuilder = type;
+        }
+
+        public TypeBasedSpecializationParameterImpl create() {
+            TypeBasedSpecializationParameterImpl param = new TypeBasedSpecializationParameterImpl(getType(), getFile(), getStartOffset(), getEndOffset());
+            return param;
+        }
+        
+        private CsmType getType() {
+            CsmType type = null;
+            if (typeBuilder != null) {
+                typeBuilder.setScope(getScope());
+                type = typeBuilder.create();
+            }
+            if (type == null) {
+                type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), getFile(), getStartOffset(), getStartOffset()); // NOI18N
+            }
+            return type;
+        }        
+    }    
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 

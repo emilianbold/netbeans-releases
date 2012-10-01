@@ -144,7 +144,12 @@ public class SBHomeFactory {
             if (propertiesFO != null && propertiesFO.isValid() && propertiesFO.isData()) {
                 try {
                     Properties props = new Properties();
-                    props.load(new FileReader(FileUtil.toFile(propertiesFO)));
+                    FileReader reader = new FileReader(FileUtil.toFile(propertiesFO));
+                    try {
+                        props.load(reader);
+                    } finally {
+                        reader.close();
+                    }
                     return new Home(path, launcherPath, propertiesPath, props.getProperty("version", "1.0")); // NOI18N
                 } catch (IOException e) {
                 }

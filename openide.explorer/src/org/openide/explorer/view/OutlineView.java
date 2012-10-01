@@ -1974,6 +1974,8 @@ public class OutlineView extends JScrollPane {
                 // The event should go to the editor component
                 editorComponent.requestFocusInWindow();
                 Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(e);
+            } else {
+                super.processComponentKeyEvent(e);
             }
         }
         

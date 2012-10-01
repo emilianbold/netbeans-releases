@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -50,17 +51,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
+import org.netbeans.modules.web.inspect.ui.MatchedRulesTC;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * WebKit-based implementation of {@code PageModel}.
@@ -82,12 +88,16 @@ public class WebKitPageModel extends PageModel {
     private List<? extends org.openide.nodes.Node> highlightedNodes = Collections.EMPTY_LIST;
     /** WebKit DOM domain listener. */
     private DOM.Listener domListener;
+    /** WebKit CSS domain listener. */
+    private CSS.Listener cssListener;
     /** Determines whether the selection mode is switched on. */
     private boolean selectionMode;
     /** Determines whether the selection between the IDE and the browser pane is synchronized. */
     private boolean synchronizeSelection;
     /** Owner project of the inspected page. */
     private Project project;
+    /** Page context. */
+    private Lookup pageContext;
     /** Updater of the stylesheets in the browser according to changes of the corresponding source files. */
     private CSSUpdater cSSUpdater = CSSUpdater.getDefault();
     /**
@@ -104,14 +114,21 @@ public class WebKitPageModel extends PageModel {
      * @param pageContext page context.
      */
     public WebKitPageModel(Lookup pageContext) {
+        this.pageContext = pageContext;
         this.webKit = pageContext.lookup(WebKitDebugging.class);
         this.project = pageContext.lookup(Project.class);
+        this.external = (pageContext.lookup(JToolBar.class) == null); // Ugly heuristics
         addPropertyChangeListener(new WebPaneSynchronizer());
 
         // Register DOM domain listener
         domListener = createDOMListener();
         DOM dom = webKit.getDOM();
         dom.addListener(domListener);
+        
+        // Register CSS domain listener
+        cssListener = createCSSListener();
+        CSS css = webKit.getCSS();
+        css.addListener(cssListener);
 
         try {
             initializePage();
@@ -165,10 +182,21 @@ public class WebKitPageModel extends PageModel {
         return project;
     }
 
+    /**
+     * Returns the page context.
+     * 
+     * @return page context.
+     */
+    public Lookup getPageContext() {
+        return pageContext;
+    }
+
     @Override
     protected void dispose() {
         DOM dom = webKit.getDOM();
         dom.removeListener(domListener);
+        CSS css = webKit.getCSS();
+        css.removeListener(cssListener);
         cSSUpdater.stop();
     }
 
@@ -309,6 +337,7 @@ public class WebKitPageModel extends PageModel {
                             public void run() {
                                 if (selected) {
                                     setSelectedNodes(selection);
+                                    activateStylesView();
                                 } else {
                                     setHighlightedNodesImpl(selection);
                                 }
@@ -346,6 +375,33 @@ public class WebKitPageModel extends PageModel {
                         domNode.updateCharacterData();
                     }
                 }
+            }
+        };
+    }
+
+    /**
+     * Creates CSS domain listener.
+     * 
+     * @return CSS domain listener.
+     */
+    private CSS.Listener createCSSListener() {
+        return new CSS.Listener() {
+            @Override
+            public void mediaQueryResultChanged() {
+            }
+
+            @Override
+            public void styleSheetChanged(String styleSheetId) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // Issue 217896
+                            String script = "NetBeans.repaintGlassPane();"; // NOI18N
+                            invokeInAllDocuments(script);
+                        } catch (TransportStateException tsex) {}
+                    }
+                });
             }
         };
     }
@@ -475,6 +531,7 @@ public class WebKitPageModel extends PageModel {
         if (!selectionMode) {
             setHighlightedNodesImpl(Collections.EMPTY_LIST);
         }
+        activateStylesView();
     }
 
     @Override
@@ -554,7 +611,45 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public CSSStylesView getCSSStylesView() {
-        return CSSStylesPanel.getDefault();
+        CSSStylesPanel view = CSSStylesPanel.getDefault();
+        view.updatePageModel();
+        return view;
+    }
+
+    /** Determines whether this page model corresponds to a page in an external browser. */
+    private boolean external;
+    
+    /**
+     * Determines whether this page model corresponds to a page in an external browser.
+     * 
+     * @return {@code true} when this page model corresponds to a page
+     * in an external browser, returns {@code false} otherwise.
+     */
+    boolean isExternal() {
+        return external;
+    }
+
+    /**
+     * Activates CSS Styles view (to fill the content of Navigator).
+     */
+    void activateStylesView() {
+        if (!isExternal()) {
+            return;
+        }
+        if (EventQueue.isDispatchThread()) {
+            WindowManager manager = WindowManager.getDefault();
+            TopComponent stylesTC = manager.findTopComponent(MatchedRulesTC.ID);
+            if (stylesTC != null) {
+                stylesTC.requestActive();
+            }
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    activateStylesView();
+                }
+            });
+        }
     }
 
     class WebPaneSynchronizer implements PropertyChangeListener {

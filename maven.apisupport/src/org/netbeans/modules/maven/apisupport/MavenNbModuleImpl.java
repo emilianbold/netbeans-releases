@@ -69,6 +69,7 @@ import java.util.Collections;
 import javax.xml.namespace.QName;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.model.Resource;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -137,7 +138,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         String file = PluginPropertyUtils.getPluginProperty(project, 
                 GROUPID_MOJO,
                 NBM_PLUGIN, //NOI18N
-                "descriptor", null); //NOI18N
+                "descriptor", null, null); //NOI18N
         if (file == null) {
             file = "src/main/nbm/module.xml"; //NOI18N
         }
@@ -241,10 +242,24 @@ public class MavenNbModuleImpl implements NbModuleProvider {
 
     @Override
     public String getResourceDirectoryPath(boolean isTest) {
+        NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
+        List<Resource> res;
+        String defaultValue;
+        
         if (isTest) {
-            return "src/test/resources"; //NOI18N
+            res = watch.getMavenProject().getTestResources();           
+            defaultValue = "src/test/resources"; //NOI18N
+        } else {
+            res = watch.getMavenProject().getResources();
+            defaultValue = "src/main/resources"; //NOI18N
         }
-        return "src/main/resources"; //NOI18N
+        for (Resource resource : res) {
+            FileObject fo = FileUtilities.convertStringToFileObject(resource.getDirectory());
+            if (FileUtil.isParentOf(project.getProjectDirectory(), fo)) {
+                return FileUtil.getRelativePath(project.getProjectDirectory(), fo);
+            }
+        }
+        return defaultValue;
     }
 
     @Override
@@ -522,7 +537,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     static @CheckForNull File findIDEInstallation(Project project) {
         String installProp = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getProperties().getProperty(PROP_NETBEANS_INSTALL);
         if (installProp == null) {
-            installProp = PluginPropertyUtils.getPluginProperty(project, GROUPID_MOJO, NBM_PLUGIN, "netbeansInstallation", "run-ide");
+            installProp = PluginPropertyUtils.getPluginProperty(project, GROUPID_MOJO, NBM_PLUGIN, "netbeansInstallation", "run-ide", "netbeans.installation");
         }
         if (installProp != null) {
             return FileUtilities.convertStringToFile(installProp);
@@ -582,13 +597,13 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                 return null; //not a maven project.
             }
             String outputDir = PluginPropertyUtils.getPluginProperty(appProject,
-                    GROUPID_MOJO, NBM_PLUGIN, "outputDirectory", "cluster-app"); //NOI18N
+                    GROUPID_MOJO, NBM_PLUGIN, "outputDirectory", "cluster-app", null); //NOI18N
             if( null == outputDir ) {
                 outputDir = "target"; //NOI18N
             }
 
             String brandingToken = PluginPropertyUtils.getPluginProperty(appProject,
-                    GROUPID_MOJO, NBM_PLUGIN, "brandingToken", "cluster-app"); //NOI18N
+                    GROUPID_MOJO, NBM_PLUGIN, "brandingToken", "cluster-app", "netbeans.branding.token"); //NOI18N
              return FileUtilities.resolveFilePath(FileUtil.toFile(appProject.getProjectDirectory()), outputDir + File.separator + brandingToken);
     }
 

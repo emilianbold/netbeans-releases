@@ -45,10 +45,10 @@ package org.netbeans.modules.db.dataview.output;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
+import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
@@ -81,6 +81,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
         this.task = task;
     }
 
+    @Override
     public void run() {
         assert task != null;
         try {
@@ -95,8 +96,8 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 dataView.disableButtons();
 
                 conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
-                String msg = "";
                 if (conn == null) {
+                    String msg;
                     Throwable connEx = DBConnectionFactory.getInstance().getLastException();
                     if (connEx != null) {
                         msg = connEx.getMessage();
@@ -124,6 +125,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
         }
     }
 
+    @Override
     public boolean cancel() {
         return task.cancel();
     }

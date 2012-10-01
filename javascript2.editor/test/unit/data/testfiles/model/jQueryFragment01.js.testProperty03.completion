@@ -145,4 +145,4 @@ METHOD     width(value): jQuery            [PUBLIC]   jquery-api.xml
 METHOD     wrap(wrappingElement): jQuery   [PUBLIC]   jquery-api.xml
 METHOD     wrapAll(wrappingElement): jQue  [PUBLIC]   jquery-api.xml
 METHOD     wrapInner(function(index)): jQ  [PUBLIC]   jquery-api.xml
-FIELD      name                            [PUBLIC]   jQueryFragment01.js
+FIELD      name: String                    [PUBLIC]   jQueryFragment01.js

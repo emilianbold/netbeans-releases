@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.util;
 
+import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -74,6 +75,48 @@ public final class FileUtilities {
      */
     public static boolean isCssFile(FileObject file) {
         return CSS_MIME_TYPE.equals(FileUtil.getMIMEType(file, CSS_MIME_TYPE));
+    }
+
+    /**
+     * Cleanup the given folder. The folder itself is not removed.
+     * @param fileObject folder to be cleaned up
+     * @throws IOException if any error occurs
+     */
+    public static void cleanupFolder(FileObject fileObject) throws IOException {
+        for (FileObject child : fileObject.getChildren()) {
+            child.delete();
+        }
+    }
+
+    /**
+     * Move content of the source to the target. If the target file already exists and is a file
+     * (not folder), the source file is moved and renamed (suffix <i>_0</i>, <i>_1</i> etc.).
+     * @param source source file object
+     * @param target target file object
+     * @throws IOException if any error occurs
+     */
+    public static void moveContent(FileObject source, FileObject target) throws IOException {
+        for (FileObject child : source.getChildren()) {
+            FileObject newChild = target.getFileObject(child.getNameExt());
+            if (newChild == null) {
+                // does not exists
+                FileUtil.moveFile(child, target, child.getName());
+            } else if (newChild.isFolder()) {
+                // copy directory content
+                moveContent(child, newChild);
+                child.delete();
+            } else {
+                // file already exists => rename
+                int i = 0;
+                for (;;) {
+                    String newName = child.getName() + "_" + i++; // NOI18N
+                    if (target.getFileObject(newName) == null) {
+                        FileUtil.moveFile(child, target, newName);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
 }

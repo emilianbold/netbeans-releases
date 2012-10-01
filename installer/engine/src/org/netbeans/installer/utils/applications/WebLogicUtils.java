@@ -123,7 +123,7 @@ public class WebLogicUtils {
         commands.add("-Dweblogic.management.GenerateDefaultConfig=true");
         commands.add("-Dweblogic.management.username=" + username);
         commands.add("-Dweblogic.management.password=" + adminPassword);                
-        commands.add("-Djava.endorsed.dirs=" + new File(wlLocation, "modules" + File.separator + "endorsed").getAbsolutePath());
+        commands.add("-Djava.endorsed.dirs=" + new File(wlLocation, "oracle_common" + File.separator + "modules" + File.separator + "endorsed").getAbsolutePath());
         commands.add("weblogic.Server");
 //        %JAVA_HOME%\bin\java.exe 
 //        -Xmx1024m -XX:MaxPermSize=128m -classpath=$CLASSPATH -Dweblogic.Domain=domainname -Dweblogic.management.GenerateDefaultConfig=true
@@ -134,11 +134,7 @@ public class WebLogicUtils {
         }
         domainBuilder.command(commands).directory(domainDir);   
         final ExecutionResults domainResults = 
-                executeCommandWithDestroyTag(domainBuilder, SERVER_RUNNING_TAG);
-//        if (results.getStdOut().indexOf(COULD_NOT_CREATE_DOMAIN_MARKER) != -1 || 
-//		  results.getStdErr().indexOf(COULD_NOT_CREATE_DOMAIN_MARKER) != -1) {
-//            throw new DomainCreationException(CLI_130);
-//        }   
+                executeCommandWithDestroyTag(domainBuilder, SERVER_RUNNING_TAG, adminPassword);
         if (domainResults.getErrorCode() > 0) {
             throw new DomainCreationException(domainResults.getErrorCode());
         }
@@ -181,10 +177,30 @@ public class WebLogicUtils {
         LogManager.log(ErrorLevel.MESSAGE, "stopWebLogicFile doesn't exist for the domain: " + domainLocation);   
         return false;
     }    
+
+    public static void unpackServerFiles (final File wlLocation, File javaHome, File installFile) throws IOException {
+        String wlPath = wlLocation.getAbsolutePath();
+        if (SystemUtils.isWindows()) {
+            // must convert to short paths, the result is elimination of all spaces in path (wl installer cannot handle them)
+            wlPath = convertPathNamesToShort(wlPath);
+        }
+        //Setting an environment for WebLogic domain creation
+        List <String> commands = new ArrayList <String> ();               
+        commands.add(getJavaExecutableCommand(javaHome));
+        commands.add("-jar");
+        commands.add(installFile.getAbsolutePath());
+        commands.add("-novalidation");
+        commands.add("ORACLE_HOME=" + wlPath);
+        final ExecutionResults configureResults = SystemUtils.executeCommand(wlLocation, commands.toArray(new String[commands.size()]));
+        if(configureResults.getErrorCode() > 0) {
+            throw new IOException(StringUtils.format(ERROR_UNPACKING_ERROR_STRING, configureResults.getErrorCode()));
+        }
+    }
         
     private static String[] getConfigureCommand(File wlLocation) {
-        String configure = new File(wlLocation, 
-                (SystemUtils.isWindows() ? "configure.cmd" : "configure.sh")).getAbsolutePath();
+        String subPath = "wlserver/server/bin/".replace("/", File.separator); //NOI18N
+        String configure = new File(wlLocation, subPath + 
+                (SystemUtils.isWindows() ? "setWLSEnv.cmd" : "setWLSEnv.sh")).getAbsolutePath();
         return SystemUtils.isWindows() ? new String[] {configure} :
                                          new String[] {"/bin/bash", configure};
     }    
@@ -225,8 +241,8 @@ public class WebLogicUtils {
         return result;
     }    
     
-    private static ExecutionResults executeCommandWithDestroyTag(ProcessBuilder builder, String processDestroyTag) throws IOException {               
-        String commandString = StringUtils.asString(builder.command(), StringUtils.SPACE);
+    private static ExecutionResults executeCommandWithDestroyTag(ProcessBuilder builder, String processDestroyTag, String passwordToHide) throws IOException {               
+        String commandString = StringUtils.asString(builder.command(), StringUtils.SPACE).replace(passwordToHide, "*****"); //NOI18N
         LogManager.log(ErrorLevel.MESSAGE,
                 "executing command: " + commandString +
                 ", in directory: " + builder.directory());
@@ -375,6 +391,9 @@ public class WebLogicUtils {
     public static final String ERROR_CONFIGURE_ERROR_STRING =
             ResourceUtils.getString(WebLogicUtils.class,
             "WU.error.configure.errno");    
+    public static final String ERROR_UNPACKING_ERROR_STRING =
+            ResourceUtils.getString(WebLogicUtils.class,
+            "WU.error.unpacking.errno"); //NOI18N
     public static final String ERROR_CREATE_DOMAIN_ERROR_STRING =
             ResourceUtils.getString(WebLogicUtils.class,
             "WU.error.create.domain.errno");    

@@ -118,15 +118,6 @@ public class HudsonManagerImpl {
             return null;
         
         fireChangeListeners();
-        
-        instance.storeDefinition();
-        
-        instance.getProperties().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                instance.storeDefinition();
-            }
-        });
-        
         return instance;
     }
     
@@ -242,6 +233,9 @@ public class HudsonManagerImpl {
                             if (!m.containsKey(INSTANCE_NAME) || !m.containsKey(INSTANCE_URL) || !m.containsKey(INSTANCE_SYNC)) {
                                 continue;
                             }
+                            if (FALSE.equals(m.get(INSTANCE_PERSISTED))) {
+                                continue;
+                            }
                             HudsonInstanceImpl.createHudsonInstance(new HudsonInstanceProperties(m), false);
                         }
                     } catch (BackingStoreException ex) {
@@ -297,7 +291,8 @@ public class HudsonManagerImpl {
             newprjs.removeAll(Arrays.asList(prjs));
             for (Project project : newprjs) {
                 HudsonInstanceImpl remove = projectInstances.remove(project);
-                if (remove != null && remove.getProperties() instanceof ProjectHIP) {
+                if (remove != null && remove.getProperties() instanceof ProjectHIP
+                        && !remove.isPersisted()) {
                     ProjectHIP props = (ProjectHIP)remove.getProperties();
                     props.removeProvider(project);
                     if (props.getProviders().isEmpty()) {

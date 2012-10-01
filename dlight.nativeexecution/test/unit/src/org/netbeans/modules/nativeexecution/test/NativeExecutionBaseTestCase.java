@@ -59,7 +59,9 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -69,13 +71,21 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -118,6 +128,82 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
 
     }
 
+    protected static class DumpingFileChangeListener implements FileChangeListener {
+        public static final String FILE_ATTRIBUTE_CHANGED = "fileAttributeChanged";
+        public static final String FILE_CHANGED = "fileChanged";
+        public static final String FILE_DATA_CREATED = "fileDataCreated";
+        public static final String FILE_DELETED = "fileDeleted";
+        public static final String FILE_FOLDER_CREATED = "fileFolderCreated";
+        public static final String FILE_RENAMED = "fileRenamed";
+
+        private final String listenerName;
+        private final String prefixToStrip;
+        private final PrintStream out;
+        private final boolean checkExpected;
+
+        public DumpingFileChangeListener(String name, String prefixToStrip, PrintStream out, boolean checkExpected) {
+            this.listenerName = name;
+            this.prefixToStrip = prefixToStrip;
+            this.out = out;
+            this.checkExpected = checkExpected;
+        }
+
+        protected void register(String eventKind, FileEvent fe) {
+            String src = stripPrefix(((FileObject) fe.getSource()).getPath());
+            String obj = stripPrefix(fe.getFile().getPath());
+            String exp = checkExpected ? ("exp=" + Boolean.toString(fe.isExpected())) : "";
+            String extra = "";
+            if (fe instanceof FileRenameEvent) {
+                FileRenameEvent fre = (FileRenameEvent) fe;
+                extra = "oldName="+fre.getName()+" oldExt="+fre.getExt();
+            }
+            out.printf("%-20s: %-20s SRC %-20s OBJ %-20s %s %s\n", listenerName, eventKind, src, obj, exp, extra);
+        }
+
+        private String stripPrefix(String path) {
+            if (path.startsWith(prefixToStrip)) {
+                path = path.substring(prefixToStrip.length());
+                if (path.startsWith("/")) {
+                    path = path.substring(1);
+                }
+            }
+            if (path.length() == 0) {
+                path = ".";
+            }
+            return path;
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            register(FILE_ATTRIBUTE_CHANGED, fe);
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            register(FILE_CHANGED, fe);
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            register(FILE_DATA_CREATED, fe);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            register(FILE_DELETED, fe);
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            register(FILE_FOLDER_CREATED, fe);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            register(FILE_RENAMED, fe);
+        }
+    }
+    
     static {
         Logger log = org.netbeans.modules.nativeexecution.support.Logger.getInstance();
         org.netbeans.modules.nativeexecution.support.Logger.getInstance().addHandler(new TestLogHandler(log));
@@ -284,6 +370,90 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         return res.output;
     }
     
+    /**
+     * Creates a directory structure described by parameters
+     *
+     * @param env execution environment
+     * @param baseDir base directory; of not exists, it is created ; if exists,
+     * the content is removed
+     * @param creationData array of strings, a string per file; a string should
+     * have format below:
+     * "- plain-filen-name" for plain file
+     * "d directory-name" for directory
+     * "l link-target link-name" for link
+     * "R file-or-dir-name" for removal
+     * "T file-name" for touch
+     * "M dir-or-file-name new-name" for move
+     * @throws Exception
+     */
+    public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData) throws Exception {
+        createDirStructure(env, baseDir, creationData, true);
+    }
+    public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData, boolean cleanOld) throws Exception {
+        if (baseDir == null || baseDir.length() == 0 || baseDir.equals("/")) {
+            throw new IllegalArgumentException("Illegal base dir: " + baseDir);
+        }
+        if (HostInfoUtils.getHostInfo(env).getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+            baseDir = WindowsSupport.getInstance().convertToCygwinPath(baseDir);
+        }
+        StringBuilder script = new StringBuilder();
+        try {
+            script.append("mkdir -p \"").append(baseDir).append("\";\n");
+            script.append("cd \"").append(baseDir).append("\";\n");
+            if (cleanOld) {
+                script.append("rm -rf *").append(";\n");
+            }
+            Set<String> checkedPaths = new HashSet<String>();
+            for (String data : creationData) {
+                if (data.length() < 3 || data.charAt(1) != ' ') {
+                    throw new IllegalArgumentException("wrong format: " + data);
+                }
+                String[] parts = data.split(" ");
+                String path = parts[1];
+                int slashPos = path.lastIndexOf('/');
+                if (slashPos > 0) {
+                    String dir = path.substring(0, slashPos);
+                    if (!checkedPaths.contains(dir)) {
+                        checkedPaths.add(dir);
+                        script.append("mkdir -p \"").append(dir).append("\";\n");
+                    }
+                }
+                switch (data.charAt(0)) {
+                    case '-':
+                        script.append("touch \"").append(path).append("\";\n");
+                        break;
+                    case 'd':
+                        script.append("mkdir -p \"").append(path).append("\";\n");
+                        break;
+                    case 'l':
+                        String link = parts[2];
+                        script.append("ln -s \"").append(path).append("\" \"").append(link).append("\";\n");
+                        break;
+                    case 'R':
+                        script.append("rm -rf \"").append(path).append("\";\n");
+                        break;
+                    case 'T':
+                        script.append("touch \"").append(path).append("\";\n");
+                        break;
+                    case 'M':
+                        String dst = parts[2];
+                        script.append("mv \"").append(path).append("\" \"").append(dst).append("\";\n");
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unexpected 1-st char: " + data);
+                }
+            }
+        } catch (Throwable thr) {
+            throw new IllegalArgumentException("Error creating script", thr);
+        }
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "sh", "-c", script.toString());
+        if (res.exitCode != 0) {
+            assertTrue("script failed at " + env.getDisplayName() + " rc=" + res.exitCode + " err=" + res.error, false);
+        } else if (res.error != null && res.error.length() > 0) {
+            assertTrue("script failed at " + env.getDisplayName() + " rc=" + res.exitCode + " err=" + res.error, false);
+        }
+    }
+    
     private String stringArrayToString(String[] args) {
         StringBuilder sb = new StringBuilder();
         for (String arg : args) {
@@ -369,10 +539,14 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
             }
             return lines;
         } finally {
-            if (r != null) try { r.close(); } catch (IOException e) {}
+            if (r != null) { 
+                try { 
+                    r.close(); 
+                } catch (IOException e) {}
+            }
         }
     }
-    
+
     public String readFile(File file) throws IOException {
         BufferedReader rdr = new BufferedReader(new FileReader(file));
         StringBuilder sb = new StringBuilder();

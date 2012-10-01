@@ -69,6 +69,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.hints.declarative.Condition;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser.FixTextDescription;
 import org.netbeans.modules.java.hints.declarative.conditionapi.Context;
@@ -147,35 +149,40 @@ public class EvaluationSpanTask extends JavaParserResultTask<Result> {
             return ;//??
         }
 
-        DebugTopComponent c = DebugTopComponent.getExistingInstance();
+        for (final Document doc : ToggleDebuggingAction.debuggingEnabled) {
+            assert doc != null;
 
-        if (c == null) return ;
+            List<int[]> passed = new LinkedList<int[]>();
+            List<int[]> failed = new LinkedList<int[]>();
+            final String[] text = new String[1];
 
-        Document doc = c.getDocument();
+            doc.render(new Runnable() {
+                @Override public void run() {
+                    text[0] = DocumentUtilities.getText(doc).toString();
+                }
+            });
 
-        assert doc != null;
+            Collection<? extends HintWrapper> hints = HintWrapper.parse(NbEditorUtilities.getFileObject(doc), text[0]);
 
-        List<int[]> passed = new LinkedList<int[]>();
-        List<int[]> failed = new LinkedList<int[]>();
+            computeHighlights(info[0],
+                              start,
+                              end,
+                              hints,
+                              passed,
+                              failed);
 
-        computeHighlights(info[0],
-                          start,
-                          end,
-                          c.getHints(),
-                          passed,
-                          failed);
+            OffsetsBag bag = new OffsetsBag(doc);
 
-        OffsetsBag bag = new OffsetsBag(doc);
+            for (int[] span : passed) {
+                bag.addHighlight(span[0], span[1], PASSED);
+            }
 
-        for (int[] span : passed) {
-            bag.addHighlight(span[0], span[1], PASSED);
+            for (int[] span : failed) {
+                bag.addHighlight(span[0], span[1], FAILED);
+            }
+
+            DebuggingHighlightsLayerFactory.getBag(doc).setHighlights(bag);
         }
-
-        for (int[] span : failed) {
-            bag.addHighlight(span[0], span[1], FAILED);
-        }
-
-        DebuggingHighlightsLayerFactory.getBag(doc).setHighlights(bag);
     }
 
     static void computeHighlights(CompilationInfo info,

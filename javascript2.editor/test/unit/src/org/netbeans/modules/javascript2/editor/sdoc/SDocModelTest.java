@@ -104,7 +104,7 @@ public class SDocModelTest extends JsDocumentationTestBase {
 
     }
 
-    private static void checkJsDocBlock(Source source, final int offset, final String expected) throws Exception {
+    private void checkJsDocBlock(Source source, final int offset, final String expected) throws Exception {
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override
             void run(ResultIterator resultIterator) throws Exception {

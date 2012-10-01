@@ -86,7 +86,7 @@ public class JQueryCodeCompletion {
         switch (jsCompletionContext) {
             case GLOBAL:
             case EXPRESSION:
-                if (JQueryUtils.isJQuery(parserResult, lastTsOffset)) {
+                if (JQueryUtils.isInJQuerySelector(parserResult, lastTsOffset)) {
                     addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
                 break;
@@ -95,6 +95,8 @@ public class JQueryCodeCompletion {
                 if (JQueryUtils.isInJQuerySelector(parserResult, lastTsOffset)) {
                     addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
+                break;
+            default:
                 break;
         }
         long end = System.currentTimeMillis();
@@ -300,26 +302,26 @@ public class JQueryCodeCompletion {
         String wrapup = ""; //NOI18N
         String prefixText = prefix;
         int anchorOffsetDelta = 0;
-        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
-            wrapup = "'"; //NOI18N
-            if (ts.token().id() == JsTokenId.IDENTIFIER) {
-                ts.movePrevious();
-            }
-            if(ts.token().id() == JsTokenId.OPERATOR_COLON) {
-                prefixText = ":" + prefixText; //NOI18N
-                anchorOffsetDelta = prefix.isEmpty() ? 0 : -1;
-            } else if (ts.token().id() == JsTokenId.OPERATOR_DOT) {
-                prefixText = "." + prefixText; //NOI18N
-                anchorOffsetDelta = prefix.isEmpty() ? 0 : -1;
-            } else {
-                anchorOffsetDelta = 0;
-            }
-//            if (prefix.isEmpty()) {
-//                anchorOffsetDelta = 1;
+//        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
+//            wrapup = "'"; //NOI18N
+//            if (ts.token().id() == JsTokenId.IDENTIFIER) {
+//                ts.movePrevious();
 //            }
-            
-            
-        } 
+//            if(ts.token().id() == JsTokenId.OPERATOR_COLON) {
+//                prefixText = ":" + prefixText; //NOI18N
+//                anchorOffsetDelta = prefix.isEmpty() ? 0 : -1;
+//            } else if (ts.token().id() == JsTokenId.OPERATOR_DOT) {
+//                prefixText = "." + prefixText; //NOI18N
+//                anchorOffsetDelta = prefix.isEmpty() ? 0 : -1;
+//            } else {
+//                anchorOffsetDelta = 0;
+//            }
+////            if (prefix.isEmpty()) {
+////                anchorOffsetDelta = 1;
+////            }
+//
+//
+//        }
         
         
         if(contextMap.isEmpty()) {
@@ -356,7 +358,7 @@ public class JQueryCodeCompletion {
                         break;
                     case CLASS:
                         Collection<String> classes = getCSSClasses(context.prefix, parserResult);
-                        anchorOffset = docOffset + prefix.length() - context.prefix.length();
+                        anchorOffset = docOffset + anchorOffsetDelta;
                         for (String cl : classes) {
                             result.add(JQueryCompletionItem.createCSSItem("." + cl, anchorOffset, wrapup));
                         }

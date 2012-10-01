@@ -39,7 +39,7 @@
  * 
  * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.dataview.table.celleditor;
+package org.netbeans.modules.db.dataview.table;
 
 import java.awt.Component;
 import java.awt.event.MouseEvent;
@@ -51,7 +51,6 @@ import javax.swing.JTextField;
 import javax.swing.UIManager;
 import org.jdesktop.swingx.renderer.JRendererCheckBox;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
-import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.awt.StatusDisplayer;
@@ -61,7 +60,7 @@ public class ResultSetTableCellEditor extends DefaultCellEditor {
     protected Object val;
     protected boolean editable = true;
     protected JTable table;
-    static final boolean isGtk = "GTK".equals (UIManager.getLookAndFeel ().getID ()); //NOI18N
+    protected static final boolean isGtk = "GTK".equals (UIManager.getLookAndFeel ().getID ()); //NOI18N
 
     public ResultSetTableCellEditor(final JTextField textField) {
         super(textField);
@@ -105,7 +104,7 @@ public class ResultSetTableCellEditor extends DefaultCellEditor {
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-        if (DataViewUtils.isSQLConstantString(value)) {
+        if (DataViewUtils.isSQLConstantString(value, null)) {
             value = "";
         }
         return super.getTableCellEditorComponent(table, value, isSelected, row, column);

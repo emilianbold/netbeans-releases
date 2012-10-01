@@ -218,9 +218,13 @@ public final class DefaultSearchResultsDisplayer<U>
 
         @Override
         public boolean isRelevantNode(Node node) {
-            Node parent = node.getParentNode();
-            return node.isLeaf() && node != null
-                    && parent.getParentNode() != null;
+            if (node == null) {
+                return false;
+            } else {
+                Node parent = node.getParentNode();
+                return node.isLeaf() && parent != null
+                        && parent.getParentNode() != null;
+            }
         }
 
         @Override

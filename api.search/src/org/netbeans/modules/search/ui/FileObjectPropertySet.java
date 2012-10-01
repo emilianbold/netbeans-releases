@@ -58,7 +58,7 @@ public class FileObjectPropertySet extends Node.PropertySet {
 
     public FileObjectPropertySet(FileObject fileObject) {
         this.fileObject = fileObject;
-        properties = new Property[] {
+        properties = new Property<?>[] {
             new PathProperty(), new SizeProperty(), new LastModifiedProperty()
         };
     }

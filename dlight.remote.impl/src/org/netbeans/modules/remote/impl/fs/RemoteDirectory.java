@@ -171,11 +171,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (ConnectException ex) {
             RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            RemoteLogger.finest(ex, this);
         } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);            
+            RemoteLogger.finest(ex, this);
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            Thread.currentThread().interrupt();
+            RemoteLogger.finest(ex, this);
         } catch (CancellationException ex) {
             // too late
         }

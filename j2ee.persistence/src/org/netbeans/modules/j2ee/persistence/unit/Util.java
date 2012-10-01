@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.persistence.unit;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -50,10 +49,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -73,19 +70,21 @@ public class Util {
 
     public static List<String> getPropsNamesExceptGeneral(Provider propCat) {
         List<String> propsList = getAllPropNames(propCat);
-        propsList.remove(propCat.getJdbcDriver());
-        propsList.remove(propCat.getJdbcUsername());
-        propsList.remove(propCat.getJdbcUrl());
-        propsList.remove(propCat.getJdbcPassword());
-        propsList.remove(propCat.getTableGenerationPropertyName());
+        if(propCat != null){
+            propsList.remove(propCat.getJdbcDriver());
+            propsList.remove(propCat.getJdbcUsername());
+            propsList.remove(propCat.getJdbcUrl());
+            propsList.remove(propCat.getJdbcPassword());
+            propsList.remove(propCat.getTableGenerationPropertyName());
+        }
         return propsList;
     }
 
     /**
      * Gets the properties that are not defined in the configuration file yet
      * 
-     * @param propCat The property category
-     * @param sessionFactory The session factory that contains the properties
+     * @param propCat The property category(persistence provider)
+     * @param pu persistence unit that contains the properties
      * @return Array of property names
      */
     public static ArrayList<String> getAvailPropNames(Provider propCat, PersistenceUnit pu) {
@@ -109,16 +108,6 @@ public class Util {
         return new ArrayList<String>();
     }
 
-//    // Gets the list of mapping files from HibernateEnvironment.
-//    public static String[] getMappingFilesFromProject(FileObject fileObj) {
-//        Project enclosingProject = FileOwnerQuery.getOwner(fileObj);
-//        HibernateEnvironment env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
-//        if(env != null) {
-//            return env.getAllHibernateMappings().toArray(new String[]{});
-//        } else {
-//            return new String[0];
-//        }
-//    }
     public static SourceGroup[] getJavaSourceGroups(PUDataObject dObj) throws java.io.IOException {
         Project proj = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
         if (proj == null) {
