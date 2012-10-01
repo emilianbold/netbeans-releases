@@ -1188,7 +1188,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
     boolean checkEditBoolean(int row) {
         FeatureDescriptor fd = getSheetModel().getPropertySetModel().getFeatureDescriptor(row);
 
-        if (fd.getValue("stringValues") != null) {
+        if (fd != null && fd.getValue("stringValues") != null) {
             return false; //NOI18N
         }
 
