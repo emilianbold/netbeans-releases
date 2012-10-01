@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
@@ -55,6 +57,7 @@ import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
 
 /**
  * Utilities related to methods
@@ -181,4 +184,51 @@ public class Methods {
         }
     }
 
+    public static boolean hasSameParameters(IndexedMethod indexedMethod, MethodNode method) {
+        return isSameList(indexedMethod.getParameters(), getMethodParams(method));
+    }
+
+    public static boolean hasSameParameters(IndexedMethod indexedMethod, MethodCallExpression methodCall) {
+        return isSameList(indexedMethod.getParameters(), getMethodParams(methodCall));
+    }
+
+    public static boolean hasSameParameters(MethodNode methodNode, MethodCallExpression methodCall) {
+        return isSameList(getMethodParams(methodNode), getMethodParams(methodCall));
+    }
+
+    public static boolean isSameList(List<String> list1, List<String> list2) {
+        if (list1.size() != list2.size()) {
+            return false;
+        }
+        for (int i = 0; i < list1.size(); i++) {
+            if (!list1.get(i).equals(list2.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static List<String> getMethodParams(MethodNode methodNode) {
+        final List<String> params = new ArrayList<String>();
+        for (Parameter param : methodNode.getParameters()) {
+            params.add(ElementUtils.getTypeName(param));
+        }
+        return params;
+
+    }
+
+    private static List<String> getMethodParams(MethodCallExpression methodCall) {
+        final List<String> params = new ArrayList<String>();
+        final Expression arguments = methodCall.getArguments();
+
+        if (arguments instanceof ArgumentListExpression) {
+            ArgumentListExpression argumentList = ((ArgumentListExpression) arguments);
+            if (argumentList.getExpressions().size() > 0) {
+                for (Expression argument : argumentList.getExpressions()) {
+                    params.add(ElementUtils.getTypeName(argument.getType()));
+                }
+            }
+        }
+        return params;
+    }
 }

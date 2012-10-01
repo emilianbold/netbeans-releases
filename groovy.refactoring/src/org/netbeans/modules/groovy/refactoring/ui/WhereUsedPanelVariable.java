@@ -44,7 +44,7 @@ package org.netbeans.modules.groovy.refactoring.ui;
 import java.awt.Dimension;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.csl.api.UiUtils;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 
 /**
  * Copied from Java Refactoring module and changed with respect to Groovy and
@@ -59,13 +59,13 @@ public class WhereUsedPanelVariable extends WhereUsedPanel.WhereUsedInnerPanel {
     }
 
     @Override
-    void initialize(final GroovyRefactoringElement element) {
+    void initialize(final RefactoringElement element) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
                 Dimension preferredSize = label.getPreferredSize();
-                label.setText(element.getName() + " : " + element.getTypeName()); // NOI18N
+                label.setText(element.getShowcase());
                 label.setIcon(UiUtils.getElementIcon(element.getKind(), element.getModifiers()));
                 label.setPreferredSize(preferredSize);
                 label.setMinimumSize(preferredSize);

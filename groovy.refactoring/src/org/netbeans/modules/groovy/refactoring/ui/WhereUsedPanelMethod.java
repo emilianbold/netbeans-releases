@@ -44,13 +44,22 @@ package org.netbeans.modules.groovy.refactoring.ui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashSet;
 import java.util.Set;
 import javax.swing.*;
 import javax.swing.plaf.UIResource;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.MethodNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.UiUtils;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.editor.api.ElementUtils;
+import org.netbeans.modules.groovy.refactoring.utils.FindPossibleMethods;
+import org.netbeans.modules.groovy.refactoring.findusages.model.MethodRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
+import org.openide.filesystems.FileObject;
 
 /**
  * Copied from Java Refactoring module and changed with respect to Groovy and
@@ -70,24 +79,59 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
 
 
     @Override
-    void initialize(final GroovyRefactoringElement element) {
-        final Set<Modifier> modifiers = element.getModifiers();
-        final Icon labelIcon = UiUtils.getElementIcon(element.getKind(), element.getModifiers());
-        final String labelText = element.getSignature();
-
+    void initialize(final RefactoringElement element) {
+        assert (element instanceof MethodRefactoringElement);
+        
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                Dimension preferredSize = label.getPreferredSize();
-                label.setText(labelText);
-                label.setIcon(labelIcon);
-                label.setPreferredSize(preferredSize);
-                label.setMinimumSize(preferredSize);
-                btn_usages.setVisible(!modifiers.contains(Modifier.STATIC));
-                btn_overriders.setVisible(!(modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE) || element.getKind() == ElementKind.CONSTRUCTOR));
-                btn_usages_overriders.setVisible(btn_usages.isVisible() && btn_overriders.isVisible());
+                initUI(element);
+                initClassTypeComboBox((MethodRefactoringElement) element);
+            }
+        });
+    }
 
-                jComboBox1.setModel(new DefaultComboBoxModel(new GroovyRefactoringElement[] {element}));
+    private void initUI(final RefactoringElement element) {
+        final Set<Modifier> modifiers = element.getModifiers();
+        final Icon labelIcon = UiUtils.getElementIcon(element.getKind(), element.getModifiers());
+        final String labelText = element.getShowcase();
+
+        Dimension preferredSize = label.getPreferredSize();
+        label.setText(labelText);
+        label.setIcon(labelIcon);
+        label.setPreferredSize(preferredSize);
+        label.setMinimumSize(preferredSize);
+        btn_usages.setVisible(!modifiers.contains(Modifier.STATIC));
+        btn_overriders.setVisible(!(modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE) || element.getKind() == ElementKind.CONSTRUCTOR));
+        btn_usages_overriders.setVisible(btn_usages.isVisible() && btn_overriders.isVisible());
+    }
+
+    private void initClassTypeComboBox(final MethodRefactoringElement element) {
+        ClassNode methodType = element.getMethodType();
+        if (methodType != null) {
+            // This happens in normal situation if we are able to interfere method type
+            jComboBox1.setModel(new DefaultComboBoxModel(new ClassNode[] {methodType}));
+            jComboBox1.setEnabled(false);
+        } else {
+            final FileObject fo = element.getFileObject();
+            final String fqn = element.getNode().getText();
+            final String methodName = element.getName();
+
+            final Set<MethodNode> possibleMethods = FindPossibleMethods.findPossibleMethods(fo, fqn, methodName);
+            final Set<ClassNode> possibleClasses = new HashSet<ClassNode>();
+            for (MethodNode method : possibleMethods) {
+                possibleClasses.add(method.getDeclaringClass());
+            }
+            jComboBox1.setModel(new DefaultComboBoxModel(possibleClasses.toArray()));
+            jComboBox1.setEnabled(true);
+            element.setMethodType(possibleClasses.iterator().next());
+        }
+        
+        jComboBox1.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                element.setMethodType((ClassNode) jComboBox1.getSelectedItem());
             }
         });
     }
@@ -125,16 +169,18 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
                 boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
 
-            if (value != null) {
-                if (value instanceof GroovyRefactoringElement) {
-                    GroovyRefactoringElement element = ((GroovyRefactoringElement) value);
+            if (value != null && value instanceof ClassNode) {
+                ClassNode classNode = ((ClassNode) value);
+                setText(ElementUtils.getNameWithoutPackage(classNode));
 
-                    setText(element.getDeclaringClassNameWithoutPackage());
-                    if (element.getDeclaringClass().isInterface()) {
-                        setIcon(UiUtils.getElementIcon(ElementKind.INTERFACE, element.getModifiers()));
+                if (classNode != null) {
+                    if (classNode.isInterface()) {
+                        setIcon(UiUtils.getElementIcon(ElementKind.INTERFACE, null));
                     } else {
-                        setIcon(UiUtils.getElementIcon(ElementKind.CLASS, element.getModifiers()));
+                        setIcon(UiUtils.getElementIcon(ElementKind.CLASS, null));
                     }
+                } else {
+                    setIcon(getEmptyIcon());
                 }
             }
             if (isSelected) {
