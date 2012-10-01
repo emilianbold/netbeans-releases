@@ -337,6 +337,25 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private boolean _extern = false;
         private boolean _const = false;
 
+        private boolean constructor = false;
+        private boolean destructor = false;
+
+        public void setConstructor() {
+            this.constructor = true;
+        }
+
+        public void setDestructor() {
+            this.destructor = true;
+        }
+
+        public boolean isConstructor() {
+            return constructor;
+        }
+
+        public boolean isDestructor() {
+            return destructor;
+        }
+        
         public void setStatic() {
             this._static = true;
         }

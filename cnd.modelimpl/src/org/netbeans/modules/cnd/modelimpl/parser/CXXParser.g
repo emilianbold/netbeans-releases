@@ -612,7 +612,11 @@ scope Declaration;
                 constructor_declarator
                 (
                     // this is a continuation of init_declarator_list after constructor_declarator
-                    ( COMMA init_declarator )* SEMICOLON
+                    ( 
+                        COMMA                                                   {action.simple_declaration(action.SIMPLE_DECLARATION__COMMA2, input.LT(0));}
+                        init_declarator 
+                    )* 
+                    SEMICOLON                                                   {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
                 |
                     function_definition_after_declarator
                 )
@@ -1601,7 +1605,11 @@ member_declaration [decl_kind kind]
                 constructor_declarator
                 (
                     // this was member_declarator_list
-                    ( COMMA member_declarator )* SEMICOLON
+                    ( 
+                        COMMA                                                   {action.member_declaration(action.MEMBER_DECLARATION__COMMA2, input.LT(0));}
+                        member_declarator 
+                    )* 
+                    SEMICOLON                                                   {action.member_declaration(action.MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
                 |
                     function_definition_after_declarator
                 )

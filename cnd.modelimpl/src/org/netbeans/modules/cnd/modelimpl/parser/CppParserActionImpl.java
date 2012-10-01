@@ -61,6 +61,12 @@ import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberTypedef.MemberTypedefBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.ConstructorImpl.ConstructorBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.DestructorImpl.DestructorBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDDImpl.ConstructorDDBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.DestructorDDImpl.DestructorDDBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.DestructorDefinitionImpl.DestructorDefinitionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDefinitionImpl.ConstructorDefinitionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
@@ -1434,12 +1440,17 @@ public class CppParserActionImpl implements CppParserActionEx {
         end_declarator(token);
     }
     @Override public void constructor_declarator(Token token) {
-        declarator(token);
-//        DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
-//        SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top(1);
-//        declaratorBuilder.setName(declBuilder.getTypeBuilder().getName());
-//        declBuilder.setTypeBuilder(null);
-                
+        declarator(token);        
+        DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
+        SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top(1);
+        CharSequence name = declBuilder.getTypeBuilder().getName();
+        declaratorBuilder.setName(name);
+        declBuilder.setTypeBuilder(null);
+        if(name != null && name.toString().contains("~")) { // NOI18N
+            declBuilder.setDestructor();
+        } else {
+            declBuilder.setConstructor();
+        }
     }
     @Override public void end_constructor_declarator(Token token) {
         end_declarator(token);
@@ -1558,7 +1569,14 @@ public class CppParserActionImpl implements CppParserActionEx {
 
         CsmObjectBuilder parent = builderContext.top(1);
         if(parent instanceof ClassBuilder) {
-            MethodDDBuilder builder = new MethodDDBuilder();
+            MethodDDBuilder builder;
+            if(declBuilder.isConstructor()) {
+                builder = new ConstructorDDBuilder();
+            } else if(declBuilder.isDestructor()) {
+                builder = new DestructorDDBuilder();
+            } else {
+                builder = new MethodDDBuilder();
+            }
                 
             builder.setParent(parent);
             builder.setFile(currentContext.file);
@@ -1575,7 +1593,13 @@ public class CppParserActionImpl implements CppParserActionEx {
             if(name != null && !name.toString().contains("::")) { //NOI18N
                 builder = new FunctionDDBuilder();
             } else {
-                builder = new FunctionDefinitionBuilder();
+                if(declBuilder.isConstructor()) {
+                    builder = new ConstructorDefinitionBuilder();
+                } else if(declBuilder.isDestructor()) {
+                    builder = new DestructorDefinitionBuilder();
+                } else {
+                    builder = new FunctionDefinitionBuilder();
+                }
             }
                 
             builder.setParent(parent);
@@ -1664,8 +1688,16 @@ public class CppParserActionImpl implements CppParserActionEx {
 
                 ((ClassBuilder)parent).addChild(builder);
             } else if(declBuilder.isFunction()) {
-                MethodBuilder builder = new MethodBuilder();
+                MethodBuilder builder;
 
+                if(declBuilder.isConstructor()) {
+                    builder = new ConstructorBuilder();
+                } else if(declBuilder.isDestructor()) {
+                    builder = new DestructorBuilder();
+                } else {
+                    builder = new MethodBuilder();
+                }
+                
                 CsmObjectBuilder parent = builderContext.top(1);
                 
                 builder.setParent(parent);
