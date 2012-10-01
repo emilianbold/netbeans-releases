@@ -147,7 +147,8 @@ import org.openide.util.actions.Presenter;
     "titleLabel.text.no.selected.rule=No Rule Selected",
     "titleLabel.tooltip.no.selected.rule=Select a css rule in editor or CSS Styles Window to activate the Rule Editor",
     "titleLabel.no.selected.rule=No Rule Selected",
-    "label.rule.error.tooltip=The selected rule contains error(s), the listed properties are read only"
+    "label.rule.error.tooltip=The selected rule contains error(s), the listed properties are read only",
+    "addPropertyCB.initial.text=Add Property ..."
 })
 public class RuleEditorPanel extends JPanel {
 
@@ -830,7 +831,7 @@ public class RuleEditorPanel extends JPanel {
     private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables
     private static Object INITIAL_TEXT_OBJECT = new Object();
-    private static String ADD_PROPERTY_CB_TEXT = "Add Property ...";
+    private static String ADD_PROPERTY_CB_TEXT = Bundle.addPropertyCB_initial_text();
 
     private static class AddPropertyComboBoxModel extends DefaultComboBoxModel {
 
