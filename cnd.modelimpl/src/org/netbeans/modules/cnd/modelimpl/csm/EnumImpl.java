@@ -329,8 +329,13 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         
         public EnumImpl create(boolean register) {
             EnumImpl impl = getEnumDefinitionInstance();
-            if(impl == null && name != null) {
+            if(impl == null) {
                 NameHolder nameHolder = NameHolder.createName(name);
+                
+                if(name == null) {
+                    name = nameHolder.getName();
+                    qName = name.toString();
+                }
                 impl = new EnumImpl(name, qName, stronglyTyped, file, startOffset, endOffset);
                 impl.initScope(getScope());
                 impl.register(getScope(), true);

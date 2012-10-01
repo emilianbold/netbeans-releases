@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl.ClassForwardDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberTypedef.MemberTypedefBuilder;
@@ -65,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl.FunctionDDBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl.FunctionDefinitionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl.FunctionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl.MethodDDBuilder;
@@ -356,11 +358,13 @@ public class CppParserActionImpl implements CppParserActionEx {
                 if(e != null) {
                     currentContext.objects.put(e.getStartOffset(), e);
                     SymTabEntry enumEntry = globalSymTab.lookupLocal(e.getName());
-                    enumEntry.setAttribute(CppAttributes.DEFINITION, e);
-                    for (CsmEnumerator csmEnumerator : e.getEnumerators()) {
-                        SymTabEntry enumeratorEntry = globalSymTab.lookupLocal(csmEnumerator.getName());
-                        assert enumeratorEntry != null;
-                        enumeratorEntry.setAttribute(CppAttributes.DEFINITION, csmEnumerator);
+                    if(enumEntry != null) {
+                        enumEntry.setAttribute(CppAttributes.DEFINITION, e);
+                        for (CsmEnumerator csmEnumerator : e.getEnumerators()) {
+                            SymTabEntry enumeratorEntry = globalSymTab.lookupLocal(csmEnumerator.getName());
+                            assert enumeratorEntry != null;
+                            enumeratorEntry.setAttribute(CppAttributes.DEFINITION, csmEnumerator);
+                        }
                     }
                 }
             }
@@ -573,6 +577,7 @@ public class CppParserActionImpl implements CppParserActionEx {
 
                 builder.setName(declBuilder.getDeclaratorBuilder().getName());
                 builder.setTypeBuilder(declBuilder.getTypeBuilder());
+                builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());
 
                 builder.create();                
             } else if(declBuilder.isFunction()) {
@@ -587,6 +592,7 @@ public class CppParserActionImpl implements CppParserActionEx {
 
                 builder.setName(declBuilder.getDeclaratorBuilder().getName());
                 builder.setTypeBuilder(declBuilder.getTypeBuilder());
+                builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());
                 builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
 
                 builder.create();                
@@ -602,6 +608,7 @@ public class CppParserActionImpl implements CppParserActionEx {
 
                 builder.setName(declBuilder.getDeclaratorBuilder().getName());
                 builder.setTypeBuilder(declBuilder.getTypeBuilder());
+                builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());
 
                 if(parent instanceof DeclarationStatementBuilder) {
                     ((DeclarationStatementBuilder)parent).addDeclarationBuilder(builder);
@@ -806,27 +813,17 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     @Override
     public void template_declaration(int kind, Token token) {
-        if(kind == TEMPLATE_DECLARATION__TEMPLATE_ARGUMENT_LIST) {
-            templateLevel++;
+        if(kind == TEMPLATE_DECLARATION__TEMPLATE) {
             TemplateDescriptorBuilder builder = new TemplateDescriptorBuilder();
             builder.setStartOffset(((APTToken)token).getOffset());
             builderContext.push(builder);
+        }
+        if(kind == TEMPLATE_DECLARATION__TEMPLATE_ARGUMENT_LIST) {
+            templateLevel++;
         }        
         if(kind == TEMPLATE_DECLARATION__END_TEMPLATE_ARGUMENT_LIST) {
             templateLevel--;
         }        
-    }
-    
-    
-    @Override
-    public void elaborated_type_specifier(Token token) {
-        APTToken aToken = (APTToken) token;
-        final CharSequence name = aToken.getTextID();
-        SymTabEntry classEntry = globalSymTab.lookup(name);
-        if (classEntry == null) {
-            classEntry = globalSymTab.enterLocal(name);
-            classEntry.setAttribute(CppAttributes.TYPE, true);
-        }
     }
     
 //    @Override
@@ -1351,7 +1348,43 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void decltype_specifier(Token token) {}
     @Override public void decltype_specifier(int kind, Token token) {}
     @Override public void end_decltype_specifier(Token token) {}
-    @Override public void end_elaborated_type_specifier(Token token) {}
+    @Override
+    public void elaborated_type_specifier(Token token) {
+        ClassForwardDeclarationBuilder builder = new ClassForwardDeclarationBuilder();
+        builder.setFile(currentContext.file);
+        builder.setStartOffset(((APTToken)token).getOffset());
+        CsmObjectBuilder parent = builderContext.top(2);
+        if(parent instanceof ClassBuilder) {
+            ((ClassBuilder)parent).addChild(builder);
+        }
+        builder.setParent(parent);        
+        SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder)builderContext.top(1);
+        if(declBuilder.getTemplateDescriptorBuilder() != null) {
+            builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
+            builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
+        }        
+        builderContext.push(builder);
+        builderContext.push(new NameBuilder());
+    }
+    @Override public void end_elaborated_type_specifier(Token token) {
+        NameBuilder nameBuilder = (NameBuilder) builderContext.top();
+        builderContext.pop();
+        ClassForwardDeclarationBuilder builder = (ClassForwardDeclarationBuilder) builderContext.top();
+        builderContext.pop();
+        builder.setEndOffset(((APTToken)token).getEndOffset());
+        builder.setName(nameBuilder.getName());
+        CsmObjectBuilder parent = builderContext.top(3);
+        if(parent == null || parent instanceof NamespaceBuilder) {
+            builder.create();
+        }
+        
+        CharSequence name = builder.getName();
+        SymTabEntry classEntry = globalSymTab.lookup(name);
+        if (classEntry == null) {
+            classEntry = globalSymTab.enterLocal(name);
+            classEntry.setAttribute(CppAttributes.TYPE, true);
+        }    
+    }
     @Override public void asm_definition(Token asmToken, Token lparenToken, Token stringToken, Token rparenToken, Token semicolonToken) {}
     @Override public void linkage_specification(Token externToken, Token stringToken) {}
     @Override public void linkage_specification(int kind, Token token) {}
@@ -1533,17 +1566,25 @@ public class CppParserActionImpl implements CppParserActionEx {
 
             builder.setName(declBuilder.getDeclaratorBuilder().getName());
             builder.setTypeBuilder(declBuilder.getTypeBuilder());
+            builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());
             builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
             builderContext.push(builder);            
         } else {
-            FunctionDDBuilder builder = new FunctionDDBuilder();
+            CharSequence name = declBuilder.getDeclaratorBuilder().getName();
+            FunctionBuilder builder;
+            if(name != null && !name.toString().contains("::")) { //NOI18N
+                builder = new FunctionDDBuilder();
+            } else {
+                builder = new FunctionDefinitionBuilder();
+            }
                 
             builder.setParent(parent);
             builder.setFile(currentContext.file);
             builder.setStartOffset(declBuilder.getStartOffset());
-
-            builder.setName(declBuilder.getDeclaratorBuilder().getName());
+            
+            builder.setName(name);
             builder.setTypeBuilder(declBuilder.getTypeBuilder());
+            builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());
             builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
             builderContext.push(builder);
         }
@@ -1553,6 +1594,11 @@ public class CppParserActionImpl implements CppParserActionEx {
         CsmObjectBuilder top = builderContext.top();
         if(top instanceof FunctionDDBuilder) {
             FunctionDDBuilder builder = (FunctionDDBuilder)top;
+            builder.setEndOffset(((APTToken)token).getEndOffset());
+            builderContext.pop();
+            builder.create();                
+        } else if(top instanceof FunctionDefinitionBuilder) {
+            FunctionDefinitionBuilder builder = (FunctionDefinitionBuilder)top;
             builder.setEndOffset(((APTToken)token).getEndOffset());
             builderContext.pop();
             builder.create();                
