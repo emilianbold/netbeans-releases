@@ -149,7 +149,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
         if (od instanceof DataObject) {
             FileObject file = ((DataObject)od).getPrimaryFile();
 
-            currentFolds = new ArrayList<FoldInfo>();
+            currentFolds = new ArrayList<Fold>();
             task = JavaElementFoldTask.getTask(file);
             task.setJavaElementFoldManager(JavaElementFoldManager.this, file);
         }
@@ -340,6 +340,16 @@ public class JavaElementFoldManager extends JavaFoldManager {
             return fi.collapseByDefault;
         }
         
+        private int flip(int order) {
+            if (order > 0) {
+                return -1;
+            } else if (order < 0) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+        
         public void run() {
             if (!insideRender) {
                 startTime = System.currentTimeMillis();
@@ -358,39 +368,37 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     if (currentFolds == null)
                         return ;
 
-                    List<FoldInfo> updatedFolds = new ArrayList<FoldInfo>(infos.size());
-                    Iterator<FoldInfo> itExisting = currentFolds.iterator();
+                    List<Fold> updatedFolds = new ArrayList<Fold>(infos.size());
+                    Iterator<Fold> itExisting = currentFolds.iterator();
                     Iterator<FoldInfo> itNew = infos.iterator();
-                    FoldInfo currentExisting = itExisting.hasNext() ? itExisting.next() : null;
+                    Fold currentExisting = itExisting.hasNext() ? itExisting.next() : null;
                     FoldInfo currentNew = itNew.hasNext() ? itNew.next() : null;
 
                     while (currentExisting != null || currentNew != null) {
-                        int order = currentExisting != null && currentNew != null ? currentExisting.compareTo(currentNew) : currentExisting != null ? -1 : 1;
+                        int order = currentExisting != null && currentNew != null ? currentNew.compareTo(currentExisting) : currentExisting != null ? 1 : -1;
 
-                        if (order < 0) {
+                        if (order > 0) {
                             //fold removed:
-                            operation.removeFromHierarchy(currentExisting.fold, tr);
+                            operation.removeFromHierarchy(currentExisting, tr);
 
-                            if (importsFold == currentExisting.fold) {
+                            if (importsFold == currentExisting) {
                                 importsFold = null;
                             }
 
-                            if (initialCommentFold == currentExisting.fold) {
+                            if (initialCommentFold == currentExisting) {
                                 initialCommentFold = null;
                             }
                             
                             currentExisting = itExisting.hasNext() ? itExisting.next() : null;
                         } else {
                             //added or remains:
-                            if (order > 0) {
+                            if (order < 0) {
                                 //added:
                                 int start = currentNew.start.getOffset();
                                 int end   = currentNew.end.getOffset();
 
                                 if (end > start &&
                                         (end - start) > (currentNew.template.getStartGuardedLength() + currentNew.template.getEndGuardedLength())) {
-                                    // copy for this FoldManager
-                                    currentNew = currentNew.copy();
                                     Fold f = operation.addToHierarchy(currentNew.template.getType(),
                                             currentNew.template.getDescription(),
                                             mergeSpecialFoldState(currentNew),
@@ -401,8 +409,6 @@ public class JavaElementFoldManager extends JavaFoldManager {
                                             currentNew,
                                             tr);
                                     
-                                    currentNew.fold = f;
-
                                     if (currentNew.template == IMPORTS_FOLD_TEMPLATE) {
                                         importsFold = f;
                                     }
@@ -411,7 +417,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                                         initialCommentFold = f;
                                     }
 
-                                    updatedFolds.add(currentNew);
+                                    updatedFolds.add(f);
                                 }
                             } else {
                                 updatedFolds.add(currentExisting);
@@ -452,7 +458,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
     }
 
     //@GuardedBy(FoldOperation.openTransaction())
-    private List<FoldInfo> currentFolds; //in natural order
+    private List<Fold> currentFolds; //in natural order
     private Fold initialCommentFold;
     private Fold importsFold;
     
@@ -664,7 +670,6 @@ public class JavaElementFoldManager extends JavaFoldManager {
         private final FoldTemplate template;
         private final boolean collapseByDefault;
         //@GUardedBy(FoldOperation.openTransaction())
-        private Fold fold;
         
         public FoldInfo(Document doc, int start, int end, FoldTemplate template, boolean collapseByDefault) throws BadLocationException {
             this.start = doc.createPosition(start);
@@ -673,18 +678,31 @@ public class JavaElementFoldManager extends JavaFoldManager {
             this.collapseByDefault = collapseByDefault;
         }
         
-        private FoldInfo(Position start, Position end, FoldTemplate template, boolean collapseByDefault) {
-            this.start = start;
-            this.end = end;
-            this.template = template;
-            this.collapseByDefault = collapseByDefault;
-        }
-        
-        FoldInfo copy() throws BadLocationException {
-            return new FoldInfo(start, end, template, collapseByDefault);
+        public int compareTo(Fold remote) {
+            if (start.getOffset() < remote.getStartOffset()) {
+                return -1;
+            }
+            
+            if (start.getOffset() > remote.getStartOffset()) {
+                return 1;
+            }
+            
+            if (end.getOffset() < remote.getEndOffset()) {
+                return -1;
+            }
+            
+            if (end.getOffset() > remote.getEndOffset()) {
+                return 1;
+            }
+            
+            //XXX: abusing the length of the fold description to implement ordering (the exact order does not matter in this case):
+            return template.getDescription().length() - remote.getDescription().length();
         }
         
         public int compareTo(Object o) {
+            if (o instanceof Fold) {
+                return compareTo((Fold)o);
+            }
             FoldInfo remote = (FoldInfo) o;
             
             if (start.getOffset() < remote.start.getOffset()) {
@@ -702,7 +720,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
             if (end.getOffset() > remote.end.getOffset()) {
                 return 1;
             }
-
+            
             //XXX: abusing the length of the fold description to implement ordering (the exact order does not matter in this case):
             return template.getDescription().length() - remote.template.getDescription().length();
         }
