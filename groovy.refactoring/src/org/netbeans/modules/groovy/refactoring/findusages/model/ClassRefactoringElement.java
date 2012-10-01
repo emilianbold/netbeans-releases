@@ -39,30 +39,30 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
-import java.util.List;
-import org.codehaus.groovy.ast.ModuleNode;
+package org.netbeans.modules.groovy.refactoring.findusages.model;
+
+import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Martin Janicek
  */
-public class FindMethodUsages extends AbstractFindUsages {
+public class ClassRefactoringElement extends RefactoringElement {
 
-    public FindMethodUsages(RefactoringElement element) {
-        super(element);
+    public ClassRefactoringElement(FileObject fileObject, ASTNode node) {
+        super(fileObject, node);
     }
 
     @Override
-    protected List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass) {
-        return singleVisitor(new FindMethodUsagesVisitor(moduleNode, element));
+    public ElementKind getKind() {
+        return ElementKind.CLASS;
     }
 
     @Override
-    protected ElementKind getElementKind() {
-        return ElementKind.METHOD;
+    public String getShowcase() {
+        return getName();
     }
 }

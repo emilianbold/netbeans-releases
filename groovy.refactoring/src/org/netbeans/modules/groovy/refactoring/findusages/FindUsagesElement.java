@@ -46,7 +46,7 @@ import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
@@ -62,13 +62,13 @@ import org.openide.util.Lookup;
  */
 public class FindUsagesElement extends SimpleRefactoringElementImplementation implements Comparable<FindUsagesElement> {
 
-    private final GroovyRefactoringElement element;
+    private final RefactoringElement element;
     private final BaseDocument doc;
     private final Line line;
     private final int lineNumber;
 
 
-    public FindUsagesElement(GroovyRefactoringElement element, BaseDocument doc) {
+    public FindUsagesElement(RefactoringElement element, BaseDocument doc) {
         this.element = element;
         this.doc = doc;
         this.line = GroovyProjectUtil.getLine(element.getFileObject(), element.getNode().getLineNumber() - 1);

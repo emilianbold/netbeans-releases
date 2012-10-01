@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,91 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.refactoring;
 
-import org.codehaus.groovy.ast.*;
+package org.netbeans.modules.groovy.refactoring.findusages.model;
+
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.Expression;
-import org.netbeans.modules.csl.api.ElementKind;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.netbeans.modules.groovy.editor.api.ElementUtils;
-import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Martin Janicek <mjanicek@netbeans.org>
+ * @author Martin Janicek
  */
-public class GroovyRefactoringElement extends ASTElement {
+public class MethodSignatureBuilder {
 
-    private final FileObject fileObject;
-    private final ElementKind refactoringKind;
+    private StringBuilder builder;
 
-    
-    public GroovyRefactoringElement(GroovyParserResult info, ASTNode node, FileObject fo, ElementKind kind) {
-        super(info, node);
-        this.fileObject = fo;
-        this.refactoringKind = kind;
+    public MethodSignatureBuilder() {
+        builder = new StringBuilder();
     }
 
-    @Override
-    public FileObject getFileObject() {
-        return fileObject;
-    }
 
-    @Override
-    public ElementKind getKind() {
-        return refactoringKind;
-    }
 
-    /**
-     * Returns the name of the refactoring element. (e.g. for field declaration
-     * "private GalacticMaster master" the method return "master")
-     *
-     * @return name of the refactoring element
-     */
-    @Override
-    public String getName() {
-        return ElementUtils.getNameWithoutPackage(node);
-    }
-
-    /**
-     * Returns type of the refactoring element. (e.g. for field declaration 
-     * "private GalacticMaster master" the method return "GalacticMaster")
-     * 
-     * @return type of the refactoring element
-     */
-    public final String getTypeName() {
-        return ElementUtils.getTypeNameWithoutPackage(node);
-    }
-
-    public final ClassNode getDeclaringClass() {
-        return ElementUtils.getDeclaringClass(node);
-    }
-
-    public final String getDeclaringClassName() {
-        return ElementUtils.getDeclaringClass(node).getName();
-    }
-
-    public final String getDeclaringClassNameWithoutPackage() {
-        return ElementUtils.getDeclaringClassNameWithoutPackage(node);
-    }
-
-    @Override
-    public String getSignature() {
-        if (node instanceof MethodNode) {
-            return getMethodSignature(((MethodNode) node));
-        } else if (node instanceof ConstructorCallExpression) {
-            return getConstructorSignature(((ConstructorCallExpression) node));
+    public MethodSignatureBuilder appendMethodName(MethodNode method) {
+        if (isConstructor(method)) {
+            builder.append(method.getDeclaringClass().getNameWithoutPackage());
+        } else {
+            builder.append(method.getName());
         }
-        return super.getSignature();
+        return this;
     }
 
-    private String getMethodSignature(MethodNode method) {
-        StringBuilder builder = new StringBuilder(super.getSignature());
+    private boolean isConstructor(MethodNode method) {
+        if ("<init>".equals(method.getName())) { // NOI18N
+            return true;
+        }
+        return false;
+    }
+
+    public MethodSignatureBuilder appendMethodName(MethodCallExpression methodCall) {
+        builder.append(methodCall.getMethodAsString());
+        return this;
+    }
+
+    public MethodSignatureBuilder appendMethodName(ConstructorCallExpression constructorCall) {
+        builder.append(constructorCall.getType().getNameWithoutPackage());
+        return this;
+    }
+
+    public MethodSignatureBuilder appendMethodParams(MethodNode method) {
         Parameter[] params = method.getParameters();
 
         builder.append("("); // NOI18N
@@ -135,23 +104,10 @@ public class GroovyRefactoringElement extends ASTElement {
             builder.setLength(builder.length() - 1);
         }
         builder.append(")"); // NOI18N
-
-        // No return type for constructors
-        if (!"<init>".equals(method.getName())) { // NOI18N
-            String returnType = method.getReturnType().getNameWithoutPackage();
-            builder.append(" : "); // NOI18N
-            builder.append(returnType);
-        }
-
-        return builder.toString();
+        return this;
     }
 
-    private String getConstructorSignature(ConstructorCallExpression constructorCall) {
-        StringBuilder builder = new StringBuilder();
-        ClassNode type = constructorCall.getType();
-        Expression arguments = constructorCall.getArguments();
-
-        builder.append(type.getNameWithoutPackage());
+    public MethodSignatureBuilder appendMethodParams(Expression arguments) {
         builder.append("("); // NOI18N
 
         if (arguments instanceof ArgumentListExpression) {
@@ -167,7 +123,30 @@ public class GroovyRefactoringElement extends ASTElement {
             }
         }
         builder.append(")"); // NOI18N
+        return this;
+    }
 
+    public MethodSignatureBuilder appendReturnType(MethodNode method) {
+        builder.append(" : "); // NOI18N
+        builder.append(method.getReturnType().getNameWithoutPackage());
+        return this;
+    }
+
+    public MethodSignatureBuilder appendReturnType(MethodCallExpression methodCall) {
+        builder.append(" : "); // NOI18N
+
+        final MethodNode methodTarget = methodCall.getMethodTarget();
+        if (methodTarget != null && methodTarget.getReturnType() != null) {
+            builder.append(methodTarget.getReturnType().getNameWithoutPackage());
+        } else {
+            // We don't know exact return type - just show an Object for now
+            builder.append("Object"); // NOI18N
+        }
+        return this;
+    }
+
+    @Override
+    public String toString() {
         return builder.toString();
     }
 }

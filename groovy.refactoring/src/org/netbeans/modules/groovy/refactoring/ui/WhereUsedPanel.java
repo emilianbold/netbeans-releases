@@ -64,7 +64,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.*;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder;
@@ -93,14 +93,14 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     private static final String PREF_SCOPE = "FindUsages-Scope";
     private static final String PACKAGE = "org/netbeans/spi/java/project/support/ui/package.gif"; // NOI18N
     private static final int SCOPE_COMBOBOX_COLUMNS = 14;
-    private final GroovyRefactoringElement element;
+    private final RefactoringElement element;
     private boolean enableScope;
     private Scope customScope;
 
     private final WhereUsedInnerPanel panel;
 
 
-    private WhereUsedPanel(GroovyRefactoringElement element, WhereUsedInnerPanel panel) {
+    private WhereUsedPanel(RefactoringElement element, WhereUsedInnerPanel panel) {
         setName(NbBundle.getMessage(WhereUsedPanel.class,"LBL_WhereUsed")); // NOI18N
         this.element = element;
         this.enableScope = true;
@@ -109,7 +109,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         btnCustomScope.setAction(new ScopeAction(scope));
     }
     
-    public static WhereUsedPanel create(GroovyRefactoringElement element, ChangeListener parent) {
+    public static WhereUsedPanel create(RefactoringElement element, ChangeListener parent) {
         final WhereUsedInnerPanel panel;
         switch (element.getKind()) {
             case CONSTRUCTOR:
@@ -306,7 +306,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
     static abstract class WhereUsedInnerPanel extends JPanel {
         abstract boolean isSearchInComments();
-        abstract void initialize(GroovyRefactoringElement element);
+        abstract void initialize(RefactoringElement element);
     }
 
     private class ScopeAction extends AbstractAction {

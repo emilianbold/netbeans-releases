@@ -39,30 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
-import java.util.List;
-import org.codehaus.groovy.ast.ModuleNode;
+package org.netbeans.modules.groovy.refactoring.findusages.model;
+
+import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
+import org.netbeans.modules.groovy.editor.api.ElementUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Martin Janicek
  */
-public class FindMethodUsages extends AbstractFindUsages {
+public class VariableRefactoringElement extends RefactoringElement {
 
-    public FindMethodUsages(RefactoringElement element) {
-        super(element);
+    public VariableRefactoringElement(FileObject fileObject, ASTNode node) {
+        super(fileObject, node);
+    }
+
+    
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.VARIABLE;
     }
 
     @Override
-    protected List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass) {
-        return singleVisitor(new FindMethodUsagesVisitor(moduleNode, element));
+    public String getShowcase() {
+        return getName() + " : " + getTypeName(); // NOI18N
     }
 
-    @Override
-    protected ElementKind getElementKind() {
-        return ElementKind.METHOD;
+    /**
+     * Returns type of the refactoring element. (e.g. for field declaration
+     * "private GalacticMaster master" the method return "GalacticMaster")
+     *
+     * @return type of the refactoring element
+     */
+    private String getTypeName() {
+        return ElementUtils.getTypeNameWithoutPackage(node);
     }
 }

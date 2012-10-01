@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.groovy.refactoring.move;
 
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringPlugin;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -55,7 +55,7 @@ import org.openide.filesystems.FileObject;
  */
 public class MoveRefactoringPlugin extends GroovyRefactoringPlugin {
 
-    public MoveRefactoringPlugin(FileObject fileObject, GroovyRefactoringElement element, AbstractRefactoring refactoring) {
+    public MoveRefactoringPlugin(FileObject fileObject, RefactoringElement element, AbstractRefactoring refactoring) {
         super(element, fileObject, refactoring);
     }
 

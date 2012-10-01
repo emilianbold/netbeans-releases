@@ -80,6 +80,7 @@ public final class ElementUtils {
         if ((node instanceof ClassNode) ||
             (node instanceof ClassExpression) ||
             (node instanceof CatchStatement) ||
+            (node instanceof ConstructorCallExpression) ||
             FindTypeUtils.isCaretOnClassNode(path, doc, caret)) {
             return ElementKind.CLASS;
         } else if ((node instanceof MethodNode)) {
@@ -89,8 +90,6 @@ public final class ElementUtils {
             return ElementKind.METHOD;
         } else if ((node instanceof ConstantExpression) && (leafParent instanceof MethodCallExpression)) {
             return ElementKind.METHOD;
-        } else if (node instanceof ConstructorCallExpression) {
-            return ElementKind.CONSTRUCTOR;
         } else if (node instanceof FieldNode) {
             return ElementKind.FIELD;
         } else if (node instanceof PropertyNode) {
@@ -215,6 +214,8 @@ public final class ElementUtils {
             }
         } else if (node instanceof ConstantExpression) {
             name = ((ConstantExpression) node).getText();
+        } else if (node instanceof MethodCallExpression) {
+            name = ((MethodCallExpression) node).getMethodAsString();
         } else if (node instanceof ConstructorCallExpression) {
             name = ((ConstructorCallExpression) node).getType().getNameWithoutPackage();
         } else if (node instanceof ArrayExpression) {
@@ -258,6 +259,8 @@ public final class ElementUtils {
             }
         } else if (node instanceof ConstantExpression) {
             return ((ConstantExpression) node).getDeclaringClass();
+        } else if (node instanceof MethodCallExpression) {
+            return ((MethodCallExpression) node).getType();
         } else if (node instanceof ConstructorCallExpression) {
             return ((ConstructorCallExpression) node).getType();
         } else if (node instanceof ArrayExpression) {
@@ -272,7 +275,7 @@ public final class ElementUtils {
         if (declaringClass != null) {
             return declaringClass.getName();
         }
-        return "Dynamic type!"; // NOI18N
+        return null;
     }
 
     public static String getDeclaringClassNameWithoutPackage(ASTNode node) {
@@ -280,7 +283,7 @@ public final class ElementUtils {
         if (declaringClass != null) {
             return declaringClass.getNameWithoutPackage();
         }
-        return "Dynamic type!"; // NOI18N
+        return null;
     }
 
     public static String normalizeTypeName(String typeName, ClassNode type) {
