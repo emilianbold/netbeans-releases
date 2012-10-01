@@ -3629,12 +3629,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         dumpProjectDeclarationContainer(project, printStream);
         if (dumpFiles) {
             ProjectBase.dumpFileContainer(project, new PrintWriter(printStream));
-            ProjectBase.dumpProjectGrapthContainer(project, printStream);
+            ProjectBase.dumpProjectGrapthContainer(project, new PrintWriter(printStream));
         }
     }
 
-    /*package*/static void dumpProjectGrapthContainer(ProjectBase project, PrintStream printStream) {
+    public static void dumpProjectGrapthContainer(ProjectBase project, PrintWriter printStream) {
         GraphContainer container = project.getGraphStorage();
+        printStream.println("\n++++++++++ Dumping Graph container " + project.getDisplayName()); // NOI18N
         Map<CharSequence, CsmFile> map = new TreeMap<CharSequence, CsmFile>();
         for (CsmFile f : project.getAllFiles()) {
             map.put(f.getAbsolutePath(), f);
@@ -3745,7 +3746,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public static void dumpFileContainer(CsmProject project, PrintWriter printStream) {
         FileContainer fileContainer = ((ProjectBase) project).getFileContainer();
-        printStream.println("\n========== Dumping File container"); // NOI18N
+        printStream.println("\n++++++++++ Dumping File container " + project.getDisplayName()); // NOI18N
         Map<CharSequence, Object/*CharSequence or CharSequence[]*/> names = fileContainer.getCanonicalNames();
         //for unit test only
         Map<CharSequence, FileEntry> files = fileContainer.getFileStorage();
