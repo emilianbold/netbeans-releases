@@ -185,6 +185,7 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
         @Override
         @Messages({"TIP_Resource1=<html>Resource directory defined in POM.<br><i>Directory: </i><b>{0}</b><br>", 
             "TIP_Resource2=<i>Target Path: </i><b>{0}</b><br>", 
+            "TIP_Resource6=<b><i>Filtering: </i>{0}. Please note that some IDE features rely on non-filtered content only.</b><br>", 
             "TIP_Resource3=<i>Includes: </i><b>{0}</b><br>", 
             "TIP_Resource4=<i>Excludes: </i><b>{0}</b><br>", 
             "TIP_Resource5=<html>Configuration Directory<br><i>Directory: </i><b>{0}</b><br>"})
@@ -194,6 +195,9 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
                 String str = TIP_Resource1(rs.getDirectory());
                 if (rs.getTargetPath() != null) {
                     str = str + TIP_Resource2(rs.getTargetPath());
+                }
+                if (rs.isFiltering()) {
+                    str = str + TIP_Resource6(rs.isFiltering());
                 }
                 if (rs.getIncludes() != null && rs.getIncludes().size() > 0) {
                     str = str + TIP_Resource3(Arrays.toString(rs.getIncludes().toArray()));
@@ -226,7 +230,12 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
         private Image computeIcon( boolean opened, int type ) {
             if (group.getResource() != null) {
                 Icon icon = group.getIcon( opened );
-                return ImageUtilities.icon2Image(icon);
+                Image img = ImageUtilities.icon2Image(icon);
+                if (group.getResource().isFiltering()) {
+                    Image warn = ImageUtilities.loadImage("org/netbeans/modules/maven/nodes/filteredResourceWarningBadge.png");
+                    img = ImageUtilities.mergeImages(img, warn , 0, 8);
+                }
+                return img;
             } else {
                 return super.getIcon(type);
             }
