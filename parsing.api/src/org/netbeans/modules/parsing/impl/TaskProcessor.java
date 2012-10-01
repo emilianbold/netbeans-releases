@@ -79,6 +79,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.*;
@@ -223,9 +224,11 @@ public class TaskProcessor {
      * @task The task to run.
      * @source The source on which the task operates
      */ 
-    public static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache,
-            boolean bridge, Class<? extends Scheduler> schedulerType) {
-        final Collection<? extends Request> rqs = toRequests(tasks, cache, bridge, schedulerType);
+    public static void addPhaseCompletionTasks(
+            @NonNull final Collection<Pair<SchedulerTask,Class<? extends Scheduler>>> tasks,
+            @NonNull final SourceCache cache,
+            final boolean bridge) {
+        final Collection<? extends Request> rqs = toRequests(tasks, cache, bridge);
         if (handleAddRequests(cache.getSource(), rqs)) {
             cancelLowPriorityTask(rqs);
         }
@@ -351,11 +354,10 @@ public class TaskProcessor {
     }
 
     public static void updatePhaseCompletionTask (
-            final @NonNull Collection<SchedulerTask>add,
-            final @NonNull Collection<SchedulerTask>remove,
+            final @NonNull Collection<Pair<SchedulerTask,Class<? extends Scheduler>>> add,
+            final @NonNull Collection<SchedulerTask> remove,
             final @NonNull Source source,
-            final @NonNull SourceCache cache,
-            final @NullAllowed Class<? extends Scheduler> schedulerType) {
+            final @NonNull SourceCache cache) {
         Parameters.notNull("add", add);
         Parameters.notNull("remove", remove);
         Parameters.notNull("source", source);
@@ -363,7 +365,7 @@ public class TaskProcessor {
         if (add.isEmpty() && remove.isEmpty()) {
             return;
         }
-        final Collection<? extends Request> rqs = toRequests(add, cache, false, schedulerType);
+        final Collection<? extends Request> rqs = toRequests(add, cache, false);
         synchronized (INTERNAL_LOCK) {
             removePhaseCompletionTasks(remove, source);
             handleAddRequests (source, rqs);
@@ -467,20 +469,19 @@ public class TaskProcessor {
     
     //Private methods
     private static @NonNull Collection<? extends Request> toRequests (
-            final @NonNull Collection<? extends SchedulerTask> tasks,
+            final @NonNull Collection<Pair<SchedulerTask,Class<? extends Scheduler>>> tasks,
             final @NonNull SourceCache cache,
-            final boolean bridge,
-            final @NullAllowed Class<? extends Scheduler> schedulerType) {
+            final boolean bridge) {
         Parameters.notNull("task", tasks);   //NOI18N
         Parameters.notNull("cache", cache);   //NOI18N
         List<Request> _requests = new ArrayList<Request> ();
-        for (SchedulerTask task : tasks) {
-            final String taskClassName = task.getClass().getName();
+        for (Pair<SchedulerTask,Class<? extends Scheduler>> task : tasks) {
+            final String taskClassName = task.first.getClass().getName();
             if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
                 if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
                     continue;
             }
-            _requests.add (new Request (task, cache, bridge ? ReschedulePolicy.ON_CHANGE : ReschedulePolicy.CANCELED, schedulerType));
+            _requests.add (new Request (task.first, cache, bridge ? ReschedulePolicy.ON_CHANGE : ReschedulePolicy.CANCELED, task.second));
         }
         return _requests;
     }
