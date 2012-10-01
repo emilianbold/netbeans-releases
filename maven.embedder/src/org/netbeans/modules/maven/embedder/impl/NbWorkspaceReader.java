@@ -71,7 +71,9 @@ public class NbWorkspaceReader implements WorkspaceReader {
 
     @Override
     public File findArtifact(org.sonatype.aether.artifact.Artifact artifact) {
-        if (silence) return null;
+        if (silence) {
+            return null;
+        }
         
         for (ArtifactFixer fixer : fixers) {
             File f = fixer.resolve(artifact);
@@ -84,7 +86,9 @@ public class NbWorkspaceReader implements WorkspaceReader {
 
     @Override
     public List<String> findVersions(org.sonatype.aether.artifact.Artifact artifact) {
-        if (silence) return Collections.emptyList();
+        if (silence) {
+            return Collections.emptyList();
+        }
         //this is important for snapshots, without it the SNAPSHOT will be attempted to be resolved to time-based snapshot version
         for (ArtifactFixer fixer : fixers) {
             File f = fixer.resolve(artifact);

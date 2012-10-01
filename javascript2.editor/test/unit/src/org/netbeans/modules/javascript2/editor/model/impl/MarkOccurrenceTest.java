@@ -280,6 +280,16 @@ public class MarkOccurrenceTest extends JsTestBase {
         // should return name occurences only from associated method and its comment
         checkOccurrences(getTestPath(), " * @param {String} co^untry my country", true);
     }
+    
+    public void testDocumentation_9() throws Exception {
+        // return types
+        checkOccurrences(getTestPath(), " * @return {Add^ress} address", true);
+    }
+    
+    public void testDocumentation_10() throws Exception {
+        // return types
+        checkOccurrences(getTestPath(), "function Add^ress (street, town, country) {", true);
+    }
 
     public void testCorrectPrototype_1() throws Exception {
         checkOccurrences(getTestPath(), "Car.pr^ototype.a = 5;", true);
@@ -301,8 +311,80 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences(getTestPath(), "Pislik.prototype.hum^an = false;", true);
     }
 
+    public void testIssue217770_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue217770.js", "t.r^un();", true);
+    }
+    
+    public void testIssue176581_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue176581.js", "    someElement.onfocus = fo^o;", true);
+    }
+    
+    public void testIssue218070_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218070_01.js", "Martin^Fousek.E;", true);
+    }
+    
+    public void testIssue218070_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218070_01.js", "MartinFousek.E^;", true);
+    }
+    
+    public void testIssue218090_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218090.js", "        text : pro^m,", true);
+    }
+    
+    public void testIssue218261() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218261.js", "var a = new Num^ber();", true);
+    }
+
+    public void testIssue218090_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218090.js", "    var ag^e = 10;", true);
+    }
+    
     private String getTestFolderPath() {
         return "testfiles/markoccurences/" + getTestName();//NOI18N
+    }
+
+    public void testIssue218231_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218231.js", "    return displa^yname;", true);
+    }
+
+    public void testIssue218231_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218231.js", "var stylizeDisplayName = function(display^name, column, record) {", true);
+    }
+
+    public void testIssue137317_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue137317.js", "        u^rl: url", true);
+    }
+
+    public void testIssue137317_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue137317.js", "        url: u^rl", true);
+    }
+
+    public void testIssue156832() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue156832.js", "CSSClass.remove = function(p^aram, c)", true);
+    }
+
+    public void testIssue198431() throws Exception {
+        checkOccurrences("testfiles/coloring/issue198431.js", "    this.doitPublic = do^it;", true);
+    }
+
+    public void testIssue218652_01() throws Exception {
+        checkOccurrences("testfiles/model/getterSettterInObjectLiteral.js", "    set years(count){this.old = coun^t + 1;},", true);
+    }
+
+    public void testIssue218652_02() throws Exception {
+        checkOccurrences("testfiles/model/getterSettterInObjectLiteral.js", "    set c(x^) {this.a = x / 2;}", true);
+    }
+
+    public void testIssue218561_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218561.js", "        test: function(pa^r1) {", true);
+    }
+
+    public void testIssue218561_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218561.js", "                par1: pa^r1 // par1 after : is marked green as member variable", true);
+    }
+
+    public void testIssue219067() throws Exception {
+        checkOccurrences("testfiles/coloring/issue219027.html", "                        product = generate^Product(element);", true);
     }
 
     private String getTestPath() {

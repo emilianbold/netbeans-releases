@@ -469,6 +469,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("UG_SYNC_SET_UNSYNC_GET")
     @Override
     public int getPermissions(String path) throws RemoteException {
         try {

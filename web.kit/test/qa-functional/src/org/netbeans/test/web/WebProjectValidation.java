@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -82,13 +81,11 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbModuleSuite;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -127,10 +124,7 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation.class);
-        conf = addServerTests(Server.GLASSFISH, conf, TESTS);
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.GLASSFISH, WebProjectValidation.class, TESTS);
     }
 
     @Override
@@ -493,52 +487,37 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     public void testCreateTLD() {
-        Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
-        rootNode.select();
-        new ActionNoBlock("File|New File", null).perform();
-        // WORKAROUND
+        NewFileWizardOperator newFileWizard = NewFileWizardOperator.invoke();
+        // prevent NPE when initializing tooltip (path selection)
         new EventTool().waitNoEvent(1000);
-        WizardOperator newFileWizard = new WizardOperator("New File");
-        new JComboBoxOperator(newFileWizard).selectItem(PROJECT_NAME);
-        new Node(new JTreeOperator(newFileWizard), "Web").select();
-        new JListOperator(newFileWizard, 1).selectItem("Tag Library Descriptor");
+        newFileWizard.selectProject(PROJECT_NAME);
+        newFileWizard.selectCategory("Web");
+        newFileWizard.selectFileType("Tag Library Descriptor");
         newFileWizard.next();
-        JTextFieldOperator txtName = new JTextFieldOperator(newFileWizard);
-        // clear text field
-        txtName.setText("");
-        txtName.typeText("MyTags");
-
-        JLabelOperator jlex = new JLabelOperator(newFileWizard, "Location:");
-        JComboBoxOperator location = new JComboBoxOperator((JComboBox) jlex.getLabelFor());
-        location.selectItem("Web Pages");
-
-        JLabelOperator jle = new JLabelOperator(newFileWizard, "Folder");
+        NewJavaFileNameLocationStepOperator nameAndLocationOper = new NewJavaFileNameLocationStepOperator();
+        nameAndLocationOper.setObjectName("MyTags");
+        nameAndLocationOper.cboLocation().selectItem("Web Pages");
+        JLabelOperator jle = new JLabelOperator(nameAndLocationOper, "Folder");
         JTextFieldOperator folder = new JTextFieldOperator((JTextField) jle.getLabelFor());
-        folder.setText("");
-        folder.typeText("WEB-INF/tlds");
-
-        newFileWizard.finish();
+        folder.setText("WEB-INF/tlds");
+        nameAndLocationOper.finish();
         Node node = new Node(new WebPagesNode(PROJECT_NAME), "WEB-INF|tlds|MyTags.tld");
         // check class is opened in Editor and then close it
         new EditorOperator("MyTags.tld").close();
     }
 
     public void testCreateTagHandler() throws InterruptedException {
-        new ActionNoBlock("File|New File", null).perform();
-        WizardOperator newFileWizard = new WizardOperator("New File");
-        new JComboBoxOperator(newFileWizard).selectItem(PROJECT_NAME);
-        new Node(new JTreeOperator(newFileWizard), "Web").select();
-        new JListOperator(newFileWizard, 1).selectItem("Tag Handler");
+        NewFileWizardOperator newFileWizard = NewFileWizardOperator.invoke();
+        // prevent NPE when initializing tooltip (path selection)
+        new EventTool().waitNoEvent(1000);
+        newFileWizard.selectProject(PROJECT_NAME);
+        newFileWizard.selectCategory("Web");
+        newFileWizard.selectFileType("Tag Handler");
         newFileWizard.next();
-        JTextFieldOperator txtName = new JTextFieldOperator(newFileWizard);
-        // clear text field
-        txtName.setText("");
-        txtName.typeText("MyTag");
-        JComboBoxOperator pkg = new JComboBoxOperator(newFileWizard, 1);
-        pkg.clearText();
-        pkg.typeText("tags");
-        newFileWizard.btNext().waitComponentEnabled();
-        newFileWizard.next();
+        NewJavaFileNameLocationStepOperator nameAndLocationOper = new NewJavaFileNameLocationStepOperator();
+        nameAndLocationOper.setObjectName("MyTag");
+        nameAndLocationOper.setPackage("tags");
+        nameAndLocationOper.next();
         new JButtonOperator(newFileWizard, "Browse").push();
         NbDialogOperator dialog = new NbDialogOperator("Browse Files");
         new Node(new JTreeOperator(dialog), "Web Pages|WEB-INF|tlds|MyTags.tld").select();

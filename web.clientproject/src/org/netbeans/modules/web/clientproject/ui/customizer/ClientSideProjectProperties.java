@@ -41,30 +41,43 @@
  */
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
+import java.awt.EventQueue;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection.SelectedLibrary;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Becicka
  */
-final class ClientSideProjectProperties {
+public final class ClientSideProjectProperties {
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectProperties.class.getName());
 
-    private final ClientSideProject project;
+    final ClientSideProject project;
     private final List<JavaScriptLibrarySelection.SelectedLibrary> newJsLibraries = new CopyOnWriteArrayList<JavaScriptLibrarySelection.SelectedLibrary>();
 
     private volatile String jsLibFolder = null;
@@ -74,7 +87,48 @@ final class ClientSideProjectProperties {
         this.project = project;
     }
 
+    /**
+     * Add or replace project and/or private properties.
+     * <p>
+     * This method cannot be called in the UI thread.
+     * @param projectProperties project properties to be added to (replaced in) the current project properties
+     * @param privateProperties private properties to be added to (replaced in) the current private properties
+     */
+    public void save(final Map<String, String> projectProperties, final Map<String, String> privateProperties) {
+        assert !EventQueue.isDispatchThread();
+        assert !projectProperties.isEmpty() || !privateProperties.isEmpty() : "Neither project nor private properties to be saved";
+        try {
+            // store properties
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws IOException {
+                    AntProjectHelper helper = project.getProjectHelper();
+
+                    mergeProperties(helper, AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                    mergeProperties(helper, AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+
+                    ProjectManager.getDefault().saveProject(project);
+                    return null;
+                }
+
+                private void mergeProperties(AntProjectHelper helper, String path, Map<String, String> properties) {
+                    if (properties.isEmpty()) {
+                        return;
+                    }
+                    EditableProperties currentProperties = helper.getProperties(path);
+                    for (Map.Entry<String, String> entry : properties.entrySet()) {
+                        currentProperties.put(entry.getKey(), entry.getValue());
+                    }
+                    helper.putProperties(path, currentProperties);
+                }
+            });
+        } catch (MutexException e) {
+            LOGGER.log(Level.WARNING, null, e.getException());
+        }
+    }
+
     public void save() {
+        assert !EventQueue.isDispatchThread();
         try {
             // store properties
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -92,15 +146,31 @@ final class ClientSideProjectProperties {
     }
 
     void saveConfig() {
-        assert ProjectManager.mutex().isWriteAccess() : "Write mutex required";
+        assert ProjectManager.mutex().isWriteAccess() : "Write mutex required"; //NOI18N
         for (ClientProjectConfigurationImplementation config : project.getLookup().lookup(ClientSideConfigurationProvider.class).getConfigurations()) {
             config.save();
         }
     }
 
+    @NbBundle.Messages({
+        "ClientSideProjectProperties.jsLibs.downloading=Downloading selected JavaScript libraries...",
+        "# {0} - names of JS libraries",
+        "ClientSideProjectProperties.error.jsLibs=<html><b>These JavaScript libraries failed to download:</b><br><br>{0}<br><br>"
+            + "<i>More information can be found in IDE log.</i>"
+    })
     void addNewJsLibraries() throws IOException {
         if (jsLibFolder != null && !newJsLibraries.isEmpty()) {
-            ClientSideProjectUtilities.applyJsLibraries(newJsLibraries, jsLibFolder, project.getSiteRootFolder(), null);
+            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.ClientSideProjectProperties_jsLibs_downloading());
+            progressHandle.start();
+            try {
+                List<SelectedLibrary> failedLibs = ClientSideProjectUtilities.applyJsLibraries(newJsLibraries, jsLibFolder, project.getSiteRootFolder(), progressHandle);
+                LOGGER.log(Level.INFO, "Failed download of JS libraries: {0}", failedLibs);
+                if (!failedLibs.isEmpty()) {
+                    errorOccured(Bundle.ClientSideProjectProperties_error_jsLibs(joinStrings(getLibraryNames(failedLibs), "<br>"))); // NOI18N
+                }
+            } finally {
+                progressHandle.finish();
+            }
         }
     }
 
@@ -118,6 +188,32 @@ final class ClientSideProjectProperties {
     public void setJsLibFolder(String jsLibFolder) {
         assert jsLibFolder != null;
         this.jsLibFolder = jsLibFolder;
+    }
+
+    private static void errorOccured(String message) {
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+    }
+
+    private List<String> getLibraryNames(List<SelectedLibrary> libraries) {
+        List<String> names = new ArrayList<String>(libraries.size());
+        for (JavaScriptLibrarySelection.SelectedLibrary selectedLibrary : libraries) {
+            JavaScriptLibrarySelection.LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
+            Library library = libraryVersion.getLibrary();
+            String name = library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME);
+            names.add(name);
+        }
+        return names;
+    }
+
+    private static String joinStrings(Collection<String> strings, String glue) {
+        StringBuilder sb = new StringBuilder(200);
+        for (String string : strings) {
+            if (sb.length() > 0) {
+                sb.append(glue);
+            }
+            sb.append(string);
+        }
+        return sb.toString();
     }
 
 }

@@ -295,10 +295,12 @@ public class MakeArtifact implements Cloneable {
                     Project findProject = ProjectManager.getDefault().findProject(toFileObject);
                     if (findProject != null) {
                         ProjectConfigurationProvider<Configuration> lookup = findProject.getLookup().lookup(ProjectConfigurationProvider.class);
-                        for(Configuration c : lookup.getConfigurations()) {
-                            if (configurationName.equals(c.getName())) {
-                                makeConfiguration = (MakeConfiguration) c;
-                                break;
+                        if (lookup != null) {
+                            for(Configuration c : lookup.getConfigurations()) {
+                                if (configurationName.equals(c.getName())) {
+                                    makeConfiguration = (MakeConfiguration) c;
+                                    break;
+                                }
                             }
                         }
                     }

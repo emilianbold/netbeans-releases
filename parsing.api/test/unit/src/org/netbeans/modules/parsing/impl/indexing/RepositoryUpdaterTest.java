@@ -297,11 +297,19 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     @Override
     protected void tearDown() throws Exception {
-        for(String id : registeredClasspaths.keySet()) {
-            final Map<ClassPath,Void> classpaths = registeredClasspaths.get(id);
-            GlobalPathRegistry.getDefault().unregister(id, classpaths.keySet().toArray(new ClassPath[classpaths.size()]));
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        try {
+            logger.setLevel (Level.FINEST);
+            logger.addHandler(handler);
+            for(String id : registeredClasspaths.keySet()) {
+                final Map<ClassPath,Void> classpaths = registeredClasspaths.get(id);
+                GlobalPathRegistry.getDefault().unregister(id, classpaths.keySet().toArray(new ClassPath[classpaths.size()]));
+            }
+            handler.await();
+        } finally {
+            logger.removeHandler(handler);
         }
-
         super.tearDown();
     }
 

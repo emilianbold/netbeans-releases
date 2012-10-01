@@ -314,8 +314,12 @@ public class ProjectUtils {
                 return;
             }
             Image _icon = ImageUtilities.icon2Image(original);
-            for (ProjectIconAnnotator pa : annotatorResult.allInstances()) {
-                _icon = pa.annotateIcon(getProject(), _icon, false);
+            final Project prj = getProject();
+            assert prj != null : "ProjectIformation.getProject() == null for " + pinfo;    //NOI18N
+            if (prj != null) {
+                for (ProjectIconAnnotator pa : annotatorResult.allInstances()) {
+                    _icon = pa.annotateIcon(prj, _icon, false);
+                }
             }
             Icon old = icon;
             icon = ImageUtilities.image2Icon(_icon);

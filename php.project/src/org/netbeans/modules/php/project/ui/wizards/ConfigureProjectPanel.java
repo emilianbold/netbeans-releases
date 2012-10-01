@@ -96,7 +96,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private volatile boolean canceled;
 
     public ConfigureProjectPanel(String[] steps, NewPhpProjectWizardIterator.WizardType wizardType) {
-        this.steps = steps;
+        this.steps = steps.clone();
         this.wizardType = wizardType;
     }
 
@@ -486,6 +486,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return prj != null || foundButBroken;
     }
 
+    @NbBundle.Messages("ConfigureProjectPanel.error.sources.homeDir=Sources cannot be your home directory.")
     private String validateSources(boolean children) {
         String err = null;
         LocalServer localServer = configureProjectPanelVisual.getSourcesLocation();
@@ -495,6 +496,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (sourcesLocation.trim().length() == 0
                 || !Utils.isValidFileName(sources)) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
+        }
+
+        if (isHomeDir(sources)) {
+            return Bundle.ConfigureProjectPanel_error_sources_homeDir();
         }
 
         err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true, true); // NOI18N
@@ -535,6 +540,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         }
 
         return null;
+    }
+
+    private boolean isHomeDir(File folder) {
+        return folder.equals(new File(System.getProperty("user.home"))); // NOI18N
     }
 
     // #131023

@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -62,6 +63,8 @@ import org.openide.windows.WindowManager;
  * @author S. Aubrecht
  */
 final class PaletteVisibility {
+
+    private static final RequestProcessor RP = new RequestProcessor( "PaletteVisibility", 1 ); //NOI18N
     
     public static boolean isVisible( PaletteController pc ) {
         if( null == pc ) {
@@ -90,13 +93,24 @@ final class PaletteVisibility {
     public static void setVisible( PaletteController pc, boolean isVisible ) {
         String paletteId = getPaletteId( pc );
 
-        FileObject fo = findPaletteTopComponentSettings();
-        try {
-            if( null != fo )
-                fo.setAttribute("_palette_visible_" + paletteId, new Boolean(isVisible));
-        } catch (IOException ex) {
-            Logger.getLogger(PaletteVisibility.class.getName()).log( Level.INFO, null, ex );
-        }
+        //don't block AWT
+        _setVisible( paletteId, isVisible );
+    }
+
+    private static void _setVisible( final String paletteId, final boolean isVisible ) {
+        RP.post( new Runnable() {
+
+            @Override
+            public void run() {
+                FileObject fo = findPaletteTopComponentSettings();
+                try {
+                    if( null != fo )
+                        fo.setAttribute("_palette_visible_" + paletteId, new Boolean(isVisible));
+                } catch (IOException ex) {
+                    Logger.getLogger(PaletteVisibility.class.getName()).log( Level.INFO, null, ex );
+                }
+            }
+        });
     }
 
     private static FileObject findPaletteTopComponentSettings() {

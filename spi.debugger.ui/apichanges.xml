@@ -172,6 +172,25 @@ made subject to such option by the copyright holder.
         <class package="org.netbeans.spi.debugger.ui" name="ViewLifecycle"/>
         <issue number="198385"/>
     </change>
+    
+    <change id="EngineComponentsProvider">
+        <api name="DebuggerCoreSPI"/>
+        <summary><code>EngineComponentsProvider</code> interface added.</summary>
+        <version major="2" minor="35"/>
+        <date day="19" month="9" year="2012"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes" semantic="compatible"/>
+        <description>
+            <p>
+                <code>EngineComponentsProvider</code> interface introduced
+                to provide GUI components that are associated with a debugger
+                engine. <code>EngineComponentsProvider.ComponentInfo</code>
+                provides information about the associated component.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.debugger.ui" name="EngineComponentsProvider"/>
+        <issue number="217953"/>
+    </change>
 
 </changes>
 

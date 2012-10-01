@@ -58,16 +58,17 @@ import com.oracle.nashorn.ir.IdentNode;
 import com.oracle.nashorn.ir.IfNode;
 import com.oracle.nashorn.ir.IndexNode;
 import com.oracle.nashorn.ir.LabelNode;
+import com.oracle.nashorn.ir.LabeledNode;
 import com.oracle.nashorn.ir.LineNumberNode;
 import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
-import com.oracle.nashorn.ir.NodeVisitor;
 import com.oracle.nashorn.ir.ObjectNode;
 import com.oracle.nashorn.ir.PhiNode;
 import com.oracle.nashorn.ir.PropertyNode;
 import com.oracle.nashorn.ir.ReferenceNode;
 import com.oracle.nashorn.ir.ReturnNode;
 import com.oracle.nashorn.ir.RuntimeNode;
+import com.oracle.nashorn.ir.SplitNode;
 import com.oracle.nashorn.ir.SwitchNode;
 import com.oracle.nashorn.ir.TernaryNode;
 import com.oracle.nashorn.ir.ThrowNode;
@@ -76,6 +77,7 @@ import com.oracle.nashorn.ir.UnaryNode;
 import com.oracle.nashorn.ir.VarNode;
 import com.oracle.nashorn.ir.WhileNode;
 import com.oracle.nashorn.ir.WithNode;
+import com.oracle.nashorn.ir.visitor.NodeVisitor;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
@@ -102,7 +104,7 @@ public abstract class JsDocumentationTestBase extends JsTestBase {
      * @param parserResult parser result of the JS file
      * @return appropriate {@code JsDocumentationHolder} to given source
      */
-    public static JsDocumentationHolder getDocumentationHolder(JsParserResult parserResult) {
+    public JsDocumentationHolder getDocumentationHolder(JsParserResult parserResult) {
         return JsDocumentationSupport.getDocumentationHolder(parserResult);
     }
 
@@ -113,7 +115,7 @@ public abstract class JsDocumentationTestBase extends JsTestBase {
      * @param provider which provider should be used to create the {@code JsDocumentationHolder}
      * @return requested type of {@code JsDocumentationHolder}
      */
-    public static JsDocumentationHolder getDocumentationHolder(JsParserResult parserResult, JsDocumentationProvider provider) {
+    public JsDocumentationHolder getDocumentationHolder(JsParserResult parserResult, JsDocumentationProvider provider) {
         return provider.createDocumentationHolder(parserResult.getSnapshot());
     }
 
@@ -160,11 +162,9 @@ public abstract class JsDocumentationTestBase extends JsTestBase {
             this.offset = offset;
         }
 
-        private void processNode(Node node, boolean onset) {
-            if (onset) {
-                if (offset >= node.getStart() && offset <= node.getFinish()) {
-                    nodes.add(node);
-                }
+        private void processNode(Node node) {
+            if (offset >= node.getStart() && offset <= node.getFinish()) {
+                nodes.add(node);
             }
         }
 
@@ -173,201 +173,213 @@ public abstract class JsDocumentationTestBase extends JsTestBase {
         }
 
         @Override
-        public Node visit(AccessNode accessNode, boolean onset) {
-            processNode(accessNode, onset);
-            return super.visit(accessNode, onset);
+        public Node enter(AccessNode accessNode) {
+            processNode(accessNode);
+            return super.enter(accessNode);
         }
 
         @Override
-        public Node visit(Block block, boolean onset) {
-            processNode(block, onset);
-            return super.visit(block, onset);
+        public Node enter(Block block) {
+            processNode(block);
+            return super.enter(block);
         }
 
         @Override
-        public Node visit(BinaryNode binaryNode, boolean onset) {
-            processNode(binaryNode, onset);
-            return super.visit(binaryNode, onset);
+        public Node enter(BinaryNode binaryNode) {
+            processNode(binaryNode);
+            return super.enter(binaryNode);
         }
 
         @Override
-        public Node visit(BreakNode breakNode, boolean onset) {
-            processNode(breakNode, onset);
-            return super.visit(breakNode, onset);
+        public Node enter(BreakNode breakNode) {
+            processNode(breakNode);
+            return super.enter(breakNode);
         }
 
         @Override
-        public Node visit(CallNode callNode, boolean onset) {
-            processNode(callNode, onset);
-            return super.visit(callNode, onset);
+        public Node enter(CallNode callNode) {
+            processNode(callNode);
+            return super.enter(callNode);
         }
 
         @Override
-        public Node visit(CaseNode caseNode, boolean onset) {
-            processNode(caseNode, onset);
-            return super.visit(caseNode, onset);
+        public Node enter(CaseNode caseNode) {
+            processNode(caseNode);
+            return super.enter(caseNode);
         }
 
         @Override
-        public Node visit(CatchNode catchNode, boolean onset) {
-            processNode(catchNode, onset);
-            return super.visit(catchNode, onset);
+        public Node enter(CatchNode catchNode) {
+            processNode(catchNode);
+            return super.enter(catchNode);
         }
 
         @Override
-        public Node visit(ContinueNode continueNode, boolean onset) {
-            processNode(continueNode, onset);
-            return super.visit(continueNode, onset);
+        public Node enter(ContinueNode continueNode) {
+            processNode(continueNode);
+            return super.enter(continueNode);
         }
 
         @Override
-        public Node visit(DoWhileNode doWhileNode, boolean onset) {
-            processNode(doWhileNode, onset);
-            return super.visit(doWhileNode, onset);
+        public Node enter(DoWhileNode doWhileNode) {
+            processNode(doWhileNode);
+            return super.enter(doWhileNode);
         }
 
         @Override
-        public Node visit(EmptyNode emptyNode, boolean onset) {
-            processNode(emptyNode, onset);
-            return super.visit(emptyNode, onset);
+        public Node enter(EmptyNode emptyNode) {
+            processNode(emptyNode);
+            return super.enter(emptyNode);
         }
 
         @Override
-        public Node visit(ExecuteNode executeNode, boolean onset) {
-            processNode(executeNode, onset);
-            return super.visit(executeNode, onset);
+        public Node enter(ExecuteNode executeNode) {
+            processNode(executeNode);
+            return super.enter(executeNode);
         }
 
         @Override
-        public Node visit(ForNode forNode, boolean onset) {
-            processNode(forNode, onset);
-            return super.visit(forNode, onset);
+        public Node enter(ForNode forNode) {
+            processNode(forNode);
+            return super.enter(forNode);
         }
 
         @Override
-        public Node visit(FunctionNode functionNode, boolean onset) {
-            processNode(functionNode, onset);
-            return super.visit(functionNode, onset);
+        public Node enter(FunctionNode functionNode) {
+            processNode(functionNode);
+            return super.enter(functionNode);
         }
 
         @Override
-        public Node visit(IdentNode identNode, boolean onset) {
-            processNode(identNode, onset);
-            return super.visit(identNode, onset);
+        public Node enter(IdentNode identNode) {
+            processNode(identNode);
+            return super.enter(identNode);
         }
 
         @Override
-        public Node visit(IfNode ifNode, boolean onset) {
-            processNode(ifNode, onset);
-            return super.visit(ifNode, onset);
+        public Node enter(IfNode ifNode) {
+            processNode(ifNode);
+            return super.enter(ifNode);
         }
 
         @Override
-        public Node visit(IndexNode indexNode, boolean onset) {
-            processNode(indexNode, onset);
-            return super.visit(indexNode, onset);
+        public Node enter(IndexNode indexNode) {
+            processNode(indexNode);
+            return super.enter(indexNode);
         }
 
         @Override
-        public Node visit(LabelNode labeledNode, boolean onset) {
-            processNode(labeledNode, onset);
-            return super.visit(labeledNode, onset);
+        public Node enter(LabelNode labeledNode) {
+            processNode(labeledNode);
+            return super.enter(labeledNode);
         }
 
         @Override
-        public Node visit(LineNumberNode lineNumberNode, boolean onset) {
-            processNode(lineNumberNode, onset);
-            return super.visit(lineNumberNode, onset);
+        public Node enter(LabeledNode labeledNode) {
+            processNode(labeledNode);
+            return super.enter(labeledNode);
         }
 
         @Override
-        public Node visit(LiteralNode literalNode, boolean onset) {
-            processNode(literalNode, onset);
-            return super.visit(literalNode, onset);
+        public Node enter(LineNumberNode lineNumberNode) {
+            processNode(lineNumberNode);
+            return super.enter(lineNumberNode);
         }
 
         @Override
-        public Node visit(ObjectNode objectNode, boolean onset) {
-            processNode(objectNode, onset);
-            return super.visit(objectNode, onset);
+        public Node enter(LiteralNode literalNode) {
+            processNode(literalNode);
+            return super.enter(literalNode);
         }
 
         @Override
-        public Node visit(PhiNode phiNode, boolean onset) {
-            processNode(phiNode, onset);
-            return super.visit(phiNode, onset);
+        public Node enter(ObjectNode objectNode) {
+            processNode(objectNode);
+            return super.enter(objectNode);
         }
 
         @Override
-        public Node visit(PropertyNode propertyNode, boolean onset) {
-            processNode(propertyNode, onset);
-            return super.visit(propertyNode, onset);
+        public Node enter(PhiNode phiNode) {
+            processNode(phiNode);
+            return super.enter(phiNode);
         }
 
         @Override
-        public Node visit(ReferenceNode referenceNode, boolean onset) {
-            processNode(referenceNode, onset);
-            return super.visit(referenceNode, onset);
+        public Node enter(PropertyNode propertyNode) {
+            processNode(propertyNode);
+            return super.enter(propertyNode);
         }
 
         @Override
-        public Node visit(ReturnNode returnNode, boolean onset) {
-            processNode(returnNode, onset);
-            return super.visit(returnNode, onset);
+        public Node enter(ReferenceNode referenceNode) {
+            processNode(referenceNode);
+            return super.enter(referenceNode);
         }
 
         @Override
-        public Node visit(RuntimeNode runtimeNode, boolean onset) {
-            processNode(runtimeNode, onset);
-            return super.visit(runtimeNode, onset);
+        public Node enter(ReturnNode returnNode) {
+            processNode(returnNode);
+            return super.enter(returnNode);
         }
 
         @Override
-        public Node visit(SwitchNode switchNode, boolean onset) {
-            processNode(switchNode, onset);
-            return super.visit(switchNode, onset);
+        public Node enter(RuntimeNode runtimeNode) {
+            processNode(runtimeNode);
+            return super.enter(runtimeNode);
         }
 
         @Override
-        public Node visit(TernaryNode ternaryNode, boolean onset) {
-            processNode(ternaryNode, onset);
-            return super.visit(ternaryNode, onset);
+        public Node enter(SplitNode splitNode) {
+            processNode(splitNode);
+            return super.enter(splitNode);
         }
 
         @Override
-        public Node visit(ThrowNode throwNode, boolean onset) {
-            processNode(throwNode, onset);
-            return super.visit(throwNode, onset);
+        public Node enter(SwitchNode switchNode) {
+            processNode(switchNode);
+            return super.enter(switchNode);
         }
 
         @Override
-        public Node visit(TryNode tryNode, boolean onset) {
-            processNode(tryNode, onset);
-            return super.visit(tryNode, onset);
+        public Node enter(TernaryNode ternaryNode) {
+            processNode(ternaryNode);
+            return super.enter(ternaryNode);
         }
 
         @Override
-        public Node visit(UnaryNode unaryNode, boolean onset) {
-            processNode(unaryNode, onset);
-            return super.visit(unaryNode, onset);
+        public Node enter(ThrowNode throwNode) {
+            processNode(throwNode);
+            return super.enter(throwNode);
         }
 
         @Override
-        public Node visit(VarNode varNode, boolean onset) {
-            processNode(varNode, onset);
-            return super.visit(varNode, onset);
+        public Node enter(TryNode tryNode) {
+            processNode(tryNode);
+            return super.enter(tryNode);
         }
 
         @Override
-        public Node visit(WhileNode whileNode, boolean onset) {
-            processNode(whileNode, onset);
-            return super.visit(whileNode, onset);
+        public Node enter(UnaryNode unaryNode) {
+            processNode(unaryNode);
+            return super.enter(unaryNode);
         }
 
         @Override
-        public Node visit(WithNode withNode, boolean onset) {
-            processNode(withNode, onset);
-            return super.visit(withNode, onset);
+        public Node enter(VarNode varNode) {
+            processNode(varNode);
+            return super.enter(varNode);
+        }
+
+        @Override
+        public Node enter(WhileNode whileNode) {
+            processNode(whileNode);
+            return super.enter(whileNode);
+        }
+
+        @Override
+        public Node enter(WithNode withNode) {
+            processNode(withNode);
+            return super.enter(withNode);
         }
     }
 }

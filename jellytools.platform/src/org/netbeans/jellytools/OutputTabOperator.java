@@ -47,6 +47,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -370,6 +371,24 @@ public class OutputTabOperator extends JComponentOperator {
         if (outputPaneOperator == null) {
             outputPaneOperator = ComponentOperator.createOperator(outputPaneForTab(getSource()));
             outputPaneOperator.copyEnvironment(this);
+            // #217765 - wait for lazy loaded actions
+            waitState(new ComponentChooser() {
+                @Override
+                public boolean checkComponent(Component comp) {
+                    try {
+                        Field actionsLoadedField = getSource().getClass().getDeclaredField("actionsLoaded");
+                        actionsLoadedField.setAccessible(true);
+                        return actionsLoadedField.getBoolean(getSource());
+                    } catch (Exception ex) {
+                        throw new JemmyException("Reflection failed: " + ex, ex);
+                    }
+                }
+
+                @Override
+                public String getDescription() {
+                    return "Output tab actions loaded";
+                }
+            });
         }
         return outputPaneOperator;
     }

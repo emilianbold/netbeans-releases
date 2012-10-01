@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.hudson.api;
 
+import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonInstanceProperties;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
@@ -67,11 +68,9 @@ public class HudsonManager {
                 return existing;
             }
         }
-        HudsonInstanceImpl nue = HudsonInstanceImpl.createHudsonInstance(new HudsonInstanceProperties(name, url, Integer.toString(sync)) {
-            public @Override boolean isPersisted() {
-                return persistent;
-            }
-        }, true);
+        HudsonInstanceProperties props = new HudsonInstanceProperties(name, url, Integer.toString(sync));
+        props.put(INSTANCE_PERSISTED, persistent ? TRUE : FALSE);
+        HudsonInstanceImpl nue = HudsonInstanceImpl.createHudsonInstance(props, true);
         HudsonManagerImpl.getDefault().addInstance(nue);
         return nue;
     }

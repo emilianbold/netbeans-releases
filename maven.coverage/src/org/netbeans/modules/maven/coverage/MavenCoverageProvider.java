@@ -141,11 +141,11 @@ public final class MavenCoverageProvider implements CoverageProvider {
         if (hasPlugin(GROUP_JOCOCO, ARTIFACT_JOCOCO)) {
             String outputDirectory = PluginPropertyUtils.getReportPluginProperty(p, GROUP_JOCOCO, ARTIFACT_JOCOCO, "outputDirectory", null);
             if (outputDirectory == null) {
-                outputDirectory = PluginPropertyUtils.getPluginProperty(p, GROUP_JOCOCO, ARTIFACT_JOCOCO, "outputDirectory", null);
+                outputDirectory = PluginPropertyUtils.getPluginProperty(p, GROUP_JOCOCO, ARTIFACT_JOCOCO, "outputDirectory", null, null);
             }
             if (outputDirectory == null) {
                 try {
-                    outputDirectory = (String) PluginPropertyUtils.createEvaluator(p.getLookup().lookup(NbMavenProject.class).getMavenProject()).evaluate("${project.reporting.outputDirectory}/jacoco");
+                    outputDirectory = (String) PluginPropertyUtils.createEvaluator(p).evaluate("${project.reporting.outputDirectory}/jacoco");
                 } catch (ExpressionEvaluationException x) {
                     LOG.log(Level.WARNING, null, x);
                     return null;
@@ -155,11 +155,11 @@ public final class MavenCoverageProvider implements CoverageProvider {
         } else {
         String outputDirectory = PluginPropertyUtils.getReportPluginProperty(p, GROUP_COBERTURA, ARTIFACT_COBERTURA, "outputDirectory", null);
         if (outputDirectory == null) {
-            outputDirectory = PluginPropertyUtils.getPluginProperty(p, GROUP_COBERTURA, ARTIFACT_COBERTURA, "outputDirectory", null);
+            outputDirectory = PluginPropertyUtils.getPluginProperty(p, GROUP_COBERTURA, ARTIFACT_COBERTURA, "outputDirectory", null, null);
         }
         if (outputDirectory == null) {
             try {
-                outputDirectory = (String) PluginPropertyUtils.createEvaluator(p.getLookup().lookup(NbMavenProject.class).getMavenProject()).evaluate("${project.reporting.outputDirectory}/cobertura");
+                outputDirectory = (String) PluginPropertyUtils.createEvaluator(p).evaluate("${project.reporting.outputDirectory}/cobertura");
             } catch (ExpressionEvaluationException x) {
                 LOG.log(Level.WARNING, null, x);
                 return null;

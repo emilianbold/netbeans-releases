@@ -44,9 +44,10 @@ package org.netbeans.modules.glassfish.common.ui;
 
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.glassfish.common.EnableComet;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -57,6 +58,59 @@ import org.openide.util.RequestProcessor;
  * @author Peter Williams
  */
 public class InstanceCustomizer extends javax.swing.JPanel {
+
+    // This is copy-paste from Glassfish cloud module. It should be moved
+    // to some common place later.
+    // Spource: org.netbeans.modules.glassfish.cloud.wizards.GlassFishWizardComponent
+    /**
+     * Event listener to validate component field on the fly.
+     */
+    abstract class ComponentFieldListener implements DocumentListener {
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Abstract methods                                                   //
+        ////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Process received notification from all notification types.
+         */
+        abstract void processEvent();
+
+        ////////////////////////////////////////////////////////////////////////
+        // Implemented Interface Methods                                      //
+        ////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Gives notification that there was an insert into component field.
+         * <p/>
+         * @param event Change event object.
+         */
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            processEvent();
+        }
+
+        /**
+         * Gives notification that a portion of component field has been removed.
+         * <p/>
+         * @param event Change event object.
+         */
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            processEvent();
+        }
+
+        /**
+         * Gives notification that an attribute or set of attributes changed.
+         * <p/>
+         * @param event Change event object.
+         */
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            processEvent();
+        }
+
+    }
 
     private GlassfishModule commonSupport;
     private boolean cometEnabledChanged = false;
@@ -71,6 +125,80 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         initComponents();
     }
 
+    /**
+     * Get target.
+     * <p/>
+     * @return User name.
+     */
+    public String getTarget() {
+        String text = targetValueField.getText();
+        return text != null ? text.trim() : null;
+    }
+
+    /**
+     * Get user name.
+     * <p/>
+     * @return User name.
+     */
+    public String getUserName() {
+        String text = userNameField.getText();
+        return text != null ? text.trim() : null;
+    }
+    
+    /**
+     * Get user password.
+     * <p/>
+     * Password processing should not remove leading and trailing spaces.
+     * <p/>
+     * @return User password.
+     */
+    public String getPassword() {
+        return new String(passwordField.getPassword());
+    }
+
+    /**
+     * Create event listener to update target field on the fly.
+     * This change will cause server URI to be updated too.
+     * <p/>
+     * This method is far from being finished because URI change will require
+     * few more things to be done. It's not registered in targetValueField now.
+     */
+    private DocumentListener initTargetUpdateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                commonSupport.setEnvironmentProperty(
+                        GlassfishModule.TARGET_ATTR, getTarget(), true);
+            }
+        };
+    }
+
+    /**
+     * Create event listener to update user name field on the fly.
+     */
+    private DocumentListener initUserNameUpdateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                commonSupport.setEnvironmentProperty(
+                        GlassfishModule.USERNAME_ATTR, getUserName(), true);
+            }
+        };
+    }
+
+    /**
+     * Create event listener to update user password field on the fly.
+     */
+    private DocumentListener initPasswordUpdateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                commonSupport.setEnvironmentProperty(
+                        GlassfishModule.PASSWORD_ATTR, getPassword(), true);
+            }
+        };
+    }
+
     private void initFields() {
         Map<String, String> ip = commonSupport.getInstanceProperties();
         String host = ip.get(GlassfishModule.HTTPHOST_ATTR);
@@ -81,6 +209,13 @@ public class InstanceCustomizer extends javax.swing.JPanel {
                 ip.get(GlassfishModule.HTTPPORT_ATTR));
         textDomainsFolder.setText(ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR)); // NOI18N
         textDomainName.setText(ip.get(GlassfishModule.DOMAIN_NAME_ATTR)); // NOI18N
+        targetValueField.setText(ip.get(GlassfishModule.TARGET_ATTR));
+        userNameField.setText(ip.get(GlassfishModule.USERNAME_ATTR));
+        userNameField.getDocument()
+                .addDocumentListener(initUserNameUpdateListener());
+        passwordField.setText(ip.get(GlassfishModule.PASSWORD_ATTR));
+        passwordField.getDocument()
+                .addDocumentListener(initPasswordUpdateListener());
         
 //        boolean cometEnabled = Boolean.parseBoolean(ip.get(GlassfishModule.COMET_FLAG));
         String cometFlag = ip.get(GlassfishModule.COMET_FLAG);
@@ -172,6 +307,12 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         jdbcDriverDeployCheckBox = new javax.swing.JCheckBox();
         enableSessionsCheckBox = new javax.swing.JCheckBox();
         startDerby = new javax.swing.JCheckBox();
+        targetValueLabel = new javax.swing.JLabel();
+        targetValueField = new javax.swing.JTextField();
+        userNameLabel = new javax.swing.JLabel();
+        userNameField = new javax.swing.JTextField();
+        passwordLabel = new javax.swing.JLabel();
+        passwordField = new javax.swing.JPasswordField();
 
         setName(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_Common")); // NOI18N
 
@@ -225,28 +366,55 @@ public class InstanceCustomizer extends javax.swing.JPanel {
             }
         });
 
+        targetValueLabel.setLabelFor(targetValueField);
+        org.openide.awt.Mnemonics.setLocalizedText(targetValueLabel, "&Target:");
+
+        targetValueField.setEditable(false);
+
+        userNameLabel.setLabelFor(userNameField);
+        org.openide.awt.Mnemonics.setLocalizedText(userNameLabel, "&User Name:");
+
+        passwordLabel.setLabelFor(passwordField);
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, "Pass&word:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(12, 12, 12)
+                .addComponent(cometCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(327, 327, 327))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(startDerby)
-                    .addComponent(jdbcDriverDeployCheckBox)
                     .addComponent(monitorCheckBox)
-                    .addComponent(cometCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(labelDomainName)
+                    .addComponent(jdbcDriverDeployCheckBox))
+                .addGap(361, 361, 361))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(labelLocation)
+                            .addComponent(targetValueLabel)
+                            .addComponent(userNameLabel)
+                            .addComponent(passwordLabel)
                             .addComponent(labelDomainsFolder)
-                            .addComponent(labelDomainName))
+                            .addComponent(labelLocation))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(textLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
-                            .addComponent(textDomainsFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
-                            .addComponent(textDomainName, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)))
-                    .addComponent(enableSessionsCheckBox))
+                            .addComponent(targetValueField, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(textDomainsFolder)
+                            .addComponent(textDomainName)
+                            .addComponent(textLocation)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(enableSessionsCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 313, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(startDerby, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -264,17 +432,29 @@ public class InstanceCustomizer extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(labelDomainName)
                     .addComponent(textDomainName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cometCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(monitorCheckBox)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(targetValueLabel)
+                    .addComponent(targetValueField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(userNameLabel)
+                    .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(passwordLabel)
+                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cometCheckBox)
+                    .addComponent(enableSessionsCheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(monitorCheckBox)
+                    .addComponent(startDerby))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jdbcDriverDeployCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(enableSessionsCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(startDerby)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
 
         textLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "A11Y_DESC_InstanceLocation")); // NOI18N
@@ -337,10 +517,16 @@ private void startDerby(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_start
     private javax.swing.JLabel labelDomainsFolder;
     private javax.swing.JLabel labelLocation;
     private javax.swing.JCheckBox monitorCheckBox;
+    private javax.swing.JPasswordField passwordField;
+    private javax.swing.JLabel passwordLabel;
     private javax.swing.JCheckBox startDerby;
+    private javax.swing.JTextField targetValueField;
+    private javax.swing.JLabel targetValueLabel;
     private javax.swing.JTextField textDomainName;
     private javax.swing.JTextField textDomainsFolder;
     private javax.swing.JTextField textLocation;
+    private javax.swing.JTextField userNameField;
+    private javax.swing.JLabel userNameLabel;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -74,7 +74,7 @@ public final class SftpConfiguration extends RemoteConfiguration {
         super(cfg);
 
         host = cfg.getValue(SftpConnectionProvider.HOST);
-        port = Integer.parseInt(cfg.getValue(SftpConnectionProvider.PORT));
+        port = readNumber(SftpConnectionProvider.PORT, SftpConnectionProvider.DEFAULT_PORT);
         userName = cfg.getValue(SftpConnectionProvider.USER);
         knownHostsFile = cfg.getValue(SftpConnectionProvider.KNOWN_HOSTS_FILE);
         identityFile = cfg.getValue(SftpConnectionProvider.IDENTITY_FILE);
@@ -156,19 +156,21 @@ public final class SftpConfiguration extends RemoteConfiguration {
             return false;
         }
         final SftpConfiguration other = (SftpConfiguration) obj;
-        if (host != other.host && (host == null || !host.equals(other.host))) {
+        if ((this.host == null) ? (other.host != null) : !this.host.equals(other.host)) {
             return false;
         }
-        if (port != other.port) {
+        if (this.port != other.port) {
             return false;
         }
-        if (userName != other.userName && (userName == null || !userName.equals(other.userName))) {
+        if ((this.userName == null) ? (other.userName != null) : !this.userName.equals(other.userName)) {
             return false;
         }
-        if (password != other.password && (password == null || !password.equals(other.password))) {
+        if ((this.identityFile == null) ? (other.identityFile != null) : !this.identityFile.equals(other.identityFile)) {
             return false;
         }
-        if (identityFile != other.identityFile && (identityFile == null || !identityFile.equals(other.identityFile))) {
+        String thisPassword = getPassword();
+        String otherPassword = other.getPassword();
+        if ((thisPassword == null) ? (otherPassword != null) : !thisPassword.equals(otherPassword)) {
             return false;
         }
         return true;

@@ -215,14 +215,10 @@ public class ParameterInfoSupport {
                         }
                         break;
                     case VARBASE:
-                        state = State.INVALID;
                         if (isStaticReference(token)) {
                             state = State.STATIC_REFERENCE;
                             break;
-                        } else {
-                            state = State.VARIABLE;
                         }
-
                     case VARIABLE:
                         metaAll.insert(0, VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VariousUtils.VAR_TYPE_PREFIX);
                     case CLASSNAME:

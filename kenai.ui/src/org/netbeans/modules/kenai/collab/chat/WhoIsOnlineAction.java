@@ -43,9 +43,16 @@ package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 
+@ActionID(id = WhoIsOnlineAction.ID, category = "Team")
+@ActionRegistration(displayName = "#CTL_WhoIsOnlineAction")
 public final class WhoIsOnlineAction implements ActionListener {
 
+    public static final String ID = "org.netbeans.modules.kenai.collab.chat.WhoIsOnlineAction"; //NOI18N
+    
+    @Override
     public void actionPerformed(ActionEvent e) {
         ChatTopComponent chat = ChatTopComponent.findInstance();
         chat.open();

@@ -72,7 +72,9 @@ public class TestCC extends GeneralJavaScript {
                 "testIssue215393",
                 "testAllCompletionSingleFile",
                 "testAllCompletionMultipleFiles",
-                "testCallAndApply").enableModules(".*").clusters(".*"));
+                "testCallAndApply",
+                "testLearning",
+                "testSetterGetter").enableModules(".*").clusters(".*"));
     }
 
     public void createApplication() {
@@ -85,7 +87,7 @@ public class TestCC extends GeneralJavaScript {
     public void testSimplePrototype() {
         startTest();
 
-        this.currentFile = "cc.js";
+        TestCC.currentFile = "cc.js";
         EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + name_iterator, "JavaScript File");
         eo.setCaretPositionToLine(5);
         type(eo, "function Foo(){\n this.x=1; \n var foo = 2;");
@@ -104,7 +106,7 @@ public class TestCC extends GeneralJavaScript {
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
-        
+
         CompletionInfo completion = getCompletion();
         String[] res = {"add", "x"};
         CompletionJListOperator cjo = completion.listItself;
@@ -120,7 +122,7 @@ public class TestCC extends GeneralJavaScript {
     public void testPrototypeInheritance() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(TestCC.currentFile);
         cleanFile(eo);
 
         eo.setCaretPositionToLine(1);
@@ -151,7 +153,7 @@ public class TestCC extends GeneralJavaScript {
     public void testCallAndApply() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(TestCC.currentFile);
         cleanFile(eo);
 
         eo.setCaretPositionToLine(1);
@@ -172,10 +174,59 @@ public class TestCC extends GeneralJavaScript {
         endTest();
     }
 
+    public void testLearning() {
+        startTest();
+
+        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        cleanFile(eo);
+
+        eo.setCaretPositionToLine(1);
+        type(eo, "var person = {};\n person.learn = function(){}; \n");
+        eo.setCaretPositionToEndOfLine(eo.getLineNumber());
+        type(eo, "\n \n");
+        eo.setCaretPositionToLine(eo.getLineNumber() - 1);
+        type(eo, "person.");
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        evt.waitNoEvent(100);
+
+        CompletionInfo completion = getCompletion();
+        String[] res = {"learn"};
+        CompletionJListOperator cjo = completion.listItself;
+        checkCompletionItems(cjo, res);
+        completion.listItself.hideAll();
+
+        endTest();
+    }
+    
+    public void testSetterGetter(){
+        startTest();
+
+        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        cleanFile(eo);
+
+        eo.setCaretPositionToLine(1);
+        type(eo, "var person = {\n \n get name(){return this.myname;");
+        eo.setCaretPositionToEndOfLine(eo.getLineNumber());
+        type(eo, ",\n set name(n){this.myname=n;");
+        eo.setCaretPositionToEndOfLine(eo.getLineNumber()+1);
+        type(eo, ";\n person.");
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        evt.waitNoEvent(100);
+
+        CompletionInfo completion = getCompletion();
+        String[] res = {"name", "myname"};
+        CompletionJListOperator cjo = completion.listItself;
+        checkCompletionItems(cjo, res);
+        completion.listItself.hideAll();
+
+        endTest();
+    }
+   
+
     public void testDOMReferences() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(TestCC.currentFile);
         cleanFile(eo);
 
         eo.setCaretPositionToLine(1);
@@ -198,7 +249,7 @@ public class TestCC extends GeneralJavaScript {
         try {
             startTest();
 
-            EditorOperator eo = new EditorOperator(this.currentFile);
+            EditorOperator eo = new EditorOperator(TestCC.currentFile);
             cleanFile(eo);
 
             eo.setCaretPositionToLine(1);
@@ -220,7 +271,7 @@ public class TestCC extends GeneralJavaScript {
     public void testObjectLiteral() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(TestCC.currentFile);
         cleanFile(eo);
         type(eo, "var foo = {\n value:0,\nincrement: function(inc){\nthis.value += typeof inc === 'number' ? inc : 1;");
         eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 2);
@@ -243,7 +294,7 @@ public class TestCC extends GeneralJavaScript {
     public void testObjectFunction() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(TestCC.currentFile);
         cleanFile(eo);
         type(eo, "function Foo(param1){\n this.name = ");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
@@ -318,7 +369,7 @@ public class TestCC extends GeneralJavaScript {
     public void testIssue215393() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(TestCC.currentFile);
         cleanFile(eo);
 
         eo.setCaretPositionToLine(1);
@@ -340,7 +391,7 @@ public class TestCC extends GeneralJavaScript {
     public void testAllCompletionSingleFile() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(this.currentFile);
+        EditorOperator eo = new EditorOperator(TestCC.currentFile);
         cleanFile(eo);
 
         eo.setCaretPositionToLine(1);
@@ -375,7 +426,7 @@ public class TestCC extends GeneralJavaScript {
 
     public void testAllCompletionMultipleFiles() {
         startTest();
-        this.currentFile = "other.js";
+        TestCC.currentFile = "other.js";
         EditorOperator eo = createWebFile("other", TEST_BASE_NAME + name_iterator, "JavaScript File");
         cleanFile(eo);
         eo.setCaretPositionToLine(1);

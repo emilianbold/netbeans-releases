@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ItemXMLCodec;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
@@ -66,6 +68,9 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 public class ItemConfiguration implements ConfigurationAuxObject {
+    
+    // enabled by default for now, see #217779
+    private static final boolean SHOW_HEADER_EXCLUDE = CndUtils.getBoolean("cnd.makeproject.showHeaderExclude", true); // NOI18N
 
     private boolean needSave = false;
     private Configuration configuration;
@@ -554,11 +559,14 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         set.setName("ItemConfiguration"); // NOI18N
         set.setDisplayName(getString("ItemConfigurationTxt"));
         set.setShortDescription(getString("ItemConfigurationHint"));
-        if ((getConfiguration() instanceof MakeConfiguration) &&
-                ((MakeConfiguration) getConfiguration()).isMakefileConfiguration()) {
-            set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromCodeAssistanceTxt"), getString("ExcludedFromCodeAssistanceHint"))); // NOI18N
-        } else {
-            set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromBuildTxt"), getString("ExcludedFromBuildHint"))); // NOI18N
+        
+        if (SHOW_HEADER_EXCLUDE || !MIMENames.isHeader(item.getMIMEType())) {
+            if ((getConfiguration() instanceof MakeConfiguration) &&
+                    ((MakeConfiguration) getConfiguration()).isMakefileConfiguration()) {
+                set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromCodeAssistanceTxt"), getString("ExcludedFromCodeAssistanceHint"))); // NOI18N
+            } else {
+                set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromBuildTxt"), getString("ExcludedFromBuildHint"))); // NOI18N
+            }
         }
         set.put(new ToolNodeProp());
         sheet.put(set);

@@ -45,9 +45,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
 import javax.swing.Action;
-
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.dbgp.DebugSession;
@@ -268,7 +266,7 @@ public class CallStackModel extends ViewModelSupport
             return null;
         }
         else if (node instanceof Stack) {
-            if (columnID == Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID) {
+            if (Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID.equals(columnID)) {
                 Stack stack = (Stack)node;
 
                 return getFile(stack) ;

@@ -190,14 +190,6 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFilePropertyChanged(NativeFileItem nativeFile) {
-        if (TraceFlags.DEBUG) {
-            Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getName()); //NOI18N
-        }
-        DeepReparsingUtils.reparseOnPropertyChanged(Collections.singletonList(nativeFile), this, false);
-    }
-
-    @Override
     public void onFilePropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {
         if (items.size() > 0) {
             DeepReparsingUtils.reparseOnPropertyChanged(items, this, invalidateLibs);
@@ -457,7 +449,7 @@ public final class ProjectImpl extends ProjectBase {
         // we don't need this since ProjectBase persists fqn
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //aFactory.writeUID(getUID(), aStream);
-        LibraryManager.getInstance().writeProjectLibraries(getUID(), aStream);
+        LibraryManager.getInstance(this).writeProjectLibraries(getUID(), aStream);
     }
 
     public ProjectImpl(RepositoryDataInput input) throws IOException {
@@ -466,7 +458,7 @@ public final class ProjectImpl extends ProjectBase {
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //CsmUID uid = aFactory.readUID(input);
         //LibraryManager.getInsatnce().read(uid, input);
-        LibraryManager.getInstance().readProjectLibraries(getUID(), input);
+        LibraryManager.getInstance(this).readProjectLibraries(getUID(), input);
     //nativeFiles = new NativeFileContainer();
     }
 

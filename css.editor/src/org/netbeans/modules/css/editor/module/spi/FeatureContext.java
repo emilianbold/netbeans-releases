@@ -47,6 +47,7 @@ import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.openide.filesystems.FileObject;
 
 /**
  * An instance of this class or its subclass is typically passed to the
@@ -93,6 +94,13 @@ public class FeatureContext {
         return getSnapshot().getSource();
     }
         
+    /**
+     * @return the associated file object, it there's any
+     */
+    public FileObject getFileObject() {
+        return getSource().getFileObject();
+    }
+    
     /**
      * @return token sequence created from the snapshot.
      */

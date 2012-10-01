@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -59,10 +60,12 @@ public abstract class SanitizingParser extends Parser {
 
     private static final Logger LOGGER = Logger.getLogger(JsParser.class.getName());
 
+    private final Language<JsTokenId> language;
+
     private JsParserResult lastResult = null;
 
-    public SanitizingParser() {
-        super();
+    public SanitizingParser(Language<JsTokenId> language) {
+        this.language = language;
     }
 
     public abstract String getDefaultScriptName();
@@ -150,42 +153,13 @@ public abstract class SanitizingParser extends Parser {
         }
         return new JsParserResult(context.getSnapshot(), node);
     }
-    
+
     private boolean sanitizeSource(Context context, Sanitize sanitizing, JsErrorManager errorManager) {
         if (sanitizing == Sanitize.MISSING_CURLY) {
             org.netbeans.modules.csl.api.Error error = errorManager.getMissingCurlyError();
             if (error != null) {
-                String source = context.getOriginalSource();
-                int balance = 0;
-                for (int i = 0; i < source.length(); i++) {
-                    char current = source.charAt(i);
-                    if (current == '{') { // NOI18N
-                        balance++;
-                    } else if (current == '}') { // NOI18N
-                        balance--;
-                    }
-                }
-                if (balance != 0) {
-                    StringBuilder builder = new StringBuilder(source);
-                    if (balance < 0) {
-                        while (balance < 0) {
-                            int index = builder.lastIndexOf("}"); // NOI18N
-                            if (index < 0) {
-                                break;
-                            }
-                            erase(builder, index, index + 1);
-                            balance++;
-                        }
-                    } else if (balance > 0 && error.getStartPosition() >= source.length()) {
-                        while (balance > 0) {
-                            builder.append('}'); // NOI18N
-                            balance--;
-                        }
-                    }
-                    context.setSanitizedSource(builder.toString());
-                    context.setSanitization(sanitizing);
-                    return true;
-                }
+                int offset = error.getStartPosition();
+                return sanitizeBrackets(sanitizing, context, offset, '{', '}'); // NOI18N
             }
         } else if (sanitizing == Sanitize.MISSING_SEMICOLON) {
             org.netbeans.modules.csl.api.Error error = errorManager.getMissingSemicolonError();
@@ -217,8 +191,8 @@ public abstract class SanitizingParser extends Parser {
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
-                        context.getSnapshot(), 0);
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                        context.getSnapshot(), 0, language);
                 if (ts != null) {
                     ts.move(offset);
                     if (ts.moveNext()) {
@@ -239,42 +213,75 @@ public abstract class SanitizingParser extends Parser {
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
-                        context.getSnapshot(), 0);
-                if (ts != null) {
-                    ts.move(offset);
-                    int start = -1;
-                    while (ts.movePrevious()) {
-                        if (ts.token().id() != JsTokenId.WHITESPACE
-                                && ts.token().id() != JsTokenId.EOL
-                                && ts.token().id() != JsTokenId.DOC_COMMENT
-                                && ts.token().id() != JsTokenId.LINE_COMMENT
-                                && ts.token().id() != JsTokenId.BLOCK_COMMENT) {
+                return sanitizePrevious(sanitizing, context, offset, new TokenCondition() {
 
-                            start = ts.offset();
-                            break;
-                        }
+                    @Override
+                    public boolean found(JsTokenId id) {
+                        return id != JsTokenId.WHITESPACE
+                                && id != JsTokenId.EOL
+                                && id != JsTokenId.DOC_COMMENT
+                                && id != JsTokenId.LINE_COMMENT
+                                && id != JsTokenId.BLOCK_COMMENT;
                     }
-                    if (start >= 0 && ts.moveNext()) {
-                        int end = ts.offset();
-                        StringBuilder builder = new StringBuilder(context.getOriginalSource());
-                        erase(builder, start, end);
-                        context.setSanitizedSource(builder.toString());
-                        context.setSanitization(sanitizing);
-                        return true;
+                });
+            }
+        } else if (sanitizing == Sanitize.MISSING_PAREN) {
+            List<? extends org.netbeans.modules.csl.api.Error> errors = errorManager.getErrors();
+            if (!errors.isEmpty()) {
+                org.netbeans.modules.csl.api.Error error = errors.get(0);
+                int offset = error.getStartPosition();
+                return sanitizeBrackets(sanitizing, context, offset, '(', ')'); // NOI18N
+            }
+        } else if (sanitizing == Sanitize.ERROR_DOT) {
+            List<? extends org.netbeans.modules.csl.api.Error> errors = errorManager.getErrors();
+            if (!errors.isEmpty()) {
+                org.netbeans.modules.csl.api.Error error = errors.get(0);
+                int offset = error.getStartPosition();
+                return sanitizePrevious(sanitizing, context, offset, new TokenCondition() {
+
+                    @Override
+                    public boolean found(JsTokenId id) {
+                        return id == JsTokenId.OPERATOR_DOT;
                     }
-                }
+                });
             }
         } else if (sanitizing == Sanitize.ERROR_LINE) {
             List<? extends org.netbeans.modules.csl.api.Error> errors = errorManager.getErrors();
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
-                sanitizeLine(sanitizing, context, offset);
+                return sanitizeLine(sanitizing, context, offset);
             }
         } else if (sanitizing == Sanitize.EDITED_LINE) {
             int offset = context.getCaretOffset();
-            sanitizeLine(sanitizing, context, offset);
+            return sanitizeLine(sanitizing, context, offset);
+        }
+        return false;
+    }
+
+    private boolean sanitizePrevious(Sanitize sanitizing, Context context, int offset, TokenCondition condition) {
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                context.getSnapshot(), 0, language);
+        if (ts != null) {
+            ts.move(offset);
+            int start = -1;
+            while (ts.movePrevious()) {
+                if (condition.found(ts.token().id())) {
+                    start = ts.offset();
+                    break;
+                }
+            }
+            if (start >= 0) {
+                int end = offset;
+                if (ts.moveNext()) {
+                    end = ts.offset();
+                }
+                StringBuilder builder = new StringBuilder(context.getOriginalSource());
+                erase(builder, start, end);
+                context.setSanitizedSource(builder.toString());
+                context.setSanitization(sanitizing);
+                return true;
+            }
         }
         return false;
     }
@@ -289,20 +296,86 @@ public abstract class SanitizingParser extends Parser {
             char c = source.charAt(start);
             while (start > 0 && c != '\n' && c != '\r' && c != '{' && c != '}') { // NOI18N
                 c = source.charAt(--start);
-                incPosition = true;
+                if (start <= 0) {
+                    incPosition = false;
+                } else {
+                    incPosition = true;
+                }
             }
             if (incPosition) {
                 start++;
             }
+            boolean decPosition = false;
             if (end < source.length()) {
                 c = source.charAt(end);
                 while (end < source.length() && c != '\n' && c != '\r' && c != '{' && c != '}') { // NOI18N
                     c = source.charAt(end++);
+                    if (end >= source.length()) {
+                        decPosition = false;
+                    } else {
+                        decPosition = true;
+                    }
                 }
+            }
+            if (decPosition) {
+                end--;
             }
 
             StringBuilder builder = new StringBuilder(context.getOriginalSource());
-            erase(builder, start, end - 1);
+            erase(builder, start, end);
+            context.setSanitizedSource(builder.toString());
+            context.setSanitization(sanitizing);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean sanitizeBrackets(Sanitize sanitizing, Context context, int offset,
+            char left, char right) {
+        String source = context.getOriginalSource();
+        int balance = 0;
+        for (int i = 0; i < source.length(); i++) {
+            char current = source.charAt(i);
+            if (current == left) {
+                balance++;
+            } else if (current == right) {
+                balance--;
+            }
+        }
+        if (balance != 0) {
+            StringBuilder builder = new StringBuilder(source);
+            if (balance < 0) {
+                while (balance < 0) {
+                    int index = builder.lastIndexOf(Character.toString(right));
+                    if (index < 0) {
+                        break;
+                    }
+                    erase(builder, index, index + 1);
+                    balance++;
+                }
+            } else if (balance > 0) {
+                if (offset >= source.length()) {
+                    while (balance > 0) {
+                        builder.append(right);
+                        balance--;
+                    }
+                } else {
+                    while (balance > 0 && offset - balance >= 0) {
+                        // we try to insert them if there are enough whitespaces
+                        char current = source.charAt(offset - balance);
+                        if (Character.isWhitespace(current)) {
+                            builder.replace(offset - balance,
+                                    offset - balance + 1, Character.toString(right));
+                            balance--;
+                        } else {
+                            return false;
+                        }
+                    }
+                    if (balance > 0) {
+                        return false;
+                    }
+                }
+            }
             context.setSanitizedSource(builder.toString());
             context.setSanitization(sanitizing);
             return true;
@@ -373,7 +446,7 @@ public abstract class SanitizingParser extends Parser {
         }
 
         public int getCaretOffset() {
-            return caretOffset;
+            return snapshot.getEmbeddedOffset(caretOffset);
         }
 
         public String getSource() {
@@ -460,10 +533,18 @@ public abstract class SanitizingParser extends Parser {
 
             @Override
             public Sanitize next() {
+                return MISSING_PAREN;
+            }
+        },
+
+        MISSING_PAREN {
+
+            @Override
+            public Sanitize next() {
                 return SYNTAX_ERROR_PREVIOUS_LINE;
             }
         },
-        
+
         /** remove line with error */
         SYNTAX_ERROR_PREVIOUS_LINE {
 
@@ -492,8 +573,8 @@ public abstract class SanitizingParser extends Parser {
         },
         
         /** 
-         * Try to remove the trailing . or :: at the error position, or the prior
-         * line, or the caret line
+         * Try to remove the trailing . at the error position, or the prior
+         * line.
          */
         ERROR_DOT {
 
@@ -502,6 +583,7 @@ public abstract class SanitizingParser extends Parser {
                 return BLOCK_START;
             }
         },
+
         /** 
          * Try to remove the initial "if" or "unless" on the block
          * in case it's not terminated
@@ -534,6 +616,12 @@ public abstract class SanitizingParser extends Parser {
 
         
         public abstract Sanitize next();
+    }
+
+    private static abstract class TokenCondition {
+
+        public abstract boolean found(JsTokenId id);
+
     }
 
 }

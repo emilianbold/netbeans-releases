@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.db.sql.history;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -52,8 +54,10 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import org.netbeans.modules.db.sql.execute.ui.SQLHistoryPanel;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -70,6 +74,14 @@ public class SQLHistoryManager  {
     private static SQLHistoryManager _instance = null;    
     private static final Logger LOGGER = Logger.getLogger(SQLHistoryEntry.class.getName());
     private SQLHistory sqlHistory;
+    private static final RequestProcessor RP = new RequestProcessor(
+            SQLHistoryManager.class.getName(), 1, false, false);
+    private final RequestProcessor.Task SAVER = RP.create(new Saver());
+    private final PropertyChangeSupport PROPERTY_CHANGE_SUPPORT =
+            new PropertyChangeSupport(this);
+    // Time between call to save and real save - usefull to accumulate before save
+    private static final int SAVE_DELAY = 5 * 1000;
+    static final String PROP_SAVED = "saved";                           //NOI18N
 
     protected SQLHistoryManager() {
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
@@ -82,9 +94,19 @@ public class SQLHistoryManager  {
         } finally {
             Thread.currentThread().setContextClassLoader(orig);
         }
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                // If a save is pending on shutdown, enforce immediate write
+                if (SAVER.getDelay() > 0) {
+                    SAVER.schedule(0);
+                    SAVER.waitFinished();
+                }
+            }
+        });
     }
     
-    public static SQLHistoryManager getInstance() {
+    public static synchronized SQLHistoryManager getInstance() {
         if (_instance == null) {
             _instance = new SQLHistoryManager();                    
         } 
@@ -150,17 +172,72 @@ public class SQLHistoryManager  {
     }
     
     public void save() {
-        try {
-            Marshaller marshaller = context.createMarshaller();
-            OutputStream os = getHistoryRoot(true).getOutputStream();
-            marshaller.marshal(sqlHistory, os);
-            os.close();
-        } catch (Exception ex) {
-            LOGGER.log(Level.INFO, ex.getMessage());
-            }
-        }    
+        // On call to save schedule real saving, as save is a oftem calleed
+        // method, this can bundle multiple saves into one write.
+        // See bug #209720.
+        //
+        // There is an potential for a dataloss in case of a forced shutdown
+        // of the jvm, but this is considered acceptable (normal shutdown
+        // is catered for by a shutdown hook)
+        if (SAVER.getDelay() == 0) {
+            SAVER.schedule(SAVE_DELAY);
+        }
+    }
 
     public SQLHistory getSQLHistory() {
         return sqlHistory;
+    }
+
+    /**
+     * Add property change listener. Used in tests to wait for scheduled events,
+     * e.g. storing to file.
+     */
+    void addPropertyChangeListener(PropertyChangeListener listener) {
+        PROPERTY_CHANGE_SUPPORT.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove property change listener added using
+     * {@link #addPropertyChangeListener}.
+     *
+     */
+    void removePropertyChangeListener(PropertyChangeListener listener) {
+        PROPERTY_CHANGE_SUPPORT.removePropertyChangeListener(listener);
+    }
+
+    private class Saver implements Runnable {
+
+        @Override
+        public void run() {
+            try {
+                final FileObject targetFile = getHistoryRoot(true);
+                targetFile.getFileSystem().
+                        runAtomicAction(new FileSystem.AtomicAction() {
+                    @Override
+                    public void run() throws IOException {
+                        OutputStream os = null;
+                        try {
+                            Marshaller marshaller = context.createMarshaller();
+                            os = targetFile.getOutputStream();
+                            marshaller.marshal(sqlHistory, os);
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                        } finally {
+                            try {
+                                if (os != null) {
+                                    os.close();
+                                }
+                                PROPERTY_CHANGE_SUPPORT.firePropertyChange(
+                                        PROP_SAVED, null, null);
+                            } catch (IOException ex) {
+                                LOGGER.log(Level.INFO, null, ex);
+                            }
+                        }
+                    }
+                });
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, ex.getMessage());
+            }
+        }
     }
 }

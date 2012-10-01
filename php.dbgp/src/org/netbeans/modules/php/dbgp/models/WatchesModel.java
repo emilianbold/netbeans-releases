@@ -471,8 +471,8 @@ class WeakProxyListener<T extends
     @Override
     public void propertyChange( PropertyChangeEvent arg0 ) {
         T t = get();
-        if ( t instanceof PropertyChangeListener ){
-            ((PropertyChangeListener)t).propertyChange(arg0);
+        if (t != null){
+            ((PropertyChangeListener) t).propertyChange(arg0);
         }
     }
 
@@ -539,8 +539,8 @@ class WeakProxyListener<T extends
     @Override
     public void watchAdded( Watch watch ) {
         T t = get();
-        if ( t instanceof DebuggerManagerListener ){
-            ((DebuggerManagerListener)t).watchAdded(watch);
+        if (t != null){
+            ((DebuggerManagerListener) t).watchAdded(watch);
         }
     }
 
@@ -550,8 +550,8 @@ class WeakProxyListener<T extends
     @Override
     public void watchRemoved( Watch watch ) {
         T t = get();
-        if ( t instanceof DebuggerManagerListener ){
-            ((DebuggerManagerListener)t).watchRemoved(watch);
+        if (t != null){
+            ((DebuggerManagerListener) t).watchRemoved(watch);
         }
     }
 

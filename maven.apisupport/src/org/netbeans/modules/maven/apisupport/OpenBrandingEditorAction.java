@@ -65,6 +65,8 @@ import org.netbeans.modules.apisupport.project.spi.PlatformJarProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -103,14 +105,24 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
     }
 
     @Override
+    @Messages("OpenBrandingEditorAction_Error_NoApplication=We could not find the application project that is associated with this branding project.\nPlease open it and retry.")
     public void actionPerformed(ActionEvent e) {
         RP.post(new Runnable() {
             @Override public void run() {
                 final Project project = context.lookup(Project.class);
                 final MavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
-                final BrandingModel model = createBrandingModel(project, brandingPath(mavenProject));
+                final BrandingModel model = createBrandingModel(project, brandingPath(project));
+                final boolean hasAppProject = MavenNbModuleImpl.findAppProject(project) != null;
+                final boolean hasExternalPlatform = MavenNbModuleImpl.findIDEInstallation(project) != null;
+                
                 EventQueue.invokeLater(new Runnable() {
                     @Override public void run() {
+                        if (!hasAppProject && !hasExternalPlatform) {
+                            //TODO do we need the external platform check? MavenPLatfomrJarProvider has it, but it's more generic than branding
+                            NotifyDescriptor.Message message  = new NotifyDescriptor.Message(OpenBrandingEditorAction_Error_NoApplication(), NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(message);
+                            return;
+                        }
                         BrandingUtils.openBrandingEditor(mavenProject.getName(), project, model);
                     }
                 });
@@ -132,11 +144,11 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
         if (mproject == null) {
             return false;
         }
-        return project.getProjectDirectory().getFileObject(brandingPath(mproject.getMavenProject())) != null;
+        return project.getProjectDirectory().getFileObject(brandingPath(project)) != null;
     }
 
-    private String brandingPath(MavenProject mavenProject) {
-        String brandingPath = PluginPropertyUtils.getPluginProperty(mavenProject, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "brandingSources", "branding"); //NOI18N
+    private String brandingPath(Project mavenProject) {
+        String brandingPath = PluginPropertyUtils.getPluginProperty(mavenProject, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "brandingSources", "branding", null); //NOI18N
         return brandingPath != null ? brandingPath : "src/main/nbm-branding"; //NOI18N
     }
 

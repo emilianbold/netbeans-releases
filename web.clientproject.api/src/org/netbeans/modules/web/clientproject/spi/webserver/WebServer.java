@@ -51,13 +51,17 @@ import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -135,13 +139,9 @@ public final class WebServer {
         if (p != null) {
             Pair pair = deployedApps.get(p);
             if (pair != null) {
-                String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") + 
+                String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                         FileUtil.getRelativePath(pair.siteRoot, projectFile);
-                try {
-                    return new URL("http://localhost:"+PORT+path);
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                return WebUtils.stringToUrl("http://localhost:"+PORT+path); //NOI18N
             }
         } else {
             // fallback if project was not found:
@@ -149,13 +149,9 @@ public final class WebServer {
                 Pair pair = entry.getValue();
                 String relPath = FileUtil.getRelativePath(pair.siteRoot, projectFile);
                 if (relPath != null) {
-                    String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") + 
+                    String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                             relPath;
-                    try {
-                        return new URL("http://localhost:"+PORT+path);
-                    } catch (MalformedURLException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    return WebUtils.stringToUrl("http://localhost:"+PORT+path); //NOI18N
                 }
             }
         }
@@ -166,23 +162,29 @@ public final class WebServer {
      * Converts server URL back into project's source file.
      */
     public FileObject fromServer(URL serverURL) {
-        return fromServer(serverURL.getPath());
+        String path;
+        try {
+            path = serverURL.toURI().getPath();
+        } catch (URISyntaxException ex) {
+            path = serverURL.getPath(); // fallback
+        }
+        return fromServer(path);
     }
 
-    private FileObject fromServer(String serverURL) {
+    private FileObject fromServer(String serverURLPath) {
         Map.Entry<Project, Pair> rootEntry = null;
         for (Map.Entry<Project, Pair> entry : deployedApps.entrySet()) {
-            if ("/".equals(entry.getValue().webContextRoot)) {
+            if ("/".equals(entry.getValue().webContextRoot)) { //NOI18N
                 rootEntry = entry;
                 // process this one as last one:
                 continue;
             }
-            if (serverURL.startsWith(entry.getValue().webContextRoot+"/")) {
-                return findFile(entry, serverURL);
+            if (serverURLPath.startsWith(entry.getValue().webContextRoot+"/")) { //NOI18N
+                return findFile(entry, serverURLPath);
             }
         }
         if (rootEntry != null) {
-            return findFile(rootEntry, serverURL);
+            return findFile(rootEntry, serverURLPath);
         }
         return null;
     }
@@ -190,7 +192,7 @@ public final class WebServer {
     private FileObject findFile(Entry<Project, Pair> entry, String serverURL) {
         Project p = entry.getKey();
         int index = entry.getValue().webContextRoot.length()+1;
-        if (entry.getValue().webContextRoot.equals("/")) {
+        if (entry.getValue().webContextRoot.equals("/")) { //NOI18N
             index = 1;
         }
         String file = serverURL.substring(index);
@@ -270,24 +272,25 @@ public final class WebServer {
                 if (line == null || line.length() == 0) {
                     return;
                 }
-                if (line.startsWith("GET ")) {
-                    StringTokenizer st = new StringTokenizer(line, " ");
+                if (line.startsWith("GET ")) { //NOI18N
+                    StringTokenizer st = new StringTokenizer(line, " "); //NOI18N
                     st.nextToken();
                     String file = st.nextToken();
+                    file = URLDecoder.decode(file, "UTF-8"); //NOI18N
                     FileObject fo = getWebserver().fromServer(file);
                     if (fo != null && fo.isFolder()) {
-                        fo = fo.getFileObject("index", "html");
+                        fo = fo.getFileObject("index", "html"); //NOI18N
                     }
                     if (fo != null) {
                         fis = fo.getInputStream();
                         out = new DataOutputStream(outputStream);
                         String mime = fo.getMIMEType();
-                        if ("content/unknown".equals(mime)) {
-                            mime = "text/plain";
+                        if ("content/unknown".equals(mime)) { //NOI18N
+                            mime = "text/plain"; //NOI18N
                         }
                         try {
-                            out.writeBytes("HTTP/1.1 200 OK\nContent-Length: "+fo.getSize()+"\n"
-                                    + "Content-Type: "+mime+"\n\n");
+                            out.writeBytes("HTTP/1.1 200 OK\nContent-Length: "+fo.getSize()+"\n" //NOI18N
+                                    + "Content-Type: "+mime+"\n\n"); //NOI18N
                             FileUtil.copy(fis, out);
                         } catch (SocketException se) {
                             // browser refused to accept data or closed the connection;

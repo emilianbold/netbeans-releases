@@ -1,0 +1,6 @@
+Code completion result for source line:
+Math.E.M|IN_VALUE;
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+FIELD      MAX_VALUE: Number               [PUBLIC,   stub_CORE_Number.js
+FIELD      MIN_VALUE: Number               [PUBLIC,   stub_CORE_Number.js

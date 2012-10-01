@@ -43,16 +43,11 @@
  */
 package org.netbeans.modules.db.dataview.util;
 
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.Iterator;
-import java.util.List;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBForeignKey;
 import org.netbeans.modules.db.dataview.meta.DBTable;
@@ -277,18 +272,15 @@ public class DataViewUtils {
         String refString = column.getName() + " --> "; // NOI18N
         StringBuilder str = new StringBuilder(refString);
         DBTable table = column.getParentObject();
-        List list = table.getForeignKeys();
+        boolean firstReferencedColumn = false;
 
-        Iterator it = list.iterator();
-        while (it.hasNext()) {
-            DBForeignKey fk = (DBForeignKey) it.next();
+        for(DBForeignKey fk: table.getForeignKeys()) {
             if (fk.contains(column)) {
-                List pkColumnList = fk.getPKColumnNames();
-                Iterator it1 = pkColumnList.iterator();
-                while (it1.hasNext()) {
-                    String pkColName = (String) it1.next();
+                for(String pkColName: fk.getPKColumnNames()) {
                     str.append(pkColName);
-                    if (it1.hasNext()) {
+                    if (firstReferencedColumn) {
+                        firstReferencedColumn = false;
+                    } else {
                         str.append(", "); // NOI18N
                     }
                 }
@@ -305,7 +297,7 @@ public class DataViewUtils {
     }
 
     public static String replaceInString(String originalString, String[] victims, String[] replacements) {
-        StringBuffer resultBuffer = new StringBuffer();
+        StringBuilder resultBuffer = new StringBuilder();
         boolean bReplaced = false;
 
         for (int charPosition = 0; charPosition < originalString.length(); charPosition++) {

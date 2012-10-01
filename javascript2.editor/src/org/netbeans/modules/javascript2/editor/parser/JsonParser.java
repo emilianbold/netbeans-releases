@@ -41,6 +41,7 @@ import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.runtime.JSException;
 import java.util.Collections;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -50,7 +51,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 public class JsonParser extends SanitizingParser {
 
     public JsonParser() {
-        super();
+        super(JsTokenId.jsonLanguage());
     }
 
     @Override

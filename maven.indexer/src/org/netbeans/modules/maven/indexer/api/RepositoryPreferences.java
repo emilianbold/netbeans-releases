@@ -83,7 +83,6 @@ public final class RepositoryPreferences {
 
     private static RepositoryPreferences instance;
 
-    private static final String KEY_TYPE = "provider";//NOI18N
     private static final String KEY_DISPLAY_NAME = "name";//NOI18N
     private static final String KEY_PATH = "path";//NOI18N
     private static final String KEY_INDEX_URL = "index";//NOI18N

@@ -239,7 +239,6 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         if (ALLOW_BROKEN) {
-            assert fileChangeListener == null : "FS listener cannot yet exist for project " + project.getName();
             try {
                 fileSystem = getSources().getFileSystem();
                 fileChangeListener = FileUtil.weakFileChangeListener(this, fileSystem);
@@ -270,7 +269,6 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             LOGGER.log(Level.FINE, "\t-> not needed for project {0} (not registered)", project.getName());
         } else {
             if (ALLOW_BROKEN) {
-                assert fileChangeListener != null : "FS listener must be known already for project " + project.getName();
                 fileSystem.removeFileChangeListener(fileChangeListener);
                 LOGGER.log(Level.FINE, "\t-> NON-RECURSIVE listener unregistered for project {0}", project.getName());
             } else {
@@ -527,6 +525,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 this.remoteHandler = remoteHandler;
             }
 
+            @org.netbeans.api.annotations.common.SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
             @Override
             public Boolean call() throws Exception {
                 Boolean localRetval = callLocal();

@@ -107,6 +107,8 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
             @NonNull final Project project,
             @NonNull Image original,
             final boolean openedNode) {
+        Parameters.notNull("project", project);     //NOI18N
+        Parameters.notNull("original", original);   //NOI18N
         LOG.log(Level.FINE, "The annotateIcon called for project: {0}.", project);  //NOI18N
         Integer problemsCount = null;
         synchronized (cacheLock) {

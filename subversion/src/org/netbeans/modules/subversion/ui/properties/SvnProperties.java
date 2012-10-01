@@ -62,6 +62,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
@@ -468,6 +469,11 @@ public final class SvnProperties implements ActionListener {
         }
     }
 
+    @NbBundle.Messages({
+        "LBL_SvnProperties.RecursiveDelete.title=Recursively Delete Property",
+        "# {0} - svn property name",
+        "MSG_SvnProperties.RecursiveDelete.question=Do you want to recursively delete property {0}?"
+    })
     private void removeProperties() {
         final SVNUrl repositoryUrl;
         try {
@@ -495,6 +501,9 @@ public final class SvnProperties implements ActionListener {
                     try {
                         SvnPropertiesNode[] svnPropertiesNodes = propTable.getNodes();
                         List<SvnPropertiesNode> lstSvnPropertiesNodes = Arrays.asList(svnPropertiesNodes);
+                        if (recursively && rows.length == 0) {
+                            removePropertyRecursively(client, toRefresh);
+                        }
                         for (int i = rows.length - 1; i >= 0; i--) {
                             String svnPropertyName = svnPropertiesNodes[propTable.getModelIndex(rows[i])].getName();
                             for (File root : getFilesWithProperty(svnPropertyName)) {
@@ -528,6 +537,22 @@ public final class SvnProperties implements ActionListener {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                     } finally {
                         Subversion.getInstance().getStatusCache().refreshAsync(recursively, toRefresh.toArray(new File[toRefresh.size()]));
+                    }
+                }
+
+                private void removePropertyRecursively (SvnClient client, Set<File> toRefresh) throws SVNClientException {
+                    String propName = getPropertyName();
+                    if (!propName.trim().isEmpty()) {
+                        if (JOptionPane.showConfirmDialog(panel, 
+                                Bundle.MSG_SvnProperties_RecursiveDelete_question(propName),
+                                Bundle.LBL_SvnProperties_RecursiveDelete_title(),
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+                            for (File root : roots) {
+                                client.propertyDel(root, propName, true);
+                                toRefresh.add(root);
+                            }
+                        }
                     }
                 }
             };

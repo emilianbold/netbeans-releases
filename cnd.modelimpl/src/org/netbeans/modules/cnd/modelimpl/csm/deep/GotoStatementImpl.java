@@ -50,6 +50,8 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * CsmGotoStatement implementation
@@ -64,6 +66,11 @@ public final class GotoStatementImpl extends StatementBase implements CsmGotoSta
         label = AstUtil.findId(ast);
     }
 
+    private GotoStatementImpl(CharSequence label, CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);
+        this.label = label;
+    }
+    
     public static GotoStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
         return new GotoStatementImpl(ast, file, scope);
     }
@@ -78,4 +85,22 @@ public final class GotoStatementImpl extends StatementBase implements CsmGotoSta
         return label;
     }
 
+    public static class GotoStatementBuilder extends StatementBuilder {
+
+        CharSequence label;
+
+        public void setLabel(CharSequence label) {
+            this.label = label;
+        }
+
+        private CharSequence getLabel() {
+            return NameCache.getManager().getString(label);
+        }
+        
+        public GotoStatementImpl create() {
+            GotoStatementImpl stmt = new GotoStatementImpl(getLabel(), getScope(), getFile(), getStartOffset(), getEndOffset());
+            return stmt;
+        }
+    }   
+    
 }   

@@ -131,7 +131,6 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
 
         listPanel = new javax.swing.JPanel();
         inheritPanel = new javax.swing.JPanel();
-        scrollPanel = new javax.swing.JScrollPane();
         panel = new javax.swing.JPanel();
         inheritLabel = new javax.swing.JLabel();
         inheritTextArea = new javax.swing.JTextArea();
@@ -151,9 +150,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(listPanel, gridBagConstraints);
 
-        inheritPanel.setLayout(new java.awt.GridBagLayout());
-
-        scrollPanel.setBorder(null);
+        inheritPanel.setLayout(new java.awt.BorderLayout());
 
         panel.setLayout(new java.awt.GridBagLayout());
 
@@ -176,16 +173,9 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         panel.add(inheritTextArea, gridBagConstraints);
-        inheritTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(StringListPanel.class, "INHERITED_VALUES_AN")); // NOI18N
-        inheritTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(StringListPanel.class, "INHERITED_VALUES_AD")); // NOI18N
 
         inheritCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(inheritCheckBox, bundle.getString("INHERIT_CHECKBOX_LBL")); // NOI18N
-        inheritCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                inheritCheckBoxActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -193,13 +183,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         panel.add(inheritCheckBox, gridBagConstraints);
 
-        scrollPanel.setViewportView(panel);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        inheritPanel.add(scrollPanel, gridBagConstraints);
+        inheritPanel.add(panel, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -210,10 +194,6 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(inheritPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void inheritCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inheritCheckBoxActionPerformed
-        inheritValues.setValue(inheritCheckBox.isSelected());
-    }//GEN-LAST:event_inheritCheckBoxActionPerformed
 
     private static class MyListEditorPanel extends ListEditorPanel<String> {
 
@@ -295,7 +275,6 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
     private javax.swing.JTextArea inheritTextArea;
     private javax.swing.JPanel listPanel;
     private javax.swing.JPanel panel;
-    private javax.swing.JScrollPane scrollPanel;
     // End of variables declaration//GEN-END:variables
 
     private static String getString(String key) {

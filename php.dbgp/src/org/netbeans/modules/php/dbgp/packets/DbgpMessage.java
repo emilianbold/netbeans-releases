@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,13 +56,10 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.openide.util.NbBundle;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -79,9 +77,6 @@ import org.xml.sax.SAXException;
 public abstract class DbgpMessage {
 
     private static final Logger LOGGER = Logger.getLogger(DbgpMessage.class.getName());
-
-    private static final String ERR_PACKET_ERROR
-                                                = "ERR_PacketError";    // NOI18N
 
     private static final String     INIT        = "init";               // NOI18N
 
@@ -126,8 +121,7 @@ public abstract class DbgpMessage {
             int size = getDataSize(inputStream);
             if ( size <0 ) {
                 notifyPacketError( null );
-                Logger.getLogger( DbgpMessage.class.getName() ).log(
-                        Level.FINE, "Got " +size+" as data size" ); // NOI18N
+                Logger.getLogger(DbgpMessage.class.getName()).log(Level.FINE, "Got {0} as data size", size); // NOI18N
                 return null;
             }
             byte[] bytes = getContent( inputStream , size );
@@ -244,11 +238,7 @@ public abstract class DbgpMessage {
 
     private static void logDebugInfo( byte[] bytes ) {
         try {
-            if (ISO_CHARSET == null) {
-                Logger.getLogger( DbgpMessage.class.getName() ).log(Level.FINE, new String( bytes ));
-            } else {
-                Logger.getLogger( DbgpMessage.class.getName() ).log(Level.FINE, new String( bytes , ISO_CHARSET));
-            }
+            Logger.getLogger( DbgpMessage.class.getName() ).log(Level.FINE, new String( bytes , ISO_CHARSET));
         }
         catch (UnsupportedEncodingException e) {
             assert false;
@@ -259,13 +249,7 @@ public abstract class DbgpMessage {
      * Notify user about unexpected format of received packet.
      */
     private static void notifyPacketError( Exception e ) {
-        Exception exception = e;
-        if ( exception == null ) {
-            exception = new Exception( NbBundle.getMessage( DbgpMessage.class,
-                    ERR_PACKET_ERROR));
-        }
-        Logger.getLogger( DbgpMessage.class.getName() ).log(
-                Level.SEVERE, null, e );
+        Logger.getLogger(DbgpMessage.class.getName()).log(Level.SEVERE, null, e);
     }
 
     private static byte[] getContent( InputStream inputStream, int size )
@@ -282,8 +266,7 @@ public abstract class DbgpMessage {
         if ( count != size ) {
             notifyPacketError( null );
             Logger.getLogger( DbgpMessage.class.getName() ).log(
-                    Level.FINE, "Red " +count+" bytes from socket input stream," +
-                    		" but expected " +size +" bytes" );       // NOI18N
+                    Level.FINE, "Red {0}" +" bytes from socket input stream," +" but expected {1} bytes" , new Object[]{count, size});       // NOI18N
             return null;
         }
         int nullByte = inputStream.read();
@@ -353,7 +336,7 @@ public abstract class DbgpMessage {
         if ( BUILDER == null || bytes == null ) {
             return null;
         }
-        String original = new String(bytes);
+        String original = new String(bytes, Charset.defaultCharset());
         String inputWithoutNullChars = null;
         try {
             // this is basically workaround for a bug in xdebug, where xdebug
@@ -414,6 +397,18 @@ public abstract class DbgpMessage {
             throws SAXException, IOException
         {
             return null;
+        }
+
+    }
+
+    public static final class NoneDbgpMessage extends DbgpMessage {
+
+        public NoneDbgpMessage(Node node) {
+            super(node);
+        }
+
+        @Override
+        public void process(DebugSession session, DbgpCommand command) {
         }
 
     }

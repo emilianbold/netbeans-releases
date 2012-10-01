@@ -91,22 +91,42 @@ public class PluginPropertyUtils {
     /**
      * tries to figure out if the property of the given plugin is customized in the
      * current project and returns it's value if so, otherwise null
+     * @deprecated use the variant with expressionProperty value
      */
-    public static @CheckForNull String getPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String goal) {
+    @Deprecated
+    public static @CheckForNull String getPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal) {
+       return getPluginProperty(prj, groupId, artifactId, parameter, goal, null);
+    }
+    
+    /**
+     * tries to figure out if the property of the given plugin is customized in the
+     * current project and returns it's value if so, otherwise null
+     * @param parameter the name of the plugin parameter to look for
+     * @param expressionProperty expression property that once defined (and plugin configuration is omited) is used.
+     */
+    public static @CheckForNull String getPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluatorFromSourceProject(project), groupId, artifactId, property, goal);
-    }
+        return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, parameter, goal, expressionProperty);
+    }    
 
     /**
      * tries to figure out if the property of the given plugin is customized in the
      * current project and returns it's value if so, otherwise null
+     * Please NOTE that if you have access to <code>Project</code> instance and your <code>MavenProject</code> is the project's own loaded one, then
+     * the variant with <code>Project</code> as parameter is preferable. Faster and less prone to deadlock.     
+     * @deprecated use the variant with expressionProperty value
      */
-    public static @CheckForNull String getPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String goal) {
-        return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, property, goal);
+    @Deprecated
+    public static @CheckForNull String getPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal) {
+        return getPluginProperty(prj, groupId, artifactId, parameter, goal, null);
+    }
+    
+    public static @CheckForNull String getPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
+        return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, parameter, goal, expressionProperty);
     }
 
-    private static @CheckForNull String getPluginPropertyImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String goal) {
+    private static @CheckForNull String getPluginPropertyImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
         String toRet = null;
         if (prj.getBuildPlugins() == null) {
             return toRet;
@@ -115,13 +135,13 @@ public class PluginPropertyUtils {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 for (PluginExecution exe : getPluginExecutions(plug, goal)) {
-                    toRet = checkConfiguration(eval, exe.getConfiguration(), property);
+                    toRet = checkConfiguration(eval, exe.getConfiguration(), parameter);
                     if (toRet != null) {
                         break;
                     }
                 }
                 if (toRet == null) {
-                    toRet = checkConfiguration(eval, plug.getConfiguration(), property);
+                    toRet = checkConfiguration(eval, plug.getConfiguration(), parameter);
                 }
             }
         }
@@ -133,10 +153,16 @@ public class PluginPropertyUtils {
                 for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
-                        toRet = checkConfiguration(eval, plug.getConfiguration(), property);
+                        toRet = checkConfiguration(eval, plug.getConfiguration(), parameter);
                         break;
                     }
                 }
+            }
+        }
+        if (toRet == null && expressionProperty != null) {
+            Properties prop = prj.getProperties();
+            if (prop != null) {
+                toRet = prop.getProperty(expressionProperty);                
             }
         }
         return toRet;
@@ -149,12 +175,14 @@ public class PluginPropertyUtils {
     public static @CheckForNull String getReportPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String report) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getReportPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluatorFromSourceProject(project), groupId, artifactId, property, report);
+        return getReportPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, property, report);
     }
 
     /**
      * tries to figure out if the property of the given report plugin is customized in the
      * current project and returns it's value if so, otherwise null
+     * Please NOTE that if you have access to <code>Project</code> instance and your <code>MavenProject</code> is the project's own loaded one, then
+     * the variant with <code>Project</code> as parameter is preferable. Faster and less prone to deadlock.     
      */
     public static @CheckForNull String getReportPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String report) {
         return getReportPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, property, report);
@@ -261,11 +289,13 @@ public class PluginPropertyUtils {
     public static @CheckForNull String[] getPluginPropertyList(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginPropertyListImpl(project.getOriginalMavenProject(), createEvaluatorFromSourceProject(project), groupId, artifactId, multiproperty, singleproperty, goal);
+        return getPluginPropertyListImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, multiproperty, singleproperty, goal);
     }
 
     /**
      * gets the list of values for the given property, if configured in the current project.
+     * Please NOTE that if you have access to <code>Project</code> instance and your <code>MavenProject</code> is the project's own loaded one, then
+     * the variant with <code>Project</code> as parameter is preferable. Faster and less prone to deadlock.     
      * @param multiproperty list's root element (eg. "sourceRoots")
      * @param singleproperty - list's single value element (eg. "sourceRoot")
      */
@@ -317,11 +347,13 @@ public class PluginPropertyUtils {
     public static @CheckForNull String[] getReportPluginPropertyList(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getReportPluginPropertyListImpl(project.getOriginalMavenProject(), createEvaluatorFromSourceProject(project), groupId, artifactId, multiproperty, singleproperty, goal);
+        return getReportPluginPropertyListImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, multiproperty, singleproperty, goal);
     }
 
     /**
      * gets the list of values for the given property, if configured in the current project.
+     * Please NOTE that if you have access to <code>Project</code> instance and your <code>MavenProject</code> is the project's own loaded one, then
+     * the variant with <code>Project</code> as parameter is preferable. Faster and less prone to deadlock.     
      * @param multiproperty list's root element (eg. "sourceRoots")
      * @param singleproperty - list's single value element (eg. "sourceRoot")
      */
@@ -398,9 +430,18 @@ public class PluginPropertyUtils {
     public static @CheckForNull Properties getPluginPropertyParameter(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String propertyParameter, @NullAllowed String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginPropertyParameterImpl(project.getOriginalMavenProject(), createEvaluatorFromSourceProject(project), groupId, artifactId, propertyParameter, goal);
+        return getPluginPropertyParameterImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, propertyParameter, goal);
     }
-    
+    /**
+     * Loads name/value pairs from plugin configuration. 
+     * Please NOTE that if you have access to <code>Project</code> instance and your <code>MavenProject</code> is the project's own loaded one, then
+     * the variant with <code>Project</code> as parameter is preferable. Faster and less prone to deadlock.
+     * Two syntaxes are supported:
+     * {@code <params><key>value</key><flag/></params>} produces {@code {key=value, flag=}}
+     * (last value is {@code ""} not {@code null} due to {@link Properties} limitation);
+     * {@code <params><param><name>key</name><value>value</value></param></params>} produces {@code {key=value}}.
+     * @return properties
+     */
     public static @CheckForNull Properties getPluginPropertyParameter(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String propertyParameter, @NullAllowed String goal) {
         return getPluginPropertyParameterImpl(prj, createEvaluator(prj), groupId, artifactId, propertyParameter, goal);
     }
@@ -524,20 +565,27 @@ public class PluginPropertyUtils {
         plugins.addAll(m2Plugins);
         return plugins;
     }
-
-    private static @NonNull ExpressionEvaluator createEvaluatorFromSourceProject(@NonNull NbMavenProjectImpl prj) {
+/**
+     * Evaluator usable for interpolating variables in plugin properties.
+     * @since 2.57
+     */
+    public static @NonNull ExpressionEvaluator createEvaluator(@NonNull Project project) {
         //ugly
         Settings ss = EmbedderFactory.getProjectEmbedder().getSettings();
         ss.setLocalRepository(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
 
+        NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
+        assert prj != null;
         return new NBPluginParameterExpressionEvaluator(
                 prj.getOriginalMavenProject(),
                 ss,
                 prj.createSystemPropsForPropertyExpressions());
     }
-
+    
     /**
      * Evaluator usable for interpolating variables in plugin properties.
+     * Please NOTE that if you have access to <code>Project</code> instance, then
+     * the variant with <code>Project</code> as parameter is preferable. Faster and less prone to deadlock.     
      * @since 2.32
      */
     public static @NonNull ExpressionEvaluator createEvaluator(@NonNull MavenProject prj) {

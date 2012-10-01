@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
@@ -81,16 +82,18 @@ public class KeyUtilities {
         return new NamespaceKey(ns);
     }
 
-    public static Key createProjectKey(ProjectBase project) {
-        return createProjectKey(project.getUniqueName());
-    }
-
-    public static Key createProjectKey(CharSequence projectQualifiedName) {        
-        return new ProjectKey(KeyUtilities.getUnitId(projectQualifiedName));
+    public static Key createProjectKey(CharSequence projectQualifiedName, CacheLocation cacheLocation) {
+        return new ProjectKey(KeyUtilities.getUnitId(projectQualifiedName, cacheLocation));
     }
 
     public static Key createProjectKey(NativeProject nativeProject) {
-        return createProjectKey(ProjectBase.getUniqueName(nativeProject));
+        return new ProjectKey(KeyUtilities.getUnitId(
+                ProjectBase.getUniqueName(nativeProject),
+                ProjectBase.getCacheLocation(nativeProject)));
+    }
+
+    public static Key createProjectKey(ProjectBase project) {
+        return new ProjectKey(project.getUnitId());
     }
 
     public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
@@ -143,8 +146,12 @@ public class KeyUtilities {
     
     ////////////////////////////////////////////////////////////////////////////
 
-    public static int getUnitId(CharSequence unitName) {
-        return APTSerializeUtils.getUnitId(unitName);
+    /**
+     * @param cacheLocation can be null, in this case standard location 
+     * ${userdir}/var/cache/cnd/model will be used
+     */
+    public static int getUnitId(CharSequence unitName, CacheLocation cacheLocation) {
+        return APTSerializeUtils.getUnitId(unitName, cacheLocation);
     }
 
     public static CharSequence getUnitName(int unitIndex) {

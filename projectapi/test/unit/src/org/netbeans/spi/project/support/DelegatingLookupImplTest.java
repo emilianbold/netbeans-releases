@@ -38,6 +38,8 @@
 
 package org.netbeans.spi.project.support;
 
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -105,6 +107,92 @@ public class DelegatingLookupImplTest extends NbTestCase {
         assertEquals(3, merger.expectedCount);
 
     }
+    
+    public void testNestedComposites() throws Exception { // #200711
+        final AtomicInteger count = new AtomicInteger();
+        final Runnable orig = new Runnable() {
+            @Override public void run() {
+                count.incrementAndGet();
+            }
+        };
+        class RunnableMerger implements LookupMerger<Runnable> {
+            @Override public Class<Runnable> getMergeableClass() {return Runnable.class;}
+            @Override public Runnable merge(final Lookup lookup) {
+                return new Runnable() {
+                    @Override public void run() {
+//                        orig.run(); jglick: this means each or the mergers calls this no matter what..
+                        //but the correct invocation stack is eg. merger2->merger1->orig
+                        for (Runnable r : lookup.lookupAll(Runnable.class)) {
+//                            assertFalse(r == orig);
+                            assertFalse(r == this);
+                            r.run();
+                        }
+                    }
+                };
+            }
+        }
+        //merger in base, runnable in base
+        Lookup base = Lookups.fixed(new RunnableMerger(), orig);
+        Lookup nested1 = new DelegatingLookupImpl(base, Lookup.EMPTY, null);
+        assertEquals(1, nested1.lookupAll(Runnable.class).size());
+        Lookup nested2 = new DelegatingLookupImpl(nested1, Lookup.EMPTY, null);
+        Collection<? extends Runnable> rs = nested2.lookupAll(Runnable.class);
+        assertEquals(1, rs.size());
+        rs.iterator().next().run();
+        assertEquals(1, count.get());
+
+        //runnable in base, merger in delegate1
+        base = Lookups.fixed(orig);
+        nested1 = new DelegatingLookupImpl(base, Lookups.fixed(new RunnableMerger()), null);
+        assertEquals(1, nested1.lookupAll(Runnable.class).size());
+        nested1.lookupAll(Runnable.class).iterator().next().run();
+        assertEquals(2, count.get());
+
+        nested2 = new DelegatingLookupImpl(nested1, Lookup.EMPTY, null);
+        rs = nested2.lookupAll(Runnable.class);
+        assertEquals(1, rs.size());
+        rs.iterator().next().run();
+        assertEquals(3, count.get());
+        
+        
+        //runnable in delegate1, merger in base
+        base = Lookups.fixed(new RunnableMerger());
+        nested1 = new DelegatingLookupImpl(base, Lookups.fixed(new LookupProvider() {
+            @Override
+            public Lookup createAdditionalLookup(Lookup baseContext) {
+                return Lookups.fixed(orig);
+            }
+        }), null);
+        assertEquals(1, nested1.lookupAll(Runnable.class).size());
+        nested1.lookupAll(Runnable.class).iterator().next().run();
+        assertEquals(4, count.get());
+        
+        nested2 = new DelegatingLookupImpl(nested1, Lookup.EMPTY, null);
+        rs = nested2.lookupAll(Runnable.class);
+        assertEquals(1, rs.size());
+        rs.iterator().next().run();
+        assertEquals(5, count.get());
+        
+        //runnable in delegate2, merger in base
+        base = Lookups.fixed(new RunnableMerger());
+        nested1 = new DelegatingLookupImpl(base, Lookup.EMPTY, null);
+        assertEquals(1, nested1.lookupAll(Runnable.class).size());
+        nested1.lookupAll(Runnable.class).iterator().next().run();
+        assertEquals(5, count.get()); //no change
+        
+        nested2 = new DelegatingLookupImpl(nested1, Lookups.fixed(new LookupProvider() {
+            @Override
+            public Lookup createAdditionalLookup(Lookup baseContext) {
+                return Lookups.fixed(orig);
+            }
+        }), null);
+        rs = nested2.lookupAll(Runnable.class);
+        assertEquals(1, rs.size());
+        rs.iterator().next().run();
+        assertEquals(6, count.get());
+        
+        
+    }    
 
     private static class LookupMergerImpl implements LookupMerger<JButton> {
 

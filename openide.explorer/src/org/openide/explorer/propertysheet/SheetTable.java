@@ -88,6 +88,7 @@ import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SpinnerModel;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
@@ -419,6 +420,15 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
         am.put(ACTION_CUSTOM_EDITOR, getCustomEditorAction());
         am.put(ACTION_EDCLASS, edClassAction);
+
+        Action defaultAction = am.get( "selectNextRow" );
+        if( null != defaultAction ) {
+            am.put("selectNextRow", new IncrementAction(false, defaultAction));
+    }
+        defaultAction = am.get( "selectPreviousRow" );
+        if( null != defaultAction ) {
+            am.put("selectPreviousRow", new IncrementAction(true, defaultAction));
+        }
     }
 
     Action getCustomEditorAction() {
@@ -932,6 +942,36 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         }
 
         return result;
+    }
+
+    /**
+     * Select (and start editing) the given property.
+     * @param fd
+     * @param startEditing
+     */
+    public void select( FeatureDescriptor fd, boolean startEditing ) {
+        PropertySetModel psm = getPropertySetModel();
+        final int index = psm.indexOf( fd );
+        if( index < 0 ) {
+            return; //not in our list
+        }
+
+        getSelectionModel().setSelectionInterval( index, index );
+        if( startEditing && psm.isProperty( index ) ) {
+            editCellAt( index, 1, new MouseEvent( SheetTable.this, 0, System.currentTimeMillis(), 0, 0, 0, 1, false) );
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    SheetCellEditor cellEditor = getEditor();
+                    if( null != cellEditor ) {
+                        InplaceEditor inplace = cellEditor.getInplaceEditor();
+                        if( null != inplace && null != inplace.getComponent() ) {
+                            inplace.getComponent().requestFocus();
+                        }
+                    }
+                }
+            });
+        }
     }
 
     //*********Implementation of editing*************************************    
@@ -1753,5 +1793,50 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
             return false;
         }
+    }
+
+    private class IncrementAction extends AbstractAction {
+
+        private final boolean isIncrement;
+        private final Action changeRowAction;
+
+        private IncrementAction( boolean increment, Action defaultAction ) {
+            this.isIncrement = increment;
+            this.changeRowAction = defaultAction;
+}
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (isEditing()) {
+                SheetCellEditor cellEditor = getEditor();
+                InplaceEditor inplaceEditor = cellEditor.getInplaceEditor();
+                if (inplaceEditor instanceof ComboInplaceEditor) {
+                    SpinnerModel model = ((ComboInplaceEditor) inplaceEditor).getIncrementSupport();
+                    if (model != null) {
+                        Object newValue = isIncrement ? model.getNextValue() : model.getPreviousValue();
+                        if (null != newValue) {
+                            try {
+                                SheetCellEditor.ignoreStopCellEditing = true;
+                                inplaceEditor.setValue(newValue);
+                            } finally {
+                                SheetCellEditor.ignoreStopCellEditing = false;
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+            changeRowAction.actionPerformed(e);
+        }
+    }
+    
+    static String VALUE_INCREMENT = "valueIncrement"; //NOI18N
+    
+    static boolean isValueIncrementEnabled(PropertyEnv env) {
+        if(env == null) {
+            return false;
+        }
+        Object o = env.getFeatureDescriptor().getValue( VALUE_INCREMENT );
+        return o != null && ( o instanceof SpinnerModel );
     }
 }

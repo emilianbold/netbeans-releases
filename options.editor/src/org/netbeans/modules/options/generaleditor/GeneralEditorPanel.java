@@ -88,9 +88,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         loc (cbCamelCaseBehavior, "Enable_Camel_Case_In_Java");
         loc (lCamelCaseBehaviorExample, "Camel_Case_Behavior_Example");
 
-        loc (lWhenSavingFiles, "When_Saving_Files");
-        loc (lRemoveTrailingWhitespace, "Remove_Trailing_Whitespace");
-        loc (cboRemoveTrailingWhitespace, "Remove_Trailing_Whitespace");
         loc (lSearch, "Search");
         loc (lEditorSearchType, "Editor_Search_Type");
         loc (cboEditorSearchType, "Editor_Search_Type");
@@ -99,8 +96,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         loc (cbShowBraceOutline, "Brace_Show_Outline");
                 
         cbUseCodeFolding.setMnemonic(NbBundle.getMessage (GeneralEditorPanel.class, "MNEMONIC_Use_Folding").charAt(0));
-        cboRemoveTrailingWhitespace.setRenderer(new RemoveTrailingWhitespaceRenderer(cboRemoveTrailingWhitespace.getRenderer()));
-        cboRemoveTrailingWhitespace.setModel(new DefaultComboBoxModel(new Object [] { "never", "always", "modified-lines" })); //NOI18N
         cboEditorSearchType.setRenderer(new EditorSearchTypeRenderer(cboEditorSearchType.getRenderer()));
         cboEditorSearchType.setModel(new DefaultComboBoxModel(new Object [] { "default", "closing"})); //NOI18N
         cboEditorSearchType.addActionListener( new ActionListener() {
@@ -143,10 +138,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         jSeparator3 = new javax.swing.JSeparator();
         cbCamelCaseBehavior = new javax.swing.JCheckBox();
         lCamelCaseBehaviorExample = new javax.swing.JLabel();
-        jSeparator4 = new javax.swing.JSeparator();
-        lWhenSavingFiles = new javax.swing.JLabel();
-        lRemoveTrailingWhitespace = new javax.swing.JLabel();
-        cboRemoveTrailingWhitespace = new javax.swing.JComboBox();
         lEditorSearchType = new javax.swing.JLabel();
         jSeparator5 = new javax.swing.JSeparator();
         lSearch = new javax.swing.JLabel();
@@ -186,14 +177,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
 
         lCamelCaseBehaviorExample.setText("<html>Example: Caret stops at J, T, N in \"JavaTypeName\"<br>when using next/previous word acctions</html>");
 
-        lWhenSavingFiles.setText("When Saving Files");
-
-        lRemoveTrailingWhitespace.setLabelFor(cboRemoveTrailingWhitespace);
-        lRemoveTrailingWhitespace.setText("Remove Trailing Whitespace:");
-
-        cboRemoveTrailingWhitespace.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        lEditorSearchType.setLabelFor(cboRemoveTrailingWhitespace);
         lEditorSearchType.setText("Editor Search Type:");
 
         lSearch.setText("Search");
@@ -212,11 +195,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                 .addComponent(jSeparator5))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addComponent(lRemoveTrailingWhitespace)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cboRemoveTrailingWhitespace, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(lCollapseByDefault)
@@ -257,10 +235,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                 .addComponent(lCamelCaseBehavior1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator6))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(lWhenSavingFiles)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator4))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(lCamelCaseBehavior)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -313,14 +287,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                 .addComponent(cbCamelCaseBehavior)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lCamelCaseBehaviorExample, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(13, 13, 13)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lWhenSavingFiles))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lRemoveTrailingWhitespace)
-                    .addComponent(cboRemoveTrailingWhitespace, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(lSearch)
@@ -348,10 +314,8 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     private javax.swing.JCheckBox cbShowBraceOutline;
     private javax.swing.JCheckBox cbUseCodeFolding;
     private javax.swing.JComboBox cboEditorSearchType;
-    private javax.swing.JComboBox cboRemoveTrailingWhitespace;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JLabel lCamelCaseBehavior;
@@ -360,11 +324,9 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     private javax.swing.JLabel lCodeFolding;
     private javax.swing.JLabel lCollapseByDefault;
     private javax.swing.JLabel lEditorSearchType;
-    private javax.swing.JLabel lRemoveTrailingWhitespace;
     private javax.swing.JLabel lSearch;
     private javax.swing.JLabel lSearchtypeTooltip;
     private javax.swing.JLabel lUseCodeFolding;
-    private javax.swing.JLabel lWhenSavingFiles;
     // End of variables declaration//GEN-END:variables
     
     
@@ -404,7 +366,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             cbFoldInitialComments.addActionListener (this);
             cbCamelCaseBehavior.addActionListener (this);
             cbFoldTags.addActionListener (this);
-            cboRemoveTrailingWhitespace.addActionListener(this);
             cboEditorSearchType.addActionListener(this);
             cbBraceTooltip.addActionListener(this);
             cbShowBraceOutline.addActionListener(this);
@@ -430,9 +391,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             cbCamelCaseBehavior.setSelected(ccJava);
         }
 
-        // when saving files section
-        cboRemoveTrailingWhitespace.setSelectedItem(model.getRemoveTrailingWhitespace());
-        
         cboEditorSearchType.setSelectedItem(model.getEditorSearchType());
         
         cbBraceTooltip.setSelected(model.isBraceTooltip());
@@ -460,9 +418,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         
         // java camel case navigation
         model.setCamelCaseNavigation(cbCamelCaseBehavior.isSelected());
-        
-        // when saving files section
-        model.setRemoveTrailingWhitespace((String)cboRemoveTrailingWhitespace.getSelectedItem());
         
         model.setEditorSearchType((String)cboEditorSearchType.getSelectedItem());
         
@@ -506,26 +461,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         cbFoldTags.setEnabled(useCodeFolding);
     }
 
-    private static final class RemoveTrailingWhitespaceRenderer implements ListCellRenderer {
-
-        private final ListCellRenderer defaultRenderer;
-
-        public RemoveTrailingWhitespaceRenderer(ListCellRenderer defaultRenderer) {
-            this.defaultRenderer = defaultRenderer;
-        }
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            return defaultRenderer.getListCellRendererComponent(
-                    list,
-                    NbBundle.getMessage(GeneralEditorPanel.class, "RTW_" + value), //NOI18N
-                    index,
-                    isSelected,
-                    cellHasFocus);
-        }
-
-    } // End of RemoveTrailingWhitespaceRendererRenderer class
-    
     private static final class EditorSearchTypeRenderer implements ListCellRenderer {
 
         private final ListCellRenderer defaultRenderer;

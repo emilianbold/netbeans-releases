@@ -457,7 +457,7 @@ public final class PhpExecutable {
      */
     @CheckForNull
     public Integer runAndWait(@NonNull ExecutionDescriptor executionDescriptor, @NonNull String progressMessage) throws ExecutionException {
-        return runAndWait(DEFAULT_EXECUTION_DESCRIPTOR, progressMessage);
+        return runAndWait(executionDescriptor, null, progressMessage);
     }
 
     /**
@@ -676,6 +676,7 @@ public final class PhpExecutable {
     private static final class InfoInputProcessor implements InputProcessor {
 
         private final InputProcessor defaultProcessor;
+        private char lastChar;
 
 
         public InfoInputProcessor(InputProcessor defaultProcessor, List<String> fullCommand) {
@@ -689,7 +690,9 @@ public final class PhpExecutable {
 
         @Override
         public void processInput(char[] chars) throws IOException {
-            // noop
+            if (chars.length > 0) {
+                lastChar = chars[chars.length - 1];
+            }
         }
 
         @Override
@@ -700,8 +703,13 @@ public final class PhpExecutable {
         @NbBundle.Messages("InfoInputProcessor.done=Done.")
         @Override
         public void close() throws IOException {
-            String msg = colorize(Bundle.InfoInputProcessor_done()) + "\n"; // NOI18N
-            defaultProcessor.processInput(msg.toCharArray());
+            StringBuilder msg = new StringBuilder(Bundle.InfoInputProcessor_done().length() + 2);
+            if (!isNewLine(lastChar)) {
+                msg.append("\n"); // NOI18N
+            }
+            msg.append(colorize(Bundle.InfoInputProcessor_done()));
+            msg.append("\n"); // NOI18N
+            defaultProcessor.processInput(msg.toString().toCharArray());
         }
 
         private String getFullCommand(List<String> fullCommand) {
@@ -709,7 +717,11 @@ public final class PhpExecutable {
         }
 
         private String colorize(String msg) {
-            return "\033[1;30;47m" + msg + "\033[00m"; // NOI18N
+            return "\033[1;30m" + msg + "\033[0m"; // NOI18N
+        }
+
+        private boolean isNewLine(char ch) {
+            return ch == '\n' || ch == '\r' || ch == '\u0000'; // NOI18N
         }
 
     }

@@ -51,8 +51,8 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.Accessible;
@@ -467,7 +467,7 @@ public class WizardDescriptor extends DialogDescriptor {
     protected void initialize() {
         super.initialize();
 
-        updateState();
+        _updateState();
 
         // update buttons when setValid(...) called
         addPropertyChangeListener(new PropertyChangeListener() {
@@ -478,7 +478,7 @@ public class WizardDescriptor extends DialogDescriptor {
                         nextButton.setEnabled(false);
                         finishButton.setEnabled(false);
                     } else {
-                        updateState();
+                        _updateState();
                     }
                 }
             }
@@ -504,7 +504,7 @@ public class WizardDescriptor extends DialogDescriptor {
         init = false;
         //callInitialize ();
 
-        updateState();
+        _updateState();
     }
 
     /** Set a different list of panels.
@@ -525,7 +525,7 @@ public class WizardDescriptor extends DialogDescriptor {
         init = false;
         //callInitialize ();
 
-        updateState();
+        _updateState();
     }
 
     /** Set options permitted by the wizard considered as a <code>DialogDescriptor</code>.
@@ -632,7 +632,7 @@ public class WizardDescriptor extends DialogDescriptor {
         titleFormat = format;
 
         if (init) {
-            updateState();
+            _updateState();
         }
     }
 
@@ -784,7 +784,23 @@ public class WizardDescriptor extends DialogDescriptor {
         putProperty (PROP_WARNING_MESSAGE, msg);
     }
 
+    /**
+     * Subclasses may override updateState() so make sure we always call it
+     * from EDT.
+     */
+    private synchronized void _updateState() {
+        if (SwingUtilities.isEventDispatchThread ()) {
+            updateState();
+        } else {
+            SwingUtilities.invokeLater( new Runnable() {
 
+                @Override
+                public void run() {
+                    updateState();
+                }
+            });
+        }
+    }
 
     /** Updates buttons to reflect the current state of the panels.
     * Can be overridden by subclasses
@@ -795,16 +811,8 @@ public class WizardDescriptor extends DialogDescriptor {
     * </PRE></code>
     */
     protected synchronized void updateState() {
-        if (SwingUtilities.isEventDispatchThread ()) {
-            updateStateOpen (data);
-        } else {
-            SwingUtilities.invokeLater (new Runnable () {
-                @Override
-                public void run () {
-                   updateStateOpen (data);
-                }
-            });
-        }
+        assert SwingUtilities.isEventDispatchThread();
+        updateStateOpen (data);
     }
 
     private static final Set<String> logged = new HashSet<String>();
@@ -1005,6 +1013,16 @@ public class WizardDescriptor extends DialogDescriptor {
 
     /** Shows blocking wait cursor during updateState run */
     private void updateStateWithFeedback() {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+
+                @Override
+                public void run() {
+                    updateStateWithFeedback();
+                }
+            });
+            return;
+        }
         try {
             showWaitCursor();
             updateState();
@@ -1034,14 +1052,14 @@ public class WizardDescriptor extends DialogDescriptor {
                 Window parentWindow = SwingUtilities.getWindowAncestor((Component) getMessage());
 
                 if (parentWindow != null) {
-                    updateState();
+                    _updateState();
                     alreadyUpdated = true;
                     resizeWizard(parentWindow, previousSize);
                 }
             }
 
             if (!alreadyUpdated) {
-                updateState();
+                _updateState();
             }
 
             if (wizardPanel != null) {
@@ -1442,7 +1460,7 @@ public class WizardDescriptor extends DialogDescriptor {
                     err.log (Level.FINE, "validation failed", wve); // NOI18N
                     if( FINISH_OPTION.equals( getValue() ) )
                         setValue( getDefaultValue() );
-                    updateState ();
+                    _updateState ();
                     // cannot continue, notify user
                     if (wizardPanel != null) {
                         wizardPanel.setMessage(WizardPanel.MSG_TYPE_ERROR, wve.getLocalizedMessage());
@@ -2059,7 +2077,7 @@ public class WizardDescriptor extends DialogDescriptor {
         /** Change in the observed objects */
         @Override
         public void stateChanged(ChangeEvent ev) {
-            updateState();
+            _updateState();
         }
 
         /** Action listener */
@@ -2100,7 +2118,7 @@ public class WizardDescriptor extends DialogDescriptor {
                                 // annotations and severity)
                                 Exceptions.printStackTrace(ise);
                             }
-                            updateState();
+                            _updateState();
                         }
                         err.log(Level.FINE,
                                 "onValidPerformer on next button exit.");

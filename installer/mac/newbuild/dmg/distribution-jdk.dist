@@ -93,7 +93,7 @@ else
 {
 	// check if it is a downgrade
 	
-	tVersionResult = system.compareVersions(bundle.CFBundleVersion, "1.7.07.10");
+	tVersionResult = system.compareVersions(bundle.CFBundleVersion, "1.7.09.05");
 	if (tVersionResult == 1) 
 	{
 		// Means installed version > current payload
@@ -131,7 +131,7 @@ function pm_choice1_enabled() {
     </choices-outline>
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="choice0" title="JDK_VERSION">
-        <pkg-ref id="com.oracle.jdk7u7"/>
+        <pkg-ref id="com.oracle.jdk7u9"/>
     </choice>
     <choice id="choice1" title="plugin" selected="pm_choice1_selected()" enabled="pm_choice1_enabled()">
         <pkg-ref id="com.oracle.jre"/>
@@ -142,8 +142,8 @@ function pm_choice1_enabled() {
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
     </choice> 
-    <pkg-ref id="com.oracle.jdk7u7" installKBytes="237832" version="1.1" auth="Root">file:./Contents/Packages/JDK%207%20Update%2007.pkg#jdk17007.pkg</pkg-ref>
-    <pkg-ref id="com.oracle.jre" installKBytes="145364" version="1.1" auth="Root">file:./Contents/Packages/JDK%207%20Update%2007.pkg#javaappletplugin.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jdk7u9" installKBytes="237880" version="1.1" auth="Root">file:./Contents/Packages/JDK%207%20Update%2009.pkg#jdk17009.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jre" installKBytes="145400" version="1.1" auth="Root">file:./Contents/Packages/JDK%207%20Update%2009.pkg#javaappletplugin.pkg</pkg-ref>
     <pkg-ref id="com.oracle.jre">
         <relocate search-id="pkmktoken18">
             <bundle id="com.oracle.java.Java-Updater"/>

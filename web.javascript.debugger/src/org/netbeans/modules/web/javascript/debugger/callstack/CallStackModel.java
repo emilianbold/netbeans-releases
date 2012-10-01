@@ -57,6 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
+import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -83,14 +84,14 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             "org/netbeans/modules/debugger/resources/callStackView/CurrentFrame"; // NOI18N
 
     private Debugger debugger;
-    private Project project;
+    private ProjectContext pc;
 
     private AtomicReference<List<? extends CallFrame>> stackTrace = 
             new AtomicReference<List<? extends CallFrame>>(new ArrayList<CallFrame>());
     
     public CallStackModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
-        project = contextProvider.lookupFirst(null, Project.class);
+        pc = contextProvider.lookupFirst(null, ProjectContext.class);
         debugger.addListener(this);
         debugger.addPropertyChangeListener(this);
         // update now:
@@ -214,16 +215,19 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             if (node instanceof CallFrame) {
                 frame = (CallFrame) node;
                 file = frame.getScript().getURL();
-                FileObject fo = null;
-                try {
-                    URL url = URI.create(file).toURL();
-                    if (project != null) {
-                        fo = ServerURLMapping.fromServer(project, url);
+                if (!file.isEmpty()) {
+                    FileObject fo = null;
+                    try {
+                        URL url = URI.create(file).toURL();
+                        Project project = pc.getProject();
+                        if (project != null) {
+                            fo = ServerURLMapping.fromServer(project, url);
+                        }
+                    } catch (MalformedURLException ex) {
                     }
-                } catch (MalformedURLException ex) {
-                }
-                if (fo != null) {
-                    file = fo.getNameExt();
+                    if (fo != null) {
+                        file = fo.getNameExt();
+                    }
                 }
             } else if (node instanceof JToolTip) {
                 JToolTip tooltip = (JToolTip) node;
@@ -231,15 +235,18 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
                 if (node instanceof CallFrame) {
                     frame = (CallFrame) node;
                     file = frame.getScript().getURL();
-                    try {
-                        URL url = URI.create(file).toURL();
-                        if (project != null) {
-                            FileObject fo = ServerURLMapping.fromServer(project, url);
-                            if (fo != null) {
-                                file = FileUtil.getFileDisplayName(fo);
+                    if (!file.isEmpty()) {
+                        try {
+                            URL url = URI.create(file).toURL();
+                            Project project = pc.getProject();
+                            if (project != null) {
+                                FileObject fo = ServerURLMapping.fromServer(project, url);
+                                if (fo != null) {
+                                    file = FileUtil.getFileDisplayName(fo);
+                                }
                             }
+                        } catch (MalformedURLException ex) {
                         }
-                    } catch (MalformedURLException ex) {
                     }
                 } else {
                     throw new UnknownTypeException("Unknown Type Node: " + node);   // NOI18N

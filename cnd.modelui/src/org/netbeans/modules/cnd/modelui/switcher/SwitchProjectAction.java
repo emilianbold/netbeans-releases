@@ -71,7 +71,7 @@ public final class SwitchProjectAction extends NodeAction {
     private final AtomicBoolean running = new AtomicBoolean(false);
     
     private enum State {
-        Enabled, Disabled, Indeterminate
+        Enabled, Disabled, Indeterminate, BeingCreated
     }
     
     public SwitchProjectAction() {
@@ -117,14 +117,26 @@ public final class SwitchProjectAction extends NodeAction {
         else {
 	    try {
 		State state = getState(projects);
-		if( state == State.Indeterminate ) {
-		    presenter.setEnabled(!running.get());
-		    presenter.setSelected(false);
-		}
-		else {
-		    presenter.setEnabled(!running.get());
-		    presenter.setSelected(state == State.Enabled);
-		}
+                switch (state) {
+                    case Indeterminate:
+                        presenter.setEnabled(!running.get());
+                        presenter.setSelected(false);
+                        break;
+                    case BeingCreated:
+                        presenter.setEnabled(false);
+                        presenter.setSelected(true);
+                        break;
+                    case Enabled:
+                        presenter.setEnabled(!running.get());
+                        presenter.setSelected(true);
+                        break;
+                    case Disabled:
+                        presenter.setEnabled(!running.get());
+                        presenter.setSelected(false);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("" + state); //NOI18N
+                }
 	    }
 	    catch( Throwable thr ) { 
 		// we are in awt thread;
@@ -165,10 +177,11 @@ public final class SwitchProjectAction extends NodeAction {
         State state = State.Indeterminate;
         for( NativeProject p : projects ) {
             State curr = getState(p);
-            if( state == State.Indeterminate ) {
+            if( state == State.BeingCreated ) {
+                return State.BeingCreated;
+            } else if( state == State.Indeterminate ) {
                 state = curr;
-            }
-            else {
+            } else {
                 if( state != curr ) {
                     return State.Indeterminate;
                 }
@@ -178,7 +191,14 @@ public final class SwitchProjectAction extends NodeAction {
     }
     
     private State getState(NativeProject p) {
-        return model.isProjectEnabled(p) ? State.Enabled : State.Disabled;
+        Boolean enabled = model.isProjectEnabled(p);
+        if (enabled == null) {
+            return State.BeingCreated;
+        } else if (enabled.booleanValue()) {
+            return State.Enabled;
+        } else {
+            return State.Disabled;
+        }
     }
     
     @Override
@@ -193,7 +213,19 @@ public final class SwitchProjectAction extends NodeAction {
         if( projects == null) {
             return false;
         }
-        return getState(projects) != State.Indeterminate;
+        State state = getState(projects);
+        switch (state) {
+            case Enabled: 
+                return true;
+            case Disabled: 
+                return true;
+            case Indeterminate: 
+                return false;
+            case BeingCreated: 
+                return false;
+            default: 
+                throw new IllegalArgumentException("" + state); //NOI18N
+        }
     }
 
     private void onActionPerformed() {

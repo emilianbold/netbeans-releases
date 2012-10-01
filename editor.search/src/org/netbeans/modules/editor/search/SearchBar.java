@@ -118,6 +118,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private Rectangle actualViewPort;
     private boolean highlightCanceled = false;
     private boolean whenOpenedWasNotVisible = false;
+    private boolean lastIncrementalSearchWasSuccessful = true;
 
     public static SearchBar getInstance() {
         if (searchbarInstance == null) {
@@ -664,15 +665,15 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
         incSearchTextField.requestFocusInWindow();
 
-        if (incSearchTextField.getText().length() > 0) {
-            // preselect the text in incremental search text field
+        boolean empty = incSearchTextField.getText().isEmpty();
+        if (!empty) { // preselect the text in incremental search text field
             incSearchTextField.selectAll();
-            findPreviousButton.setEnabled(true);
-            findNextButton.setEnabled(true);
-        } else {
-            findPreviousButton.setEnabled(false);
-            findNextButton.setEnabled(false);
         }
+        findPreviousButton.setEnabled(!empty);
+        findNextButton.setEnabled(!empty);
+        ReplaceBar.getInstance(this).getReplaceButton().setEnabled(!empty);
+        ReplaceBar.getInstance(this).getReplaceAllButton().setEnabled(!empty);
+
         actualViewPort = getActualTextComponent().getVisibleRect();
         if (!isClosingSearchType() && highlightCanceled) {
             searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -698,6 +699,10 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.FALSE);
             highlightCanceled = true;
         }
+        searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
+        searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
+        searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
+        EditorFindSupport.getInstance().putFindProperties(searchProps.getProperties());
     }
 
     private void incrementalSearch() {
@@ -747,6 +752,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
                 org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
                 changeHighlightCheckboxName(getCountFindMatches(findSupport));
+                lastIncrementalSearchWasSuccessful = true;
             } else {
                 // text not found - indicate error in incremental search
                 // text field with red foreground
@@ -754,7 +760,10 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), NbBundle.getMessage(
                         SearchBar.class, "incremental-search-not-found", incrementalSearchText),
                         StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND); //NOI18N
-                Toolkit.getDefaultToolkit().beep();
+                if (lastIncrementalSearchWasSuccessful) {
+                    Toolkit.getDefaultToolkit().beep();
+                    lastIncrementalSearchWasSuccessful = false;
+                }
                 changeHighlightCheckboxName(0);
             }
         }

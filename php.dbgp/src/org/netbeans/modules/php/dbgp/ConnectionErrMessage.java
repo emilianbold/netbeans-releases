@@ -66,7 +66,7 @@ public class ConnectionErrMessage extends javax.swing.JPanel {
     private final String message;
     public static void showMe(int seconds) {
         ConnectionErrMessage panel = new ConnectionErrMessage(seconds);
-        
+
         NotifyDescriptor messageDescriptor = new NotifyDescriptor.Message("");//NOI18N
         DialogDescriptor descr2 = new DialogDescriptor(panel, messageDescriptor.getTitle(),
                 true, new Object[]{DialogDescriptor.OK_OPTION}, null, DialogDescriptor.BOTTOM_ALIGN, null, null);
@@ -86,15 +86,15 @@ public class ConnectionErrMessage extends javax.swing.JPanel {
         final String entry3 = "<li>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSessionEntry3")+"</li>";//NOI18N
         final String entry4 = "<li>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSessionEntry4",
                 String.valueOf(debuggerPort))+"</li>";//NOI18N
-        final String entries = "<ul>"+entry1+entry2+entry3+entry4+"</ul>";       
+        final String entries = "<ul>"+entry1+entry2+entry3+entry4+"</ul>";
         return "<html>"+NbBundle.getMessage(ConnectionErrMessage.class, "MSG_ErrDebugSession", seconds,entries)+"</html>";//NOI18N
     }
-    
+
     private static JLabel createIconLabel() {
         final Icon icon = UIManager.getIcon("OptionPane.informationIcon");//NOI18N
         return (icon != null) ? new JLabel(icon) : new JLabel();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -180,9 +180,7 @@ public class ConnectionErrMessage extends javax.swing.JPanel {
                 assert hlevt.getURL() != null;
                 HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault();
                 assert displayer != null : "HtmlBrowser.URLDisplayer found.";
-                if (displayer != null) {
-                    displayer.showURL(hlevt.getURL());
-                }
+                displayer.showURL(hlevt.getURL());
             }
         }
     }

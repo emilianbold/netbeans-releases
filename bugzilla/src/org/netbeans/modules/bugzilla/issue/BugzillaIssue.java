@@ -103,6 +103,7 @@ import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -1311,7 +1312,12 @@ public class BugzillaIssue {
                     @Override
                     public void run() {
                         try {
-                            getAttachementData(new FileOutputStream(file));
+                            FileOutputStream fos = new FileOutputStream(file);
+                            try {
+                                getAttachementData(fos);
+                            } finally {
+                                fos.close();
+                            }
                         } catch (IOException ioex) {
                             Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
                         } finally {
@@ -1356,7 +1362,12 @@ public class BugzillaIssue {
                 prefix = prefix + "tmp";                                //NOI18N
             }
             File file = File.createTempFile(prefix, suffix);
-            getAttachementData(new FileOutputStream(file));
+            FileOutputStream fos = new FileOutputStream(file);
+            try {
+                getAttachementData(fos);
+            } finally {
+                fos.close();
+            }
             return file;
         }
 

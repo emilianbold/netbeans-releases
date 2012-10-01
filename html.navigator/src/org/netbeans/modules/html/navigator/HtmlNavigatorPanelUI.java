@@ -147,6 +147,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             String propName = evt.getPropertyName();
             if (PageModel.PROP_DOCUMENT.equals(propName)) {
                 pageModelDocumentChanged();
+                List nodes = translate(manager.getSelectedNodes());
+                pageModel.setSelectedNodes(nodes);
             } else if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
                 updateSelection();
             } else if (PageModel.PROP_HIGHLIGHTED_NODES.equals(propName)) {
@@ -315,6 +317,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             return null;
         }
         String inspectedURL = pageModel.getDocumentURL();
+        if (inspectedURL == null) {
+            return null;
+        }
         try {
             
             URL url = new URL(inspectedURL);
@@ -487,14 +492,14 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         if (!"text/html".equals(FileUtil.getMIMEType(fo))) {
             return;
         }
-        
+
         setPageModel(PageInspectorImpl.getDefault().getPage());
 
         Source source = Source.create(fo);
-        if (source == null) {
+        if (source == null || !"text/html".equals(source.getMimeType())) {
             return;
         }
-        
+
         //TODO: uncomment when working again
         //showWaitNode();
         
@@ -861,6 +866,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      * Updates the set of highlighted nodes.
      */
     final void updateHighlight() {
+        if (pageModel==null) {
+            return;
+        }
         synchronized (highlightedTreeNodes) {
             highlightedTreeNodes.clear();
             //System.out.println("highlighted treenodes cleared");
@@ -1007,20 +1015,21 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 }
             }
 
-            private List translate(Node[] selectedNodes) {
-                List result = new ArrayList();
-                for (Node n:selectedNodes) {
-                    if (n instanceof HtmlElementNode) {
-                        Node domNode = ((HtmlElementNode) n).getDOMNode();
-                        if (domNode!=null) {
-                            result.add(domNode);
-                        }
-                    }
-                }
-                return result;
-            }
         };
     }    
+
+    private List translate(Node[] selectedNodes) {
+        List result = new ArrayList();
+        for (Node n : selectedNodes) {
+            if (n instanceof HtmlElementNode) {
+                Node domNode = ((HtmlElementNode) n).getDOMNode();
+                if (domNode != null) {
+                    result.add(domNode);
+                }
+            }
+        }
+        return result;
+    }
     
     
 }

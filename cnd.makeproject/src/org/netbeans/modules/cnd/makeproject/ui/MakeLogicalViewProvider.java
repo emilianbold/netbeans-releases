@@ -46,9 +46,13 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.awt.Image;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -70,6 +74,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
@@ -87,12 +92,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     static final Image brokenLinkBadge = loadToolTipImage(brokenLinkBadgePath, "BrokenLinkTxt"); // NOI18N
     static final Image brokenProjectBadge = loadToolTipImage(brokenProjectBadgePath, "BrokenProjectTxt"); // NOI18N
     static final Image brokenIncludeBadge = loadToolTipImage(brokenIncludeImgPath, "BrokenIncludeTxt"); // NOI18N
-
     static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
     static final String SUBTYPE_FOLDER = "x-org-netbeans-modules-cnd-makeproject-uidnd-folder"; // NOI18N
     static final String MASK = "mask"; // NOI18N
     final static RequestProcessor ANNOTATION_RP = new RequestProcessor("MakeLogicalViewProvider.AnnotationUpdater", 10); // NOI18N
-
     private final MakeProject project;
     private MakeLogicalViewRootNode projectRootNode;
 
@@ -134,7 +137,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         ic.add(searchInfo);
         projectRootNode = new MakeLogicalViewRootNode(null, this, ic);
     }
-
     private final AtomicBoolean findPathMode = new AtomicBoolean(false);
 
     boolean isFindPathMode() {
@@ -197,8 +199,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         returnNode = nodes[index];
                     }
                     /*
-                    if (nodes.length > 0)
-                    returnNode = nodes[nodes.length -1];
+                     if (nodes.length > 0)
+                     returnNode = nodes[nodes.length -1];
                      */
                 }
             } finally {
@@ -255,8 +257,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     /**
-     * HACK: set the folder node visible in the project explorer
-     * See IZ7551
+     * HACK: set the folder node visible in the project explorer See IZ7551
      */
     public static void setVisible(Project project, Folder folder) {
         Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
@@ -276,7 +277,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     public static void setVisible(final Project project, final Item[] items) {
         SwingUtilities.invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
@@ -302,7 +302,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return;
         }
         SwingUtilities.invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
@@ -322,7 +321,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return;
         }
         SwingUtilities.invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
@@ -342,7 +340,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return;
         }
         SwingUtilities.invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 if (item == null) {
@@ -369,18 +366,51 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         checkForChangedViewItemNodes(findProjectNode(rootNode, project));
     }
 
-    private static void checkForChangedViewItemNodes(Node root) {
-        if (root != null) {
-            for (Node node : root.getChildren().getNodes(true)) {
-                checkForChangedViewItemNodes(node);
-                if (node instanceof FilterNode) {
-                    Object o = node.getLookup().lookup(ViewItemNode.class);
-                    if (o != null) {
-                        ((ChangeListener) o).stateChanged(null);
+    private static class ChangedViewItemNodesChecker extends SwingWorker<Collection<ChangeListener>, Object> {
+
+        private Node root = null;
+
+        public ChangedViewItemNodesChecker(Node root) {
+            this.root = root;
+        }
+
+        @Override
+        protected Collection<ChangeListener> doInBackground() throws Exception {
+            List<ChangeListener> result = new LinkedList<ChangeListener>();
+            doWork(root, result);
+            return result;
+        }
+
+        private void doWork(Node current, List<ChangeListener> result) {
+            if (current != null) {
+                for (Node node : current.getChildren().getNodes(true)) {
+                    doWork(node, result);
+                    if (node instanceof FilterNode) {
+                        Object o = node.getLookup().lookup(ViewItemNode.class);
+                        if (o != null) {
+                            result.add((ChangeListener) o);
+                        }
                     }
                 }
             }
         }
+
+        @Override
+        protected void done() {
+            try {
+                for (ChangeListener listener : get()) {
+                    listener.stateChanged(null);
+                }
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    private static void checkForChangedViewItemNodes(Node root) {
+        (new ChangedViewItemNodesChecker(root)).execute();
     }
 
     /**
@@ -418,7 +448,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             final Node[] root = new Node[1];
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
-
                     @Override
                     public void run() {
                         root[0] = getRootNode();
@@ -486,5 +515,4 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         return pdp.gotDescriptor();
     }
-
 }

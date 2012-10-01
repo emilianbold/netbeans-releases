@@ -55,16 +55,16 @@ public class QuestionDialogOperatorTest extends NbDialogOperatorTest {
     /** "Question" */
     private static final String TEST_DIALOG_TITLE =
             Bundle.getString("org.openide.text.Bundle", "LBL_SaveFile_Title");
+    public static String[] tests = new String[]{
+        "testConstructorWithParameter",
+        "testLblQuestion"
+    };
 
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public QuestionDialogOperatorTest(String testName) {
         super(testName);
-    }
-
-    static {
-        tests = new String[]{"testConstructorWithParameter", "testLblQuestion"};
     }
 
     public static Test suite() {

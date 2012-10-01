@@ -88,7 +88,7 @@ public class TwigParserResult extends ParserResult {
         return errorList;
     }
 
-    public class Error implements org.netbeans.modules.csl.api.Error {
+    public static class Error implements org.netbeans.modules.csl.api.Error {
 
         String description;
         int offset;
@@ -156,7 +156,7 @@ public class TwigParserResult extends ParserResult {
         }
     }
 
-    public class Block {
+    public static class Block {
 
         CharSequence function;
         int offset;

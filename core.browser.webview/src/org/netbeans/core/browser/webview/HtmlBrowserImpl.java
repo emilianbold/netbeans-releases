@@ -105,6 +105,7 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
     
     @Override
     public void reloadDocument() {
+        init();
         getBrowser().reloadDocument();
     }
 
@@ -158,6 +159,7 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
         final TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
         final WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
         final NetBeansJavaScriptDebuggerFactory debuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
+        final MessageDispatcherImpl dispatcher = getLookup().lookup(MessageDispatcherImpl.class);
         if (webkitDebugger == null || debuggerFactory == null) {
             return;
         }
@@ -168,9 +170,13 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
                     debuggerFactory.stopDebuggingSession(session);
                 }
                 session = null;
+                if (dispatcher != null) {
+                    dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
+                }
                 if (webkitDebugger.getDebugger().isEnabled()) {
                     webkitDebugger.getDebugger().disable();
                 }
+                webkitDebugger.reset();
                 transport.detach();
             }
         });

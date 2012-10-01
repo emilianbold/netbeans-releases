@@ -86,9 +86,6 @@ public class JsIndexer extends EmbeddingIndexer {
             return;
         }
 
-        List<IndexDocument> documents = new LinkedList<IndexDocument>();
-        IndexDocument reverseIdxDocument = support.createDocument(indexable);
-
         JsObject globalObject = model.getGlobalObject();
         for(JsObject object : globalObject.getProperties().values()) {
             storeObject(object, support, indexable);
@@ -96,7 +93,7 @@ public class JsIndexer extends EmbeddingIndexer {
     }
 
     private void storeObject(JsObject object, IndexingSupport support, Indexable indexable) {
-        if (object.isDeclared()) {
+        if (object.isDeclared() || object.getName().equals("prototype")) {
             // if it's delcared, then store in the index as new document.
             support.addDocument(IndexedElement.createDocument(object, support, indexable));
         }
@@ -112,7 +109,7 @@ public class JsIndexer extends EmbeddingIndexer {
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "js"; // NOI18N
-        public static final int VERSION = 2;
+        public static final int VERSION = 4;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

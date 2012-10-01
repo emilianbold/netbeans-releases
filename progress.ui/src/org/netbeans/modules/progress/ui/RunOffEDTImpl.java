@@ -64,14 +64,11 @@ import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress;
+import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress2;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
+import org.openide.util.*;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
@@ -81,9 +78,11 @@ import org.openide.windows.WindowManager;
  * @author Jan Lahoda, Tomas Holy
  */
 @ServiceProvider(service=RunOffEDTProvider.class, position = 100)
-public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
+public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
 
     private static final RequestProcessor WORKER = new RequestProcessor(ProgressUtils.class.getName());
+    private static final RequestProcessor TI_WORKER = new RequestProcessor("TI_" + ProgressUtils.class.getName(), 1, true);
+    
     private static final Map<String, Long> CUMULATIVE_SPENT_TIME = new HashMap<String, Long>();
     private static final Map<String, Long> MAXIMAL_SPENT_TIME = new HashMap<String, Long>();
     private static final Map<String, Integer> INVOCATION_COUNT = new HashMap<String, Integer>();
@@ -216,10 +215,94 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
             }
         }
     }
+    
+    @Override
+    public void runOffEventThreadWithCustomDialogContent(Runnable operation, String dialogTitle, JPanel content, int waitCursorAfter, int dialogAfter)
+    {
+        runOffEventThreadCustomDialogImpl(operation, dialogTitle, content, waitCursorAfter, dialogAfter);
+    }
 
+    @Override
+    public void runOffEventThreadWithProgressDialog(final Runnable operation, final String operationDescr,
+            ProgressHandle handle, boolean includeDetailLabel, int waitCursorAfter, int dialogAfter) {
+        JPanel content = contentPanel(handle, includeDetailLabel);
+        runOffEventThreadCustomDialogImpl(operation, operationDescr, content, waitCursorAfter, dialogAfter);
+    }
+    
+    private void runOffEventThreadCustomDialogImpl(final Runnable operation, final String operationDescr,
+            final JPanel contentPanel, int waitCursorAfter, int dialogAfter) {
+        if (waitCursorAfter < 0) waitCursorAfter = 1000;
+        if (dialogAfter < 0) dialogAfter = 2000;
+        
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference<Dialog> d = new AtomicReference<Dialog>();
+        final AtomicReference<RequestProcessor.Task> t  = new AtomicReference<RequestProcessor.Task>();
+        
+        JDialog dialog = createModalDialog(operation, operationDescr, contentPanel, d, t, operation instanceof Cancellable);
+
+        final Task rt = TI_WORKER.post(new Runnable() {
+
+            public @Override void run() {
+		try {
+		    operation.run();
+		} finally {
+		    latch.countDown();
+
+		    SwingUtilities.invokeLater(new Runnable() {
+
+			public @Override void run() {
+			    Dialog dd = d.get();
+			    if (dd != null) {
+				dd.setVisible(false);
+				dd.dispose();
+			    }
+			}
+		    });
+		}
+            }
+        });
+        t.set(rt);
+
+        Window window = null;
+        Component glassPane = null;
+        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if (focusOwner != null) {
+            window = SwingUtilities.getWindowAncestor(focusOwner);
+            if (window != null) {
+                RootPaneContainer root = (RootPaneContainer) SwingUtilities.getAncestorOfClass(RootPaneContainer.class, focusOwner);
+                glassPane = root.getGlassPane();   
+            }
+        } 
+        if (window == null || glassPane == null) {
+            window = WindowManager.getDefault().getMainWindow();
+            glassPane = ((JFrame) window).getGlassPane();
+        }
+        if (waitMomentarily(glassPane, null, waitCursorAfter, latch, window)) {
+            return;
+        }
+
+        Cursor wait = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+
+        if (waitMomentarily(glassPane, wait, dialogAfter, latch, window)) {
+            return;
+        }
+
+        d.set(dialog);
+        if (EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    d.get().setVisible(true);
+                }
+            });
+        } else {
+            d.get().setVisible(true);
+        }
+    }
+    
     private static boolean waitMomentarily(Component glassPane, Cursor wait, int timeout, final CountDownLatch l, Window window) {
         Cursor originalWindow = window.getCursor();
-        Cursor originalGlass = glassPane.getCursor();
+        Cursor originalGlass = glassPane.getCursor();    
 
         try {
             if (wait != null) {
@@ -411,5 +494,111 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
             }
         }
 
+    }
+
+    private static JPanel contentPanel(final ProgressHandle handle, boolean includeDetail) {
+        // top panel
+        JPanel contentPanel = new JPanel(new GridBagLayout());
+        
+        // main label
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        
+        JLabel mainLabel = ProgressHandleFactory.createMainLabelComponent(handle);
+        Font f = mainLabel.getFont();
+        if (f != null) {
+            mainLabel.setFont(f.deriveFont(Font.BOLD));
+        }
+        contentPanel.add(mainLabel, gridBagConstraints);
+        
+        // progress bar
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
+        contentPanel.add (progressBar, gridBagConstraints);
+        
+        if (includeDetail) {
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 2;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+            JLabel details = ProgressHandleFactory.createDetailLabelComponent(handle);
+            contentPanel.add(details, gridBagConstraints);
+        }
+        
+        // empty panel - for correct resizing
+        JPanel emptyPanel = new JPanel();
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = includeDetail ? 3 : 2;
+        gridBagConstraints.weighty = 2.0;
+        gridBagConstraints.weightx = 2.0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        contentPanel.add(emptyPanel, gridBagConstraints);
+        
+        return contentPanel;
+    }
+    
+    private static JDialog createModalDialog(
+            final Runnable operation,
+            final String title,
+            final JPanel content,
+            final AtomicReference<Dialog> d,
+            final AtomicReference<RequestProcessor.Task> task,
+            final boolean cancelAvail) 
+    {
+        assert EventQueue.isDispatchThread();
+        
+        JPanel panel = new JPanel(new GridBagLayout());
+        
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        
+        panel.add(content, gridBagConstraints);
+        
+        if (cancelAvail) {
+            JPanel buttonsPanel = new JPanel();
+            buttonsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+            String cancelButton = NbBundle.getMessage(RunOffEDTImpl.class, "RunOffAWT.BTN_Cancel"); //NOI18N
+            JButton cancel = new JButton(cancelButton);
+            cancel.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (operation instanceof Cancellable) {
+                        ((Cancellable) operation).cancel();
+                        task.get().cancel();
+                        d.get().setVisible(false);
+                        d.get().dispose();
+                    }
+                }
+            });
+            buttonsPanel.add(cancel);
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 1;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            gridBagConstraints.weightx = 1.0;
+            panel.add(buttonsPanel, gridBagConstraints);
+        }
+        
+        Frame mainWindow = WindowManager.getDefault().getMainWindow();
+        final JDialog result = new JDialog(mainWindow, title, true);
+        result.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        result.setSize(400, 150);
+        result.setContentPane(panel);
+        result.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
+        return result;
     }
 }

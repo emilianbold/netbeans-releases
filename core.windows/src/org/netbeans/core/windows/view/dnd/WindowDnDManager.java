@@ -1298,6 +1298,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
         @Override
         public int getKind() {
+            if( null == getStartingDroppable() )
+                return Constants.MODE_KIND_EDITOR;
             return getStartingDroppable().getKind();
         }
 

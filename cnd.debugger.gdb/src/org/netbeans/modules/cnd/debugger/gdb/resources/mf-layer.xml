@@ -103,6 +103,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
                 </file>
             </folder>
             <folder name="x-c++">
@@ -138,6 +139,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
                 </file>
             </folder>
             
@@ -176,6 +178,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
                 </file>
             </folder>
             
@@ -239,6 +242,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
                 </file>
             </folder>
         </folder>

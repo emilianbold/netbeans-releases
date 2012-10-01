@@ -62,6 +62,7 @@ import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
 
 /**
  *
@@ -104,6 +105,8 @@ public final class ElementUtils {
                 return ElementKind.CLASS;
             }
             return ElementKind.VARIABLE;
+        } else if (node instanceof Parameter) {
+            return ElementKind.VARIABLE;
         } else if (node instanceof DeclarationExpression) {
             return ElementKind.VARIABLE;
         }
@@ -130,8 +133,17 @@ public final class ElementUtils {
      * @throws IllegalStateException if an implementation is missing for the given ASTNode type
      */
     public static ClassNode getType(ASTNode node) {
+        if (node instanceof FakeASTNode) {
+            node = ((FakeASTNode) node).getOriginalNode();
+        }
+
         if (node instanceof ClassNode) {
-            return ((ClassNode) node);
+            ClassNode clazz = ((ClassNode) node);
+            if (clazz.getComponentType() != null) {
+                return clazz.getComponentType();
+            } else {
+                return clazz;
+            }
         } else if (node instanceof FieldNode) {
             return ((FieldNode) node).getType();
         } else if (node instanceof PropertyNode) {
@@ -166,6 +178,10 @@ public final class ElementUtils {
     }
 
     public static String getNameWithoutPackage(ASTNode node) {
+        if (node instanceof FakeASTNode) {
+            node = ((FakeASTNode) node).getOriginalNode();
+        }
+
         String name = null;
         if (node instanceof ClassNode) {
             name = ((ClassNode) node).getNameWithoutPackage();
@@ -276,6 +292,10 @@ public final class ElementUtils {
         // This will happened with all arrays except primitive type arrays
         if (typeName.endsWith("[]")) { // NOI18N
             typeName = typeName.substring(0, typeName.length() - 2);
+        }
+
+        if (typeName.endsWith(";")) { // NOI18N
+            typeName = typeName.substring(0, typeName.length() - 1);
         }
         return typeName;
     }

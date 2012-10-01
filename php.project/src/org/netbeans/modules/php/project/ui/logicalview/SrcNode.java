@@ -83,6 +83,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Radek Matous
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
 public class SrcNode extends FilterNode {
     static final Image PACKAGE_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
@@ -220,6 +221,7 @@ public class SrcNode extends FilterNode {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
     private static final class PackageNode extends FilterNode {
 
         private final PhpProject project;
@@ -253,7 +255,8 @@ public class SrcNode extends FilterNode {
             List<Action> actions = new ArrayList<Action>();
             actions.addAll(Arrays.asList(getOriginal().getActions(context)));
             Action[] commonActions = getCommonActions();
-            int idx = actions.indexOf(SystemAction.get(PasteAction.class));
+            // find first separator and add actions there
+            int idx = actions.indexOf(null);
             for (int i = 0; i < commonActions.length; i++) {
                 if (idx >= 0 && idx + commonActions.length < actions.size()) {
                     //put on the proper place after paste
@@ -289,18 +292,20 @@ public class SrcNode extends FilterNode {
         private Action[] getCommonActions() {
             if (isTest) {
                 return new Action[] {
+                    ProjectSensitiveActions.projectCommandAction(RunTestsCommand.ID, RunTestsCommand.DISPLAY_NAME, null),
                     null,
-                    ProjectSensitiveActions.projectCommandAction(RunTestsCommand.ID, RunTestsCommand.DISPLAY_NAME, null)
                 };
             }
             // remove sync action
-            Action[] actions = new Action[COMMON_ACTIONS.length - 1];
+            Action[] actions = new Action[COMMON_ACTIONS.length];
             System.arraycopy(COMMON_ACTIONS, 0, actions, 0, COMMON_ACTIONS.length - 1);
+            actions[actions.length - 1] = null;
             return actions;
         }
 
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
     private static final class ObjectNode extends FilterNode {
         private final Node originalNode;
         private final boolean isTest;
@@ -315,7 +320,8 @@ public class SrcNode extends FilterNode {
         public Action[] getActions(boolean context) {
             List<Action> actions = new ArrayList<Action>();
             actions.addAll(Arrays.asList(getOriginal().getActions(context)));
-            int idx = actions.indexOf(SystemAction.get(PasteAction.class));
+            // find first separator and add actions there
+            int idx = actions.indexOf(null);
             Action[] toAdd = getCommonActions();
             for (int i = 0; i < toAdd.length; i++) {
                 if (idx >= 0 && idx + toAdd.length < actions.size()) {
@@ -357,6 +363,7 @@ public class SrcNode extends FilterNode {
             if (!isTest) {
                 actions.addAll(Arrays.asList(COMMON_ACTIONS));
             }
+            actions.add(null);
 
             return actions.toArray(new Action[actions.size()]);
         }

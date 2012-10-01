@@ -43,7 +43,6 @@ package org.netbeans.modules.nativeexecution.api.execution;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.EnumSet;
@@ -163,6 +162,7 @@ public final class NativeExecutionService {
             @Override
             public Integer call() throws Exception {
                 ProgressHandle progressHandle = null;
+
                 try {
                     if (descriptor.showProgress) {
                         Cancellable c = null;
@@ -179,6 +179,7 @@ public final class NativeExecutionService {
                                 }
                             };
                         }
+
                         progressHandle = ProgressHandleFactory.createHandle(displayName, c, new AbstractAction() {
 
                             @Override
@@ -188,6 +189,7 @@ public final class NativeExecutionService {
                         });
                         progressHandle.start();
                     }
+
                     final NativeProcess process = processBuilder.call();
 
                     if (descriptor.frontWindow) {
@@ -216,22 +218,21 @@ public final class NativeExecutionService {
                     }
 
                     /**
-                     * As IO could be re-used we need to 'unlock' it
-                     * because it could be 'locked' by previous run...
-                     * (It is always set to read-only mode on run finish)
+                     * As IO could be re-used we need to 'unlock' it because it
+                     * could be 'locked' by previous run... (It is always set to
+                     * read-only mode on run finish)
                      */
                     IOTerm.term(descriptor.inputOutput).setReadOnly(!descriptor.inputVisible);
 
                     PtySupport.connect(descriptor.inputOutput, process);
 
                     /**
-                     * We call invokeAndWait here to be sure that connect is 
-                     * done. This is because connection is asynchronious 
-                     * operation that occurs in EDT.
-                     * return from connect() guarantees that event was posted to
-                     * EDT. So our event is queued after that one.
-                     * So as soon as our is processed we are sure that connection
-                     * is done.
+                     * We call invokeAndWait here to be sure that connect is
+                     * done. This is because connection is asynchronous
+                     * operation that occurs in EDT. return from connect()
+                     * guarantees that event was posted to EDT. So our event is
+                     * queued after that one. So as soon as our is processed we
+                     * are sure that connection is done.
                      */
                     SwingUtilities.invokeAndWait(new Runnable() {
 
@@ -249,25 +250,8 @@ public final class NativeExecutionService {
 
                     return process.waitFor();
                 } finally {
-                    // draining...
-                    // before starting post execution routine
-                    // need to be sure that all process'es output was read
-                    final NativeProcess p = processRef.get();
-                    if (p != null) {
-                        final InputStream is = p.getInputStream();
-                        if (is != null) {
-                            while (true) {
-                                try {
-                                    if (is.available() == 0) {
-                                        is.close();
-                                        break;
-                                    }
-                                } catch (IOException ex) {
-                                    // already closed ... that's OK
-                                    break;
-                                }
-                            }
-                        }
+                    if (progressHandle != null) {
+                        progressHandle.finish();
                     }
 
                     // After we are sure that our output was read, and queued in
@@ -278,26 +262,32 @@ public final class NativeExecutionService {
                     // disconnect() method will not be executed.
                     // So do it directly...
 
-                    IOTerm.disconnect(descriptor.inputOutput, null);
-                    SwingUtilities.invokeAndWait(new Runnable() {
+                    final Runnable EDTContinuation = new Runnable() {
 
                         @Override
                         public void run() {
-                            // disconnected
-                        }
-                    });
+                            NativeTaskExecutorService.submit(new Runnable() {
 
-                    try {
-                        if (descriptor.postExecution != null) {
-                            descriptor.postExecution.run();
+                                @Override
+                                public void run() {
+                                    try {
+                                        if (descriptor.postExecution != null) {
+                                            descriptor.postExecution.run();
+                                        }
+                                    } finally {
+                                        IOTerm.term(descriptor.inputOutput).setReadOnly(true);
+                                        descriptor.inputOutput.getOut().close();
+                                    }
+                                }
+                            }, "term process post execution"); // NOI18N
                         }
-                    } finally {
-                        IOTerm.term(descriptor.inputOutput).setReadOnly(true);
-                        descriptor.inputOutput.getOut().close();
-                        if (progressHandle != null) {
-                            progressHandle.finish();
-                        }
-                    }
+                    };
+
+                    // disconnect() calls continuation in EDT.
+                    // But we need to call postExecution in _this_ thread - 
+                    // so do it this way.
+
+                    IOTerm.disconnect(descriptor.inputOutput, EDTContinuation);
                 }
             }
         };
@@ -310,14 +300,15 @@ public final class NativeExecutionService {
              */
             public boolean cancel(boolean mayInterruptIfRunning) {
                 synchronized (processRef) {
-                    /* *** Bug 186172 ***
+                    /*
+                     * *** Bug 186172 ***
                      *
                      * Do NOT call super.cancel() here as it will interrupt
                      * waiting thread (see callable's that this task is created
                      * from) and will initiate a postExecutionTask BEFORE the
-                     * process is terminated.
-                     * Just need to terminate the process. The process.waitFor()
-                     * will naturally return then.
+                     * process is terminated. Just need to terminate the
+                     * process. The process.waitFor() will naturally return
+                     * then.
                      *
                      */
 //                    boolean ret = super.cancel(mayInterruptIfRunning);
@@ -363,7 +354,7 @@ public final class NativeExecutionService {
 
         ExecutionService es = ExecutionService.newService(processBuilder, descr, displayName);
         final Future<Integer> result = es.run();
-        
+
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -373,19 +364,19 @@ public final class NativeExecutionService {
                 // force this condition ... 
                 boolean prevFocusTaken = descriptor.inputOutput.isFocusTaken();
                 descriptor.inputOutput.setFocusTaken(true);
-                
+
                 IOSelect.select(descriptor.inputOutput,
                         EnumSet.<AdditionalOperation>of(
                         AdditionalOperation.OPEN,
                         AdditionalOperation.REQUEST_ACTIVE,
                         AdditionalOperation.REQUEST_VISIBLE));
-                
+
                 // ... and restore it to the original state as leaving it
                 // in TRUE state is strongly discouraged  
                 descriptor.inputOutput.setFocusTaken(prevFocusTaken);
             }
         });
-        
+
         return result;
     }
 

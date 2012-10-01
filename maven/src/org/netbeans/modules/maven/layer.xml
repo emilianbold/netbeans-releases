@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
             </file>
             <file name="license-gpl30.txt" url="licenses/gpl30-license.txt">
                 <attr name="template" boolvalue="true"/>
-                <attr name="displayName" stringvalue="General Public Licence 3.0"/>
+                <attr name="displayName" stringvalue="General Public License 3.0"/>
                 <attr name="mavenLicenseURL" stringvalue="http://www.gnu.org/licenses/gpl-3.0.html"/>
             </file>
             <file name="license-lgpl21.txt" url="licenses/lgpl21-license.txt">
@@ -89,6 +89,11 @@ made subject to such option by the copyright holder.
             <file name="license-epl10.txt" url="licenses/epl10-license.txt">
                 <attr name="displayName" stringvalue="Eclipse Public License 1.0"/>
                 <attr name="mavenLicenseURL" stringvalue="http://www.eclipse.org/legal/epl-v10.html"/>
+                <attr name="template" boolvalue="true"/>
+            </file>            
+            <file name="license-bsd.txt" url="licenses/bsd-license.txt">
+                <attr name="displayName" stringvalue="BSD 2-Clause License"/>
+                <attr name="mavenLicenseURL" stringvalue="http://opensource.org/licenses/bsd-license.php"/>
                 <attr name="template" boolvalue="true"/>
             </file>            
         </folder>
@@ -212,7 +217,7 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="OptionsExport">
-        <folder name="Advanced">
+        <folder name="Java">
             <file name="Maven">
                 <attr name="include" stringvalue="config/(Preferences/org/netbeans/modules/maven([.]properties|/(?!externalOwners[.]properties).*)|Projects/org-netbeans-modules-maven/nbactions[.]xml)"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.maven.Bundle#options-export-displayName"/>

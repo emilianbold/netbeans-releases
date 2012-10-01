@@ -53,6 +53,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
+import org.netbeans.modules.nativeexecution.PtyNativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -64,6 +65,7 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.UserQuestionException;
 
 public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
@@ -95,32 +97,59 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
     }
 
     public void testListenersLocal() throws Exception {
-        doTestListeners(ExecutionEnvironmentFactory.getLocal());
+        doTestListeners(ExecutionEnvironmentFactory.getLocal(), true, true);
+        doTestListeners(ExecutionEnvironmentFactory.getLocal(), false, true);
+        doTestListeners(ExecutionEnvironmentFactory.getLocal(), true, false);
+        doTestListeners(ExecutionEnvironmentFactory.getLocal(), false, false);
     }
 
     @ForAllEnvironments(section = "remote.platforms")
     public void testListeners() throws Exception {
         int count = 5;
         RequestProcessor rp = new RequestProcessor("testListeners", 50);
-        final CountDownLatch cdl = new CountDownLatch(count);
+        final CountDownLatch done = new CountDownLatch(count * 4);
+        final CountDownLatch start = new CountDownLatch(1);
 
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < count * 4; i++) {
+            final int x = i;
             rp.submit(new Runnable() {
 
                 @Override
                 public void run() {
-                    doTestListeners(getTestExecutionEnvironment());
-                    cdl.countDown();
+                    try {
+                        start.await();
+
+                        switch (x % 4) {
+                            case 0:
+                                doTestListeners(getTestExecutionEnvironment(), true, true);
+                                break;
+                            case 1:
+                                doTestListeners(getTestExecutionEnvironment(), true, false);
+                                break;
+                            case 2:
+                                doTestListeners(getTestExecutionEnvironment(), false, true);
+                                break;
+                            case 3:
+                                doTestListeners(getTestExecutionEnvironment(), false, false);
+                                break;
+
+                        }
+                    } catch (Throwable ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        done.countDown();
+                    }
                 }
             });
         }
 
-        cdl.await();
-        rp.shutdownNow();
+        start.countDown();
+        done.await();
     }
 
-    private void doTestListeners(ExecutionEnvironment env) {
-
+    private void doTestListeners(ExecutionEnvironment env, final boolean startLongProcessAndTerminateIt, final boolean usePty) {
+        log("Starts doTestListeners(" + env.getDisplayName() + ", " + startLongProcessAndTerminateIt + ", " + usePty + ")"); // NOI18N
+        
         try {
             ConnectionManager.getInstance().connectTo(env);
         } catch (IOException ex) {
@@ -130,7 +159,15 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         }
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-        npb.setExecutable("echo");
+
+        if (startLongProcessAndTerminateIt) {
+            npb.setExecutable("sleep").setArguments("1000"); // NOI18N
+        } else {
+            npb.setExecutable("echo").setArguments("1000"); // NOI18N
+        }
+
+        npb.setUsePty(usePty);
+
         final Counters counters = new Counters();
         final AtomicInteger result = new AtomicInteger();
         final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
@@ -144,19 +181,21 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
                     return;
                 }
 
-                if (!(e.getSource() instanceof NativeProcess)) {
-                    fail("Unexpected event");
-                    return;
+                if (usePty) {
+                    assertTrue("Source must be a PtyNativeProcess (" + e.getSource().getClass() + ")", e.getSource() instanceof PtyNativeProcess);
+                } else {
+                    assertTrue("Source must be a sublcass of NativeProcess (" + e.getSource().getClass() + ")", NativeProcess.class.isAssignableFrom(e.getSource().getClass()));
                 }
 
                 final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
                 final NativeProcess process = (NativeProcess) event.getSource();
                 final State state = event.state;
-
                 processRef.compareAndSet(null, process);
+                assertEquals("There must be only one source of events", processRef.get(), process);
+
                 counters.getCounter(state.name()).incrementAndGet();
 
-                if (state == State.FINISHED) {
+                if (state == State.FINISHED || state == State.CANCELLED || state == State.ERROR) {
                     result.set(processRef.get().exitValue());
                 }
 
@@ -173,9 +212,23 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
                         assertEquals(0, counters.getCounter(State.CANCELLED.name()).get());
                         assertEquals(0, counters.getCounter(State.ERROR.name()).get());
                         break;
-                    case FINISHED:
+                    case CANCELLED:
+                        if (!startLongProcessAndTerminateIt) {
+                            fail("CANCELLED state is NOT expected as process was terminated");
+                        }
                         assertEquals(1, counters.getCounter(State.STARTING.name()).get());
                         assertEquals(1, counters.getCounter(State.RUNNING.name()).get());
+                        assertEquals(1, counters.getCounter(State.CANCELLED.name()).get());
+                        assertEquals(0, counters.getCounter(State.FINISHED.name()).get());
+                        assertEquals(0, counters.getCounter(State.ERROR.name()).get());
+                        break;
+                    case FINISHED:
+                        if (startLongProcessAndTerminateIt) {
+                            fail("FINISHED state is NOT expected as process was terminated");
+                        }
+                        assertEquals(1, counters.getCounter(State.STARTING.name()).get());
+                        assertEquals(1, counters.getCounter(State.RUNNING.name()).get());
+                        assertEquals(1, counters.getCounter(State.FINISHED.name()).get());
                         assertEquals(0, counters.getCounter(State.CANCELLED.name()).get());
                         assertEquals(0, counters.getCounter(State.ERROR.name()).get());
                         break;
@@ -185,9 +238,13 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
         try {
             NativeProcess process = npb.call();
-            assertEquals(process, processRef.get());
+            assertEquals("It is expected that a process returned from call() is the source of all events", processRef.get(), process);
+
+            if (startLongProcessAndTerminateIt) {
+                process.destroy();
+            }
             int exitCode = process.waitFor();
-            assertTrue(exitCode == result.get());
+            assertEquals("It is expected that exitCode is the same as reported for listeners", result.get(), exitCode);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
@@ -202,6 +259,27 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
     @ForAllEnvironments(section = "remote.platforms")
     public void testSetCommandLine() throws Exception {
         doTestSetCommandLine(getTestExecutionEnvironment());
+    }
+    
+    public void testAsksForconnection() {
+        ExecutionEnvironment ee = ExecutionEnvironmentFactory.createNew("never", "existed.com");
+        NativeProcessBuilder b = NativeProcessBuilder.newProcessBuilder(ee);
+        b.setExecutable("ade");
+        b.setArguments("lsviews");
+        try {
+            b.call();
+            fail("The previous call should thrown an exception");
+        } catch (UserQuestionException ex) {
+            // OK, expected
+            assertEquals(
+                "Localized message as expected",
+                Bundle.EXC_NotConnectedQuestion(ee.getDisplayName()), 
+                ex.getLocalizedMessage()
+            );
+            assertEquals("No connection to never@existed.com", ex.getMessage());
+        } catch (IOException ex) {
+            fail("we should not get IOException: " + ex);
+        }
     }
 
     private void doTestSetCommandLine(ExecutionEnvironment execEnv) throws Exception {

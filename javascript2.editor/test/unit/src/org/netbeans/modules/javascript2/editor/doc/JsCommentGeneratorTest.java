@@ -52,6 +52,7 @@ import javax.swing.text.DefaultEditorKit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
@@ -113,6 +114,18 @@ public class JsCommentGeneratorTest extends JsTestBase {
     }
     
     public void testObject1() throws Exception {
+        insertBreak(getOriginalContent(), getExpectedContent());
+    }
+
+    public void testIssue218945() throws Exception {
+        insertBreak(getOriginalContent(), getExpectedContent());
+    }
+
+    public void testIssue218411_1() throws Exception {
+        insertBreak(getOriginalContent(), getExpectedContent());
+    }
+
+    public void testIssue218411_2() throws Exception {
         insertBreak(getOriginalContent(), getExpectedContent());
     }
 
@@ -189,10 +202,6 @@ public class JsCommentGeneratorTest extends JsTestBase {
 
     private String getTestName(boolean expected) {
         String name = getName();
-        int indexOf = name.indexOf("_");
-        if (indexOf != -1) {
-            name = name.substring(0, indexOf);
-        }
         if (expected) {
             return name + "-expected";
         } else {

@@ -5,14 +5,14 @@ var |>GLOBAL:components<| = [];
 
   
 function |>METHOD:countComponentTables<|() { 
-    |>GLOBAL:$<|(".sortable").each(function() { // each table
+    $(".sortable").each(function() { // each table
         var index = 0;
-        var sums = new |>GLOBAL:Array<|();
-        var id = |>GLOBAL:$<|(this).attr("id");
-        |>GLOBAL:$<|(this).find("thead th").each(function() {
+        var sums = new Array();
+        var id = $(this).attr("id");
+        $(this).find("thead th").each(function() {
             index++;
-            if (index > 1 && (!|>GLOBAL:$<|(this).attr("id") || |>GLOBAL:$<|(this).attr("id").indexOf("dummy") > -1))
-                sums.push(|>GLOBAL:sumOfColumns<|(id, index, true));
+            if (index > 1 && (!$(this).attr("id") || $(this).attr("id").indexOf("dummy") > -1))
+                sums.push(sumOfColumns(id, index, true));
 
         });
 
@@ -21,7 +21,7 @@ function |>METHOD:countComponentTables<|() {
             tfoot += "<td>" + sums[i] + "</td>";
         }
 
-        |>GLOBAL:$<|(this).append(tfoot + "</tr></tfoot>");
+        $(this).append(tfoot + "</tr></tfoot>");
 
 
     });

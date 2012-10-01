@@ -376,7 +376,7 @@ public final class PhpProjectGenerator {
                 projectDir.equals(sourceDir) ? "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
                 runAs != null ? runAs.name() : "", // NOI18N
                 "1", // NOI18N
-                (copyFiles != null && copyFiles == Boolean.TRUE) ? "COPY_FILES_YES" : "COPY_FILES_NO", // NOI18N
+                (copyFiles != null && copyFiles) ? "COPY_FILES_YES" : "COPY_FILES_NO", // NOI18N
                 PhpProjectUtils.getFrameworksForUsage(frameworkExtenders.keySet())));
     }
 

@@ -254,7 +254,7 @@ made subject to such option by the copyright holder.
                     <attr boolvalue="true" name="application"/>
                 </file>
 
-                <file name="MobileEmbeddedApplication">
+                <file name="EmbeddedApplication">
                     <attr name="position" intvalue="150"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.NewProjectIterator"/>

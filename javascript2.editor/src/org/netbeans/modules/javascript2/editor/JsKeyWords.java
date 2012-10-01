@@ -43,48 +43,53 @@ package org.netbeans.modules.javascript2.editor;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**
  *
  * @author Petr Pisl
- * 
+ *
  */
 
 public class JsKeyWords {
-    
-    protected static enum CompletionType {CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
-    ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON};
-    
-    protected final static Map<String,CompletionType> KEYWORDS = new HashMap<String, CompletionType>();
-    static {
-        KEYWORDS.put("break", CompletionType.ENDS_WITH_SEMICOLON);
-        KEYWORDS.put("case", CompletionType.ENDS_WITH_COLON);
-        KEYWORDS.put("catch", CompletionType.CURSOR_INSIDE_BRACKETS);
-        KEYWORDS.put("continue",  CompletionType.ENDS_WITH_SEMICOLON);
-        KEYWORDS.put("default", CompletionType.ENDS_WITH_COLON);
-        KEYWORDS.put("delete",  CompletionType.CURSOR_INSIDE_BRACKETS);
-        KEYWORDS.put("do", CompletionType.CURSOR_INSIDE_BRACKETS);
-        KEYWORDS.put("else", CompletionType.CURSOR_INSIDE_BRACKETS);
-        KEYWORDS.put("finally", CompletionType.ENDS_WITH_CURLY_BRACKETS);
-        KEYWORDS.put("for", CompletionType.CURSOR_INSIDE_BRACKETS);
-        KEYWORDS.put("function", CompletionType.ENDS_WITH_SPACE);
-        KEYWORDS.put("if", CompletionType.CURSOR_INSIDE_BRACKETS);
-        KEYWORDS.put("in", CompletionType.ENDS_WITH_SPACE);
-        KEYWORDS.put("instanceof",  CompletionType.ENDS_WITH_SPACE);        
-        KEYWORDS.put("new", CompletionType.ENDS_WITH_SPACE);        
-        KEYWORDS.put("return",  CompletionType.ENDS_WITH_SPACE);
-        KEYWORDS.put("switch", CompletionType.CURSOR_INSIDE_BRACKETS);
-        KEYWORDS.put("throw", CompletionType.ENDS_WITH_SPACE);
-        KEYWORDS.put("try",  CompletionType.ENDS_WITH_CURLY_BRACKETS);
-        KEYWORDS.put("typeof", CompletionType.ENDS_WITH_SPACE);
-        KEYWORDS.put("var", CompletionType.ENDS_WITH_SPACE);
-        KEYWORDS.put("while", CompletionType.CURSOR_INSIDE_BRACKETS);
-        KEYWORDS.put("with",  CompletionType.ENDS_WITH_SPACE);
-    }
-    
-    protected final static String[] RESERVED = {
-        "abstract",
-        "as",
-        "boolean"
+
+    protected static enum CompletionType {
+        CURSOR_INSIDE_BRACKETS,
+        ENDS_WITH_CURLY_BRACKETS,
+        ENDS_WITH_SPACE,
+        ENDS_WITH_SEMICOLON,
+        ENDS_WITH_COLON,
+        ENDS_WITH_DOT
     };
+
+    protected final static Map<String, CompletionType> KEYWORDS = new HashMap<String, CompletionType>();
+    static {
+        KEYWORDS.put(JsTokenId.KEYWORD_BREAK.fixedText(), CompletionType.ENDS_WITH_SEMICOLON);
+        KEYWORDS.put(JsTokenId.KEYWORD_CASE.fixedText(), CompletionType.ENDS_WITH_COLON);
+        KEYWORDS.put(JsTokenId.KEYWORD_CATCH.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
+        KEYWORDS.put(JsTokenId.KEYWORD_CONTINUE.fixedText(), CompletionType.ENDS_WITH_SEMICOLON);
+        KEYWORDS.put(JsTokenId.KEYWORD_DEBUGGER.fixedText(), CompletionType.ENDS_WITH_SEMICOLON);
+        KEYWORDS.put(JsTokenId.KEYWORD_DEFAULT.fixedText(), CompletionType.ENDS_WITH_COLON);
+        KEYWORDS.put(JsTokenId.KEYWORD_DELETE.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
+        KEYWORDS.put(JsTokenId.KEYWORD_DO.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
+        KEYWORDS.put(JsTokenId.KEYWORD_ELSE.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
+        KEYWORDS.put(JsTokenId.KEYWORD_FINALLY.fixedText(), CompletionType.ENDS_WITH_CURLY_BRACKETS);
+        KEYWORDS.put(JsTokenId.KEYWORD_FOR.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
+        KEYWORDS.put(JsTokenId.KEYWORD_FUNCTION.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_IF.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
+        KEYWORDS.put(JsTokenId.KEYWORD_IN.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_INSTANCEOF.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_NEW.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_RETURN.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_SWITCH.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
+        // XXX this keyword is missing here
+        KEYWORDS.put(JsTokenId.KEYWORD_THIS.fixedText(), CompletionType.ENDS_WITH_DOT);
+        KEYWORDS.put(JsTokenId.KEYWORD_THROW.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_TRY.fixedText(), CompletionType.ENDS_WITH_CURLY_BRACKETS);
+        KEYWORDS.put(JsTokenId.KEYWORD_TYPEOF.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_VAR.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_VOID.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_WHILE.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
+        KEYWORDS.put(JsTokenId.KEYWORD_WITH.fixedText(), CompletionType.ENDS_WITH_SPACE);
+    }
 }

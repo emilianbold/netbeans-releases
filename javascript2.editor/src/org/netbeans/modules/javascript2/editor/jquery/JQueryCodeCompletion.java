@@ -73,6 +73,8 @@ public class JQueryCodeCompletion {
 
     private static final Logger LOGGER = Logger.getLogger(JQueryCodeCompletion.class.getName());
 
+    private static Collection<HtmlTagAttribute> allAttributes;
+
     private int lastTsOffset = 0;
     
     public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContextFinder.CompletionContext jsCompletionContext, String prefix) {
@@ -84,9 +86,17 @@ public class JQueryCodeCompletion {
         switch (jsCompletionContext) {
             case GLOBAL:
             case EXPRESSION:
-                if (JQueryUtils.isJQuery(parserResult, lastTsOffset)) {
+                if (JQueryUtils.isInJQuerySelector(parserResult, lastTsOffset)) {
                     addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
+                break;
+            // can be for the dot in selectors - (.|)
+            case OBJECT_PROPERTY:
+                if (JQueryUtils.isInJQuerySelector(parserResult, lastTsOffset)) {
+                    addSelectors(result, parserResult, prefix, lastTsOffset);
+                }
+                break;
+            default:
                 break;
         }
         long end = System.currentTimeMillis();
@@ -167,7 +177,7 @@ public class JQueryCodeCompletion {
         }
         return null;
     }
-    
+
     private enum SelectorKind {
         TAG, TAG_ATTRIBUTE, CLASS, ID, TAG_ATTRIBUTE_COMPARATION, AFTER_COLON
     }
@@ -289,26 +299,29 @@ public class JQueryCodeCompletion {
         if (!(ts.moveNext() && ts.movePrevious())) {
             return;
         }
-        String wrapup = "";
+        String wrapup = ""; //NOI18N
         String prefixText = prefix;
         int anchorOffsetDelta = 0;
-        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
-            wrapup = "'";
-            if (ts.token().id() == JsTokenId.IDENTIFIER) {
-                ts.movePrevious();
-            }
-            if(ts.token().id() == JsTokenId.OPERATOR_COLON) {
-                prefixText = ":" + prefixText;
-                anchorOffsetDelta = prefix.isEmpty() ? 0 : -1;
-            } else {
-                anchorOffsetDelta = prefix.isEmpty() ? 1 : 0;
-            }
-//            if (prefix.isEmpty()) {
-//                anchorOffsetDelta = 1;
+//        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
+//            wrapup = "'"; //NOI18N
+//            if (ts.token().id() == JsTokenId.IDENTIFIER) {
+//                ts.movePrevious();
 //            }
-            
-            
-        } 
+//            if(ts.token().id() == JsTokenId.OPERATOR_COLON) {
+//                prefixText = ":" + prefixText; //NOI18N
+//                anchorOffsetDelta = prefix.isEmpty() ? 0 : -1;
+//            } else if (ts.token().id() == JsTokenId.OPERATOR_DOT) {
+//                prefixText = "." + prefixText; //NOI18N
+//                anchorOffsetDelta = prefix.isEmpty() ? 0 : -1;
+//            } else {
+//                anchorOffsetDelta = 0;
+//            }
+////            if (prefix.isEmpty()) {
+////                anchorOffsetDelta = 1;
+////            }
+//
+//
+//        }
         
         
         if(contextMap.isEmpty()) {
@@ -318,7 +331,7 @@ public class JQueryCodeCompletion {
         SelectorContext context = findSelectorContext(prefixText);
         
         if (context != null) {
-            int docOffset = parserResult.getSnapshot().getOriginalOffset(offset) - prefix.length();
+            int docOffset = parserResult.getSnapshot().getOriginalOffset(offset) - prefixText.length();
             for (SelectorKind selectorKind : context.kinds) {
                 switch (selectorKind) {
                     case TAG:
@@ -345,7 +358,7 @@ public class JQueryCodeCompletion {
                         break;
                     case CLASS:
                         Collection<String> classes = getCSSClasses(context.prefix, parserResult);
-                        anchorOffset = docOffset + prefix.length() - context.prefix.length();
+                        anchorOffset = docOffset + anchorOffsetDelta;
                         for (String cl : classes) {
                             result.add(JQueryCompletionItem.createCSSItem("." + cl, anchorOffset, wrapup));
                         }
@@ -356,7 +369,7 @@ public class JQueryCodeCompletion {
                         }
                         for (SelectorItem selector : afterColonList) {
                             if (selector.getDisplayText().startsWith(context.prefix)) {
-                                anchorOffset = docOffset + anchorOffsetDelta + ((prefix.isEmpty() || prefix.charAt(0) == ':') ? 0 : 1);
+                                anchorOffset = docOffset + anchorOffsetDelta;
                                 result.add(JQueryCompletionItem.createJQueryItem(":" + selector.displayText, anchorOffset, wrapup, selector.getInsertTemplate()));
                             }
                         }
@@ -372,21 +385,20 @@ public class JQueryCodeCompletion {
             return Collections.emptyList();
         }
         Project project = FileOwnerQuery.getOwner(fo);
-        HashSet<String> unigue = new HashSet<String>();
+        HashSet<String> unique = new HashSet<String>();
         try {
             CssIndex cssIndex = CssIndex.create(project);
             Map<FileObject, Collection<String>> findIdsByPrefix = cssIndex.findIdsByPrefix(tagIdPrefix);
 
-            for (FileObject fObject : findIdsByPrefix.keySet()) {
-                Collection<String> ids = findIdsByPrefix.get(fObject);
+            for (Collection<String> ids : findIdsByPrefix.values()) {
                 for (String id : ids) {
-                    unigue.add(id);
+                    unique.add(id);
                 }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return unigue;
+        return unique;
     }
 
     private Collection<String> getCSSClasses(String classPrefix, ParserResult parserResult) {
@@ -395,33 +407,39 @@ public class JQueryCodeCompletion {
             return Collections.emptyList();
         }
         Project project = FileOwnerQuery.getOwner(fo);
-        HashSet<String> unigue = new HashSet<String>();
+        HashSet<String> unique = new HashSet<String>();
         try {
             CssIndex cssIndex = CssIndex.create(project);
             Map<FileObject, Collection<String>> findIdsByPrefix = cssIndex.findClassesByPrefix(classPrefix);
 
-            for (FileObject fObject : findIdsByPrefix.keySet()) {
-                Collection<String> ids = findIdsByPrefix.get(fObject);
+            for (Collection<String> ids : findIdsByPrefix.values()) {
                 for (String id : ids) {
-                    unigue.add(id);
+                    unique.add(id);
                 }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return unigue;
+        return unique;
 
     }
 
     private Collection<HtmlTagAttribute> getHtmlAttributes(final String tagName, final String prefix) {
-        Collection<HtmlTagAttribute> result = Collections.emptyList();
+        Collection<HtmlTagAttribute> result = Collections.<HtmlTagAttribute>emptyList();
         HtmlModel htmlModel = HtmlModelFactory.getModel(HtmlVersion.HTML5);
         HtmlTag htmlTag = htmlModel.getTag(tagName);
         if (htmlTag != null) {
             if (prefix.isEmpty()) {
-                result = htmlTag.getAttributes();
+                if (tagName.isEmpty()) {
+                    result = getAllAttributes(htmlModel);
+                } else {
+                    result = htmlTag.getAttributes();
+                }
             } else {
                 Collection<HtmlTagAttribute> attributes = htmlTag.getAttributes();
+                if (tagName.isEmpty()) {
+                    attributes = allAttributes;
+                }
                 result = new ArrayList<HtmlTagAttribute>();
                 for (HtmlTagAttribute htmlTagAttribute : attributes) {
                     if(htmlTagAttribute.getName().startsWith(prefix)) {
@@ -448,5 +466,27 @@ public class JQueryCodeCompletion {
             }
         }
         return result;
+    }
+
+    private synchronized Collection<HtmlTagAttribute> getAllAttributes(HtmlModel htmlModel) {
+        if (allAttributes == null) {
+            initAllAttributes(htmlModel);
+        }
+        return allAttributes;
+    }
+
+    private synchronized void initAllAttributes(HtmlModel htmlModel) {
+        assert allAttributes == null;
+        Map<String, HtmlTagAttribute> result = new HashMap<String, HtmlTagAttribute>();
+        for (HtmlTag htmlTag : htmlModel.getAllTags()) {
+            for (HtmlTagAttribute htmlTagAttribute : htmlTag.getAttributes()) {
+                // attributes can probably differ per tag so we can just offer some of them,
+                // at least for the CC purposes it should be complete list of attributes for unknown tag
+                if (!result.containsKey(htmlTagAttribute.getName())) {
+                    result.put(htmlTagAttribute.getName(), htmlTagAttribute);
+                }
+            }
+        }
+        allAttributes = result.values();
     }
 }

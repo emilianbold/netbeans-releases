@@ -80,8 +80,11 @@ final class ViewItemPasteType extends PasteType {
         // Only allowing copying configurations within same project
         if (newConfigurations == null || oldConfigurations == null) {
             return;
-        }
+        }        
         assert newConfigurations.length == oldConfigurations.length;
+        if (newConfigurations.length == 0 || oldConfigurations.length == 0) {
+            return;
+        }
         for (int i = 0; i < newConfigurations.length; i++) {
             newConfigurations[i].assignValues(oldConfigurations[i]);
         }

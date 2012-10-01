@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -68,31 +68,34 @@ public final class LibProjectImpl extends ProjectBase {
     private final CharSequence includePath;
     private final SourceRootContainer projectRoots = new SourceRootContainer(true);
 
-    private LibProjectImpl(ModelImpl model, FileSystem fs, String includePathName) {
-        super(model, fs, includePathName, includePathName);
+    private LibProjectImpl(ModelImpl model, FileSystem fs, String includePathName, CacheLocation cacheLocation) {
+        super(model, fs, includePathName, includePathName, cacheLocation);
         this.includePath = FilePathCache.getManager().getString(includePathName);
         this.projectRoots.fixFolder(includePathName);
         assert this.includePath != null;
     }
 
-    public static LibProjectImpl createInstance(ModelImpl model, FileSystem fs, String includePathName) {
+    public static LibProjectImpl createInstance(ModelImpl model, FileSystem fs, String includePathName, CacheLocation cacheLocation) {
         ProjectBase instance = null;
         assert includePathName != null;
         if (TraceFlags.PERSISTENT_REPOSITORY) {
             try {
-                instance = readInstance(model, fs, includePathName, includePathName);
+                instance = readInstance(model, fs, includePathName, includePathName, cacheLocation);
             } catch (Exception e) {
                 // just report to console;
                 // the code below will create project "from scratch"
-                cleanRepository(fs, includePathName, true);
+                cleanRepository(fs, includePathName, true, cacheLocation);
                 DiagnosticExceptoins.register(e);
             }
         }
         if (instance == null) {
-            instance = new LibProjectImpl(model, fs, includePathName);
+            instance = new LibProjectImpl(model, fs, includePathName, cacheLocation);
         }
         if (instance instanceof LibProjectImpl) {
             assert ((LibProjectImpl) instance).includePath != null;
+        } else {
+            // ProjectBase inst = readInstance(model, fs, includePathName, includePathName);
+            assert false : "Wrong instance, should be LibProjectImpl: " + instance; //NOI18N
         }
         CndUtils.assertTrue(instance.getFileSystem() == fs);
         return (LibProjectImpl) instance;
@@ -114,7 +117,7 @@ public final class LibProjectImpl extends ProjectBase {
     public Collection<ProjectBase> getDependentProjects() {
         // TODO: looks like not very safe way to get dependencies
         // see issue #211061
-        return LibraryManager.getInstance().getProjectsByLibrary(this);
+        return LibraryManager.getInstance(this).getProjectsByLibrary(this);
     }
 
     @Override
@@ -143,11 +146,7 @@ public final class LibProjectImpl extends ProjectBase {
     @Override
     public void onFileAdded(List<NativeFileItem> file) {
     }
-
-    @Override
-    public void onFilePropertyChanged(NativeFileItem nativeFile) {
-    }
-
+    
     @Override
     public void onFilePropertyChanged(List<NativeFileItem> nativeFiles, boolean invalidateLibs) {
     }

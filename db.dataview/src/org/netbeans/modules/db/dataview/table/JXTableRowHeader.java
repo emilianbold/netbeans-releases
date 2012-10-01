@@ -243,7 +243,7 @@ public final class JXTableRowHeader extends JComponent {
     private final CountingTableModel ctm = new CountingTableModel();
     private final JXTable headerTable;
     private JXTable backingTable;
-    private RowSorter backingSorter;
+    private RowSorter<?> backingSorter;
 
     /**
      * Create a row header from the given {@code JTable}. This row header will
@@ -280,7 +280,7 @@ public final class JXTableRowHeader extends JComponent {
         this.headerTable.setInheritsPopupMenu(true);
         this.headerTable.setShowGrid(true, true);
         this.headerTable.setGridColor(ResultSetJXTable.GRID_COLOR);
-        this.headerTable.setHighlighters(HighlighterFactory.createAlternateStriping(Color.WHITE, ResultSetJXTable.ALTERNATE_ROW_COLOR));
+        this.headerTable.setHighlighters(HighlighterFactory.createAlternateStriping(ResultSetJXTable.ROW_COLOR, ResultSetJXTable.ALTERNATE_ROW_COLOR));
             }
 
     /**

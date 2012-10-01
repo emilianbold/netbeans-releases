@@ -41,19 +41,11 @@ import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
-import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.csl.core.CslEditorKit;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.netbeans.modules.php.smarty.TplTestBase;
-import org.netbeans.modules.php.smarty.editor.lexer.TplTokenId;
-import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -63,22 +55,6 @@ public class ToggleBlockCommentActionTest extends TplTestBase {
 
     public ToggleBlockCommentActionTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        assert Lookup.getDefault().lookup(TestLanguageProvider.class) != null;
-
-        try {
-            TestLanguageProvider.register(HTMLTokenId.language());
-            TestLanguageProvider.register(PHPTokenId.language());
-            TestLanguageProvider.register(JsTokenId.javascriptLanguage());
-            TestLanguageProvider.register(TplTopTokenId.language());
-        } catch (IllegalStateException ise) {
-            // Ignore -- we've already registered this either via layers or other means
-        }
     }
 
     @Override

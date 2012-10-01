@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.html;
 
+import org.netbeans.modules.html.api.HtmlDataNode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -207,7 +208,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     
     private synchronized HtmlEditorSupport getHtmlEditorSupport() {
         if (htmlEditorSupport == null) {
-            htmlEditorSupport = HtmlEditorSupport.createInstance(this);
+            htmlEditorSupport = new HtmlEditorSupport(this); 
         }
         return htmlEditorSupport;
     }

@@ -42,7 +42,6 @@
 package org.netbeans.modules.ws.qaf.rest;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests REST node in project logical view
@@ -68,13 +67,13 @@ public class JEE6RestNodeTest extends RestNodeTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6RestNodeTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, JEE6RestNodeTest.class,
                 "testNodesAfterOpen",
                 "testOpenOnResource",
                 "testOpenOnMethod",
                 "testOpenOnLocator",
                 "testAddMethod",
                 "testRemoveMethod",
-                "testCloseProject").enableModules(".*").clusters(".*"));
+                "testCloseProject");
     }
 }

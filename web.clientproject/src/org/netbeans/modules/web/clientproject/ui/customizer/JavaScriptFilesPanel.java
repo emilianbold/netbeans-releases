@@ -53,17 +53,20 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  * Manager for project JavaScript files.
  */
-public final class JavaScriptFilesPanel extends JPanel {
+public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provider {
 
     private static final long serialVersionUID = 8973245611032L;
 
@@ -99,13 +102,34 @@ public final class JavaScriptFilesPanel extends JPanel {
         javaScriptLibrarySelection.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                if (validateData()) {
-                    storeData();
-                }
+                validateAndStore();
+            }
+        });
+        javaScriptLibrarySelection.addJsLibsListener(new ListDataListener() {
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+                processChange();
+            }
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+                processChange();
+            }
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                processChange();
+            }
+            private void processChange() {
+                validateAndStore();
             }
         });
         // add to placeholder
         placeholderPanel.add(javaScriptLibrarySelection, BorderLayout.CENTER);
+    }
+
+    void validateAndStore() {
+        if (validateData()) {
+            storeData();
+        }
     }
 
     boolean validateData() {
@@ -128,7 +152,7 @@ public final class JavaScriptFilesPanel extends JPanel {
         return true;
     }
 
-    void storeData() {
+    private void storeData() {
         assert EventQueue.isDispatchThread();
         uiProperties.setJsLibFolder(javaScriptLibrarySelection.getLibrariesFolder());
         uiProperties.setNewJsLibraries(javaScriptLibrarySelection.getSelectedLibraries());
@@ -151,6 +175,11 @@ public final class JavaScriptFilesPanel extends JPanel {
             }
         }, Bundle.JavaScriptFilesPanel_progress_detectingJsFiles());
         return jsFiles;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.customizer.JavaScriptFilesPanel");
     }
 
     /**

@@ -46,6 +46,7 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -60,6 +61,10 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
     protected @Override void setUp() throws Exception {
         clearWorkDir();
     }
+    
+    private static ProblemReporterImpl getReporter(Project p) {
+        return p.getLookup().lookup(NbMavenProjectImpl.class).getProblemReporter();
+    }
 
     public void testMissingParent() throws Exception {
         TestFileUtils.writeFile(new File(getWorkDir(), "pom.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
@@ -68,7 +73,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
             "</project>");
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         assertEquals("g:m:jar:0", p.getLookup().lookup(NbMavenProject.class).getMavenProject().getId());
-        ProblemReporterImpl pr = p.getLookup().lookup(ProblemReporterImpl.class);
+        ProblemReporterImpl pr = getReporter(p);
         pr.doIDEConfigChecks();
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "par", "0", null, "pom", null, new DefaultArtifactHandler("pom"))), pr.getMissingArtifacts());
@@ -80,7 +85,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
             "<build><plugins><plugin><groupId>g</groupId><artifactId>plug</artifactId><version>0</version><extensions>true</extensions></plugin></plugins></build>" +
             "</project>");
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
-        ProblemReporterImpl pr = p.getLookup().lookup(ProblemReporterImpl.class);
+        ProblemReporterImpl pr = getReporter(p);
         pr.doIDEConfigChecks();
         final Object lock = new Object();
         pr.RP.post(new Runnable() {
@@ -111,7 +116,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
             "<dependencies><dependency><groupId>g</groupId><artifactId>b</artifactId><version>1.0-SNAPSHOT</version></dependency></dependencies>" +
             "</project>");
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
-        ProblemReporterImpl pr = p.getLookup().lookup(ProblemReporterImpl.class);
+        ProblemReporterImpl pr = getReporter(p);
         pr.doIDEConfigChecks();
         final Object lock = new Object();
         pr.RP.post(new Runnable() {

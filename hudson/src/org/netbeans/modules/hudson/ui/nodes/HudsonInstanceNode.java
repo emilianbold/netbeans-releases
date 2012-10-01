@@ -245,6 +245,7 @@ public class HudsonInstanceNode extends AbstractNode {
                 }
                 jobs.add(job);
             }
+            Collections.sort(jobs);
             setKeys(jobs);
         }
         

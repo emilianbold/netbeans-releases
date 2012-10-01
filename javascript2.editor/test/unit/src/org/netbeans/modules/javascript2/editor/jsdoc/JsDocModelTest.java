@@ -106,7 +106,7 @@ public class JsDocModelTest extends JsDocumentationTestBase {
 
     }
 
-    private static void checkJsDocBlock(Source source, final int offset, final String expected) throws Exception {
+    private void checkJsDocBlock(Source source, final int offset, final String expected) throws Exception {
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result result = resultIterator.getParserResult();
@@ -366,6 +366,12 @@ public class JsDocModelTest extends JsDocumentationTestBase {
         checkJsDocBlock(source, caretOffset, "@param||type=String:name=accessLevel:desc=accessLevel is optional");
     }
 
+    public void test217949() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
+        final int caretOffset = getCaretOffset(source, "function test(p1, p2) {^");
+        checkJsDocBlock(source, caretOffset, "@param||type=NULL:name=p1:desc=textA;@param||type=Cislo:name=p2:desc=text2");
+    }
+
     /**
      * Examples of expected values:
      * @borrows <param1> as <param2>
@@ -427,7 +433,11 @@ public class JsDocModelTest extends JsDocumentationTestBase {
                 assertEquals(splitedType[i], element.getParamTypes().get(i).getType());
             }
         } else {
-            assertEquals(expected.getProperty("type"), element.getParamTypes().get(0).getType());
+            if ("NULL".equals(expected.getProperty("type"))) {
+                assertTrue(element.getParamTypes().isEmpty());
+            } else {
+                assertEquals(expected.getProperty("type"), element.getParamTypes().get(0).getType());
+            }
         }
     }
 

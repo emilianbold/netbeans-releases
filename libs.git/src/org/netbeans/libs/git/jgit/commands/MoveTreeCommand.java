@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuildIterator;
 import org.eclipse.jgit.dircache.DirCacheBuilder;
@@ -106,7 +107,12 @@ abstract class MoveTreeCommand extends GitCommand {
                     DirCacheEntry e = treeWalk.getTree(0, DirCacheBuildIterator.class).getDirCacheEntry();
                     if (e != null) {
                         if (targetFilter.include(treeWalk)) {
-                            monitor.notifyWarning(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Warning_IndexEntryExists"), path)); //NOI18N
+                            if (Utils.isUnderOrEqual(treeWalk, Collections.singletonList(targetFilter))) {
+                                monitor.notifyWarning(MessageFormat.format(Utils.getBundle(MoveTreeCommand.class).getString("MSG_Warning_IndexEntryExists"), path)); //NOI18N
+                            } else {
+                                // keep in index the files not directly under the path filter (as symlinks e.g.)
+                                builder.add(e);
+                            }
                             continue;
                         }
                         String newPath = getRelativePath(file, source, target);

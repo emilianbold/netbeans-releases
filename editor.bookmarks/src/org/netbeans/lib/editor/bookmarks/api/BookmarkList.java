@@ -90,7 +90,7 @@ public final class BookmarkList {
         return bookmarkList;
     }
 
-    private static final String PROP_BOOKMARKS = "bookmarks";
+    private static final String PROP_BOOKMARKS = "bookmarks"; //NOI18N
 
     private static Set<Observable> observedObservables = new WeakSet<Observable> ();
 
@@ -391,6 +391,7 @@ public final class BookmarkList {
 
     private void fireChange() {
         SwingUtilities.invokeLater (new Runnable () {
+            @Override
             public void run() {
                 propertyChangeSupport.firePropertyChange (PROP_BOOKMARKS, null, null);
             }
@@ -430,8 +431,9 @@ public final class BookmarkList {
     
     private static PropertyChangeListener documentModifiedListener = new PropertyChangeListener () {
 
+        @Override
         public void propertyChange (PropertyChangeEvent evt) {
-            if ("modified".equals (evt.getPropertyName ()) &&
+            if ("modified".equals (evt.getPropertyName ()) &&  //NOI18N
                 Boolean.FALSE.equals (evt.getNewValue ())
             ) {
                 Observable observable = (Observable) evt.getSource();

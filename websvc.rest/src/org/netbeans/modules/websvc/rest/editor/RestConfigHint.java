@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -68,20 +69,19 @@ import org.openide.util.NbBundle;
 class RestConfigHint extends BaseRestConfigurationFix  {
     
     private RestConfigHint(Project project , FileObject fileObject , 
-            RestConfigurationEditorAwareTaskFactory factory, String[] packs, 
-            boolean jersey)
+            RestConfigurationEditorAwareTaskFactory factory, 
+            ClasspathInfo cpInfo, boolean jersey)
     {
-        super(project, fileObject, factory, packs);
+        super(project, fileObject, factory, cpInfo );
         isJersey = jersey;
-        packages = packs;
     }
     
     public static List<Fix> getConfigHints(Project project , FileObject fileObject , 
-            RestConfigurationEditorAwareTaskFactory factory, String[] packs)
+            RestConfigurationEditorAwareTaskFactory factory, ClasspathInfo cpInfo)
     {
         List<Fix> result = new ArrayList<Fix>(2);
-        result.add( new RestConfigHint(project, fileObject, factory, packs, false));
-        result.add( new RestConfigHint(project, fileObject, factory, packs, true));
+        result.add( new RestConfigHint(project, fileObject, factory, cpInfo, false));
+        result.add( new RestConfigHint(project, fileObject, factory, cpInfo, true));
         return result;
     }
 
@@ -127,6 +127,5 @@ class RestConfigHint extends BaseRestConfigurationFix  {
 
     
     private boolean isJersey;
-    private String[] packages;
 
 }

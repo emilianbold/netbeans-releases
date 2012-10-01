@@ -76,7 +76,7 @@ public class ComposerOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 871513576876878676L;
 
-    private static final String COMPOSER_LAST_FOLDER_SUFFIX = ".composer";
+    private static final String COMPOSER_LAST_FOLDER_SUFFIX = ".composer"; // NOI18N
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -98,6 +98,7 @@ public class ComposerOptionsPanel extends JPanel {
         // listeners
         DocumentListener documentListener = new DefaultDocumentListener();
         composerTextField.getDocument().addDocumentListener(documentListener);
+        vendorTextField.getDocument().addDocumentListener(documentListener);
         authorNameTextField.getDocument().addDocumentListener(documentListener);
         authorEmailTextField.getDocument().addDocumentListener(documentListener);
     }
@@ -108,6 +109,14 @@ public class ComposerOptionsPanel extends JPanel {
 
     public void setComposerPath(String composerPath) {
         composerTextField.setText(composerPath);
+    }
+
+    public String getVendor() {
+        return vendorTextField.getText();
+    }
+
+    public void setVendor(String vendor) {
+        vendorTextField.setText(vendor);
     }
 
     public String getAuthorName() {
@@ -163,6 +172,8 @@ public class ComposerOptionsPanel extends JPanel {
         browseButton = new JButton();
         searchButton = new JButton();
         hintLabel = new JLabel();
+        vendorLabel = new JLabel();
+        vendorTextField = new JTextField();
         authorNameLabel = new JLabel();
         authorNameTextField = new JTextField();
         authorEmailLabel = new JLabel();
@@ -185,6 +196,7 @@ public class ComposerOptionsPanel extends JPanel {
             }
         });
         Mnemonics.setLocalizedText(hintLabel, "HINT"); // NOI18N
+        Mnemonics.setLocalizedText(vendorLabel, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.vendorLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(authorNameLabel, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.authorNameLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(authorEmailLabel, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.authorEmailLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.noteLabel.text")); // NOI18N
@@ -206,30 +218,34 @@ public class ComposerOptionsPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(composerLabel)
-                            .addComponent(authorNameLabel)
-                            .addComponent(authorEmailLabel))
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(hintLabel)
-                            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                                    .addComponent(authorEmailTextField, Alignment.LEADING)
-                                    .addComponent(composerTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
-                                    .addComponent(authorNameTextField, Alignment.LEADING))
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(browseButton)
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(searchButton))))
                     .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(errorLabel)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(installationInstructionsLabel)
-                            .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(composerLabel)
+                            .addComponent(authorNameLabel)
+                            .addComponent(authorEmailLabel)
+                            .addComponent(vendorLabel))
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(hintLabel)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                                    .addComponent(vendorTextField, Alignment.LEADING)
+                                    .addComponent(authorEmailTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
+                                    .addComponent(composerTextField, Alignment.LEADING)
+                                    .addComponent(authorNameTextField, Alignment.LEADING))
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(browseButton)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(searchButton)))))
                 .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
@@ -243,6 +259,10 @@ public class ComposerOptionsPanel extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(hintLabel)
                 .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(vendorTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vendorLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(authorNameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(authorNameLabel))
@@ -333,6 +353,8 @@ public class ComposerOptionsPanel extends JPanel {
     private JLabel learnMoreLabel;
     private JLabel noteLabel;
     private JButton searchButton;
+    private JLabel vendorLabel;
+    private JTextField vendorTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

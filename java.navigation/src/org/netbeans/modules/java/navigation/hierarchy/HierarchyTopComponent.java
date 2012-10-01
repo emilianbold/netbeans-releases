@@ -77,6 +77,8 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
@@ -95,6 +97,7 @@ import org.netbeans.modules.java.navigation.base.Pair;
 import org.netbeans.modules.java.navigation.base.Resolvers;
 import org.netbeans.modules.java.navigation.base.SelectJavadocTask;
 import org.netbeans.modules.java.navigation.base.TapPanel;
+import org.netbeans.modules.java.navigation.base.Utils;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -117,23 +120,27 @@ import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays something.
+ * @author Tomas Zezula
  */
 @ConvertAsProperties(
     dtd = "-//org.netbeans.modules.java.navigation.hierarchy//Hierarchy//EN",
 autostore = false)
 @TopComponent.Description(
     preferredID = "JavaHierarchyTopComponent",
-iconBase="org/netbeans/modules/java/navigation/resources/supertypehierarchy.gif", 
+iconBase="org/netbeans/modules/java/navigation/resources/hierarchy_window.png",
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "properties", openAtStartup = false)
 @Messages({
     "CTL_HierarchyTopComponent=Hierarchy",
     "HINT_HierarchyTopComponent=This is a Hierarchy window"
 })
-public final class HierarchyTopComponent extends TopComponent implements ExplorerManager.Provider, ActionListener, PropertyChangeListener {
+public final class HierarchyTopComponent extends TopComponent implements ExplorerManager.Provider, ActionListener, PropertyChangeListener, ListDataListener {
 
     private static final int NOW = 0;
     private static final int JDOC_TIME = 500;
+    private static final int COMBO_HEIGHT = 20;
+    private static final int MIN_HISTORY_WIDTH = 50;
+    private static final int MIN_TYPE_WIDTH = 100;
     private static final Logger LOG = Logger.getLogger(HierarchyTopComponent.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(HierarchyTopComponent.class);
     @StaticResource
@@ -143,7 +150,6 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private static final String NON_ACTIVE_CONTENT = "non-active-content";  //NOI18N
     private static final String ACTIVE_CONTENT = "active-content";  //NOI18N
     private static final String PROP_LOWER_TOOLBAR_EXPANDED = "filtersPanelTap.expanded"; //NOI18N
-    private static final int MIN_HISTORY_WIDTH = 50;
     
     private static HierarchyTopComponent instance;
 
@@ -153,6 +159,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final InstanceContent selectedNodes;
     private final Lookup lookup;
     private final Container contentView;
+    private final JLabel nonActiveInfo;
     private final BeanTreeView btw;
     private final TapPanel lowerToolBar;
     private final JComboBox viewTypeCombo;
@@ -164,9 +171,12 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     private final HistorySupport history;
 
     @NbBundle.Messages({
-        "TXT_RefreshContent=Refresh",
-        "TXT_OpenJDoc=Open Javadoc Window",
-        "TXT_NonActiveContent=<No View Available - Refresh Manually>"
+        "TXT_NonActiveContent=<No View Available - Refresh Manually>",
+        "TXT_InspectHierarchyHistory=<empty>",
+        "TOOLTIP_RefreshContent=Refresh for entity under cursor",
+        "TOOLTIP_OpenJDoc=Open Javadoc Window",
+        "TOOLTIP_ViewHierarchyType=Hierachy View Type",
+        "TOOLTIP_InspectHierarchyHistory=Inspect Hierarchy History"
     })
     public HierarchyTopComponent() {
         history = HistorySupport.getInstnace(this.getClass());
@@ -183,37 +193,36 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         setName(Bundle.CTL_HierarchyTopComponent());
         setToolTipText(Bundle.HINT_HierarchyTopComponent());        
         viewTypeCombo = new JComboBox(new DefaultComboBoxModel(ViewType.values()));
+        viewTypeCombo.setMinimumSize(new Dimension(MIN_TYPE_WIDTH,COMBO_HEIGHT));
         viewTypeCombo.addActionListener(this);
-        historyCombo = new JComboBox(HistorySupport.createModel(history)){
-            @Override
-            public Dimension getMinimumSize() {
-                Dimension res = super.getMinimumSize();
-                if (res.width > MIN_HISTORY_WIDTH) {
-                    res = new Dimension(MIN_HISTORY_WIDTH, res.height);
-                }
-                return res;
-            }
-        };
+        viewTypeCombo.setToolTipText(Bundle.TOOLTIP_ViewHierarchyType());
+        historyCombo = new JComboBox(HistorySupport.createModel(history, Bundle.TXT_InspectHierarchyHistory()));
+        historyCombo.setMinimumSize(new Dimension(MIN_HISTORY_WIDTH,COMBO_HEIGHT));
         historyCombo.setRenderer(HistorySupport.createRenderer(history));
         historyCombo.addActionListener(this);
+        historyCombo.setEnabled(false);
+        historyCombo.getModel().addListDataListener(this);
+        historyCombo.setToolTipText(Bundle.TOOLTIP_InspectHierarchyHistory());
         refreshButton = new JButton(ImageUtilities.loadImageIcon(REFRESH_ICON, true));
         refreshButton.addActionListener(this);
-        refreshButton.setFocusable(false);
-        refreshButton.setToolTipText(Bundle.TXT_RefreshContent());
+        refreshButton.setToolTipText(Bundle.TOOLTIP_RefreshContent());
         jdocButton = new JButton(ImageUtilities.loadImageIcon(JDOC_ICON, true));
         jdocButton.addActionListener(this);
-        jdocButton.setFocusable(false);
-        jdocButton.setToolTipText(Bundle.TXT_OpenJDoc());
-        final Box upperToolBar = new MainToolBar(viewTypeCombo, historyCombo, refreshButton, jdocButton);        
+        jdocButton.setToolTipText(Bundle.TOOLTIP_OpenJDoc());
+        final Box upperToolBar = new MainToolBar(
+            constrainedComponent(viewTypeCombo, GridBagConstraints.HORIZONTAL, 1.0, new Insets(0,0,0,0)),
+            constrainedComponent(historyCombo, GridBagConstraints.HORIZONTAL, 1.5, new Insets(0,3,0,0)),
+            constrainedComponent(refreshButton, GridBagConstraints.NONE, 0.0, new Insets(0,3,0,0)),
+            constrainedComponent(jdocButton, GridBagConstraints.NONE, 0.0, new Insets(0,3,0,3)));
         add(decorateAsUpperPanel(upperToolBar), BorderLayout.NORTH);
         contentView = new JPanel();
         contentView.setLayout(new CardLayout());
-        JPanel nonActiveContent = updateBackground(new JPanel());
+        JPanel nonActiveContent = Utils.updateBackground(new JPanel());
         nonActiveContent.setLayout(new BorderLayout());
-        final JLabel info = new JLabel(Bundle.TXT_NonActiveContent());
-        info.setEnabled(false);
-        info.setHorizontalAlignment(SwingConstants.CENTER);
-        nonActiveContent.add(info, BorderLayout.CENTER);
+        nonActiveInfo = new JLabel(Bundle.TXT_NonActiveContent());
+        nonActiveInfo.setEnabled(false);
+        nonActiveInfo.setHorizontalAlignment(SwingConstants.CENTER);
+        nonActiveContent.add(nonActiveInfo, BorderLayout.CENTER);
         btw = createBeanTreeView();
         contentView.add(nonActiveContent, NON_ACTIVE_CONTENT);
         contentView.add(btw, ACTIVE_CONTENT);
@@ -227,8 +236,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                 getBoolean(PROP_LOWER_TOOLBAR_EXPANDED, true); //NOI18N
         lowerToolBar.setExpanded(expanded);
         lowerToolBar.addPropertyChangeListener(this);
-        add(updateBackground(lowerToolBar), BorderLayout.SOUTH);
-
+        add(Utils.updateBackground(lowerToolBar), BorderLayout.SOUTH);
     }
 
     public void setContext(
@@ -306,6 +314,22 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     }
 
     @Override
+    public void intervalAdded(ListDataEvent e) {
+        enableHistory();
+    }
+
+    @Override
+    public void intervalRemoved(ListDataEvent e) {
+        enableHistory();
+    }
+
+    @Override
+    public void contentsChanged(ListDataEvent e) {
+        enableHistory();
+    }
+
+
+    @Override
     protected void componentActivated() {
         super.componentActivated();
         if (JavadocTopComponent.shouldUpdate() && getLookup().lookup(Node.class) != null) {
@@ -314,6 +338,30 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         }
     }
 
+    private void enableHistory() {
+        if (!history.getHistory().isEmpty()) {
+            historyCombo.setEnabled(true);
+        }
+    }
+
+    @NonNull
+    private static Pair<JComponent, GridBagConstraints> constrainedComponent(
+            @NonNull final JComponent component,
+            final int fill,
+            final double weightx,
+            @NonNull final Insets insets) {
+        final GridBagConstraints c = new GridBagConstraints();
+        c.gridx = GridBagConstraints.RELATIVE;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.weightx = weightx;
+        c.weighty = 0;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = fill;
+        c.insets = insets;
+        return Pair.<JComponent,GridBagConstraints>of(component,c);
+    }
 
 
     @NonNull
@@ -322,14 +370,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         btw.setRootVisible(false);
         return btw;
     }
-
-    @NonNull
-    private static <T extends JComponent> T updateBackground(@NonNull final T comp) {
-        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-            comp.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-        }
-        return comp;
-    }
+    
 
     @NonNull
     private static JPanel decorateAsUpperPanel(@NonNull final JComponent comp) {
@@ -349,13 +390,14 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         wrapper.setBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0,
                     UIManager.getColor("NbSplitPane.background")));//NOI18N
-        return updateBackground(wrapper);
+        return Utils.updateBackground(wrapper);
     }
 
     private void showBusy() {
         assert SwingUtilities.isEventDispatchThread();
         ((CardLayout)contentView.getLayout()).show(contentView, ACTIVE_CONTENT);
         rootChildren.set(Nodes.waitNode());
+        btw.requestFocus();
     }
 
     private void schedule(@NonNull final Callable<Pair<URI,ElementHandle<TypeElement>>> resolver) {
@@ -439,8 +481,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     }
 
     @NbBundle.Messages({
-        "LBL_SuperTypeView=Supertype View",
-        "LBL_SubTypeView=Subtype View"})
+        "LBL_SuperTypeView=Supertypes",
+        "LBL_SubTypeView=Subtypes"})
     private static enum ViewType {
                        
         SUPER_TYPE(Bundle.LBL_SuperTypeView()),
@@ -477,47 +519,54 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         @Override
         @NbBundle.Messages({
         "ERR_Cannot_Resolve_File=Cannot resolve type: {0}.",
-        "ERR_Not_Declared_Type=Not a declared type."})
+        "ERR_Not_Declared_Type=Not a declared type.",
+        "WARN_Object=<html>The subtypes of java.lang.Object are not supported."})
         public void run() {
             try {
                 final Pair<URI,ElementHandle<TypeElement>> pair = toShow.get();
                 if (pair != null) {
-                    final FileObject file = URLMapper.findFileObject(pair.first.toURL());
-                    JavaSource js;
-                    if (file != null && (js=JavaSource.forFileObject(file)) != null) {
-                        LOG.log(Level.FINE, "Showing hierarchy for: {0}", pair.second.getQualifiedName());  //NOI18N
-                        history.addToHistory(pair);
-                        js.runUserActionTask(new Task<CompilationController>() {
-                            @Override
-                            public void run(CompilationController cc) throws Exception {
-                                cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                                final TypeElement te = pair.second.resolve(cc);
-                                if (te != null) {
-                                    final Node root;
-                                    if (viewType == ViewType.SUPER_TYPE) {
-                                     root = Nodes.superTypeHierarchy(
-                                            (DeclaredType)te.asType(),
-                                            cc.getClasspathInfo(),
-                                            filters);
-                                    } else {
-                                        Node subTypes = Nodes.subTypeHierarchy(te, cc, filters, new AtomicBoolean());
-                                        
-                                        root = subTypes != null ? subTypes : /*XXX:*/new AbstractNode(Children.LEAF);
-                                    }
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            historyCombo.getModel().setSelectedItem(pair);
-                                            rootChildren.set(root);
-                                            btw.expandAll();
-                                        }
-                                    });
-                                }
-                            }
-                        }, true);
+                    if (viewType == ViewType.SUB_TYPE &&
+                        Object.class.getName().equals(pair.second.getQualifiedName())) {
+                        nonActiveInfo.setText(Bundle.WARN_Object());
+                        ((CardLayout)contentView.getLayout()).show(contentView, NON_ACTIVE_CONTENT);
                     } else {
-                        rootChildren.set(null);
-                        StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(pair.second.getQualifiedName()));
+                        final FileObject file = URLMapper.findFileObject(pair.first.toURL());
+                        JavaSource js;
+                        if (file != null && (js=JavaSource.forFileObject(file)) != null) {
+                            LOG.log(Level.FINE, "Showing hierarchy for: {0}", pair.second.getQualifiedName());  //NOI18N
+                            history.addToHistory(pair);
+                            js.runUserActionTask(new Task<CompilationController>() {
+                                @Override
+                                public void run(CompilationController cc) throws Exception {
+                                    cc.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    final TypeElement te = pair.second.resolve(cc);
+                                    if (te != null) {
+                                        final Node root;
+                                        if (viewType == ViewType.SUPER_TYPE) {
+                                         root = Nodes.superTypeHierarchy(
+                                                (DeclaredType)te.asType(),
+                                                cc.getClasspathInfo(),
+                                                filters);
+                                        } else {
+                                            Node subTypes = Nodes.subTypeHierarchy(te, cc, filters, new AtomicBoolean());
+
+                                            root = subTypes != null ? subTypes : /*XXX:*/new AbstractNode(Children.LEAF);
+                                        }
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                historyCombo.getModel().setSelectedItem(pair);
+                                                rootChildren.set(root);
+                                                btw.expandAll();
+                                            }
+                                        });
+                                    }
+                                }
+                            }, true);
+                        } else {
+                            rootChildren.set(null);
+                            StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(pair.second.getQualifiedName()));
+                        }
                     }
                 } else {
                     rootChildren.set(null);
@@ -563,7 +612,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
     }
     
     private static final class MainToolBar extends Box {
-        MainToolBar(@NonNull final JComponent... components) {
+        MainToolBar(@NonNull final Pair<JComponent,GridBagConstraints>... components) {
             super(BoxLayout.X_AXIS);
             setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 5));
             final JToolBar toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
@@ -573,8 +622,9 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             toolbar.setBorder(BorderFactory.createEmptyBorder());
             toolbar.setOpaque(false);
             toolbar.setFocusable(false);
-            for (JComponent component : components) {
-                toolbar.add(component);
+            toolbar.setLayout(new GridBagLayout());
+            for (Pair<JComponent,GridBagConstraints> p : components) {
+                toolbar.add(p.first,p.second);
             }
             add (toolbar);
         }

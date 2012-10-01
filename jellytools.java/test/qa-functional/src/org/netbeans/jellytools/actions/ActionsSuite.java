@@ -42,8 +42,8 @@
 package org.netbeans.jellytools.actions;
 
 import junit.framework.Test;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileActionTest;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Run all tests in the same instance of the IDE.
@@ -54,7 +54,7 @@ import org.netbeans.junit.NbModuleSuite;
 public class ActionsSuite {
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().
+        return JellyTestCase.emptyConfiguration().
                 addTest(ActionNoBlockTest.class, ActionNoBlockTest.tests).
                 addTest(ActionTest.class, ActionTest.tests).
                 addTest(AddLocaleActionTest.class, AddLocaleActionTest.tests).
@@ -87,7 +87,7 @@ public class ActionsSuite {
                 addTest(ShowDescriptionAreaActionTest.class).
                 addTest(SortByCategoryActionTest.class).
                 addTest(SortByNameActionTest.class).
-                addTest(DebugJavaFileActionTest.class);
-        return conf.clusters(".*").enableModules(".*").suite();
+                addTest(DebugJavaFileActionTest.class).
+                suite();
     }
 }

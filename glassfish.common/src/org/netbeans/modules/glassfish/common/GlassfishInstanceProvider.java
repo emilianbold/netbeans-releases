@@ -87,52 +87,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     static public String PRELUDE_DEFAULT_NAME = "GlassFish_v3_Prelude"; //NOI18N
     static public String EE6WC_DEFAULT_NAME = "GlassFish_Server_3.1"; // NOI18N
 
-    /** GlassFish user account instance key ring name space. */
-    static final String KEYRING_NAME_SPACE="GlassFish.admin";
-    
-    /**
-     * GlassFish user account instance key ring field separator.
-     * <p/>
-     * Key ring name is constructed in following form:
-     * <field>{'.'<field>}':'<identifier>
-     * e.g. "GlassFish.cloud.userAccount.userPassword:someUser".
-     */
-    static final String KEYRING_NAME_SEPARATOR=".";
-
-    /**
-     * GlassFish user account instance key ring identifier separator.
-     * <p/>
-     * Key ring name is constructed in following form:
-     * <field>{'.'<field>}':'<identifier>
-     * e.g. "GlassFish.cloud.userAccount.userPassword:someUser".
-     */
-    static final String KEYRING_IDENT_SEPARATOR=":";
-
-    /**
-     * Build key ring identifier for password related to given user name.
-     * <p/>
-     * @param serverName Name of server to add into password key.
-     * @param userName User name of account user who's password will be stored.
-     * @return Key ring identifier for password related to given user name
-     */
-    private static String passwordKey(String serverName, String userName) {
-        StringBuilder pwKey = new StringBuilder(
-                KEYRING_NAME_SPACE.length() + KEYRING_NAME_SEPARATOR.length()
-                + GlassfishModule.PASSWORD_ATTR.length()
-                + KEYRING_IDENT_SEPARATOR.length()
-                + (serverName != null ? serverName.length() : 0)
-                + KEYRING_IDENT_SEPARATOR.length()
-                + (userName != null ? userName.length() : 0));
-        pwKey.append(KEYRING_NAME_SPACE);
-        pwKey.append(KEYRING_NAME_SEPARATOR);
-        pwKey.append(GlassfishModule.PASSWORD_ATTR);
-        pwKey.append(KEYRING_IDENT_SEPARATOR);
-        pwKey.append(serverName != null ? serverName : "");
-        pwKey.append(KEYRING_IDENT_SEPARATOR);
-        pwKey.append(userName != null ? userName : "");
-        return pwKey.toString();
-    }
-
     public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
         List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
         if(initialize) {
@@ -537,11 +491,48 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
     }
 
-    private GlassfishInstance readInstanceFromFile(FileObject instanceFO, String uriFragment) throws IOException {
+    /**
+     * Fix attributes being imported from old NetBeans.
+     * <p/>
+     * Password for local server is changed from <code>"adminadmin"</code>
+     * to <code>""</code>.
+     * Fixed attributes are marked with new property to avoid multiple fixes
+     * in the future.
+     * <p/>
+     * Argument <code>ip</code> shall not be <code>null</code>.
+     * <p/>
+     * @param ip Instance properties <code>Map</code>.
+     * @param fo Instance file object.
+     */
+    private void fixImportedAttributes(Map<String, String> ip,
+            FileObject fo) {
+        if (!ip.containsKey(GlassfishModule.NB73_IMPORT_FIXED)) {
+            String password = ip.get(GlassfishModule.PASSWORD_ATTR);
+            if (password != null) {
+                boolean local
+                        = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) != null;
+                if (local && GlassfishInstance.OLD_DEFAULT_ADMIN_PASSWORD
+                        .equals(password)) {
+                    ip.put(GlassfishModule.PASSWORD_ATTR,
+                            GlassfishInstance.DEFAULT_ADMIN_PASSWORD);
+                    setStringAttribute(fo, GlassfishModule.PASSWORD_ATTR,
+                            GlassfishInstance.DEFAULT_ADMIN_PASSWORD);
+                }
+            }
+            ip.put(GlassfishModule.NB73_IMPORT_FIXED, Boolean.toString(true));
+        }
+    }
+
+    // Password from keyring (GlassfishModule.PASSWORD_ATTR) is read on demand
+    // using code in GlassfishInstance.Props class.
+    private GlassfishInstance readInstanceFromFile(FileObject instanceFO,
+            String uriFragment) throws IOException {
         GlassfishInstance instance = null;
 
-        String installRoot = getStringAttribute(instanceFO, GlassfishModule.INSTALL_FOLDER_ATTR);
-        String glassfishRoot = getStringAttribute(instanceFO, GlassfishModule.GLASSFISH_FOLDER_ATTR);
+        String installRoot = getStringAttribute(instanceFO,
+                GlassfishModule.INSTALL_FOLDER_ATTR);
+        String glassfishRoot = getStringAttribute(instanceFO,
+                GlassfishModule.GLASSFISH_FOLDER_ATTR);
         
         // Existing installs may lack "installRoot", but glassfishRoot and 
         // installRoot are the same in that case.
@@ -549,7 +540,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             installRoot = glassfishRoot;
         }
 
-        if(isValidHomeFolder(installRoot) && isValidGlassfishFolder(glassfishRoot)) {
+        if(isValidHomeFolder(installRoot)
+                && isValidGlassfishFolder(glassfishRoot)) {
             // collect attributes and pass to create()
             Map<String, String> ip = new HashMap<String, String>();
             Enumeration<String> iter = instanceFO.getAttributes();
@@ -559,15 +551,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 ip.put(name, value);
             }
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
-            String serverName = ip.get(GlassfishModule.DISPLAY_NAME_ATTR);
-            String userName = ip.get(GlassfishModule.USERNAME_ATTR);
-            char[] password = Keyring.read(passwordKey(serverName, userName));
-            String userPassword = password != null
-                    ? new String(password) : "";
-            ip.put(GlassfishModule.PASSWORD_ATTR, userPassword);
+            fixImportedAttributes(ip, instanceFO);
             instance = GlassfishInstance.create(ip,this,false);
         } else {
-            getLogger().log(Level.FINER, "GlassFish folder {0} is not a valid install.", instanceFO.getPath()); // NOI18N
+            getLogger().log(Level.FINER,
+                    "GlassFish folder {0} is not a valid install.",
+                    instanceFO.getPath()); // NOI18N
             instanceFO.delete();
         }
 
@@ -611,7 +600,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                         if (key.equals(GlassfishModule.PASSWORD_ATTR)) {
                             String serverName = attrMap.get(GlassfishModule.DISPLAY_NAME_ATTR);
                             String userName = attrMap.get(GlassfishModule.USERNAME_ATTR);
-                            Keyring.save(passwordKey(serverName, userName),
+                            Keyring.save(GlassfishInstance.passwordKey(
+                                    serverName, userName),
                                     entry.getValue().toCharArray(),
                                     "GlassFish administrator user password");
                         } else {
@@ -705,6 +695,23 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             result = (String) attr;
         }
         return result;
+    }
+
+    /**
+     * Set file attribute of given file object.
+     * @param fo File object.
+     * @param key Attribute key.
+     * @param value Attribute value.
+     */
+    private static void setStringAttribute(FileObject fo, String key,
+            String value) {
+        try {
+            fo.setAttribute(key, value);
+        } catch (IOException ioe) {
+            getLogger().log(Level.WARNING,
+                    "Cannot update file object value: {0} -> {1} in {2}",
+                    new Object[]{key, value, fo.getPath()});
+        }
     }
         
     String[] getNoPasswordCreatDomainCommand(String startScript, String jarLocation, 

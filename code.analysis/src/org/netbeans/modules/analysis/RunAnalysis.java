@@ -71,10 +71,12 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.analysis.RunAnalysisPanel.DialogState;
+import org.netbeans.modules.analysis.spi.AnalysisScopeProvider;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
+import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.modules.analysis.ui.AnalysisProblemNode;
 import org.netbeans.modules.analysis.ui.AnalysisResultTopComponent;
 import org.netbeans.modules.analysis.ui.RequiredPluginsNode;
@@ -132,6 +134,7 @@ public class RunAnalysis {
                 final String singleWarningId = rap.getSingleWarningId();
                 final Collection<? extends AnalyzerFactory> analyzers = rap.getAnalyzers();
                 final DialogState dialogState = rap.getDialogState();
+                final Map<AnalyzerFactory, Map<String, WarningDescription>> analyzerId2Description = rap.getAnalyzerId2Description();
 
                 rap.started();
                 progress.start();
@@ -174,7 +177,7 @@ public class RunAnalysis {
                             @Override public void run() {
                                 if (!doCancel.get()) {
                                     AnalysisResultTopComponent resultWindow = AnalysisResultTopComponent.findInstance();
-                                    resultWindow.setData(context, dialogState, new AnalysisResult(result, extraNodes));
+                                    resultWindow.setData(context, dialogState, new AnalysisResult(result, analyzerId2Description, extraNodes));
                                     resultWindow.open();
                                     resultWindow.requestActive();
                                 }
@@ -267,6 +270,12 @@ public class RunAnalysis {
     static Scope addProjectToScope(Project p, Scope target, AtomicBoolean cancel, Map<Project, Map<FileObject, ClassPath>> projects2RegisteredContent) {
         Scope projectScope = p.getLookup().lookup(Scope.class);
 
+        if (projectScope == null) {
+            AnalysisScopeProvider scopeProvider = p.getLookup().lookup(AnalysisScopeProvider.class);
+            
+            projectScope = scopeProvider != null ? scopeProvider.getScope() : null;
+        }
+        
         if (projectScope != null) {
             return augment(target, projectScope.getSourceRoots(), projectScope.getFolders(), projectScope.getFiles());
         }

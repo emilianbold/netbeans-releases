@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.navigation.base;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -59,9 +60,12 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.java.navigation.NoBorderToolBar;
@@ -219,7 +223,7 @@ public final class FiltersManager {
             // configure toolbar
             toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
             toolbar.setFloatable(false);
-            toolbar.setRollover(true);
+            toolbar.setRollover(true);            
             toolbar.setBorderPainted(false);
             toolbar.setBorder(BorderFactory.createEmptyBorder());
             toolbar.setOpaque(false);
@@ -256,13 +260,19 @@ public final class FiltersManager {
         }
         
         private void addSortButtons( AbstractButton[] sortButtons ) {
-            Dimension space = new Dimension(3, 0);
-            for( AbstractButton button : sortButtons ) {
+            if (!toggles.isEmpty()) {
+                toolbar.addSeparator();
+            }
+            final Dimension space = new Dimension(3, 0);
+            for(int i=0; i< sortButtons.length; i++) {
+                if (i!=0) {
+                    toolbar.addSeparator(space);
+                }
+                final AbstractButton button = sortButtons[i];
                 Icon icon = button.getIcon();
                 Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
                 button.setPreferredSize(size);
-                button.setMargin(new Insets(2,3,2,3));
-                toolbar.addSeparator(space);
+                button.setMargin(new Insets(2,3,2,3));                
                 toolbar.add( button );
             }
         }

@@ -137,6 +137,11 @@ public class TextDetailTest extends NbTestCase {
         assertTrue(htmlName.contains("</b>" + ELLIPSIS + "<b>"));
     }
 
+    public void testMatchOfHtmlContent() {
+        String htmlName = createHtmlDisplayName("a<b>BOLD</b>c", "<b>BOLD</b>");
+        assertEquals("a<b>&lt;b>BOLD&lt;/b></b>c", htmlName);
+    }
+
     public String createHtmlDisplayName(String line, String match) {
         TextDetail td = createMockTextDetail(line, match);
         DetailNode detailNode = new TextDetail.DetailNode(td, false);

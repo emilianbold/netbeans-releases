@@ -322,6 +322,7 @@ public class ProjectUtilities {
 
     public static void fetchSubprojects(final Project project, final Set<Project> projects) {
         // process possible subprojects
+        //mkleint: see subprojectprovider for official contract, see #210465
         SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
 
         if (spp != null) {
@@ -491,6 +492,7 @@ public class ProjectUtilities {
 
             if (traverse) {
                 // process possible subprojects
+                //mkleint: see subprojectprovider for official contract, maybe classpath should be checked instead? see #210465                
                 SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
 
                 if (spp != null) {

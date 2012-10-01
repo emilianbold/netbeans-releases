@@ -44,9 +44,11 @@ package org.netbeans.modules.java.hints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import com.sun.source.tree.ClassTree;
@@ -68,7 +70,11 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.GuardedDocument;
+import org.netbeans.editor.MarkBlock;
+import org.netbeans.editor.MarkBlockChain;
 import org.netbeans.modules.editor.java.JavaKit;
+import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -93,9 +99,8 @@ public class OrganizeMembers {
     @TriggerTreeKind(Kind.CLASS)
     public static ErrorDescription checkMembers(final HintContext context) {
         Source source = context.getInfo().getSnapshot().getSource();
-        ModificationResult result = null;
         try {
-            result = ModificationResult.runModificationTask(Collections.singleton(source), new UserTask() {
+            ModificationResult result = ModificationResult.runModificationTask(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
@@ -103,22 +108,22 @@ public class OrganizeMembers {
                     doOrganizeMembers(copy, context.getPath());
                 }
             });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        List<? extends Difference> diffs = result != null ? result.getDifferences(source.getFileObject()) : null;
-        if (diffs != null && !diffs.isEmpty()) {
-            Fix fix = new OrganizeMembersFix(context.getInfo(), context.getPath()).toEditorFix();
-            SourcePositions sp = context.getInfo().getTrees().getSourcePositions();
-            int offset = diffs.get(0).getStartPosition().getOffset();
-            CompilationUnitTree cut = context.getPath().getCompilationUnit();
-            ClassTree clazz = (ClassTree) context.getPath().getLeaf();
-            for (Tree member : clazz.getMembers()) {
-                if (sp.getStartPosition(cut, member) >= offset) {
-                    return ErrorDescriptionFactory.forTree(context, member, NbBundle.getMessage(OrganizeMembers.class, "MSG_OragnizeMembers"), fix); //NOI18N
+            List<? extends Difference> diffs = result != null ? result.getDifferences(source.getFileObject()) : null;
+            if (diffs != null && !diffs.isEmpty() && !checkGuarded(context.getInfo().getDocument(), diffs)) {
+                Fix fix = new OrganizeMembersFix(context.getInfo(), context.getPath()).toEditorFix();
+                SourcePositions sp = context.getInfo().getTrees().getSourcePositions();
+                int offset = diffs.get(0).getStartPosition().getOffset();
+                CompilationUnitTree cut = context.getPath().getCompilationUnit();
+                ClassTree clazz = (ClassTree) context.getPath().getLeaf();
+                for (Tree member : clazz.getMembers()) {
+                    if (sp.getStartPosition(cut, member) >= offset) {
+                        return ErrorDescriptionFactory.forTree(context, member, NbBundle.getMessage(OrganizeMembers.class, "MSG_OragnizeMembers"), fix); //NOI18N
+                    }
                 }
+                return ErrorDescriptionFactory.forTree(context, clazz, NbBundle.getMessage(OrganizeMembers.class, "MSG_OragnizeMembers"), fix); //NOI18N
             }
-            return ErrorDescriptionFactory.forTree(context, clazz, NbBundle.getMessage(OrganizeMembers.class, "MSG_OragnizeMembers"), fix); //NOI18N
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }
@@ -129,6 +134,18 @@ public class OrganizeMembers {
         ClassTree nue = maker.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), clazz.getImplementsClause(), Collections.<Tree>emptyList());
         nue = GeneratorUtilities.get(copy).insertClassMembers(nue, clazz.getMembers());
         copy.rewrite(clazz, nue);
+    }
+    
+    private static boolean checkGuarded(Document doc, List<? extends Difference> diffs) {
+        if (doc instanceof GuardedDocument) {
+            MarkBlockChain chain = ((GuardedDocument) doc).getGuardedBlockChain();
+            for (Difference diff : diffs) {
+                if ((chain.compareBlock(diff.getStartPosition().getOffset(), diff.getEndPosition().getOffset()) & MarkBlock.OVERLAP) != 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static class OrganizeMembersFix extends JavaFix {
@@ -169,19 +186,26 @@ public class OrganizeMembers {
                     @Override
                     public void run() {
                         try {
-                            ModificationResult.runModificationTask(Collections.singleton(source), new UserTask() {
+                            ModificationResult result = ModificationResult.runModificationTask(Collections.singleton(source), new UserTask() {
                                 @Override
                                 public void run(ResultIterator resultIterator) throws Exception {
                                     WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
                                     copy.toPhase(Phase.RESOLVED);
                                     TreePath path = copy.getTreeUtilities().pathFor(component.getCaretPosition());
-                                    if (path != null && path.getLeaf().getKind() == Kind.CLASS) {
+                                    path = Utilities.getPathElementOfKind(EnumSet.of(Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.ANNOTATION_TYPE), path);
+                                    if (path != null) {
                                         doOrganizeMembers(copy, path);
                                     } else {
                                         Toolkit.getDefaultToolkit().beep();                                        
                                     }
                                 }
-                            }).commit();
+                            });
+                            List<? extends Difference> diffs = result != null ? result.getDifferences(source.getFileObject()) : null;
+                            if (diffs != null && !diffs.isEmpty() && !checkGuarded(doc, diffs)) {
+                                result.commit();
+                            } else {
+                                Toolkit.getDefaultToolkit().beep();                                        
+                            }
                         } catch (Exception ex) {
                             Toolkit.getDefaultToolkit().beep();
                         }

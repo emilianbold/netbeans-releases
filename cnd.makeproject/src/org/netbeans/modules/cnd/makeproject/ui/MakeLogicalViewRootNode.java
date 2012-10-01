@@ -411,13 +411,15 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     public void stateChanged(ChangeEvent e) {
         brokenLinks = provider.hasBrokenLinks();
         brokenIncludes = hasBrokenIncludes(getProject());
-        MakeConfigurationDescriptor makeConfigurationDescriptor = provider.getMakeConfigurationDescriptor();
-        if (makeConfigurationDescriptor != null) {
-            brokenProject =  makeConfigurationDescriptor.getState() == State.BROKEN;
-            incorrectPlatform = isIncorrectPlatform();
-            incorrectVersion = !isCorectVersion(makeConfigurationDescriptor.getVersion());
-            if (gotMakeConfigurationDescriptor() && provider.getMakeConfigurationDescriptor().getConfs().size() == 0 ) {
-                brokenProject = true;
+        if (provider.gotMakeConfigurationDescriptor()) {
+            MakeConfigurationDescriptor makeConfigurationDescriptor = provider.getMakeConfigurationDescriptor();
+            if (makeConfigurationDescriptor != null) {
+                brokenProject =  makeConfigurationDescriptor.getState() == State.BROKEN;
+                incorrectPlatform = isIncorrectPlatform();
+                incorrectVersion = !isCorectVersion(makeConfigurationDescriptor.getVersion());
+                if (makeConfigurationDescriptor.getConfs().size() == 0 ) {
+                    brokenProject = true;
+                }
             }
         }
         updateAnnotationFiles();

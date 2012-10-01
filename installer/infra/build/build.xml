@@ -62,14 +62,13 @@
 	    </and>
         </condition>
 
-        <!-- use.hg.root.translatedfiles property is set if ml.build is set and hg.root.translated is set and not empty -->
+        <!-- use.hg.root.translatedfiles property is set if hg.root.translated is set and not empty -->
 	<condition property="use.hg.root.translatedfiles">
 	    <and>
 	        <isset property="hg.root.translatedfiles"/>
 	        <not>
 	            <equals arg1="${hg.root.translatedfiles}" arg2=""/> 
 	         </not>		
-		<isset property="ml.build"/>
 
                 <available file="${hg.root.translatedfiles}/src"/>
 	    </and>
@@ -132,9 +131,6 @@
     </target>
 
     <target name="-init-ml">
-        <condition property="ml.build">
-	     <equals arg1="${nb.build.type}" arg2="ml"/>
-        </condition>
         <condition property="nb.locales.isset">
  	     <not>
  	     	<equals arg1="${nb.locales}" arg2=""/>
@@ -239,18 +235,6 @@
             classpath="${custom.tasks.cls}" 
             classname="org.netbeans.installer.infra.build.ant.registries.CreateBundle"/>
 
-	<set property="nb.build.type.number"
-                 value="0"/>
-        <set property="nb.build.suffix"
-                 value=""/>
-
-        <if property="nb.build.type" value="ml">
-            <set property="nb.build.type.number"
-                 value="1"/>
-	    <set property="nb.build.suffix"
-                 value="-ml"/>
-        </if>
-
         <condition property="do.build.jtb">
 	     <and>
 		     <equals arg1="${build.jtb}" arg2="1"/>
@@ -261,32 +245,12 @@
         </condition>
 
 
-        <set property="gf.ml.build.type" value="${gf.build.type}"/>
+        <set property="glassfish.build.suffix" value="ml"/>
 
-        <if property="do.build.jtb">
-             <!-- For Java Tools Bundle Update 7 we use NB6.5ML but EN SJSAS -->
-             <!--<set property="gf.ml.build.type" value=""/>-->
-        </if>
-
-        <if property="gf.ml.build.type" value="">
-            <set property="glassfish.build.suffix" value="en"/>
-        </if>
-        <if property="gf.ml.build.type" value="ml">
-            <set property="glassfish.build.suffix" value="ml"/>
-        </if>
-
-        <if property="gf-mod.build.type" value="">
-            <set property="glassfish-mod-sun.build.suffix" value="en"/>
-            <set property="glassfish-mod-sun.ml.appendix" value=""/>
-            <set property="glassfish-mod.build.suffix" value="en"/>
-            <set property="glassfish-mod.ml.appendix" value=""/>
-        </if>
-        <if property="gf-mod.build.type" value="ml">
-            <set property="glassfish-mod-sun.build.suffix" value="ml"/>
-            <set property="glassfish-mod-sun.ml.appendix" value="-ml"/>
-            <set property="glassfish-mod.build.suffix" value="ml"/>
-            <set property="glassfish-mod.ml.appendix" value="-ml"/>
-        </if>
+        <set property="glassfish-mod-sun.build.suffix" value="ml"/>
+        <set property="glassfish-mod-sun.ml.appendix" value="-ml"/>
+        <set property="glassfish-mod.build.suffix" value="ml"/>
+        <set property="glassfish-mod.ml.appendix" value="-ml"/>
         
 	<set property="nb.build.number"
              value="${build.number}"/>
@@ -299,13 +263,13 @@
              value="7.3.0.0.${nb.build.number}"/>
 
         <set property="nb.zip.files.prefix"
-             value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
+             value="${nb.files.prefix}-${build.number}"/>
 
         <set property="nb.bundle.files.prefix"
-             value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
+             value="${nb.files.prefix}-${build.number}"/>
 
         <set property="jdk.bundle.files.suffix"
-             value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
+             value="${nb.files.prefix}-${build.number}"/>
 	
         <set property="jdk.bundle.files.suffix"
              value="nb-dev"/>
@@ -314,7 +278,7 @@
              value="${output.dir}/bundles"/>
 
     <set property="weblogic.bundle.files.suffix"
-         value="${nb.files.prefix}${nb.build.suffix}"/>
+         value="${nb.files.prefix}"/>
 
     <set property="weblogic.bundle.files.suffix"
          value="nb-7_3"/>
@@ -364,16 +328,10 @@
 	<set property="tomcat.version"      value="7.0.27"/>
 	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
         
-        <set property="weblogic.version"      value="12.1.1"/>
+        <set property="weblogic.version"      value="12.1.2"/>
 	<set property="weblogic.full.version" value="${weblogic.version}.0.0"/>
 
-	<if property="gf.ml.build.type" value="">
-		<set property="glassfish.ml.appendix" value=""/>
-	</if>
-
-	<if property="gf.ml.build.type" value="ml">
-		<set property="glassfish.ml.appendix" value="-ml"/>
-	</if>
+        <set property="glassfish.ml.appendix" value="-ml"/>
 	
         <get
             src="${glassfish.builds.host}/java/re/glassfish/3.1.2.2/promoted/b05/bundles/"
@@ -419,12 +377,7 @@
                 file="${temp.file}" 
                 prefix="swdp"/>
 	    -->
-            <if property="gf.ml.build.type" value="">
-            <set property="javaeesdk.build.location" value="${glassfish.builds.host}/java/re/javaeesdk/5.0_07/archive"/>
-	    </if>
-            <if property="gf.ml.build.type" value="ml">
             <set property="javaeesdk.build.location" value="${glassfish.builds.host}/java/re/javaeesdk/5.0_07-ml/archive"/>
-	    </if>
 
             <get
                 src="${javaeesdk.build.location}/fcs/latest/bundles/"
@@ -507,7 +460,6 @@ remote.work.dir=~/.${nb.bundle.files.prefix}
         <echo file="${environment.properties}" append="true">
 glassfish-mod.milestone.number=${glassfish-mod.milestone.number}
 glassfish-mod.milestone.number.real=${glassfish-mod.milestone.number.real}
-glassfish-mod.build.type=${glassfish-mod.build.type}
 glassfish-mod.build.number=${glassfish-mod.build.number}
 glassfish-mod.release.number=${glassfish-mod.release.number}
 
@@ -515,7 +467,6 @@ tomcat.full.version=${tomcat.full.version}
 tomcat.version=${tomcat.version}
 
 nb.full.version=${nb.full.version}
-nb.build.suffix=${nb.build.suffix}
 nb.zip.files.prefix=${nb.zip.files.prefix}
 nb.bundle.files.prefix=${nb.bundle.files.prefix}
 	</echo>
@@ -867,8 +818,8 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nb-product-default-mapping" unless="use.custom.package.data.mapping">
 	<antcall target="build-product">
 	    <param name="release.parent.uid" value="${netbeans.group.uid}"/>
-            <param name="product.packaged.data.file"            value="${packaged.data.dir}/${product.uid}${nb.build.suffix},${product.version}-${build.number},${product.platforms},${i}.jar"/>
-	    <param name="product.packaged.data.properties.file" value="${packaged.data.dir}/${product.uid}${nb.build.suffix},${product.version}-${build.number},${product.platforms},${i}.jar.properties"/>
+            <param name="product.packaged.data.file"            value="${packaged.data.dir}/${product.uid},${product.version}-${build.number},${product.platforms},${i}.jar"/>
+	    <param name="product.packaged.data.properties.file" value="${packaged.data.dir}/${product.uid},${product.version}-${build.number},${product.platforms},${i}.jar.properties"/>
         </antcall>
     </target>
 
@@ -1915,8 +1866,8 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-jdk6-bundles" if="do.build.jdk6">
         <!-- JavaSE + JDK6 bundles -->
 	<antcall target="generate-jdk-bundle-single">
-	    <param name="jdk.bundle.files.prefix"     value="jdk-6u35"/>
-	    <param name="jdk.full.version"            value="1.6.0.35.10"/>
+	    <param name="jdk.bundle.files.prefix"     value="jdk-6u37"/>
+	    <param name="jdk.full.version"            value="1.6.0.37.06"/>
             <param name="bundled.jvm.file.prefix"     value="jre-6u32"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk6.resource}"/>
 	</antcall>
@@ -1925,8 +1876,8 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-jdk7-bundles" if="do.build.jdk7">
         <!-- JavaSE + JDK7 bundles -->
 	<antcall target="generate-jdk-bundle-single">
-	    <param name="jdk.bundle.files.prefix"     value="jdk-7u7"/>
-	    <param name="jdk.full.version"            value="1.7.0.07.10"/>
+	    <param name="jdk.bundle.files.prefix"     value="jdk-7u9"/>
+	    <param name="jdk.full.version"            value="1.7.0.09.05"/>
             <param name="bundled.jvm.file.prefix"     value="jre-7u4"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk7.resource}"/>
 	</antcall>
@@ -1938,7 +1889,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </for-each>
     </target>
     <target name="generate-jdk-bundle-single-windows">
-        <condition property="jdk.full.version.platform" value="${jdk.full.version}32" else="1.7.0.6.2432">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}32" else="1.7.0.07.1132">
             <isset property="jdk.full.version"/>
         </condition>
 	<antcall target="generate-jdk-bundle">
@@ -1950,7 +1901,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
     <target name="generate-jdk-bundle-single-windows-x64">
-        <condition property="jdk.full.version.platform" value="${jdk.full.version}64" else="1.7.0.6.2464">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}64" else="1.7.0.07.1164">
             <isset property="jdk.full.version"/>
         </condition>
 	<antcall target="generate-jdk-bundle">
@@ -1962,7 +1913,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
     <target name="generate-jdk-bundle-single-linux">
-        <condition property="jdk.full.version.platform" value="${jdk.full.version}32" else="1.7.0.6.2432">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}32" else="1.7.0.07.1032">
             <isset property="jdk.full.version"/>
         </condition>
 	<antcall target="generate-jdk-bundle">
@@ -1975,7 +1926,7 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
     
     <target name="generate-jdk-bundle-single-linux-x64">
-        <condition property="jdk.full.version.platform" value="${jdk.full.version}64" else="1.7.0.6.2464">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}64" else="1.7.0.07.1064">
             <isset property="jdk.full.version"/>
         </condition>
 	<antcall target="generate-jdk-bundle">
@@ -1989,7 +1940,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-jdk-bundle"  depends="get-bundled-jvm">
         <property name="bundle.prefix"
-                      value="${jdk.output.dir}/${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-${bundle.platform.filename}${nb.build.suffix}"/>
+                      value="${jdk.output.dir}/${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-${bundle.platform.filename}"/>
 
         <create-bundle root="${output.dir}/registry-temp"
                         platform="${bundle.platform}"
@@ -2038,21 +1989,17 @@ jarsigner.storepass=${jarsigner.storepass}
 		<param name="bundle.platform"  value="linux"/>
 		<param name="bundle.extension" value="sh"/>
 	</antcall>
-	<antcall target="generate-weblogic-bundle">
-               <param name="bundle.platform"  value="macosx-x86"/>
-               <param name="bundle.extension" value="zip"/>
-        </antcall>
     </target>
 
     <target name="generate-weblogic-bundle">
         <property name="bundle.prefix"
-                  value="${weblogic.output.dir}/${weblogic.bundle.files.prefix}-${weblogic.bundle.files.suffix}-${bundle.platform}${nb.build.suffix}"/>
+                  value="${weblogic.output.dir}/${weblogic.bundle.files.prefix}-${weblogic.bundle.files.suffix}-${bundle.platform}"/>
         <create-bundle root="${output.dir}/registry-temp"
                        platform="${bundle.platform}"
                        target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base"         version="${nb.full.version}"/>
             <component uid="nb-javase"       version="${nb.full.version}"/>            
-            <component uid="nb-wbcommon"     version="${nb.full.version}"/>
+            <component uid="nb-webcommon"     version="${nb.full.version}"/>
             <component uid="nb-javaee"       version="${nb.full.version}"/>            
             <component uid="weblogic"        version="${weblogic.full.version}"/>
             <bundleProperty name="${bundledproduct.name}" value="weblogic"/>
@@ -2061,10 +2008,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <bundleProperty name="nbi.overall.license.resource" value="${license.resource}"/>
 	    -->
         </create-bundle>
-	<antcall target="convert-weblogic-bundle"/>
     </target>
-  
-    <target name="convert-weblogic-bundle" depends="convert-zip-to-dmg"/>
 
 <!--end-->
 

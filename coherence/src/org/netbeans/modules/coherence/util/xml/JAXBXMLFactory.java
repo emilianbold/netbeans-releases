@@ -222,7 +222,15 @@ public class JAXBXMLFactory {
     }
 
     public Object unmarshalXMLFromFile(File xmlFile, String packageName) throws FileNotFoundException {
-        return unmarshalXMLFromStream(new FileInputStream(xmlFile), packageName);
+        FileInputStream fis = new FileInputStream(xmlFile);
+        Object xml = unmarshalXMLFromStream(fis, packageName);
+
+        try {
+            fis.close();
+        } catch (IOException ex) {
+            logger.log(Level.FINE, null, ex);
+        }
+        return xml;
     }
 
     public Object unmarshalXMLFromString(String xmlString, String packageName) {

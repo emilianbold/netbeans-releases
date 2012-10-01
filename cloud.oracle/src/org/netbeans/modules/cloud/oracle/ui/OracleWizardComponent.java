@@ -45,22 +45,15 @@ package org.netbeans.modules.cloud.oracle.ui;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.MessageFormat;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -68,13 +61,23 @@ import org.openide.util.NbPreferences;
 public class OracleWizardComponent extends javax.swing.JPanel implements DocumentListener {
 
     private ChangeListener l;
-    private static final String ADMIN_URL = "https://javaservices.cloud.oracle.com"; // NOI18N
+    private static final String ADMIN_URL = "https://javaservices.{0}.cloud.oracle.com"; // NOI18N
     
     static final boolean SHOW_CLOUD_URLS = Boolean.getBoolean("oracle.cloud.dev");
+    
+    private static String[] dataCenters = new String[] { 
+        "us1 [US Commercial 1]",  // NOI18N
+        "us2 [US Commercial 2]",  // NOI18N
+        "em1 [EMEA Commercial 1]",  // NOI18N
+        "em2 [EMEA Commercial 2]",  // NOI18N
+        "ap1 [APAC Commercial 1]",  // NOI18N
+        "ap2 [APAC Commercial 2]",  // NOI18N
+        " " };  // NOI18N
     
     /** Creates new form OracleWizardComponent */
     public OracleWizardComponent() {
         initComponents();
+        jDataCenterComboBox.setModel(new javax.swing.DefaultComboBoxModel(dataCenters));
         adminLabel.setVisible(SHOW_CLOUD_URLS);
         adminURLTextField.setVisible(SHOW_CLOUD_URLS);
         
@@ -86,7 +89,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         setName(NbBundle.getBundle(OracleWizardComponent.class).getString("LBL_Name")); // NOI18N
 
         if (!SHOW_CLOUD_URLS) {
-            adminURLTextField.setText(ADMIN_URL); // NOI18N
+            adminURLTextField.setText(String.format(ADMIN_URL, getDataCenterCode())); // NOI18N
         }
         adminURLTextField.getDocument().addDocumentListener(this);
         passwordField.getDocument().addDocumentListener(this);
@@ -94,6 +97,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         identityDomainTextField.getDocument().addDocumentListener(this);
         serviceInstanceTextField.getDocument().addDocumentListener(this);
         sdkTextField.getDocument().addDocumentListener(this);
+        ((JTextField)jDataCenterComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
     }
 
     void disableModifications(boolean disable) {
@@ -134,6 +138,8 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         sdkTextField = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         dbServiceNameTextField = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        jDataCenterComboBox = new javax.swing.JComboBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel3.text")); // NOI18N
 
@@ -172,6 +178,10 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
 
         dbServiceNameTextField.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.dbServiceNameTextField.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel8.text")); // NOI18N
+
+        jDataCenterComboBox.setEditable(true);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -184,7 +194,8 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                     .addComponent(jLabel2)
                     .addComponent(jLabel4)
                     .addComponent(sdkLabel)
-                    .addComponent(jLabel6))
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel8))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(adminURLTextField)
@@ -193,20 +204,25 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                     .addComponent(identityDomainTextField)
                     .addComponent(serviceInstanceTextField)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 90, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(sdkTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(configureButton))
-                    .addComponent(dbServiceNameTextField)))
+                    .addComponent(dbServiceNameTextField)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jDataCenterComboBox, 0, 221, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(identityDomainTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7))
+                    .addComponent(jLabel8)
+                    .addComponent(jDataCenterComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(identityDomainTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, 0)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -259,6 +275,7 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     private javax.swing.JButton configureButton;
     private javax.swing.JTextField dbServiceNameTextField;
     private javax.swing.JTextField identityDomainTextField;
+    private javax.swing.JComboBox jDataCenterComboBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -266,6 +283,7 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel sdkLabel;
     private javax.swing.JTextField sdkTextField;
@@ -287,6 +305,19 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         } else {
             return prefix + "." + username;
         }
+    }
+    
+    public String getDataCenter() {
+        String s = ((JTextField)jDataCenterComboBox.getEditor().getEditorComponent()).getText().trim();
+        return s;
+    }
+    
+    private String getDataCenterCode() {
+        String s = getDataCenter();
+        if (s.length() > 3) {
+            s = s.substring(0, 3);
+        }
+        return s;
     }
     
     public static String getUnprefixedUserName(String prefix, String username) {
@@ -333,6 +364,9 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     }
     
     private void update(DocumentEvent e) {
+        if (!SHOW_CLOUD_URLS) {
+            adminURLTextField.setText(String.format(ADMIN_URL, getDataCenterCode())); // NOI18N
+        }
         if (l != null) {
             l.stateChanged(new ChangeEvent(this));
         }

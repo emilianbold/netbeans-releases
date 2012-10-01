@@ -199,7 +199,6 @@ public class ExistingClientSideProject extends JPanel {
         "ExistingClientSideProject.error.projectDirectory.invalid=Project directory is not a valid path.",
         "ExistingClientSideProject.error.projectDirectory.empty=Project directory must be selected.",
         "ExistingClientSideProject.error.projectDirectory.nbproject=Project directory is already NetBeans project.",
-        "ExistingClientSideProject.error.projectDirectory.noSiteRoot=Project directory is not parent of site root (and is not empty).",
         "ExistingClientSideProject.error.projectDirectory.notWritable=Project directory cannot be created."
     })
     private String validateProjectDirectory() {
@@ -224,13 +223,7 @@ public class ExistingClientSideProject extends JPanel {
             if (nbprojects != null && nbprojects.length > 0) {
                 return Bundle.ExistingClientSideProject_error_projectDirectory_nbproject();
             }
-            // 2. site root underneath project dir?
-            String siteRootPath = siteRoot.getAbsolutePath() + File.separator;
-            String projDirPath = projDir.getAbsolutePath() + File.separator;
-            if (!siteRootPath.startsWith(projDirPath)) {
-                return Bundle.ExistingClientSideProject_error_projectDirectory_noSiteRoot();
-            }
-            // XXX ideally warn about non-empty directory
+            // XXX ideally warn about possibly non-empty directory
         } else {
             // not existing directory
             if (!ValidationUtilities.isValidFilename(projDir)) {
@@ -380,7 +373,7 @@ public class ExistingClientSideProject extends JPanel {
 
     @NbBundle.Messages("ExistingClientSideProject.siteRoot.dialog.title=Select Site Root")
     private void siteRootBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_siteRootBrowseButtonActionPerformed
-        File siteRoot = browseFile(".siteRoot", Bundle.ExistingClientSideProject_siteRoot_dialog_title(),
+        File siteRoot = browseFile(".siteRoot", Bundle.ExistingClientSideProject_siteRoot_dialog_title(), //NOI18N
                 getSiteRoot());
         if (siteRoot != null) {
             siteRootTextField.setText(FileUtil.normalizeFile(siteRoot).getAbsolutePath());

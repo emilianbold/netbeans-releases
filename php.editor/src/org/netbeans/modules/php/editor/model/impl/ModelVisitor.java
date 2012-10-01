@@ -65,8 +65,8 @@ import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
@@ -130,7 +130,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (elements.size() > 0) {
             for (PhpBaseElement element : elements) {
                 if (element instanceof PhpVariable) {
-                    assert element != null;
                     PhpVariable phpVariable = (PhpVariable) element;
                     Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
                     for (NamespaceScope namespace : declaredNamespaces) {
@@ -626,7 +625,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
         if (scope instanceof VariableNameFactory) {
             ASTNodeInfo<Variable> varInfo = ASTNodeInfo.create(node);
-            if (scope instanceof MethodScope && varInfo.getName().equals("$this")) {//NOI18N
+            if (scope instanceof MethodScope && "$this".equals(varInfo.getName())) {//NOI18N
                 scope = scope.getInScope();
             }
             if (scope instanceof VariableNameFactory) {

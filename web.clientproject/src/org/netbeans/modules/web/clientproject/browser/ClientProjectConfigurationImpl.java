@@ -57,6 +57,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.NbBundle;
 
 public class ClientProjectConfigurationImpl implements ClientProjectConfigurationImplementation {
 
@@ -83,15 +84,15 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     
     @Override
     public String getId() {
-        return PropertyUtils.getUsablePropertyName(browser.getId()+(disableIntegration ? ".dis" : ""));
+        return PropertyUtils.getUsablePropertyName(browser.getId()+(disableIntegration ? ".dis" : "")); //NOI18N
     }
 
     @Override
     public void save() {
         if (cust != null && getBrowserIntegration() == Boolean.TRUE) {
             EditableProperties p = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            p.put(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+getId(), Boolean.toString(cust.panel.isAutoRefresh()));
-            p.put(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+getId(), Boolean.toString(cust.panel.isHighlightSelection()));
+            p.put(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+getId(), Boolean.toString(cust.panel.isAutoRefresh())); //NOI18N
+            p.put(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+getId(), Boolean.toString(cust.panel.isHighlightSelection())); //NOI18N
             project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         }
     }
@@ -105,8 +106,13 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         return browserIntegration;
     }
     
+    public boolean canBeDefaultConfiguration() {
+        return Boolean.TRUE.equals(browserIntegration) && 
+            (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM);
+    }
+    
     public boolean isAutoRefresh() {
-        String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+getId());
+        String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+getId()); //NOI18N
         if (val != null) {
             return Boolean.parseBoolean(val) && getBrowserIntegration() == Boolean.TRUE;
         } else {
@@ -117,7 +123,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public boolean isHighlightSelectionEnabled() {
-        String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+getId());
+        String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+getId()); //NOI18N
         if (val != null) {
             return Boolean.parseBoolean(val) && getBrowserIntegration() == Boolean.TRUE;
         } else {
@@ -128,11 +134,10 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public String getDisplayName() {
-        String suffix = "";
         if (browserIntegration == Boolean.TRUE && browser.getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
-            suffix = " with NetBeans Integration";
+            return NbBundle.getMessage(ClientProjectConfigurationImpl.class, "WITH_NETBEANS_INTEGRATION", browser.getName());
         }
-        return browser.getName() + suffix;
+        return browser.getName();
     }
 
     @Override
@@ -171,7 +176,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public void delete() {
-        throw new UnsupportedOperationException("not allowed");
+        throw new UnsupportedOperationException("not allowed"); //NOI18N
     }
 
     @Override

@@ -119,6 +119,36 @@ public class ExplorerActionsImplTest extends NbTestCase implements PropertyChang
             fail("There should be some change in actions: " + cnt);
         }
     }
+    
+    public void testPasteActionGetDelegatesBlocks() throws Exception {
+        N root = new N();
+        final N ch1 = new N();
+        final N ch2 = new N();
+        final N ch3 = new N();
+        PT mockPaste = new PT();
+        ch3.pasteTypes = Collections.<PasteType>singletonList(mockPaste);
+
+        root.getChildren().add(new Node[] { ch1, ch2, ch3 });
+        final ExplorerManager em = new ExplorerManager();
+        em.setRootContext(root);
+        em.setSelectedNodes(new Node[] { root });
+        Action action = ExplorerUtils.actionPaste(em);
+        em.waitActionsFinished();
+        assertFalse("Not enabled", action.isEnabled());
+        
+        action.addPropertyChangeListener(this);
+        
+        assertNull("No delegates yet", action.getValue("delegates"));
+
+        em.setSelectedNodes(new Node[] { ch3 });
+        Object ret = action.getValue("delegates");
+        assertNotNull("Delegates are updated", ret);
+        Object[] arr = (Object[])ret;
+        assertEquals("One item in there", 1, arr.length);
+        if (err != null) {
+            throw err;
+        }
+    }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {

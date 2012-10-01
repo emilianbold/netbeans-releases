@@ -49,6 +49,7 @@ import org.openide.util.HelpCtx;
 
 import java.io.File;
 import java.awt.BorderLayout;
+import java.util.List;
 
 @TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_NEVER, preferredID="Git.SearchHistoryTopComponent")
 public class SearchHistoryTopComponent extends TopComponent {
@@ -69,6 +70,14 @@ public class SearchHistoryTopComponent extends TopComponent {
         this.files = files;
         initComponents();
     }
+    
+    SearchHistoryTopComponent (File repository, File file, DiffResultsViewFactory fac) {
+        this();
+        this.repository = repository;
+        this.files = new File[] { file };
+        initComponents();
+        shp.setDiffResultsViewFactory(fac);
+    }
 
     public void search (boolean showCriteria) {
         shp.executeSearch();
@@ -80,6 +89,10 @@ public class SearchHistoryTopComponent extends TopComponent {
             scp.tfFrom.setText(commitId);
             scp.tfTo.setText(commitId);
         }
+    }
+
+    void activateDiffView (boolean selectFirstRevision) {
+        shp.activateDiffView(selectFirstRevision);
     }
 
     private void initComponents () {
@@ -97,5 +110,14 @@ public class SearchHistoryTopComponent extends TopComponent {
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
+    }
+
+    /**
+     * Provides an initial diff view. To display a specific one, override createDiffResultsView.
+     */
+    static class DiffResultsViewFactory {
+        DiffResultsView createDiffResultsView(SearchHistoryPanel panel, List<RepositoryRevision> results) {
+            return new DiffResultsView(panel, results);
+        }
     }
 }

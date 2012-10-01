@@ -44,15 +44,21 @@
 
 package org.netbeans.modules.editor.lib;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.undo.UndoableEdit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.lib.editor.util.GapList;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib2.document.DocumentSpiPackageAccessor;
+import org.netbeans.modules.editor.lib2.document.ModRootElement;
+import org.netbeans.spi.editor.document.OnSaveTask;
 
 /**
- * Removal of trailing whitespace
+ * Registration of tasks performed right before document save.
  *
  * @author Miloslav Metelka
  * @since 1.9
@@ -60,7 +66,7 @@ import org.netbeans.lib.editor.util.GapList;
 public final class BeforeSaveTasks {
     
     private static final Logger LOG = Logger.getLogger(BeforeSaveTasks.class.getName());
-    
+
     public static synchronized BeforeSaveTasks get(BaseDocument doc) {
         BeforeSaveTasks beforeSaveTasks = (BeforeSaveTasks) doc.getProperty(BeforeSaveTasks.class);
         if (beforeSaveTasks == null) {
@@ -72,8 +78,6 @@ public final class BeforeSaveTasks {
     
     private final BaseDocument doc;
 
-    private List<Task> tasks = new GapList<Task>(1);
-    
     private BeforeSaveTasks(BaseDocument doc) {
         this.doc = doc;
         Runnable beforeSaveRunnable = (Runnable)
@@ -90,54 +94,77 @@ public final class BeforeSaveTasks {
         doc.putProperty("beforeSaveRunnable", beforeSaveRunnable); // NOI18N
     }
 
-    /**
-     * Add a new task to be executed before save of the document.
-     *
-     * @param task non-null task.
-     */
-    public synchronized void addTask(Task task) {
-        if (task == null)
-            throw new IllegalArgumentException("task must not be null"); // NOI18N
-        tasks.add(task);
-    }
-
-    /**
-     * Remove a task from the list of existing before-save tasks.
-     *
-     * @param task runnable to be removed.
-     * @return true if the tasks was removed successfully or false if the task
-     *  was not found (compared by <code>Object.equals()</code>).
-     */
-    public synchronized boolean removeTask(Task task) {
-        return tasks.remove(task);
-    }
-    
-    private void runTasks() {
-        try {
-            doc.runAtomicAsUser (new Runnable () {
-                public @Override void run () {
-                    UndoableEdit atomicEdit = EditorPackageAccessor.get().BaseDocument_markAtomicEditsNonSignificant(doc);
-                    // Since these are before-save actions they should generally not prevent
-                    // the save operation to succeed. Thus the possible exceptions thrown
-                    // by the tasks will be notified but they will not prevent the save to succeed.
-                    try {
-                        for (Task task : tasks) {
-                            task.run(atomicEdit);
-                        }
-                    } catch (Exception e) {
-                        LOG.log(Level.WARNING, "Exception thrown in before-save tasks", e); // NOI18N
-                    }
-
-                }
-            });
-        } finally {
-            EditorPackageAccessor.get().BaseDocument_clearAtomicEdits(doc);
+    void runTasks() {
+        String mimeType = DocumentUtilities.getMimeType(doc);
+        Collection<? extends OnSaveTask.Factory> factories = MimeLookup.getLookup(mimeType).
+                lookupAll(OnSaveTask.Factory.class);
+        OnSaveTask.Context context = DocumentSpiPackageAccessor.get().createContext(doc);
+        List<OnSaveTask> tasks = new ArrayList<OnSaveTask>(factories.size());
+        for (OnSaveTask.Factory factory : factories) {
+            OnSaveTask task = factory.createTask(context);
+            if (task != null) {
+                tasks.add(task);
+            }
+        }
+        if (tasks.size() > 0) {
+            new TaskRunnable(doc, tasks, context).run();
         }
     }
 
-    public interface Task {
+    private static final class TaskRunnable implements Runnable {
         
-        void run(UndoableEdit edit);
+        final BaseDocument doc;
+
+        final List<OnSaveTask> tasks;
+        
+        final OnSaveTask.Context context;
+
+        int lockedTaskIndex;
+
+        public TaskRunnable(BaseDocument doc, List<OnSaveTask> tasks, OnSaveTask.Context context) {
+            this.doc = doc;
+            this.tasks = tasks;
+            this.context = context;
+        }
+
+        @Override
+        public void run() {
+            if (lockedTaskIndex < tasks.size()) {
+                OnSaveTask task = tasks.get(lockedTaskIndex++);
+                task.runLocked(this);
+
+            } else {
+                try {
+                    doc.runAtomicAsUser(new Runnable() {
+                        public @Override
+                        void run() {
+                            UndoableEdit atomicEdit = EditorPackageAccessor.get().BaseDocument_markAtomicEditsNonSignificant(doc);
+                            DocumentSpiPackageAccessor.get().setUndoEdit(context, atomicEdit);
+
+                            // Since these are before-save actions they should generally not prevent
+                            // the save operation to succeed. Thus the possible exceptions thrown
+                            // by the tasks will be notified but they will not prevent the save to succeed.
+                            try {
+                                for (int i = 0; i < tasks.size(); i++) {
+                                    OnSaveTask task = tasks.get(i);
+                                    DocumentSpiPackageAccessor.get().setTaskStarted(context, true);
+                                    task.performTask();
+                                }
+                                ModRootElement modRootElement = ModRootElement.get(doc);
+                                if (modRootElement != null) {
+                                    modRootElement.resetMods(atomicEdit);
+                                }
+                            } catch (Exception e) {
+                                LOG.log(Level.WARNING, "Exception thrown in before-save tasks", e); // NOI18N
+                            }
+
+                        }
+                    });
+                } finally {
+                    EditorPackageAccessor.get().BaseDocument_clearAtomicEdits(doc);
+                }
+            }
+        }
 
     }
 

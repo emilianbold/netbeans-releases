@@ -106,8 +106,20 @@ is the proper place.
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
-
   <changes>
+    <change id="customDialogs">
+        <api name="progress_api"/>
+        <summary><code>ProgressUtils</code> class with <code>runOffEventThreadWithCustomDialogContent</code> and <code>runOffEventThreadWithProgressDialog</code> methods were added.</summary>
+        <version major="1" minor="30"/>
+        <date day="28" month="8" year="2012"/>
+        <author login="pflaska	"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description><code>ProgressUtils</code> class with <code>runOffEventThreadWithCustomDialogContent</code> and <code>runOffEventThreadWithProgressDialog</code> methods were added. These methods allow movement of operations out of AWT thread, showing the waint cursor after one second and a dialog when task is not finished in a three seconds.
+        </description>
+        <class package="org.netbeans.api.progress" name="ProgressUtils"/>
+        <issue number="204553"/>
+    </change>
+
     <change id="modalRunMethods">
         <api name="progress_api"/>
         <summary>Modal progress dialogs</summary>

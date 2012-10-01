@@ -138,7 +138,7 @@ public class TwigStructureItem implements StructureItem {
         return null;
     }
 
-    class TwigElementHandle implements ElementHandle {
+    static class TwigElementHandle implements ElementHandle {
 
         TwigParserResult.Block item;
         Snapshot snapshot;

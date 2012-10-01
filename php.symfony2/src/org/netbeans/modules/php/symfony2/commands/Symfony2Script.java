@@ -120,7 +120,6 @@ public final class Symfony2Script {
      * @param warn <code>true</code> if user is warned when the Symfony2 script is not valid
      * @return Symfony2 console script or {@code null} if the script is not valid
      */
-    @CheckForNull
     @Messages({
         "# {0} - error message",
         "MSG_InvalidSymfony2Script=<html>Project''s Symfony2 console script is not valid.<br>({0})"
@@ -196,12 +195,14 @@ public final class Symfony2Script {
         }
         List<Symfony2CommandVO> commandsVO = new ArrayList<Symfony2CommandVO>();
         try {
-            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile)));
+            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile), "UTF-8")); // NOI18N
             Symfony2CommandsXmlParser.parse(reader, commandsVO);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         } finally {
-            tmpFile.delete();
+            if (!tmpFile.delete()) {
+                LOGGER.info("Cannot delete temporary file");
+            }
         }
         if (commandsVO.isEmpty()) {
             // error => rerun with output window

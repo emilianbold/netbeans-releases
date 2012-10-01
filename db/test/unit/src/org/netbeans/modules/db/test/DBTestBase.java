@@ -41,7 +41,11 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Properties;
+import java.util.logging.Filter;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -55,7 +59,6 @@ import org.netbeans.modules.db.explorer.node.TableNode;
 import org.netbeans.modules.db.explorer.node.ViewListNode;
 import org.netbeans.modules.db.explorer.node.ViewNode;
 import org.openide.nodes.Node;
-import org.openide.util.Utilities;
 //import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 //import org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
 //import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
@@ -117,6 +120,7 @@ public abstract class DBTestBase extends TestBase {
 
     @Override
     protected void setUp() throws Exception {
+        suppressSuperfluousLogging();
         super.setUp();
         getProperties();
         createDBProvider();
@@ -347,27 +351,8 @@ public abstract class DBTestBase extends TestBase {
             return;
         }
 
-        if (isDerby()) {
-            // Trying to remove the schema is very difficult, as it has to
-            // be completely empty. Easier just to blow away the database directory.
-            // Next time we connect a new db will be automatically created
-            shutdownDerby();
-            if (! dblocation.equals(this.getWorkDirPath())) {
-                try {
-                    clearWorkDir();
-                } catch (IOException e) {
-                    // ignore on Windows because some files might be locked
-                    if (!Utilities.isWindows()) {
-                        throw e;
-                    }
-                }
-            } else {
-                deleteSubFiles(new File(dblocation));
-            }
-        } else {
             dbProvider.dropSchema(getConnection(), getSchema());
         }
-    }
 
     protected static void deleteSubFiles(File file) throws IOException {
         if (file.isDirectory() && file.exists()) {
@@ -640,19 +625,16 @@ public abstract class DBTestBase extends TestBase {
         String url = dbUrl + ";shutdown=true";
         url = url.replace(";create=true", "");
 
-        DatabaseConnection conn = DatabaseConnection.create(getJDBCDriver(),
-                url, getSchema(), getUsername(), getPassword(), false);
-
-        ConnectionManager.getDefault().addConnection(conn);
+        Properties p = new Properties();
+        p.put("username", username);
+        p.put("password", password);
 
         // This forces the shutdown
         try {
-            ConnectionManager.getDefault().connect(conn);
-        } catch (DatabaseException dbe) {
-            // expected, this always happens when you shut it down
+            getJDBCDriver().getDriver().connect(url, p);
+        } catch (SQLException ex) {
+            // Exception is expected
         }
-
-        ConnectionManager.getDefault().removeConnection(conn);
     }
 
     @Override
@@ -814,4 +796,37 @@ public abstract class DBTestBase extends TestBase {
         }
     }
     
+    /**
+     * Disable logging of logging messages from DatabaseUILogger. See #215375.
+     *
+     * Usefulness of the whole logger seems to be doubtful
+     */
+    public static void suppressSuperfluousLogging() {
+        for (Handler h : Logger.getLogger("").getHandlers()) {
+            h.setFilter(new Filter() {
+                @Override
+                public boolean isLoggable(LogRecord lr) {
+                    if (lr.getSourceClassName().equals(
+                            "org.netbeans.modules.db.explorer.DatabaseUILogger")) {
+                        return false;
+                    } else if (lr.getSourceClassName().equals(
+                            "org.netbeans.api.db.sql.support.SQLIdentifiers$DatabaseMetaDataQuoter")) {
+                        if (lr.getSourceMethodName().equals("getExtraNameChars")
+                                && lr.getLevel() == Level.WARNING
+                                && lr.getMessage().startsWith(
+                                "DatabaseMetaData.getExtraNameCharacters() failed")) {
+                            return false;
+                        } else if (lr.getSourceMethodName().equals("needToQuote")
+                                && lr.getLevel().intValue() <= Level.INFO.intValue()) {
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
+                }
+            });
+        }
+    }
 }

@@ -48,6 +48,7 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArrayExpression;
@@ -57,6 +58,7 @@ import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
@@ -107,15 +109,11 @@ public final class FindTypeUtils {
         ASTNode leaf = path.leaf();
         ASTNode leafParent = path.leafParent();
 
-        if (leaf instanceof ClassNode) {
-            for (ImportNode importNode : ((ClassNode) leaf).getModule().getImports()) {
-                if (isCaretOnImportStatement(importNode, doc, caret)) {
-                    if (!importNode.isStar()) {
-                        return ElementUtils.getType(importNode);
-                    }
-                }
-            }
+        if (isOnImportNode(path, doc, caret)) {
+            return getCurrentImportNode(getCurrentModuleNode(path), doc, caret);
+        }
 
+        if (leaf instanceof ClassNode) {
             ClassNode classNode = ((ClassNode) leaf);
             if (isCaretOnClassNode(classNode, doc, caret)) {
                 return classNode;
@@ -208,6 +206,47 @@ public final class FindTypeUtils {
             return leaf;
         }
         return leaf;
+    }
+
+    private static boolean isOnImportNode(AstPath path, BaseDocument doc, int caret) {
+        ModuleNode moduleNode = getCurrentModuleNode(path);
+        if (moduleNode == null) {
+            return false;
+        }
+        if (getCurrentImportNode(moduleNode, doc, caret) == null) {
+            return false;
+        }
+        return true;
+    }
+
+    private static ModuleNode getCurrentModuleNode(AstPath path) {
+        ASTNode leaf = path.leaf();
+        ASTNode leafParent = path.leafParent();
+
+        ModuleNode moduleNode = null;
+        if (leaf instanceof ModuleNode) {
+            moduleNode = (ModuleNode) leaf;
+        } else if (leaf instanceof ClassNode) {
+            moduleNode = ((ClassNode) leaf).getModule();
+        } else if (leaf instanceof BlockStatement &&
+                   leafParent instanceof MethodNode &&
+                   path.root() instanceof ModuleNode) {
+
+            // #218608 - Wrong highlighting on the import node in groovy scripts
+            moduleNode = (ModuleNode) path.root();
+        }
+        return moduleNode;
+    }
+
+    private static ClassNode getCurrentImportNode(ModuleNode moduleNode, BaseDocument doc, int caret) {
+        for (ImportNode importNode : moduleNode.getImports()) {
+            if (isCaretOnImportStatement(importNode, doc, caret)) {
+                if (!importNode.isStar()) {
+                    return ElementUtils.getType(importNode);
+                }
+            }
+        }
+        return null;
     }
 
     private static boolean isCaretOnClassNode(ClassNode classNode, BaseDocument doc, int cursorOffset) {

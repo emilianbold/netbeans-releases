@@ -54,8 +54,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.SourceRoots;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -100,6 +102,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
+        checkPhpProject();
         setTargetFolder();
         wizardPanels = getPanels();
 
@@ -111,9 +114,20 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
             Component c = wizardPanels[i].getComponent();
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i + beforeStepLength - 1)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i + beforeStepLength - 1)); // NOI18N
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
+        }
+    }
+
+    private void checkPhpProject() {
+        PhpProject phpProject = getPhpProject();
+        if (phpProject == null) {
+            // not php project
+            return;
+        }
+        if (PhpProjectValidator.isFatallyBroken(phpProject)) {
+            Utils.warnInvalidSourcesDirectory(phpProject);
         }
     }
 
@@ -122,19 +136,28 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
             // already set
             return;
         }
+        PhpProject phpProject = getPhpProject();
+        if (phpProject == null) {
+            // not php project
+            return;
+        }
+        FileObject srcDir = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
+        if (srcDir != null && srcDir.isValid()) {
+            Templates.setTargetFolder(wizard, srcDir);
+        }
+    }
+
+    private PhpProject getPhpProject() {
         Project project = Templates.getProject(wizard);
         if (project == null) {
             // no project => ignore
-            return;
+            return null;
         }
         if (!(project instanceof PhpProject)) {
             LOGGER.log(Level.WARNING, "PHP project expected but found {0}", project.getClass().getName());
-            return;
+            return null;
         }
-        FileObject srcDir = ProjectPropertiesSupport.getSourcesDirectory((PhpProject) project);
-        if (srcDir != null) {
-            Templates.setTargetFolder(wizard, srcDir);
-        }
+        return (PhpProject) project;
     }
 
     private String[] createSteps(String[] beforeSteps) {

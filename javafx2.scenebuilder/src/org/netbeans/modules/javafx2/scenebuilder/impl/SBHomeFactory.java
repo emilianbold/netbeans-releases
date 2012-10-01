@@ -44,7 +44,10 @@ package org.netbeans.modules.javafx2.scenebuilder.impl;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import org.netbeans.modules.javafx2.scenebuilder.Home;
 import org.netbeans.modules.javafx2.scenebuilder.HomeFactory;
 import org.openide.filesystems.FileObject;
@@ -54,14 +57,14 @@ import org.openide.util.Utilities;
 
 /**
  * Creates {@linkplain Home} instance for an SB installation path
- * @author Jaroslav Bachorik
+ * @author Jaroslav Bachorik, Petr Somol
  */
 public class SBHomeFactory {
-    private static final String VER_CURRENT = NbBundle.getMessage(SBHomeFactory.class, "SB_Version"); // NOI18N
+    private static final List<String> VER_CURRENT = getVersions(NbBundle.getMessage(SBHomeFactory.class, "SB_Version")); // NOI18N
     
     private static final HomeFactory WINDOWS_HOME_LOCATOR = new HomeFactory() {
-        final private String WKIP = NbBundle.getMessage(SBHomeFactory.class, "WIN_WKIP") + " " + VER_CURRENT; // NOI18N
-        final private String WKIP_MIX = NbBundle.getMessage(SBHomeFactory.class, "WIN_WKIP_MIX") + " " + VER_CURRENT; // NOI18N
+        final private String WKIP = NbBundle.getMessage(SBHomeFactory.class, "WIN_WKIP"); // NOI18N
+        final private String WKIP_MIX = NbBundle.getMessage(SBHomeFactory.class, "WIN_WKIP_MIX"); // NOI18N
         final private String LAUNCHER_PATH = NbBundle.getMessage(SBHomeFactory.class, "WIN_LAUNCHER"); // NOI18N
         final private String PROPERTIES_PATH = NbBundle.getMessage(SBHomeFactory.class, "WIN_PROPERTIES"); // NOI18N
         @Override
@@ -71,22 +74,35 @@ public class SBHomeFactory {
 
         @Override
         public Home defaultHome() {
-            Home h = loadHome(WKIP);
-            if (h == null) {
-                h = loadHome(WKIP_MIX);
-            }
-            
+            Home h = null;
+            for(String s : VER_CURRENT) {
+                h = loadHome(WKIP + " " + s); // NOI18N
+                if(h != null) {
+                    return h;
+                }
+                h = loadHome(WKIP_MIX + " " + s); // NOI18N
+                if(h != null) {
+                    return h;
+                }
+            }            
             return h;
         }
     };
     private static final HomeFactory MAC_HOME_LOCATOR = new HomeFactory() {
-        final private String WKIP = NbBundle.getMessage(SBHomeFactory.class, "MAC_WKIP") + " " + VER_CURRENT + ".app"; // NOI18N
+        final private String WKIP = NbBundle.getMessage(SBHomeFactory.class, "MAC_WKIP"); // NOI18N
         final private String LAUNCHER_PATH = NbBundle.getMessage(SBHomeFactory.class, "MAC_LAUNCHER"); // NOI18N
         final private String PROPERTIES_PATH = NbBundle.getMessage(SBHomeFactory.class, "MAC_PROPERTIES"); // NOI18N
         
         @Override
         public Home defaultHome() {
-            return loadHome(WKIP);
+            Home h = null;
+            for(String s : VER_CURRENT) {
+                h = loadHome(WKIP + " " + s + ".app"); // NOI18N
+                if(h != null) {
+                    return h;
+                }
+            }
+            return h;
         }
 
         @Override
@@ -128,12 +144,26 @@ public class SBHomeFactory {
             if (propertiesFO != null && propertiesFO.isValid() && propertiesFO.isData()) {
                 try {
                     Properties props = new Properties();
-                    props.load(new FileReader(FileUtil.toFile(propertiesFO)));
+                    FileReader reader = new FileReader(FileUtil.toFile(propertiesFO));
+                    try {
+                        props.load(reader);
+                    } finally {
+                        reader.close();
+                    }
                     return new Home(path, launcherPath, propertiesPath, props.getProperty("version", "1.0")); // NOI18N
                 } catch (IOException e) {
                 }
             }
         }
         return null;
+    }
+    
+    private static List<String> getVersions(String versions) {
+        StringTokenizer st = new StringTokenizer(versions, ";"); // NOI18N
+        List<String> r = new ArrayList<String>();
+        while(st.hasMoreTokens()) { 
+            r.add(st.nextToken());
+        }
+        return r;
     }
 }

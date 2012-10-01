@@ -32,31 +32,37 @@
 package org.netbeans.api.search.provider.impl;
 
 import java.io.File;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
-import static org.netbeans.api.queries.SharabilityQuery.MIXED;
-import static org.netbeans.api.queries.SharabilityQuery.NOT_SHARABLE;
-import static org.netbeans.api.queries.SharabilityQuery.SHARABLE;
+import java.net.URI;
+import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.api.queries.SharabilityQuery.Sharability;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
+import org.openide.util.Utilities;
 
 /**
  * Primitive implementation of {@link SharabilityQuery}.
  *
  * @author  MarianPetras
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.SharabilityQueryImplementation.class)
-public class SharabilityQueryImpl implements SharabilityQueryImplementation {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.SharabilityQueryImplementation2.class)
+public class SharabilityQueryImpl implements SharabilityQueryImplementation2 {
 
     private static final String SHARABLE_SUFFIX = "_sharable";
     private static final String NON_SHARABLE_SUFFIX = "_unsharable";
 
-    public int getSharability(File file) {
+    @Override
+    public Sharability getSharability(URI uri) {
+        final File file = Utilities.toFile(uri);
+        if (file == null) {
+            return Sharability.NOT_SHARABLE;
+        }
         final String simpleName = getSimpleName(file);
         if (simpleName.endsWith(SHARABLE_SUFFIX)) {
-            return SHARABLE;
+            return Sharability.SHARABLE;
         } else if (simpleName.endsWith(NON_SHARABLE_SUFFIX)) {
-            return NOT_SHARABLE;
+            return Sharability.NOT_SHARABLE;
         } else {
-            return file.isDirectory() ? MIXED
-                                      : SHARABLE;
+            return file.isDirectory() ? Sharability.MIXED
+                                      : Sharability.SHARABLE;
         }
     }
 

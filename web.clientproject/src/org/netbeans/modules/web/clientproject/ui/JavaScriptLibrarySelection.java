@@ -48,7 +48,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -73,6 +72,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
 import javax.swing.RowFilter;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -85,18 +85,11 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableRowSorter;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
-import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
 import org.netbeans.modules.web.common.api.Version;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 public class JavaScriptLibrarySelection extends JPanel {
@@ -109,8 +102,8 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    // selected items are accessed outside of EDT thread
     final List<SelectedLibrary> selectedLibraries = Collections.synchronizedList(new ArrayList<SelectedLibrary>());
+    final Set<SelectedLibrary> failedLibraries = Collections.synchronizedSet(new HashSet<SelectedLibrary>());
     // @GuardedBy("EDT")
     final LibrariesTableModel librariesTableModel = new LibrariesTableModel();
     // @GuardedBy("EDT")
@@ -153,7 +146,32 @@ public class JavaScriptLibrarySelection extends JPanel {
                 assert EventQueue.isDispatchThread();
                 Point point = e.getPoint();
                 int row = librariesTable.convertRowIndexToModel(librariesTable.rowAtPoint(point));
-                librariesTable.setToolTipText(librariesTableModel.getItems().get(row).getDescription());
+                librariesTable.setToolTipText(getWrappedText(librariesTableModel.getItems().get(row).getDescription()));
+            }
+
+            /**
+             * Wrap the given text after each 100 characters or so.
+             */
+            private String getWrappedText(String text) {
+                if (text == null || text.isEmpty()) {
+                    return null;
+                }
+                final int lineLength = 100;
+                if (text.length() <= lineLength) {
+                    return text;
+                }
+                StringBuilder sb = new StringBuilder(text.length() + 40);
+                int currentLineLength = lineLength;
+                for (String word : text.split(" ")) { // NOI18N
+                    sb.append(word);
+                    if (sb.length() > currentLineLength) {
+                        sb.append("<br>"); // NOI18N
+                        currentLineLength += lineLength + 4; // count <br> as well
+                    } else {
+                        sb.append(" "); // NOI18N
+                    }
+                }
+                return "<html>" + sb.toString(); // NOI18N
             }
         });
         librariesFilterTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -179,26 +197,10 @@ public class JavaScriptLibrarySelection extends JPanel {
         assert EventQueue.isDispatchThread();
         selectedLibrariesList.setModel(selectedLibrariesListModel);
         selectedLibrariesList.setCellRenderer(new SelectedLibraryRenderer(selectedLibrariesList.getCellRenderer()));
-        selectedLibrariesListModel.addListDataListener(new ListDataListener() {
-            @Override
-            public void intervalAdded(ListDataEvent e) {
-                dataChanged();
-            }
-            @Override
-            public void intervalRemoved(ListDataEvent e) {
-                dataChanged();
-            }
-            @Override
-            public void contentsChanged(ListDataEvent e) {
-                dataChanged();
-            }
-            private void dataChanged() {
-                fireChangeEvent();
-            }
-        });
     }
 
     private void initLibrariesButtons() {
+        assert EventQueue.isDispatchThread();
         // listen on table and list
         ListSelectionListener selectionListener = new ListSelectionListener() {
             @Override
@@ -301,6 +303,17 @@ public class JavaScriptLibrarySelection extends JPanel {
         changeSupport.removeChangeListener(listener);
     }
 
+    // XXX hotfix for #218726
+    /*
+     * Panel itself does not listen on jslibs list changes since fireChangeEvent would be called;
+     * that means that the new project wizard would not tell user the background-validation error (if any occurs)
+     * (JavaScriptLibrarySelectionPanel.asyncError is set to false after every change in this panel).
+     * That is a work around for issue #202796, can be removed once that issue is fixed.
+     */
+    public void addJsLibsListener(ListDataListener listener) {
+        selectedLibrariesListModel.addListDataListener(listener);
+    }
+
     final void fireChangeEvent() {
         changeSupport.fireChange();
     }
@@ -319,7 +332,29 @@ public class JavaScriptLibrarySelection extends JPanel {
         ((GroupLayout) getLayout()).setHonorsVisibility(additionalInfoLabel, additionalInfo != null);
     }
 
+    public void lockPanel() {
+        enablePanel(false);
+    }
+
+    public void unlockPanel() {
+        enablePanel(true);
+    }
+
+    private void enablePanel(boolean enabled) {
+        librariesFilterTextField.setEnabled(enabled);
+        librariesTable.setEnabled(enabled);
+        librariesTable.setRowSelectionAllowed(enabled);
+        librariesTable.setColumnSelectionAllowed(enabled);
+        selectAllButton.setEnabled(enabled);
+        selectSelectedButton.setEnabled(enabled);
+        deselectAllButton.setEnabled(enabled);
+        deselectSelectedButton.setEnabled(enabled);
+        selectedLibrariesList.setEnabled(enabled);
+        librariesFolderTextField.setEnabled(enabled);
+    }
+
     void enableLibraryButtons() {
+        assert EventQueue.isDispatchThread();
         // select
         selectAllButton.setEnabled(librariesTableModel.getRowCount() > 0);
         selectSelectedButton.setEnabled(librariesTable.getSelectedRows().length > 0);
@@ -390,6 +425,7 @@ public class JavaScriptLibrarySelection extends JPanel {
     }
 
     private void selectLibrary(int libraryIndex) {
+        assert EventQueue.isDispatchThread();
         ModelItem modelItem = librariesTableModel.getItems().get(libraryIndex);
         LibraryVersion libraryVersion = modelItem.getSelectedVersion();
         selectedLibraries.add(new SelectedLibrary(libraryVersion));
@@ -436,39 +472,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         return null;
     }
 
-    @NbBundle.Messages({
-        "JavaScriptLibrarySelection.error.copying=Some of the library files could not be retrieved.",
-        "# {0} - library name",
-        "JavaScriptLibrarySelection.msg.downloading=Downloading {0}"
-    })
-    void apply(FileObject projectDir, ProgressHandle handle) throws IOException {
-        assert !EventQueue.isDispatchThread();
-        FileObject librariesRoot = null;
-        boolean someFilesAreMissing = false;
-        for (SelectedLibrary selectedLibrary : selectedLibraries) {
-            LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
-            if (libraryVersion == null) {
-                // happens for js files from selected site template
-                continue;
-            }
-            if (librariesRoot == null) {
-                librariesRoot = FileUtil.createFolder(projectDir, librariesFolder);
-            }
-            Library library = libraryVersion.getLibrary();
-            handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(library.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
-            try {
-                WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
-            } catch (MissingLibResourceException e) {
-                someFilesAreMissing = true;
-            }
-        }
-        if (someFilesAreMissing) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.JavaScriptLibrarySelection_error_copying(), NotifyDescriptor.ERROR_MESSAGE));
-        }
-    }
-
     public void updateDefaults(Collection<String> defaultLibs) {
-        assert EventQueue.isDispatchThread();
         // remove default libraries
         Iterator<SelectedLibrary> iterator = selectedLibraries.iterator();
         while (iterator.hasNext()) {
@@ -480,7 +484,23 @@ public class JavaScriptLibrarySelection extends JPanel {
         for (String lib : defaultLibs) {
             selectedLibraries.add(new SelectedLibrary(lib));
         }
-        selectedLibrariesListModel.fireContentsChanged();
+        fireSelectedLibrariesChangeInEDT();
+    }
+
+    public void updateFailed(List<SelectedLibrary> failedLibs) {
+        failedLibraries.clear();
+        failedLibraries.addAll(failedLibs);
+        fireSelectedLibrariesChangeInEDT();
+    }
+
+    private void fireSelectedLibrariesChangeInEDT() {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                assert EventQueue.isDispatchThread();
+                selectedLibrariesListModel.fireContentsChanged();
+            }
+        });
     }
 
     /**
@@ -547,7 +567,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(librariesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(librariesFilterTextField))
+                        .addComponent(librariesFilterTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE))
                     .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -558,9 +578,13 @@ public class JavaScriptLibrarySelection extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectedLabel)
-                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
-            .addComponent(generalInfoLabel)
-            .addComponent(additionalInfoLabel)
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(additionalInfoLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(generalInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectAllButton, deselectSelectedButton, selectAllButton, selectSelectedButton});
@@ -568,7 +592,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(generalInfoLabel)
+                .addComponent(generalInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addComponent(additionalInfoLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -588,7 +612,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                         .addComponent(deselectSelectedButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(deselectAllButton)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 57, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(librariesFolderLabel)
@@ -667,7 +691,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             } else if (WebClientLibraryManager.VOL_REGULAR.equals(rawType)) {
                 type = ""; // NOI18N
             } else {
-                assert false : "Unknown library type: " + libraryVersion;
+                assert false : "Unknown library type: " + libraryVersion; //NOI18N
                 // fallback
                 type = ""; // NOI18N
             }
@@ -687,7 +711,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         public LibrariesTableModel() {
             assert EventQueue.isDispatchThread();
             Map<String, List<Library>> map = new HashMap<String, List<Library>>();
-            for (Library lib : LibraryManager.getDefault().getLibraries()) {
+            for (Library lib : /*LibraryManager.getDefault().getLibraries()*/WebClientLibraryManager.getLibraries()) {
                 if (WebClientLibraryManager.TYPE.equals(lib.getType())) {
                     String name = lib.getProperties().get(
                             WebClientLibraryManager.PROPERTY_REAL_NAME);
@@ -735,7 +759,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             if (columnIndex == 1) {
                 return Bundle.JavaScriptLibrarySelection_column_version();
             }
-            assert false : "Unknown column index: " + columnIndex;
+            assert false : "Unknown column index: " + columnIndex; // NOI18N
             return null;
         }
 
@@ -759,7 +783,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             if (columnIndex == 1) {
                 return VersionsRenderer.getLabel(modelItem.getSelectedVersion());
             }
-            assert false : "Unknown column index: " + columnIndex;
+            assert false : "Unknown column index: " + columnIndex; //NOI18N
             return null;
         }
 
@@ -771,7 +795,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                 modelItem.setSelectedVersion((LibraryVersion) aValue);
                 return;
             }
-            assert false : "Unknown column index: " + columnIndex;
+            assert false : "Unknown column index: " + columnIndex; //NOI18N
         }
 
         List<ModelItem> getItems() {
@@ -833,7 +857,7 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     }
 
-    private static final class SelectedLibraryRenderer implements ListCellRenderer {
+    private final class SelectedLibraryRenderer implements ListCellRenderer {
 
         private final ListCellRenderer defaultRenderer;
 
@@ -847,6 +871,9 @@ public class JavaScriptLibrarySelection extends JPanel {
             Component component = defaultRenderer.getListCellRendererComponent(list, selectedLibrary.getFilename(), index, isSelected, cellHasFocus);
             if (selectedLibrary.isDefault()) {
                 component.setEnabled(false);
+            }
+            if (failedLibraries.contains(selectedLibrary)) {
+                component.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
             }
             return component;
         }
@@ -897,7 +924,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         }
 
         public String getSimpleDisplayName() {
-            return getLibrary().getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME);
+            return getLibrary().getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME);
         }
 
         public String getDescription() {
@@ -937,7 +964,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                     libraryVersions.add(libraryVersion);
                 }
                 if (libraryVersion == null) {
-                    assert false : "Unknown library version: " + library.getName();
+                    assert false : "Unknown library version: " + library.getName(); //NOI18N
                 }
             }
             return libraryVersions;
@@ -1003,7 +1030,7 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         @Override
         public String toString() {
-            return "LibraryVersion{" + "library=" + library.getName() + ", type=" + type + '}'; // NOI18N
+            return "LibraryVersion{" + "library=" + library.getName() + ", type=" + type + '}'; //NOI18N
         }
 
     }
@@ -1065,7 +1092,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             } else if (WebClientLibraryManager.VOL_REGULAR.equals(rawType)) {
                 type = ""; // NOI18N
             } else {
-                assert false : "Unknown library type: " + libraryVersion;
+                assert false : "Unknown library type: " + libraryVersion; //NOI18N
                 // fallback
                 type = ".???"; // NOI18N
             }

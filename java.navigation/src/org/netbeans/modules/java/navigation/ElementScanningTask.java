@@ -42,6 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.java.navigation;
+import org.netbeans.modules.java.navigation.base.Utils;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -71,10 +72,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 
 /** XXX Remove the ElementScanner class from here it should be wenough to
@@ -95,17 +96,25 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         this.ui = ui;
     }
     
+    @Override
     public void cancel() {
         //System.out.println("Element task canceled");
         canceled.set(true);
     }
 
+    @Override
     public void run(CompilationInfo info) throws Exception {
+        runImpl(info, false);
+    }
+
+    void runImpl(
+            @NonNull final CompilationInfo info,
+            final boolean userAction) throws Exception {
         ui.start();
         canceled.set (false); // Task shared for one file needs reset first
         long start = System.currentTimeMillis();        
         
-        if (info.getChangedTree() != null) {
+        if (ClassMemberPanel.compareAndSetLastUsedFile(info.getFileObject()) && info.getChangedTree() != null) {
             //method body has been reparsed - no need to update the navigator
             long end = System.currentTimeMillis();
             Logger.getLogger("TIMER").log(Level.FINE, "Element Scanning Task", //NOI18N
@@ -143,7 +152,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
         
         if ( !canceled.get()) {
-            ui.refresh( rootDescription );            
+            ui.refresh(rootDescription, userAction);
         }
         long end = System.currentTimeMillis();
         Logger.getLogger("TIMER").log(Level.FINE, "Element Scanning Task",  //NOI18N
@@ -240,7 +249,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         final Element encElement = e.getEnclosingElement();
         Description d = new Description(
                 ui,
-                e.getSimpleName().toString(),
+                getSimpleName(e),
                 ElementHandle.create(e),
                 e.getKind(),
                 inherited,
@@ -271,6 +280,14 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             return -1;
          }
          return res.longValue();
+    }
+
+    private static String getSimpleName(@NonNull final Element e) {
+        if (e.getKind() == ElementKind.CONSTRUCTOR) {
+            return e.getEnclosingElement().getSimpleName().toString();
+        } else {
+            return e.getSimpleName().toString();
+        }
     }
         
    /** Creates HTML display name of the Executable element */

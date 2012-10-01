@@ -44,6 +44,8 @@ package org.netbeans.modules.php.editor.lexer;
 
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
+
+@org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH", "URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE", "DM_DEFAULT_ENCODING"})
 %%
 
 %public
@@ -70,6 +72,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state ST_PHP_DOC_COMMENT
 %state ST_PHP_LINE_COMMENT
 %state ST_PHP_HIGHLIGHTING_ERROR
+%state ST_HALTED_COMPILER
 
 %eofval{
        if(input.readLength() > 0) {
@@ -92,6 +95,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     private boolean short_tags_allowed;
 
     private LexerInput input;
+    private boolean haltedCompiler = false;
 
     /*public PhpLexer5(int state){
         initialize(state);
@@ -132,13 +136,14 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 setState((LexerState)info.state());
             } else {
                 //initial state
+                stack.pushStack(YYINITIAL);
                 if (inPHP) {
+                    stack.pushStack(ST_PHP_IN_SCRIPTING);
                     zzState = zzLexicalState = ST_PHP_IN_SCRIPTING;
                 }
                 else {
                     zzState = zzLexicalState = YYINITIAL;
                 }
-                stack.clear();
             }
 
         }
@@ -643,7 +648,13 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"__halt_compiler" {
+    pushState(ST_HALTED_COMPILER);
 	return PHPTokenId.PHP_HALT_COMPILER;
+}
+
+<ST_HALTED_COMPILER> {ANY_CHAR}+ {
+    popState();
+    return PHPTokenId.T_INLINE_HTML;
 }
 
 <ST_PHP_IN_SCRIPTING>"static" {

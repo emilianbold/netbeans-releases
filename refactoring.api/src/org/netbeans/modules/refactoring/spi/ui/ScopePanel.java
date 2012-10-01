@@ -145,12 +145,7 @@ public final class ScopePanel extends javax.swing.JPanel {
                 @Override
                 public void run() {
                     scopeCombobox.setModel(new DefaultComboBoxModel(scopes.toArray(new ScopeProvider[scopes.size()])));
-                    for (DelegatingScopeInformation scopeProvider : scopes) {
-                        if(scopeProvider instanceof ScopeProvider.CustomScopeProvider) {
-                            ScopePanel.this.btnCustomScope.setVisible(false);
-                            break;
-                        }
-                    }
+                    ScopePanel.this.btnCustomScope.setVisible(customizable.get());
                     String preselectId = preferences.get(preferencesKey, null);
                     if (preselectId == null) { // Needed for the old preferences of Java's Where Used Panel.
                         int defaultItem = (Integer) preferences.getInt(preferencesKey, -1); // NOI18N
@@ -193,7 +188,8 @@ public final class ScopePanel extends javax.swing.JPanel {
      */
     @CheckForNull
     public Scope getSelectedScope() {
-        return ((ScopeProvider) scopeCombobox.getSelectedItem()).getScope();
+        final ScopeProvider selectedScope = (ScopeProvider) scopeCombobox.getSelectedItem();
+        return selectedScope != null ? selectedScope.getScope() : null;
     }
 
     /**

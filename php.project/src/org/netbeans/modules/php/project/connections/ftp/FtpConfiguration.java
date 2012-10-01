@@ -75,14 +75,14 @@ public final class FtpConfiguration extends RemoteConfiguration {
         super(cfg);
 
         host = cfg.getValue(FtpConnectionProvider.HOST);
-        port = Integer.parseInt(cfg.getValue(FtpConnectionProvider.PORT));
+        port = readNumber(FtpConnectionProvider.PORT, FtpConnectionProvider.DEFAULT_PORT);
         security = new Security(
                 readEnum(Encryption.class, FtpConnectionProvider.ENCRYPTION, FtpConnectionProvider.DEFAULT_ENCRYPTION),
                 readBoolean(FtpConnectionProvider.ONLY_LOGIN_ENCRYPTED, FtpConnectionProvider.DEFAULT_ONLY_LOGIN_ENCRYPTED));
         userName = cfg.getValue(FtpConnectionProvider.USER);
         anonymousLogin = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY);
-        timeout = Integer.parseInt(cfg.getValue(FtpConnectionProvider.TIMEOUT));
+        timeout = readNumber(FtpConnectionProvider.TIMEOUT, FtpConnectionProvider.DEFAULT_TIMEOUT);
         keepAliveInterval = readNumber(FtpConnectionProvider.KEEP_ALIVE_INTERVAL, FtpConnectionProvider.DEFAULT_KEEP_ALIVE_INTERVAL);
         passiveMode = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.PASSIVE_MODE));
         ignoreDisconnectErrors = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.IGNORE_DISCONNECT_ERRORS));
@@ -185,16 +185,18 @@ public final class FtpConfiguration extends RemoteConfiguration {
             return false;
         }
         final FtpConfiguration other = (FtpConfiguration) obj;
-        if (host != other.host && (host == null || !host.equals(other.host))) {
+        if ((this.host == null) ? (other.host != null) : !this.host.equals(other.host)) {
             return false;
         }
-        if (port != other.port) {
+        if (this.port != other.port) {
             return false;
         }
-        if (userName != other.userName && (userName == null || !userName.equals(other.userName))) {
+        if ((this.userName == null) ? (other.userName != null) : !this.userName.equals(other.userName)) {
             return false;
         }
-        if (password != other.password && (password == null || !password.equals(other.password))) {
+        String thisPassword = getPassword();
+        String otherPassword = other.getPassword();
+        if ((thisPassword == null) ? (otherPassword != null) : !thisPassword.equals(otherPassword)) {
             return false;
         }
         return true;
@@ -244,7 +246,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
     /**
      * Security of the FTP connection.
      */
-    public final class Security {
+    public static final class Security {
 
         private final Encryption encryption;
         private final boolean onlyLoginEncrypted;

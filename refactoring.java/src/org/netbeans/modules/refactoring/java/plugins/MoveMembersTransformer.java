@@ -504,7 +504,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
         }
     }
 
-    private void insertIfMatch(TreePath currentPath, ClassTree node, Element target) throws IllegalArgumentException {
+    private void insertIfMatch(TreePath currentPath, ClassTree node, final Element target) throws IllegalArgumentException {
         Element el = workingCopy.getTrees().getElement(currentPath);
         if (el == null) {
             return;
@@ -576,6 +576,16 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                                 Element el = trees.getElement(currentPath);
                                 if (isElementBeingMoved(el) != null) {
                                     return false;
+                                }
+                            } else {
+                                TreePath currentPath = new TreePath(resolvedPath, node);
+                                Element el = trees.getElement(currentPath);
+                                if (isElementBeingMoved(el) != null &&
+                                        el.getKind() != ElementKind.PACKAGE &&
+                                        el.getModifiers().contains(Modifier.STATIC)) {
+                                    ExpressionTree ident = make.Identifier(target);
+                                    MemberSelectTree memberSelect = make.MemberSelect(ident, el);
+                                    original2Translated.put(node, memberSelect);
                                 }
                             }
                             return super.visitMemberSelect(node, source);

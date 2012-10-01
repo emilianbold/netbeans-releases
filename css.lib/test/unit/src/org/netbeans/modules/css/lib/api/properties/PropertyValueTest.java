@@ -212,9 +212,9 @@ public class PropertyValueTest extends CssTestBase {
     public void testBackgroundRGBAlternatives() {
         PropertyModel p = Properties.getPropertyModel("background");
         assertAlternatives(p.getGrammar(), "rgb", "(");
-        assertAlternatives(p.getGrammar(), "rgb(", "!percentage", "!number");
+        assertAlternatives(p.getGrammar(), "rgb(", "!percentage", "!number", "-");
         assertAlternatives(p.getGrammar(), "rgb(10%", ",");
-        assertAlternatives(p.getGrammar(), "rgb(", "!percentage", "!number");
+        assertAlternatives(p.getGrammar(), "rgb(", "!percentage", "!number", "-");
         assertAlternatives(p.getGrammar(), "rgb(10%, 20", ",");
         assertAlternatives(p.getGrammar(), "rgb(10%, 20, 6%", ")");
     }

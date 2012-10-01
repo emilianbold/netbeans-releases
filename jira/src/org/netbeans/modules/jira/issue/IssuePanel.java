@@ -253,7 +253,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private void initAttachmentsPanel() {
-        attachmentsPanel = new AttachmentsPanel();
+        attachmentsPanel = new AttachmentsPanel(this);
         GroupLayout layout = (GroupLayout)getLayout();
         layout.replace(dummyAttachmentPanel, attachmentsPanel);
         attachmentLabel.setLabelFor(attachmentsPanel);
@@ -725,14 +725,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
             // Comments
             commentsPanel.setIssue(issue);
-            UIUtils.keepFocusedComponentVisible(commentsPanel);
+            UIUtils.keepFocusedComponentVisible(commentsPanel, this);
             if (force) {
                 addCommentArea.setText(""); // NOI18N
             }
 
             // Attachments
             attachmentsPanel.setIssue(issue);
-            UIUtils.keepFocusedComponentVisible(attachmentsPanel);
+            UIUtils.keepFocusedComponentVisible(attachmentsPanel, this);
 
             // NbJiraIssue-links
             boolean anyLink = (issue.getLinkedIssues().length != 0);

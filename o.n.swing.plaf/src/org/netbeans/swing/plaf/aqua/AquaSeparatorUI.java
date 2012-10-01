@@ -53,7 +53,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.SeparatorUI;
 
@@ -66,7 +66,8 @@ import javax.swing.plaf.SeparatorUI;
  * @author  Christopher Atlan
  */
 public class AquaSeparatorUI extends SeparatorUI {
-    private final static Color lineColor = new Color(215, 215, 215);
+    private final static Color lineColorHorizontal = new Color(215, 215, 215);
+    private final static Color lineColorVertical = new Color(128, 128, 128);
     
     private static ComponentUI separatorui = new AquaSeparatorUI();
     
@@ -77,12 +78,21 @@ public class AquaSeparatorUI extends SeparatorUI {
     public void paint( Graphics g, JComponent c ) {
         Dimension s = c.getSize();
 
-        g.setColor(lineColor);
-        g.drawLine(1, 5, s.width - 2, 5);
+        if (((JSeparator) c).getOrientation() == JSeparator.HORIZONTAL) {
+            g.setColor(lineColorHorizontal);
+            g.drawLine(1, 5, s.width - 2, 5);
+        } else {
+            g.setColor(lineColorVertical);
+            g.drawLine(0, 1, 0, s.height - 2);
+        }
     }
     
     public Dimension getPreferredSize(JComponent c) {
-        return new Dimension( 0, 12 );
+        if (((JSeparator) c).getOrientation() == JSeparator.HORIZONTAL) {
+            return new Dimension( 0, 12 );
+        } else {
+            return new Dimension( 1, 11 );
+        }
     }
     
     public Dimension getMinimumSize( JComponent c ) { return null; }

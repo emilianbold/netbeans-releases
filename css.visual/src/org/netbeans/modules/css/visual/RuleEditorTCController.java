@@ -61,6 +61,8 @@ import org.openide.windows.WindowManager;
  */
 public class RuleEditorTCController implements PropertyChangeListener {
 
+    private static final RequestProcessor RP = new RequestProcessor(RuleEditorTCController.class);
+    
     private static RuleEditorTCController STATIC_INSTANCE;
 
     //called from CssCaretAwareSourceTask constructor
@@ -102,7 +104,7 @@ public class RuleEditorTCController implements PropertyChangeListener {
                 return; //ignore if its me
             }
 
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
 

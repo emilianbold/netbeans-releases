@@ -46,6 +46,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -54,6 +55,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -135,12 +137,12 @@ public class PredefinedSymbols {
         File file = InstalledFileLocator.getDefault().locate("docs/predefined_vars.zip", null, true); //NoI18N
         if (file != null) {
             try {
-                URL urll = file.toURI().toURL();
+                URL urll = Utilities.toURI(file).toURL();
                 urll = FileUtil.getArchiveRoot(urll);
                 docURLBase = urll.toString();
             } catch (java.net.MalformedURLException e) {
                 // nothing to do
-                }
+            }
         }
     }
 
@@ -169,7 +171,7 @@ public class PredefinedSymbols {
             } while (count > 0);
 
             is.close();
-            String text = baos.toString();
+            String text = baos.toString(Charset.defaultCharset().name());
             baos.close();
             return text;
         } catch (java.io.IOException e) {

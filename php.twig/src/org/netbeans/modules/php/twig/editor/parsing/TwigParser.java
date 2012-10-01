@@ -158,7 +158,6 @@ public class TwigParser extends Parser {
                                 if (token.id() == TwigTokenId.T_TWIG_TAG) {
 
                                     block.function = token.text();
-                                    block.functionTokenIndex = sequence.index();
                                     block.functionFrom = token.offset(tokenHierarchy);
                                     block.functionLength = token.length();
                                     break;
@@ -319,7 +318,6 @@ public class TwigParser extends Parser {
         CharSequence extra = null;
         int startTokenIndex = 0;
         int endTokenIndex = 0;
-        int functionTokenIndex = 0;
         int from = 0;
         int length = 0;
         int functionFrom = 0;

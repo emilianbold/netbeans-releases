@@ -1,4 +1,4 @@
-|>GLOBAL:jQuery<|(function($){
+jQuery(function($){
     $.timepicker.regional["|>CLASS:cs<|"] = {
         |>FIELD:closeText<|: 'Zavřít',
         |>FIELD:prevText<|: '&#x3c;Dříve',
@@ -24,7 +24,7 @@
     
     var |>CLASS:test<| = {}
     test["myProperty"] = 20;
-    test.anotherProperty = test.myProperty;
+    test.|>FIELD:anotherProperty<| = test.myProperty;
 });
 
 

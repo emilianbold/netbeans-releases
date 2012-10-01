@@ -140,8 +140,21 @@ NetBeans.insertGlassPane = function() {
     // Selection handler
     canvas.addEventListener('click', function(event) {
         var element = getElementForEvent(event);
+        var ctrl = event.ctrlKey;
+        var meta = event.metaKey;
+        var value;
+        if (ctrl || meta) {
+            var index = NetBeans.selection.indexOf(element);
+            if (index === -1) {
+                value = 'add';
+            } else {
+                value = 'remove';
+            }
+        } else {
+            value = 'set';
+        }
         // HACK: notify NetBeans
-        element.setAttribute(self.ATTR_SELECTED, 'true');
+        element.setAttribute(self.ATTR_SELECTED, value);
         element.removeAttribute(self.ATTR_SELECTED);
     });
 
@@ -151,7 +164,7 @@ NetBeans.insertGlassPane = function() {
         if (self.lastHighlighted !== element) {
             self.lastHighlighted = element;
             // HACK: notify NetBeans
-            element.setAttribute(self.ATTR_HIGHLIGHTED, 'true');
+            element.setAttribute(self.ATTR_HIGHLIGHTED, 'set');
             element.removeAttribute(self.ATTR_HIGHLIGHTED);
         }
     });
@@ -161,7 +174,7 @@ NetBeans.insertGlassPane = function() {
         if (e.toElement === null) {
             self.lastHighlighted = null;
             // HACK notify NetBeans
-            canvas.setAttribute(self.ATTR_HIGHLIGHTED, 'false');
+            canvas.setAttribute(self.ATTR_HIGHLIGHTED, 'clear');
             canvas.removeAttribute(self.ATTR_HIGHLIGHTED);
         }
     });

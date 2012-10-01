@@ -62,6 +62,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.openide.util.ChangeSupport;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
@@ -111,28 +112,32 @@ public final class BrokenReferencesModel extends AbstractListModel implements Pr
     }
 
     void refresh() {
-        final int size;
-        synchronized (lock) {
-            for (Iterator<Map.Entry<ProjectProblemsProvider,PropertyChangeListener>> it = providers.entrySet().iterator(); it.hasNext();) {
-                final Map.Entry<ProjectProblemsProvider,PropertyChangeListener> e = it.next();
-                e.getKey().removePropertyChangeListener(e.getValue());
-                it.remove();
-            }
-            final Set<ProblemReference> all = new LinkedHashSet<ProblemReference>();
-            for (Project bprj : ctx.getBrokenProjects()) {
-                final ProjectProblemsProvider ppp = bprj.getLookup().lookup(ProjectProblemsProvider.class);
-                if (ppp != null) {
-                    final PropertyChangeListener l = WeakListeners.propertyChange(this, ppp);
-                    ppp.addPropertyChangeListener(l);
-                    providers.put(ppp, l);
-                    for (ProjectProblem problem : ppp.getProblems()) {
-                        all.add(new ProblemReference(problem, bprj, global));
+        final int size = ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
+            @Override
+            public Integer run() {
+                synchronized (lock) {
+                    for (Iterator<Map.Entry<ProjectProblemsProvider,PropertyChangeListener>> it = providers.entrySet().iterator(); it.hasNext();) {
+                        final Map.Entry<ProjectProblemsProvider,PropertyChangeListener> e = it.next();
+                        e.getKey().removePropertyChangeListener(e.getValue());
+                        it.remove();
                     }
+                    final Set<ProblemReference> all = new LinkedHashSet<ProblemReference>();
+                    for (Project bprj : ctx.getBrokenProjects()) {
+                        final ProjectProblemsProvider ppp = bprj.getLookup().lookup(ProjectProblemsProvider.class);
+                        if (ppp != null) {
+                            final PropertyChangeListener l = WeakListeners.propertyChange(BrokenReferencesModel.this, ppp);
+                            ppp.addPropertyChangeListener(l);
+                            providers.put(ppp, l);
+                            for (ProjectProblem problem : ppp.getProblems()) {
+                                all.add(new ProblemReference(problem, bprj, global));
+                            }
+                        }
+                    }
+                    updateReferencesList(problems, all);
+                    return getSize();
                 }
             }
-            updateReferencesList(problems, all);
-            size = getSize();
-        }
+        });
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {

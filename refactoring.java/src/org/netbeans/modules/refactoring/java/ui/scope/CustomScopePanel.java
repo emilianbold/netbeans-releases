@@ -56,6 +56,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 import java.util.*;
 import javax.lang.model.element.TypeElement;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
@@ -450,6 +451,11 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
             data.addPropertyChangeListener(WeakListeners.propertyChange(this, data));
             this.panel = panel;
             this.data = data;
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
         }
 
         @Override

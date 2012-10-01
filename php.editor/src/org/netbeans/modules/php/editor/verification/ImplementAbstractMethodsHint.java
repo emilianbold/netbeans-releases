@@ -57,10 +57,11 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -108,10 +109,13 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
         "ImplementAbstractMethodsHintDesc={0} is not abstract and does not override abstract method {1} in {2}"
     })
     void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
-        Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(context.fileScope);
-        FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
-        for (FixInfo fixInfo : checkHints(allClasses, context)) {
-            hints.add(new Hint(ImplementAbstractMethodsHint.this, Bundle.ImplementAbstractMethodsHintDesc(fixInfo.className, fixInfo.lastMethodDeclaration, fixInfo.lastMethodOwnerName), fileObject, fixInfo.classNameRange, createHintFixes(context.doc, fixInfo), 500));
+        FileScope fileScope = context.fileScope;
+        if (fileScope != null) {
+            Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(fileScope);
+            FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
+            for (FixInfo fixInfo : checkHints(allClasses, context)) {
+                hints.add(new Hint(ImplementAbstractMethodsHint.this, Bundle.ImplementAbstractMethodsHintDesc(fixInfo.className, fixInfo.lastMethodDeclaration, fixInfo.lastMethodOwnerName), fileObject, fixInfo.classNameRange, createHintFixes(context.doc, fixInfo), 500));
+            }
         }
     }
 
@@ -146,8 +150,12 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
                         }
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, methodElement.getOffset());
                         List typeNameResolvers = new ArrayList<TypeNameResolver>();
-                        typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, methodElement.getOffset()));
-                        typeNameResolvers.add(TypeNameResolverImpl.forSmartName(classScope, classScope.getOffset()));
+                        if (fileObject != null && CodeUtils.isPhp_52(fileObject)) {
+                            typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
+                        } else {
+                            typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, methodElement.getOffset()));
+                            typeNameResolvers.add(TypeNameResolverImpl.forSmartName(classScope, classScope.getOffset()));
+                        }
                         TypeNameResolver typeNameResolver = TypeNameResolverImpl.forChainOf(typeNameResolvers);
                         String skeleton = methodElement.asString(PrintAs.DeclarationWithEmptyBody, typeNameResolver);
                         skeleton = skeleton.replace(ABSTRACT_PREFIX, ""); //NOI18N
@@ -198,6 +206,11 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
         for (InterfaceScope interfaceScope : superInterface) {
             declaredSuperMethods.addAll(index.getDeclaredMethods(interfaceScope));
             accessibleSuperMethods.addAll(index.getAccessibleMethods(interfaceScope, classScope));
+        }
+        Collection<? extends TraitScope> traits = classScope.getTraits();
+        for (TraitScope traitScope : traits) {
+            declaredSuperMethods.addAll(index.getDeclaredMethods(traitScope));
+            accessibleSuperMethods.addAll(index.getAccessibleMethods(traitScope, classScope));
         }
         inheritedMethods.addAll(declaredSuperMethods);
         inheritedMethods.addAll(accessibleSuperMethods);
@@ -285,7 +298,7 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
         }
     }
 
-    private class AbstractClassFix implements HintFix {
+    private static class AbstractClassFix implements HintFix {
         private final BaseDocument doc;
         private final FixInfo fixInfo;
 

@@ -1,17 +1,20 @@
 NETBEANS IDE 7.3 DEVELOPMENT VERSION ("Product")
  LICENSE AGREEMENT
 
-PLEASE READ THE FOLLOWING LICENSE AGREEMENT TERMS AND
-CONDITIONS CAREFULLY, INCLUDING WITHOUT LIMITATION THOSE
-DISPLAYED ELSEWHERE (AS INDICATED BY LINKS LISTED BELOW),
-BEFORE USING THE SOFTWARE.  THESE TERMS AND CONDITIONS
-CONSTITUTE A LEGAL AGREEMENT BETWEEN YOU, OR THE ENTITY FOR
-WHICH YOU ARE AN AUTHORIZED REPRESENTATIVE WITH FULL
-AUTHORITY TO ENTER INTO THIS AGREEMENT, AND ORACLE.  BY
-CLICKING "ACCEPT" OR THE EQUIVALENT YOU AGREE TO ALL OF
-THE TERMS AND CONDITIONS OF THIS LICENSE AGREEMENT.  IF YOU
-DO NOT AGREE TO THIS LICENSE DO NOT CLICK "ACCEPT" OR
-THE EQUIVALENT AND DO NOT INSTALL OR USE THIS SOFTWARE.
+PLEASE READ THE FOLLOWING LICENSE AGREEMENT TERMS
+AND CONDITIONS CAREFULLY, INCLUDING WITHOUT
+LIMITATION THOSE DISPLAYED ELSEWHERE (AS INDICATED
+BY LINKS LISTED BELOW), BEFORE USING THE SOFTWARE. 
+THESE TERMS AND CONDITIONS CONSTITUTE A LEGAL
+AGREEMENT BETWEEN YOU, OR THE ENTITY FOR WHICH YOU
+ARE AN AUTHORIZED REPRESENTATIVE WITH FULL
+AUTHORITY TO ENTER INTO THIS AGREEMENT, AND
+ORACLE.  BY CLICKING "ACCEPT" OR THE EQUIVALENT
+YOU AGREE TO ALL OF THE TERMS AND CONDITIONS OF
+THIS LICENSE AGREEMENT.  IF YOU DO NOT AGREE TO
+THIS LICENSE DO NOT CLICK "ACCEPT" OR THE
+EQUIVALENT AND DO NOT INSTALL OR USE THIS
+SOFTWARE.
 
 Copyright (c) 1997, 2012, Oracle and/or its affiliates. All
 rights reserved.
@@ -35,7 +38,7 @@ Classpath Exception. In addition, the Product also contains
 components which are governed exclusively by the terms of
 the GPLv2 with Classpath Exception (e.g. components from
 OpenJDK) or by the terms of one of the licenses listed below
-(i.e. Java ME SDK 3.0.5, Oracle JDBC Drivers, and Java Card
+(i.e. Java ME SDK 3.2, Oracle JDBC Drivers, and Java Card
 Development Kit 3.0.2).
 
 Third party technology that may be necessary for use with
@@ -66,7 +69,7 @@ LICENSE #2: CDDL.
 
 OTHER TERMS AND CONDITIONS INCORPORATED IN THIS AGREEMENT:
 
-The use of Java ME SDK 3.0.5 is subject to the terms and
+The use of Java ME SDK 3.2 is subject to the terms and
 conditions set forth at
 http://www.oracle.com/technetwork/java/javame/downloads/java-me-sdk-3-0-5-license-459303.html
 
@@ -78,7 +81,7 @@ The use of Java Card Development Kit 3.0.2 is subject to the
 terms and conditions set forth at
 http://download.oracle.com/otn-pub/java/licenses/OTN_Java_Card_Classic_Connected_SDK_4April2012.pdf
 
-Last updated 27 June 2012
+Last updated 27 September 2012
 
 ************************************************************
 

@@ -1,0 +1,8 @@
+Code completion result for source line:
+a|lert("Text");
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     addEventListener(type: String,  [PUBLIC]   stub_DOM_window.js
+METHOD     alert(): undefined              [PUBLIC]   stub_DOM_window.js
+METHOD     atob(encodedData: String): Str  [PUBLIC]   stub_DOM_window.js
+FIELD      applicationCache: Object        [PUBLIC]   stub_DOM_window.js

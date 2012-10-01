@@ -52,6 +52,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -76,6 +78,7 @@ import org.netbeans.spi.search.SearchScopeDefinition;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 /**
@@ -89,6 +92,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private ChangeListener usabilityChangeListener;
     private BasicSearchCriteria searchCriteria = new BasicSearchCriteria();
     private SearchScopeDefinition[] extraSearchScopes;
+    private boolean searchInGeneratedSetAutomatically = false;
+    private PropertyChangeListener topComponentRegistryListener;
 
     /** Creates new form BasicSearchForm */
     BasicSearchForm(String preferredSearchScopeType,
@@ -109,6 +114,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
         initInteraction(searchAndReplace);
         setValuesOfComponents(initialCriteria, searchAndReplace);
+        setContextAwareOptions(searchAndReplace);
     }
 
     /**
@@ -157,6 +163,48 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 cboxTextToFind.getSearchPattern().getSearchExpression());
     }
     
+    /**
+     * Set options that depend on current context, and listeners that ensure
+     * they stay valid when the context changes.
+     */
+    private void setContextAwareOptions(boolean searchAndReplace) {
+        if (!searchAndReplace) {
+            updateSearchInGeneratedForActiveTopComponent();
+            topComponentRegistryListener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(
+                            TopComponent.Registry.PROP_ACTIVATED)) {
+                        updateSearchInGeneratedForActiveTopComponent();
+                    }
+                }
+            };
+            TopComponent.getRegistry().addPropertyChangeListener(
+                    WeakListeners.propertyChange(topComponentRegistryListener,
+                    TopComponent.getRegistry()));
+        }
+    }
+
+    /**
+     * Update searching in generated sources. If Files window is selected,
+     * Search In Generated Sources option should be checked automatically.
+     */
+    private void updateSearchInGeneratedForActiveTopComponent() {
+        assert searchCriteria != null && !searchCriteria.isSearchAndReplace();
+        TopComponent tc = TopComponent.getRegistry().getActivated();
+        if (tc != null && tc.getHelpCtx() != null
+                && "ProjectTab_Files".equals( //NOI18N
+                tc.getHelpCtx().getHelpID())) {
+            if (!scopeSettingsPanel.isSearchInGenerated()) {
+                scopeSettingsPanel.setSearchInGenerated(true);
+                searchInGeneratedSetAutomatically = true;
+            }
+        } else if (searchInGeneratedSetAutomatically) {
+            scopeSettingsPanel.setSearchInGenerated(false);
+            searchInGeneratedSetAutomatically = false;
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -606,8 +654,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             memory.setPreserveCase(chkPreserveCase.isSelected());
         } else {
             memory.setSearchInArchives(scopeSettingsPanel.isSearchInArchives());
-            memory.setSearchInGenerated(
-                    scopeSettingsPanel.isSearchInGenerated());
+            if (!searchInGeneratedSetAutomatically) {
+                memory.setSearchInGenerated(
+                        scopeSettingsPanel.isSearchInGenerated());
+            }
         }
         memory.setFilePathRegex(scopeSettingsPanel.isFileNameRegExp());
         memory.setUseIgnoreList(scopeSettingsPanel.isUseIgnoreList());

@@ -48,22 +48,22 @@ package org.netbeans.modules.web.clientproject;
 public class ClientSideProjectConstants {
 
     // misc persistent project properties:
-    public static final String PROJECT_ENCODING = "files.encoding";
-    public static final String PROJECT_SITE_ROOT_FOLDER = "site.root.folder";
-    public static final String PROJECT_TEST_FOLDER = "test.folder";
-    public static final String PROJECT_CONFIG_FOLDER = "config.folder";
-    public static final String PROJECT_SERVER = "server";
-    public static final String PROJECT_START_FILE = "start.file";
-    public static final String PROJECT_WEB_ROOT = "web.context.root";
-    public static final String PROJECT_PROJECT_URL = "external.project.url";
-    public static final String PROJECT_AUTO_REFRESH = "browser.autorefresh";
-    public static final String PROJECT_HIGHLIGHT_SELECTION = "browser.highlightselection";
+    public static final String PROJECT_ENCODING = "files.encoding"; //NOI18N
+    public static final String PROJECT_SITE_ROOT_FOLDER = "site.root.folder"; //NOI18N
+    public static final String PROJECT_TEST_FOLDER = "test.folder"; //NOI18N
+    public static final String PROJECT_CONFIG_FOLDER = "config.folder"; //NOI18N
+    public static final String PROJECT_SERVER = "server"; //NOI18N
+    public static final String PROJECT_START_FILE = "start.file"; //NOI18N
+    public static final String PROJECT_WEB_ROOT = "web.context.root"; //NOI18N
+    public static final String PROJECT_PROJECT_URL = "external.project.url"; //NOI18N
+    public static final String PROJECT_AUTO_REFRESH = "browser.autorefresh"; //NOI18N
+    public static final String PROJECT_HIGHLIGHT_SELECTION = "browser.highlightselection"; //NOI18N
 
     // default paths:
-    public static final String DEFAULT_SITE_ROOT_FOLDER = "public_html";
-    public static final String DEFAULT_TEST_FOLDER = "test";
-    public static final String DEFAULT_CONFIG_FOLDER = "config";
+    public static final String DEFAULT_SITE_ROOT_FOLDER = "public_html"; //NOI18N
+    public static final String DEFAULT_TEST_FOLDER = "test"; //NOI18N
+    public static final String DEFAULT_CONFIG_FOLDER = "config"; //NOI18N
     
     // template's descriptor file
-    public static final String TEMPLATE_DESCRIPTOR = "netbeans-project.properties";
+    public static final String TEMPLATE_DESCRIPTOR = "netbeans-project.properties"; //NOI18N
 }

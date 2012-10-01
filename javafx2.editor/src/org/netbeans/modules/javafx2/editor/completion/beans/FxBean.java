@@ -129,6 +129,11 @@ public final class FxBean extends FxDefinition {
     private FxBean  builder;
     
     /**
+     * The class supports j.u.Map interface
+     */
+    private boolean map;
+    
+    /**
      * Provides the default {@link FxBeanProvider} instance for the given {@link CompilationInfo}.
      * The provider utilizes a cache for FxBeans, so repeated queries will not analyse a Type again,
      * but rather serve the information form the cache.
@@ -209,6 +214,14 @@ public final class FxBean extends FxDefinition {
     
     void makeBuilder(FxBean created) {
         this.createdBean = created;
+    }
+    
+    void makeMap() {
+        this.map = true;
+    }
+    
+    public boolean isMap() {
+        return map;
     }
     
     public boolean isBuilder() {
@@ -466,7 +479,6 @@ public final class FxBean extends FxDefinition {
         if (superBi == null) {
             return;
         }
-        
         if (attachedProperties.isEmpty() && !superBi.getAttachedProperties().isEmpty()) {
             attachedProperties = new HashMap<String, FxProperty>(superBi.getAttachedProperties());
         } else {

@@ -278,6 +278,7 @@ public class HgCommand {
     public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in "; // NOI18N
     public static final String HG_MERGE_FAILED1_ERR = "merging"; // NOI18N
     public static final String HG_MERGE_FAILED2_ERR = "failed!"; // NOI18N
+    public static final String HG_MERGE_FAILED3_ERR = "incomplete!"; // NOI18N
     private static final String HG_MERGE_MULTIPLE_HEADS_ERR = "abort: repo has "; // NOI18N
     private static final String HG_MERGE_UNCOMMITTED_ERR = "abort: outstanding uncommitted merges"; // NOI18N
 
@@ -2079,7 +2080,7 @@ public class HgCommand {
                         handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
                     } else if (isErrorNoResponse(list.get(list.size() - 1))) {
                         handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_RESPONSE_ERR"), logger);
-                    } else if (isErrorAbort(list.get(list.size() - 1))) {
+                    } else if (isErrorAbort(list.get(0)) || isErrorAbort(list.get(list.size() - 1))) {
                         if ((credentials = handleAuthenticationError(list, target, rawUrl, credentials == null ? "" : credentials.getUserName(), new UserCredentialsSupport(), HG_CLONE_CMD)) != null) { //NOI18N
                             // try again with new credentials
                             retry = true;
@@ -4023,7 +4024,8 @@ public class HgCommand {
     }
 
     public static boolean isMergeFailedMsg (String msg) {
-        return (msg.indexOf(HG_MERGE_FAILED1_ERR) > -1) && (msg.indexOf(HG_MERGE_FAILED2_ERR) > -1);
+        return (msg.indexOf(HG_MERGE_FAILED1_ERR) > -1) 
+                && (msg.indexOf(HG_MERGE_FAILED2_ERR) > -1 || msg.indexOf(HG_MERGE_FAILED3_ERR) > -1);
     }
 
     public static boolean isConflictDetectedInMsg (String msg) {

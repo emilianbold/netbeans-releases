@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -54,7 +55,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  */
 public final class WeakContainer<T> {
 
-    private WeakReference<T> weakContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<T>(null) : null;
+    private volatile WeakReference<T> weakContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<T>(null) : null;
     private int preventMultiplyDiagnosticExceptionsSorage = 0;
     private final CsmValidable stateOwner;
     private final Key storageKey;
@@ -65,9 +66,11 @@ public final class WeakContainer<T> {
         this.storageKey = storageKey;
     }
 
-    public synchronized void clear() {
-        if (TraceFlags.USE_WEAK_MEMORY_CACHE) {
-            weakContainer.clear();
+    public void clear() {
+        synchronized (this) {
+            if (TraceFlags.USE_WEAK_MEMORY_CACHE) {
+                weakContainer.clear();
+            }
         }
     }
 
@@ -84,10 +87,23 @@ public final class WeakContainer<T> {
             }
             container = (T) RepositoryUtils.get(storageKey);
             if (container == null && stateOwner.isValid() && preventMultiplyDiagnosticExceptionsSorage < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
-                DiagnosticExceptoins.register(new IllegalStateException("Failed to get container sorage by key " + storageKey)); // NOI18N
+                T container2 = (T) RepositoryUtils.get(storageKey);
+                String postfix = ""; // NOI18N
+                if (CndUtils.isDebugMode() || CndUtils.isUnitTestMode()) {
+                    if (container2 == null) {
+                        postfix = " TWICE";// NOI18N
+                    } else {
+                        postfix = " second attempt OK";// NOI18N
+                    }
+                }
+                DiagnosticExceptoins.register(new IllegalStateException("Failed to get container sorage by key " + storageKey + postfix)); // NOI18N
                 preventMultiplyDiagnosticExceptionsSorage++;
+//            } else{
+//                System.err.printf("OK %s\n", storageKey);
             }
             if (TraceFlags.USE_WEAK_MEMORY_CACHE && container != null && weakContainer != null) {
+//                WeakReference<T> weak = new WeakReference<T>(container);
+//                // assign only when object is completely created
                 weakContainer = new WeakReference<T>(container);
             }
             return container;

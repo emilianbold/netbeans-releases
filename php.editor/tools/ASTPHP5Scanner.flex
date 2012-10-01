@@ -46,11 +46,11 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.LinkedList;
 import java.util.List;
+import java_cup.runtime.*;
 import org.netbeans.modules.php.editor.*;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
-import java.io.IOException;
-import java_cup.runtime.*;
 
+@org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH", "URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE", "DM_DEFAULT_ENCODING"})
 %%
 // Options adn declarations section
 
@@ -92,6 +92,7 @@ import java_cup.runtime.*;
 %state ST_DOCBLOCK
 %state ST_ONE_LINE_COMMENT
 %state ST_IN_SHORT_ECHO
+%state ST_HALTED_COMPILER
 %{
     private final List commentList = new LinkedList();
     private String heredoc = null;
@@ -582,9 +583,15 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 	return createSymbol(ASTPHP5Symbols.T_EMPTY);
 }
 
-<ST_IN_SCRIPTING>"__halt_compiler" {
+<ST_IN_SCRIPTING>"__halt_compiler();" {
+    yybegin(ST_HALTED_COMPILER);
 	return createSymbol(ASTPHP5Symbols.T_HALT_COMPILER);
 }
+
+<ST_HALTED_COMPILER> {ANY_CHAR}+ {
+    return createSymbol(ASTPHP5Symbols.T_INLINE_HTML);
+}
+
 <ST_IN_SCRIPTING>"static" {
 	return createSymbol(ASTPHP5Symbols.T_STATIC);
 }

@@ -110,7 +110,8 @@ public class JFXProjectGenerator {
     enum Action {
         CREATE("USG_PROJECT_CREATE", "USG_PROJECT_CREATE_JFX"),   //NOI18N
         OPEN("USG_PROJECT_OPEN", "USG_PROJECT_OPEN_JFX"),       //NOI18N
-        CLOSE("USG_PROJECT_CLOSE", "USG_PROJECT_CLOSE_JFX");     //NOI18N
+        CLOSE("USG_PROJECT_CLOSE", "USG_PROJECT_CLOSE_JFX"),     //NOI18N
+        BUILD_NATIVE("USG_PROJECT_BUILD_NATIVE", "USG_PROJECT_BUILD_NATIVE_JFX");     //NOI18N
         
         private final String genericLogMessage;
         private final String specificLogMessage;
@@ -451,8 +452,8 @@ public class JFXProjectGenerator {
         ep.setProperty(JFXProjectProperties.JAVAFX_ENABLE_CONCURRENT_EXTERNAL_RUNS, "false"); // NOI18N
         ep.setComment(JFXProjectProperties.JAVAFX_ENABLE_CONCURRENT_EXTERNAL_RUNS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_enable_concurrent_external_runs")}, false); // NOI18N
 
-        ep.setProperty(JFXProjectProperties.JAVAFX_NATIVE_BUNDLING_ENABLED, "false"); // NOI18N
-        ep.setProperty(JFXProjectProperties.JAVAFX_NATIVE_BUNDLING_TYPE, JFXProjectProperties.BundlingType.NONE.getString().toLowerCase());
+        //ep.setProperty(JFXProjectProperties.JAVAFX_NATIVE_BUNDLING_ENABLED, "false"); // NOI18N
+        //ep.setProperty(JFXProjectProperties.JAVAFX_NATIVE_BUNDLING_TYPE, JFXProjectProperties.BundlingType.NONE.getString().toLowerCase());
         
         // update mode set to false with signing on to prevent malfunction caused by so-far unresolved issues in JavaFX 2.1.x WebStart
         ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "false"); // NOI18N

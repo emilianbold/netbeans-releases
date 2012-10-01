@@ -60,6 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1035,15 +1036,15 @@ public final class NbModuleProject implements Project {
                 @Override public void propertyChange(PropertyChangeEvent evt) {
                     final String prop = evt.getPropertyName();
                     if (prop == null || prop.startsWith(SOURCE_START) || prop.startsWith(JAVADOC_START)) {
-                        cache = null;
+                        cache.set(null);
                         pcs.firePropertyChange(evt);
                     }
                 }
             });
         }
 
-        PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        private HashMap<String, String> cache;
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private final AtomicReference<Map<String, String>> cache = new AtomicReference<Map<String, String>>();
 
         @Override public String getProperty(String prop) {
             return getProperties().get(prop);
@@ -1054,23 +1055,30 @@ public final class NbModuleProject implements Project {
         }
 
         @Override @NonNull public Map<String, String> getProperties() {
-            if (cache == null) {
-                cache = new HashMap<String, String>();
+            Map<String,String> ce = cache.get();
+            if (ce == null) {
+                ce = new HashMap<String, String>();
                 ProjectXMLManager pxm = new ProjectXMLManager(NbModuleProject.this);
                 String[] cpExts = pxm.getBinaryOrigins();
                 for (String cpe : cpExts) {
-                    addFileRef(cache, cpe);
+                    addFileRef(ce, cpe);
                 }
                 Map<String, String> prjProps = evaluator().getProperties();
                 if (prjProps != null) {
-                for (Map.Entry<String, String> entry : prjProps.entrySet()) {
-                    if (entry.getKey().startsWith(SOURCE_START) || entry.getKey().startsWith(JAVADOC_START)) {
-                        cache.put(entry.getKey(), entry.getValue());
+                    for (Map.Entry<String, String> entry : prjProps.entrySet()) {
+                        if (entry.getKey().startsWith(SOURCE_START) || entry.getKey().startsWith(JAVADOC_START)) {
+                            ce.put(entry.getKey(), entry.getValue());
+                        }
                     }
                 }
+                if (!cache.compareAndSet(null, ce)) {
+                    Map<String,String> tmp = cache.get();
+                    if (tmp != null) {
+                        ce = tmp;
+                    }
                 }
             }
-            return cache;
+            return ce;
         }
 
         private void addFileRef(Map<String, String> props, String path) {

@@ -19,31 +19,27 @@
 
 set -x -e 
 
-echo Given parameters: $1 $2 $3 $4 $5 $5
+echo Given parameters: $1 $2 $3 $4 $5 $6
 
-if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ] || [ -z "$7" ]; then
-    echo "usage: $0 zipdir prefix buildnumber en_build ml_build build_jdk7 signing_identity [nb_locales]"
+if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ]; then
+    echo "usage: $0 zipdir prefix buildnumber build_jdk7 signing_identity [nb_locales]"
     echo ""
-    echo "zipdir is the dir which contains the zip/modulclusters and zip-ml/moduleclusters"
+    echo "zipdir is the dir which contains the zip/modulclusters
     echo "prefix is the distro filename prefix, e.g. netbeans-hudson-trunk in netbeans-hudson-trunk-2464"
     echo "buildnumber is the distro buildnumber, e.g. 2464 in netbeans-hudson-trunk-2464"
-    echo "en_build is 1 if en builds are required and 0 if not"
-    echo "ml_build is 1 if ml builds are required and 0 if not"
     echo "build_jdk7 is 1 if bundle jdk7 are required and 0 if not"
     echo "signing_identity is a digital identity for signing the OS X installer or 0 if not signing"
-    echo "nb_locales is the string with the list of locales (for ml builds)"
+    echo "nb_locales is the string with the list of locales
     exit 1
 fi
 
 work_dir=$1
 prefix=$2
 buildnumber=$3
-en_build=$4
-ml_build=$5
-build_jdk7=$6
-signing_identity=$7
-if [ -n "$8" ] ; then
-  nb_locales="$8"
+build_jdk7=$4
+signing_identity=$5
+if [ -n "$6" ] ; then
+  nb_locales=",$6"
 fi
 
 basename=`dirname "$0"`
@@ -67,18 +63,10 @@ if [ -z $en_build ] ; then
     en_build=1
 fi
 
-if [ 0 -eq "${signing_identity}" ] ; then
+if [ 0 = "${signing_identity}" ] ; then
     signing_identity=0
 fi
 
 rm -rf "$basename"/dist_en
-if [ 1 -eq $en_build ] ; then
-    ant -f $basename/build.xml $target -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='false' -Dsigning_identity="${signing_identity}" -Dbuild.jdk7=$build_jdk7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Djdk_builds_host=$JDK_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
-    mv -f "$basename"/dist "$basename"/dist_en
-fi
-
-
-if [ 1 -eq $ml_build ] ; then
-    commonname_ml=$work_dir/zip-ml/moduleclusters/$prefix-$buildnumber
-    ant -f $basename/build.xml $target -Dnb.locales=$nb_locales -Dcommon.name=$commonname_ml -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='true' -Dsigning_identity="$signing_identity" -Dbuild.jdk7=$build_jdk7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Djdk_builds_host=$JDK_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
-fi
+ant -f $basename/build.xml $target -Dlocales=$nb_locales -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber  -Dsigning_identity="${signing_identity}" -Dbuild.jdk7=$build_jdk7 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Djdk_builds_host=$JDK_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST
+mv -f "$basename"/dist "$basename"/dist_en

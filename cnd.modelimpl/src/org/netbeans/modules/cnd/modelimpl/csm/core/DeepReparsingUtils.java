@@ -118,21 +118,12 @@ public final class DeepReparsingUtils {
      * Reparse including/included files at fileImpl content changed.
      */
     public static void tryPartialReparseOnChangedFile(final ProjectBase changedFileProject, final FileImpl fileImpl) {
-        if (TraceFlags.USE_PARTIAL_REPARSE) {
-            if (TRACE) {
-                LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
-            }
-            changedFileProject.markAsParsingPreprocStates(fileImpl);
-            fileImpl.markReparseNeeded(false);
-            ParserQueue.instance().addForPartialReparse(fileImpl);
-        } else {
-            if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
-                if (TRACE) LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
-                reparseOnlyOneFile(changedFileProject, fileImpl);
-            } else {
-                reparseOnChangedFileImpl(changedFileProject, fileImpl, true);
-            }
+        if (TRACE) {
+            LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
         }
+        changedFileProject.markAsParsingPreprocStates(fileImpl);
+        fileImpl.markReparseNeeded(false);
+        ParserQueue.instance().addForPartialReparse(fileImpl);
     }
 
     static boolean finishPartialReparse(FileImpl fileImpl, FileContentSignature lastFileBasedSignature, FileContentSignature newSignature) {
@@ -316,7 +307,7 @@ public final class DeepReparsingUtils {
                 // invalide libraries when asked but after deep reparsing activity
                 // because this activity uses information about project dependency and library dependencies
                 assert (changedProject instanceof ProjectImpl): "should be ProjectImpl: " + changedProject;
-                LibraryManager.getInstance().onProjectPropertyChanged(changedProject);
+                LibraryManager.getInstance(changedProject).onProjectPropertyChanged(changedProject);
             }
         } catch (Exception e) {
             DiagnosticExceptoins.register(e);
@@ -497,7 +488,7 @@ public final class DeepReparsingUtils {
         }
     }
     
-    private static String toString(Collection<?> files) {
+    static String toString(Collection<?> files) {
         StringBuilder out = new StringBuilder();
         for (Object elem : files) {
             if (elem instanceof FileImpl) {

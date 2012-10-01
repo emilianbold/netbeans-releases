@@ -764,7 +764,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             }
 
             if (command != null) {
-                performCommand (command, lastPressedTab == -1 || lastPressedTab >
+                performCommand (command, lastPressedTab == -1 || lastPressedTab >=
                     displayer.getModel().size() ? idx : lastPressedTab, e);
             }
         }

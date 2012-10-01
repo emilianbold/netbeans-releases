@@ -161,6 +161,9 @@ public class WebKitDebugging {
         if (dom != null) {
             dom.reset();
         }
+        if (console != null) {
+            console.reset();
+        }
     }
     
     // other parts of Remote WebKit Debugging like CSS, DOMDebugger, 

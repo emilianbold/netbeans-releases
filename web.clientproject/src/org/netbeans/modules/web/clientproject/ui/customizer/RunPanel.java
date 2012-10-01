@@ -72,12 +72,14 @@ import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author david
  */
-public class RunPanel extends javax.swing.JPanel implements DocumentListener, ItemListener {
+public class RunPanel extends javax.swing.JPanel implements DocumentListener, ItemListener, HelpCtx.Provider {
 
     private ClientSideProject project;
     private ComboBoxModel model;
@@ -98,7 +100,8 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         updateConfigurationCustomizer();
         
         jFileToRunTextField.setText(project.getStartFile());
-        model = new DefaultComboBoxModel(new String[]{"Embedded Lightweight", "External"});
+        model = new DefaultComboBoxModel(new String[]{NbBundle.getMessage(RunPanel.class, "EMBEDDED_LIGHTWEIGHT"), 
+            NbBundle.getMessage(RunPanel.class, "EXTERNAL")});
         jServerComboBox.setModel(model);
         jServerComboBox.addItemListener(this);
         jServerComboBox.setSelectedIndex(getServer());
@@ -108,8 +111,8 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         jProjectURLTextField.setText(project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL));
         jProjectURLTextField.getDocument().addDocumentListener(this);
         updateWebRootEnablement();
-        jProjectURLDescriptionLabel.setText("<html>Enter a URL configured to open content of the '"+
-                FileUtil.getFileDisplayName(project.getSiteRootFolder())+"' folder.");
+        jProjectURLDescriptionLabel.setText(
+                NbBundle.getMessage(RunPanel.class, "URL_DESCRIPTION", FileUtil.getFileDisplayName(project.getSiteRootFolder())));
         
         category.setStoreListener(new ActionListener() {
             @Override
@@ -121,7 +124,7 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
                 } else {
                     ep.setProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL, jProjectURLTextField.getText());
                 }
-                ep.setProperty(ClientSideProjectConstants.PROJECT_SERVER, isEmbeddedServer() ? "internal" : "external");
+                ep.setProperty(ClientSideProjectConstants.PROJECT_SERVER, isEmbeddedServer() ? "internal" : "external"); //NOI18N
                 project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                 try {
                     configProvider.setActiveConfiguration(
@@ -279,7 +282,7 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
-        chooser.addChoosableFileFilter(new FileNameExtensionFilter("HTML Documents", "html"));
+        chooser.addChoosableFileFilter(new FileNameExtensionFilter(org.openide.util.NbBundle.getMessage(RunPanel.class, "HTML_DOCUMENTS"), "html"));
         chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
         File file = new File(FileUtil.toFile(project.getSiteRootFolder()), jFileToRunTextField.getText());
         if (file.exists()) {
@@ -296,7 +299,7 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
                     jFileToRunTextField.setText(rel);
                 } else {
                     DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                        "Selected file must be located under Project's Site Root."));
+                        org.openide.util.NbBundle.getMessage(RunPanel.class, "WARNING")));
                 }
             }
         }
@@ -329,21 +332,21 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
             return;
         }
         if (!jWebRootTextField.isEnabled()) {
-            jWebRootExampleLabel.setText(" ");
+            jWebRootExampleLabel.setText(" "); //NOI18N
             return;
         }
-        StringBuilder s = new StringBuilder(org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jWebRootExampleLabel.text")); // NOI18N        
+        StringBuilder s = new StringBuilder();
         s.append(WebServer.getWebserver().getPort());
         String ctx = jWebRootTextField.getText();
         if (ctx.trim().length() == 0) {
-            s.append("/");
+            s.append("/"); //NOI18N
         } else {
-            if (!ctx.startsWith("/")) {
-                s.append("/");
+            if (!ctx.startsWith("/")) { //NOI18N
+                s.append("/"); //NOI18N
             }
             s.append(ctx);
         }
-        jWebRootExampleLabel.setText(s.toString());
+        jWebRootExampleLabel.setText(NbBundle.getMessage(RunPanel.class, "RunPanel.jWebRootExampleLabel.text", s.toString()));
     }
     
     private boolean isEmbeddedServer() {
@@ -369,7 +372,7 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         }
         category.setValid(jProjectURLTextField.getText().length() > 0);
         if (!category.isValid()) {
-            category.setErrorMessage("Enter External server root URL of this project");
+            category.setErrorMessage(org.openide.util.NbBundle.getMessage(RunPanel.class, "ERROR_URL_MISSING"));
         } else {
             category.setErrorMessage(null);
         }
@@ -394,6 +397,11 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
     @Override
     public void itemStateChanged(ItemEvent e) {
         updateWebRootEnablement();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.customizer.RunPanel");
     }
     
     private static class ConfigRenderer implements ListCellRenderer {

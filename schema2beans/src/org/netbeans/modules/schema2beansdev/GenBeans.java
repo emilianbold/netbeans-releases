@@ -940,7 +940,12 @@ public class GenBeans {
 
         config.readConfigs();
         if (config.getWriteConfig() != null) {
-            config.write(new FileOutputStream(config.getWriteConfig()));
+            FileOutputStream fos = new FileOutputStream(config.getWriteConfig());
+            try {
+               config.write(fos);
+            } finally {
+                fos.close();
+            }
         }
     }
 
