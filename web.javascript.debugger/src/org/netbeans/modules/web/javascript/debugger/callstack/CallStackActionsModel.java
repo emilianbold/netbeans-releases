@@ -115,7 +115,7 @@ public final class CallStackActionsModel extends ViewModelSupport implements
             Bundle.CTL_CallstackAction_Copy2CLBD_Label(),
         new Models.ActionPerformer() {
             @Override public boolean isEnabled (Object node) {
-                return true;
+                return debugger.isSuspended();
             }
             @Override public void perform (Object[] nodes) {
                 stackToCLBD();
@@ -167,7 +167,9 @@ public final class CallStackActionsModel extends ViewModelSupport implements
     }
     
     private void stackToCLBD() {
-        // JPDAThread t = debugger.getCurrentThread();
+        if (!debugger.isSuspended()) {
+            return ;
+        }
         StringBuilder frameStr = new StringBuilder(50);
         List<CallFrame> stack = debugger.getCurrentCallStack();
         if (stack != null) {
