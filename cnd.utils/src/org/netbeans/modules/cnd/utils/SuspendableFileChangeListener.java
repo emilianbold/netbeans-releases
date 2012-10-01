@@ -81,15 +81,17 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
       
         @Override
         public void run() {
+            int lastEventsNum = -1;
             while (true) {
                 HashMap<FSPath, EventWrapper> curEvents;
                 synchronized (eventsLock) {
-                    if (events.isEmpty()) {
+                    if (events.isEmpty() || (suspendCount > 0 && lastEventsNum == events.size())) {
                         break;
                     }
                     if (suspendCount == 0) {
                         curEvents = events;
                         events = new LinkedHashMap<FSPath, EventWrapper>();
+                        lastEventsNum = -1;
                     } else {
                         curEvents = events;
                         HashMap<FSPath, EventWrapper> suspendedRemoves = new LinkedHashMap<FSPath, EventWrapper>();
@@ -102,6 +104,7 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
                             }
                         }
                         events = suspendedRemoves;
+                        lastEventsNum = events.size();
                     }
                 }
                 for (EventWrapper eventWrapper : curEvents.values()) {
