@@ -164,7 +164,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private final List<String> sourceRoots = new ArrayList<String>();
     private final List<String> testRoots = new ArrayList<String>();
     private final Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
-    private volatile NativeProject nativeProject = null;
+    private volatile NativeProjectChangeSupport nativeProjectChangeSupport = null;
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
@@ -1738,22 +1738,24 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     private NativeProjectChangeSupport getNativeProjectChangeSupport() {
         // the cons
-        if (nativeProject == null) {
+        if (nativeProjectChangeSupport == null) {
             FileObject fo = projectDirFO;
             try {
                 Project aProject = ProjectManager.getDefault().findProject(fo);
-                nativeProject = aProject.getLookup().lookup(NativeProject.class);
+                nativeProjectChangeSupport = aProject.getLookup().lookup(NativeProjectChangeSupport.class);
+                if (nativeProjectChangeSupport == null) {
+                    NativeProject nativeProject = aProject.getLookup().lookup(NativeProject.class);
+                    if (nativeProject instanceof NativeProjectChangeSupport) {
+                        nativeProjectChangeSupport = (NativeProjectChangeSupport) nativeProject;
+                    }
+                }
             } catch (Exception e) {
                 // This may be ok. The project could have been removed ....
                 System.err.println("getNativeProject " + e);
             }
 
         }
-        if(nativeProject instanceof NativeProjectChangeSupport) {
-            return (NativeProjectChangeSupport) nativeProject;
-        } else {
-            return null;
-        }
+        return nativeProjectChangeSupport;
     }
 
     public static class ProjectItemChangeEvent extends ChangeEvent {
