@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.SuspendableFileChangeListener;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.cookies.EditorCookie;
@@ -105,7 +106,7 @@ public class ModelSupport implements PropertyChangeListener {
     private volatile ModelImpl theModel;
     private final Set<Lookup.Provider> openedProjects = new HashSet<Lookup.Provider>();
     private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
-    private FileChangeListener fileChangeListener;
+    private SuspendableFileChangeListener fileChangeListener;
     private static final boolean TRACE_STARTUP = Boolean.getBoolean("cnd.modelsupport.startup.trace");// NOI18N
     private volatile boolean postponeParse = false;
     private final RequestProcessor.Task openProjectsTask = 
@@ -140,7 +141,7 @@ public class ModelSupport implements PropertyChangeListener {
                 fileChangeListener = null;
             }
             if (model != null) {
-                fileChangeListener = new ExternalUpdateListener();
+                fileChangeListener = new SuspendableFileChangeListener(new ExternalUpdateListener());
                 CndFileSystemProvider.addFileChangeListener(fileChangeListener);
             }
         }
@@ -669,6 +670,24 @@ public class ModelSupport implements PropertyChangeListener {
         Diagnostic.unindent();
     }
 
+    public void suspendDeleteEvents() {
+        if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+            System.err.printf("External updates: suspendDeleteEvents\n");
+        }        
+        if (fileChangeListener != null) {
+            fileChangeListener.suspendRemoves();
+        }
+    }
+
+    public void resumeDeleteEvents() {
+        if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+            System.err.printf("External updates: resumeDeleteEvents\n");
+        }
+        if (fileChangeListener != null) {
+            fileChangeListener.resumeRemoves();
+        }
+    }
+    
     private class ExternalUpdateListener extends FileChangeAdapter implements Runnable {
         
         private boolean isRunning;

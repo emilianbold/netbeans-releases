@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
@@ -222,5 +223,15 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 }
             }, "Applying property changes"); // NOI18N            
         }
+    }
+
+    @Override
+    public void fileOperationsStarted(NativeProject nativeProject) {
+        ModelSupport.instance().suspendDeleteEvents();
+    }
+
+    @Override
+    public void fileOperationsFinished(NativeProject nativeProject) {
+        ModelSupport.instance().resumeDeleteEvents();
     }
 }
