@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.BuildToolsAction;
 import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
@@ -107,6 +108,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.CaptureInfo;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
@@ -1636,6 +1639,34 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
             cs = CompilerSetManager.get(exEnv).getCompilerSet(model.getSelectedCompilerSetName());
             return cs.getTool(PredefinedToolKind.DebuggerTool).getPath();
+        }
+        return null;
+    }
+    
+    public static String getDebuggerString(NativeDebuggerInfo ndi) {
+        // Figure out dbx command
+        // Copied from GdbProfile
+        MakeConfiguration conf = (MakeConfiguration) ndi.getConfiguration();
+        CompilerSetManager csm = CompilerSetManager.get(conf.getFileSystemHost());
+        CompilerSet2Configuration csconf = conf.getCompilerSet();
+        
+	if (csm == null || ! csconf.isValid()) {
+	    return null;
+        }
+        
+        for (CompilerSet cs : csm.getCompilerSets()) {
+            if (ndi.debuggerType() == getDebuggerType(cs)) {
+                return cs.getTool(PredefinedToolKind.DebuggerTool).getPath();
+            }
+        }
+        return null;
+    }
+    
+    private static EngineType getDebuggerType(CompilerSet cs) {
+        Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
+        if (debuggerTool != null) {
+            ToolchainManager.DebuggerDescriptor descriptor = (ToolchainManager.DebuggerDescriptor) debuggerTool.getDescriptor();
+            return EngineTypeManager.getEngineTypeForDebuggerDescriptor(descriptor);
         }
         return null;
     }
