@@ -41,15 +41,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 import org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation.AttributesHelper.PropertyHandler;
@@ -57,8 +60,7 @@ import org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation.Attribut
 public class AttributesImpl implements Attributes, PropertyHandler {
 
     private final AnnotationModelHelper helper;
-    private final AttributesHelper attrHelper;
-
+    private  AttributesHelper attrHelper;
     private EmbeddedId embeddedId;
     private final List<Id> idList = new ArrayList<Id>();
     private final List<Id> derivedIdList = new ArrayList<Id>();
@@ -70,17 +72,36 @@ public class AttributesImpl implements Attributes, PropertyHandler {
     private final List<ManyToMany> manyToManyList = new ArrayList<ManyToMany>();
 
     public AttributesImpl(EntityImpl entity) {
-        this(entity.getRoot().getHelper(), entity.getTypeElement());
+        this(entity.getRoot(), entity.getTypeElement());
     }
 
     public AttributesImpl(MappedSuperclassImpl mappedSuperclass) {
-        this(mappedSuperclass.getRoot().getHelper(), mappedSuperclass.getTypeElement());
+        this(mappedSuperclass.getRoot(), mappedSuperclass.getTypeElement());
     }
 
-    private AttributesImpl(AnnotationModelHelper helper, TypeElement typeElement) {
-        this.helper = helper;
-        attrHelper = new AttributesHelper(helper, typeElement, this);
-        attrHelper.parse();
+    private AttributesImpl(EntityMappingsImpl mappings, TypeElement typeElement) {
+        this.helper = mappings.getHelper();
+        Stack<TypeElement> hierarchy = new Stack<TypeElement>();
+
+        hierarchy.add(typeElement);
+        for (; typeElement != null;) {
+            TypeMirror supMirror = typeElement.getSuperclass();
+            if (supMirror != null && supMirror.getKind() == TypeKind.DECLARED) {
+                DeclaredType superclassDeclaredType = (DeclaredType) supMirror;
+                typeElement = (TypeElement) superclassDeclaredType.asElement();
+            } else {
+                break;
+            }
+            Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
+            if (annByType.get("javax.persistence.Entity") != null || annByType.get("javax.persistence.MappedSuperclass") != null) { // NOI18N
+                hierarchy.add(typeElement);
+            }
+        }
+        while (!hierarchy.empty()) {
+            typeElement = hierarchy.pop();
+            attrHelper = new AttributesHelper(helper, typeElement, this);
+            attrHelper.parse();
+        }
     }
 
     public boolean hasFieldAccess() {
@@ -138,7 +159,7 @@ public class AttributesImpl implements Attributes, PropertyHandler {
             }
         }
         //
-        if(derivedIdAnnotation != null) {
+        if (derivedIdAnnotation != null) {
             AnnotationMirror columnAnnotation = annByType.get("javax.persistence.Column"); // NOI18N, TODO some annotations may not be valid for derived id and it may  not be requires, also need to separate from usual id later(just like embedded ids) to find if exist
             AnnotationMirror temporalAnnotation = annByType.get("javax.persistence.Temporal"); // NOI18N
             String temporal = temporalAnnotation != null ? EntityMappingsUtilities.getTemporalType(helper, temporalAnnotation) : null;
@@ -148,7 +169,7 @@ public class AttributesImpl implements Attributes, PropertyHandler {
             IdImpl id = new IdImpl(propertyName, genValue, column, temporal);
             idList.add(id);
             derivedIdList.add(id);
-      }
+        }
     }
 
     @Override
