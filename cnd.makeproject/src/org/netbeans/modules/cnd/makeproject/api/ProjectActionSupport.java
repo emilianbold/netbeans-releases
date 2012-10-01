@@ -48,8 +48,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +66,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
@@ -233,6 +237,47 @@ public class ProjectActionSupport {
     private ArrayList<String> tabNames = new ArrayList<String>();
     private final Object lock = new Object();
 
+    private final class ProjectFileOperationsNotifier {
+        private final NativeProjectChangeSupport npcs;
+        private final ProjectActionEvent startPAE;
+        private ProjectActionEvent finishPAE;
+
+        public ProjectFileOperationsNotifier(NativeProjectChangeSupport npcs, ProjectActionEvent startPAE) {
+            this.npcs = npcs;
+            this.startPAE = startPAE;
+        }
+    }
+    
+    private final class FileOperationsNotifier {
+        private final Map<Project, ProjectFileOperationsNotifier> prjNotifier;
+
+        public FileOperationsNotifier(Map<Project, ProjectFileOperationsNotifier> prjNotifier) {
+            this.prjNotifier = prjNotifier;
+        }
+
+        private void onStart(ProjectActionEvent curPAE) {
+            ProjectFileOperationsNotifier notifier = prjNotifier.get(curPAE.getProject());
+            if (notifier != null && (notifier.npcs != null) && (curPAE == notifier.startPAE)) {
+                notifier.npcs.fireFileOperationsStarted();
+            }
+        }
+
+        public void onFinish(ProjectActionEvent curPAE) {
+            ProjectFileOperationsNotifier notifier = prjNotifier.get(curPAE.getProject());
+            if (notifier != null && (notifier.npcs != null) && (curPAE == notifier.finishPAE)) {
+                notifier.npcs.fireFileOperationsFinished();
+            }
+        }
+
+        private void finishAll() {
+            for (ProjectFileOperationsNotifier notifier : prjNotifier.values()) {
+                if (notifier.npcs != null) {
+                    notifier.npcs.fireFileOperationsFinished();
+                }
+            }
+        }
+    }
+    
     private final class HandleEvents implements ExecutionListener {
 
         private InputOutput ioTab = null;
@@ -249,12 +294,14 @@ public class ProjectActionSupport {
         private final ProjectActionHandler customHandler;
         private ProjectActionHandler currentHandler = null;
         private final boolean reuseTabs;
+        private final FileOperationsNotifier fon;
 
         public HandleEvents(ProjectActionEvent[] paes, ProjectActionHandler customHandler) {
             this.paes = paes;
             this.customHandler = customHandler;
             currentAction = 0;
             reuseTabs = MakeOptions.getInstance().getReuse();
+            fon = getFileOperationsNotifier(paes);
             if (reuseTabs) {
                 synchronized (lock) {
                     if (mainTabHandler == null) {
@@ -477,6 +524,7 @@ public class ProjectActionSupport {
                     out.close();
                 }
             }
+            fon.finishAll();
         }
         
         private void go() {
@@ -606,8 +654,61 @@ public class ProjectActionSupport {
                     action.executionStarted(pid);
                 }
             }
+            fon.onStart(paes[currentAction]);
         }
 
+        private FileOperationsNotifier getFileOperationsNotifier(ProjectActionEvent[] paes) {
+            Map<Project, ProjectFileOperationsNotifier> prj2Notifier = new HashMap<Project, ProjectFileOperationsNotifier>();
+            for (ProjectActionEvent pae : paes) {
+                if (isFileOperationsIntensive(pae)) {
+                    Project project = pae.getProject();
+                    ProjectFileOperationsNotifier notifer = prj2Notifier.get(project);
+                    if (notifer == null) {
+                        NativeProjectChangeSupport npcs = null;
+                        try {
+                            npcs = project.getLookup().lookup(NativeProjectChangeSupport.class);
+                            if (npcs == null) {
+                                NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
+                                if (nativeProject instanceof NativeProjectChangeSupport) {
+                                    npcs = (NativeProjectChangeSupport)nativeProject;
+                                }
+                            }
+                        } catch (Exception e) {
+                            // This may be ok. The project could have been removed ....
+                            System.err.println("getNativeProject " + e);
+                        }                        
+                        notifer = new ProjectFileOperationsNotifier(npcs, pae);
+                        prj2Notifier.put(project, notifer);
+                    }
+                    notifer.finishPAE = pae;
+                }
+            }
+            return new FileOperationsNotifier(prj2Notifier);
+        }
+        
+        private boolean isFileOperationsIntensive(ProjectActionEvent pae) {
+            Type type = pae.getType();
+            if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS) {
+                return true;
+            }
+            return false;
+        }
+        
+        public NativeProjectChangeSupport getNativeProjectChangeSupport(Project project) {
+            NativeProject nativeProject = null;
+            try {
+                nativeProject = project.getLookup().lookup(NativeProject.class);
+            } catch (Exception e) {
+                // This may be ok. The project could have been removed ....
+                System.err.println("getNativeProject " + e);
+            }
+            if (nativeProject instanceof NativeProjectChangeSupport) {
+                return (NativeProjectChangeSupport) nativeProject;
+            } else {
+                return null;
+            }
+        }
+        
         @Override
         public void executionFinished(int rc) {
             if (additional != null) {
@@ -615,11 +716,13 @@ public class ProjectActionSupport {
                     ((ExecutionListener) action).executionFinished(rc);
                 }
             }
-            Type type = paes[currentAction].getType();
-            if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS || type == PredefinedType.RUN) {
+            ProjectActionEvent curPAE = paes[currentAction];
+            Type type = curPAE.getType();
+            if (isFileOperationsIntensive(curPAE) || type == PredefinedType.RUN) {
                 // Refresh all files
-                refreshProjectFiles(paes[currentAction].getProject());
+                refreshProjectFiles(curPAE.getProject());
             }
+            fon.onFinish(curPAE);
             if (currentAction >= paes.length - 1 || rc != 0) {
                 synchronized (lock) {
                     if (mainTabHandler == this) {
