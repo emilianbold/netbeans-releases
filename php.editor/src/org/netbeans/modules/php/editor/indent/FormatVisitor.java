@@ -492,12 +492,35 @@ public class FormatVisitor extends DefaultVisitor {
     public void visit(ClassInstanceCreation node) {
         scan(node.getClassName());
         if (node.ctorParams() != null && node.ctorParams().size() > 0) {
-            formatTokens.add(new FormatToken.IndentToken(node.getClassName().getEndOffset(), options.continualIndentSize));
-            scan(node.ctorParams());
-            formatTokens.add(new FormatToken.IndentToken(node.ctorParams().get(node.ctorParams().size() - 1).getEndOffset(), -1 * options.continualIndentSize));
+            boolean addIndentation = (path.size() > 2 && (path.get(1) instanceof ArrayElement) && (path.get(2) instanceof ArrayCreation));
+            if (addIndentation) {
+                formatTokens.add(new FormatToken.IndentToken(node.getClassName().getEndOffset(), options.continualIndentSize));
+            }
+            processArguments(node.ctorParams());
+            if (addIndentation) {
+                formatTokens.add(new FormatToken.IndentToken(node.ctorParams().get(node.ctorParams().size() - 1).getEndOffset(), -1 * options.continualIndentSize));
+            }
             addAllUntilOffset(node.getEndOffset());
         } else {
             super.visit(node);
+        }
+    }
+
+    private void processArguments(final List<Expression> arguments) {
+        while (ts.moveNext() && ts.offset() < arguments.get(0).getStartOffset()
+                && lastIndex < ts.index()) {
+            addFormatToken(formatTokens);
+        }
+        ts.movePrevious();
+        addUnbreakalbeSequence(arguments.get(0), true);
+        for (int i = 1; i < arguments.size(); i++) {
+            if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
+                addFormatToken(formatTokens);
+            } else {
+                ts.movePrevious();
+            }
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_ARGUMENT_LIST, ts.offset() + ts.token().length()));
+            addUnbreakalbeSequence(arguments.get(i), false);
         }
     }
 
@@ -842,25 +865,11 @@ public class FormatVisitor extends DefaultVisitor {
         scan(node.getFunctionName());
         List<Expression> parameters = node.getParameters();
         if (parameters != null && parameters.size() > 0) {
-            boolean addIndentation = !(path.get(1) instanceof Assignment || (path.size() > 2 && path.get(1) instanceof MethodInvocation && path.get(2) instanceof Assignment));
+            boolean addIndentation = !(path.get(1) instanceof ReturnStatement || path.get(1) instanceof Assignment || (path.size() > 2 && path.get(1) instanceof MethodInvocation && path.get(2) instanceof Assignment));
             if (addIndentation) {
                 formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
             }
-            while (ts.moveNext() && ts.offset() < parameters.get(0).getStartOffset()
-                    && lastIndex < ts.index()) {
-                addFormatToken(formatTokens);
-            }
-            ts.movePrevious();
-            addUnbreakalbeSequence(parameters.get(0), true);
-            for (int i = 1; i < parameters.size(); i++) {
-                if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
-                    addFormatToken(formatTokens);
-                } else {
-                    ts.movePrevious();
-                }
-                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_ARGUMENT_LIST, ts.offset() + ts.token().length()));
-                addUnbreakalbeSequence(parameters.get(i), false);
-            }
+            processArguments(parameters);
             if (addIndentation) {
                 List<FormatToken> removed = new ArrayList<FormatToken>();
                 FormatToken ftoken = formatTokens.get(formatTokens.size() - 1);

@@ -236,11 +236,6 @@ public class PHPFormatterTemplateTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/templates/issue184141.php", options, true);
     }
 
-    public void testIssue185353_06() throws Exception {
-        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/issue185353_06.php", options, true);
-    }
-
     // The test file containscharacters that are converted by default setting of netbeans.
     // Don't edit the test file in NetBeans!!!
     public void testIssue185435_01() throws Exception {
