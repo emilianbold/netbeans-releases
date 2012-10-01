@@ -63,6 +63,7 @@ import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -507,28 +508,25 @@ retry:  while (true) {
     public void scheduleTasks (Class<? extends Scheduler> schedulerType) {
         //S ystem.out.println("scheduleTasks " + schedulerType);
         final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
-        final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
+        final List<Pair<SchedulerTask,Class<? extends Scheduler>>> add = new ArrayList<Pair<SchedulerTask,Class<? extends Scheduler>>> ();
         Collection<SchedulerTask> tsks = createTasks();
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             for (SchedulerTask task : tsks) {
-                if (schedulerType == null ||
-                    task.getSchedulerClass () == schedulerType ||
-                    task instanceof EmbeddingProvider
-                ) {
-                    if (pendingTasks.remove (task)) {
-                        add.add (task);
-                    }
-                    else {
+                if (schedulerType == null || task instanceof EmbeddingProvider) {
+                    if (!pendingTasks.remove (task)) {
                         remove.add (task);
-                        //S ystem.out.println ("  remove: " + task);
-                        add.add (task);
+                    }                   
+                    add.add (Pair.<SchedulerTask,Class<? extends Scheduler>>of(task,null));
+                } else if (task.getSchedulerClass () == schedulerType) {
+                    if (!pendingTasks.remove (task)) {
+                        remove.add (task);
                     }
-                    //S ystem.out.println ("  add: " + task);
+                    add.add (Pair.<SchedulerTask,Class<? extends Scheduler>>of(task,schedulerType));
                 }
             }
-        }
+        }        
         if (!add.isEmpty ()) {
-            TaskProcessor.updatePhaseCompletionTask(add, remove, source, this, schedulerType);
+            TaskProcessor.updatePhaseCompletionTask(add, remove, source, this);
         }
     }
 
@@ -557,17 +555,13 @@ retry:  while (true) {
         SourceModificationEvent sourceModificationEvent = SourceAccessor.getINSTANCE ().getSourceModificationEvent (source);
         if (sourceModificationEvent == null)
             return;
-        Map<Class<? extends Scheduler>,SchedulerEvent> schedulerEvents = new HashMap<Class<? extends Scheduler>, SchedulerEvent> ();
-        for (Scheduler scheduler : Schedulers.getSchedulers ()) {
-            SchedulerEvent schedulerEvent = SchedulerAccessor.get ().createSchedulerEvent (scheduler, sourceModificationEvent);
-            if (schedulerEvent != null)
-                schedulerEvents.put (scheduler.getClass (), schedulerEvent);
-        }
-        SourceAccessor.getINSTANCE ().setSchedulerEvents (source, schedulerEvents);
-        if (schedulerEvents.isEmpty ())
+        final Map<Class<? extends Scheduler>,? extends SchedulerEvent> schedulerEvents =
+                SourceAccessor.getINSTANCE ().createSchedulerEvents (source, Schedulers.getSchedulers (), sourceModificationEvent);
+        if (schedulerEvents.isEmpty ()) {
             return;
+        }
         final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
-        final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
+        final List<Pair<SchedulerTask,Class<? extends Scheduler>>> add = new ArrayList<Pair<SchedulerTask,Class<? extends Scheduler>>>();
         Collection<SchedulerTask> tsks = createTasks();
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             for (SchedulerTask task : tsks) {
@@ -576,19 +570,14 @@ retry:  while (true) {
                     !schedulerEvents.containsKey (schedulerClass)
                 )
                     continue;
-                if (pendingTasks.remove (task)) {
-                    add.add (task);
-                }
-                else {
+                if (!pendingTasks.remove (task)) {
                     remove.add (task);
-                    //S ystem.out.println ("  remove: " + task);
-                    add.add (task);
                 }
-                //S ystem.out.println ("  add: " + task);
+                add.add (Pair.<SchedulerTask,Class<? extends Scheduler>>of(task,null));
             }
         }
         if (!add.isEmpty ()) {
-            TaskProcessor.updatePhaseCompletionTask (add, remove, source, this, null);
+            TaskProcessor.updatePhaseCompletionTask (add, remove, source, this);
         }
     }
     
