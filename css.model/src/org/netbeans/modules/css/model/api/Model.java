@@ -43,7 +43,6 @@ package org.netbeans.modules.css.model.api;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import org.netbeans.modules.css.live.LiveUpdater;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -51,7 +50,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -67,16 +65,12 @@ import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.live.LiveUpdater;
 import org.netbeans.modules.css.model.ModelAccess;
 import org.netbeans.modules.css.model.impl.ElementFactoryImpl;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.LexerUtils;
-import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -110,6 +104,8 @@ public final class Model {
     private ElementFactory ELEMENT_FACTORY;
     private static final Map<CssParserResult, Reference<Model>> PR_MODEL_CACHE = new WeakHashMap<CssParserResult, Reference<Model>>();
 
+    private boolean changesApplied;
+    
     /**
      * Gets the Model instance for given CssParserResult.
      *
@@ -207,6 +203,9 @@ public final class Model {
      * @param runnable
      */
     public void runWriteTask(final ModelTask runnable) {
+        if(changesApplied) {
+            throw new IllegalStateException("trying to write to already saved model!"); //NOI18N
+        }
         MODEL_MUTEX.writeAccess(new Runnable() {
             @Override
             public void run() {
@@ -215,7 +214,7 @@ public final class Model {
         });
         support.firePropertyChange(MODEL_WRITE_TASK_FINISHED, null, null);
     }
-
+    
     public CharSequence getOriginalSource() {
         return getLookup().lookup(CharSequence.class);
     }
@@ -263,6 +262,9 @@ public final class Model {
      *
      */
     public void applyChanges() throws IOException, BadLocationException {
+        if(changesApplied) {
+            throw new IllegalStateException("Trying to save already saved model!");
+        }
         Document doc = getLookup().lookup(Document.class);
         if (doc == null) {
             throw new IOException("Not document based model instance!"); //NOI18N
@@ -271,7 +273,10 @@ public final class Model {
         Snapshot snapshot = getLookup().lookup(Snapshot.class);
         applyChanges_AtomicLock(doc, new SnapshotOffsetConvertor(snapshot));
 
+        changesApplied = true;
+        LOGGER.log(Level.INFO, "{0}: changes applied to document", this);
         support.firePropertyChange(CHANGES_APPLIED_TO_DOCUMENT, null, null);
+        
     }
 
     private void applyChanges_AtomicLock(final Document document, final OffsetConvertor convertor) throws IOException, BadLocationException {
@@ -412,10 +417,6 @@ public final class Model {
 
         }
 
-        FileObject file = getLookup().lookup(FileObject.class);
-        String filename = file == null ? "???" : file.getNameExt();
-        LOGGER.log(Level.INFO, "Changes applied to document for {0}", filename);
-
         saveIfNotOpenInEditor(document);
     }
 
@@ -469,9 +470,15 @@ public final class Model {
 
     @Override
     public String toString() {
-        return new StringBuilder().append(super.toString())
-                .append("file=")
-                .append(getLookup().lookup(FileObject.class))
+        FileObject file = getLookup().lookup(FileObject.class);
+        return new StringBuilder()
+                .append(getClass().getSimpleName())
+                .append(':')
+                .append(System.identityHashCode(this))
+                .append(", file=")
+                .append(file != null ? file.getNameExt() : null)
+                .append(", saved=")
+                .append(changesApplied)
                 .toString();
     }
 
