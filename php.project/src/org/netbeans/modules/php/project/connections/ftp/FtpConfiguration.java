@@ -196,7 +196,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
         }
         String thisPassword = getPassword();
         String otherPassword = other.getPassword();
-        if ((thisPassword == null) ? (otherPassword != null) : !thisPassword.equals(otherPassword)) {
+        if (!thisPassword.equals(otherPassword)) {
             return false;
         }
         return true;
@@ -208,7 +208,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
         hash = 97 * hash + (host != null ? host.hashCode() : 0);
         hash = 97 * hash + port;
         hash = 97 * hash + (userName != null ? userName.hashCode() : 0);
-        hash = 97 * hash + (password != null ? password.hashCode() : 0);
+        hash = 97 * hash + getPassword().hashCode();
         return hash;
     }
 

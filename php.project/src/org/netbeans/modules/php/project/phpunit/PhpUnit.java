@@ -216,6 +216,7 @@ public final class PhpUnit extends PhpProgram {
             }
         } else {
             // test does not exist yet
+            assert phpClass.getFullyQualifiedName() != null : "No FQN for php class: " + phpClass.getName();
             if (!generateTestInternal(configFiles, phpClass.getFullyQualifiedName(), sourceFo, workingDirectory)) {
                 // test not generated
                 return null;
@@ -527,10 +528,12 @@ public final class PhpUnit extends PhpProgram {
                                 // comment about %INCLUDE_PATH%, let's skip it
                                 continue;
                             }
+                            String includePath = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.INCLUDE_PATH);
+                            assert includePath != null : "Include path should be always present";
                             line = processIncludePath(
                                     finalBootstrap,
                                     line,
-                                    ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.INCLUDE_PATH),
+                                    includePath,
                                     FileUtil.toFile(project.getProjectDirectory()));
                         }
                         out.write(line);
