@@ -992,7 +992,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             }
             CodeStyle codeStyle = CodeStyle.get(EditorRegistry.lastFocusedComponent().getDocument());
             boolean appendSpace = true;
-            String name = null;
+            String name;
             switch (type) {
                 case SIMPLE:
                     return null;
