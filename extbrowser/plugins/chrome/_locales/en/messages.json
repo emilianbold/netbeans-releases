@@ -25,6 +25,14 @@
         "message": "Show Help"
     },
 
+    // select mode
+    "_StartSelectMode": {
+        "message": "Start Select Mode"
+    },
+    "_StopSelectMode": {
+        "message": "Stop Select Mode"
+    },
+
     // presets
     "_Desktop": {
         "message": "Desktop"

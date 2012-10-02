@@ -136,7 +136,7 @@ NetBeans.updateContextMenu = function() {
 
 // Returns the name of 'Select Mode' context menu
 NetBeans.contextMenuName = function() {
-    return NetBeans.getSelectionMode() ? 'Stop Select Mode' : 'Start Select Mode';
+    return chrome.i18n.getMessage(NetBeans.getSelectionMode() ? '_StopSelectMode' : '_StartSelectMode');
 };
 
 // show infobar
