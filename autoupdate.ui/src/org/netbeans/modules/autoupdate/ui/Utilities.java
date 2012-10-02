@@ -117,19 +117,6 @@ public class Utilities {
                     res.add(cat);
                     names.add(catName);
                 }
-                String licenseId = el == null ? null : el.getLicenseId();
-                if (licenseId != null) {
-                    if (licenseId.contains(",")) {
-                        if (getAcceptedLicenseIds().addAll(Arrays.asList(licenseId.split(",")))) {
-                            logger.fine("License ID - Yet another licenses " + licenseId + " was accepted during installation.");
-                        }
-
-                    } else {
-                        if (getAcceptedLicenseIds().add(licenseId)) {
-                            logger.fine("License ID - Yet another license " + licenseId + " was accepted during installation.");
-                        }
-                    }
-                }
             }
         }
         logger.log(Level.FINER, "makeInstalledCategories (" + units.size() + ") returns " + res.size());
