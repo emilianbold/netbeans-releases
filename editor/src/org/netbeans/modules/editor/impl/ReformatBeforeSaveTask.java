@@ -172,11 +172,13 @@ public class ReformatBeforeSaveTask implements OnSaveTask {
                     int endOffset = modElementEndOffset;
                     do {
                         if (guardedBlockStartPos != null) {
+                            int guardedStartOffset = guardedBlockStartPos.getOffset();
+                            int guardedEndOffset = guardedBlockEndPos.getOffset();
                             BlockCompare blockCompare = BlockCompare.get(
                                     startOffset,
                                     endOffset,
-                                    guardedBlockStartPos.getOffset(),
-                                    guardedBlockEndPos.getOffset());
+                                    guardedStartOffset,
+                                    guardedEndOffset);
                             if (blockCompare.before()) {
                                 add = true;
                                 modElementFinished = true;
@@ -189,19 +191,25 @@ public class ReformatBeforeSaveTask implements OnSaveTask {
                                 add = false;
                                 modElementFinished = true;
                             } else if (blockCompare.overlapStart()) {
-                                endOffset = guardedBlockStartPos.getOffset();
+                                endOffset = guardedStartOffset;
                                 add = true;
                                 modElementFinished = true;
                             } else if (blockCompare.overlapEnd()) {
                                 // Skip part covered by guarded block
-                                endOffset = guardedBlockEndPos.getOffset();
+                                endOffset = guardedEndOffset;
                                 fetchNextGuardedBlock();
                                 add = false;
                                 modElementFinished = false;
                             } else if (blockCompare.contains()) {
-                                endOffset = guardedBlockStartPos.getOffset();
-                                add = true;
-                                modElementFinished = false;
+                                if (blockCompare.equalStart()) {
+                                    startOffset = guardedEndOffset;
+                                    add = true;
+                                    modElementFinished = true;
+                                } else {
+                                    endOffset = guardedStartOffset;
+                                    add = true;
+                                    modElementFinished = false;
+                                }
                             } else if (blockCompare.inside()) {
                                 add = false;
                                 modElementFinished = true;
