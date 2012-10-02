@@ -39,13 +39,14 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.csl;
+package org.netbeans.modules.css.lib.api;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  *
+ * @since 1.14
  * @author mfukala@netbeans.org
  */
 public enum CssColor {
