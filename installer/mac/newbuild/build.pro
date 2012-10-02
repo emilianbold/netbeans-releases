@@ -9,17 +9,17 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="7.2"/>
-    <property name="appname" value="NetBeans 7.2"/> 
-    <property name="mpkg.name_nb" value="NetBeans 7.2"/> 
+    <property name="baseide.version" value="7.2.1"/>
+    <property name="appname" value="NetBeans 7.2.1"/> 
+    <property name="mpkg.name_nb" value="NetBeans 7.2.1"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb"/>      
     <property name="nb.check.build.number" value="0"/>
     <property name="nb.id" value="${buildnumber}"/>
 
-    <property name="appversion" value="7.2"/>
-    <property name="nb.display.version.long"  value="7.2"/>
-    <property name="nb.display.version.short" value="7.2"/>
+    <property name="appversion" value="7.2.1"/>
+    <property name="nb.display.version.long"  value="7.2.1"/>
+    <property name="nb.display.version.short" value="7.2.1"/>
 
     <property name="servicetag.source" value="NetBeans IDE ${nb.display.version.short} Installer"/>
     
@@ -146,7 +146,7 @@
     <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
     <property name="mpkg.version_jdk" value=" 7 Update 09"/> 
     <property name="jdk.bundle.files.prefix" value="jdk-7u9"/>
-    <property name="jdk.bundle.files.suffix" value="nb-7_2"/>
+    <property name="jdk.bundle.files.suffix" value="nb-7_2_1"/>
     <property name="output.jdk7.dir" value="jdk/"/>
     <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home"/>
     <property name="jdk_bits_location" value="${gf_builds_host}/java/re/jdk/7u9/promoted/fcs/b05/bundles/macosx-x64/jdk-7u9-macosx-x64.dmg"/>

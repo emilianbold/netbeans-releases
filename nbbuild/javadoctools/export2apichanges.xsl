@@ -75,7 +75,7 @@ made subject to such option by the copyright holder.
 
             <center>
                 <h1>NetBeans API Changes since Last Release</h1>
-                <h3>Version 7.2</h3>
+                <h3>Version 7.2.1</h3>
                 <xsl:if test="$date" >
                     <xsl:value-of select="$date" />
                     <p/>
@@ -117,8 +117,9 @@ made subject to such option by the copyright holder.
                 <a href="http://bits.netbeans.org/7.0/javadoc/apichanges.html">release 7.0</a>,
                 <a href="http://bits.netbeans.org/7.0.1/javadoc/apichanges.html">release 7.0.1</a>,
                 <a href="http://bits.netbeans.org/7.1/javadoc/apichanges.html">release 7.1</a>,
-                <a href="http://bits.netbeans.org/7.1.1/javadoc/apichanges.html">release 7.1.1</a>, and
-                <a href="http://bits.netbeans.org/7.1.2/javadoc/apichanges.html">release 7.1.2</a>.
+                <a href="http://bits.netbeans.org/7.1.1/javadoc/apichanges.html">release 7.1.1</a>, 
+                <a href="http://bits.netbeans.org/7.1.2/javadoc/apichanges.html">release 7.1.2</a>, and
+                <a href="http://bits.netbeans.org/7.2/javadoc/apichanges.html">release 7.2</a>.
             <xsl:call-template name="do-the-table" />
             </body>
             </html>
