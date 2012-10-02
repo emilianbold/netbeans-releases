@@ -61,12 +61,10 @@ import org.netbeans.modules.php.smarty.editor.completion.entries.SmartyCodeCompl
 public class TplCompletionQuery extends UserTask {
 
     private Document document;
-    private int offset;
     private CompletionResult completionResult;
 
-    public TplCompletionQuery(Document document, int offset) {
+    public TplCompletionQuery(Document document) {
         this.document = document;
-        this.offset = offset;
     }
 
     public CompletionResult query() throws ParseException {
