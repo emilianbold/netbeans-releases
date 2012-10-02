@@ -60,6 +60,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.beaninfo.editors.HtmlBrowser;
 import org.netbeans.core.ProxySettings;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -75,6 +76,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords={"#KW_General"}, location=OptionsDisplayer.GENERAL)
 public class GeneralOptionsPanel extends JPanel implements ActionListener {
     
     private boolean                 changed = false;

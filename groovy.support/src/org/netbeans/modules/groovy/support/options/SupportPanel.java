@@ -56,8 +56,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -69,6 +71,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Adamek
  */
+@OptionsPanelController.Keywords(keywords={"groovy", "grails"}, location=OptionsDisplayer.ADVANCED, tabTitle="Groovy")
 final class SupportPanel extends javax.swing.JPanel {
 
     private final Collection<GroovyOptionsSubpanel> subpanels;

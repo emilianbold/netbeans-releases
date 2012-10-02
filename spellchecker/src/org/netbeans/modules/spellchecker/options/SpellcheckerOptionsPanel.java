@@ -82,11 +82,13 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.spellchecker.ComponentPeer;
 import org.netbeans.modules.spellchecker.DefaultLocaleQueryImplementation;
 import org.netbeans.modules.spellchecker.DictionaryProviderImpl;
 import org.netbeans.modules.spellchecker.options.DictionaryInstallerPanel.DictionaryDescription;
 import org.netbeans.modules.spellchecker.spi.dictionary.DictionaryProvider;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -102,6 +104,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
+@OptionsPanelController.Keywords(keywords = {"spellchecker"}, location = OptionsDisplayer.EDITOR, index = 8)
 public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
     
     private List<Locale> removedDictionaries = new ArrayList<Locale>();

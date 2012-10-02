@@ -46,6 +46,7 @@ package org.netbeans.modules.terminal;
 import java.util.prefs.Preferences;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -67,6 +68,7 @@ keywords="#KW_TerminalOptions", // NOI18N
 keywordsCategory="Advanced/TermAdvancedOption"// NOI18N
 //tooltip="#CTL_Term_options" // NOI18N
 )
+@OptionsPanelController.Keywords(keywords={"terminal"}, location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_Term_options")
 public final class TermAdvancedOption extends OptionsPanelController {
     private TermOptions termOptions;
     private TermOptions clonedTermOptions;

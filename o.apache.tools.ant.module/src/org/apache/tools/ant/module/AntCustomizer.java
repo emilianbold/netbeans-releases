@@ -59,6 +59,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbClassPath;
@@ -73,6 +75,7 @@ import org.openide.util.RequestProcessor;
  * Implementation of one panel in Options Dialog.
  * @author Jan Jancura, Jesse Glick
  */
+@OptionsPanelController.Keywords(keywords={"ant"}, location=JavaOptions.JAVA, index=0)
 public class AntCustomizer extends JPanel implements ActionListener {
     
     private List<File> classpath = Collections.emptyList();

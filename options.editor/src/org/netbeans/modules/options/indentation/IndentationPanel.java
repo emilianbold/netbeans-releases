@@ -79,10 +79,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
@@ -96,6 +98,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords={"indentation"}, location=OptionsDisplayer.EDITOR, index=1)
 public class IndentationPanel extends JPanel implements ChangeListener, ActionListener, PreferenceChangeListener {
 
     private static final Logger LOG = Logger.getLogger(IndentationPanel.class.getName());

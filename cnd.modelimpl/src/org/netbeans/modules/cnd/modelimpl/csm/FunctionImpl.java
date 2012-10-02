@@ -813,6 +813,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     public static class FunctionBuilder extends SimpleDeclarationBuilder {
     
+        @Override
         public FunctionImpl create() {
             CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), false);
 
@@ -820,10 +821,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             temporaryRepositoryRegistration(true, fun);
 
             StringBuilder clsTemplateSuffix = new StringBuilder();
+            
             //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
             //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
 
-            //functionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+            if(getTemplateDescriptorBuilder() != null) {
+                fun.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
+            }
 
             fun.setReturnType(getType());
             ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(fun);

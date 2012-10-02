@@ -47,11 +47,14 @@ package org.netbeans.modules.bugtracking.util;
 import java.awt.CardLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
  * @author Tomas Stupka
  */
+@OptionsPanelController.Keywords(keywords={"issue tracking"}, location=OptionsDisplayer.ADVANCED, tabTitle="#LBL_IssueTracking")
 class BugtrackingOptionsPanel extends javax.swing.JPanel {
     
     /** Creates new form VcsAdvancedOptionsPanel */

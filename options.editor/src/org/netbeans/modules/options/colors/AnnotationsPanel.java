@@ -71,7 +71,9 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.options.colors.spi.FontsColorsController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.ColorComboBox;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -80,6 +82,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords = {"annotations"}, location = OptionsDisplayer.FONTSANDCOLORS, index = 2)
 public class AnnotationsPanel extends JPanel implements ActionListener, 
     ItemListener, FontsColorsController {
     
