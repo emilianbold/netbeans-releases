@@ -3452,7 +3452,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
             boolean b = (newWork instanceof RootsWork);
             if (b) {
-                follow.add(new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), getLogContext()));
+                follow.add(new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), LogContext.createAndAbsorb(getLogContext())));
                 LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
             }
             return b;
@@ -3600,7 +3600,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
             boolean b = (newWork instanceof RootsWork);
             if (b) {
-                follow.add(new RefreshEifIndices(eifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), getLogContext()));
+                follow.add(new RefreshEifIndices(eifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), LogContext.createAndAbsorb(getLogContext())));
                 LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
             }
             return b;
