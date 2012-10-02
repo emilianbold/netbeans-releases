@@ -216,6 +216,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
                 completeOperators(completionProposals, request);
                 break;
             case NONE:
+                completeAll(completionProposals, request);
                 break;
             default:
                 completeAll(completionProposals, request);
