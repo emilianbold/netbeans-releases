@@ -45,14 +45,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.php.editor.lexer.LexUtilities;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.util.Exceptions;
 
 /**
@@ -352,7 +351,7 @@ public class PHPNewLineIndenter {
 
         if (token.id() == PHPTokenId.PHP_OPENTAG && ts.moveNext()) {
             // we are at the begining of the php blog
-            token = LexUtilities.findNext(ts, Arrays.asList(
+            LexUtilities.findNext(ts, Arrays.asList(
                     PHPTokenId.WHITESPACE,
                     PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
                     PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
@@ -431,7 +430,7 @@ public class PHPNewLineIndenter {
             } else if ((token.id() == PHPTokenId.PHP_SEMICOLON || token.id() == PHPTokenId.PHP_OPENTAG)
                     && ts.moveNext()) {
                 // we found previous end of expression => find begin of the current.
-                token = LexUtilities.findNext(ts, Arrays.asList(
+                LexUtilities.findNext(ts, Arrays.asList(
                         PHPTokenId.WHITESPACE,
                         PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
                         PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
@@ -478,7 +477,7 @@ public class PHPNewLineIndenter {
                             }
                         }
                         if (parentBalance == 1 && ts.movePrevious()) {
-                            token = LexUtilities.findPrevious(ts, Arrays.asList(
+                            LexUtilities.findPrevious(ts, Arrays.asList(
                                     PHPTokenId.WHITESPACE,
                                     PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
                                     PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
@@ -502,7 +501,7 @@ public class PHPNewLineIndenter {
                 curlyBalance--;
                 if (curlyBalance == -1 && ts.moveNext()) {
                     // we are after previous blog close
-                    token = LexUtilities.findNext(ts, Arrays.asList(
+                    LexUtilities.findNext(ts, Arrays.asList(
                             PHPTokenId.WHITESPACE,
                             PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
                             PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
@@ -518,7 +517,7 @@ public class PHPNewLineIndenter {
                 curlyBalance++;
                 if (curlyBalance == 1 && ts.moveNext()) {
                     // we are at the begining of a blog
-                    token = LexUtilities.findNext(ts, Arrays.asList(
+                    LexUtilities.findNext(ts, Arrays.asList(
                             PHPTokenId.WHITESPACE,
                             PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
                             PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
@@ -539,7 +538,7 @@ public class PHPNewLineIndenter {
 
         if (!ts.movePrevious()) {
             // we are at the first php line
-            token = LexUtilities.findNext(ts, Arrays.asList(
+            LexUtilities.findNext(ts, Arrays.asList(
                     PHPTokenId.WHITESPACE,
                     PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
                     PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
@@ -558,14 +557,14 @@ public class PHPNewLineIndenter {
      * @param ts
      * @return -1 if is not by case or offset of the case keyword
      */
-    private int breakProceededByCase(TokenSequence ts) {
+    private int breakProceededByCase(TokenSequence<? extends PHPTokenId> ts) {
         int retunValue = -1;
         int origOffset = ts.offset();
 
         if (ts.movePrevious()) {
             if (semicolonProceededByBreak(ts)) {
                 while (ts.movePrevious()) {
-                    TokenId tid = ts.token().id();
+                    PHPTokenId tid = ts.token().id();
 
                     if (tid == PHPTokenId.PHP_CASE) {
                         retunValue = ts.offset();
@@ -629,15 +628,15 @@ public class PHPNewLineIndenter {
 
     private static class ScopeDelimiter {
 
-        private TokenId tokenId;
+        private PHPTokenId tokenId;
         private String tokenContent;
         private int indentDelta;
 
-        public ScopeDelimiter(TokenId tokenId, int indentDelta) {
+        public ScopeDelimiter(PHPTokenId tokenId, int indentDelta) {
             this(tokenId, null, indentDelta);
         }
 
-        public ScopeDelimiter(TokenId tokenId, String tokenContent, int indentDelta) {
+        public ScopeDelimiter(PHPTokenId tokenId, String tokenContent, int indentDelta) {
             this.tokenId = tokenId;
             this.tokenContent = tokenContent;
             this.indentDelta = indentDelta;
