@@ -97,11 +97,6 @@ NetBeans.createContextMenu = function(tabId, url) {
         if (index !== -1) {
             url = url.substr(0, index);
         }
-        // Remove query string
-        index = url.indexOf('?');
-        if (index !== -1) {
-            url = url.substr(0, index);
-        }
         return url;
     };
     NetBeans.contextMenuUrl = baseUrl(url);

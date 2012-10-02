@@ -3681,7 +3681,7 @@ public abstract class CslTestBase extends NbTestCase {
                 List<Hint> descsOnLine = null;
                 int underlineStart = -1;
                 int underlineEnd = -1;
-                for (int i = lineStart; i <= lineEnd; i++) {
+                for (int i = lineStart; i <= lineEnd && i < text.length(); i++) {
                     if (i == caretOffset) {
                         sb.append("^");
                     }
