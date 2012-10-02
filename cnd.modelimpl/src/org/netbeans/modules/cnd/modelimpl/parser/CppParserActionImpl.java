@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl.TypedefBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl.UsingDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl.UsingDirectiveBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.VariableDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl.VariableBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.DeclaratorBuilder;
@@ -679,7 +680,13 @@ public class CppParserActionImpl implements CppParserActionEx {
 
                     builder.create();                
                 } else {
-                    VariableBuilder builder = new VariableBuilder(currentContext.file.getParsingFileContent());
+                    CharSequence name = declBuilder.getDeclaratorBuilder().getName();
+                    VariableBuilder builder;
+                    if(name != null && !name.toString().contains("::")) { //NOI18N
+                        builder = new VariableBuilder();
+                    } else {
+                        builder = new VariableDefinitionImpl.VariableDefinitionBuilder();
+                    }
 
                     CsmObjectBuilder parent = builderContext.top(1);
                     builder.setParent(parent);
@@ -688,7 +695,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                     builder.setStartOffset(declBuilder.getStartOffset());
                     builder.setEndOffset(((APTToken)token).getOffset());
 
-                    builder.setName(declBuilder.getDeclaratorBuilder().getName());
+                    builder.setName(name);
                     builder.setTypeBuilder(declBuilder.getTypeBuilder());
                     builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());
 
