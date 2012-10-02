@@ -50,7 +50,6 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -121,10 +120,6 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class PHPBracketCompleter implements KeystrokeHandler {
-//    /** When true, automatically reflows comments that are being edited according to the rdoc
-//     * conventions as well as the right hand side margin
-//     */
-//    private static final boolean REFLOW_COMMENTS = Boolean.getBoolean("ruby.autowrap.comments"); // NOI18N
 
     // XXX: this should made it to options and be supported in java for example
     /** When true, continue comments if you press return in a line comment (that does not
@@ -138,13 +133,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE
     };
 
-//    /** Tokens which indicate that we're within a regexp string */
-//    // XXX What about PHPTokenId.PHP_REGEXP_BEGIN?
-//    private static final TokenId[] REGEXP_TOKENS = { PHPTokenId.PHP_REGEXP_LITERAL, PHPTokenId.PHP_REGEXP_END };
-//
-//    /** Used in =begin/=end completion */
-//    private final static String EQ_BEGIN = "=begin"; // NOI18N
-//
     /** When != -1, this indicates that we previously adjusted the indentation of the
      * line to the given offset, and if it turns out that the user changes that token,
      * we revert to the original indentation
@@ -351,77 +339,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             // Pressed return on a blank newline - do nothing
             return -1;
         }
-// XXX: heredoc
-//        // Look for an unterminated heredoc string
-//        if (lineBegin != -1 && lineEnd != -1) {
-//            TokenSequence<?extends PHPTokenId> lineTs = LexUtilities.getPHPTokenSequence(doc, offset);
-//            if (lineTs != null) {
-//                lineTs.move(lineBegin);
-//                StringBuilder sb = new StringBuilder();
-//                while (lineTs.moveNext() && lineTs.offset() <= lineEnd) {
-//                    Token<?extends PHPTokenId> token = lineTs.token();
-//                    TokenId id = token.id();
-//
-//                    if (id == PHPTokenId.PHP_STRING_BEGIN) {
-//                        String text = token.text().toString();
-//                        if (text.startsWith("<<") && insertMatching) {
-//                            StringBuilder markerBuilder = new StringBuilder();
-//
-//                            for (int i = 2, n = text.length(); i < n; i++) {
-//                                char c = text.charAt(i);
-//
-//                                if ((c == '\n') || (c == '\r')) {
-//                                    break;
-//                                }
-//
-//                                markerBuilder.append(c);
-//                            }
-//
-//                            String marker = markerBuilder.toString();
-//
-//                            // Handle indented heredoc
-//                            if (marker.startsWith("-")) {
-//                                marker = marker.substring(1);
-//                            }
-//
-//                            if ((marker.startsWith("'") && marker.endsWith("'")) ||
-//                                    ((marker.startsWith("\"") && marker.endsWith("\"")))){
-//                                marker = marker.substring(1, marker.length()-2);
-//                            }
-//
-//
-//                            // Next token should be string contents or a string end marker
-//                            //boolean addEndMarker = true;
-//
-//                            TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
-//                            ts.move(offset);
-//                            // XXX No, this is bogus, find a better way to detect whether the string is matched,
-//                            // perhaps using "find matching?"
-//
-//                            OffsetRange range = LexUtilities.findHeredocEnd(ts, token);
-//                            if (range == OffsetRange.NONE) {
-//                                sb.append("\n");
-//                                sb.append(marker);
-//                                //sb.append("\n");
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                if (sb.length() > 0) {
-//                    if (lineEnd == doc.getLength()) {
-//                        // At the end of the buffer we need a newline after the end
-//                        // marker. On other lines, we don't.
-//                        sb.append("\n");
-//                    }
-//
-//                    doc.insertString(lineEnd, sb.toString(), null);
-//                    caret.setDot(lineEnd);
-//
-//                    return -1;
-//                }
-//            }
-//        }
 
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
 
@@ -503,21 +420,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             return -1;
         }
 
-
-        // XXX: this may not be neccessary, at least not for }
-        // Special case: since I do hash completion, if you try to type
-        //     y = Thread.start {
-        //         code here
-        //     }
-        // you end up with
-        //     y = Thread.start {|}
-        // If you hit newline at this point, you end up with
-        //     y = Thread.start {
-        //     |}
-        // which is not as helpful as it would be if we were not doing hash-matching
-        // (in that case we'd notice the brace imbalance, and insert the closing
-        // brace on the line below the insert position, and indent properly.
-        // Catch this scenario and handle it properly.
         if ((id == PHPTokenId.PHP_CURLY_CLOSE || LexUtilities.textEquals(token.text(), ']') || LexUtilities.textEquals(token.text(), ')')) // NOI18N
                 /*&& (Utilities.getRowLastNonWhite(doc, offset) == offset)*/) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
@@ -700,16 +602,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         }
 
         if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END) {
-            if (id == PHPTokenId.PHP_COMMENT_START && offset == ts.offset()) {
-////                int indent = GsfUtilities.getLineIndent(doc, offset);
-////                String indentString = IndentUtils.createIndentString(doc, indent);
-////
-////                int insertOffset = offset; // offset < length ? offset+1 : offset;
-////                doc.insertString(insertOffset, indentString, null);
-////                caret.setDot(insertOffset);
-//                //return insertOffset;
-            }
-            else {
+            if (!(id == PHPTokenId.PHP_COMMENT_START && offset == ts.offset())) {
                 Object [] ret = beforeBreakInComments(doc, ts, offset, caret,
                     PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END);
                 return (Integer) ret[0];
@@ -1063,7 +956,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         Token<?extends PHPTokenId> token = ts.token();
         TokenId id = token.id();
         TokenId[] stringTokens = null;
-        TokenId beginTokenId = null;
 
         if (id == PHPTokenId.PHP_LINE_COMMENT && target.getSelectionStart() != -1) {
             if (ch == '*' || ch == '+' || ch == '_') {
@@ -1085,79 +977,8 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         // "/" is handled AFTER the character has been inserted since we need the lexer's help
         if (ch == '\"') {
             stringTokens = STRING_TOKENS;
-            beginTokenId = PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
         } else if (ch == '\'') {
             stringTokens = STRING_TOKENS;
-            beginTokenId = PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
-//        } else if (id == PHPTokenId.UNKNOWN_TOKEN) {
-//            String text = token.text().toString();
-//
-//            if (text.equals("%")) {
-//                // Depending on the character we're going to continue
-//                if (!Character.isLetter(ch)) { // %q, %x, etc. Only %[], %!!, %<space> etc. is allowed
-//                    stringTokens = STRING_TOKENS;
-//                    beginTokenId = PHPTokenId.PHP_QUOTED_STRING_BEGIN;
-//                }
-//            } else if ((text.length() == 2) && (text.charAt(0) == '%') &&
-//                    Character.isLetter(text.charAt(1))) {
-//                char c = text.charAt(1);
-//
-//                switch (c) {
-//                case 'q':
-//                    stringTokens = STRING_TOKENS;
-//                    beginTokenId = PHPTokenId.PHP_STRING_BEGIN;
-//
-//                    break;
-//
-//                case 'Q':
-//                    stringTokens = STRING_TOKENS;
-//                    beginTokenId = PHPTokenId.PHP_QUOTED_STRING_BEGIN;
-//
-//                    break;
-//
-//                case 'r':
-//                    stringTokens = REGEXP_TOKENS;
-//                    beginTokenId = PHPTokenId.PHP_REGEXP_BEGIN;
-//
-//                    break;
-//
-//                default:
-//                    // ?
-//                    stringTokens = STRING_TOKENS;
-//                    beginTokenId = PHPTokenId.PHP_QUOTED_STRING_BEGIN;
-//                }
-//            } else {
-//                ts.movePrevious();
-//
-//                TokenId prevId = ts.token().id();
-//
-//                if ((prevId == PHPTokenId.PHP_STRING_BEGIN) ||
-//                        (prevId == PHPTokenId.PHP_QUOTED_STRING_BEGIN)) {
-//                    stringTokens = STRING_TOKENS;
-//                    beginTokenId = prevId;
-//                } else if (prevId == PHPTokenId.PHP_REGEXP_BEGIN) {
-//                    stringTokens = REGEXP_TOKENS;
-//                    beginTokenId = PHPTokenId.PHP_REGEXP_BEGIN;
-//                }
-//            }
-//        } else if (((((id == PHPTokenId.PHP_STRING_BEGIN) || (id == PHPTokenId.PHP_QUOTED_STRING_BEGIN)) &&
-//                (caretOffset == (ts.offset() + 1))))) {
-//            if (!Character.isLetter(ch)) { // %q, %x, etc. Only %[], %!!, %<space> etc. is allowed
-//                stringTokens = STRING_TOKENS;
-//                beginTokenId = id;
-//            }
-//        } else if (((id == PHPTokenId.PHP_STRING_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
-//                (id == PHPTokenId.PHP_STRING_END)) {
-//            stringTokens = STRING_TOKENS;
-//            beginTokenId = PHPTokenId.PHP_STRING_BEGIN;
-//        } else if (((id == PHPTokenId.PHP_QUOTED_STRING_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
-//                (id == PHPTokenId.PHP_QUOTED_STRING_END)) {
-//            stringTokens = STRING_TOKENS;
-//            beginTokenId = PHPTokenId.PHP_QUOTED_STRING_BEGIN;
-//        } else if (((id == PHPTokenId.PHP_REGEXP_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
-//                (id == PHPTokenId.PHP_REGEXP_END)) {
-//            stringTokens = REGEXP_TOKENS;
-//            beginTokenId = PHPTokenId.PHP_REGEXP_BEGIN;
         }
 
         if (stringTokens != null) {
@@ -1174,31 +995,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
 
         return false;
     }
-
-    // For debugging purposes
-    // Probably obsolete - see the tokenspy utility in gsf debugging tools for better help
-    //private void dumpTokens(BaseDocument doc, int dot) {
-    //    TokenSequence< ?extends PHPTokenId> ts = LexUtilities.getTokenSequence(doc);
-    //
-    //    System.out.println("Dumping tokens for dot=" + dot);
-    //    int prevOffset = -1;
-    //    if (ts != null) {
-    //        ts.moveFirst();
-    //        int index = 0;
-    //        do {
-    //            Token<? extends PHPTokenId> token = ts.token();
-    //            int offset = ts.offset();
-    //            String id = token.id().toString();
-    //            String text = token.text().toString().replaceAll("\n", "\\\\n");
-    //            if (prevOffset < dot && dot <= offset) {
-    //                System.out.print(" ===> ");
-    //            }
-    //            System.out.println("Token " + index + ": offset=" + offset + ": id=" + id + ": text=" + text);
-    //            index++;
-    //            prevOffset = offset;
-    //        } while (ts.moveNext());
-    //    }
-    //}
 
     /**
      * A hook method called after a character was inserted into the
@@ -1219,16 +1015,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         isAfter = true;
         Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
-// XXX: reflow comments
-//        if (REFLOW_COMMENTS) {
-//            Token<?extends PHPTokenId> token = LexUtilities.getToken(doc, dotPos);
-//            if (token != null) {
-//                TokenId id = token.id();
-//                if (id == PHPTokenId.PHP_LINE_COMMENT || id == PHPTokenId.PHP_DOCUMENTATION) {
-//                    new ReflowParagraphAction().reflowEditedComment(target);
-//                }
-//            }
-//        }
 
         // See if our automatic adjustment of indentation when typing (for example) "end" was
         // premature - if you were typing a longer word beginning with one of my adjustment
@@ -1254,156 +1040,46 @@ public class PHPBracketCompleter implements KeystrokeHandler {
 
         //dumpTokens(doc, dotPos);
         switch (ch) {
-        case '}':
-        case '{':
-        case ')':
-        case ']':
-        case '(':
-        case '[': {
+            case '}':
+            case '{':
+            case ')':
+            case ']':
+            case '(':
+            case '[': {
 
-            if (!isInsertMatchingEnabled(doc)) {
-                return false;
-            }
-
-
-            Token<?extends PHPTokenId> token = LexUtilities.getToken(doc, dotPos);
-            if (token == null) {
-                return true;
-            }
-            TokenId id = token.id();
-
-            if (((id == PHPTokenId.PHP_VARIABLE) && (token.length() == 1)) ||
-                    (LexUtilities.textEquals(token.text(), '[')) || (LexUtilities.textEquals(token.text(), ']')) ||
-//                    (id == PHPTokenId.PHP_CURLY_OPEN) || (id == PHPTokenId.PHP_CURLY_CLOSE) ||
-                    (LexUtilities.textEquals(token.text(), '(')) || (LexUtilities.textEquals(token.text(), ')'))) {
-                if (ch == ']' || ch == ')') { // || ch == '}'
-                    skipClosingBracket(doc, caret, ch);
-                } else if ((ch == '[') || (ch == '(')) {//  || (ch == '{')
-                    completeOpeningBracket(doc, dotPos, caret, ch);
+                if (!isInsertMatchingEnabled(doc)) {
+                    return false;
                 }
-            } else if (id == PHPTokenId.PHP_CASTING && ch == ')') {
-                skipClosingBracket(doc, caret, ch);
-            }
 
 
-            // Reindent blocks (won't do anything if } is not at the beginning of a line
-            if (ch == '}') {
-                reindent(doc, dotPos, PHPTokenId.PHP_CURLY_CLOSE, caret);
-            }
-            else if (ch == '{') {
-                reindent(doc, dotPos, PHPTokenId.PHP_CURLY_OPEN, caret);
-            }
-        }
+                Token<?extends PHPTokenId> token = LexUtilities.getToken(doc, dotPos);
+                if (token == null) {
+                    return true;
+                }
+                TokenId id = token.id();
 
-        break;
-// XXX: ruby specific, but we may need something similar
-//        case 'd':
-//            // See if it's the end of an "end" - if so, reindent
-//            reindent(doc, dotPos, PHPTokenId.PHP_END, caret);
-//
-//            break;
-//
-//        case 'e':
-//            // See if it's the end of an "else" or an "ensure" - if so, reindent
-//            reindent(doc, dotPos, PHPTokenId.PHP_ELSE, caret);
-//            reindent(doc, dotPos, PHPTokenId.PHP_ENSURE, caret);
-//            reindent(doc, dotPos, PHPTokenId.PHP_RESCUE, caret);
-//
-//            break;
-//
-//        case 'f':
-//            // See if it's the end of an "else" - if so, reindent
-//            reindent(doc, dotPos, PHPTokenId.PHP_ELSIF, caret);
-//
-//            break;
-//
-//        case 'n':
-//            // See if it's the end of an "when" - if so, reindent
-//            reindent(doc, dotPos, PHPTokenId.PHP_WHEN, caret);
-//
-//            break;
-//
-//        case '/': {
-//            if (!isInsertMatchingEnabled(doc)) {
-//                return false;
-//            }
-//
-//            // Bracket matching for regular expressions has to be done AFTER the
-//            // character is inserted into the document such that I can use the lexer
-//            // to determine whether it's a division (e.g. x/y) or a regular expression (/foo/)
-//            Token<?extends PHPTokenId> token = LexUtilities.getToken(doc, dotPos);
-//            if (token != null) {
-//                TokenId id = token.id();
-//
-//                if (id == PHPTokenId.PHP_REGEXP_BEGIN || id == PHPTokenId.PHP_REGEXP_END) {
-//                    TokenId[] stringTokens = REGEXP_TOKENS;
-//                    TokenId beginTokenId = PHPTokenId.PHP_REGEXP_BEGIN;
-//
-//                    boolean inserted =
-//                        completeQuote(doc, dotPos, caret, ch, stringTokens, beginTokenId);
-//
-//                    if (inserted) {
-//                        caret.setDot(dotPos + 1);
-//                    }
-//
-//                    return inserted;
-//                }
-//            }
-//            break;
-//        }
-//        case '|': {
-//            if (!isInsertMatchingEnabled(doc)) {
-//                return false;
-//            }
-//
-//            Token<?extends PHPTokenId> token = LexUtilities.getToken(doc, dotPos);
-//            if (token == null) {
-//                return true;
-//            }
-//
-//            TokenId id = token.id();
-//
-//            // Ensure that we're not in a comment, strings etc.
-//            if (id == PHPTokenId.PHP_NONUNARY_OP && token.length() == 2 && "||".equals(token.text().toString())) {
-//                // Type through: |^| and type |
-//                // See if we're in a do or { block
-//                if (isBlockDefinition(doc, dotPos)) {
-//                    // It's a block so this should be a variable declaration of the form { |foo| }
-//                    // Did you type "|" in the middle? If so, should type through!
-//                    // TODO - check that we were typing in the middle, not in the front!
-//                    doc.remove(dotPos, 1);
-//                    caret.setDot(dotPos+1);
-//
-//                    return true;
-//                }
-//
-//            } else if (id == PHPTokenId.PHP_IDENTIFIER && token.length() == 1 && "|".equals(token.text().toString())) {
-//                // Only insert a matching | if there aren't any others on this line AND we're in a block
-//                if (isBlockDefinition(doc, dotPos)) {
-//                    boolean found = false;
-//                    int lineEnd = Utilities.getRowEnd(doc, dotPos);
-//                    if (lineEnd > dotPos+1) {
-//                        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, dotPos+1);
-//                        ts.move(dotPos+1);
-//                        while (ts.moveNext() && ts.offset() < lineEnd) {
-//                            Token<? extends PHPTokenId> t = ts.token();
-//                            if (t.id() == PHPTokenId.PHP_IDENTIFIER && t.length() == 1 && "|".equals(t.text().toString())) {
-//                                found = true;
-//                                break;
-//                            }
-//                        }
-//                    }
-//
-//                    if (!found) {
-//                        doc.insertString(dotPos+1, "|", null);
-//                        caret.setDot(dotPos + 1);
-//                    }
-//                }
-//
-//                return true;
-//            }
-//            break;
-//        }
+                if (((id == PHPTokenId.PHP_VARIABLE) && (token.length() == 1)) ||
+                        (LexUtilities.textEquals(token.text(), '[')) || (LexUtilities.textEquals(token.text(), ']')) ||
+                        (LexUtilities.textEquals(token.text(), '(')) || (LexUtilities.textEquals(token.text(), ')'))) {
+                    if (ch == ']' || ch == ')') { // || ch == '}'
+                        skipClosingBracket(doc, caret, ch);
+                    } else if ((ch == '[') || (ch == '(')) {//  || (ch == '{')
+                        completeOpeningBracket(doc, dotPos, caret, ch);
+                    }
+                } else if (id == PHPTokenId.PHP_CASTING && ch == ')') {
+                    skipClosingBracket(doc, caret, ch);
+                }
+
+
+                // Reindent blocks (won't do anything if } is not at the beginning of a line
+                if (ch == '}') {
+                    reindent(doc, dotPos, PHPTokenId.PHP_CURLY_CLOSE, caret);
+                }
+                else if (ch == '{') {
+                    reindent(doc, dotPos, PHPTokenId.PHP_CURLY_OPEN, caret);
+                }
+            }
+            break;
         }
 
         return true;
@@ -1448,7 +1124,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 if (id == PHPTokenId.PHP_CURLY_CLOSE) {
                     begin = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_CURLY_OPEN, '{', PHPTokenId.PHP_CURLY_CLOSE, '}');
                 } else {
-                    begin = LexUtilities.findBegin(doc, ts);
+                    begin = OffsetRange.NONE;
                 }
 
                 if (begin != OffsetRange.NONE) {
@@ -1825,31 +1501,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             (chr == ']') || (chr == '}') || (chr == '\n') || (chr == '\t') || (chr == ';'));
         }
     }
-
-//    private boolean isQuoteCompletablePosition(BaseDocument doc, int dotPos) throws BadLocationException {
-//        if (dotPos == doc.getLength()) { // there's no other character to test
-//
-//            return true;
-//        } else {
-//            // test that we are in front of ) , " or ' ... etc.
-//            int eol = LexUtilities.findPhpSectionEnd(doc, dotPos, true, 0);
-//
-//            if ((dotPos == eol) || (eol == -1)) {
-//                return false;
-//            }
-//
-//            int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(doc, dotPos, eol);
-//
-//            if (firstNonWhiteFwd == -1) {
-//                return false;
-//            }
-//
-//            char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
-//
-//            return ((chr == ')') || (chr == ',') || (chr == '+') || (chr == '}') || (chr == ';') ||
-//               (chr == ']') || (chr == '/'));
-//        }
-//    }
 
     /**
      * Returns for an opening bracket or quote the appropriate closing
