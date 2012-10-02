@@ -53,9 +53,9 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -64,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * @author Radek Matous
@@ -213,7 +214,7 @@ public abstract class PhpElementImpl implements PhpElement {
 
             try {
                 f = f.getCanonicalFile();
-                retval = f.toURI().toURL().toExternalForm();
+                retval = Utilities.toURI(f).toURL().toExternalForm();
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
