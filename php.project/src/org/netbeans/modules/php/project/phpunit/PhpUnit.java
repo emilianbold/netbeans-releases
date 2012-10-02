@@ -216,8 +216,9 @@ public final class PhpUnit extends PhpProgram {
             }
         } else {
             // test does not exist yet
-            assert phpClass.getFullyQualifiedName() != null : "No FQN for php class: " + phpClass.getName();
-            if (!generateTestInternal(configFiles, phpClass.getFullyQualifiedName(), sourceFo, workingDirectory)) {
+            String fullyQualifiedName = phpClass.getFullyQualifiedName();
+            assert fullyQualifiedName != null : "No FQN for php class: " + phpClass.getName();
+            if (!generateTestInternal(configFiles, fullyQualifiedName, sourceFo, workingDirectory)) {
                 // test not generated
                 return null;
             }
