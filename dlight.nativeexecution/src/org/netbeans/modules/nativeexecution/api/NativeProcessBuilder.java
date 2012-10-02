@@ -184,7 +184,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
         }
 
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            throw new UserQuestionException(NbBundle.getMessage(NativeProcessBuilder.class, "EXC_NotConnectedQuestion", execEnv.getDisplayName())) {// NOI18N
+            throw new UserQuestionException("No connection to " + execEnv.getDisplayName()) {// NOI18N
                 @Override
                 public void confirmed() throws IOException {
                     try {
