@@ -219,11 +219,6 @@ public final class PHPIndexer extends EmbeddingIndexer {
             }
             final FileObject fileObject = r.getSnapshot().getSource().getFileObject();
             assert r.getDiagnostics().isEmpty() || !PhpSourcePath.FileType.INTERNAL.equals(PhpSourcePath.getFileType(fileObject)) : fileObject.getPath();
-            String processedFileURL = fileObject.toURL().toExternalForm();
-
-            if (processedFileURL == null) {
-                return;
-            }
 
             boolean isFileEdited = false;
             if (!context.isAllFilesIndexing() && context.checkForEditorModifications()) {

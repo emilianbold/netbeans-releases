@@ -75,6 +75,7 @@ import org.openide.util.Union2;
  * Top component which displays PHP class hierarchy.
  * @author Radek Matous
  */
+@org.netbeans.api.annotations.common.SuppressWarnings({"SE_NO_SUITABLE_CONSTRUCTOR_FOR_EXTERNALIZATION"})
 final class PhpHierarchyTopComponent extends TopComponent implements PropertyChangeListener {
 
     private static PhpHierarchyTopComponent instance;
@@ -94,7 +95,8 @@ final class PhpHierarchyTopComponent extends TopComponent implements PropertyCha
     }
 
     private void setModel(Model model) {
-        setName(model.getFileScope().getFileObject().getNameExt() + " - " + NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
+        FileObject fileObject = model.getFileScope().getFileObject();
+        setName(fileObject == null ? "?" : fileObject.getNameExt() + " - " + NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_HierarchyTopComponent")); // NOI18N
         if (!(last instanceof ClassHierarchyPanel)) {
             removeAll();

@@ -69,6 +69,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous
  */
+@org.netbeans.api.annotations.common.SuppressWarnings({"SE_BAD_FIELD_STORE"})
 public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
 
     private static final int MAX_STACK_DEPTH = 250;
@@ -276,6 +277,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         return new HelpCtx("PhpTypeView"); // NOI18N
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings({"EI_EXPOSE_REP2"})
     protected static abstract class AbstractTypeNode implements TreeNode {
 
         static String ICON_BASE = "org/netbeans/modules/php/editor/resources/";     //NOI18N
@@ -349,7 +351,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         Arrays.<TypeNode>sort(types, new Comparator<TypeNode>() {
             @Override
             public int compare(TypeNode o1, TypeNode o2) {
-                int compareTo = new Boolean(o1.isClass).compareTo(o2.isClass);
+                int compareTo = Boolean.valueOf(o1.isClass).compareTo(o2.isClass);
                 return compareTo == 0 ? o1.toString().compareToIgnoreCase(o2.toString()) : compareTo;
             }
         });
@@ -405,7 +407,8 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         private final String filename;
 
         private FileRootNode(final Model model) {
-            filename = model.getFileScope().getFileObject().getNameExt();
+            FileObject fileObject = model.getFileScope().getFileObject();
+            filename = fileObject == null ? "?" : fileObject.getNameExt(); //NOI18N
         }
 
         @Override

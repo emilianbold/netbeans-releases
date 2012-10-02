@@ -55,8 +55,6 @@ import org.netbeans.modules.csl.spi.ParserResult;
 public class AstElement extends PHPElement {
     public static final Set<Modifier> STATIC = EnumSet.of(Modifier.STATIC);
 
-    protected List<AstElement> children;
-    //protected Node node;
     protected String name;
     protected String in;
     protected ParserResult info;
