@@ -79,7 +79,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     private PhpModifiers modifiers;
     private Scope inScope;
     protected ElementHandle indexedElement;
-    protected String filenameUrl;
+    private final String filenameUrl;
 
     //new contructors
     ModelElementImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers) {
@@ -107,9 +107,9 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
                     + name + " | " + file + " | " + kind);//NOI18N
         }
         assert file.hasFirst() || file.hasSecond();
-        if (file.hasFirst()) {
+        if (file.hasFirst() && file.first() != null) {
             this.filenameUrl = file.first();
-        } else if (file.hasSecond()) {
+        } else if (file.hasSecond() && file.second() != null) {
             this.filenameUrl = file.second().getNameExt();
         } else {
             this.filenameUrl = "";
