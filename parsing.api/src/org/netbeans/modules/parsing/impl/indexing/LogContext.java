@@ -38,8 +38,6 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.File;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
@@ -115,6 +113,26 @@ import org.openide.util.Utilities;
             Thread.currentThread().getStackTrace(),
             message,
             parent);
+    }
+
+    /**
+     * Creates a new {@link LogContext} with type and stack trace taken from the prototype,
+     * the prototype is absorbed by the newly created {@link LogContext}.
+     * @param prototype to absorb
+     * @return newly created {@link LogContext}
+     */
+    @NonNull
+    public static LogContext createAndAbsorb(@NonNull final LogContext prototype) {
+        final LogContext ctx = new LogContext(
+                prototype.eventType,
+                prototype.stackTrace,
+                String.format(
+                    "Replacement of LogContext: [type: %s, message: %s]",   //NOI18N
+                    prototype.eventType,
+                    prototype.message),
+                null);
+        ctx.absorb(prototype);
+        return ctx;
     }
 
     @Override
