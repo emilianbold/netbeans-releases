@@ -43,6 +43,8 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -55,9 +57,12 @@ import org.openide.filesystems.FileObject;
  */
 public interface IndexFactoryImpl {
 
+    @NonNull
     public IndexDocument createDocument (Indexable indexable);
 
+    @CheckForNull
     public LayeredDocumentIndex createIndex (final Context ctx) throws IOException;
 
+    @CheckForNull
     public LayeredDocumentIndex getIndex (final FileObject indexFolder) throws IOException;
 }
