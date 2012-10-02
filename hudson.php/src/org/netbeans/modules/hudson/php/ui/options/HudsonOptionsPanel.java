@@ -69,6 +69,7 @@ import org.netbeans.modules.hudson.php.options.HudsonOptions;
 import org.netbeans.modules.hudson.php.options.HudsonOptionsValidator;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
@@ -80,6 +81,7 @@ import org.openide.util.NbBundle;
 /**
  *
  */
+@OptionsPanelController.Keywords(keywords={"php hudson"}, location=UiUtils.OPTIONS_PATH, index=4)
 public class HudsonOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = -464132465732132L;

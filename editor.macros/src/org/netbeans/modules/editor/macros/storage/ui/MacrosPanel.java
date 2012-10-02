@@ -67,10 +67,12 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
 import org.netbeans.modules.editor.macros.storage.ui.MacrosModel.Macro;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -82,6 +84,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords = {"macros"}, location = OptionsDisplayer.EDITOR, index = 6)
 public class MacrosPanel extends JPanel {
 
     private final MacrosModel model = MacrosModel.get();

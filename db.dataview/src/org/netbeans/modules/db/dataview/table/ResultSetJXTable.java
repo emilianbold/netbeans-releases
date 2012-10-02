@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.table.*;
 import org.jdesktop.swingx.JXTable;
@@ -120,6 +121,11 @@ public class ResultSetJXTable extends JXTableDecorator {
     @Override
     protected JTableHeader createDefaultTableHeader() {
         return new JTableHeaderImpl(columnModel);
+    }
+
+    @Override
+    protected RowSorter<? extends TableModel> createDefaultRowSorter() {
+        return new StringFallbackRowSorter(this.getModel());
     }
 
     public void createTableModel(List<Object[]> rows, final JXTableRowHeader rowHeader) {

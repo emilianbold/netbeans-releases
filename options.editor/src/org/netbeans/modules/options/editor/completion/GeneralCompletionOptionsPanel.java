@@ -47,11 +47,14 @@ package org.netbeans.modules.options.editor.completion;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
  * @author Dusan Balek
  */
+@OptionsPanelController.Keywords(keywords = {"all languages"}, location = OptionsDisplayer.EDITOR, index = 2)
 public class GeneralCompletionOptionsPanel extends JPanel {
 
     private Preferences preferences;

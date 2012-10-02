@@ -65,11 +65,14 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.annotations.UserAnnotationPanel;
 import org.netbeans.modules.php.project.annotations.UserAnnotationTag;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
+@OptionsPanelController.Keywords(keywords={"php anotations"}, location=UiUtils.OPTIONS_PATH, index=3)
 public class PhpAnnotationsPanel extends JPanel {
 
     private static final long serialVersionUID = 89732416546545L;

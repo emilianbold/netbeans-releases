@@ -73,7 +73,9 @@ import javax.swing.event.RowSorterEvent;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -83,6 +85,7 @@ import org.openide.util.NbBundle;
  *
  * @author Max Sauer
  */
+@OptionsPanelController.Keywords(keywords={"keymaps"}, location=OptionsDisplayer.KEYMAPS)
 public class KeymapPanel extends javax.swing.JPanel implements ActionListener, Popupable {
 
     // Delay times for incremental search [ms]

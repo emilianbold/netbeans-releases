@@ -78,6 +78,8 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.maven.options.Bundle.*;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -85,6 +87,7 @@ import org.openide.util.NbBundle.Messages;
  * are written to the settings file, some into the Netbeans settings..
  * @author  mkleint
  */
+@OptionsPanelController.Keywords(keywords={"maven"}, location=JavaOptions.JAVA, index=5)
 public class SettingsPanel extends javax.swing.JPanel {
     private static final String SEPARATOR = "SEPARATOR";
     private static final String BUNDLED_RUNTIME_VERSION =

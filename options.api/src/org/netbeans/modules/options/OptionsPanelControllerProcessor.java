@@ -42,37 +42,56 @@
 
 package org.netbeans.modules.options;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.swing.JPanel;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.netbeans.spi.options.OptionsPanelController.ContainerRegistration;
+import org.netbeans.spi.options.OptionsPanelController.Keywords;
+import org.netbeans.spi.options.OptionsPanelController.KeywordsRegistration;
 import org.netbeans.spi.options.OptionsPanelController.SubRegistration;
 import org.netbeans.spi.options.OptionsPanelController.TopLevelRegistration;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
 
+    private Element originatingElement;
+
     public @Override Set<String> getSupportedAnnotationTypes() {
         return new HashSet<String>(Arrays.asList(
             TopLevelRegistration.class.getCanonicalName(),
             ContainerRegistration.class.getCanonicalName(),
-            SubRegistration.class.getCanonicalName()
+            SubRegistration.class.getCanonicalName(),
+            KeywordsRegistration.class.getCanonicalName(),
+            Keywords.class.getCanonicalName()
         ));
     }
 
@@ -108,6 +127,40 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
             keywords(e, r.keywords(), r.keywordsCategory(), r, file);
             file.write();
         }
+        
+        ArrayList<Keywords> advanced = new ArrayList<Keywords>();
+        for (Element e : roundEnv.getElementsAnnotatedWith(Keywords.class)) {
+            Keywords annotation = e.getAnnotation(Keywords.class);
+            if (annotation != null) {
+                originatingElement = e;
+                String location = annotation.location();
+                if(location.equals(OptionsDisplayer.ADVANCED)) {
+                    if(getBundleValue(annotation.tabTitle(), annotation, "tabTitle").trim().isEmpty()) {
+                        throw new LayerGenerationException("Must specify both location and tabTitle", e, processingEnv, annotation, "tabTitle");
+                    }
+                    if(annotation.index() != -1) {
+                        throw new LayerGenerationException("No need to specify index, panels in Miscellaneous category are sorted alphabetically", e, processingEnv, annotation, "index");
+                    }
+                    advanced.add(annotation);
+                } else if(!location.equals(OptionsDisplayer.GENERAL) && !location.equals(OptionsDisplayer.KEYMAPS)) {
+                    if(annotation.index() < 0) {
+                        throw new LayerGenerationException("You need to specify a non-negative value for index", e, processingEnv, annotation, "index");
+                    }
+                }
+            }
+        }
+        Collections.sort(advanced, new AdvancedComparable());
+
+        for (Element e : roundEnv.getElementsAnnotatedWith(Keywords.class)) {
+            handleElement(e, e.getAnnotation(Keywords.class), advanced, "");
+        }
+        for (Element e : roundEnv.getElementsAnnotatedWith(KeywordsRegistration.class)) {
+            KeywordsRegistration r = e.getAnnotation(KeywordsRegistration.class);
+            Keywords[] panels = r.value();
+            for (int i = 0; i < panels.length; i++) {
+                handleElement(e, panels[i], advanced, Integer.toString(-(i + 1)));
+            }
+        }
         for (Element e : roundEnv.getElementsAnnotatedWith(ContainerRegistration.class)) {
             ContainerRegistration r = e.getAnnotation(ContainerRegistration.class);
             LayerBuilder builder = layer(e);
@@ -122,6 +175,90 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
             layer(e).folder("OptionsDialog/" + r.id()).position(0).write();
         }
         return true;
+    }
+
+    private void handleElement(Element e, Keywords annotation, ArrayList<Keywords> advanced, String name) throws LayerGenerationException {
+        originatingElement = e;
+        int index = annotation.index();
+        if (annotation.location().equals(OptionsDisplayer.ADVANCED)) {
+            index = advanced.indexOf(annotation);
+        }
+        File file = layer(e).
+                file("OptionsDialog/Keywords/".concat(e.asType().toString()).concat(name)).
+                stringvalue("instanceOf", JPanel.class.getName()).
+                stringvalue("location", annotation.location()).
+                stringvalue("tabTitle", getBundleValue(annotation.tabTitle(), annotation, "tabTitle")).
+                intvalue("index", index);
+        StringBuilder keywordsSB = new StringBuilder();
+        String[] keywords = annotation.keywords();
+        keywordsSB.append(getBundleValue(keywords[0], annotation, "keywords").toUpperCase());
+        for (int j = 1; j < keywords.length; j++) {
+            keywordsSB.append(",").append(getBundleValue(keywords[j], annotation, "keywords").toUpperCase());
+        }
+        file.stringvalue("keywords", keywordsSB.toString());
+        file.write();
+    }
+    
+    private class AdvancedComparable implements Comparator<Keywords> {
+
+        @Override
+        public int compare(Keywords r1, Keywords r2) {
+            return r1.tabTitle().compareTo(r2.tabTitle());
+        }
+    }
+
+    private String getBundleValue(String label, Annotation annotation, String annotationMethod) throws LayerGenerationException {
+        String javaIdentifier = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)";
+        Matcher m = Pattern.compile("((?:" + javaIdentifier + "\\.)+[^\\s.#]+)?#(\\S*)").matcher(label);
+        if (m.matches()) {
+            String bundle = m.group(1);
+            String key = m.group(2);
+            if (bundle == null) {
+                Element referenceElement = originatingElement;
+                while (referenceElement != null && referenceElement.getKind() != ElementKind.PACKAGE) {
+                    referenceElement = referenceElement.getEnclosingElement();
+                }
+                if (referenceElement == null) {
+                    throw new LayerGenerationException("No reference element to determine package in '" + label + "'", originatingElement);
+                }
+                bundle = ((PackageElement) referenceElement).getQualifiedName() + ".Bundle";
+            }
+            return verifyBundleValue(bundle, key, m.group(1) == null, annotation, annotationMethod);
+        }
+        return label;
+    }
+
+    private String verifyBundleValue(String bundle, String key, boolean samePackage, Annotation annotation, String annotationMethod) throws LayerGenerationException {
+        if (processingEnv == null) {
+            return "";
+        }
+        if (samePackage) {
+            for (Element e = originatingElement; e != null; e = e.getEnclosingElement()) {
+                NbBundle.Messages m = e.getAnnotation(NbBundle.Messages.class);
+                if (m != null) {
+                    for (String kv : m.value()) {
+                        if (kv.startsWith(key + "=")) {
+                            return kv.substring(kv.indexOf("=") + 1);
+                        }
+                    }
+                }
+            }
+        }
+        try {
+            InputStream is = layer(originatingElement).validateResource(bundle.replace('.', '/') + ".properties", originatingElement, null, null, false).openInputStream();
+            try {
+                Properties p = new Properties();
+                p.load(is);
+                if (p.getProperty(key) == null) {
+                    throw new LayerGenerationException("No key '" + key + "' found in " + bundle, originatingElement, processingEnv, annotation, annotationMethod);
+                }
+                return p.getProperty(key);
+            } finally {
+                is.close();
+            }
+        } catch (IOException x) {
+            throw new LayerGenerationException("Could not open " + bundle + ": " + x, originatingElement, processingEnv, annotation, annotationMethod);
+        }
     }
 
     private void iconBase(Element e, String iconBase, Annotation r, File file, LayerBuilder builder) throws LayerGenerationException {

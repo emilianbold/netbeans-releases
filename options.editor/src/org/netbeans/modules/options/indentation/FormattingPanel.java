@@ -65,9 +65,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -75,6 +77,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Dusan Balek
  */
+@OptionsPanelController.Keywords(keywords={"formatting"}, location=OptionsDisplayer.EDITOR, index=1)
 public final class FormattingPanel extends JPanel implements PropertyChangeListener {
     
     /** Creates new form FormattingPanel */

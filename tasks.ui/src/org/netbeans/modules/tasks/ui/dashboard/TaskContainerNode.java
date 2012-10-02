@@ -273,7 +273,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     }
 
     final void initPaging() {
-        pageSize = DashboardSettings.getInstance().getTasksLimitValue();
+        pageSize = DashboardSettings.getInstance().isTasksLimit() ? DashboardSettings.getInstance().getTasksLimitValue() : Integer.MAX_VALUE;
         pageCountShown = 1;
     }
 

@@ -1075,21 +1075,36 @@ public final class DashboardViewer implements PropertyChangeListener {
         return false;
     }
 
-    private void removeNodesSelection(List<TreeListNode> nodes) {
-        if (nodes.isEmpty()) {
-            return;
+    private void handleSelection(TreeListNode node) {
+        ListSelectionModel selectionModel = treeList.getSelectionModel();
+        if (!selectionModel.isSelectionEmpty()) {
+            int indexOfNode = model.getAllNodes().indexOf(node);
+            if (selectionModel.isSelectedIndex(indexOfNode)) {
+                int minSelectionIndex = selectionModel.getMinSelectionIndex();
+                int maxSelectionIndex = selectionModel.getMaxSelectionIndex();
+                if (minSelectionIndex == maxSelectionIndex) {
+                    selectionModel.setSelectionInterval(minSelectionIndex, maxSelectionIndex);
+                } else {
+                    List<Integer> selectedIndexes = new ArrayList<Integer>(maxSelectionIndex - minSelectionIndex + 1);
+                    for (int i = minSelectionIndex; i <= maxSelectionIndex; i++) {
+                        if (selectionModel.isSelectedIndex(i)) {
+                            selectedIndexes.add(i);
+                        }
+                    }
+                    selectionModel.clearSelection();
+                    for (int index : selectedIndexes) {
+                        selectionModel.addSelectionInterval(index, index);
+                    }
+                }
+            }
         }
-        final List<TreeListNode> allNodes = model.getAllNodes();
-        int firstIndex = allNodes.indexOf(nodes.get(0));
-        int lastIndex = allNodes.indexOf(nodes.get(nodes.size() - 1));
-        treeList.getSelectionModel().removeSelectionInterval(firstIndex, lastIndex);
     }
 
     private class ModelListener implements TreeListModelListener {
 
         @Override
         public void nodeExpanded(TreeListNode node) {
-            removeNodesSelection(node.getChildren());
+            handleSelection(node);
         }
     }
 }

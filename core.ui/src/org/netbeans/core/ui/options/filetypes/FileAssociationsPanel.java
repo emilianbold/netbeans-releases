@@ -48,7 +48,9 @@ import java.util.Collections;
 import java.util.prefs.Preferences;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.ui.options.filetypes.FileAssociationsModel.MimeItem;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -58,6 +60,7 @@ import org.openide.util.NbPreferences;
  *
  * @author Jiri Skrivanek
  */
+@OptionsPanelController.Keywords(keywords={"#KW_FilesOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="#AdvancedOption.displayName")
 final class FileAssociationsPanel extends javax.swing.JPanel {
 
     private final FileAssociationsOptionsPanelController controller;
