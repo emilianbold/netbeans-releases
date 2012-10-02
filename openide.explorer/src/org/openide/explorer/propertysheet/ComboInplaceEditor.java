@@ -47,6 +47,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyEditor;
 import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.PopupMenuEvent;
@@ -84,6 +85,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
     private static PopupChecker checker = null;
     protected PropertyEditor editor;
     protected PropertyEnv env;
+    private ListCellRenderer originalRenderer;
     protected PropertyModel mdl;
     boolean inSetUI = false;
     private boolean tableUI;
@@ -133,6 +135,8 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                 popupCancelled = true;
             }
         });
+        
+        originalRenderer = getRenderer();
     }
 
     /** Overridden to add a listener to the editor if necessary, since the
@@ -194,7 +198,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
 
     public void connect(PropertyEditor pe, PropertyEnv env) {
         connecting = true;
-
+        
         try {
             log("Combo editor connect to " + pe + " env=" + env);
 
@@ -209,6 +213,19 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             setEditable(editable);
             setActionCommand(COMMAND_SUCCESS);
             setupAutoComplete();
+            
+            //Support for custom ListCellRenderer injection via PropertyEnv
+            //The instance obtained from the env by the "customListCellRendererSupport" key
+            //must both implement ListCellRenderer and extend AtomicReference<ListCellRenderer> 
+            //The AtomicReference workaround it necessary since we somehow need to put 
+            //reference to the original ListCellRenderer to the custom one.
+            Object customRendererSupport = env.getFeatureDescriptor().getValue("customListCellRendererSupport"); //NOI18N
+            if(customRendererSupport != null) {
+                //set the actual renrerer to the custom one so it may delegate
+                AtomicReference<ListCellRenderer> ref = (AtomicReference<ListCellRenderer>)customRendererSupport;
+                ref.set(originalRenderer);
+                setRenderer((ListCellRenderer)customRendererSupport);
+            } 
             
             if(SheetTable.isValueIncrementEnabled(env)) {
                 disable_VK_UP_VK_DOWN_Keystrokes(this);

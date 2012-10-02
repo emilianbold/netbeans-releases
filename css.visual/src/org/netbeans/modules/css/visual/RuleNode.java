@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.visual;
 
-import java.awt.Color;
 import java.beans.PropertyEditor;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -78,7 +77,6 @@ import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
 /**
@@ -480,9 +478,6 @@ public class RuleNode extends AbstractNode {
 
     private Property createPropertyDefinitionProperty(PropertyDefinition definition) {
         PropertyModel pmodel = Properties.getPropertyModel(definition.getName());
-//        if (pmodel.getProperty().getName().equals("color")) {
-//            return new ColorPDP(definition, null);
-//        }
         return new PropertyDefinitionProperty(definition, createPropertyValueEditor(pmodel, false));
     }
 
@@ -504,7 +499,7 @@ public class RuleNode extends AbstractNode {
         });
 
         if (!fixedElements.isEmpty()) {
-            return new PropertyValuesEditor(fixedElements, unitElements, addNoneProperty);
+            return new PropertyValuesEditor(pmodel, getModel(), fixedElements, unitElements, addNoneProperty);
         }
 
         return null;
@@ -600,23 +595,6 @@ public class RuleNode extends AbstractNode {
         }
     }
 
-    private class ColorPDP extends AbstractPDP<Color> {
-
-        public ColorPDP(PropertyDefinition def, PropertyEditor editor) {
-            super(def, editor, Color.class, Bundle.rule_properties_add_declaration_tooltip());
-        }
-
-        @Override
-        protected String convertToString(Color val) {
-            return val.toString();
-        }
-
-        @Override
-        protected Color getEmptyValue() {
-            return Color.white;
-        }
-    }
-
     private class PropertyDefinitionProperty extends PlainPDP {
 
         public PropertyDefinitionProperty(PropertyDefinition def, PropertyEditor editor) {
@@ -648,6 +626,10 @@ public class RuleNode extends AbstractNode {
             this.declaration = declaration;
             this.markAsModified = markAsModified;
             this.editor = editor;
+
+            //one may set a custom inplace editor by 
+            //setValue("inplaceEditor", new MyInplaceEditor());
+            
         }
 
         public Declaration getDeclaration() {
