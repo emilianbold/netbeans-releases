@@ -246,6 +246,11 @@ public class ProjectActionSupport {
             this.npcs = npcs;
             this.startPAE = startPAE;
         }
+
+        @Override
+        public String toString() {
+            return "ProjectFileOperationsNotifier{" + "npcs=" + npcs + ", startPAE=" + startPAE + ", finishPAE=" + finishPAE + '}'; // NOI18N
+        }
     }
     
     private final class FileOperationsNotifier {
