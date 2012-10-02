@@ -68,6 +68,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -126,7 +127,8 @@ public class SettingsTab extends javax.swing.JPanel {
         spTab.setLeftComponent(scrollerForTable);
         spTab.setRightComponent(scrollerForDetails);
         
-        table.setModel(new SettingsTableModel());        
+        table.setModel(new SettingsTableModel());
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         TableColumnModel columnModel = table.getColumnModel();
         columnModel.getColumn(1).setCellRenderer(new UpdateProviderRenderer ());
         
