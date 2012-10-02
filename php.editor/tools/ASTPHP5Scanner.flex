@@ -50,7 +50,7 @@ import java_cup.runtime.*;
 import org.netbeans.modules.php.editor.*;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 
-@org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH", "URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE", "DM_DEFAULT_ENCODING"})
+@org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH", "URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE", "DM_DEFAULT_ENCODING", "EI_EXPOSE_REP2", "UUF_UNUSED_FIELD"})
 %%
 // Options adn declarations section
 
