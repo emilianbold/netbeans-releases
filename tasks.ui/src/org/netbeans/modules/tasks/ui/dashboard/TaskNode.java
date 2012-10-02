@@ -224,7 +224,7 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Prop
         } else {
             return compareComplexId(task.getID(), toCompare.task.getID());
         }
-        
+
     }
 
     @Override
@@ -250,17 +250,17 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Prop
     }
 
     private int compareComplexId(String id1, String id2) {
-        int deviderIndex1 = id1.lastIndexOf("-"); //NOI18
-        int deviderIndex2 = id2.lastIndexOf("-"); //NOI18
-        if (deviderIndex1 == -1 || deviderIndex2 == -1) {
+        int dividerIndex1 = id1.lastIndexOf("-"); //NOI18
+        int dividerIndex2 = id2.lastIndexOf("-"); //NOI18
+        if (dividerIndex1 == -1 || dividerIndex2 == -1) {
             DashboardViewer.LOG.log(Level.WARNING, "Unsupported ID format");
             return 0;
         }
-        String prefix1 = id1.subSequence(0, deviderIndex1).toString();
-        String suffix1 = id1.substring(deviderIndex1+1);
+        String prefix1 = id1.subSequence(0, dividerIndex1).toString();
+        String suffix1 = id1.substring(dividerIndex1 + 1);
 
-        String prefix2 = id2.subSequence(0, deviderIndex1).toString();
-        String suffix2 = id2.substring(deviderIndex1+1);
+        String prefix2 = id2.subSequence(0, dividerIndex2).toString();
+        String suffix2 = id2.substring(dividerIndex2 + 1);
 
         //compare prefix, alphabetically
         int comparePrefix = prefix1.compareTo(prefix2);
