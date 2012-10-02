@@ -131,7 +131,7 @@ public abstract class PhpElementImpl implements PhpElement {
             final int offset, final ElementQuery elementQuery) {
         this.name = name;
         this.in = in;
-        this.fileUrl = fileUrl;
+        this.fileUrl = fileUrl == null ? "" : fileUrl;
         this.offset = offset;
         if (fileUrl != null && fileUrl.contains(" ")) {//NOI18N
             throw new IllegalArgumentException("fileURL may not contain spaces!");//NOI18N
