@@ -259,8 +259,8 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Prop
         String prefix1 = id1.subSequence(0, deviderIndex1).toString();
         String suffix1 = id1.substring(deviderIndex1+1);
 
-        String prefix2 = id2.subSequence(0, deviderIndex1).toString();
-        String suffix2 = id2.substring(deviderIndex1+1);
+        String prefix2 = id2.subSequence(0, deviderIndex2).toString();
+        String suffix2 = id2.substring(deviderIndex2 + 1);
 
         //compare prefix, alphabetically
         int comparePrefix = prefix1.compareTo(prefix2);
