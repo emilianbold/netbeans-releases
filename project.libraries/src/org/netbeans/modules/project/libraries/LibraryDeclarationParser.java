@@ -48,6 +48,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.filesystems.FileObject;
@@ -349,6 +351,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
             final @NonNull FileObject definitionFile,
             final @NonNull LibraryImplementation library,
             final @NonNull LibraryTypeProvider libraryTypeProvider) throws IOException {
+        validateLibraryContent(library, libraryTypeProvider);
         final Document doc = Util.supportsDisplayName(library) ?
                 (Util.supportsProperties(library) ?
                     createLibraryDefinition3(library, libraryTypeProvider) :
@@ -359,6 +362,21 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
             XMLUtil.write(doc, os, "UTF-8"); // NOI18N
         } finally {
             os.close();
+        }
+    }
+
+    /**
+     * Validates {@link URL}s in in the library.
+     * @param library to check
+     * @param libraryTypeProvider library meta definition
+     * @throws IllegalArgumentException if the library contains {@link URL}
+     * which cannot be converted to {@link URI}.
+     */
+    private static void validateLibraryContent(
+            @NonNull final LibraryImplementation library,
+            @NonNull final LibraryTypeProvider libraryTypeProvider) {
+        for (String vtype : libraryTypeProvider.getSupportedVolumeTypes()) {
+            LibrariesModel.convertURLsToURIs(library.getContent(vtype));
         }
     }
 
