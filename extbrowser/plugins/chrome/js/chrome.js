@@ -148,14 +148,14 @@ NetBeans.showInfoBar = function(tabId) {
 };
 NetBeans.getWindowInfo = function(callback) {
     chrome.windows.getLastFocused(callback);
-}
+};
 NetBeans.detectViewPort = function(callback) {
     chrome.tabs.executeScript(null, {file: 'js/viewport.js'}, function() {
         if (callback) {
             callback();
         }
     });
-}
+};
 NetBeans.resetPageSize = function(callback) {
     chrome.windows.getLastFocused(function(win) {
         var opt = {};
