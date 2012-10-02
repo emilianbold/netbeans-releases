@@ -45,6 +45,7 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -460,6 +461,22 @@ public class AddTableColumnDialog extends JPanel {
         });
 
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddTableColumnDialog.class, "ACS_AddTableColumnDialogA11yDesc"));
+
+        doLayout();
+
+        Dimension referenceCurDimension = colsizefield.getSize();
+        Dimension referencePrefDimension = colsizefield.getPreferredSize();
+        Dimension referenceMinDimension = colsizefield.getMinimumSize();
+        Dimension referenceMaxDimension = colsizefield.getMaximumSize();
+
+        colsizefield.setSize(referenceCurDimension);
+        colsizefield.setPreferredSize(referencePrefDimension);
+        colsizefield.setMinimumSize(referenceMinDimension);
+        colsizefield.setMaximumSize(referenceMaxDimension);
+        colscalefield.setSize(referenceCurDimension);
+        colscalefield.setPreferredSize(referencePrefDimension);
+        colscalefield.setMinimumSize(referenceMinDimension);
+        colscalefield.setMaximumSize(referenceMaxDimension);
     }
 
     /** Returns Integer instance from given text field or null if cannot be parsed.
