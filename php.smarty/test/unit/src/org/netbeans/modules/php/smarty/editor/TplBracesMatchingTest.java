@@ -183,6 +183,42 @@ public class TplBracesMatchingTest extends TplTestBase {
         assertMatch(5, 5, matcher);
     }
 
+    public void testCommentTagEnd() throws Exception {
+        setDocumentText("{* any comment *}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(17, false, 1);
+        assertOrigin(0, 17, matcher);
+        assertMatch(17, 17, matcher);
+    }
+
+    public void testCommentTagBegin1() throws Exception {
+        setDocumentText("{* comment *}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(0, false, 1);
+        assertOrigin(0, 13, matcher);
+        assertMatch(0, 0, matcher);
+    }
+
+    public void testCommentTagBegin2() throws Exception {
+        setDocumentText("{* comment *}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(1, false, 1);
+        assertOrigin(0, 13, matcher);
+        assertMatch(1, 1, matcher);
+    }
+
+    public void testCommentTagBegin3() throws Exception {
+        setDocumentText(" {* comment *}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(1, false, 1);
+        assertOrigin(1, 14, matcher);
+        assertMatch(1, 1, matcher);
+    }
+
     public void testUnfinishedTag() throws Exception {
         setDocumentText("{writing");
         //               01234567890123456789012345678901234567890123456789012345678901234567890
