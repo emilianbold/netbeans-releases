@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.remote;
+package org.netbeans.modules.web.common.remote;
 
 import java.awt.Image;
 import java.io.FileNotFoundException;
@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -58,7 +57,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -76,7 +74,7 @@ public class RemoteFS extends AbstractFileSystem {
 
     private RemoteFS() {
         this.urlCache = new HashMap<String, URL>();
-        list = new RemoteList(null);
+        list = new RemoteList();
         info = new RemoteInfo();
         attr = new RemoteAttributes();
         status = new RemoteStatus();
@@ -161,39 +159,17 @@ public class RemoteFS extends AbstractFileSystem {
     
     private final class RemoteList implements List, ChangeListener {
         
-        private final RemoteFiles rFiles;
-        
-        RemoteList(RemoteFiles rFiles) {
-            this.rFiles = rFiles;
-            if (rFiles != null) {
-                rFiles.addChangeListener(this);
-            }
+        RemoteList() {
         }
 
         @Override
         public String[] children(String f) {
             if (f.isEmpty()) { // root
-                if (rFiles != null) {
-                    java.util.List<URL> remoteFiles = rFiles.getRemoteFiles();
-                    String[] childrenNames = new String[remoteFiles.size()];
-                    synchronized (urlCache) {
-                        //urlCache.clear();
-                        for (int i = 0; i < childrenNames.length; i++) {
-                            URL url = remoteFiles.get(i);
-                            String name = getNameFrom(url);
-                            childrenNames[i] = name;
-                            urlCache.put(name, url);
-                        }
-                    }
-                    return childrenNames;
-                } else {
-                    String[] childrenNames;
-                    synchronized (urlCache) {
-                        childrenNames = urlCache.keySet().toArray(new String[] {});
-                    }
-                    return childrenNames;
-                    
+                String[] childrenNames;
+                synchronized (urlCache) {
+                    childrenNames = urlCache.keySet().toArray(new String[] {});
                 }
+                return childrenNames;
             } else {
                 return new String[] {};
             }

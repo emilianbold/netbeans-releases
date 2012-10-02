@@ -49,8 +49,8 @@ import java.nio.charset.Charset;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
-import org.netbeans.modules.netserver.websocket.WebSocketClient;
-import org.netbeans.modules.netserver.websocket.WebSocketReadHandler;
+import org.netbeans.modules.netserver.api.WebSocketClient;
+import org.netbeans.modules.netserver.api.WebSocketReadHandler;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
@@ -71,19 +71,13 @@ public abstract class MobileDebugTransport implements TransportImplementation, W
     @Override
     public boolean attach() {
         try {
-            webSocket = createWebSocket();//
-            webSocket.setWebSocketReadHandler(this);
-            RequestProcessor.getDefault().post(webSocket);
-            synchronized (webSocket) {
-                webSocket.wait(3000);
-            }
+            webSocket = createWebSocket(this);
+            webSocket.start();
             return true;
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
-           Exceptions.printStackTrace(ex);
+            Exceptions.printStackTrace(ex);
+            return false;
         }
-        return false;
     }
 
     @Override
@@ -106,7 +100,7 @@ public abstract class MobileDebugTransport implements TransportImplementation, W
     @Override
     public URL getConnectionURL() {
         try {
-            return webSocket.getUri().toURL();
+            return webSocket.getURI().toURL();
         } catch (MalformedURLException ex) {
             throw new RuntimeException(ex);
         }
@@ -137,7 +131,7 @@ public abstract class MobileDebugTransport implements TransportImplementation, W
     }
 
 
-    public abstract WebSocketClient createWebSocket() throws IOException;
+    public abstract WebSocketClient createWebSocket(WebSocketReadHandler handler) throws IOException;
 
     public String translate(String toString) {
         if (toString.contains("Debugger.setBreakpointByUrl")) {

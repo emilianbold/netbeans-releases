@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.browser.api;
 
+import org.netbeans.modules.web.common.api.DependentFileQuery;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;

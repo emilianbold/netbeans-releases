@@ -40,14 +40,14 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.api;
+package org.netbeans.modules.web.common.api;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
+import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;

@@ -40,11 +40,11 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.api;
+package org.netbeans.modules.web.common.api;
 
 import java.io.IOException;
 import java.net.URL;
-import org.netbeans.modules.web.clientproject.spi.RemoteFileCacheImplementation;
+import org.netbeans.modules.web.common.spi.RemoteFileCacheImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
