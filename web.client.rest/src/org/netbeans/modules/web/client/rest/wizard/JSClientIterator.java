@@ -289,7 +289,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         if ( generator.hasUi() ){
             builder.append("<link rel='stylesheet' href='");                // NOI18N
             builder.append(JSClientGenerator.TABLESORTER_URL);
-            builder.append("css/blue/style.css'>\n");                       // NOI18N
+            builder.append("css/theme.blue.css'>\n");                       // NOI18N
             builder.append("<link rel='stylesheet' href='");                // NOI18N
             builder.append(JSClientGenerator.TABLESORTER_URL);
             builder.append("addons/pager/jquery.tablesorter.pager.css'>\n");// NOI18N
