@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * CsmFunction + CsmMember implementation
@@ -179,7 +180,15 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     
     public static class MethodBuilder extends FunctionBuilder {
         
-        CsmVisibility visibility = CsmVisibility.PUBLIC;
+        private CsmVisibility visibility = CsmVisibility.PUBLIC;
+
+        public CsmVisibility getVisibility() {
+            return visibility;
+        }
+
+        public void setVisibility(CsmVisibility visibility) {
+            this.visibility = visibility;
+        }
         
         @Override
         public MethodImpl create() {
@@ -188,7 +197,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
             boolean _explicit = false;
 
 
-            MethodImpl method = new MethodImpl(getName(), getRawName(), cls, visibility, _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            MethodImpl method = new MethodImpl(getName(), getRawName(), cls, getVisibility(), _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
             StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -196,6 +205,9 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
             //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
 
             //functionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+            if(getTemplateDescriptorBuilder() != null) {
+                method.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
+            }
 
             method.setReturnType(getType());
             ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(method);

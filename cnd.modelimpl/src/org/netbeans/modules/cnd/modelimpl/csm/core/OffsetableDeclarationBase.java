@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -301,6 +302,25 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         public void setLocal() {
             this.global = false;
         }
+        
+        @Override
+        public CharSequence getName() {
+            String[] split = super.getName().toString().split("::");
+            return NameCache.getManager().getString(split[split.length - 1]);
+        }
+        
+        public CharSequence[] getScopeNames() {
+            if(super.getName() != null) {
+                String[] split = super.getName().toString().split("::");
+                CharSequence[] res = new CharSequence[split.length - 1];
+                for (int i = 0; i < res.length; i++) {
+                    res[i] =  NameCache.getManager().getString(split[i]);
+                }
+                return res;
+            } else {
+                return new CharSequence[0];
+            }
+        }
     }
     
     public static class SimpleDeclarationBuilder extends ScopedDeclarationBuilder {
@@ -317,6 +337,25 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private boolean _extern = false;
         private boolean _const = false;
 
+        private boolean constructor = false;
+        private boolean destructor = false;
+
+        public void setConstructor() {
+            this.constructor = true;
+        }
+
+        public void setDestructor() {
+            this.destructor = true;
+        }
+
+        public boolean isConstructor() {
+            return constructor;
+        }
+
+        public boolean isDestructor() {
+            return destructor;
+        }
+        
         public void setStatic() {
             this._static = true;
         }
@@ -376,10 +415,22 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
 
         public void setTemplateDescriptorBuilder(TemplateDescriptor.TemplateDescriptorBuilder templateDescriptorBuilder) {
             this.templateDescriptorBuilder = templateDescriptorBuilder;
+            if(templateDescriptorBuilder != null) {
+                setStartOffset(templateDescriptorBuilder.getStartOffset());
+            }
         }
 
         public TemplateDescriptor.TemplateDescriptorBuilder getTemplateDescriptorBuilder() {
             return templateDescriptorBuilder;
+        }
+        
+        public TemplateDescriptor getTemplateDescriptor() {
+            TemplateDescriptor td = null;
+            if(getTemplateDescriptorBuilder() != null) {
+                getTemplateDescriptorBuilder().setScope(getScope());
+                td = getTemplateDescriptorBuilder().create();
+            }
+            return td;
         }
         
         public void setTypeBuilder(TypeBuilder typeBuilder) {

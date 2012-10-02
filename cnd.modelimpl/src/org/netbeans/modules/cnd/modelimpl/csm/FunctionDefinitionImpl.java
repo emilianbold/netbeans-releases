@@ -66,10 +66,14 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl.CompoundStatementBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -77,6 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * @author Vladimir Kvasihn
@@ -316,6 +321,60 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         return this;
     }
 
+    public static class FunctionDefinitionBuilder extends FunctionBuilder implements StatementBuilderContainer {
+
+        private CompoundStatementBuilder bodyBuilder;
+        
+        public void setBodyBuilder(CompoundStatementBuilder builder) {
+            bodyBuilder = builder;
+        }
+
+        public CompoundStatementBuilder getBodyBuilder() {
+            return bodyBuilder;
+        }
+        
+        @Override
+        public FunctionDefinitionImpl create() {
+            CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), true);
+
+            FunctionDefinitionImpl<?> impl = new FunctionDefinitionImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);        
+            temporaryRepositoryRegistration(true, impl);
+
+//            StringBuilder clsTemplateSuffix = new StringBuilder();
+//            TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionDDImpl, clsTemplateSuffix, global);
+//            CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+//
+//            functionDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+            if(getTemplateDescriptorBuilder() != null) {
+                impl.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
+            }
+            
+            impl.setReturnType(getType());
+            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(impl);
+            impl.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(), false);
+            
+            impl.setClassOrNspNames(getScopeNames());        
+            
+            bodyBuilder.setScope(impl);
+            impl.setCompoundStatement(bodyBuilder.create());
+
+            postObjectCreateRegistration(true, impl);
+            postFunctionImpExCreateRegistration(getFileContent(), isGlobal(), impl);
+            getNameHolder().addReference(getFileContent(), impl);
+            
+            addDeclaration(impl);
+            
+            return impl;
+        }
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            assert builder instanceof CompoundStatementBuilder;
+            setBodyBuilder((CompoundStatementBuilder)builder);
+        }
+
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     @Override

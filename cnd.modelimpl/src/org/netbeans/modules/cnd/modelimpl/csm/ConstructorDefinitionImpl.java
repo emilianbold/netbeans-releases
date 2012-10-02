@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
@@ -59,14 +60,16 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * @author Vladimir Kvasihn
@@ -141,6 +144,37 @@ public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl<CsmF
             return Collections.<CsmExpression>emptyList();
         }
     }    
+    
+    public static class ConstructorDefinitionBuilder extends FunctionDefinitionBuilder implements StatementBuilderContainer {
+
+        @Override
+        public FunctionDefinitionImpl create() {
+            CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), true);
+
+            ConstructorDefinitionImpl impl = new ConstructorDefinitionImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            temporaryRepositoryRegistration(true, impl);
+
+            if(getTemplateDescriptorBuilder() != null) {
+                impl.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
+            }
+            
+            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(impl);
+            impl.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(), false);
+            
+            impl.setClassOrNspNames(getScopeNames());        
+            
+            getBodyBuilder().setScope(impl);
+            impl.setCompoundStatement(getBodyBuilder().create());
+
+            postObjectCreateRegistration(true, impl);
+            postFunctionImpExCreateRegistration(getFileContent(), isGlobal(), impl);
+            getNameHolder().addReference(getFileContent(), impl);
+            
+            addDeclaration(impl);
+            
+            return impl;
+        }
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
