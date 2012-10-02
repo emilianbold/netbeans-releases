@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.api;
 
+import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationResolver;
@@ -60,7 +61,7 @@ public final class JsDocumentationSupport {
     /** Path of the documentation providers in the layer. */
     public static final String DOCUMENTATION_PROVIDER_PATH = "javascript/doc/providers"; //NOI18N
 
-    private static Map<JsParserResult, JsDocumentationHolder> providers = new WeakHashMap<JsParserResult, JsDocumentationHolder>();
+    private static Map<JsParserResult, WeakReference<JsDocumentationHolder>> providers = new WeakHashMap<JsParserResult, WeakReference<JsDocumentationHolder>>();
 
     private JsDocumentationSupport() {
     }
@@ -73,12 +74,12 @@ public final class JsDocumentationSupport {
      * @return {@code JsDocumentationProvider} for given {@code JsParserResult}
      */
     public static synchronized JsDocumentationHolder getDocumentationHolder(JsParserResult result) {
-        if (!providers.containsKey(result)) {
+        if (!providers.containsKey(result) || providers.get(result).get() == null) {
             // XXX - complete caching of documentation tool provider
             JsDocumentationProvider provider = getDocumentationProvider(result);
-            providers.put(result, provider.createDocumentationHolder(result.getSnapshot()));
+            providers.put(result, new WeakReference(provider.createDocumentationHolder(result.getSnapshot())));
         }
-        return providers.get(result);
+        return providers.get(result).get();
     }
 
     public static JsDocumentationProvider getDocumentationProvider(JsParserResult result) {
