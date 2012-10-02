@@ -59,8 +59,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.netbeans.modules.cnd.utils.ui.StringArrayCustomEditor;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -72,6 +74,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author sg155630
  */
+@OptionsPanelController.Keywords(keywords={"c/c++ other options"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, index=4)
 /*package-local*/ final class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionListener {
 
     public CndOtherOptionsPanel() {

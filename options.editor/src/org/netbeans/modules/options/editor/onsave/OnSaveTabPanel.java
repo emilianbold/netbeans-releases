@@ -50,7 +50,9 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.WeakListeners;
 
 /**
@@ -58,6 +60,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Miloslav Metelka
  */
+@OptionsPanelController.Keywords(keywords = {"on save"}, location = OptionsDisplayer.EDITOR, index = 7)
 public class OnSaveTabPanel extends JPanel implements PropertyChangeListener {
     
     private OnSaveCommonPanel commonPanel;

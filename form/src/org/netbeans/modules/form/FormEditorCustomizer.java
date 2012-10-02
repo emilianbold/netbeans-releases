@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.PropertySupport;
@@ -70,6 +71,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Stola, Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords={"gui builder"}, location="Java", index=1)
 public final class FormEditorCustomizer extends JPanel implements  ActionListener, ChangeListener {
     private JCheckBox cbFold = new JCheckBox ();
     private JCheckBox cbAssistant = new JCheckBox();

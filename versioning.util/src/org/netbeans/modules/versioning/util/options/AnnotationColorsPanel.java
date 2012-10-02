@@ -64,7 +64,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.versioning.util.OptionsPanelColorProvider;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.WeakListeners;
@@ -73,6 +75,7 @@ import org.openide.util.WeakListeners;
  * 
  * @author Maros Sandor, Ondra Vrabec
  */
+@OptionsPanelController.Keywords(keywords={"versioning", "colors"}, location=OptionsDisplayer.FONTSANDCOLORS, index=4)
 public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionListener, FontsColorsController, PropertyChangeListener {
 
     private boolean listen;

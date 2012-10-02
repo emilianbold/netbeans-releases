@@ -46,11 +46,14 @@ import java.util.HashMap;
 import javax.swing.DefaultListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
  * @author mkleint
  */
+@OptionsPanelController.Keywords(keywords={"maven global"}, location=JavaOptions.JAVA, index=5)
 public class GlobalOptionsPanel extends javax.swing.JPanel {
     private HashMap<String, String> descMap;
 

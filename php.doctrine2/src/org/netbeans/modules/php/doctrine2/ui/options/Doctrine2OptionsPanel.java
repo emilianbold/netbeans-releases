@@ -64,6 +64,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.doctrine2.commands.Doctrine2Script;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
@@ -75,6 +76,7 @@ import org.openide.util.NbBundle;
 /**
  * Panel for Doctrine2 options.
  */
+@OptionsPanelController.Keywords(keywords={"php doctrine2"}, location=UiUtils.OPTIONS_PATH, index=12)
 public class Doctrine2OptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 67643468774654L;

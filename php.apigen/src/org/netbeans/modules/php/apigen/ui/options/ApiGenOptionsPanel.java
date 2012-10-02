@@ -66,6 +66,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.apigen.commands.ApiGenScript;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
@@ -74,6 +75,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
+@OptionsPanelController.Keywords(keywords={"php apigen"}, location=UiUtils.OPTIONS_PATH, index=5)
 public class ApiGenOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 458797646546L;

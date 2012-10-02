@@ -62,7 +62,9 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.spellchecker.Utilities;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
@@ -74,6 +76,7 @@ import org.openide.util.NbBundle;
 /**
  * @author David Kaspar
  */
+@OptionsPanelController.Keywords(keywords = {"install", "dictionary"}, location = OptionsDisplayer.EDITOR, index = 8)
 public class DictionaryInstallerPanel extends javax.swing.JPanel {
     private final JButton okButton;
 

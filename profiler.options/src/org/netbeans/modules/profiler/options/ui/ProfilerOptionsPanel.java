@@ -54,7 +54,9 @@ import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.*;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.modules.profiler.api.JavaPlatform;
+import org.netbeans.spi.options.OptionsPanelController;
 
 
 /**
@@ -107,6 +109,7 @@ import org.netbeans.modules.profiler.api.JavaPlatform;
     "ProfilerOptionsPanel_JavaPlatformComboAccessDescr=Java platform used for running the profiled application",
     "ProfilerOptionsPanel_IfThreadsMonitoringEnabledHint=if threads monitoring is enabled"
 })
+@OptionsPanelController.Keywords(keywords={"profiler"}, location=JavaOptions.JAVA, index=6)
 public final class ProfilerOptionsPanel extends JPanel implements ActionListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 

@@ -74,6 +74,22 @@ public final class OptionsDisplayer {
      * @since 1.8
      */
     public static final String ADVANCED = "Advanced"; // NOI18N
+    /** Registration name of Keymaps category (aka Keymap). 
+     * @since 1.29
+     */
+    public static final String KEYMAPS = "Keymaps"; // NOI18N
+    /** Registration name of FontsAndColors category (aka Fonts & Colors).
+     * @since 1.29
+     */
+    public static final String FONTSANDCOLORS = "FontsAndColors"; // NOI18N
+    /** Registration name of Editor category.
+     * @since 1.29
+     */
+    public static final String EDITOR = "Editor"; // NOI18N
+    /** Registration name of General category.
+     * @since 1.29
+     */
+    public static final String GENERAL = "General"; // NOI18N
     private String currentCategoryID = null;
     private AtomicBoolean operationCancelled;
         
