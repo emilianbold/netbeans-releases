@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.css.visual.editors;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,11 +55,14 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Icon;
+import javax.swing.JColorChooser;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.SpinnerModel;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.api.CssIndex;
@@ -73,11 +79,15 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marekfukala
  */
+@NbBundle.Messages({
+    "choose.color.item=Choose Color"
+})
 public class PropertyValuesEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
     private Collection<UnitGrammarElement> unitElements;
@@ -88,6 +98,9 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     private boolean containsColor;
     private FileObject file;
     private PropertyModel pmodel;
+    
+    private static final String CHOOSE_COLOR_ITEM = new StringBuilder().append("<html><b>").append(Bundle.choose_color_item()).append("</b></html>").toString();  //NOI18N
+    private static final JColorChooser COLOR_CHOOSER = new JColorChooser();
 
     public PropertyValuesEditor(PropertyModel pmodel, Model model, Collection<FixedTextGrammarElement> fixedElements, Collection<UnitGrammarElement> unitElements, boolean addNoneProperty) {
         this.fixedElements = fixedElements;
@@ -143,6 +156,8 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
                     }
                 }
+                
+                tagsList.add(0, CHOOSE_COLOR_ITEM);
             }
             
             if (addNoneProperty) {
@@ -169,6 +184,32 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         //same value, ignore
         if (str.equals(getValue())) {
             return;
+        }
+        
+        if(CHOOSE_COLOR_ITEM.equals(str)) {
+            //color chooser
+            final AtomicReference<Color> color_ref = new AtomicReference<Color>();
+            JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), CHOOSE_COLOR_ITEM, true, COLOR_CHOOSER,
+                    new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            color_ref.set(COLOR_CHOOSER.getColor());
+                        }
+                    }, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    //no-op
+                }
+            });
+            dialog.setVisible(true);
+            dialog.dispose();
+
+            Color color = color_ref.get();
+            if(color != null) {
+                str = WebUtils.toHexCode(color);
+                
+            }
+
         }
 
         if (RuleNode.NONE_PROPERTY_NAME.equals(str)) {
@@ -309,6 +350,12 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                     icon = WebUtils.createColorIcon(colorCode); //null CssColor will create default icon
                 }
 
+                if(strval.equals(CHOOSE_COLOR_ITEM)) {
+                    Color chooserColor = COLOR_CHOOSER.getColor();
+                    String hexCode = chooserColor != null ? WebUtils.toHexCode(chooserColor) : null;
+                    icon = WebUtils.createColorIcon(hexCode);
+                }
+                
                 FixedTextGrammarElement element = tags2fixedElement.get(strval);
                 if(!"inherit".equals(strval)) { //filter out colors for inherit
                     if (element != null) {
