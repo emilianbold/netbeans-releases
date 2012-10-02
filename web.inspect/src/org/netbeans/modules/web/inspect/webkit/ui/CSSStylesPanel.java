@@ -316,7 +316,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                 }
                             }
                         } else {
-//                            controller.setNoRuleState();
+                            controller.setNoRuleState();
                         }
                     }
                 });
