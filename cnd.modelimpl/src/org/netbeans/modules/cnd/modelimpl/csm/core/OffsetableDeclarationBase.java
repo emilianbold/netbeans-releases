@@ -305,13 +305,13 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         
         @Override
         public CharSequence getName() {
-            String[] split = super.getName().toString().split("::");
+            String[] split = super.getName().toString().split("::"); // NOI18N
             return NameCache.getManager().getString(split[split.length - 1]);
         }
         
         public CharSequence[] getScopeNames() {
             if(super.getName() != null) {
-                String[] split = super.getName().toString().split("::");
+                String[] split = super.getName().toString().split("::"); // NOI18N
                 CharSequence[] res = new CharSequence[split.length - 1];
                 for (int i = 0; i < res.length; i++) {
                     res[i] =  NameCache.getManager().getString(split[i]);
