@@ -97,6 +97,8 @@ import org.openide.windows.TopComponent;
     position=373
 )
 public class TplDataObject extends MultiDataObject implements CookieSet.Factory {
+    
+    private static final long serialVersionUID = 1L;
 
     private transient TplEditorSupport tplEditorSupport;
 
