@@ -1721,6 +1721,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("SE_COMPARATOR_SHOULD_BE_SERIALIZABLE")
     private static final class SyncItemImageIconComparator implements Comparator<ImageIcon> {
 
         @Override

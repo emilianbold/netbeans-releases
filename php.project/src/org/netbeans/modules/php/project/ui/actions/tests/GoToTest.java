@@ -177,6 +177,7 @@ public class GoToTest implements TestLocator {
                 if (!PhpUnit.isTestOrSuiteClass(phpClass.getName())) {
                     continue;
                 }
+                assert phpClass.getFullyQualifiedName() != null : "No FQN for php class: " + phpClass.getName();
                 classes.add(Pair.of(PhpUnit.getTestedClass(phpClass.getName()), PhpUnit.getTestedClass(phpClass.getFullyQualifiedName())));
             }
 
