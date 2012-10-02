@@ -547,6 +547,8 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                             bracketCounter--;
                         }
                         break;
+                    default:
+                        // do nothing
                 }
                 if (token.sym != ASTPHP5Symbols.T_INLINE_HTML) {
                     lastPHPToken = token;
@@ -722,7 +724,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         private String source;
         private String sanitizedSource;
         private OffsetRange sanitizedRange = OffsetRange.NONE;
-        private String sanitizedContents;
         private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
 
