@@ -49,6 +49,7 @@ package org.netbeans.modules.php.editor.parser;
 import java.util.*;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 
+@org.netbeans.api.annotations.common.SuppressWarnings({"DM_NUMBER_CTOR", "EI_EXPOSE_REP", "MS_PKGPROTECT"})
 /** CUP v0.11a beta 20060608 generated parser.
   * @version Wed Sep 05 13:43:46 CEST 2012
   */

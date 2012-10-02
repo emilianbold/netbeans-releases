@@ -70,6 +70,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> UNUSED_USES_SET = EnumSet.of(ColoringAttributes.UNUSED);
     private static final String NAMESPACE_SEPARATOR = "\\"; //NOI18N
 
+    // @GuarderBy("this")
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
     private Set<UnusedOffsetRanges> unusedUsesOffsetRanges;
@@ -94,7 +95,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     }
 
     @Override
-    public void cancel() {
+    public synchronized void cancel() {
         cancelled = true;
     }
 

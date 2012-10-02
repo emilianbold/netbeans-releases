@@ -44,17 +44,16 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java_cup.runtime.Symbol;
+import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.php.editor.parser.GSFPHPParser.Context;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.csl.api.Error;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,15 +100,15 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
         syntaxErrors = new ArrayList<SyntaxError>();
     }
 
+    @Override
     public void handleError(Type type, short[] expectedtokens, Symbol current, Symbol previous) {
-        org.netbeans.modules.csl.api.Error error;
         if (type == ParserErrorHandler.Type.SYNTAX_ERROR) {
             // logging syntax error
             if (LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.finest("Syntax error:"); //NOI18N
-                LOGGER.finest("Current [" + current.left + ", " + current.right + "](" + Utils.getASTScannerTokenName(current.sym) + "): " + current.value); //NOI18N
-                LOGGER.finest("Previous [" + previous.left + ", " + previous.right + "] (" + Utils.getASTScannerTokenName(previous.sym) + "):" + previous.value); //NOI18N
-                StringBuffer message = new StringBuffer();
+                LOGGER.log(Level.FINEST, "Current [{0}, {1}]({2}): {3}", new Object[]{current.left, current.right, Utils.getASTScannerTokenName(current.sym), current.value}); //NOI18N
+                LOGGER.log(Level.FINEST, "Previous [{0}, {1}] ({2}):{3}", new Object[]{previous.left, previous.right, Utils.getASTScannerTokenName(previous.sym), previous.value}); //NOI18N
+                StringBuilder message = new StringBuilder();
                 message.append("Expected tokens:"); //NOI18N
                 for (int i = 0; i < expectedtokens.length; i += 2) {
                     message.append(" ").append( Utils.getASTScannerTokenName(expectedtokens[i])); //NOI18N
@@ -117,23 +116,6 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
                 LOGGER.finest(message.toString());
             }
             syntaxErrors.add(new SyntaxError(expectedtokens, current, previous));
-        } else {
-            String message = null;
-            if (current != null) {
-                String tagText = getTokenTextForm(current.sym);
-                if (tagText != null) {
-                    message = "Unexpected " + tagText;
-                }
-                else {
-                    message = "Unexpected " + Utils.getASTScannerTokenName(current.sym);
-                }
-            }
-            if (message == null) {
-                message = "Parser error";
-            }
-            error = new GSFPHPError(message, context.getSnapshot().getSource().getFileObject(),
-                    current.left, current.right, Severity.ERROR, null);
-            //TODO: context.getListener().error(error);
         }
     }
 
@@ -155,7 +137,7 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
                     }
                 }
                 if (astError != null) {
-                    LOGGER.finest("ASTError [" + astError.getStartOffset() + ", " + astError.getEndOffset() + "]"); //NOI18N
+                    LOGGER.log(Level.FINEST, "ASTError [{0}, {1}]", new Object[]{astError.getStartOffset(), astError.getEndOffset()}); //NOI18N
                 } else {
                     LOGGER.finest("ASTError was not found");  //NOI18N
                 }
@@ -168,10 +150,10 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
 
     // This is just defualt handling. We can do a logic, which will find metter
     private Error defaultSyntaxErrorHandling(SyntaxError syntaxError, ASTNode astError) {
-        Error error = null;
+        Error error;
         String unexpectedText = "";     //NOI18N
-        StringBuffer message = new StringBuffer();
-        boolean isUnexpected = false;
+        StringBuilder message = new StringBuilder();
+        boolean isUnexpected;
         int start  = syntaxError.getCurrentToken().left;
         int end = syntaxError.getCurrentToken().right;
 
@@ -366,6 +348,8 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
             case ASTPHP5Symbols.T_CURLY_OPEN : text = "{"; break; //NOI18N
             case ASTPHP5Symbols.T_DOUBLE_ARROW : text = "=>"; break; //NOI18N
             case ASTPHP5Symbols.T_DOLLAR_OPEN_CURLY_BRACES : text = "${"; break; //NOI18N
+            default:
+                //no-op
         }
         return text;
     }
