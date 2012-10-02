@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.remote;
+package org.netbeans.modules.web.common.remote;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -53,7 +53,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import org.netbeans.modules.web.clientproject.spi.RemoteFileCacheImplementation;
+import org.netbeans.modules.web.common.spi.RemoteFileCacheImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;

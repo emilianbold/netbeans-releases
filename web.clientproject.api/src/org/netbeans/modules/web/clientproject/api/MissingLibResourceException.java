@@ -52,11 +52,11 @@ import org.openide.filesystems.FileObject;
  * @author ads
  *
  */
-public class MissingLibResourceException extends Exception {
+public final class MissingLibResourceException extends Exception {
     
     private static final long serialVersionUID = -6752342401622745978L;
 
-    public MissingLibResourceException(List<FileObject> files){
+    MissingLibResourceException(List<FileObject> files){
         this.files = Collections.unmodifiableList(files);
     }
 

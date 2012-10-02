@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JToolTip;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;

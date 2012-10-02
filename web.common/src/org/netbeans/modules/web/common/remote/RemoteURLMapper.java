@@ -39,58 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.api;
+package org.netbeans.modules.web.common.remote;
 
-import org.netbeans.modules.web.browser.spi.DependentFileQueryImplementation;
+import java.io.File;
+import java.net.URL;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * An API entry point to query dependency relationships between files. 
- * None SPI is really implemented at this stage - see comments below.
+ * Assures serialization and de-serialization of file objects from RemoteFS.
+ * Serves only files, that are cached already.
+ * 
+ * @author Martin
  */
-public class DependentFileQuery {
-
-    private static Lookup.Result<DependentFileQueryImplementation> lookup = 
-            Lookup.getDefault().lookupResult(DependentFileQueryImplementation.class);
+@ServiceProvider(service=URLMapper.class)
+public class RemoteURLMapper extends URLMapper {
     
-    /**
-     * Does "master" FileObject depends on "dependent" FileObject? Typical usage will
-     * be to answer questions like "does foo.html depends on style.css?"
-     */
-    public static boolean isDependent(FileObject master, FileObject dependent) {
-        if (dependent.equals(master)) {
-            return true;
-        }
-        for (DependentFileQueryImplementation impl : lookup.allInstances()) {
-            if (Boolean.TRUE.equals(impl.isDependent(master, dependent))) {
-                return true;
+    @Override
+    public URL getURL(FileObject fo, int type) {
+        URL url = RemoteFilesCache.getDefault().isRemoteFile(fo);
+        return url;
+    }
+
+    @Override
+    public FileObject[] getFileObjects(URL url) {
+        String protocol = url.getProtocol();
+        if ("http".equals(protocol) || "https".equals(protocol)) {      // NOI18N
+            File cachedFile = RemoteFilesCache.getCachedFileName(url);
+            if (cachedFile.exists()) {
+                FileObject fo = RemoteFS.getDefault().getFileForURL(url);
+                if (fo != null) {
+                    return new FileObject[] { fo };
+                }
             }
         }
-        
-        return false;
+        return null;
     }
     
-    /*
-     * Find collection of files whose change affects changes in the view of <code>fileObject</code>.
-     * F.e. if <code>fileObject</code> is html file then its view is affected 
-     * by changes in included JS or CSS files. Related to {@link #isDependent} .
-     * @param fileObject
-     * @return collection of files from which <code>fileObject</code> depends on
-     *
-    public static Set<FileObject> getDependent(FileObject fileObject) {
-        Collection<? extends DependentFileQueryImplementation> impls = lookup.allInstances();
-        if ( impls.isEmpty() ){
-            return Collections.emptySet();
-        }
-        if ( impls.size() == 1){
-            return impls.iterator().next().getDependent(fileObject);
-        }
-        HashSet<FileObject> result = new HashSet<FileObject>();
-        for( DependentFileQueryImplementation impl : lookup.allInstances()){
-            Set<FileObject> set = impl.getDependent(fileObject);
-            result.addAll(set);
-        }
-        return result;
-    }*/
 }

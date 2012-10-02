@@ -39,19 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.common.spi;
 
-package org.netbeans.modules.web.clientproject.spi;
-
-import java.io.IOException;
-import java.net.URL;
 import org.openide.filesystems.FileObject;
 
 /**
- * Plugable implementation of remote file caching. See API version for JavaDoc.
+ * See DependentFileQuery API for more info.
  */
-public interface RemoteFileCacheImplementation {
-
-    FileObject getRemoteFile(URL file) throws IOException;
+public interface DependentFileQueryImplementation {
     
-    URL isRemoteFile(FileObject fo);
+    Boolean isDependent(FileObject master, FileObject dependent);
+    
+    //Set<FileObject> getDependent( FileObject fileObject );
+    
 }
