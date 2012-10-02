@@ -75,10 +75,14 @@ import org.openide.util.Exceptions;
 public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
     private MatcherContext context;
-    protected static boolean testMode = false;
+    private static boolean testMode = false;
 
     public TplBracesMatching() {
         this(null);
+    }
+
+    protected static void setTestMode(boolean testMode) {
+        TplBracesMatching.testMode = testMode;
     }
 
     private TplBracesMatching(MatcherContext context) {

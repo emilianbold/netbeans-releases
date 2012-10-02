@@ -101,7 +101,7 @@ public class TplCompletionProvider implements CompletionProvider {
         @Override
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
-                TplCompletionQuery.CompletionResult result = new TplCompletionQuery(doc, caretOffset).query();
+                TplCompletionQuery.CompletionResult result = new TplCompletionQuery(doc).query();
                 if (result != null) {
                     items = getItems(result, doc, caretOffset);
                 } else {
@@ -190,7 +190,7 @@ public class TplCompletionProvider implements CompletionProvider {
                     //item == null means that the DocQuery is invoked
                     //based on the explicit documentation opening request
                     //(not ivoked by selecting a completion item in the list)
-                    TplCompletionQuery.CompletionResult result = new TplCompletionQuery(doc, caretOffset).query();
+                    TplCompletionQuery.CompletionResult result = new TplCompletionQuery(doc).query();
                     if (result != null && result.getFunctions().size() > 0) {
                         item = result.getFunctions().iterator().next();
                     }
