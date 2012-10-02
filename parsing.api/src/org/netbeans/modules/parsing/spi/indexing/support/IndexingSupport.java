@@ -107,7 +107,7 @@ public final class IndexingSupport {
      */
     public boolean isValid() {
         try {
-            return spiIndex.getStatus() != Index.Status.INVALID;
+            return spiIndex != null && spiIndex.getStatus() != Index.Status.INVALID;
         } catch (IOException e) {
             return false;
         }
@@ -149,7 +149,9 @@ public final class IndexingSupport {
      */
     public void addDocument (final IndexDocument document) {
         Parameters.notNull("document", document.spi); //NOI18N
-        spiIndex.addDocument (document.spi);
+        if (spiIndex != null) {
+            spiIndex.addDocument (document.spi);
+        }
     }
 
     /**
@@ -158,7 +160,9 @@ public final class IndexingSupport {
      */
     public void removeDocuments (final Indexable indexable) {
         Parameters.notNull("indexable", indexable); //NOI18N
-        spiIndex.removeDocument (indexable.getRelativePath());
+        if (spiIndex != null) {
+            spiIndex.removeDocument (indexable.getRelativePath());
+        }
     }
 
     /**
@@ -172,7 +176,9 @@ public final class IndexingSupport {
      */
     public void markDirtyDocuments (final Indexable indexable) {
         Parameters.notNull("indexable", indexable); //NOI18N
-        spiIndex.markKeyDirty(indexable.getRelativePath());
+        if (spiIndex != null) {
+            spiIndex.markKeyDirty(indexable.getRelativePath());
+        }
     }
 
 }
