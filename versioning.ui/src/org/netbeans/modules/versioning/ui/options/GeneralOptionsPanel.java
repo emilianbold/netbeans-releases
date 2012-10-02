@@ -64,7 +64,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-@OptionsPanelController.Keywords(keywords={"general", "versioning"}, location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
+@OptionsPanelController.Keywords(keywords={"#GeneralOptionsPanel.kw1", "#GeneralOptionsPanel.kw3", "#GeneralOptionsPanel.kw3"}, location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
 final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionListener {
     
     private final GeneralOptionsPanelController controller;

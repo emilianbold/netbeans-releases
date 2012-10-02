@@ -45,8 +45,12 @@
 package org.netbeans.modules.git.options;
 
 
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.spi.options.OptionsPanelController;
 
+@OptionsPanelController.Keywords(keywords={"git", "#GitOptionsPanel.kw1", "#GitOptionsPanel.kw2", "#GitOptionsPanel.kw3", "#GitOptionsPanel.kw4"},
+        location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
 final class GitOptionsPanel extends javax.swing.JPanel {
     
     private final GitOptionsPanelController controller;
