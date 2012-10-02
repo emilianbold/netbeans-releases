@@ -1595,41 +1595,7 @@ member_declaration [decl_kind kind]
 @init                                                                           {if(state.backtracking == 0){action.member_declaration(input.LT(1));}}
 @after                                                                          {if(state.backtracking == 0){action.end_member_declaration(input.LT(0));}}
     :
-                                                                                {action.decl_specifiers(input.LT(1));}
-        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
-        (
-            (IDENT? COLON)=>
-                member_bitfield_declarator ( COMMA member_declarator )* SEMICOLON
-        |
-            (constructor_declarator)=>
-                constructor_declarator
-                (
-                    // this was member_declarator_list
-                    ( 
-                        COMMA                                                   {action.member_declaration(action.MEMBER_DECLARATION__COMMA2, input.LT(0));}
-                        member_declarator 
-                    )* 
-                    SEMICOLON                                                   {action.member_declaration(action.MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
-                |
-                    function_definition_after_declarator
-                )
-        |
-            declarator
-            (
-                { /*$declarator.type.is_function()*/ (input.LA(1) != ASSIGNEQUAL && (input.LA(1) != COLON || input.LA(0) == RPAREN)) }?
-                    function_definition_after_declarator
-            |
-                // this was member_declarator_list
-                constant_initializer? 
-                ( 
-                    COMMA                                                       {action.member_declaration(action.MEMBER_DECLARATION__COMMA2, input.LT(0));}
-                    member_declarator 
-                )* 
-                SEMICOLON                                                       {action.member_declaration(action.MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
-            )
-        |
-            SEMICOLON
-        )
+        simple_member_declaration_or_function_definition[kind]
     |
         /* this is likely to be covered by decl_specifier/declarator part of member_declarator
             SCOPE? nested_name_specifier LITERAL_template? unqualified_id SEMICOLON
@@ -1643,6 +1609,47 @@ member_declaration [decl_kind kind]
         static_assert_declaration
     |
         alias_declaration
+    ;
+
+simple_member_declaration_or_function_definition[decl_kind kind]
+@init                                                                           {if(state.backtracking == 0){action.simple_member_declaration(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_simple_member_declaration(input.LT(0));}}
+    :
+                                                                                {action.decl_specifiers(input.LT(1));}
+        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
+        (
+            (IDENT? COLON)=>
+                member_bitfield_declarator ( COMMA member_declarator )* SEMICOLON
+        |
+            (constructor_declarator)=>
+                constructor_declarator
+                (
+                    // this was member_declarator_list
+                    ( 
+                        COMMA                                                   {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__COMMA2, input.LT(0));}
+                        member_declarator 
+                    )* 
+                    SEMICOLON                                                   {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
+                |
+                    function_definition_after_declarator
+                )
+        |
+            declarator
+            (
+                { /*$declarator.type.is_function()*/ (input.LA(1) != ASSIGNEQUAL && (input.LA(1) != COLON || input.LA(0) == RPAREN)) }?
+                    function_definition_after_declarator
+            |
+                // this was member_declarator_list
+                constant_initializer? 
+                ( 
+                    COMMA                                                       {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__COMMA2, input.LT(0));}
+                    member_declarator 
+                )* 
+                SEMICOLON                                                       {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
+            )
+        |
+            SEMICOLON
+        )
     ;
 
 member_bitfield_declarator
