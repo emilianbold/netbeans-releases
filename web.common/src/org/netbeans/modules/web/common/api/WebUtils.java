@@ -411,10 +411,15 @@ public class WebUtils {
      * The implementation caches the created icons weakly by their color codes.
      * 
      * @since 1.24
-     * @param colorCode 3 or 6 digits hex color code (examples: aabbcc, ff0012)
+     * @param colorCode 3 or 6 digits hex color code (examples: aabbcc, #ff0012). May or may not start with hash char.
      * @return an instance of ImageIcon.
      */
     public static ImageIcon createColorIcon(String colorCode) {
+        if(colorCode != null && colorCode.length() > 0 && '#' == colorCode.charAt(0)) {
+            //strip the leading hash
+            colorCode = colorCode.substring(1);
+        }
+        
         ImageIcon icon = ICONS_WEAK_CACHE.get(colorCode);
         if(icon == null) {
             icon = _createColorIcon(colorCode);
