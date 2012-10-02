@@ -70,7 +70,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.options.colors.spi.FontsColorsController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.ColorComboBox;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -79,6 +81,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords={"highlighting"}, location=OptionsDisplayer.FONTSANDCOLORS, index=1)
 public class HighlightingPanel extends JPanel implements ActionListener, ItemListener, FontsColorsController {
     
     private ColorModel          colorModel = null;

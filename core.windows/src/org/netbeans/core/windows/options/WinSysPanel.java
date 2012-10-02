@@ -49,12 +49,15 @@ import java.awt.event.ItemListener;
 import java.util.prefs.Preferences;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.windows.FloatingWindowTransparencyManager;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
+@OptionsPanelController.Keywords(keywords={"#AdvancedOption_DisplayName_WinSys"}, location=OptionsDisplayer.ADVANCED, tabTitle="#AdvancedOption_DisplayName_WinSys")
 final class WinSysPanel extends javax.swing.JPanel {
 
     private final WinSysOptionsPanelController controller;

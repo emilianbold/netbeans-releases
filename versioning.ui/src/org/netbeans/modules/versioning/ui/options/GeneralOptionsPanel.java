@@ -54,14 +54,17 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.Utils;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
+@OptionsPanelController.Keywords(keywords={"general", "versioning"}, location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
 final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionListener {
     
     private final GeneralOptionsPanelController controller;

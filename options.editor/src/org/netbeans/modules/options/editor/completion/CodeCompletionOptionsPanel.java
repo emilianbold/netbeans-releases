@@ -55,13 +55,16 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.WeakListeners;
 
 /**
  * @author Dusan Balek
  */
+@OptionsPanelController.Keywords(keywords = {"code completion"}, location = OptionsDisplayer.EDITOR, index = 2)
 public class CodeCompletionOptionsPanel extends JPanel implements PropertyChangeListener {
     
     private CodeCompletionOptionsSelector selector;

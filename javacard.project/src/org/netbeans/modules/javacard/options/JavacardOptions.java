@@ -49,6 +49,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.javacard.common.GuiUtils;
 import org.netbeans.modules.javacard.common.Utils;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.netbeans.validation.api.Problem;
 import org.netbeans.validation.api.Validator;
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
@@ -57,6 +59,7 @@ import org.netbeans.validation.api.ui.ValidationUI;
 import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.util.NbBundle;
 
+@OptionsPanelController.Keywords(keywords={"java card"}, location=JavaOptions.JAVA, index=2)
 final class JavacardOptions extends javax.swing.JPanel implements ValidationUI, DocumentListener {
 
     private final JavacardOptionsPanelController controller;

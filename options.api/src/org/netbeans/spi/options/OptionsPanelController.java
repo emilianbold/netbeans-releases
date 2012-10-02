@@ -316,4 +316,63 @@ public abstract class OptionsPanelController {
         int position() default Integer.MAX_VALUE;
     }
 
+    /**
+     * Similar to {@link Keywords} but permits multiple registrations of
+     * one class.
+     *
+     * @since org.netbeans.modules.options.api/1 1.29
+     */
+    @Target({ElementType.TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface KeywordsRegistration {
+
+        /**
+         * List of Keywords registrations.
+         */
+        Keywords[] value();
+    }
+
+    /**
+     * Registers keywords for some panel in the Options dialog. Should be placed
+     * on a {@link JPanel} instance.
+     *
+     * @since org.netbeans.modules.options.api/1 1.29
+     */
+    @Target({ElementType.TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Keywords {
+
+        /**
+         * Keywords for use with search inside the Options dialog. You may use
+         * {@code #key} syntax.
+         */
+        String[] keywords();
+
+        /**
+         * Keyword category for use with search inside the Options dialog.
+         *
+         * Location of this panel inside some top-level panel matching
+         * {@link ContainerRegistration#id} or {@link SubRegistration#location}.
+         * Typically this should be a reference to a compile-time constant also
+         * used for the container's ID.
+         *
+         * If the panel is in the Miscellaneous category you must also specify {@link #tabTitle}).
+         */
+        String location();
+
+        /**
+         * Optional title that must be used if the panel is in the Miscellaneous category.
+         * 
+         * You may use {@code #key} syntax.
+         */
+        String tabTitle() default "";
+
+        /**
+         * Position relative to sibling subpanels matching the tab index in a tabbed pane.
+         * If the panel is in the Miscellaneous panel there is no need to specify the index 
+         * as tabs in Miscellaneous category are always sorted alphabetically.
+         */
+        int index() default -1;
+    }
+
 }

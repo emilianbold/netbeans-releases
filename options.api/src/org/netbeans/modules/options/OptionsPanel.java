@@ -77,37 +77,32 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractAction;
-import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.options.CategoryModel.Category;
 import org.netbeans.modules.options.advanced.AdvancedPanel;
 import org.netbeans.modules.options.ui.VariableBorder;
@@ -115,6 +110,8 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.QuickSearch;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -141,6 +138,10 @@ public class OptionsPanel extends JPanel {
     private HashMap<String, HashMap<Integer, TabInfo>> categoryid2tabs = new HashMap<String, HashMap<Integer, TabInfo>>();
     private ArrayList<String> disabledCategories = new ArrayList<String>();
     private JTextField keymapsSearch = null;
+
+    private ArrayList<FileObject> advancedFOs = new ArrayList<FileObject>();
+    private HashMap<String, Integer> dublicateKeywordsFOs = new HashMap<String, Integer>();
+    private HashMap<FileObject, Integer> fo2index = new HashMap<FileObject, Integer>();
 
     private Map<String, CategoryButton> buttons = new LinkedHashMap<String, CategoryButton>();    
     private final boolean isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");
@@ -404,189 +405,126 @@ public class OptionsPanel extends JPanel {
         for (Map.Entry<String, CategoryModel.Category> set : categories) {
             JComponent jcomp = set.getValue().getComponent();
             String id = set.getValue().getID();
-            ArrayList<String> strings = categoryid2words.get(id);
-            if (strings == null) {
-                strings = new ArrayList<String>();
-            }
-            if (!strings.contains(id.toUpperCase())) {
-                strings.add(id.toUpperCase());
-            }
-            categoryid2words.put(id, strings);
             if(jcomp instanceof JTabbedPane) {
                 categoryid2tabbedpane.put(id, (JTabbedPane)jcomp);
-                handleJTabbedPane((JTabbedPane)jcomp, id);
             } else if(jcomp instanceof AdvancedPanel) {
                 categoryid2tabbedpane.put(id, (JTabbedPane)jcomp.getComponent(0));
-                handleJTabbedPane((JTabbedPane)jcomp.getComponent(0), id);
             } else if (jcomp instanceof Container) {
-                setCurrentCategory(set.getValue(), null);
                 handleAllComponents((Container) jcomp, id, null, -1);
             }
         }
+
+        FileObject keywordsFOs = FileUtil.getConfigRoot().getFileObject(CategoryModel.OD_LAYER_KEYWORDS_FOLDER_NAME);
+        
+        for(FileObject keywordsFO : keywordsFOs.getChildren()) {
+            String location = keywordsFO.getAttribute("location").toString(); //NOI18N
+            if (location.equals(OptionsDisplayer.ADVANCED)) {
+                String id = keywordsFO.getAttribute("tabTitle").toString(); //NOI18N
+                if(dublicateKeywordsFOs.containsKey(id)) {
+                    int value = dublicateKeywordsFOs.get(id);
+                    value++;
+                    dublicateKeywordsFOs.put(id, value);
+                } else {
+                    dublicateKeywordsFOs.put(id, 0);
+                }
+                advancedFOs.add(keywordsFO);
+            }
+        }
+        Collections.sort(advancedFOs, new AdvancedComparable());
+
+        for (int i = 0; i < advancedFOs.size(); i++) {
+            FileObject fo = advancedFOs.get(i);
+            fo2index.put(fo, i);
+        }
+        for (int i = 0; i < advancedFOs.size(); i++) {
+            FileObject fo = advancedFOs.get(i);
+            String id = fo.getAttribute("tabTitle").toString(); //NOI18N
+            int val = dublicateKeywordsFOs.get(id);
+            if(val != 0) {
+                fo2index.put(fo, fo2index.get(fo));
+                for (int j = i + 1; j <= i + val; j++) {
+                    FileObject fo2 = advancedFOs.get(j);
+                    fo2index.put(fo2, fo2index.get(fo));
+                }
+                for (int j = i + val + 1; j < advancedFOs.size(); j++) {
+                    FileObject fo2 = advancedFOs.get(j);
+                    fo2index.put(fo2, fo2index.get(fo2) - val);
+                }
+                i = i + val;
+            }
+        }
+        for(FileObject keywordsFO : keywordsFOs.getChildren()) {
+            handlePanel(keywordsFO);
+        }
     }
 
-    private void handleJTabbedPane(JTabbedPane pane, String categoryID) {
-        int tabsNum = pane.getTabCount();
-        selectedTabIndex = pane.getSelectedIndex();
+    private class AdvancedComparable implements Comparator<FileObject> {
 
-        if (!categoryid2tabs.containsKey(categoryID)) {
-            categoryid2tabs.put(categoryID, new HashMap<Integer, TabInfo>());
+        @Override
+        public int compare(FileObject r1, FileObject r2) {
+            return r1.getAttribute("tabTitle").toString().compareTo(r2.getAttribute("tabTitle").toString()); //NOI18N
         }
-        HashMap<Integer, TabInfo> categoryTabs = categoryid2tabs.get(categoryID);
+    }
+
+    private void handlePanel(FileObject keywordsFO) {
+        String location = keywordsFO.getAttribute("location").toString(); //NOI18N
+        int tabIndex = (Integer) keywordsFO.getAttribute("index"); //NOI18N
+
+        if (location.equals(OptionsDisplayer.ADVANCED)) {
+            tabIndex = fo2index.get(keywordsFO);
+        }
+
+        ArrayList<String> keywords = new ArrayList<String>();
+        keywords.addAll(Arrays.asList(keywordsFO.getAttribute("keywords").toString().split(","))); //NOI18N
+
+        ArrayList<String> words = categoryid2words.get(location);
+        if (words == null) {
+            words = new ArrayList<String>();
+        }
+
+        Set<String> newWords = new HashSet<String>();
+        for (String keyword : keywords) {
+            if (!words.contains(keyword)) {
+                newWords.add(keyword);
+             }
+         }
+
+        words.addAll(newWords);
+        categoryid2words.put(location, words);
+
+        if (!categoryid2tabs.containsKey(location)) {
+            categoryid2tabs.put(location, new HashMap<Integer, TabInfo>());
+        }
+        HashMap<Integer, TabInfo> categoryTabs = categoryid2tabs.get(location);
         TabInfo tabInfo;
-
-        for (int i = 0; i < tabsNum; i++) {
-            pane.setSelectedIndex(i);
-            Component tab = pane.getComponentAt(i);
-            
-            if (!categoryTabs.containsKey(i)) {
-                tabInfo = new TabInfo(pane.getTitleAt(i), CategoryModel.getInstance().getCategory(categoryID).getCategoryName(), tab);
-            } else {
-                tabInfo = categoryTabs.get(i);
-            }
-            categoryTabs.put(i, tabInfo);
-            categoryid2tabs.put(categoryID, categoryTabs);
-            
-            ArrayList<String> strings = categoryid2words.get(categoryID);
-            if (strings == null) {
-                strings = new ArrayList<String>();
-            }
-            if (!strings.contains(pane.getTitleAt(i).toUpperCase())) {
-                strings.add(pane.getTitleAt(i).toUpperCase());
-            }
-            categoryid2words.put(categoryID, strings);            
-            
-            if (tab instanceof Container) {
-                handleAllComponents((Container) tab, categoryID, pane, i);
-            }
+        if (!categoryTabs.containsKey(tabIndex)) {
+            tabInfo = new TabInfo();
+        } else {
+            tabInfo = categoryTabs.get(tabIndex);
         }
-        pane.setSelectedIndex(selectedTabIndex);
-    }
+        tabInfo.addWords(newWords);
+        categoryTabs.put(tabIndex, tabInfo);
+        categoryid2tabs.put(location, categoryTabs);
+     }
 
     private void handleAllComponents(Container container, String categoryID, JTabbedPane tabbedPane, int index) {
         Component[] components = container.getComponents();
-        Component component = null;
-        ArrayList<String> strings = categoryid2words.get(categoryID);
-        if(strings == null) {
-            strings = new ArrayList<String>();
-        }
-
+        Component component;
         for (int i = 0; i < components.length; i++) {
             component = components[i];
-            String text = "";
-            
-            if (component instanceof JComponent) {
-                final Border border = ((JComponent)component).getBorder();
-                if (border instanceof TitledBorder) {
-                    TitledBorder titledBorder = (TitledBorder) border;
-                    text = titledBorder.getTitle();
-                    if (text != null && !text.isEmpty() && !strings.contains(text.toUpperCase())) {
-                        strings.add(text.toUpperCase());
-                    }
-                }
-            }
+            String text;
             
             if (component instanceof JLabel) {
                 text = ((JLabel) component).getText();
-                if (text != null && !text.isEmpty() && !strings.contains(text.toUpperCase())) {
-                    strings.add(text.toUpperCase());
-                }
                 // hack to search into Keymaps category
                 if(categoryID.equals("Keymaps") && text.equals("Search:")) { // NOI18N
                     keymapsSearch = (JTextField)((JLabel) component).getLabelFor();
-                }
-            } else if (component instanceof AbstractButton) {
-                text = ((AbstractButton) component).getText();
-                if (text != null && !text.isEmpty() && !strings.contains(text.toUpperCase())) {
-                    strings.add(text.toUpperCase());
-                }
-            } else if (component instanceof JTextComponent) {
-                text = ((JTextComponent) component).getText();
-                if (text != null && !text.isEmpty() && !strings.contains(text.toUpperCase())) {
-                    strings.add(text.toUpperCase());
-                }
-            } else if (component instanceof JComboBox) {
-                StringBuilder sb = new StringBuilder();
-                for (int j = 0; j < ((JComboBox) component).getItemCount(); j++) {
-                    Object object = ((JComboBox) component).getItemAt(j);
-                    text = object.toString();
-                    if (text != null && !text.isEmpty()) {
-                        if (!strings.contains(text.toUpperCase())) {
-                            strings.add(text.toUpperCase());
-                        }
-                        sb.append(text.toUpperCase().concat(" "));
-                    }
-                }
-                text = sb.toString().trim();
-            } else if (component instanceof JList) {
-                StringBuilder sb = new StringBuilder();
-                ListModel model = ((JList) component).getModel();
-                if (model != null) {
-                    for (int j = 0; j < model.getSize(); j++) {
-                        Object object = model.getElementAt(j);
-                        if (object != null) {
-                            text = object.toString();
-                            if (text != null && !text.isEmpty()) {
-                                if (!strings.contains(text.toUpperCase())) {
-                                    strings.add(text.toUpperCase());
-                                }
-                                sb.append(text.toUpperCase().concat(" "));
-                            }
-                        }
-                    }
-                }
-                text = sb.toString().trim();
-            } else if (component instanceof JTable) {
-                StringBuilder sb = new StringBuilder();
-                JTableHeader header = ((JTable) component).getTableHeader();
-                if (header != null) {
-                    TableColumnModel columnModel = header.getColumnModel();
-                    for (int j = 0; j < columnModel.getColumnCount(); j++) {
-                        Object object = columnModel.getColumn(j).getHeaderValue();
-                        if (object != null) {
-                            text = object.toString();
-                            if (text != null && !text.isEmpty()) {
-                                if (!strings.contains(text.toUpperCase())) {
-                                    strings.add(text.toUpperCase());
-                                }
-                                sb.append(text.toUpperCase().concat(" "));
-                            }
-                        }
-                    }
-                }
-                
-                TableModel model = ((JTable) component).getModel();
-                for (int j = 0; j < model.getRowCount(); j++) {
-                    for (int k = 0; k < model.getColumnCount(); k++) {
-                        Object object = model.getValueAt(j, k);
-                        if(object != null) {
-                            text = object.toString();
-                            if (text != null && !text.isEmpty()) {
-                                if (!strings.contains(text.toUpperCase())) {
-                                    strings.add(text.toUpperCase());
-                                }
-                                sb.append(text.toUpperCase().concat(" "));
-                            }
-                        }
-                    }                    
-                }
-                text = sb.toString().trim();
-            }
-
-            categoryid2words.put(categoryID, strings);
-            
-            if (tabbedPane != null && index > -1) {
-                TabInfo tabInfo = categoryid2tabs.get(categoryID).get(index);
-                if (text != null && !text.isEmpty() && !tabInfo.getWords().contains(text.toUpperCase())) {
-                    tabInfo.addWord(text.toUpperCase());
-                    categoryid2tabs.get(categoryID).put(index, tabInfo);
                 }
             }
             if(component instanceof JTabbedPane) {
                 if(categoryid2tabbedpane.get(categoryID) == null) {
                     categoryid2tabbedpane.put(categoryID, (JTabbedPane)component);
                 }
-                handleJTabbedPane((JTabbedPane)component, categoryID);
             } else {
                 handleAllComponents((Container)component, categoryID, tabbedPane, index);
             }
@@ -596,30 +534,10 @@ public class OptionsPanel extends JPanel {
     
     private class TabInfo {
 
-        private String tabTitle;
-        private Component tab;
-        private String categoryName;
         private ArrayList<String> words;
 
-        public TabInfo(String tabTitle, String categoryName, Component tab) {
-            this.tabTitle = tabTitle;
-            this.categoryName = categoryName;
-            this.tab = tab;
+        public TabInfo() {
             this.words = new ArrayList<String>();
-            words.add(tabTitle.toUpperCase());
-            words.add(categoryName.toUpperCase());
-        }
-
-        public String getTabTitle() {
-            return tabTitle;
-        }
-
-        public Component getTab() {
-            return tab;
-        }
-
-        public String getCategoryName() {
-            return categoryName;
         }
 
         public ArrayList<String> getWords() {
@@ -628,6 +546,12 @@ public class OptionsPanel extends JPanel {
 
         public void addWord(String word) {
             words.add(word.toUpperCase());
+        }
+
+        public void addWords(Set<String> words) {
+            for (String word : words) {
+                addWord(word);
+            }
         }
     }
 
@@ -679,90 +603,92 @@ public class OptionsPanel extends JPanel {
         }
         
         private void handleSearch(String searchText) {
-            String visibleCategory = null;
             String exactCategory = null;
-            int exactTabIndex = 0;
+            int exactTabIndex = -1;
             for (String id : CategoryModel.getInstance().getCategoryIDs()) {
                 ArrayList<String> entry = categoryid2words.get(id);
-                boolean found = false;
-                for (String text : entry) {
-                    if (text.contains(searchText.toUpperCase())) {
-                        found = true;
-                        if(id.toUpperCase().contains(searchText.toUpperCase())) {
-                            exactCategory = id;
+                if (entry != null) {
+                    boolean found = false;
+                    for (String text : entry) {
+                        if (text.contains(searchText.toUpperCase())) {
+                            found = true;
+                            if (id.toUpperCase().contains(searchText.toUpperCase())) {
+                                exactCategory = id;
+                            }
+                            break;
                         }
+                    }
+
+                    if (found) {
+                        disabledCategories.remove(id);
+                        buttons.get(id).setEnabled(true);
+                        JTabbedPane pane = categoryid2tabbedpane.get(id);
+                        if (categoryid2tabs.get(id) != null) {
+                            HashMap<Integer, TabInfo> tabsInfo = categoryid2tabs.get(id);
+                            for (Integer tabIndex : tabsInfo.keySet()) {
+                                if (tabIndex != -1) {
+                                    ArrayList<String> tabWords = tabsInfo.get(tabIndex).getWords();
+                                    boolean foundInTab = false;
+                                    for (int i = 0; i < tabWords.size(); i++) {
+                                        String txt = tabWords.get(i).toString().toUpperCase();
+                                        if (txt.contains(searchText.toUpperCase())) {
+                                            foundInTab = true;
+                                            exactTabIndex = tabIndex;
+                                            setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+                                            break;
+                                        }
+                                    }
+                                    if (foundInTab) {
+                                        pane.setEnabledAt(tabIndex, true);
+                                        if (exactTabIndex == tabIndex) {
+                                            pane.setSelectedIndex(tabIndex);
+                                        }
+                                    } else {
+                                        pane.setEnabledAt(tabIndex, false);
+                                        if(exactTabIndex == -1) {
+                                            pane.setSelectedIndex(getNextEnabledTabIndex(pane, tabIndex));
+                                        }
+                                    }
+                                } else {
+                                    setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+                                }
+                            }
+                        } else {
+                            setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+                        }
+                    } else {
+                        handleNotFound(id, exactCategory);
+                    }
+                } else {
+                    handleNotFound(id, exactCategory);
+                }
+                if (keymapsSearch != null) {
+                    keymapsSearch.setText(searchText);
+                }
+            }
+        }
+
+        private void handleNotFound(String id, String exactCategory) {
+            if (!disabledCategories.contains(id)) {
+                disabledCategories.add(id);
+            }
+            JTabbedPane pane = categoryid2tabbedpane.get(id);
+            if (categoryid2tabs.get(id) != null && pane != null) {
+                for (int i = 0; i < pane.getTabCount(); i++) {
+                    pane.setEnabledAt(i, false);
+                }
+                pane.setSelectedIndex(-1);
+            }
+            buttons.get(id).setEnabled(false);
+            if (disabledCategories.size() == buttons.size()) {
+                setCurrentCategory(null, null);
+            } else {
+                for (String id3 : CategoryModel.getInstance().getCategoryIDs()) {
+                    if (buttons.get(id3).isEnabled() && exactCategory == null) {
+                        setCurrentCategory(CategoryModel.getInstance().getCategory(id3), null);
                         break;
                     }
                 }
-
-                if (found) {
-                    visibleCategory = id;
-                    disabledCategories.remove(id);
-                    buttons.get(id).setEnabled(true);
-                    JTabbedPane pane = categoryid2tabbedpane.get(id);
-                    if (categoryid2tabs.get(id) != null) {
-                        HashMap<Integer, TabInfo> tabsInfo = categoryid2tabs.get(id);
-                        for (Integer tabIndex : tabsInfo.keySet()) {
-                            ArrayList<String> tabWords = tabsInfo.get(tabIndex).getWords();
-                            boolean foundInTab = false;
-                            for (int i = 0; i < tabWords.size(); i++) {
-                                String txt = tabWords.get(i).toString().toUpperCase();
-                                if (txt.contains(searchText.toUpperCase())) {
-                                    foundInTab = true;
-                                    String tabTitle = tabsInfo.get(tabIndex).getTabTitle();
-                                    if (tabTitle.toUpperCase().contains(searchText.toUpperCase())) {
-                                        if (exactCategory == null
-                                                || (exactCategory != null && exactCategory.equals(id) 
-                                                    && exactCategory.toUpperCase().contains(searchText.toUpperCase()))) {
-                                            exactTabIndex = tabIndex;
-                                            setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
-                                    }
-                                    }
-                                    break;
-                                }
-                            }
-                            if (foundInTab) {
-                                pane.setEnabledAt(tabIndex, true);
-                                if (exactTabIndex == tabIndex) {
-                                    pane.setSelectedIndex(tabIndex);
-                                }
-                            } else {
-                                pane.setEnabledAt(tabIndex, false);
-                                pane.setSelectedIndex(getNextEnabledTabIndex(pane, tabIndex));
-                            }
-                        }
-                    } else {
-                        setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
-                    }
-                } else {
-                    if (!disabledCategories.contains(id)) {
-                        disabledCategories.add(id);
-                    }
-                    JTabbedPane pane = categoryid2tabbedpane.get(id);
-                    if (categoryid2tabs.get(id) != null) {
-                        HashMap<Integer, TabInfo> tabsInfo = categoryid2tabs.get(id);
-                        for (Integer tabIndex : tabsInfo.keySet()) {
-                            pane.setEnabledAt(tabIndex, false);
-                        }
-                        pane.setSelectedIndex(-1);
-                    }
-                    buttons.get(id).setEnabled(false);
-                    if(disabledCategories.size() == buttons.size()) {
-                        setCurrentCategory(null, null);
-                        visibleCategory = null;
-                    } else {
-                        for (String id3 : CategoryModel.getInstance().getCategoryIDs()) {
-                            if (buttons.get(id3).isEnabled() && exactCategory == null) {
-                                setCurrentCategory(CategoryModel.getInstance().getCategory(id3), null);
-                                visibleCategory = id3;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            if(keymapsSearch != null) {
-                keymapsSearch.setText(searchText);
             }
         }
 
@@ -814,10 +740,9 @@ public class OptionsPanel extends JPanel {
             clearSearch = true;
             for (String id : CategoryModel.getInstance().getCategoryIDs()) {
                 JTabbedPane pane = categoryid2tabbedpane.get(id);
-                if (categoryid2tabs.get(id) != null) {
-                    HashMap<Integer, TabInfo> tabsInfo = categoryid2tabs.get(id);
-                    for (Integer tabIndex : tabsInfo.keySet()) {
-                        pane.setEnabledAt(tabIndex, true);
+                if (categoryid2tabs.get(id) != null && pane != null) {
+                    for (int i = 0; i < pane.getTabCount(); i++) {
+                        pane.setEnabledAt(i, true);
                     }
                 }
                 buttons.get(id).setEnabled(true);
@@ -825,7 +750,7 @@ public class OptionsPanel extends JPanel {
             setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
             disabledCategories.clear();
             if(keymapsSearch != null) {
-                keymapsSearch.setText("");
+                keymapsSearch.setText(""); //NOI18N
             }
         }
     }

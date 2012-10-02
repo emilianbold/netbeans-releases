@@ -54,6 +54,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.tree.TreeSelectionModel;
 import java.beans.*;
+import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
+import org.netbeans.spi.options.OptionsPanelController;
 
 import org.openide.util.NbCollections;
 import org.openide.explorer.ExplorerManager;
@@ -67,6 +69,7 @@ import org.openide.nodes.NodeOp;
 // roughly modelled on
 // org.netbeans.modules.cnd.execution.profiles.ui.ProfileCustomizer
 
+@OptionsPanelController.Keywords(keywords={"c/c++ debugging"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, index=3)
 public class GlobalOptionsPanel extends JPanel {
 
     private OptionSet options;

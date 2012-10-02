@@ -53,12 +53,15 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.*;
 import java.io.File;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  * Diff Options panel.
  *
  * @author  Maros Sandor
  */
+@OptionsPanelController.Keywords(keywords={"diff"}, location=OptionsDisplayer.ADVANCED, tabTitle="Diff")
 class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, DocumentListener {
 
     private boolean isChanged;

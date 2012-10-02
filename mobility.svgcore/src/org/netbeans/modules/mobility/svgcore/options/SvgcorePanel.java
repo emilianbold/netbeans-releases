@@ -49,12 +49,15 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.mobility.svgcore.api.snippets.SVGSnippetsProvider;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
+@OptionsPanelController.Keywords(keywords={"#AdvancedOption_Tooltip", "svg"}, location=OptionsDisplayer.ADVANCED, tabTitle="#AdvancedOption_DisplayName")
 final class SvgcorePanel extends javax.swing.JPanel {
 
     private final SvgcoreOptionsPanelController controller;

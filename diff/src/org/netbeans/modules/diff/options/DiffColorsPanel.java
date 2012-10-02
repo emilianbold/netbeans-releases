@@ -62,6 +62,8 @@ import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  * Copied from org.netbeans.modules.options.colors.HighlightingPanel
@@ -69,6 +71,7 @@ import java.util.*;
  * copied from editor/options.
  * @author Maros Sandor
  */
+@OptionsPanelController.Keywords(keywords={"diff colors"}, location=OptionsDisplayer.FONTSANDCOLORS, index=3)
 public class DiffColorsPanel extends javax.swing.JPanel implements ActionListener, FontsColorsController, PropertyChangeListener {
     
     private static final String ATTR_NAME_ADDED = "added";

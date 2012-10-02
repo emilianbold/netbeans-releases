@@ -50,8 +50,10 @@ import java.beans.PropertyEditorManager;
 import java.io.IOException;
 import javax.swing.Action;
 import javax.swing.JComboBox;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.output2.Controller;
 import org.netbeans.core.output2.NbIOProvider;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.ColorComboBox;
@@ -68,6 +70,7 @@ import org.openide.windows.OutputListener;
 @NbBundle.Messages({
     "LBL_Description=Output Window Settings"
 })
+@OptionsPanelController.Keywords(keywords={"Output Window Font Color"}, location=OptionsDisplayer.ADVANCED, tabTitle="Output")
 public final class OutputSettingsPanel extends javax.swing.JPanel {
 
     private OutputOptions outputOptions;

@@ -81,6 +81,7 @@ public final class CategoryModel implements LookupListener {
             Collections.synchronizedMap(new LinkedHashMap<String, CategoryModel.Category>());
     private MasterLookup masterLookup;
     static final String OD_LAYER_FOLDER_NAME = "OptionsDialog"; // NOI18N
+    static final String OD_LAYER_KEYWORDS_FOLDER_NAME = OD_LAYER_FOLDER_NAME.concat("/Keywords"); // NOI18N
     private Result<OptionsCategory> result;
     
     Set<Map.Entry<String, CategoryModel.Category>> getCategories() {
