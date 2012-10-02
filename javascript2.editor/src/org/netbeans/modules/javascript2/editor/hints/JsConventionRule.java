@@ -218,6 +218,12 @@ public class JsConventionRule extends JsAstRule {
                         }
                     }
                 }
+            } else if (!ts.moveNext() && ts.movePrevious() && ts.moveNext()) {
+                // we are probably at the end of file without the semicolon
+                fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
+                hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()),
+                        context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                        new OffsetRange(fileOffset, fileOffset + ts.token().length()), null, 500));
             }
         }
 

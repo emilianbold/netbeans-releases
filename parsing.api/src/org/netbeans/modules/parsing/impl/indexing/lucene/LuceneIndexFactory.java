@@ -85,7 +85,7 @@ public final class LuceneIndexFactory implements IndexFactoryImpl {
     }
 
     @Override
-    @NonNull
+    @CheckForNull
     public LayeredDocumentIndex createIndex (@NonNull final Context ctx) throws IOException {
         Parameters.notNull("ctx", ctx); //NOI18N
         final FileObject indexBaseFolder = ctx.getIndexFolder();

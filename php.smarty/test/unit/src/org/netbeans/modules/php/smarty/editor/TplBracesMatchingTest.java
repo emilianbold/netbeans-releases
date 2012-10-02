@@ -49,7 +49,7 @@ public class TplBracesMatchingTest extends TplTestBase {
 
     static {
         MATCHER_FACTORY = new TplBracesMatching();
-        TplBracesMatching.testMode = true;
+        TplBracesMatching.setTestMode(true);
     }
     private Document document;
 

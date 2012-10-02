@@ -612,7 +612,11 @@ scope Declaration;
                 constructor_declarator
                 (
                     // this is a continuation of init_declarator_list after constructor_declarator
-                    ( COMMA init_declarator )* SEMICOLON
+                    ( 
+                        COMMA                                                   {action.simple_declaration(action.SIMPLE_DECLARATION__COMMA2, input.LT(0));}
+                        init_declarator 
+                    )* 
+                    SEMICOLON                                                   {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
                 |
                     function_definition_after_declarator
                 )
@@ -737,8 +741,8 @@ trailing_type_specifier
 
 simple_type_specifier returns [type_specifier_t ts_val]
 scope QualName;
-@init {action.simple_type_specifier(input.LT(1));}
-@after {action.end_simple_type_specifier(input.LT(0));}
+@init {if(state.backtracking == 0){action.simple_type_specifier(input.LT(1));}}
+@after {if(state.backtracking == 0){action.end_simple_type_specifier(input.LT(0));}}
     :
         LITERAL_char                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__CHAR, input.LT(0));}
     |
@@ -825,6 +829,8 @@ decltype_specifier
     ;
 
 elaborated_type_specifier
+@init {if(state.backtracking == 0){action.elaborated_type_specifier(input.LT(1));}}
+@after {if(state.backtracking == 0){action.end_elaborated_type_specifier(input.LT(0));}}
     :                                                                           //{action.elaborated_type_specifier(input.LT(1));}
     (
         class_key SCOPE?         
@@ -833,7 +839,7 @@ elaborated_type_specifier
                 nested_name_specifier (simple_template_id_or_IDENT | LITERAL_template simple_template_id_nocheck)
         |
             (
-                simple_template_id_or_IDENT                                     {action.elaborated_type_specifier(input.LT(0));}
+                simple_template_id_or_IDENT                                     //{action.elaborated_type_specifier(input.LT(0));}
             | 
                 LITERAL_template simple_template_id_nocheck
             )
@@ -1599,7 +1605,11 @@ member_declaration [decl_kind kind]
                 constructor_declarator
                 (
                     // this was member_declarator_list
-                    ( COMMA member_declarator )* SEMICOLON
+                    ( 
+                        COMMA                                                   {action.member_declaration(action.MEMBER_DECLARATION__COMMA2, input.LT(0));}
+                        member_declarator 
+                    )* 
+                    SEMICOLON                                                   {action.member_declaration(action.MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
                 |
                     function_definition_after_declarator
                 )
