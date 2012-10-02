@@ -469,13 +469,9 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 } else {
                     sbEnabled = false;
                 }
-                details.setActionListener(removeAction);
-                details.setActionListener2(editAction);
             } else {
                 detailsTitle = null;
                 detailsText = null;
-                details.setActionListener2(null);
-                details.setActionListener(null);
             }
             SwingUtilities.invokeLater(this);
         }
@@ -496,6 +492,13 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 details.setText(detailsText == null ? null : detailsText.toString());
                 editAction.setEnabled(sbEnabled);
                 details.setTitle(detailsTitle);
+                if (table.getSelectedRow() != -1) {
+                    details.setActionListener(removeAction);
+                    details.setActionListener2(editAction);
+                } else {
+                    details.setActionListener2(null);
+                    details.setActionListener(null);
+                }
 
                 SettingsTab.this.revalidate();
             }
