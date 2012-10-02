@@ -59,7 +59,8 @@ public class TwigCompletionContextFinder {
         VARIABLE,
         BLOCK,
         FILTER,
-        NONE;
+        NONE,
+        ALL;
     }
 
     private static final List<Object[]> FILTER_TOKEN_CHAINS = Arrays.asList(
@@ -81,12 +82,26 @@ public class TwigCompletionContextFinder {
     }
 
     private static boolean canComplete(final TokenSequence<? extends TwigTokenId> tokenSequence, final int caretOffset) {
-        return tokenSequence.moveNext() && tokenSequence.token() != null
+        boolean result = true;
+        if (tokenSequence.moveNext()) {
+            result = tokenSequence.token() != null
                 && (!TwigLexerUtils.isDelimiter(tokenSequence.token().id()) || tokenSequence.offset() == caretOffset);
+        } else {
+            if (tokenSequence.movePrevious()) {
+                Token<? extends TwigTokenId> token = tokenSequence.token();
+                if (token != null && TwigLexerUtils.isEndingDelimiter(token.id())) {
+                    result = false;
+                } else {
+                    result = true;
+                }
+                tokenSequence.moveNext();
+            }
+        }
+        return result;
     }
 
     private static CompletionContext findContext(TokenSequence<? extends TwigTokenId> tokenSequence) {
-        CompletionContext result = CompletionContext.NONE;
+        CompletionContext result = CompletionContext.ALL;
         do {
             Token<? extends TwigTokenId> token = tokenSequence.token();
             if (token == null) {
