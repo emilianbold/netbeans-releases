@@ -40,7 +40,6 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-console.log('Sending actual viewport margins');
 chrome.extension.sendMessage({
     type: 'VIEWPORT',
     width: window.innerWidth,
