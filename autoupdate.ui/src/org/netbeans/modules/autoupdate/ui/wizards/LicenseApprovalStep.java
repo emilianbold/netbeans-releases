@@ -143,11 +143,11 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
     public void storeSettings (WizardDescriptor wd) {
         if (WizardDescriptor.NEXT_OPTION.equals (wd.getValue ())) {
             model.addApprovedLicenses (panel.getLicenses ());
-            Utilities.addAcceptedLicenseIDs(panel.getLicenseIds());
             Installer.RP.post(new Runnable() {
 
                 @Override
                 public void run() {
+                    Utilities.addAcceptedLicenseIDs(panel.getLicenseIds());
                     Utilities.storeAcceptedLicenseIDs();
                 }
             });
