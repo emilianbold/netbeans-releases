@@ -61,9 +61,12 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
  */
 // package-local
 class NativeProjectListenerImpl implements NativeProjectItemsListener {
-    private static final boolean TRACE = false;
+    private static final boolean TRACE;
     private static final Logger LOG = Logger.getLogger("NativeProjectListenerImpl"); // NOI18N
-
+    static {
+        TRACE = LOG.isLoggable(Level.FINE);
+    }
+    
     private final NativeProject nativeProject;
     private final ProjectBase projectBase;
     private volatile boolean enabledEventsHandling = true;
@@ -227,11 +230,19 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     @Override
     public void fileOperationsStarted(NativeProject nativeProject) {
+        if (TRACE) {
+            String title = "fileOperationsStarted:" + nativeProject.getProjectDisplayName(); // NOI18N
+            LOG.log(Level.INFO, title, new Exception(title));
+        }        
         ModelSupport.instance().suspendDeleteEvents();
     }
 
     @Override
     public void fileOperationsFinished(NativeProject nativeProject) {
+        if (TRACE) {
+            String title = "fileOperationsFinished:" + nativeProject.getProjectDisplayName(); // NOI18N
+            LOG.log(Level.INFO, title, new Exception(title));
+        }
         ModelSupport.instance().resumeDeleteEvents();
     }
 }
