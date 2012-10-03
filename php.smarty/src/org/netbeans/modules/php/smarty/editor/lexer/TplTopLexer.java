@@ -137,6 +137,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         return new TplTopLexer(info);
     }
 
+    @Override
     public Token<TplTopTokenId> nextToken() {
         TplTopTokenId tokenId = scanner.nextToken();
         Token<TplTopTokenId> token = null;
@@ -146,10 +147,12 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         return token;
     }
 
+    @Override
     public Object state() {
         return scanner.getState();
     }
 
+    @Override
     public void release() {
     }
 
