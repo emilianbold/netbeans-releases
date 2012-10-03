@@ -182,6 +182,16 @@ public class RuleNode extends AbstractNode {
                             nName2DeclarationMap.put(d.getProperty().getContent().toString(), d);
                         }
                         
+                        //compare the names of the properties in the old and new map,
+                        //they must be the same otherwise we wont' marge but recreate 
+                        //the whole property sets
+                        Collection<String> oldNames = oName2DeclarationMap.keySet();
+                        Collection<String> newNames = nName2DeclarationMap.keySet();
+                        Collection<String> comp = new HashSet<String>(oldNames);
+                        if(comp.retainAll(newNames)) { //assumption: the collections size are the same
+                            break update; //canot merge - the collections differ
+                        }
+                        
                         for (String declarationName : oName2DeclarationMap.keySet()) {
                             Declaration oldD = oName2DeclarationMap.get(declarationName);
                             Declaration newD = nName2DeclarationMap.get(declarationName);
