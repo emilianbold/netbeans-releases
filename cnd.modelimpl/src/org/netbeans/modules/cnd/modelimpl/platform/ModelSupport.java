@@ -666,7 +666,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     public void suspendDeleteEvents() {
         if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-            System.err.printf("External updates: suspendDeleteEvents\n");
+            ExternalUpdateListener.LOG.info("External updates: suspendDeleteEvents");
         }        
         if (fileChangeListener != null) {
             fileChangeListener.suspendRemoves();
@@ -675,7 +675,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     public void resumeDeleteEvents() {
         if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-            System.err.printf("External updates: resumeDeleteEvents\n");
+            ExternalUpdateListener.LOG.info("External updates: resumeDeleteEvents");
         }
         if (fileChangeListener != null) {
             fileChangeListener.resumeRemoves();

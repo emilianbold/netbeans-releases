@@ -45,6 +45,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -67,6 +69,7 @@ import org.openide.filesystems.FileUtil;
  * @author Vladimir Voskresensky
  */
 /*package*/final class ExternalUpdateListener extends FileChangeAdapter implements Runnable {
+    /*package*/static final Logger LOG = Logger.getLogger("ExternalUpdateListener"); // NOI18N
     private final ModelSupport modelSupport;
     private enum EventKind {
         CREATED,
@@ -99,7 +102,7 @@ import org.openide.filesystems.FileUtil;
     @Override
     public void fileChanged(FileEvent fe) {
         if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-            System.err.printf("External updates: try to register fileChanged %s\n", fe);
+            LOG.log(Level.INFO, "External updates: try to register fileChanged {0}", fe);
         }
         register(fe, EventKind.CHANGED);
     }
@@ -107,7 +110,7 @@ import org.openide.filesystems.FileUtil;
     @Override
     public void fileDataCreated(FileEvent fe) {
         if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-            System.err.printf("External updates: try to register fileDataCreated %s\n", fe);
+            LOG.log(Level.INFO, "External updates: try to register fileDataCreated {0}", fe);
         }
         register(fe, EventKind.CREATED);
     }
@@ -115,7 +118,7 @@ import org.openide.filesystems.FileUtil;
     @Override
     public void fileRenamed(FileRenameEvent fe) {
         if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-            System.err.printf("External updates: try to register fileRenamed %s\n", fe);
+            LOG.log(Level.INFO, "External updates: try to register fileRenamed {0}", fe);
         }     
         final ModelImpl model = modelSupport.theModel;
         if (model != null) {
@@ -129,7 +132,7 @@ import org.openide.filesystems.FileUtil;
                 FileEvent deleteFE = new FileEvent((FileObject) fe.getSource(), removedFO, fe.isExpected(), fe.getTime());
                 synchronized (eventsLock) {
                     if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                        System.err.printf("External updates: registered fileRenamed %s\n", fe);
+                        LOG.log(Level.INFO, "External updates: registered fileRenamed {0}", fe);
                     }
                     events.addLast(new Pair(EventKind.DELETED, deleteFE));
                     events.addLast(new Pair(EventKind.CREATED, fe));
@@ -142,7 +145,7 @@ import org.openide.filesystems.FileUtil;
     @Override
     public void fileDeleted(FileEvent fe) {
         if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-            System.err.printf("External updates: try to register fileDeleted %s\n", fe);
+            LOG.log(Level.INFO, "External updates: try to register fileDeleted {0}", fe);
         }
         register(fe, EventKind.DELETED); 
     }
@@ -150,14 +153,14 @@ import org.openide.filesystems.FileUtil;
     @Override
     public void run() {
         if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-            System.err.printf("External updates: running update task\n");
+            LOG.info("External updates: running update task");
         }
         while (true) {
             LinkedList<Pair> curEvents;
             synchronized (eventsLock) {
                 if (events.isEmpty()) {
                     if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                        System.err.printf("External updates: empty queue\n");
+                        LOG.info("External updates: empty queue");
                     }
                     return;
                 }
@@ -173,7 +176,7 @@ import org.openide.filesystems.FileUtil;
                 if (fo != null) {
                     EventKind curKind = pair.kind;
                     if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                        System.err.printf("External updates: Updating for %s%s\n", curKind, fo);
+                        LOG.log(Level.INFO, "External updates: Updating for {0} {1}", new Object[]{curKind, fo});
                     }
                     CsmFile[] files = model.findFiles(FSPath.toFSPath(fo), false, false);
                     Set<ProjectBase> handledProjects = new HashSet<ProjectBase>();
@@ -185,17 +188,17 @@ import org.openide.filesystems.FileUtil;
                             handledProjects.add(project);
                             if (curKind == EventKind.DELETED) {
                                 if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                                    System.err.printf("External updates: project %s found for deleted %s\n", project, file);
+                                    LOG.log(Level.INFO, "External updates: project {0} found for deleted {1}", new Object[]{project, file});
                                 }
                                 project.checkForRemoved();
                             } else if (curKind == EventKind.CHANGED) {
                                 if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                                    System.err.printf("External updates: project %s found for changed %s\n", project, file);
+                                    LOG.log(Level.INFO, "External updates: project {0} found for changed {1}", new Object[]{project, file});
                                 }
                                 project.onFileImplExternalChange(file);
                             } else {
                                 if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                                    System.err.printf("External updates: project %s found for %s\n", project, fo);
+                                    LOG.log(Level.INFO, "External updates: project {0} found for {1}", new Object[]{project, fo});
                                 }
                                 project.onFileObjectExternalCreate(fo);                            
                             }
@@ -208,14 +211,14 @@ import org.openide.filesystems.FileUtil;
                                 ProjectBase project = (ProjectBase) prj;
                                 if (!handledProjects.contains(project)) {
                                     if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                                        System.err.printf("External updates: project %s found for %s\n", project, fo);
+                                        LOG.log(Level.INFO, "External updates: project {0} found for {1}", new Object[]{project, fo});
                                     }
                                     project.onFileObjectExternalCreate(fo);
                                 }
                             }
                         }
                         if (TraceFlags.TRACE_EXTERNAL_CHANGES && ownerCsmProjects.isEmpty()) {
-                            System.err.printf("External updates: No CsmProject found for %s\n", fo);
+                            LOG.log(Level.INFO, "External updates: No CsmProject found for {0}", fo);
                         }
                     }
                 }
@@ -228,7 +231,7 @@ import org.openide.filesystems.FileUtil;
         if (mime == null) {
             mime = FileUtil.getMIMEType(fo);
             if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                System.err.printf("External updates: MIME resolved: %s\n", mime);
+                LOG.log(Level.INFO, "External updates: MIME resolved: {0}", mime);
             }
         }
         return MIMENames.isFortranOrHeaderOrCppOrC(mime);
@@ -241,7 +244,7 @@ import org.openide.filesystems.FileUtil;
             if (!fo.isValid() || isCOrCpp(fo)) {
                 synchronized (eventsLock) {
                     if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                        System.err.printf("External updates: registered %s %s\n", kind, fe);
+                        LOG.log(Level.INFO, "External updates: registered {0} {1}", new Object[]{kind, fe});
                     }                    
                     events.addLast(new Pair(kind, fe));
                 }
