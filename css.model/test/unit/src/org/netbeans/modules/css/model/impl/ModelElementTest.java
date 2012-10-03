@@ -74,6 +74,7 @@ public class ModelElementTest extends ModelTestBase {
         System.out.println("file parsing took " + (b-a) + "ms.");
         
         Model model = createModel(result);
+
         long c = System.currentTimeMillis();
         System.out.println("model creation took " + (c-b) + "ms.");
 
