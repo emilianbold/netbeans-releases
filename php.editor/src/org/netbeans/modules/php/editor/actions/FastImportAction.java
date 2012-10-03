@@ -46,19 +46,16 @@ package org.netbeans.modules.php.editor.actions;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -67,7 +64,6 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -95,20 +91,14 @@ public class FastImportAction extends BaseAction {
         super(ACTION_NAME);
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         try {
             final Rectangle caretRectangle = target.modelToView(target.getCaretPosition());
             final Font font = target.getFont();
             final Point where = new Point(caretRectangle.x, caretRectangle.y + caretRectangle.height);
             SwingUtilities.convertPointToScreen(where, target);
-
             final int position = target.getCaretPosition();
-            final String ident = Utilities.getIdentifier(Utilities.getDocument(target), position);
-
-            if (ident == null) {
-                Toolkit.getDefaultToolkit().beep();
-                return;
-            }
             try {
                 ParserManager.parse(Collections.singleton(Source.create(target.getDocument())), new UserTask() {
 
@@ -116,7 +106,7 @@ public class FastImportAction extends BaseAction {
                     public void run(ResultIterator resultIterator) throws Exception {
                         ParserResult info = (ParserResult) resultIterator.getParserResult();
                         if (info != null) {
-                            importItem(info, where, caretRectangle, font, position, ident);
+                            importItem(info, where, caretRectangle, font, position);
                         }
                     }
                 });
@@ -130,7 +120,7 @@ public class FastImportAction extends BaseAction {
         }
     }
 
-    private void importItem(final ParserResult info, final Point where, final Rectangle caretRectangle, final Font font, final int position, final String ident) {
+    private void importItem(final ParserResult info, final Point where, final Rectangle caretRectangle, final Font font, final int position) {
         PHPParseResult result = (PHPParseResult) info;
         final Model model = result.getModel();
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(position);
@@ -149,7 +139,7 @@ public class FastImportAction extends BaseAction {
                 String relativizeFile = PropertyUtils.relativizeFile(baseFolder, includedFile);
                 StringBuilder sb = new StringBuilder();
                 sb.append("\"").append(relativizeFile).append("\";");//NOI18N
-                LinkedHashSet<String> list = null;
+                LinkedHashSet<String> list;
                 if (fileType.equals(FileType.INTERNAL)) {
                     //list = denied;
                     String elementInfo = declaration.getPhpElementKind()+" " + declaration.getName();//NOI18N
@@ -173,9 +163,9 @@ public class FastImportAction extends BaseAction {
             if (privileged.size() > 0 || denied.size() > 0) {
                 SwingUtilities.invokeLater(new Runnable() {
 
+                    @Override
                     public void run() {
-                        ImportModulePanel panel = new ImportModulePanel(ident,
-                                new ArrayList<String>(privileged), new ArrayList<String>(denied), font, info, position);
+                        ImportModulePanel panel = new ImportModulePanel(new ArrayList<String>(privileged), new ArrayList<String>(denied), font, info, position);
                         PopupUtil.showPopup(panel, "", where.x, where.y, true, caretRectangle.height);
                     }
                 });

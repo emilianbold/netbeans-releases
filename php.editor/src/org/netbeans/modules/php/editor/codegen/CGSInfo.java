@@ -177,7 +177,7 @@ public class CGSInfo {
                         ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
                         if (classDecl != null) {
                             className = classDecl.getName().getName();
-                            if (info != null && className != null) {
+                            if (className != null) {
                                 FileObject fileObject = info.getSnapshot().getSource().getFileObject();
                                 Index index = ElementQueryFactory.getIndexQuery(info);
                                 final ElementFilter forFilesFilter = ElementFilter.forFiles(fileObject);

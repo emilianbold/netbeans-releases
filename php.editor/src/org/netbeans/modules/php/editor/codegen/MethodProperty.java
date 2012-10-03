@@ -70,9 +70,9 @@ public final class MethodProperty extends Property {
         return new Comparator<MethodProperty>() {
             @Override
             public int compare(MethodProperty o1, MethodProperty o2) {
-                int retval = -Boolean.valueOf(o1.getMethod().isConstructor()).compareTo(o2.getMethod().isConstructor());
+                int retval = Boolean.valueOf(o2.getMethod().isConstructor()).compareTo(o1.getMethod().isConstructor());
                 if (retval == 0) {
-                    retval = -Boolean.valueOf(o1.isSelected()).compareTo(o2.isSelected());
+                    retval = Boolean.valueOf(o2.isSelected()).compareTo(o1.isSelected());
                 }
                 if (retval == 0) {
                     retval = Boolean.valueOf(o1.getMethod().isMagic()).compareTo(o2.getMethod().isMagic());

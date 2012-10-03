@@ -4971,7 +4971,7 @@ switch (CUP$ASTPHP5Parser$act_num) {
 		int modifierright = ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()).right;
 		Integer modifier = (Integer)((java_cup.runtime.Symbol) CUP$ASTPHP5Parser$stack.peek()).value;
 
-    RESULT = Integer.valueOf(modifier.intValue());
+    RESULT = modifier;
 
               CUP$ASTPHP5Parser$result = parser.getSymbolFactory().newSymbol("variable_modifiers",114, ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()), RESULT);
             }
@@ -4985,7 +4985,7 @@ switch (CUP$ASTPHP5Parser$act_num) {
 		int modifierright = ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()).right;
 		Integer modifier = (Integer)((java_cup.runtime.Symbol) CUP$ASTPHP5Parser$stack.peek()).value;
 
-    RESULT = Integer.valueOf(modifier.intValue());
+    RESULT = modifier;
 
               CUP$ASTPHP5Parser$result = parser.getSymbolFactory().newSymbol("variable_modifiers",114, ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()), RESULT);
             }
@@ -5061,7 +5061,7 @@ switch (CUP$ASTPHP5Parser$act_num) {
 		int modifierright = ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()).right;
 		Integer modifier = (Integer)((java_cup.runtime.Symbol) CUP$ASTPHP5Parser$stack.peek()).value;
 
-    RESULT = Integer.valueOf(modifier.intValue());
+    RESULT = modifier;
 
               CUP$ASTPHP5Parser$result = parser.getSymbolFactory().newSymbol("method_modifiers",96, ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()), RESULT);
             }
@@ -5075,7 +5075,7 @@ switch (CUP$ASTPHP5Parser$act_num) {
 		int modifierright = ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()).right;
 		Integer modifier = (Integer)((java_cup.runtime.Symbol) CUP$ASTPHP5Parser$stack.peek()).value;
 
-    RESULT = Integer.valueOf(modifier.intValue());
+    RESULT = modifier;
 
               CUP$ASTPHP5Parser$result = parser.getSymbolFactory().newSymbol("method_modifiers",96, ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()), RESULT);
             }
@@ -5089,7 +5089,7 @@ switch (CUP$ASTPHP5Parser$act_num) {
 		int modifierright = ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()).right;
 		Integer modifier = (Integer)((java_cup.runtime.Symbol) CUP$ASTPHP5Parser$stack.peek()).value;
 
-    RESULT = Integer.valueOf(modifier.intValue());
+    RESULT = modifier;
 
               CUP$ASTPHP5Parser$result = parser.getSymbolFactory().newSymbol("method_modifiers",96, ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()), RESULT);
             }
