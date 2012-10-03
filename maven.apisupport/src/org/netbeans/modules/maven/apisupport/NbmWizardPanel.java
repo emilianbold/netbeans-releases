@@ -90,7 +90,7 @@ public class NbmWizardPanel implements WizardDescriptor.FinishablePanel<WizardDe
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(NbmWizardPanel.class);
+        return new HelpCtx("org.netbeans.modules.maven.apisupport.NbmWizardPanel");
     }
     
     public @Override void addChangeListener(ChangeListener l) {}
