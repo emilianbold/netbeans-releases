@@ -81,60 +81,55 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
       
         @Override
         public void run() {
-            int lastEventsNum = -1;
-            while (true) {
-                HashMap<FSPath, EventWrapper> curEvents;
-                synchronized (eventsLock) {
-                    if (events.isEmpty() || (suspendCount > 0 && lastEventsNum == events.size())) {
-                        break;
-                    }
-                    if (suspendCount == 0) {
-                        curEvents = events;
-                        events = new LinkedHashMap<FSPath, EventWrapper>();
-                        lastEventsNum = -1;
-                    } else {
-                        curEvents = events;
-                        HashMap<FSPath, EventWrapper> suspendedRemoves = new LinkedHashMap<FSPath, EventWrapper>();
-                        for (Iterator<Map.Entry<FSPath, EventWrapper>> it = curEvents.entrySet().iterator(); it.hasNext();) {
-                            Map.Entry<FSPath, EventWrapper> entry = it.next();
-                            EventWrapper value = entry.getValue();
-                            if (value.kind == EventKind.FILE_DELETED) {
-                                suspendedRemoves.put(entry.getKey(), value);
-                                it.remove();
-                            }
-                        }
-                        events = suspendedRemoves;
-                        lastEventsNum = events.size();
-                    }
+            HashMap<FSPath, EventWrapper> curEvents;
+            synchronized (eventsLock) {
+                if (events.isEmpty()) {
+                    return;
                 }
-                for (EventWrapper eventWrapper : curEvents.values()) {
-                    FileEvent fe = eventWrapper.event;
-                    switch (eventWrapper.kind) {
-                        case FILE_DELETED:
-                            external.fileDeleted(fe);
-                            break;
-                        case FILE_CREATED:
-                            external.fileDataCreated(fe);
-                            break;
-                        case FILE_RENAMED_CREATED:
-                            external.fileRenamed((FileRenameEvent)fe);
-                            break;
-                        case FILE_CHANGED:
-                            external.fileChanged(fe);
-                            break;
-                        case FILE_ATTRIBUTE_CHANGED:
-                            external.fileAttributeChanged((FileAttributeEvent)fe);
-                            break;
-                        case FOLDER_CREATED:
-                            external.fileFolderCreated(fe);
-                            break;
-                        case NULL:
-                            break;
-                        case FILE_RENAMED_DELETED:
-                            break;
-                        default:
-                            throw new AssertionError(eventWrapper.kind.name());
+                if (suspendCount == 0) {
+                    curEvents = events;
+                    events = new LinkedHashMap<FSPath, EventWrapper>();
+                } else {
+                    curEvents = events;
+                    HashMap<FSPath, EventWrapper> suspendedRemoves = new LinkedHashMap<FSPath, EventWrapper>();
+                    for (Iterator<Map.Entry<FSPath, EventWrapper>> it = curEvents.entrySet().iterator(); it.hasNext();) {
+                        Map.Entry<FSPath, EventWrapper> entry = it.next();
+                        EventWrapper value = entry.getValue();
+                        if (value.kind == EventKind.FILE_DELETED) {
+                            suspendedRemoves.put(entry.getKey(), value);
+                            it.remove();
+                        }
                     }
+                    events = suspendedRemoves;
+                }
+            }
+            for (EventWrapper eventWrapper : curEvents.values()) {
+                FileEvent fe = eventWrapper.event;
+                switch (eventWrapper.kind) {
+                    case FILE_DELETED:
+                        external.fileDeleted(fe);
+                        break;
+                    case FILE_CREATED:
+                        external.fileDataCreated(fe);
+                        break;
+                    case FILE_RENAMED_CREATED:
+                        external.fileRenamed((FileRenameEvent)fe);
+                        break;
+                    case FILE_CHANGED:
+                        external.fileChanged(fe);
+                        break;
+                    case FILE_ATTRIBUTE_CHANGED:
+                        external.fileAttributeChanged((FileAttributeEvent)fe);
+                        break;
+                    case FOLDER_CREATED:
+                        external.fileFolderCreated(fe);
+                        break;
+                    case NULL:
+                        break;
+                    case FILE_RENAMED_DELETED:
+                        break;
+                    default:
+                        throw new AssertionError(eventWrapper.kind.name());
                 }
             }            
         }
