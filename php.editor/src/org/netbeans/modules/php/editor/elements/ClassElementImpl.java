@@ -50,15 +50,15 @@ import java.util.StringTokenizer;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.api.elements.ClassElement;
-import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.openide.util.Parameters;
@@ -138,8 +138,9 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
 
     public static ClassElement fromFrameworks(final PhpClass clz, final ElementQuery elementQuery) {
         Parameters.notNull("clz", clz);
-        Parameters.notNull("elementQuery", clz);
-        ClassElementImpl retval = new ClassElementImpl(QualifiedName.create(clz.getFullyQualifiedName()),
+        Parameters.notNull("elementQuery", elementQuery);
+        String fullyQualifiedName = clz.getFullyQualifiedName();
+        ClassElementImpl retval = new ClassElementImpl(QualifiedName.create(fullyQualifiedName == null ? clz.getName() : fullyQualifiedName),
                 clz.getOffset(), null, Collections.<QualifiedName>emptySet(), Collections.<QualifiedName>emptySet(),
                 Collections.<QualifiedName>emptySet(), PhpModifiers.NO_FLAGS, Collections.<QualifiedName>emptySet(), null, elementQuery);
         retval.fileObject = clz.getFile();
@@ -221,28 +222,34 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         StringBuilder retval = new StringBuilder();
         switch (as) {
             case NameAndSuperTypes:
-                retval.append(getName()); //NOI18N
+                retval.append(getName());
+                printAsSuperTypes(retval);
+                break;
             case SuperTypes:
-                QualifiedName superClassName = getSuperClassName();
-                if (superClassName != null) {
-                    retval.append(" extends  ");//NOI18N
-                    retval.append(superClassName.getName());
-                }
-                Set<QualifiedName> superIfaces = getSuperInterfaces();
-                if (!superIfaces.isEmpty()) {
-                    retval.append(" implements ");//NOI18N
-                }
-                StringBuilder ifacesBuffer = new StringBuilder();
-                for (QualifiedName qualifiedName : superIfaces) {
-                    if (ifacesBuffer.length() > 0) {
-                        ifacesBuffer.append(", ");//NOI18N
-                    }
-                    ifacesBuffer.append(qualifiedName.getName());
-                }
-                retval.append(ifacesBuffer);
+                printAsSuperTypes(retval);
                 break;
         }
         return retval.toString();
+    }
+
+    private void printAsSuperTypes(StringBuilder sb) {
+        QualifiedName superClassName = getSuperClassName();
+        if (superClassName != null) {
+            sb.append(" extends  ");//NOI18N
+            sb.append(superClassName.getName());
+        }
+        Set<QualifiedName> superIfaces = getSuperInterfaces();
+        if (!superIfaces.isEmpty()) {
+            sb.append(" implements ");//NOI18N
+        }
+        StringBuilder ifacesBuffer = new StringBuilder();
+        for (QualifiedName qualifiedName : superIfaces) {
+            if (ifacesBuffer.length() > 0) {
+                ifacesBuffer.append(", ");//NOI18N
+            }
+            ifacesBuffer.append(qualifiedName.getName());
+        }
+        sb.append(ifacesBuffer);
     }
 
     private void checkClassSignature(StringBuilder sb) {
