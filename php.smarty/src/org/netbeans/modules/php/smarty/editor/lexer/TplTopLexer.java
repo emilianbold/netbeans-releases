@@ -96,6 +96,12 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
             if (this.embeddingLevel != other.embeddingLevel) {
                 return false;
             }
+            if (this.lastState != other.lastState) {
+                return false;
+            }
+            if (this.lastChar != other.lastChar) {
+                return false;
+            }
             return true;
         }
 
@@ -112,7 +118,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
 
         @Override
         public String toString() {
-            return "State(hash=" + hashCode() + ",s=" + lexerState + ",ss=" + lexerSubState + ",ls=" + lastState + ",lch=" + lastChar + ")"; //NOI18N
+            return "State(hash=" + hashCode() + ",s=" + lexerState + ",ss=" + lexerSubState + ",ls=" + lastState + ",lch=" + (char)lastChar + ")"; //NOI18N
         }
     }
 
@@ -380,12 +386,18 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                                 if (LexerUtils.isWS(lastChar) && getSmartyVersion() == SmartyFramework.Version.SMARTY3) {
                                     if (lastState == TplTopTokenId.T_SMARTY) {
                                         state = State.IN_SMARTY;
+                                    } else {
+                                        state = State.OUTER;
                                     }
-                                    return TplTopTokenId.T_SMARTY;
+                                    return lastState;
                                 } else {
                                     embeddingLevel--;
                                     state = getStateFromEmbeddingLevel(embeddingLevel);
-                                    lastState = TplTopTokenId.T_SMARTY;
+                                    if (state == State.IN_SMARTY) {
+                                        lastState = TplTopTokenId.T_SMARTY;
+                                    } else {
+                                        lastState = TplTopTokenId.T_HTML;
+                                    }
                                     return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
                                 }
                             }
@@ -396,6 +408,8 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                                     break;
                                 case PHP_CODE:
                                     state = State.IN_PHP;
+                                    break;
+                                default:
                                     break;
                             }
                             lastState = TplTopTokenId.T_HTML;
