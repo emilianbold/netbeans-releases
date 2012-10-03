@@ -78,6 +78,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.debugger.jpda.ui.VariablesFormatter;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
@@ -89,6 +91,9 @@ import org.openide.util.NbBundle;
  *
  * @author martin
  */
+@OptionsPanelController.Keywords(keywords={"#CategoryPanelFormatters.kw1",
+                                           "#CategoryPanelFormatters.kw2"},
+                                 location=JavaOptions.JAVA, index=3)
 class CategoryPanelFormatters extends StorablePanel {
 
     private static final String COPY1 = " (copy"; // NOI18N

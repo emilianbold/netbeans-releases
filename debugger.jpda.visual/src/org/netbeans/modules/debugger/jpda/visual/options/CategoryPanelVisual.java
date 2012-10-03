@@ -49,11 +49,17 @@ package org.netbeans.modules.debugger.jpda.visual.options;
 
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.debugger.jpda.ui.options.StorablePanel;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
  * @author martin
  */
+@OptionsPanelController.Keywords(keywords={"#LBL_VisualDebugging",
+                                           "#CategoryPanelVisual.kw1",
+                                           "#CategoryPanelVisual.kw2"},
+                                 location=JavaOptions.JAVA, index=3)
 public class CategoryPanelVisual extends StorablePanel {
 
     /** Creates new form CategoryPanelVisual */
