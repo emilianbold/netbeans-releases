@@ -135,6 +135,7 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ModuleTypePanel.isPanelUpdated(evt) && !internalUpdate && validityCounter == validityId) {
             try {
@@ -255,11 +256,12 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
     }
 
     private void updateGUI() {
-        if (internalUpdate) return;
+        if (internalUpdate) {
+            return;
+        }
         // update project folder
         folderValue.setText(getFolder().getPath());
-        Logger.getLogger(BasicInfoVisualPanel.class.getName()).log(Level.FINE,
-                "(" + validityId + ") Setting project folder to '" + getFolder().getPath() + "'");
+        Logger.getLogger(BasicInfoVisualPanel.class.getName()).log(Level.FINE, "({0}) Setting project folder to ''{1}''", new Object[]{validityId, getFolder().getPath()});
         ModuleTypePanel.setProjectFolder(getSettings(), getFolder());
     }
 
@@ -333,17 +335,21 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
     
     private void attachDocumentListeners() {
         DocumentListener fieldsDL = new UIUtil.DocumentAdapter() {
+            @Override
             public void insertUpdate(DocumentEvent e) { updateAndCheck(); }
         };
         nameValue.getDocument().addDocumentListener(fieldsDL);
         nameValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+            @Override
             public void insertUpdate(DocumentEvent e) { nameUpdated = true; }
         });
         locationValue.getDocument().addDocumentListener(fieldsDL);
         locationValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+            @Override
             public void insertUpdate(DocumentEvent e) { locationUpdated = true; }
         });
         ActionListener plafAL = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 updateAndCheck();
             }
