@@ -232,11 +232,13 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
         throw new UnsupportedOperationException(); 
     }
     
+    // NOTE: sometimes events are delivered twice from FO refresh and refresh on window activation
+    // 
     // (curKind)                            (prevKind)
     //       states |   DELETED |   CREATED |   RENAMED_CREATED |   RENAMED_DELETED | FOLDER_CREATED|   CHANGED     |   ATTRIBS     |   
     // -----------------------------------------------------------------------------------------------------------------------------|
-    //  DELETED     |   assert  |   null    |   null            |   assert          |   null        |   DELETED     |   DELETED     |   
-    //  CREATED     |   CHANGED |   assert  |   assert          |   CHANGED         |   assert      |   assert      |   assert      |   
+    //  DELETED     |   DELETED |   null    |   null            |   assert          |   null        |   DELETED     |   DELETED     |   
+    //  CREATED     |   CHANGED |   CREATED |   assert          |   CHANGED         |   assert      |   assert      |   assert      |   
     //RENAME_CREATED|   CHANGED |   assert  |   assert          |   CHANGED         |   assert      |   assert      |   assert      |
     //RENAME_DELETED|   assert  |   null (?)|   null (?)        |   assert          |   null (?)    | RENAME_DELETED| RENAME_DELETED|
     //FOLDER_CREATED|   CHANGED |   assert  |   assert          |   CHANGED         |   assert      |   assert      |   assert      |
@@ -251,7 +253,7 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
         switch (cur.kind) {
             case FILE_DELETED: //<editor-fold defaultstate="collapsed" desc="...">
                 switch (prev.kind) {
-                    case FILE_DELETED:          return doAssert(prev, cur);
+                    case FILE_DELETED:          return prev; 
                     case FILE_CREATED:          return doNull(prev, cur);
                     case FILE_RENAMED_CREATED:  return doNull(prev, cur);
                     case FILE_RENAMED_DELETED:  return doAssert(prev, cur);
@@ -263,7 +265,7 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
             case FILE_CREATED://<editor-fold defaultstate="collapsed" desc="...">
                 switch (prev.kind) {
                     case FILE_DELETED:          return doChanged(prev, cur);
-                    case FILE_CREATED:          return doAssert(prev, cur);
+                    case FILE_CREATED:          return prev; 
                     case FILE_RENAMED_CREATED:  return doAssert(prev, cur);
                     case FILE_RENAMED_DELETED:  return doChanged(prev, cur);
                     case FOLDER_CREATED:        return doAssert(prev, cur);
