@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
 /**
  *
  */
-@OptionsPanelController.Keywords(keywords={"php hudson"}, location=UiUtils.OPTIONS_PATH, index=4)
+@OptionsPanelController.Keywords(keywords={"php hudson"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_OptionsName")
 public class HudsonOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = -464132465732132L;

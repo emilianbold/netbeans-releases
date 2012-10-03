@@ -94,7 +94,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@OptionsPanelController.Keywords(keywords = {"code", "templates"}, location = OptionsDisplayer.EDITOR, index = 3)
+@OptionsPanelController.Keywords(keywords = {"code", "templates"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_CodeTemplates_DisplayName")
 public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSelectionListener, KeyListener, DocumentListener {
     
     private static final Logger LOG = Logger.getLogger(CodeTemplatesPanel.class.getName());

@@ -109,7 +109,7 @@ import org.netbeans.spi.options.OptionsPanelController;
     "ProfilerOptionsPanel_JavaPlatformComboAccessDescr=Java platform used for running the profiled application",
     "ProfilerOptionsPanel_IfThreadsMonitoringEnabledHint=if threads monitoring is enabled"
 })
-@OptionsPanelController.Keywords(keywords={"profiler"}, location=JavaOptions.JAVA, index=6)
+@OptionsPanelController.Keywords(keywords={"profiler"}, location=JavaOptions.JAVA, tabTitle="org.netbeans.modules.profiler.options.Bundle#ProfilerOptionsCategory_Title")
 public final class ProfilerOptionsPanel extends JPanel implements ActionListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
