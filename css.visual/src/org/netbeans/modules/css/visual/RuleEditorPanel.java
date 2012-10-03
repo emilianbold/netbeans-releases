@@ -564,50 +564,24 @@ public class RuleEditorPanel extends JPanel {
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.MODEL_SET.name(), oldModel, this.model);
 
         if (this.rule != null) {
-            //try to resolve the old rule from the previous model to corresponding
-            //rule in the new model
-            final AtomicReference<CharSequence> oldRuleId_ref = new AtomicReference<CharSequence>();
-            oldModel.runReadTask(new Model.ModelTask() {
+            //resolve the old rule from the previous model to corresponding rule in the new model
+            final AtomicReference<Rule> rule_ref = new AtomicReference<Rule>();
+            this.model.runReadTask(new Model.ModelTask() {
                 @Override
                 public void run(StyleSheet styleSheet) {
-                    oldRuleId_ref.set(oldModel.getElementSource(oldRule.getSelectorsGroup()));
+                    ModelUtils utils = new ModelUtils(model);
+                    rule_ref.set(utils.findMatchingRule(oldModel, oldRule));
                 }
             });
-            final CharSequence oldRuleId = oldRuleId_ref.get();
-
-            final AtomicReference<Rule> match_ref = new AtomicReference<Rule>();
-            model.runReadTask(new Model.ModelTask() {
-                @Override
-                public void run(StyleSheet styleSheet) {
-                    styleSheet.accept(new ModelVisitor.Adapter() {
-                        @Override
-                        public void visitRule(Rule rule) {
-                            CharSequence ruleId = model.getElementSource(rule.getSelectorsGroup());
-                            if (LexerUtils.equals(oldRuleId, ruleId, false, false)) {
-                                //should be the same rule
-
-                                //TODO - having some API for resolving old to new model elements between
-                                //two model instances would be great. Something like ElementHandle.resolve
-                                //TODO - the handles would be usefull as well as the elements shouldn't 
-                                //be kept outside of the ModelTask-s.
-
-                                LOG.log(Level.FINE, "found matching rule {0}", rule);
-                                match_ref.set(rule);
-
-                            }
-                        }
-                    });
-                }
-            });
-
-            Rule match = match_ref.get();
+            
+            Rule match = rule_ref.get();
             if (match == null) {
                 setNoRuleState();
             } else {
-                setRule(match_ref.get());
+                setRule(match);
             }
+            
             CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, match);
-
 
         } else {
             LOG.log(Level.FINE, "no rule was set before");
