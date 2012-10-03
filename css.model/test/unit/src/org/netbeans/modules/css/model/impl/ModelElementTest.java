@@ -39,33 +39,61 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api;
+package org.netbeans.modules.css.model.impl;
+
+import java.io.IOException;
+import org.netbeans.modules.css.lib.TestUtil;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelTestBase;
+import org.netbeans.modules.css.model.api.ModelVisitor;
+import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.model.api.StyleSheet;
+import org.openide.filesystems.FileObject;
+
 
 /**
  *
  * @author marekfukala
  */
-public interface ModelVisitor {
-  
-    //!!!
-    //Do not forget to update ModelElement.acceptVisitorGeneric(...) when 
-    //adding or removing the visitXXX(...) methods
-    //!!!
-    
-    public void visitRule(Rule rule);
-    
-    public void visitMedia(Media media);
- 
-    public static class Adapter implements ModelVisitor {
+public class ModelElementTest extends ModelTestBase {
 
-        @Override
-        public void visitRule(Rule rule) {
-        }
-
-        @Override
-        public void visitMedia(Media media) {
-        }
+    public ModelElementTest(String name) {
+        super(name);
+    }
     
+    public void testAcceptVisitorGeneric_speed() throws IOException {
+        FileObject file = getTestFile("testfiles/bootstrap.css");
+        String content = file.asText();
+        
+        System.out.println("Testing performance on " + file.getNameExt() + " ... ");
+        
+        long a = System.currentTimeMillis();
+        CssParserResult result = TestUtil.parse(content);
+        long b = System.currentTimeMillis();
+        System.out.println("file parsing took " + (b-a) + "ms.");
+        
+        Model model = createModel(result);
+        long c = System.currentTimeMillis();
+        System.out.println("model creation took " + (c-b) + "ms.");
+
+        StyleSheet s = getStyleSheet(model);
+        assertNotNull(s);
+        
+        ModelVisitor visitor = new ModelVisitor.Adapter() {
+
+            @Override
+            public void visitRule(Rule rule) {
+                //no-op
+            }
+            
+        };
+        
+        s.accept(visitor);
+        long d = System.currentTimeMillis();
+        
+        System.out.println("visiting took " + (d-c) + "ms.");
+        
     }
     
 }
