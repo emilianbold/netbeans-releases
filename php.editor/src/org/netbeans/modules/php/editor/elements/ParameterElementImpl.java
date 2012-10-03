@@ -140,6 +140,7 @@ public final class ParameterElementImpl implements ParameterElement {
         sb.append(SEPARATOR.COLON);//NOI18N
         if (!isMandatory()) {
             final String defVal = getDefaultValue();
+            assert defVal != null;
             sb.append(encode(defVal));
         }
         sb.append(SEPARATOR.COLON);//NOI18N
@@ -216,7 +217,7 @@ public final class ParameterElementImpl implements ParameterElement {
     }
 
     private static String decode(final String inStr) {
-        StringBuffer outStr = new StringBuffer(inStr.length());
+        StringBuilder outStr = new StringBuilder(inStr.length());
 
         try {
             for (int i = 0; i < inStr.length(); i++) {
@@ -263,7 +264,8 @@ public final class ParameterElementImpl implements ParameterElement {
                 assert getName().equals(parsedParameter.getName()) : signature;
                 assert hasDeclaredType() == parsedParameter.hasDeclaredType() : signature;
                 if (getDefaultValue() != null) {
-                    assert getDefaultValue().equals(parsedParameter.getDefaultValue()) : signature;
+                    String paramDefaultValue = parsedParameter.getDefaultValue();
+                    assert paramDefaultValue != null && getDefaultValue().equals(paramDefaultValue) : signature;
                 }
                 assert isMandatory() == parsedParameter.isMandatory() : signature;
                 assert isReference() == parsedParameter.isReference() : signature;

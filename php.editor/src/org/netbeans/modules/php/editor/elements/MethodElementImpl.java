@@ -80,7 +80,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
             final List<ParameterElement> parameters,
             final Set<TypeResolver> returnTypes) {
         super(methodName, enclosingType.getName(), fileUrl, offset, elementQuery);
-        final boolean isFromInterface = enclosingType != null && enclosingType.isInterface();
+        final boolean isFromInterface = enclosingType.isInterface();
         this.modifiers = PhpModifiers.fromBitMask((isFromInterface) ? (flags | Modifier.ABSTRACT | Modifier.PUBLIC) : flags);
         this.isMagic = isMagic;
         this.enclosingType = enclosingType;

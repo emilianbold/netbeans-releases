@@ -76,6 +76,7 @@ public class UsedNamesComputer {
 
     public Map<String, List<UsedNamespaceName>> computeNames() {
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), caretPosition);
+        assert namespaceScope != null;
         OffsetRange offsetRange = namespaceScope.getBlockRange();
         Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
         NamespaceNameVisitor namespaceNameVisitor = new NamespaceNameVisitor(offsetRange);
@@ -114,7 +115,7 @@ public class UsedNamesComputer {
         return result;
     }
 
-    private class NamespaceNameVisitor extends DefaultVisitor {
+    private static class NamespaceNameVisitor extends DefaultVisitor {
         private final OffsetRange offsetRange;
         private final Map<String, List<UsedNamespaceName>> existingNames = new HashMap<String, List<UsedNamespaceName>>();
 

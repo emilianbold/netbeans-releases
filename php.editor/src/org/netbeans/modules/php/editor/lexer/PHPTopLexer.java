@@ -66,6 +66,7 @@ public class PHPTopLexer implements Lexer<PHPTopTokenId> {
         return new PHPTopLexer(info);
     }
 
+    @Override
     public Token<PHPTopTokenId> nextToken() {
         PHPTopTokenId tokenId = scanner.nextToken();
         Token<PHPTopTokenId> token = null;
@@ -75,10 +76,12 @@ public class PHPTopLexer implements Lexer<PHPTopTokenId> {
         return token;
     }
 
+    @Override
     public Object state() {
         return scanner.getState();
     }
 
+    @Override
     public void release() {
     }
 
@@ -97,7 +100,7 @@ public class PHPTopLexer implements Lexer<PHPTopTokenId> {
         IN_PHP
     }
 
-    private class PHPTopColoringLexer {
+    private static class PHPTopColoringLexer {
 
         private State state;
         private final LexerInput input;
@@ -192,6 +195,9 @@ public class PHPTopLexer implements Lexer<PHPTopTokenId> {
                                         hereDocStart = textLength - 3;
                                     }
                                 }
+                                break;
+                            default:
+                                // no-op
                         }
                         break;
                     case IN_PHP_CONSTANT_STRING:
@@ -255,7 +261,7 @@ public class PHPTopLexer implements Lexer<PHPTopTokenId> {
                                             || text.charAt(textLength - 3 -hereDocDelimiterLenght) == '\n')
                                             && TokenUtilities.textEquals(hereDocDelimiter, text.subSequence(textLength - 2 - hereDocDelimiterLenght, textLength - 2))) {
                                         // heredoc finished
-                                        state = state.IN_PHP;
+                                        state = State.IN_PHP;
                                     }
                                 }
                                 break;

@@ -222,6 +222,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         case SMART:
                             generateAs = qn.getKind();
                             break;
+                        default:
+                            assert false : codeCompletionType;
                     }
 
                 } else if (generateAs.isQualified() && (ifq instanceof TypeElement)
@@ -269,6 +271,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     }
                     template.append(getName());
                     break;
+                default:
+                    assert false : generateAs;
             }
 
             return template.toString();
