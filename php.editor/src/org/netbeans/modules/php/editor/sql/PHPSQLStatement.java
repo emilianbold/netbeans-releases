@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.editor.sql;
 
 import java.util.ArrayList;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletion;
@@ -67,6 +66,7 @@ final class PHPSQLStatement {
         final PHPSQLStatement[] result = {null};
         document.render(new Runnable() {
 
+            @Override
             public void run() {
                 TokenSequence<PHPTokenId> seq = LexUtilities.getPHPTokenSequence(document, caretOffset);
                 if (seq == null) {
@@ -130,7 +130,7 @@ final class PHPSQLStatement {
         if (codeBlock == null) {
             return -1;
         }
-        int generatedPos = -1;
+        int generatedPos;
         int offsetWithinBlock = sourceOffset - codeBlock.sourceStart;
         int generatedOffset = codeBlock.generatedStart + offsetWithinBlock;
         if (generatedOffset <= codeBlock.generatedEnd) {
@@ -152,6 +152,7 @@ final class PHPSQLStatement {
      * @param rawStatement
      * @return
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH"})
     private String generateSQLStatement(TokenSequence<PHPTokenId> seq, int caretOffset) {
         statementOffset = StringFinder.findStringBegin(seq, caretOffset);
         if (statementOffset < 0) {
@@ -261,6 +262,8 @@ final class PHPSQLStatement {
                             concatenating = false;
                             inVariable = false;
                             break;
+                        default:
+                            // no-op
                     }
                     addUnknownCodeBlock(seq, buf);
                     break;
@@ -334,7 +337,7 @@ final class PHPSQLStatement {
         return null;
     }
 
-    private class CodeBlockData {
+    private static class CodeBlockData {
         /** Start of section in PHP file */
         private int sourceStart;
         /** End of section in PHP file */
@@ -358,8 +361,8 @@ final class PHPSQLStatement {
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append("CodeBlockData[");
-            sb.append("\n  SOURCE(" + sourceStart + "," + sourceEnd + ")");
-            sb.append(",\n  SQL(" + generatedStart + "," + generatedEnd + ")");
+            sb.append("\n  SOURCE(").append(sourceStart).append(",").append(sourceEnd).append(")");
+            sb.append(",\n  SQL(").append(generatedStart).append(",").append(generatedEnd).append(")");
             sb.append("]");
             return sb.toString();
         }
@@ -613,7 +616,7 @@ final class PHPSQLStatement {
         }
 
         private static int getOffset(TokenSequence seq, StringDirection direction) {
-            if (direction == direction.BACKWARD) {
+            if (direction == StringDirection.BACKWARD) {
                 return seq.offset();
             } else {
                 return seq.offset() + seq.token().length();
