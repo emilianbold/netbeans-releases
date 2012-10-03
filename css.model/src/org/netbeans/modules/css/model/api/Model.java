@@ -252,14 +252,15 @@ public final class Model {
      *
      * This method will throw an exception if the model instance is not created
      * from a CssParserResult based on a document.
+     * 
+     * This method will throw {@link IllegalStateException} if the model has been
+     * saved already and hence the original source document snapshot become invalid.
      *
      * Basically it applies all the changes obtained from
      * {@link #getModelSourceDiff()} to to given document.
      *
-     * <b> It is up to the client to ensure: 1) it is the document upon which
-     * source the model was build 2) the document has not changed since the
-     * model creation. 3) the method is called under document atomic lock </b>
-     *
+     * <b> It is up to the client to ensure that the document has not changed 
+     * since the model creation.</b>
      */
     public void applyChanges() throws IOException, BadLocationException {
         if(changesApplied) {
@@ -281,10 +282,6 @@ public final class Model {
 
     private void applyChanges_AtomicLock(final Document document, final OffsetConvertor convertor) throws IOException, BadLocationException {
         BaseDocument bdoc = (BaseDocument) document;
-        if (!bdoc.isAtomicLock()) {
-            LOGGER.log(Level.FINE, "Called w/o document atomic lock!", new IllegalStateException());
-        }
-
         final AtomicReference<IOException> io_exc_ref = new AtomicReference<IOException>();
         final AtomicReference<BadLocationException> ble_exc_ref = new AtomicReference<BadLocationException>();
 
@@ -306,7 +303,6 @@ public final class Model {
         if (ble_exc_ref.get() != null) {
             throw ble_exc_ref.get();
         }
-
     }
 
     /**

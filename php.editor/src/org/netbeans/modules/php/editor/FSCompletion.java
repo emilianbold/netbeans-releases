@@ -83,6 +83,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * Base on code from contrib/editor.fscompletion
@@ -211,8 +212,8 @@ public class FSCompletion implements CompletionProvider {
                 if (pathPrefix != null) {
                     File toFile = FileUtil.toFile(f);
                     if (toFile != null) {
-                        URI resolve = toFile.toURI().resolve(pathPrefix).normalize();
-                        File normalizedFile = FileUtil.normalizeFile(new File(resolve));
+                        URI resolve = Utilities.toURI(toFile).resolve(pathPrefix).normalize();
+                        File normalizedFile = FileUtil.normalizeFile(Utilities.toFile(resolve));
                         f = FileUtil.toFileObject(normalizedFile);
                     } else {
                         f = f.getFileObject(pathPrefix);
@@ -403,8 +404,9 @@ public class FSCompletion implements CompletionProvider {
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof FSCompletionItem))
+            if (!(o instanceof FSCompletionItem)) {
                 return false;
+            }
 
             FSCompletionItem remote = (FSCompletionItem) o;
 

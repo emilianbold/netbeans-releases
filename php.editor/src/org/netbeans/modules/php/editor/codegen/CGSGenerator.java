@@ -127,7 +127,12 @@ public class CGSGenerator implements CodeGenerator {
                     final String paramName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
                                 ? withoutUnderscore(name) : name;
                     if (property.isSelected()) {
-                        params.append(", $").append(paramName);        //NOI18N
+                        params.append(", "); //NOI18N
+                        String type = property.getType();
+                        if (type != null && !type.isEmpty()) {
+                            params.append(property.getTypeForTemplate());
+                        }
+                        params.append("$").append(paramName);        //NOI18N
                         assignments.append(ASSIGNMENT_TEMPLATE.replace(PROPERTY, name).replace(PARAM_NAME, paramName));
                     }
                 }

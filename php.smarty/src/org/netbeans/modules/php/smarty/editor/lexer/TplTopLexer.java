@@ -67,11 +67,15 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         private State lexerState;
         private SubState lexerSubState;
         private int embeddingLevel;
+        private TplTopTokenId lastState;
+        private int lastChar;
 
-        public CompoundState(State lexerState, SubState lexerSubState, int embeddingLevel) {
+        public CompoundState(State lexerState, SubState lexerSubState, int embeddingLevel, TplTopTokenId lastState, int lastChar) {
             this.lexerState = lexerState;
             this.lexerSubState = lexerSubState;
             this.embeddingLevel = embeddingLevel;
+            this.lastState = lastState;
+            this.lastChar = lastChar;
         }
 
         @Override
@@ -92,6 +96,12 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
             if (this.embeddingLevel != other.embeddingLevel) {
                 return false;
             }
+            if (this.lastState != other.lastState) {
+                return false;
+            }
+            if (this.lastChar != other.lastChar) {
+                return false;
+            }
             return true;
         }
 
@@ -101,19 +111,21 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
             hash = 17 * hash + this.lexerState.ordinal();
             hash = 17 * hash + this.lexerSubState.ordinal();
             hash = 17 * hash + this.embeddingLevel;
+            hash = 17 * hash + this.lastState.ordinal();
+            hash = 17 * hash + this.lastChar;
             return hash;
         }
 
         @Override
         public String toString() {
-            return "State(hash=" + hashCode() + ",s=" + lexerState + ",ss=" + lexerSubState + ")"; //NOI18N
+            return "State(hash=" + hashCode() + ",s=" + lexerState + ",ss=" + lexerSubState + ",ls=" + lastState + ",lch=" + (char)lastChar + ")"; //NOI18N
         }
     }
 
     private TplTopLexer(LexerRestartInfo<TplTopTokenId> info) {
-        CompoundState state = null;
+        CompoundState state;
         if (info.state() == null) {
-            state = new CompoundState(State.INIT, SubState.NO_SUB_STATE, 0);
+            state = new CompoundState(State.INIT, SubState.NO_SUB_STATE, 0, TplTopTokenId.T_HTML, -1);
         } else {
             state = (CompoundState) info.state();
         }
@@ -137,6 +149,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         return new TplTopLexer(info);
     }
 
+    @Override
     public Token<TplTopTokenId> nextToken() {
         TplTopTokenId tokenId = scanner.nextToken();
         Token<TplTopTokenId> token = null;
@@ -146,10 +159,12 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         return token;
     }
 
+    @Override
     public Object state() {
         return scanner.getState();
     }
 
+    @Override
     public void release() {
     }
 
@@ -182,12 +197,16 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         private State state;
         private SubState subState;
         private int embeddingLevel;
+        private TplTopTokenId lastState;
+        private int lastChar;
 
         public TplTopColoringLexer(LexerRestartInfo<TplTopTokenId> info, CompoundState state, TplMetaData metadata) {
             this.input = info.input();
             this.state = state.lexerState;
             this.subState = state.lexerSubState;
             this.embeddingLevel = state.embeddingLevel;
+            this.lastState = state.lastState;
+            this.lastChar = state.lastChar;
             if (metadata != null) {
                 this.metadata = metadata;
             } else {
@@ -231,18 +250,22 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                         if (subState == SubState.NO_SUB_STATE) {
                             if (isSmartyOpenDelimiter(SmartyFramework.OPEN_DELIMITER)) {
                                 c = input.read();
+                                input.backup(1);
                                 if (c == LexerInput.EOF) {
-                                    input.backup(1);
                                     return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
                                 } else {
                                     if (LexerUtils.isWS(c)
                                             && c != LexerInput.EOF
                                             && getSmartyVersion() == SmartyFramework.Version.SMARTY3) {
-                                        state = State.OUTER;
-                                        input.backup(1);
-                                        return TplTopTokenId.T_HTML;
+                                        if (lastState == TplTopTokenId.T_SMARTY) {
+                                            state = State.IN_SMARTY;
+                                        } else {
+                                            state = State.OUTER;
+                                        }
+                                        return lastState;
                                     } else {
-                                        input.backup(1);
+                                        embeddingLevel++;
+                                        lastState = TplTopTokenId.T_SMARTY;
                                         return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
                                     }
                                 }
@@ -264,6 +287,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                     case AFTER_DELIMITER:
                         if (LexerUtils.isWS(c)) {
                             if (subState == SubState.NO_SUB_STATE) {
+                                lastState = TplTopTokenId.T_SMARTY;
                                 return TplTopTokenId.T_SMARTY;
                             } else {
                                 break;
@@ -351,23 +375,47 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                         if (textLength < closeDelimiterLength) {
                             break;
                         }
-                        switch (subState) {
-                            case LITERAL:
-                                state = State.IN_LITERAL;
-                                break;
-                            case PHP_CODE:
-                                state = State.IN_PHP;
-                                break;
-                            default:
-                                if (embeddingLevel > 0) {
-                                    state = State.IN_SMARTY;
-                                    embeddingLevel--;
+                        if (subState == SubState.NO_SUB_STATE) {
+                            c = input.read();
+                            input.backup(1);
+                            if (c == LexerInput.EOF) {
+                                embeddingLevel--;
+                                state = getStateFromEmbeddingLevel(embeddingLevel);
+                                return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
+                            } else {
+                                if (LexerUtils.isWS(lastChar) && getSmartyVersion() == SmartyFramework.Version.SMARTY3) {
+                                    if (lastState == TplTopTokenId.T_SMARTY) {
+                                        state = State.IN_SMARTY;
+                                    } else {
+                                        state = State.OUTER;
+                                    }
+                                    return lastState;
                                 } else {
-                                    state = State.OUTER;
+                                    embeddingLevel--;
+                                    state = getStateFromEmbeddingLevel(embeddingLevel);
+                                    if (state == State.IN_SMARTY) {
+                                        lastState = TplTopTokenId.T_SMARTY;
+                                    } else {
+                                        lastState = TplTopTokenId.T_HTML;
+                                    }
+                                    return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
                                 }
-                                break;
+                            }
+                        } else {
+                            switch (subState) {
+                                case LITERAL:
+                                    state = State.IN_LITERAL;
+                                    break;
+                                case PHP_CODE:
+                                    state = State.IN_PHP;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            lastState = TplTopTokenId.T_HTML;
+                            embeddingLevel--;
+                            return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
                         }
-                        return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
 
                     case IN_PHP:
                         if (isSmartyOpenDelimiter(text)) {
@@ -402,12 +450,8 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                     case IN_SMARTY:
                         if (isSmartyCloseDelimiter(text)) {
                             if (textLength == closeDelimiterLength) {
-                                if (embeddingLevel > 0) {
-                                    state = State.IN_SMARTY;
-                                    embeddingLevel--;
-                                } else {
-                                    state = State.OUTER;
-                                }
+                                embeddingLevel--;
+                                state = getStateFromEmbeddingLevel(embeddingLevel);
                                 return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
                             } else {
                                 state = State.CLOSE_DELIMITER;
@@ -419,7 +463,6 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                         } else if (isSmartyOpenDelimiter(text)) {
                             if (isSmartyOpenDelimiter(text)) {
                                 state = State.OPEN_DELIMITER;
-                                embeddingLevel++;
                                 input.backup(openDelimiterLength);
                                 if (textLength > openDelimiterLength) {
                                     return TplTopTokenId.T_SMARTY;
@@ -440,10 +483,19 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                         }
                         break;
                 }
+                lastChar = c;
                 c = input.read();
             }
 
             return getTokenId(state);
+        }
+
+        private State getStateFromEmbeddingLevel(int embeddingLevel) {
+            if (embeddingLevel > 0) {
+                return State.IN_SMARTY;
+            } else {
+                return State.OUTER;
+            }
         }
 
         private TplTopTokenId getTokenId(State state) {
@@ -460,7 +512,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         }
 
         Object getState() {
-            return new CompoundState(state, subState, embeddingLevel);
+            return new CompoundState(state, subState, embeddingLevel, lastState, lastChar);
         }
 
         private boolean isSmartyOpenDelimiter(CharSequence text) {
