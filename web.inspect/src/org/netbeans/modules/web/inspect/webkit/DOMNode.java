@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.actions.Resource;
@@ -256,7 +258,8 @@ public class DOMNode extends AbstractNode {
 
     @Override
     public String toString() {
-        return super.toString() + "[nodeId=" + getNode().getNodeId() + "]"; // NOI18N
+        return super.toString() + "[nodeId=" + getNode().getNodeId() // NOI18N
+                + ", identityHashCode=" + System.identityHashCode(this) + "]"; // NOI18N
     }
 
     @Override
@@ -322,11 +325,23 @@ public class DOMNode extends AbstractNode {
         @Override
         protected org.openide.nodes.Node[] createNodes(Integer nodeId) {
             DOMNode node = pageModel.getNode(nodeId);
+            org.openide.nodes.Node[] result;
             if (node == null) {
-                return null;
+                result = null;
             } else {
-                return new org.openide.nodes.Node[] { node };
+                org.openide.nodes.Node oldParent = node.getParentNode();
+                org.openide.nodes.Node newParent = getNode();
+                if (oldParent == null || oldParent == newParent) {
+                    result = new org.openide.nodes.Node[] { node };
+                } else {
+                    // Should not happen - a bug in WebKit protocol ?!?
+                    Logger.getLogger(DOMChildren.class.getName()).log(Level.INFO,
+                            "Node {0} cannot be added to node {1} because it already belongs to {2}!", // NOI18N
+                            new Object[]{node, newParent, oldParent});
+                    result = null;
+                }
             }
+            return result;
         }
         
     }

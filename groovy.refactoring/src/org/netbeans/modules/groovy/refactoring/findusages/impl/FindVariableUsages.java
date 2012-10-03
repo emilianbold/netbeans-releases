@@ -44,10 +44,13 @@ package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
 import java.util.List;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
@@ -65,7 +68,7 @@ public class FindVariableUsages extends AbstractFindUsages {
 
     @Override
     protected List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass) {
-        return singleVisitor(new FindVariableUsagesVisitor(moduleNode, defClass));
+        return singleVisitor(new FindVariableUsagesVisitor(moduleNode));
     }
 
     @Override
@@ -76,21 +79,23 @@ public class FindVariableUsages extends AbstractFindUsages {
 
     private class FindVariableUsagesVisitor extends AbstractFindUsagesVisitor {
 
-        private final String declaringClassName;
+        private final String variableType;
         private final String variableName;
 
         
-        public FindVariableUsagesVisitor(ModuleNode moduleNode, String declaringClass) {
+        public FindVariableUsagesVisitor(ModuleNode moduleNode) {
            super(moduleNode);
            assert (element instanceof VariableRefactoringElement) : "Expected VariableRefactoringElement but it was: " + element.getClass().getSimpleName();
-           this.declaringClassName = element.getDeclaringClassName();
-           this.variableName = element.getName();
+           final VariableRefactoringElement varElement = (VariableRefactoringElement) element;
+
+           this.variableType = varElement.getVariableTypeName();
+           this.variableName = varElement.getVariableName();
         }
 
         @Override
         public void visitField(FieldNode field) {
-            if (!field.isSynthetic() && variableName.equals(field.getName())) {
-                addIfEqual(field, field.getName());
+            if (!field.isSynthetic()) {
+                addField(field);
             }
             super.visitField(field);
         }
@@ -98,25 +103,84 @@ public class FindVariableUsages extends AbstractFindUsages {
         @Override
         public void visitProperty(PropertyNode property) {
             if (!property.isSynthetic()) {
-                addIfEqual(property.getField(), property.getName());
+                addField(property.getField());
             }
             super.visitProperty(property);
+        }
+
+        private void addField(FieldNode field) {
+            final String fieldName = field.getName();
+            final String fieldOwner = field.getOwner().getName();
+
+            addIfEqual(field, fieldOwner, fieldName);
+        }
+
+        @Override
+        public void visitPropertyExpression(PropertyExpression expression) {
+            final Expression objectExpression = expression.getObjectExpression();
+            if (objectExpression == null) {
+                return;
+            }
+
+            final String varName = expression.getPropertyAsString();
+            if (objectExpression instanceof VariableExpression) {
+                final VariableExpression varExpression = ((VariableExpression) objectExpression);
+
+                final String varType;
+                if ("this".equals(varExpression.getName())) {
+                    String fileName = getSourceUnit().getName();            // returns file name (e.g. Tester.groovy)
+                    varType = fileName.substring(0, fileName.indexOf(".")); // remove the .groovy suffix
+                } else {
+                    varType = varExpression.getType().getName();
+                }
+                addIfEqual(expression.getProperty(), varType, varName);
+            } else {
+                // No need to check for "this" here
+                addIfEqual(expression.getProperty(), objectExpression.getType().getName(), varName);
+            }
+            super.visitPropertyExpression(expression);
         }
 
         @Override
         public void visitVariableExpression(VariableExpression expression) {
             final VariableExpression variableExpression = ((VariableExpression) expression);
             final Variable variable = variableExpression.getAccessedVariable();
+
             if (variable != null) {
-                addIfEqual(expression, variable.getName());
+                final String varName = variableExpression.getText();
+                final String fileName = getSourceUnit().getName();
+                final String varType = fileName.substring(0, fileName.indexOf("."));
+
+                addIfEqual(expression, varType, varName);
             }
             super.visitVariableExpression(expression);
         }
 
-        private void addIfEqual(ASTNode nodeToAdd, String name) {
-            // FIXME: we have to check also variable declaration type somehow
-            // So far if there are two classes containing both field with the
-            // same name, the result won't be correct
+        private void addIfEqual(ASTNode nodeToAdd, String type, String name) {
+            // Currently visited field is dynamic --> Just check for the correct name
+            // because we want to add everything that can possibly match the finding one
+            if ("java.lang.Object".equals(type)) {
+                addIfNameEquals(nodeToAdd, name);
+            }
+
+            // Finding field is dynamic --> Just check for the correct name because
+            // we want to add everything that can possibly match it
+            if ("java.lang.Object".equals(variableType)) {
+                addIfNameEquals(nodeToAdd, name);
+            }
+
+            // Normal situation when both (finding and visiting) fields/variables
+            // are statically typed and thus we can check if the types are the same
+            
+            // The reason why the endWith method is used instead of equals is that
+            // in case of "this" reference we don't get whole fqn from the Expression
+            // and only information we got is the name of the file
+            if (variableType.endsWith(type)) {
+                addIfNameEquals(nodeToAdd, name);
+            }
+        }
+
+        private void addIfNameEquals(ASTNode nodeToAdd, String name) {
             if (variableName.equals(name)) {
                 usages.add(nodeToAdd);
             }
