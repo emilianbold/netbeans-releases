@@ -85,11 +85,11 @@ public class TypeResolver {
         return null;
     }
 
-    public static ClassNode resolveVariableType(AstPath path, PropertyExpression propertyExpression) {
+    private static ClassNode resolveVariableType(AstPath path, PropertyExpression propertyExpression) {
         return resolveType(path, propertyExpression.getObjectExpression());
     }
 
-    public static ClassNode resolveMethodType(AstPath path, MethodCallExpression methodCall) {
+    private static ClassNode resolveMethodType(AstPath path, MethodCallExpression methodCall) {
         return resolveType(path, methodCall.getObjectExpression());
     }
 
