@@ -41,11 +41,7 @@
  */
 package org.netbeans.modules.css.model.api;
 
-import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.api.semantic.box.Box;
-import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.Edge;
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.junit.MockServices;
@@ -53,12 +49,15 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.ModelAccess;
-
-import org.netbeans.modules.css.model.api.Declarations;
-import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.model.api.semantic.Edge;
+import org.netbeans.modules.css.model.api.semantic.box.Box;
+import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
+import org.netbeans.modules.css.model.api.semantic.box.BoxType;
+import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
 import org.netbeans.modules.css.model.impl.semantic.box.DeclarationsBoxModelProvider;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -79,6 +78,17 @@ public class ModelTestBase extends NbTestCase {
         //disable checking for model access so tests doesn't have to use 
         //the Model.runRead/WriteModel(...) methods
         ModelAccess.checkModelAccess = false;
+    }
+    
+    protected FileObject getTestFile(String relFilePath) {
+        File wholeInputFile = new File(getDataDir(), relFilePath);
+        if (!wholeInputFile.exists()) {
+            NbTestCase.fail("File " + wholeInputFile + " not found.");
+        }
+        FileObject fo = FileUtil.toFileObject(wholeInputFile);
+        assertNotNull(fo);
+
+        return fo;
     }
     
     //for testing only - leaking model!
