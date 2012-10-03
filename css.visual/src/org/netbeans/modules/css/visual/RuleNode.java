@@ -189,6 +189,11 @@ public class RuleNode extends AbstractNode {
                             //Declaration object from the new model instance
                             DeclarationProperty declarationProperty = om.get(oldD);
                             declarationProperty.updateDeclaration(newD);
+                            
+                            //also update the declaration2PropertyMap itself 
+                            //as we now use new Declaration object
+                            om.remove(oldD);
+                            om.put(newD, declarationProperty);
                         }
 
                     }
@@ -642,8 +647,18 @@ public class RuleNode extends AbstractNode {
             this.declaration = declaration;
             String newValue = getValue();
             String propertyName = getPropertyName();
-            //and fire property change to the node
+
+            /* Reset DeclarationInfo to default state (null) as the contract 
+             * doesn't require/expect the RuleEditorController.setDeclarationInfo(...) 
+             * to be called for each "plain" declaration with null DeclarationInfo argument.
+            */
+            this.info = null;
+            setDisplayName(getHtmlDisplayName());
+            
+            //and fire property change to the node 
+            //this will trigger the property name and value repaint
             firePropertyChange(propertyName, oldValue, newValue);
+            
         }
 
         private String getPropertyName() {
@@ -665,9 +680,11 @@ public class RuleNode extends AbstractNode {
         }
 
         public void setDeclarationInfo(DeclarationInfo info) {
-            String old = getHtmlDisplayName();
             this.info = info;
-            fireDisplayNameChange(old, getHtmlDisplayName());
+            setDisplayName(getHtmlDisplayName());
+            //force the property repaint - stupid way but there's
+            //doesn't seemt to be any better way
+            firePropertyChange(getPropertyName(), null, getValue());
         }
 
         private boolean isOverridden() {
