@@ -84,7 +84,7 @@ import org.openide.util.RequestProcessor;
 /**
  * @author Tomas Mysik
  */
-@OptionsPanelController.Keywords(keywords={"php zend"}, location=UiUtils.OPTIONS_PATH, index=10)
+@OptionsPanelController.Keywords(keywords={"php zend framework zf"}, location=UiUtils.OPTIONS_PATH, index=10)
 public final class ZendOptionsPanel extends JPanel {
     private static final long serialVersionUID = -13564875423210L;
     private static final String ZEND_LAST_FOLDER_SUFFIX = ".zend";
