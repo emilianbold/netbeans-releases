@@ -333,6 +333,19 @@ public class TplTopLexerBatchTest extends TplTestBase {
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " ");
     }
 
+    public void testIssue212121_3() {
+        String text = "<title>{$title}</title><style type=\"text/css\">.a { margin-left: 15px; }</style>";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "<title>");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "$title");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "</title><style type=\"text/css\">.a ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " margin-left: 15px; }</style>");
+    }
+
 
     private TokenSequence createTokenSequence(String text) {
         TokenHierarchy<?> hi = TokenHierarchy.create(text, TplTopTokenId.language());
