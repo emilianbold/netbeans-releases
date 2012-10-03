@@ -39,63 +39,63 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl;
+package org.netbeans.modules.jumpto.common;
 
-import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
  *
- * @author marekfukala
+ * @author Tomas Zezula
  */
-public class Utils {
-        
-    private static final String IMPLEMENTATIONS_PACKAGE = StyleSheetI.class.getPackage().getName();
-    private static final char IMPLEMENTATIONS_SUFFIX = 'I'; //NOI18N
-    
-    
-    
-    //rule: grammar element name, first char in upper case + "I" postfix
-    static String getImplementingClassNameForNodeType(NodeType nodeType) {
-        return getImplementingClassNameForNodeType(nodeType.name());
-    }
-    
-    static String getImplementingClassNameForNodeType(String typeName) {
-        StringBuilder sb = new StringBuilder();
-        
-        sb.append(IMPLEMENTATIONS_PACKAGE);
-        sb.append('.');
-        sb.append(getInterfaceForNodeType(typeName));
-        sb.append(IMPLEMENTATIONS_SUFFIX);
-        
-        return sb.toString();
-    }
-    
-    static String getInterfaceForNodeType(String typeName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(Character.toUpperCase(typeName.charAt(0)));
-        
-        //underscores in element names conversion
-        //
-        //generic_at_rule --- should generate class name --- GenericAtRuleI
-        for(int i = 1; i < typeName.length(); i++) {
-            char c = typeName.charAt(i);
-            if(c == '_') {
-                //eat and convert next char to uppercase
-                assert i < typeName.length() - 1 :
-                    String.format("NodeType name %s cannot end with underscore!", typeName);
-                i++;
-                c = typeName.charAt(i);
-                assert c != '_' : 
-                        String.format("No two underscores in row can be preset in the NodeType %s name!", typeName);
+public final class Pair<F,S> {
 
-                sb.append(Character.toUpperCase(c));
-            } else {
-                sb.append(c);
-            }
-            
-        }
-        return sb.toString();
+    public final F first;
+    public final S second;
+
+
+    private Pair(
+        @NullAllowed final F first,
+        @NullAllowed final S second) {
+        this.first = first;
+        this.second = second;
     }
-    
-    
+
+    @Override
+    public String toString() {
+        return String.format(
+            "Pair[%s,%s]",  //NOI18N
+            first,
+            second);
+    }
+
+    @Override
+    public int hashCode() {
+        int res = 17;
+        res = res * 31 + (first == null ? 0 : first.hashCode());
+        res = res * 31 + (second == null ? 0 : second.hashCode());
+        return res;
+    }
+
+    @Override
+    public boolean equals(@NullAllowed final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof Pair)) {
+            return false;
+        }
+        final Pair<?,?> otherPair = (Pair<?,?>) other;
+        return first == null ? otherPair.first == null : first.equals(otherPair.first) &&
+            second == null ? otherPair.second == null : second.equals(otherPair.second);
+    }
+
+
+    @NonNull
+    public static <F,S> Pair<F,S> of(
+        @NullAllowed final F first,
+        @NullAllowed final S second) {
+        return new Pair<F,S>(first,second);
+    }
+
 }

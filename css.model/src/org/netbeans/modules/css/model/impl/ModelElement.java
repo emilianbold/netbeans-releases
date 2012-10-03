@@ -48,6 +48,8 @@ import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.model.api.Media;
+import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.semantic.PModel;
 import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.ElementListener;
@@ -93,25 +95,34 @@ public abstract class ModelElement implements Element {
     public void acceptVisitorGeneric(Element element, ModelVisitor modelVisitor) {
         try {
             Class<?> elementClass = getModelClass(element);
-            String elementClassSimpleName = elementClass.getSimpleName();
-
-            Class<?> visitorClass = modelVisitor.getClass();
-            StringBuilder sb = new StringBuilder();
-            sb.append("visit"); //NOI18N
-            sb.append(elementClassSimpleName);
-
-//            System.out.println("trying to call ModelVisitor." + sb.toString() + "(" + elementClass.getSimpleName() + ")");
             
-            Method method = visitorClass.getMethod(sb.toString(), elementClass);
-            method.setAccessible(true);
+            if(Rule.class.equals(elementClass)) {
+                modelVisitor.visitRule((Rule)element);
+            } else if(Media.class.equals(elementClass)) {
+                modelVisitor.visitMedia((Media)element);
+            }
             
-            method.invoke(modelVisitor, element);
-        } catch (NoSuchMethodException nsme) {
+            //The reflection approach is horribly slow
+            
+//            String elementClassSimpleName = elementClass.getSimpleName();
+//
+//            Class<?> visitorClass = modelVisitor.getClass();
+//            StringBuilder sb = new StringBuilder();
+//            sb.append("visit"); //NOI18N
+//            sb.append(elementClassSimpleName);
+//
+////            System.out.println("trying to call ModelVisitor." + sb.toString() + "(" + elementClass.getSimpleName() + ")");
+//            
+//            Method method = visitorClass.getMethod(sb.toString(), elementClass);
+//            method.setAccessible(true);
+//            
+//            method.invoke(modelVisitor, element);
+//        } catch (NoSuchMethodException nsme) {
             //the visitor doesn't contain such method, delegate to the generic
             //ModelVisitor.visitElement(...)
             //XXX ideally the ModelVisitor interface is generated so it contain
             //all the methods
-            modelVisitor.visitElement(element);
+//            modelVisitor.visitElement(element);
         } catch (/* NoSuchMethodException, SecurityException,
                  InstantiationException, IllegalAccessException, IllegalArgumentException, 
                  InvocationTargetException */Exception ex) {

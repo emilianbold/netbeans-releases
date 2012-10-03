@@ -41,61 +41,60 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import org.netbeans.modules.css.lib.api.NodeType;
+import java.io.IOException;
+import org.netbeans.modules.css.lib.TestUtil;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelTestBase;
+import org.netbeans.modules.css.model.api.ModelVisitor;
+import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.model.api.StyleSheet;
+import org.openide.filesystems.FileObject;
+
 
 /**
  *
  * @author marekfukala
  */
-public class Utils {
-        
-    private static final String IMPLEMENTATIONS_PACKAGE = StyleSheetI.class.getPackage().getName();
-    private static final char IMPLEMENTATIONS_SUFFIX = 'I'; //NOI18N
-    
-    
-    
-    //rule: grammar element name, first char in upper case + "I" postfix
-    static String getImplementingClassNameForNodeType(NodeType nodeType) {
-        return getImplementingClassNameForNodeType(nodeType.name());
-    }
-    
-    static String getImplementingClassNameForNodeType(String typeName) {
-        StringBuilder sb = new StringBuilder();
-        
-        sb.append(IMPLEMENTATIONS_PACKAGE);
-        sb.append('.');
-        sb.append(getInterfaceForNodeType(typeName));
-        sb.append(IMPLEMENTATIONS_SUFFIX);
-        
-        return sb.toString();
-    }
-    
-    static String getInterfaceForNodeType(String typeName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(Character.toUpperCase(typeName.charAt(0)));
-        
-        //underscores in element names conversion
-        //
-        //generic_at_rule --- should generate class name --- GenericAtRuleI
-        for(int i = 1; i < typeName.length(); i++) {
-            char c = typeName.charAt(i);
-            if(c == '_') {
-                //eat and convert next char to uppercase
-                assert i < typeName.length() - 1 :
-                    String.format("NodeType name %s cannot end with underscore!", typeName);
-                i++;
-                c = typeName.charAt(i);
-                assert c != '_' : 
-                        String.format("No two underscores in row can be preset in the NodeType %s name!", typeName);
+public class ModelElementTest extends ModelTestBase {
 
-                sb.append(Character.toUpperCase(c));
-            } else {
-                sb.append(c);
+    public ModelElementTest(String name) {
+        super(name);
+    }
+    
+    public void testAcceptVisitorGeneric_speed() throws IOException {
+        FileObject file = getTestFile("testfiles/bootstrap.css");
+        String content = file.asText();
+        
+        System.out.println("Testing performance on " + file.getNameExt() + " ... ");
+        
+        long a = System.currentTimeMillis();
+        CssParserResult result = TestUtil.parse(content);
+        long b = System.currentTimeMillis();
+        System.out.println("file parsing took " + (b-a) + "ms.");
+        
+        Model model = createModel(result);
+
+        long c = System.currentTimeMillis();
+        System.out.println("model creation took " + (c-b) + "ms.");
+
+        StyleSheet s = getStyleSheet(model);
+        assertNotNull(s);
+        
+        ModelVisitor visitor = new ModelVisitor.Adapter() {
+
+            @Override
+            public void visitRule(Rule rule) {
+                //no-op
             }
             
-        }
-        return sb.toString();
+        };
+        
+        s.accept(visitor);
+        long d = System.currentTimeMillis();
+        
+        System.out.println("visiting took " + (d-c) + "ms.");
+        
     }
-    
     
 }

@@ -71,7 +71,10 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Adamek
  */
-@OptionsPanelController.Keywords(keywords={"groovy", "grails"}, location=OptionsDisplayer.ADVANCED, tabTitle="Groovy")
+@OptionsPanelController.Keywords(
+        location = OptionsDisplayer.ADVANCED, 
+        tabTitle = "Groovy",
+        keywords = {"groovy", "grails", "gsp"})
 final class SupportPanel extends javax.swing.JPanel {
 
     private final Collection<GroovyOptionsSubpanel> subpanels;
