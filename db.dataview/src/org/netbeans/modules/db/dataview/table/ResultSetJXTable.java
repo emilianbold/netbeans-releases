@@ -319,7 +319,7 @@ public class ResultSetJXTable extends JXTableDecorator {
             return "\"\""; //NOI18N
         } else if (value.contains("\t") || value.contains("\n") //NOI18N
                 || value.contains("\"")) { //NOI18N
-            return "\"" + value.replaceAll("\"", "\"\"") + "\""; //NOI18N
+            return "\"" + value.replace("\"", "\"\"") + "\""; //NOI18N
         } else {
             return value;
         }

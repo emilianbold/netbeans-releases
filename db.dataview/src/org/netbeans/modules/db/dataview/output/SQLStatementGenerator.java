@@ -469,7 +469,7 @@ class SQLStatementGenerator {
             try {
                 Clob lob = (Clob) val;
                 String result = lob.getSubString(1, (int) lob.length());
-                return "'" + result.replaceAll("'", "''") + "'"; //NOI18N
+                return "'" + result.replace("'", "''") + "'"; //NOI18N
             } catch (SQLException ex) {
                 LOG.log(Level.INFO, "Failed to read CLOB", ex); //NOI18N
             }
@@ -484,7 +484,7 @@ class SQLStatementGenerator {
             }
         }
         // Fallback if previous converts fail
-        return "'" + val.toString().replaceAll("'", "''") + "'"; //NOI18N
+        return "'" + val.toString().replace("'", "''") + "'"; //NOI18N
     }
 
     private String getAutoIncrementText(int dbType) throws Exception {
