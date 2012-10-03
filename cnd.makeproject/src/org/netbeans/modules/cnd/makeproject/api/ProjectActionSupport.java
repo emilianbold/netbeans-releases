@@ -138,8 +138,20 @@ public class ProjectActionSupport {
         return instance;
     }
 
-    private static void refreshProjectFiles(final Project project) {
+    private static boolean isFileOperationsIntensive(ProjectActionEvent pae) {
+        Type type = pae.getType();
+        if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS) {
+            return true;
+        }
+        return false;
+    }
+    
+    private static void refreshProjectFilesOnFinish(final ProjectActionEvent curPAE, final FileOperationsNotifier fon) {
         try {
+            if (curPAE.getType() != PredefinedType.RUN && !fon.isLastExpectedEvent(curPAE)) {
+                return;
+            }
+            final Project project = curPAE.getProject();
             final Set<File> files = new HashSet<File>();
             final Set<FileObject> fileObjects = new HashSet<FileObject>();
             FileObject projectFileObject = project.getProjectDirectory();
@@ -167,16 +179,21 @@ public class ProjectActionSupport {
             Runnable refresher = new Runnable() {
                 @Override
                 public void run() {
-                    final File[] array = files.toArray(new File[files.size()]);
-                    if (array.length > 0) {
-                        FileUtil.refreshFor(array);
-                    }
-                    if (!fileObjects.isEmpty()) {
-                        for (FileObject fo : fileObjects) {
-                            FileSystemProvider.scheduleRefresh(fo);
+                    if (RP.isRequestProcessorThread()) {
+                        FileUtil.runAtomicAction(this);
+                        fon.onFinish(curPAE);
+                        MakeLogicalViewProvider.refreshBrokenItems(project);
+                    } else {
+                        final File[] array = files.toArray(new File[files.size()]);
+                        if (array.length > 0) {
+                            FileUtil.refreshFor(array);
+                        }
+                        if (!fileObjects.isEmpty()) {
+                            for (FileObject fo : fileObjects) {
+                                FileSystemProvider.scheduleRefresh(fo);
+                            }
                         }
                     }
-                    MakeLogicalViewProvider.refreshBrokenItems(project);
                 }
             };
             final Preferences nd = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction"); // NOI18N
@@ -184,7 +201,9 @@ public class ProjectActionSupport {
             if (manual) {
                 RP.post(refresher);
             } else {
-                refresher.run();
+                FileUtil.runAtomicAction(refresher);
+                fon.onFinish(curPAE);
+                MakeLogicalViewProvider.refreshBrokenItems(project);
             }
         } catch (Exception e) {
             LOGGER.log(Level.INFO, "Cannot refresh project files", e);
@@ -280,6 +299,14 @@ public class ProjectActionSupport {
                     notifier.npcs.fireFileOperationsFinished();
                 }
             }
+        }
+
+        private boolean isLastExpectedEvent(ProjectActionEvent curPAE) {
+            ProjectFileOperationsNotifier notifier = prjNotifier.get(curPAE.getProject());
+            if (notifier != null && (notifier.npcs != null) && (curPAE == notifier.finishPAE)) {
+                return true;
+            }
+            return false;
         }
     }
     
@@ -691,14 +718,6 @@ public class ProjectActionSupport {
             return new FileOperationsNotifier(prj2Notifier);
         }
         
-        private boolean isFileOperationsIntensive(ProjectActionEvent pae) {
-            Type type = pae.getType();
-            if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS) {
-                return true;
-            }
-            return false;
-        }
-        
         public NativeProjectChangeSupport getNativeProjectChangeSupport(Project project) {
             NativeProject nativeProject = null;
             try {
@@ -722,12 +741,8 @@ public class ProjectActionSupport {
                 }
             }
             ProjectActionEvent curPAE = paes[currentAction];
-            Type type = curPAE.getType();
-            if (isFileOperationsIntensive(curPAE) || type == PredefinedType.RUN) {
-                // Refresh all files
-                refreshProjectFiles(curPAE.getProject());
-            }
-            fon.onFinish(curPAE);
+            // Refresh FS
+            refreshProjectFilesOnFinish(curPAE, fon);
             if (currentAction >= paes.length - 1 || rc != 0) {
                 synchronized (lock) {
                     if (mainTabHandler == this) {
