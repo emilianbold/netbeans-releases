@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -180,7 +181,7 @@ public class RuleNode extends AbstractNode {
                         for (Declaration d : nm.keySet()) {
                             nName2DeclarationMap.put(d.getProperty().getContent().toString(), d);
                         }
-
+                        
                         for (String declarationName : oName2DeclarationMap.keySet()) {
                             Declaration oldD = oName2DeclarationMap.get(declarationName);
                             Declaration newD = nName2DeclarationMap.get(declarationName);
@@ -423,19 +424,13 @@ public class RuleNode extends AbstractNode {
         model.runReadTask(new Model.ModelTask() {
             @Override
             public void run(StyleSheet styleSheet) {
-                doc.runAtomic(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            model.applyChanges();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-
+                try {
+                    model.applyChanges();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         });
     }
