@@ -484,7 +484,7 @@ class SQLStatementGenerator {
             }
         }
         // Fallback if previous converts fail
-        return "'" + val.toString().replace("'", "''") + "'"; //NOI18N
+        return "'" + val.toString().replaceAll("'", "''") + "'"; //NOI18N
     }
 
     private String getAutoIncrementText(int dbType) throws Exception {
