@@ -504,6 +504,9 @@ public class AntDebugger extends ActionsProviderSupport {
         if (frame instanceof TargetOriginating) {
             frame = ((TargetOriginating) frame).getOriginatingTarget();
         }
+        if (frame == null) {
+            return "?";
+        }
         return frame instanceof Task ?
             ((Task) frame).getTaskStructure ().getName () :
             ((TargetLister.Target) frame).getName ();
