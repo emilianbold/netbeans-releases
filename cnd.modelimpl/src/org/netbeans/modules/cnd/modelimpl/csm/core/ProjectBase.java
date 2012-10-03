@@ -2381,8 +2381,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getProjectRoots().isMySource(includePath);
     }
 
-    @Deprecated public void onFileExternalAdded(NativeFileItem nativeFile) {}
-    
     //// were extracted into NativeProjectListener methods
     public void onFileItemRenamed(String oldPath, NativeFileItem newFileIetm) {}
 
@@ -2448,10 +2446,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         // or use FO as fallback, it can be helpful for header files not included into
         // project, but used in include directives which were broken so far
         if (nativeFileItem != null) {
-            onFileExternalAdded(nativeFileItem);
-        } else {
-            DeepReparsingUtils.reparseOnAdded(file, this);
+            // TODO: can we track it as just added file item?
+            onFileItemsAdded(Collections.singletonList(nativeFileItem));
         }
+        // allow to fix broken includes anyway
+        DeepReparsingUtils.reparseOnAdded(file, this);
     }
 
     public final void onFileImplExternalChange(FileImpl file) {

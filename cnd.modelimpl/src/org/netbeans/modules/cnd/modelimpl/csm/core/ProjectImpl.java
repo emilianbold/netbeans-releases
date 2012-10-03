@@ -67,7 +67,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -191,16 +190,6 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFileItemsPropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {
-        if (!this.isValid()) {
-            return;
-        }
-        if (items.size() > 0) {
-            DeepReparsingUtils.reparseOnPropertyChanged(items, this, invalidateLibs);
-        }
-    }
-
-    @Override
     public void onFileImplRemoved(Collection<FileImpl> physicallyRemoved, Collection<FileImpl> excluded) {
         try {
             synchronized (editedFiles) {
@@ -223,72 +212,50 @@ public final class ProjectImpl extends ProjectBase {
     @Override
     public void onFileItemsRemoved(List<NativeFileItem> items) {
         try {
-            ParserQueue.instance().onStartAddingProjectFiles(this);
-//            List<FileImpl> toReparse = new ArrayList<FileImpl>();
-//            for (NativeFileItem item : items) {
-//                FileImpl impl = getFile(item.getAbsolutePath(), false);
-//                if (impl != null) {
-//                    toReparse.add(impl);
-//                }
-//            }
-//            onFileImplRemoved(toReparse);            
+            ParserQueue.instance().onStartAddingProjectFiles(this);           
             checkForRemoved();
         } finally {
             ParserQueue.instance().onEndAddingProjectFiles(this);
         }
     }
 
-    @Deprecated
-    @Override
-    public void onFileExternalAdded(NativeFileItem nativeFile) {
-        onFileAddedImpl(nativeFile, true);
-    }
-
     @Override
     public void onFileItemRenamed(String oldPath, NativeFileItem newFileIetm) {
-//        FileImpl fileImpl = getFile(oldPath, false);
-//        if (fileImpl != null) {
-//            onFileImplRemoved(Collections.singletonList(fileImpl));
-//        }
-        checkForRemoved();
-        onFileAddedImpl(newFileIetm, false);
-    }
-    
-    private NativeFileItem onFileAddedImpl(NativeFileItem nativeFile, boolean deepReparse) {
-        if (Utils.acceptNativeItem(nativeFile)) {
-            CndFileUtils.clearFileExistenceCache();
-            try {
-                //Notificator.instance().startTransaction();
-                createIfNeed(nativeFile, isSourceFile(nativeFile));
-                return nativeFile;
-            } finally {
-                //Notificator.instance().endTransaction();
-                Notificator.instance().flush();
-                if (deepReparse) {
-                    DeepReparsingUtils.reparseOnAdded(Collections.singletonList(nativeFile), this);
-                }
-            }
+        try {
+            ParserQueue.instance().onStartAddingProjectFiles(this);
+            // TODO: for now we consider this as pair "remove"/"add" file item
+            checkForRemoved();
+            onFileItemsAdded(Collections.singletonList(newFileIetm));
+        } finally {
+            ParserQueue.instance().onEndAddingProjectFiles(this);
         }
-        return null;
     }
 
     @Override
     public void onFileItemsAdded(List<NativeFileItem> items) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(this);
-            List<NativeFileItem> toReparse = new ArrayList<NativeFileItem>();
             for (NativeFileItem item : items) {
-                NativeFileItem done = onFileAddedImpl(item, false);
-                if (done != null) {
-                    toReparse.add(done);
+                if (Utils.acceptNativeItem(item)) {
+                    createIfNeed(item, isSourceFile(item));
                 }
             }
-            DeepReparsingUtils.reparseOnAdded(toReparse, this);
         } finally {
+            Notificator.instance().flush();
             ParserQueue.instance().onEndAddingProjectFiles(this);
         }
     }
 
+    @Override
+    public void onFileItemsPropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {
+        if (!this.isValid()) {
+            return;
+        }
+        if (items.size() > 0) {
+            DeepReparsingUtils.reparseOnPropertyChanged(items, this, invalidateLibs);
+        }
+    }
+    
     protected 
     @Override
     void ensureChangedFilesEnqueued() {
