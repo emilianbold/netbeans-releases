@@ -42,6 +42,9 @@
 package org.netbeans.modules.css.model.impl;
 
 import java.io.IOException;
+import org.netbeans.modules.css.lib.TestUtil;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelTestBase;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
@@ -63,12 +66,18 @@ public class ModelElementTest extends ModelTestBase {
         FileObject file = getTestFile("testfiles/bootstrap.css");
         String content = file.asText();
         
+        System.out.println("Testing performance on " + file.getNameExt() + " ... ");
+        
         long a = System.currentTimeMillis();
-        StyleSheet s = createStyleSheet(content);
+        CssParserResult result = TestUtil.parse(content);
         long b = System.currentTimeMillis();
+        System.out.println("file parsing took " + (b-a) + "ms.");
         
-        System.out.println("model creation time (including parsing) = " + (b-a) + "ms.");
-        
+        Model model = createModel(result);
+        long c = System.currentTimeMillis();
+        System.out.println("model creation took " + (c-b) + "ms.");
+
+        StyleSheet s = getStyleSheet(model);
         assertNotNull(s);
         
         ModelVisitor visitor = new ModelVisitor.Adapter() {
@@ -81,9 +90,9 @@ public class ModelElementTest extends ModelTestBase {
         };
         
         s.accept(visitor);
-        long c = System.currentTimeMillis();
+        long d = System.currentTimeMillis();
         
-        System.out.println("visiting took = " + (c-b) + "ms.");
+        System.out.println("visiting took " + (d-c) + "ms.");
         
     }
     

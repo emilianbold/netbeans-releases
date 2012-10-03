@@ -113,7 +113,10 @@ public class ModelTestBase extends NbTestCase {
     }
     
     protected Model createModel(String source) {
-        CssParserResult result = TestUtil.parse(source);
+        return createModel(TestUtil.parse(source));
+    }
+    
+    protected Model createModel(CssParserResult result) {
         return new Model(result);
     }
 
