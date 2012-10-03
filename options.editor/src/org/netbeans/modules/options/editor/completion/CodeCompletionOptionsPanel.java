@@ -64,7 +64,7 @@ import org.openide.util.WeakListeners;
 /**
  * @author Dusan Balek
  */
-@OptionsPanelController.Keywords(keywords = {"code completion"}, location = OptionsDisplayer.EDITOR, index = 2)
+@OptionsPanelController.Keywords(keywords = {"code completion"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_CodeCompletion_DisplayName")
 public class CodeCompletionOptionsPanel extends JPanel implements PropertyChangeListener {
     
     private CodeCompletionOptionsSelector selector;

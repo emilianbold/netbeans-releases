@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
 /**
  * Panel for SYmfony2 options.
  */
-@OptionsPanelController.Keywords(keywords={"php symfony symfony2 framework sf sf2"}, location=UiUtils.OPTIONS_PATH, index=8)
+@OptionsPanelController.Keywords(keywords={"php symfony symfony2 framework sf sf2"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_OptionsName")
 @NbBundle.Messages("LBL_ZipFilesFilter=Zip File (*.zip)")
 public class Symfony2OptionsPanel extends JPanel {
 

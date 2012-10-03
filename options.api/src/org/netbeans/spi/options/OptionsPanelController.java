@@ -361,18 +361,13 @@ public abstract class OptionsPanelController {
         String location();
 
         /**
-         * Optional title that must be used if the panel is in the Miscellaneous category.
+         * Optional title that must be used if the panel is part of a tabbed pane, such as when it is
+         * in the Editor, Fonts & Colors, Java, PHP, C/C++ or Miscellaneous categories, matching the
+         * {@link SubRegistration#displayName}.
          * 
          * You may use {@code #key} syntax.
          */
         String tabTitle() default "";
-
-        /**
-         * Position relative to sibling subpanels matching the tab index in a tabbed pane.
-         * If the panel is in the Miscellaneous panel there is no need to specify the index 
-         * as tabs in Miscellaneous category are always sorted alphabetically.
-         */
-        int index() default -1;
     }
 
 }
