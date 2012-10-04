@@ -58,10 +58,12 @@ import org.openide.util.Lookup;
  *
  * Maybe, this should rather be in the web.project and j2ee.ejbjarproject modules?
  */
-@LookupMerger.Registration(projectType={
-    "org-netbeans-modules-web-project",
-    "org-netbeans-modules-j2ee-ejbjarproject"
-})
+@LookupMerger.Registration(
+    projectType = {
+        "org-netbeans-modules-web-project",
+        "org-netbeans-modules-j2ee-ejbjarproject"
+    }
+)
 public class GroovyLookupMerger implements LookupMerger<ActionProvider> {
 
     @Override
