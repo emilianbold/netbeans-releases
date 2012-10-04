@@ -266,11 +266,13 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                         TokenAcceptor.NumberPostfixAcceptor acceptor = (TokenAcceptor.NumberPostfixAcceptor) genericAcceptor;
                         if (acceptor.accepts(value)) {
                             int i = acceptor.getNumberValue(value).intValue();
-                            String postfix = acceptor.getPostfix(value).toString();
+                            CharSequence postfix = acceptor.getPostfix(value);
 
                             StringBuilder newVal = new StringBuilder();
                             newVal.append(i + (forward ? 1 : -1));
-                            newVal.append(postfix);
+                            if(postfix != null) {
+                                newVal.append(postfix);
+                            }
 
                             return newVal.toString();
                         }
