@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,17 +62,16 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
-import org.netbeans.modules.php.editor.api.elements.ClassElement;
-import org.netbeans.modules.php.editor.api.QuerySupportFactory;
-import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.php.editor.api.elements.PhpElement;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.FieldElement;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
+import org.netbeans.modules.php.editor.api.elements.FieldElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -79,10 +79,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
-import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Dispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
@@ -251,7 +251,7 @@ public class SemiAttribute extends DefaultVisitor {
         if (expression instanceof Variable) {
             Variable var = (Variable) expression;
             final String name = extractVariableName(var);
-            if (var != null && name != null) {
+            if (name != null) {
                 node2Element.put(var,
                         scopes.peek().enterWrite(name, Kind.VARIABLE, var));
             }
@@ -724,8 +724,8 @@ public class SemiAttribute extends DefaultVisitor {
                     }
                 }
                 if (Kind.CLASS.equals(k) && fName.equals("parent")) {//NOI18N
-                    Collection<AttributedElement> values = name2El.values();
                     if (name2El != null) {
+                        Collection<AttributedElement> values = name2El.values();
                         for (AttributedElement ael : values) {
                             if (ael instanceof ClassElementAttribute) {
                                 ClassElementAttribute ce = (ClassElementAttribute) ael;
@@ -904,7 +904,7 @@ public class SemiAttribute extends DefaultVisitor {
     }
 
     public Collection<AttributedElement> getFunctions() {
-        Collection<AttributedElement> retval = null;
+        Collection<AttributedElement> retval;
         if (global != null) {
             retval = global.getFunctions();
         } else {
@@ -914,7 +914,7 @@ public class SemiAttribute extends DefaultVisitor {
     }
 
     public Collection<AttributedElement> getConstants() {
-        Collection<AttributedElement> retval = null;
+        Collection<AttributedElement> retval;
         if (global != null) {
             retval = global.getConstants();
         } else {
@@ -924,7 +924,7 @@ public class SemiAttribute extends DefaultVisitor {
     }
 
     public Collection<AttributedElement> getGlobalVariables() {
-        Collection<AttributedElement> retval = null;
+        Collection<AttributedElement> retval;
         if (global != null) {
             retval = global.getVariables();
         } else {
@@ -934,7 +934,7 @@ public class SemiAttribute extends DefaultVisitor {
     }
 
     public Collection<ClassElementAttribute> getClasses() {
-        Collection<ClassElementAttribute> retval = null;
+        Collection<ClassElementAttribute> retval;
         if (global != null) {
             retval = global.getClasses();
         } else {
@@ -945,6 +945,7 @@ public class SemiAttribute extends DefaultVisitor {
 
     public boolean hasGlobalVisibility(AttributedElement elem) {
         if (elem.isClassMember()) {
+            assert (elem instanceof ClassMemberElement);
             ClassMemberElement cme = (ClassMemberElement) elem;
             boolean isGlobal = (cme.getModifier() == -1 || !cme.isPrivate()) && hasGlobalVisibility(cme.getClassElement());
             return isGlobal;
@@ -1153,10 +1154,38 @@ public class SemiAttribute extends DefaultVisitor {
                             case STATIC:
                                 modifier |= BodyDeclaration.Modifier.STATIC;
                                 break;
+                            default:
+                                // no-op
                         }
                     }
                 }
             }
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 97 * hash + (this.classElement != null ? this.classElement.hashCode() : 0);
+            hash = 97 * hash + this.modifier;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ClassMemberElement other = (ClassMemberElement) obj;
+            if (this.classElement != other.classElement && (this.classElement == null || !this.classElement.equals(other.classElement))) {
+                return false;
+            }
+            if (this.modifier != other.modifier) {
+                return false;
+            }
+            return true;
         }
 
         public enum ClassMemberKind {
@@ -1261,6 +1290,42 @@ public class SemiAttribute extends DefaultVisitor {
         void initialized() {
             initialized = true;
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 79 * hash + (this.enclosedElements != null ? this.enclosedElements.hashCode() : 0);
+            hash = 79 * hash + (this.superClass != null ? this.superClass.hashCode() : 0);
+            hash = 79 * hash + (this.ifaces != null ? this.ifaces.hashCode() : 0);
+            hash = 79 * hash + (this.initialized ? 1 : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ClassElementAttribute other = (ClassElementAttribute) obj;
+            if (this.enclosedElements != other.enclosedElements && (this.enclosedElements == null || !this.enclosedElements.equals(other.enclosedElements))) {
+                return false;
+            }
+            if (this.superClass != other.superClass && (this.superClass == null || !this.superClass.equals(other.superClass))) {
+                return false;
+            }
+            if (this.ifaces != other.ifaces && (this.ifaces == null || !this.ifaces.equals(other.ifaces))) {
+                return false;
+            }
+            if (this.initialized != other.initialized) {
+                return false;
+            }
+            return true;
+        }
+
+
     }
 
     public  class FunctionElementAttribute extends AttributedElement {
@@ -1313,12 +1378,37 @@ public class SemiAttribute extends DefaultVisitor {
         void initialized() {
             initialized = true;
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 41 * hash + (this.enclosedElements != null ? this.enclosedElements.hashCode() : 0);
+            hash = 41 * hash + (this.initialized ? 1 : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FunctionElementAttribute other = (FunctionElementAttribute) obj;
+            if (this.enclosedElements != other.enclosedElements && (this.enclosedElements == null || !this.enclosedElements.equals(other.enclosedElements))) {
+                return false;
+            }
+            if (this.initialized != other.initialized) {
+                return false;
+            }
+            return true;
+        }
     }
 
     public  class DefinitionScope {
 
-        private final Map<Kind, Map<String, AttributedElement>> name2Writes = new HashMap<Kind, Map<String, AttributedElement>>();
-//        private final Map<AttributedElement, ASTNode> reads = new HashMap<AttributedElement, ASTNode>();
+        private final Map<Kind, Map<String, AttributedElement>> name2Writes = new EnumMap<Kind, Map<String, AttributedElement>>(Kind.class);
         private boolean classScope;
         private boolean functionScope;
         private AttributedElement thisVar;
