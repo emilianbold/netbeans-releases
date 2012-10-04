@@ -428,10 +428,6 @@ public class RuleNode extends AbstractNode {
 
     public void applyModelChanges() {
         final Model model = getModel();
-        final NbEditorDocument doc = (NbEditorDocument) model.getLookup().lookup(Document.class);
-        if (doc == null) {
-            return;
-        }
         model.runReadTask(new Model.ModelTask() {
             @Override
             public void run(StyleSheet styleSheet) {
@@ -834,9 +830,6 @@ public class RuleNode extends AbstractNode {
                             //and the RuleEditorPanel's listener will ASYNCHRONOUSLY
                             //refresh the css source model.
 
-                        } else {
-                            //for addPropertyMode only
-                            fireContextChanged(false); //will also trigger the updateDeclaration(...) method synchronously 
                         }
 
                     }
