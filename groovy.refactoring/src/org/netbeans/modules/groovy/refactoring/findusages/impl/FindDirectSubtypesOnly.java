@@ -45,7 +45,6 @@ package org.netbeans.modules.groovy.refactoring.findusages.impl;
 import java.util.List;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
 import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
@@ -64,11 +63,6 @@ public class FindDirectSubtypesOnly extends AbstractFindUsages {
     @Override
     protected List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass) {
         return singleVisitor(new FindDirectSubtypesOnlyVisitor(moduleNode, defClass));
-    }
-
-    @Override
-    protected ElementKind getElementKind() {
-        return ElementKind.CLASS;
     }
 
 

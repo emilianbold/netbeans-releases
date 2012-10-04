@@ -51,7 +51,6 @@ import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.VariableRefactoringElement;
 
@@ -68,11 +67,6 @@ public class FindVariableUsages extends AbstractFindUsages {
     @Override
     protected List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass) {
         return singleVisitor(new FindVariableUsagesVisitor(moduleNode));
-    }
-
-    @Override
-    protected ElementKind getElementKind() {
-        return ElementKind.VARIABLE;
     }
 
 
