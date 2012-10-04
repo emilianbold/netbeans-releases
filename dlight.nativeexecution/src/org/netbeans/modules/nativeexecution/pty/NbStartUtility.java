@@ -58,7 +58,7 @@ import org.openide.util.Exceptions;
  */
 public class NbStartUtility extends HelperUtility {
 
-    private static final boolean DISABLED = Boolean.getBoolean("disable.nbstart"); // NOI18N
+    private static final boolean DISABLED = true; // Boolean.getBoolean("disable.nbstart"); // NOI18N
     private final static NbStartUtility instance = new NbStartUtility();
 
     public NbStartUtility() {
