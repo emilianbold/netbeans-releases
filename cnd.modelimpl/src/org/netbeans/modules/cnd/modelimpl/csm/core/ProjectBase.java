@@ -2461,27 +2461,29 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     public final void onFileObjectExternalCreate(FileObject file) {
-        CndFileUtils.clearFileExistenceCache();
-        // #196664 - Code Model ignores the generated files"
-        // when external file was created and assigned to this project => 
-        // create csm file for it if possible
-        NativeFileItem nativeFileItem = null;
-        // Try to find native file
-        if (getPlatformProject() instanceof NativeProject) {
-            NativeProject prj = (NativeProject) getPlatformProject();
-            if (prj != null) {
-                nativeFileItem = prj.findFileItem(file);
+        try {
+            ParserQueue.instance().onStartAddingProjectFiles(this);
+            CndFileUtils.clearFileExistenceCache();
+            // #196664 - Code Model ignores the generated files"
+            // when external file was created and assigned to this project => 
+            // create csm file for it if possible
+            NativeFileItem nativeFileItem = null;
+            // Try to find native file
+            if (getPlatformProject() instanceof NativeProject) {
+                NativeProject prj = (NativeProject) getPlatformProject();
+                if (prj != null) {
+                    nativeFileItem = prj.findFileItem(file);
+                }
             }
+            // schedule reparse like added NFI
+            if (nativeFileItem != null) {
+                onFileItemsAdded(Collections.singletonList(nativeFileItem));
+            }
+            // allow to fix broken includes
+            DeepReparsingUtils.reparseOnAdded(file, this);
+        } finally {
+            ParserQueue.instance().onEndAddingProjectFiles(this);   
         }
-        // schedule reparse either based on NFI 
-        // or use FO as fallback, it can be helpful for header files not included into
-        // project, but used in include directives which were broken so far
-        if (nativeFileItem != null) {
-            // TODO: can we track it as just added file item?
-            onFileItemsAdded(Collections.singletonList(nativeFileItem));
-        }
-        // allow to fix broken includes anyway
-        DeepReparsingUtils.reparseOnAdded(file, this);
     }
 
     public final void onFileImplExternalChange(FileImpl file) {
