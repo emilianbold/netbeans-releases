@@ -178,7 +178,6 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                                 wd.setPanelsAndSettings (panels, wd);
                                 fireChange ();
                                 LazyUnit.storeUpdateElements (operationType, updates);
-                                AutoupdateCheckScheduler.notifyAvailable (LazyUnit.loadLazyUnits (operationType), operationType);
                             }
                         });
                     }
@@ -219,7 +218,6 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                 }
                 component.setBody (body);
                 component.setWaitingState (false);
-                AutoupdateCheckScheduler.notifyAvailable (installModel, operationType);
                 fireChange ();
             }
         }
@@ -268,6 +266,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
             if (checkRealUpdatesTask != null && ! checkRealUpdatesTask.isFinished ()) {
                 checkRealUpdatesTask.cancel ();
             }
+            AutoupdateCheckScheduler.notifyAvailable (installModel, operationType);
         }
     }
 
