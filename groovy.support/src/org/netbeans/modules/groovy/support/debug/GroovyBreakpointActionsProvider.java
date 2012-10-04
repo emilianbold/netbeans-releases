@@ -98,16 +98,10 @@ public class GroovyBreakpointActionsProvider implements NodeActionsProviderFilte
         }
 
         Action[] oas = original.getActions(node);
-        if (node instanceof LineBreakpoint) {
-            Action[] as = new Action[oas.length + 3];
-            as[0] = GO_TO_SOURCE_ACTION;
-            as[1] = null;
-            System.arraycopy(oas, 0, as, 2, oas.length);
-            as[as.length - 1] = CUSTOMIZE_ACTION;
-            return as;
-        }
-        Action[] as = new Action[oas.length + 1];
-        System.arraycopy(oas, 0, as, 0, oas.length);
+        Action[] as = new Action[oas.length + 3];
+        as[0] = GO_TO_SOURCE_ACTION;
+        as[1] = null;
+        System.arraycopy(oas, 0, as, 2, oas.length);
         as[as.length - 1] = CUSTOMIZE_ACTION;
         return as;
     }
