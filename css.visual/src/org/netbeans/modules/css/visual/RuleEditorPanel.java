@@ -152,9 +152,11 @@ import org.openide.util.actions.Presenter;
 })
 public class RuleEditorPanel extends JPanel {
 
+    private static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
+    static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
+    
     static RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
-    public static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
-    private static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
+    
     private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
     private static final Icon APPLIED_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/database.gif")); //NOI18N
     private static final JLabel ERROR_LABEL = new JLabel(ERROR_ICON);

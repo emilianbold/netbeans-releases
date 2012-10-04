@@ -72,7 +72,7 @@ import org.openide.windows.WindowManager;
  */
 public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParserResult> {
 
-    private static final Logger LOG = Logger.getLogger(RuleEditorPanel.RULE_EDITOR_LOGGER_NAME);
+    private static final Logger LOG = RuleEditorPanel.LOG;
     private static final String CSS_MIMETYPE = "text/css"; //NOI18N
     private boolean cancelled;
 
