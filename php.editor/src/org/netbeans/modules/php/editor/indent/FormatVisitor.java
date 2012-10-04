@@ -1140,7 +1140,7 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(SwitchStatement node) {
         scan(node.getExpression());
-        if (node.getBody() != null && (node.getBody() instanceof Block && !((Block) node.getBody()).isCurly())) {
+        if (node.getBody() != null && !((Block) node.getBody()).isCurly()) {
             addAllUntilOffset(node.getBody().getStartOffset());
             formatTokens.add(new FormatToken.IndentToken(node.getBody().getStartOffset(), options.indentSize));
 
@@ -1363,11 +1363,11 @@ public class FormatVisitor extends DefaultVisitor {
                 String part1 = text.substring(0, text.indexOf('(') + 1);
                 String part2 = text.substring(part1.length(), text.indexOf(')'));
                 String part3 = text.substring(part1.length() + part2.length());
-                String ws1 = "";
+                StringBuilder ws1 = new StringBuilder();
                 String ws2 = "";
                 int index = 0;
                 while (index < part2.length() && part2.charAt(index) == ' ') {
-                    ws1 = ws1 + ' ';
+                    ws1.append(' ');
                     index++;
                 }
                 index = part2.length() - 1;
@@ -1381,7 +1381,7 @@ public class FormatVisitor extends DefaultVisitor {
                 length += part1.length();
                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_TYPE_CAST_PARENS, ts.offset() + part1.length()));
                 if (ws1.length() > 0) {
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + length, ws1));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + length, ws1.toString()));
                     length += ws1.length();
                 }
                 tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset() + length, part2));
