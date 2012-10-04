@@ -41,18 +41,13 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
-import java.io.File;
 import java.io.IOException;
 import java.util.WeakHashMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
-import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.util.Exceptions;
 
 /**
@@ -63,14 +58,7 @@ public final class SignalSupport {
 
     private static final WeakHashMap<ExecutionEnvironment, SignalSupport> cache =
             new WeakHashMap<ExecutionEnvironment, SignalSupport>();
-    private final NativeProcessBuilder killNpb;
     private final ExecutionEnvironment exEnv;
-    private final boolean useShell;
-
-    private String[] args = new String[2];
-    private int last_pid = -1;
-    private Signal last_signal = null;
-
     private static final HelperUtility sigqueueHelperUtility =
             new HelperUtility("bin/nativeexecution/$osname-${platform}$_isa/sigqueue"); // NOI18N
 
@@ -90,76 +78,6 @@ public final class SignalSupport {
 
     private SignalSupport(ExecutionEnvironment execEnv) throws IOException {
         this.exEnv = execEnv;
-        String command = null;
-        boolean _useShell = false;
-
-        HostInfo hostInfo;
-        try {
-            hostInfo = HostInfoUtils.getHostInfo(execEnv);
-        } catch (CancellationException ex) {
-            throw new java.util.concurrent.CancellationException(ex.getMessage()); // TODO:CancellationException error processing
-        }
-        String shell = hostInfo.getShell();
-
-        if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
-            File killFile = new File(new File(shell).getParentFile(), "kill.exe"); // NOI18N
-            if (killFile.exists()) {
-                command = killFile.getAbsolutePath();
-            } else {
-                // Msys has no kill.exe - will use shell
-                command = shell;
-                args[0] = "-c"; // NOI18N
-                _useShell = true;
-            }
-        } else {
-            command = "/bin/kill"; // NOI18N
-        }
-
-        useShell = _useShell;
-
-        if (command != null) {
-            killNpb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            killNpb.setExecutable(command);
-        } else {
-            killNpb = null;
-        }
-    }
-
-    public synchronized int kill(Signal signal, int pid) {
-        if (killNpb == null) {
-            return -1;
-        }
-
-        if (last_pid != pid || last_signal != signal) {
-            last_pid = pid;
-            last_signal = signal;
-
-            if (useShell) {
-                args[1] = "kill -" + (signal == Signal.NULL ? "0" // NOI18N
-                        : signal.name().substring(3)) + " " + pid; // NOI18N
-            } else {
-                args[0] = signal == Signal.NULL ? "-0" // NOI18N
-                        : "-" + signal.name().substring(3); // NOI18N
-                args[1] = Integer.toString(pid);
-            }
-
-            killNpb.setArguments(args);
-        }
-
-        int result = -1;
-
-        try {
-            Process p = killNpb.call();
-            result = p.waitFor();
-        } catch (Exception ex) {
-        }
-
-        return result;
-    }
-
-    public synchronized int killgrp(Signal signal, int pid) {
-        // negative pid means send signal to process group (see man kill)
-        return kill(signal, -pid);
     }
 
     public int sigqueue(int pid, int signo, int value) {
