@@ -70,6 +70,7 @@ import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -77,6 +78,7 @@ import org.openide.util.NbBundle;
 /**
  * @author  Tomas Mysik
  */
+@OptionsPanelController.Keywords(keywords={"php"}, location=UiUtils.OPTIONS_PATH, index=0)
 public final  class PhpOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 10985641247986428L;

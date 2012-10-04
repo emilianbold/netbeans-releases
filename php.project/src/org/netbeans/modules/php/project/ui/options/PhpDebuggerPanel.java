@@ -58,6 +58,8 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
@@ -67,6 +69,7 @@ import org.openide.util.NbBundle;
 /**
  * UI for PHP debugging options.
  */
+@OptionsPanelController.Keywords(keywords={"php debugger debugging xdebug"}, location=UiUtils.OPTIONS_PATH, index=1)
 public class PhpDebuggerPanel extends JPanel {
 
     private static final long serialVersionUID = 9465641111345L;

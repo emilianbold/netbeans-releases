@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
@@ -96,7 +97,7 @@ public abstract class ProjectActionBase extends NodeAction {
         }
         final Collection<CsmProject> projects = getCsmProjects(getActivatedNodes());
         if (enabledAction) {
-            if (projects == null) {
+            if (projects == null || projects.isEmpty()) {
                 setEnabled(!running);
                 presenter.setVisible(false);
             } else {
@@ -178,7 +179,8 @@ public abstract class ProjectActionBase extends NodeAction {
                     }
                 }
                 if (nativeProject != null) {
-                    csm = CsmModelAccessor.getModel().getProject(nativeProject);
+                    CsmModel model = CsmModelAccessor.getModel();
+                    csm = (model instanceof ModelImpl) ? ((ModelImpl) model).getProjectFast(nativeProject) : model.getProject(nativeProject);
                 }
             }
             if (csm != null) {

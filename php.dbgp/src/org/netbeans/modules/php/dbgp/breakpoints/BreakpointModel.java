@@ -253,7 +253,7 @@ public class BreakpointModel extends ViewModelSupport
         boolean accept( Breakpoint breakpoint );
     }
 
-    private class LineBreakpointAcceptor implements Acceptor {
+    private static class LineBreakpointAcceptor implements Acceptor {
 
         LineBreakpointAcceptor( String currentFilePath, int lineNumber ) {
             myCurrentFilePath = currentFilePath;
@@ -273,7 +273,7 @@ public class BreakpointModel extends ViewModelSupport
         private String myCurrentFilePath;
     }
 
-    private class FunctionBreakpointAcceptor implements Acceptor {
+    private static class FunctionBreakpointAcceptor implements Acceptor {
         FunctionBreakpointAcceptor( String function ){
             myFunction = function;
         }

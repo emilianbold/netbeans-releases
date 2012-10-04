@@ -44,15 +44,16 @@ package org.netbeans.modules.php.editor.parser;
 import java.util.*;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 
+@org.netbeans.api.annotations.common.SuppressWarnings({"DM_NUMBER_CTOR", "EI_EXPOSE_REP", "MS_PKGPROTECT"})
 parser code {:
     private static short[][] getActionTable() {}
 
-	protected final static Integer PUBLIC = new Integer(BodyDeclaration.Modifier.PUBLIC);
-	protected final static Integer PRIVATE = new Integer(BodyDeclaration.Modifier.PRIVATE);
-	protected final static Integer PROTECTED = new Integer(BodyDeclaration.Modifier.PROTECTED);
-	protected final static Integer ABSTRACT = new Integer(BodyDeclaration.Modifier.ABSTRACT);
-	protected final static Integer FINAL = new Integer(BodyDeclaration.Modifier.FINAL);
-	protected final static Integer STATIC = new Integer(BodyDeclaration.Modifier.STATIC);
+	protected final static Integer PUBLIC = Integer.valueOf(BodyDeclaration.Modifier.PUBLIC);
+	protected final static Integer PRIVATE = Integer.valueOf(BodyDeclaration.Modifier.PRIVATE);
+	protected final static Integer PROTECTED = Integer.valueOf(BodyDeclaration.Modifier.PROTECTED);
+	protected final static Integer ABSTRACT = Integer.valueOf(BodyDeclaration.Modifier.ABSTRACT);
+	protected final static Integer FINAL = Integer.valueOf(BodyDeclaration.Modifier.FINAL);
+	protected final static Integer STATIC = Integer.valueOf(BodyDeclaration.Modifier.STATIC);
 
         private ErrorStrategy defaultStrategy = new DefaultErrorStrategy();;
         private ErrorStrategy errorStrategy = defaultStrategy;
@@ -1350,7 +1351,7 @@ elseif_list ::=
 {:
 	((LinkedList)elseifList[0]).addFirst(condition);
 	((LinkedList)elseifList[1]).addFirst(iftrue);
-	((LinkedList)elseifList[2]).addFirst(new Integer(tokenleft));
+	((LinkedList)elseifList[2]).addFirst(Integer.valueOf(tokenleft));
 
 	RESULT = elseifList;
 :}
@@ -1373,7 +1374,7 @@ new_elseif_list ::=
 	Block block = new Block(colonleft, statementListright, statementList, false);
 	((LinkedList)elseifList[0]).addFirst(condition);
 	((LinkedList)elseifList[1]).addFirst(block);
-	((LinkedList)elseifList[2]).addFirst(new Integer(tokenleft));
+	((LinkedList)elseifList[2]).addFirst(Integer.valueOf(tokenleft));
 
 	RESULT = elseifList;
 :}
@@ -1820,12 +1821,12 @@ T_SEMICOLON /* abstract method */
 variable_modifiers ::=
 ppp_modifiers:modifier
 {:
-    RESULT = new Integer(modifier.intValue());
+    RESULT = modifier;
 :}
-
+Integer.valueOf(modifier.intValue())
 | static_modifier:modifier
 {:
-    RESULT = new Integer(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | static_modifier:fModifier ppp_modifiers:sModifier
@@ -1833,7 +1834,7 @@ ppp_modifiers:modifier
     int result = 0;
     result |= fModifier.intValue();
     result |= sModifier.intValue();
-    RESULT = new Integer(result);
+    RESULT = Integer.valueOf(result);
 :}
 
 | ppp_modifiers:fModifier static_modifier:sModifier
@@ -1841,7 +1842,7 @@ ppp_modifiers:modifier
     int result = 0;
     result |= fModifier.intValue();
     result |= sModifier.intValue();
-    RESULT = new Integer(result);
+    RESULT = Integer.valueOf(result);
 :}
 
 | T_VAR
@@ -1858,17 +1859,17 @@ method_modifiers ::=
 
 | af_modifiers:modifier
 {:
-    RESULT = new Integer(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | static_modifier:modifier
 {:
-    RESULT = new Integer(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | ppp_modifiers:modifier
 {:
-    RESULT = new Integer(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | static_modifier:fModifier ppp_modifiers:sModifier
@@ -1876,7 +1877,7 @@ method_modifiers ::=
     int result = 0;
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | static_modifier:fModifier af_modifiers:sModifier
@@ -1884,7 +1885,7 @@ method_modifiers ::=
     int result = 0;
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | ppp_modifiers:fModifier static_modifier:sModifier
@@ -1892,7 +1893,7 @@ method_modifiers ::=
     int result = 0;
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | ppp_modifiers:fModifier af_modifiers:sModifier
@@ -1900,7 +1901,7 @@ method_modifiers ::=
     int result = 0;
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | af_modifiers:fModifier static_modifier:sModifier
@@ -1908,7 +1909,7 @@ method_modifiers ::=
     int result = 0;
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | af_modifiers:fModifier ppp_modifiers:sModifier
@@ -1916,7 +1917,7 @@ method_modifiers ::=
     int result = 0;
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | static_modifier:fModifier ppp_modifiers:sModifier af_modifiers:tModifier
@@ -1925,7 +1926,7 @@ method_modifiers ::=
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
     result |= tModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | static_modifier:fModifier af_modifiers:sModifier ppp_modifiers:tModifier
@@ -1934,7 +1935,7 @@ method_modifiers ::=
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
     result |= tModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | ppp_modifiers:fModifier static_modifier:sModifier af_modifiers:tModifier
@@ -1943,7 +1944,7 @@ method_modifiers ::=
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
     result |= tModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | ppp_modifiers:fModifier af_modifiers:sModifier static_modifier:tModifier
@@ -1952,7 +1953,7 @@ method_modifiers ::=
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
     result |= tModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | af_modifiers:fModifier static_modifier:sModifier ppp_modifiers:tModifier
@@ -1961,7 +1962,7 @@ method_modifiers ::=
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
     result |= tModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | af_modifiers:fModifier ppp_modifiers:sModifier static_modifier:tModifier
@@ -1970,7 +1971,7 @@ method_modifiers ::=
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
     result |= tModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 ;
 
@@ -3288,12 +3289,12 @@ string_st:varName
 simple_indirect_reference ::=
 T_DOLLAR
 {:
-	RESULT = new Integer(1);
+	RESULT = Integer.valueOf(1);
 :}
 
 | simple_indirect_reference:ref T_DOLLAR
 {:
-	RESULT = new Integer(1 + ref.intValue());
+	RESULT = Integer.valueOf(1 + ref.intValue());
 :}
 ;
 

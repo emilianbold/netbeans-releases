@@ -67,7 +67,7 @@ import org.openide.modules.SpecificationVersion;
  * @author ads
  *
  */
-public class WebClientLibraryManager {
+public final class WebClientLibraryManager {
     
     /**
      * Library TYPE.
@@ -120,6 +120,10 @@ public class WebClientLibraryManager {
     public static final String PROPERTY_VERSION = "version"; // NOI18N
     
     private static List<Library> libs;
+
+    private WebClientLibraryManager() {
+    }
+    
     
     /**
      * Returns all JavaScript libraries. They are not registered in global libraries

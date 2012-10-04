@@ -46,9 +46,12 @@ package org.netbeans.modules.groovy.refactoring;
 
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.groovy.refactoring.findusages.FindUsagesPlugin;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
+import org.netbeans.modules.groovy.refactoring.move.MoveRefactoringPlugin;
 import org.netbeans.modules.groovy.refactoring.rename.RenameRefactoringPlugin;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -68,10 +71,10 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
 
     @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        Lookup lookup = refactoring.getRefactoringSource();
-        NonRecursiveFolder pkg = lookup.lookup(NonRecursiveFolder.class);
+        final Lookup lookup = refactoring.getRefactoringSource();
+        final NonRecursiveFolder pkg = lookup.lookup(NonRecursiveFolder.class);
+        final RefactoringElement element = lookup.lookup(RefactoringElement.class);
         FileObject sourceFO = lookup.lookup(FileObject.class);
-        GroovyRefactoringElement element = lookup.lookup(GroovyRefactoringElement.class);
 
         if (sourceFO == null){
             if (pkg != null){
@@ -89,10 +92,13 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
 
         if (supportedFile) {
             if (refactoring instanceof WhereUsedQuery){
-                return new FindUsagesPlugin(sourceFO, element, (WhereUsedQuery) refactoring);
+                return new FindUsagesPlugin(sourceFO, element, refactoring);
             }
             if (refactoring instanceof RenameRefactoring) {
-                return new RenameRefactoringPlugin(sourceFO, element, (RenameRefactoring) refactoring);
+                return new RenameRefactoringPlugin(sourceFO, element, refactoring);
+            }
+            if (refactoring instanceof MoveRefactoring) {
+                return new MoveRefactoringPlugin(sourceFO, element, refactoring);
             }
         }
         return null;

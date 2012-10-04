@@ -45,7 +45,10 @@ package org.netbeans.modules.web.clientproject.api;
 /**
  *
  */
-public class WebClientProjectConstants {
+public final class WebClientProjectConstants {
+
+    private WebClientProjectConstants() {
+    }
     
     /**
      * Constant for Site Root sources group.

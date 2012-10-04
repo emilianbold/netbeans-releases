@@ -193,7 +193,11 @@ public class MergeAction extends ContextAction {
             String filepath = null;
             if (HgCommand.isMergeFailedMsg(line)) {
                 bConflicts = true;
-                filepath = line.substring(HgCommand.HG_MERGE_FAILED1_ERR.length(), line.length() - HgCommand.HG_MERGE_FAILED2_ERR.length()).trim().replace("/", File.separator); // NOI18N
+                if (line.contains(HgCommand.HG_MERGE_FAILED2_ERR)) {
+                    filepath = line.substring(HgCommand.HG_MERGE_FAILED1_ERR.length(), line.length() - HgCommand.HG_MERGE_FAILED2_ERR.length()).trim().replace("/", File.separator); // NOI18N
+                } else if (line.contains(HgCommand.HG_MERGE_FAILED3_ERR)) {
+                    filepath = line.substring(HgCommand.HG_MERGE_FAILED1_ERR.length(), line.length() - HgCommand.HG_MERGE_FAILED3_ERR.length()).trim().replace("/", File.separator); // NOI18N
+                }
                 filepath = root.getAbsolutePath() + File.separator + filepath;
             } else if (HgCommand.isConflictDetectedInMsg(line)) {
                 bConflicts = true;

@@ -74,6 +74,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.lib.editor.codetemplates.AbbrevDetection;
 import org.netbeans.lib.editor.codetemplates.storage.CodeTemplateSettingsImpl.OnExpandAction;
@@ -93,6 +94,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords = {"code", "templates"}, location = OptionsDisplayer.EDITOR, index = 3)
 public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSelectionListener, KeyListener, DocumentListener {
     
     private static final Logger LOG = Logger.getLogger(CodeTemplatesPanel.class.getName());

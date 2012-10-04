@@ -48,6 +48,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Pisl
  */
+@org.netbeans.api.annotations.common.SuppressWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class GSFPHPError implements org.netbeans.modules.csl.api.Error.Badging {
 
     private final String displayName;
@@ -67,38 +68,47 @@ public class GSFPHPError implements org.netbeans.modules.csl.api.Error.Badging {
     }
 
 
+    @Override
     public String getDisplayName() {
         return this.displayName;
     }
 
+    @Override
     public String getDescription() {
         return null;
     }
 
+    @Override
     public String getKey() {
         return "[" + startPosition + "," + endPosition + "]-" + displayName ;
     }
 
+    @Override
     public FileObject getFile() {
         return this.file;
     }
 
+    @Override
     public int getStartPosition() {
         return this.startPosition;
     }
 
+    @Override
     public int getEndPosition() {
         return this.endPosition;
     }
 
+    @Override
     public Severity getSeverity() {
         return this.severity;
     }
 
+    @Override
     public Object[] getParameters() {
         return this.parameters;
     }
 
+    @Override
     public boolean isLineError() {
         return true;
     }

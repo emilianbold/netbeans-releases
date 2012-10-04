@@ -117,19 +117,6 @@ public class Utilities {
                     res.add(cat);
                     names.add(catName);
                 }
-                String licenseId = el == null ? null : el.getLicenseId();
-                if (licenseId != null) {
-                    if (licenseId.contains(",")) {
-                        if (getAcceptedLicenseIds().addAll(Arrays.asList(licenseId.split(",")))) {
-                            logger.fine("License ID - Yet another licenses " + licenseId + " was accepted during installation.");
-                        }
-
-                    } else {
-                        if (getAcceptedLicenseIds().add(licenseId)) {
-                            logger.fine("License ID - Yet another license " + licenseId + " was accepted during installation.");
-                        }
-                    }
-                }
             }
         }
         logger.log(Level.FINER, "makeInstalledCategories (" + units.size() + ") returns " + res.size());
@@ -138,7 +125,7 @@ public class Utilities {
     
     private static Set<String> getAcceptedLicenseIds() {
         if (acceptedLicenseIDs == null) {
-            loadAcceptedLicenseIDs(0);
+            initAcceptedLicenseIDs();
         }
         return acceptedLicenseIDs;
     }
@@ -159,8 +146,9 @@ public class Utilities {
     }
     
     public static void storeAcceptedLicenseIDs() {
+        assert ! SwingUtilities.isEventDispatchThread() : "Don't call in AWT queue";
         if (acceptedLicenseIDs == null) {
-            return ;
+            initAcceptedLicenseIDs();
         }
         StringBuilder sb = new StringBuilder();
         for(String licenseId : acceptedLicenseIDs) {
@@ -168,12 +156,22 @@ public class Utilities {
         }
         getPreferences().put(PLUGIN_MANAGER_ACCEPTED_LICENSE_IDS, sb.length() == 0 ? "" : sb.substring(0, sb.length() - 1));
         logger.fine("License IDs - Stored: " + (sb.length() == 0 ? "" : sb.substring(0, sb.length() - 1)));
-        acceptedLicenseIDs = null;
     }
     
-    public static void loadAcceptedLicenseIDs(int capacity) {
+    public static void initAcceptedLicenseIDs() {
+        assert ! SwingUtilities.isEventDispatchThread() : "Don't call in AWT queue";
         if (acceptedLicenseIDs == null) {
-            acceptedLicenseIDs = new HashSet<String> (capacity);
+            acceptedLicenseIDs = new HashSet<String> ();
+            for (UpdateUnit u : UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE)) {
+                UpdateElement el;
+                if ((el = u.getInstalled()) != null) {
+                    String id;
+                    if ((id = el.getLicenseId()) != null) {
+                        acceptedLicenseIDs.add(id);
+                    }
+                }
+            }
+            
         }
         String storedIds = getPreferences().get(PLUGIN_MANAGER_ACCEPTED_LICENSE_IDS, null);
         if (storedIds != null) {

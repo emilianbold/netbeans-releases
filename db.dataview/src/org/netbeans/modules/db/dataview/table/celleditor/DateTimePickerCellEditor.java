@@ -137,7 +137,7 @@ public class DateTimePickerCellEditor extends AbstractCellEditor implements Tabl
     }
 
     protected Timestamp getValueAsTimestamp(Object value) {
-        if (isEmpty(value) || DataViewUtils.isSQLConstantString(value)) {
+        if (isEmpty(value) || DataViewUtils.isSQLConstantString(value, null)) {
             return new Timestamp(System.currentTimeMillis());
         }
 

@@ -131,11 +131,11 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     // Public implementation
     // ------------------------------------------------------------------------
     public static boolean isGeneratedIdentifier(String ident) {
-        return GENERATED_IDENTIFIER.equals(ident);
+        return GENERATED_IDENTIFIER.equals(ident) || ident.contains(NETBEANS_IMPORT_FILE);
     }
     
     public static boolean containsGeneratedIdentifier(String ident) {
-        return ident.contains(GENERATED_IDENTIFIER);
+        return ident.contains(GENERATED_IDENTIFIER) || ident.contains(NETBEANS_IMPORT_FILE);
     }
     // ------------------------------------------------------------------------
     // Private implementation

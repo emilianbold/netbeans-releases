@@ -85,9 +85,9 @@ public class LinkListenersParityTestCase extends RemoteFileTestBase {
             
             String prefix = baseDirFO.getPath();
             if (recursive) {
-                FileSystemProvider.addRecursiveListener(new FCL("recursive", prefix, out, true), baseDirFO.getFileSystem(), baseDirFO.getPath());
+                FileSystemProvider.addRecursiveListener(new DumpingFileChangeListener("recursive", prefix, out, true), baseDirFO.getFileSystem(), baseDirFO.getPath());
             } else {
-                baseDirFO.addFileChangeListener(new FCL("baseDir", prefix, out, true));
+                baseDirFO.addFileChangeListener(new DumpingFileChangeListener("baseDir", prefix, out, true));
             }
             FileObject childFO = baseDirFO.createData(childName);
             FileObject subdirFO = baseDirFO.createFolder(subdirName);
@@ -98,8 +98,8 @@ public class LinkListenersParityTestCase extends RemoteFileTestBase {
             assertNotNull(subdirLinkFO);
             
             if (!recursive) {
-                subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), prefix, out, true));
-                subdirLinkFO.addFileChangeListener(new FCL(subdirLinkFO.getNameExt(), prefix, out, true));
+                subdirFO.addFileChangeListener(new DumpingFileChangeListener(subdirFO.getNameExt(), prefix, out, true));
+                subdirLinkFO.addFileChangeListener(new DumpingFileChangeListener(subdirLinkFO.getNameExt(), prefix, out, true));
             }
             FileObject grandChildFO = subdirFO.createData("grand_child_file");
             FileObject grandChildDirFO = subdirFO.createFolder("grand_child_dir");

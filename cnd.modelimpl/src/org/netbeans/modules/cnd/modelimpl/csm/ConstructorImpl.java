@@ -51,18 +51,20 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.openide.util.CharSequences;
 
 /**
  * CsmConstructor implementation
@@ -133,6 +135,41 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
         return NoType.instance();
     }
 
+    public static class ConstructorBuilder extends MethodBuilder {
+        
+        @Override
+        public ConstructorImpl create() {
+            CsmClass cls = (CsmClass) getScope();
+            boolean _virtual = false;
+            boolean _explicit = false;
+
+
+            ConstructorImpl method = new ConstructorImpl(getName(), getRawName(), cls, getVisibility(), _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            temporaryRepositoryRegistration(true, method);
+
+            StringBuilder clsTemplateSuffix = new StringBuilder();
+            //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
+            //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+
+            //functionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+            if(getTemplateDescriptorBuilder() != null) {
+                method.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
+            }
+
+            //method.setReturnType(getType());
+            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(method);
+            method.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(),
+                    true);
+
+            postObjectCreateRegistration(true, method);
+            getNameHolder().addReference(getFileContent(), method);
+
+            addMember(method);
+            return method;
+        }
+        
+    }          
+        
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     

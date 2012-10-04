@@ -123,8 +123,6 @@ public class WebLogicPanel extends DestinationPanel {
                 DEFAULT_PASSWORD_LABEL_TEXT);
         setProperty(REPEAT_PASSWORD_LABEL_TEXT_PROPERTY,
                 DEFAULT_REPEAT_PASSWORD_LABEL_TEXT);
-        setProperty(DEFAULTS_LABEL_TEXT_PROPERTY,
-                DEFAULT_DEFAULTS_LABEL_TEXT);
         
         setProperty(ERROR_DOMAINNAME_NULL_PROPERTY,
                 DEFAULT_ERROR_DOMAINNAME_NULL);        
@@ -351,10 +349,10 @@ public class WebLogicPanel extends DestinationPanel {
         private NbiLabel passwordLabel;
         private NbiPasswordField passwordField;
         
-        private NbiLabel defaultsLabel;
-        
         private NbiLabel repeatPasswordLabel;
         private NbiPasswordField repeatPasswordField;                
+        private String domainDestinationSuffix;
+        private boolean internalChange;
         
         public WebLogicPanelSwingUi(
                 final WebLogicPanel panel,
@@ -374,7 +372,7 @@ public class WebLogicPanel extends DestinationPanel {
             
             final JdkLocationPanel jdkLocationPanel = panel.getJdkLocationPanel();
             
-            if (jdkLocationPanel.getLocations().size() == 0) {
+            if (jdkLocationPanel.getLocations().isEmpty()) {
                 final Version minVersion = Version.getVersion(jdkLocationPanel.getProperty(
                         JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
                 final Version maxVersion = Version.getVersion(jdkLocationPanel.getProperty(
@@ -434,13 +432,9 @@ public class WebLogicPanel extends DestinationPanel {
             usernameField.setText(panel.getWizard().getProperty(USERNAME_PROPERTY));
             passwordField.setText(panel.getWizard().getProperty(PASSWORD_PROPERTY));
             repeatPasswordField.setText(panel.getWizard().getProperty(PASSWORD_PROPERTY));
-                                   
-            defaultsLabel.setText(StringUtils.format(
-                    panel.getProperty(DEFAULTS_LABEL_TEXT_PROPERTY),
-                    panel.getProperty(DEFAULT_USERNAME_PROPERTY),
-                    panel.getProperty(DEFAULT_PASSWORD_PROPERTY)));            
                         
             super.initialize();
+            initDomainDestinationSuffix();
         }
         
         @Override
@@ -822,14 +816,17 @@ public class WebLogicPanel extends DestinationPanel {
             jdkLocationField = new NbiTextField();
             jdkLocationField.getDocument().addDocumentListener(
                     new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     updateErrorMessage();
                 }
                 
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     //updateErrorMessage();
                 }
                 
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     updateErrorMessage();
                 }
@@ -837,6 +834,7 @@ public class WebLogicPanel extends DestinationPanel {
             
             // jdkLocationComboBox //////////////////////////////////////////////////
             final LocationValidator validator = new LocationValidator() {
+                @Override
                 public void validate(String location) {
                     jdkLocationField.setText(location);
                 }
@@ -846,6 +844,7 @@ public class WebLogicPanel extends DestinationPanel {
             jdkLocationComboBox.setEditable(true);
             jdkLocationComboBox.setEditor(new LocationsComboBoxEditor(validator));
             jdkLocationComboBox.addItemListener(new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent e) {
                     final ComboBoxModel model = jdkLocationComboBox.getModel();
                     
@@ -863,6 +862,7 @@ public class WebLogicPanel extends DestinationPanel {
             // browseButton /////////////////////////////////////////////////////////
             browseButton = new NbiButton();
             browseButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     browseButtonPressed();
                 }
@@ -871,14 +871,52 @@ public class WebLogicPanel extends DestinationPanel {
             // domainDestinationField /////////////////////////////////////////////////////
             domainDestinationField = new NbiTextField();
             domainDestinationField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void changedUpdate(DocumentEvent e) {
-                    updateErrorMessage();
+                    domainDestinationFieldChanged();
                 }
+                @Override
                 public void insertUpdate(DocumentEvent e) {
+                    domainDestinationFieldChanged();
+                }
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    domainDestinationFieldChanged();
+                }
+
+                private void domainDestinationFieldChanged () {
+                    if (!internalChange) {
+                        initDomainDestinationSuffix();
+                    }
                     updateErrorMessage();
                 }
-                public void removeUpdate(DocumentEvent e) {
-                    updateErrorMessage();
+            });
+            getDestinationField().getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate (DocumentEvent e) {
+                    updateDomainDestination();
+                }
+
+                @Override
+                public void removeUpdate (DocumentEvent e) {
+                    updateDomainDestination();
+                }
+
+                @Override
+                public void changedUpdate (DocumentEvent e) {
+                    updateDomainDestination();
+                }
+
+                private void updateDomainDestination () {
+                    if (domainDestinationSuffix != null) {
+                        boolean previousValue = internalChange;
+                        try {
+                            internalChange = true;
+                            domainDestinationField.setText(getDestinationField().getText() + domainDestinationSuffix);
+                        } finally {
+                            internalChange = previousValue;
+                        }
+                    }
                 }
             });
             
@@ -889,6 +927,7 @@ public class WebLogicPanel extends DestinationPanel {
             // destinationButton ////////////////////////////////////////////////////
             domainBrowseButton = new NbiButton();
             domainBrowseButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     domainBrowseButtonPressed();
                 }
@@ -950,10 +989,6 @@ public class WebLogicPanel extends DestinationPanel {
             // repeatPasswordLabel //////////////////////////////////////////////////
             repeatPasswordLabel = new NbiLabel();
             repeatPasswordLabel.setLabelFor(repeatPasswordField);
-            
-           
-            // defaultsLabel ////////////////////////////////////////////////////////
-            defaultsLabel = new NbiLabel();
             
             // this /////////////////////////////////////////////////////////////////
            /*add(domainDestinationLabel, new GridBagConstraints(
@@ -1124,14 +1159,6 @@ public class WebLogicPanel extends DestinationPanel {
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(4, 6, 0, 11),          // padding
                     0, 0));                           // padx, pady - ???
-            containerPanel.add(defaultsLabel, new GridBagConstraints(
-                    3, 2,                             // x, y
-                    1, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(4, 0, 0, 11),          // padding
-                    0, 0));                           // padx, pady - ???
             
             containerPanel.add(repeatPasswordLabel, new GridBagConstraints(
                     0, 3,                             // x, y
@@ -1297,6 +1324,14 @@ public class WebLogicPanel extends DestinationPanel {
                 domainDestinationField.setText(newDestination);
             }        
        }        
+
+        private void initDomainDestinationSuffix () {
+            if (domainDestinationField.getText().startsWith(getDestinationField().getText())) {
+                domainDestinationSuffix = domainDestinationField.getText().substring(getDestinationField().getText().length());
+            } else {
+                domainDestinationSuffix = null;
+            }
+        }
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -1330,8 +1365,6 @@ public class WebLogicPanel extends DestinationPanel {
             "password.label.text"; // NOI18N
     public static final String REPEAT_PASSWORD_LABEL_TEXT_PROPERTY =
             "repeat.password.label.text"; // NOI18N  
-    public static final String DEFAULTS_LABEL_TEXT_PROPERTY =
-            "defaults.label.text"; // NOI18N        
     public static final String DOMAIN_DESTINATION_LABEL_TEXT_PROPERTY
             = "domain.destination.label.text"; // NOI18N
     

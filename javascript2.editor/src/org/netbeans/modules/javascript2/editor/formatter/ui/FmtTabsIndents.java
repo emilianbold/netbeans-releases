@@ -49,6 +49,7 @@ import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.javascript2.editor.formatter.FmtOptions;
 import org.netbeans.modules.javascript2.editor.formatter.FmtOptions.CategorySupport;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.CategorySupport.OPTION_ID;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**
  *
@@ -76,7 +77,7 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         } catch (IOException ex) {
             // TODO log it
         }
-        return new CategorySupport.Factory(PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class,
+        return new CategorySupport.Factory(JsTokenId.JAVASCRIPT_MIME_TYPE, PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class,
                 preview, 
                 new String[] { FmtOptions.rightMargin, "30" }, //NOI18N
                 new String[] { FmtOptions.initialIndent, "0" } //NOI18N

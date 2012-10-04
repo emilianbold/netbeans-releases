@@ -218,6 +218,12 @@ public class JsConventionRule extends JsAstRule {
                         }
                     }
                 }
+            } else if (!ts.moveNext() && ts.movePrevious() && ts.moveNext()) {
+                // we are probably at the end of file without the semicolon
+                fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
+                hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()),
+                        context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                        new OffsetRange(fileOffset, fileOffset + ts.token().length()), null, 500));
             }
         }
 
@@ -228,7 +234,7 @@ public class JsConventionRule extends JsAstRule {
             }
             if (condition instanceof BinaryNode) {
                 BinaryNode binaryNode = (BinaryNode)condition;
-                if (assignmentInCondition != null && binaryNode.isAssignment()) {
+                if (binaryNode.isAssignment()) {
                     hints.add(new Hint(assignmentInCondition, Bundle.AssignmentCondition(),
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
@@ -253,6 +259,8 @@ public class JsConventionRule extends JsAstRule {
                     break;
                 case NE:
                     message = Bundle.ExpectedInstead("!==", "!="); //NOI18N
+                    break;
+                default:
                     break;
             }
             if (message != null) {

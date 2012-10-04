@@ -170,7 +170,7 @@ public final class ClientSideProjectUtilities {
     }
 
     public static SourceGroup[] getSourceGroups(Project project) {
-        assert project instanceof ClientSideProject;
+        assert project instanceof ClientSideProject : "ClientSideProject project expected but got: " + project.getClass().getName();
         Sources sources = ProjectUtils.getSources(project);
         List<SourceGroup> res= new ArrayList<SourceGroup>();
         res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)));
@@ -245,6 +245,7 @@ public final class ClientSideProjectUtilities {
         return failed;
     }
 
+    // XXX remove and call ClientSideProjectProperties
     private static void saveProjectProperties(final AntProjectHelper projectHelper, final Map<String, String> properties) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {

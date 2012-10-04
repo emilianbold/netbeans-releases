@@ -47,7 +47,9 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -66,6 +68,7 @@ import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Log;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -98,7 +101,7 @@ public class LogsComponent extends TopComponent {
                 fetchLogs();
             }
         });
-        //fetchServiceInstanceLogs();
+        fetchServiceInstanceLogs();
         loadJobs();
     }
     
@@ -208,55 +211,26 @@ public class LogsComponent extends TopComponent {
         });
     }
 
-//    @NbBundle.Messages({"MSG_IgnoreEmpty=This log file is empty.",
-//            "MSG_IgnoreContentType=This log file is ignored because its content type is {0}"})
-//    private void fetchServiceInstanceLogs() {
-//        appLogs.setText(Bundle.MSG_Loading());
-//        
-//        OracleInstance.runAsynchronously(new Callable<Void>() {
-//            @Override
-//            public Void call() throws Exception {
-//                final StringBuffer sb = new StringBuffer();
-//                List<Log> logs = am.listServiceInstanceLogs(oi.getIdentityDomain(), oi.getJavaServiceName());
-//                sb.append(""+logs.size()+ " log file(s) found:\n\n");
-//                for (Log lt : logs) {
-//                    sb.append("==================== Log file: "+lt.getName()+"==========================\n\n");
-//                    if (!"text/plain".equals(lt.getContentType())) {
-//                        sb.append(Bundle.MSG_IgnoreContentType(lt.getContentType()));
-//                        sb.append("\n");
-//                    }
-//                    ByteArrayOutputStream os = new ByteArrayOutputStream(8000);
-//                    try {
-//                        am.fetchServiceInstanceLog(oi.getIdentityDomain(), oi.getJavaServiceName(), lt.getName(), os);
-//                    } catch (Throwable t) {
-//                        sb.append("Exception occured while retrieving the log:\n"+t.toString());
-//                        continue;
-//                    }
-//                    try {
-//                        String s = os.toString(Charset.defaultCharset().name());
-//                        if (s.trim().length() == 0) {
-//                            sb.append(Bundle.MSG_IgnoreEmpty());
-//                            sb.append("\n");
-//                        } else {
-//                            sb.append(s);
-//                        }
-//                    } catch (UnsupportedEncodingException ex) {
-//                        Exceptions.printStackTrace(ex);
-//                    }
-//                }
-//                if (logs.size() == 0) {
-//                    sb.replace(0, sb.length(), Bundle.MSG_NoLogs());
-//                }
-//                SwingUtilities.invokeLater(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        LogsComponent.this.appLogs.setText(sb.toString());
-//                    }
-//                });
-//                return null;
-//            }
-//        });
-//    }
+    private void fetchServiceInstanceLogs() {
+        appLogs.setText(Bundle.MSG_Loading());
+        
+        OracleInstance.runAsynchronously(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                InputStream is = new BufferedInputStream(am.queryServiceInstanceLogs(oi.getIdentityDomain(), oi.getJavaServiceName()));
+                final ByteArrayOutputStream os = new ByteArrayOutputStream();
+                FileUtil.copy(is, os);
+                is.close();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        LogsComponent.this.appLogs.setText(os.toString());
+                    }
+                });
+                return null;
+            }
+        });
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -269,6 +243,7 @@ public class LogsComponent extends TopComponent {
 
         refreshButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel3 = new javax.swing.JPanel();
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
@@ -279,6 +254,9 @@ public class LogsComponent extends TopComponent {
         jScrollPane2 = new javax.swing.JScrollPane();
         logs = new javax.swing.JTextArea();
         jLabel2 = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        appLogs = new javax.swing.JTextArea();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
@@ -311,14 +289,14 @@ public class LogsComponent extends TopComponent {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addGap(3, 3, 3)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE))
         );
 
         jSplitPane1.setTopComponent(jPanel1);
@@ -332,14 +310,14 @@ public class LogsComponent extends TopComponent {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jLabel2)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE))
         );
 
         jSplitPane1.setRightComponent(jPanel2);
@@ -348,32 +326,52 @@ public class LogsComponent extends TopComponent {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 349, Short.MAX_VALUE)
             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE))
+                .addComponent(jSplitPane1))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 290, Short.MAX_VALUE)
+            .addGap(0, 253, Short.MAX_VALUE)
             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE))
+                .addComponent(jSplitPane1))
         );
+
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.jPanel3.TabConstraints.tabTitle"), jPanel3); // NOI18N
+
+        appLogs.setEditable(false);
+        appLogs.setColumns(20);
+        appLogs.setRows(5);
+        jScrollPane3.setViewportView(appLogs);
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.jPanel4.TabConstraints.tabTitle"), jPanel4); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(223, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(refreshButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(closeButton))
-            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(closeButton)
@@ -394,7 +392,11 @@ public class LogsComponent extends TopComponent {
     }
     
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-        loadJobs();
+        if (jTabbedPane1.getSelectedIndex() == 0) {
+            loadJobs();
+        } else {
+            fetchServiceInstanceLogs();
+        }
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
@@ -402,15 +404,19 @@ public class LogsComponent extends TopComponent {
     }//GEN-LAST:event_closeButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea appLogs;
     private javax.swing.JButton closeButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jobsTable;
     private javax.swing.JTextArea logs;
     private javax.swing.JButton refreshButton;

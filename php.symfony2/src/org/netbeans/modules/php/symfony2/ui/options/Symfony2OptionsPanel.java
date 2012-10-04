@@ -64,6 +64,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
@@ -75,6 +77,7 @@ import org.openide.util.NbBundle;
 /**
  * Panel for SYmfony2 options.
  */
+@OptionsPanelController.Keywords(keywords={"php symfony symfony2 framework sf sf2"}, location=UiUtils.OPTIONS_PATH, index=8)
 @NbBundle.Messages("LBL_ZipFilesFilter=Zip File (*.zip)")
 public class Symfony2OptionsPanel extends JPanel {
 

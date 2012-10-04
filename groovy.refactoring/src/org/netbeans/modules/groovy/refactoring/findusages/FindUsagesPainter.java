@@ -108,7 +108,7 @@ public class FindUsagesPainter {
     }
 
     private static String colorLine(final Line line, final String name) {
-        final int start = line.getText().indexOf(name);
+        final int start = line.getText().lastIndexOf(name);
         final String beforePart = line.createPart(0, start).getText();
         final String usagePart = line.createPart(start, name.length()).getText();
         final String afterPart = line.createPart(start + name.length(), line.getText().length()).getText();

@@ -41,7 +41,7 @@ package org.netbeans.modules.javascript2.editor.lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
-@org.netbeans.api.annotations.common.SuppressWarnings({"URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE"})
+@org.netbeans.api.annotations.common.SuppressWarnings({"URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE", "DM_DEFAULT_ENCODING"})
 %%
 
 %public
@@ -147,7 +147,7 @@ WhiteSpace = [ \t\f\u00A0\u000B]+
 OctDigit          = [0-7]
 
 /* number literals */
-NumberLiteral = "-"?[0-9]+({Fraction}|{Exponent}|{Fraction}{Exponent})?
+NumberLiteral = [0-9]+({Fraction}|{Exponent}|{Fraction}{Exponent})?
 
 Fraction = \. [0-9]*
 Exponent = [eE] [+-]? [0-9]+
@@ -177,6 +177,7 @@ StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
   "]"                            { return JsTokenId.BRACKET_RIGHT_BRACKET; }
   ","                            { return JsTokenId.OPERATOR_COMMA; }
   ":"                            { return JsTokenId.OPERATOR_COLON; }
+  "-"                            { return JsTokenId.OPERATOR_MINUS; }
   
   /* string literal */
   \"                             {

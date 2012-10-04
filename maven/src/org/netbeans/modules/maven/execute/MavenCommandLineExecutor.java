@@ -244,14 +244,21 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     
     @Override
     public boolean cancel() {
-        if (preProcess != null) {
-            kill(preProcess, preProcessUUID);
-            preProcess = null;
-        }
-        if (process != null) {
-            kill(process, processUUID);
-            process = null;
-        }
+        final Process pre = preProcess;
+        preProcess = null;
+        final Process pro = process;
+        process = null;
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                if (pre != null) {
+                    kill(pre, preProcessUUID);
+                }
+                if (pro != null) {
+                    kill(pro, processUUID);
+                }
+            }
+        });
         return true;
     }
         
@@ -516,6 +523,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
         @Override public @CheckForNull NbMavenProject find(@NonNull Project root) {
             // XXX EventSpy (#194090) would make this more reliable and efficient
+            //mkleint: usage of subprojectprovider is correct here
             for (Project module : root.getLookup().lookup(SubprojectProvider.class).getSubprojects()) {
                 if (Thread.interrupted()) {
                     break;

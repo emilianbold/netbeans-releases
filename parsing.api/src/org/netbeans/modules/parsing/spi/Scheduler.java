@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.parsing.spi;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.CurrentDocumentScheduler;
 import org.netbeans.modules.parsing.impl.CursorSensitiveScheduler;
@@ -157,10 +154,8 @@ public abstract class Scheduler {
         task = requestProcessor.create (new Runnable () {
             @Override
             public void run () {
-                SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
-                Map<Class<? extends Scheduler>,SchedulerEvent> events = new HashMap<Class<? extends Scheduler>,SchedulerEvent> ();
-                events.put (Scheduler.this.getClass (), event);
-                SourceAccessor.getINSTANCE ().setSchedulerEvents (source, events);
+                SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);                
+                SourceAccessor.getINSTANCE ().setSchedulerEvent (source, Scheduler.this, event);
                 //S ystem.out.println ("\nSchedule tasks (" + Scheduler.this + "):");
                 cache.scheduleTasks (Scheduler.this.getClass ());
             }

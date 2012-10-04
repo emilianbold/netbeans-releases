@@ -104,6 +104,7 @@ public final class WhiteListUpdater  implements PropertyChangeListener {
     private void updateWhitelist(Project p, String oldWhiteListId, String newWhiteListId) {
         List<Project> projs = new ArrayList<Project>();
         projs.add(p);
+        //mkleint: see subprojectprovider for official contract, maybe classpath should be checked instead? see #210465
         projs.addAll(p.getLookup().lookup(SubprojectProvider.class).getSubprojects());
         for (Project pp : projs) {
             if (oldWhiteListId != null) {

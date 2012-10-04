@@ -231,7 +231,6 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     private void initialize () {
         try {
             final List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes ());
-            Utilities.loadAcceptedLicenseIDs(uu.size());
             List<UnitCategory> precompute1 = Utilities.makeUpdateCategories (uu, false);
             List<UnitCategory> precompute2 = Utilities.makeUpdateCategories (uu, true);
             // postpone later
@@ -257,7 +256,6 @@ public class PluginManagerUI extends javax.swing.JPanel  {
             public void run () {
                 //ensures that uninitialization runs after initialization
                 initTask.waitFinished ();
-                Utilities.storeAcceptedLicenseIDs();
                 AutoupdateCheckScheduler.runCheckAvailableUpdates (0);
                 //ensure exclusivity between this uninitialization code and refreshUnits (which can run even after this dialog is disposed)
                 synchronized(initLock) {

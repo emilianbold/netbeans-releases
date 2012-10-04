@@ -109,7 +109,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
         LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
-            request.context = context;
             String pref = getPrefix(info, caretOffset, true);
             pref = pref == null ? "" : pref;
 
@@ -412,6 +411,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         // from index
         JsIndex index = JsIndex.get(fo);
         Collection<IndexedElement> fromIndex = index.getGlobalVar(request.prefix);
+        fromIndex.addAll(index.getPropertiesWithPrefix("window", request.prefix));  //NOI18N
         for (IndexedElement indexedElement : fromIndex) {
             JsElement object = foundObjects.get(indexedElement.getName());
             if(object == null) {
@@ -439,6 +439,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
         
         // from model
+        //int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
         for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
             if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
                     && startsWith(object.getName(), request.prefix)) {
@@ -461,7 +462,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
-        
+
         for(JsElement element: foundObjects.values()) {
             resultList.add(JsCompletionItem.Factory.create(element, request));
         }

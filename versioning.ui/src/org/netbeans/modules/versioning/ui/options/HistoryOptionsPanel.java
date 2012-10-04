@@ -43,10 +43,14 @@
  */
 package org.netbeans.modules.versioning.ui.options;
 
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
+
 /**
  *
  * @author Tomas Stupka
  */
+@OptionsPanelController.Keywords(keywords={"#HistoryOptionsPanel.kw1", "#HistoryOptionsPanel.kw2", "#HistoryOptionsPanel.kw2"}, location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
 public class HistoryOptionsPanel extends javax.swing.JPanel {
     
     /** Creates new form SvnOptionsPanel */

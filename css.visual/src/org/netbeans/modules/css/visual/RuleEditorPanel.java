@@ -43,6 +43,8 @@ package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.FeatureDescriptor;
@@ -52,6 +54,7 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.TreeSet;
@@ -144,13 +147,16 @@ import org.openide.util.actions.Presenter;
     "titleLabel.text.no.selected.rule=No Rule Selected",
     "titleLabel.tooltip.no.selected.rule=Select a css rule in editor or CSS Styles Window to activate the Rule Editor",
     "titleLabel.no.selected.rule=No Rule Selected",
-    "label.rule.error.tooltip=The selected rule contains error(s), the listed properties are read only"
+    "label.rule.error.tooltip=The selected rule contains error(s), the listed properties are read only",
+    "addPropertyCB.initial.text=Add Property ..."
 })
 public class RuleEditorPanel extends JPanel {
 
-    private RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
-    public static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
-    private static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
+    private static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
+    static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
+    
+    static RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
+    
     private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
     private static final Icon APPLIED_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/database.gif")); //NOI18N
     private static final JLabel ERROR_LABEL = new JLabel(ERROR_ICON);
@@ -179,21 +185,17 @@ public class RuleEditorPanel extends JPanel {
     private AddPropertyComboBoxModel ADD_PROPERTY_CB_MODEL = new AddPropertyComboBoxModel();
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (Model.CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
-                Mutex.EVENT.readAccess(new Runnable() {
-                    @Override
-                    public void run() {
+        public void propertyChange(final PropertyChangeEvent evt) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    if (Model.CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
                         northWestPanel.add(APPLIED_LABEL);
                         northWestPanel.revalidate();
                         northWestPanel.repaint();
-                    }
-                });
-                //re-set the css model as the CssCaretAwareSourceTask won't work 
-                //if the modified file is not opened in editor
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
+
+                        //re-set the css model as the CssCaretAwareSourceTask won't work 
+                        //if the modified file is not opened in editor
                         Model model = getModel();
                         if (model != null) {
                             Document doc = model.getLookup().lookup(Document.class);
@@ -207,13 +209,8 @@ public class RuleEditorPanel extends JPanel {
                                             if (resultIterator != null) {
                                                 CssCslParserResult result = (CssCslParserResult) resultIterator.getParserResult();
                                                 final Model model = result.getModel();
-                                                SwingUtilities.invokeLater(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        LOG.info("Setting new model upon Model.applyChanges()");
-                                                        setModel(model);
-                                                    }
-                                                });
+                                                LOG.info("Setting new model upon Model.applyChanges()");
+                                                setModel(model);
                                             }
                                         }
                                     });
@@ -222,20 +219,27 @@ public class RuleEditorPanel extends JPanel {
                                 }
                             }
                         }
+                    } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
+                        //refresh the PS content
+                        node.fireContextChanged(false);
+                        if (createdDeclaration != null) {
+                            //select & edit the property corresponding to the created declaration
+                            editCreatedDeclaration();
+                        }
                     }
-                });
-            } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
-                //refresh the PS content
-                node.fireContextChanged();
-                
-                if(createdDeclaration != null) {
-                    //select & edit the property corresponding to the created declaration
-                    editCreatedDeclaration();
                 }
-            }
+            });
         }
     };
 
+    private final ActionListener addPropertyCBActionListener = new ActionListener() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            addPropertyCBValueEntered();
+        }
+    };
+    
     public RuleEditorPanel() {
         this(false);
     }
@@ -315,17 +319,24 @@ public class RuleEditorPanel extends JPanel {
         initComponents();
 
         //init the add property combo box
-        ADD_PROPERTY_CB_MODEL.addInitialText();
  
         addPropertyCB.getEditor().getEditorComponent().addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 ADD_PROPERTY_CB_MODEL.removeInitialText();
+                
+                //add the ActionListener after the model change (removed initial text) 
+                //as it fires an action event
+                addPropertyCB.addActionListener(addPropertyCBActionListener);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 ADD_PROPERTY_CB_MODEL.addInitialText();
+                
+                //add the ActionListener after the model change (added initial text) 
+                //as it fires an action event
+                addPropertyCB.removeActionListener(addPropertyCBActionListener);
             }
         });
 
@@ -491,7 +502,7 @@ public class RuleEditorPanel extends JPanel {
             return; //no change
         }
         this.sortMode = mode;
-        node.fireContextChanged();
+        node.fireContextChanged(true);
     }
 
     public boolean isShowAllProperties() {
@@ -503,7 +514,7 @@ public class RuleEditorPanel extends JPanel {
             return; //no change
         }
         this.showAllProperties = showAllProperties;
-        node.fireContextChanged();
+        node.fireContextChanged(true);
     }
 
     public boolean isShowCategories() {
@@ -515,7 +526,7 @@ public class RuleEditorPanel extends JPanel {
             return; //no change
         }
         this.showCategories = showCategories;
-        node.fireContextChanged();
+        node.fireContextChanged(true);
     }
 
     public Model getModel() {
@@ -555,50 +566,24 @@ public class RuleEditorPanel extends JPanel {
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.MODEL_SET.name(), oldModel, this.model);
 
         if (this.rule != null) {
-            //try to resolve the old rule from the previous model to corresponding
-            //rule in the new model
-            final AtomicReference<CharSequence> oldRuleId_ref = new AtomicReference<CharSequence>();
-            oldModel.runReadTask(new Model.ModelTask() {
+            //resolve the old rule from the previous model to corresponding rule in the new model
+            final AtomicReference<Rule> rule_ref = new AtomicReference<Rule>();
+            this.model.runReadTask(new Model.ModelTask() {
                 @Override
                 public void run(StyleSheet styleSheet) {
-                    oldRuleId_ref.set(oldModel.getElementSource(oldRule.getSelectorsGroup()));
+                    ModelUtils utils = new ModelUtils(model);
+                    rule_ref.set(utils.findMatchingRule(oldModel, oldRule));
                 }
             });
-            final CharSequence oldRuleId = oldRuleId_ref.get();
-
-            final AtomicReference<Rule> match_ref = new AtomicReference<Rule>();
-            model.runReadTask(new Model.ModelTask() {
-                @Override
-                public void run(StyleSheet styleSheet) {
-                    styleSheet.accept(new ModelVisitor.Adapter() {
-                        @Override
-                        public void visitRule(Rule rule) {
-                            CharSequence ruleId = model.getElementSource(rule.getSelectorsGroup());
-                            if (LexerUtils.equals(oldRuleId, ruleId, false, false)) {
-                                //should be the same rule
-
-                                //TODO - having some API for resolving old to new model elements between
-                                //two model instances would be great. Something like ElementHandle.resolve
-                                //TODO - the handles would be usefull as well as the elements shouldn't 
-                                //be kept outside of the ModelTask-s.
-
-                                LOG.log(Level.FINE, "found matching rule {0}", rule);
-                                match_ref.set(rule);
-
-                            }
-                        }
-                    });
-                }
-            });
-
-            Rule match = match_ref.get();
+            
+            Rule match = rule_ref.get();
             if (match == null) {
                 setNoRuleState();
             } else {
-                setRule(match_ref.get());
+                setRule(match);
             }
+            
             CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, match);
-
 
         } else {
             LOG.log(Level.FINE, "no rule was set before");
@@ -614,7 +599,7 @@ public class RuleEditorPanel extends JPanel {
     public Rule getRule() {
         return rule;
     }
-
+    
     public void setRule(final Rule rule) {
         LOG.log(Level.FINE, "setRule({0})", rule);
 
@@ -627,6 +612,15 @@ public class RuleEditorPanel extends JPanel {
         }
         Rule old = this.rule;
         this.rule = rule;
+        
+        //refresh new AddPropertyComboBoxModel so the add property combobox doesn't contain 
+        //already existing properties
+        Declarations decls = rule.getDeclarations();
+        Collection<Declaration> declarations = decls == null 
+                ? Collections.<Declaration>emptyList() 
+                : decls.getDeclarations();
+                        
+        ADD_PROPERTY_CB_MODEL.setExistingProperties(declarations);
 
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), old, this.rule);
 
@@ -642,7 +636,9 @@ public class RuleEditorPanel extends JPanel {
         }
         northWestPanel.revalidate();
 
-        node.fireContextChanged();
+        //force property sets refresh if the rule is erroneous or 
+        //the rule is valid, but the previous was erroneous.
+        node.fireContextChanged(old == null || !(old.isValid() && rule.isValid())); 
 
         final AtomicReference<String> ruleNameRef = new AtomicReference<String>();
         model.runReadTask(new Model.ModelTask() {
@@ -671,7 +667,7 @@ public class RuleEditorPanel extends JPanel {
         
         addPropertyButton.setEnabled(false);
         addPropertyCB.setEnabled(false);
-        node.fireContextChanged();
+        node.fireContextChanged(false);
     }
 
     public void setDeclarationInfo(Declaration declaration, DeclarationInfo declarationInfo) {
@@ -774,11 +770,6 @@ public class RuleEditorPanel extends JPanel {
         addPropertyCB.setEditable(true);
         addPropertyCB.setEnabled(false);
         addPropertyCB.setRenderer(new AddPropertyCBRendeder());
-        addPropertyCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addPropertyCBActionPerformed(evt);
-            }
-        });
         southPanel.add(addPropertyCB, java.awt.BorderLayout.CENTER);
 
         add(southPanel, java.awt.BorderLayout.SOUTH);
@@ -793,10 +784,6 @@ public class RuleEditorPanel extends JPanel {
         filterTextField.setText(null);
     }//GEN-LAST:event_cancelFilterLabelMouseClicked
 
-    private void addPropertyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPropertyCBActionPerformed
-        addPropertyCBValueEntered();
-    }//GEN-LAST:event_addPropertyCBActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addPropertyButton;
     private javax.swing.JComboBox addPropertyCB;
@@ -810,14 +797,13 @@ public class RuleEditorPanel extends JPanel {
     private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables
     private static Object INITIAL_TEXT_OBJECT = new Object();
-    private static String ADD_PROPERTY_CB_TEXT = "Add Property ...";
+    private static String ADD_PROPERTY_CB_TEXT = Bundle.addPropertyCB_initial_text();
 
     private static class AddPropertyComboBoxModel extends DefaultComboBoxModel {
 
         private boolean containsInitialText;
 
         public AddPropertyComboBoxModel() {
-            super(getProperties().toArray());
             addInitialText();
         }
 
@@ -842,6 +828,29 @@ public class RuleEditorPanel extends JPanel {
                 containsInitialText = false;
             }
         }
+        
+        private void setExistingProperties(Collection<Declaration> existing) {
+            removeInitialText();
+            removeAllElements();
+            
+            addInitialText();
+            
+            Collection<PropertyDefinition> existingDefs = new ArrayList<PropertyDefinition>();
+            for(Declaration d : existing) {
+                PropertyDefinition definition = Properties.getProperty(d.getProperty().getContent().toString());
+                if(definition != null) {
+                    existingDefs.add(definition);
+                }
+            }
+            
+            for(PropertyDefinition prop : getProperties()) {
+                if(!existingDefs.contains(prop)) {
+                    addElement(prop);
+                }
+            }
+        }
+        
+        
     }
 
     private static class AddPropertyCBRendeder extends DefaultListCellRenderer {

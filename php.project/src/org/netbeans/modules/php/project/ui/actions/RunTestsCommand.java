@@ -74,8 +74,8 @@ public class RunTestsCommand extends Command implements Displayable {
     @Override
     public void invokeActionInternal(Lookup context) {
         FileObject folder = findFolderWithTest(context);
-        assert folder != null : "Folder should be found for running tests";
         if (folder == null) {
+            logger.warning("Folder should be found for running tests");
             return;
         }
         ConfigAction.get(ConfigAction.Type.TEST, getProject()).runFile(Lookups.fixed(folder));

@@ -1,0 +1,147 @@
+Code completion result for source line:
+window.|location.toString();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     Image(width: Number, height: N  [PUBLIC]   stub_DOM_window.js
+METHOD     Option(text: String, value: St  [PUBLIC]   stub_DOM_window.js
+METHOD     Worker(uri: String): Worker     [PUBLIC]   stub_DOM_window.js
+METHOD     addEventListener(type: String,  [PUBLIC]   stub_DOM_window.js
+METHOD     alert(): undefined              [PUBLIC]   stub_DOM_window.js
+METHOD     atob(encodedData: String): Str  [PUBLIC]   stub_DOM_window.js
+METHOD     back(): undefined               [PUBLIC]   stub_DOM_window.js
+METHOD     blur(): undefined               [PUBLIC]   stub_DOM_window.js
+METHOD     btoa(stringToEncode: String):   [PUBLIC]   stub_DOM_window.js
+METHOD     clearImmediate(immediateID: Nu  [PUBLIC]   stub_DOM_window.js
+METHOD     clearInterval(intervalID: Numb  [PUBLIC]   stub_DOM_window.js
+METHOD     clearTimeout(timeoutID: Number  [PUBLIC]   stub_DOM_window.js
+METHOD     close(): undefined              [PUBLIC]   stub_DOM_window.js
+METHOD     confirm(message: String): Bool  [PUBLIC]   stub_DOM_window.js
+METHOD     create(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperties(O: Object, Pr  [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperty(O: Object, P: S  [PUBLIC,   stub_CORE_Object.js
+METHOD     dump(message: String): undefin  [PUBLIC]   stub_DOM_window.js
+METHOD     escape(regular: String): Strin  [PUBLIC]   stub_DOM_window.js
+METHOD     find(aString: String, aCaseSen  [PUBLIC]   stub_DOM_window.js
+METHOD     focus(): undefined              [PUBLIC]   stub_DOM_window.js
+METHOD     forward(): undefined            [PUBLIC]   stub_DOM_window.js
+METHOD     freeze(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     getAttention(): undefined       [PUBLIC]   stub_DOM_window.js
+METHOD     getComputedStyle(element: Elem  [PUBLIC]   stub_DOM_window.js
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   stub_CORE_Object.js
+METHOD     getSelection(): Selection       [PUBLIC]   stub_DOM_window.js
+METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   stub_CORE_Object.js
+METHOD     isExtensible(O: Object): Boole  [PUBLIC,   stub_CORE_Object.js
+METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
+METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   stub_CORE_Object.js
+METHOD     isSealed(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
+METHOD     keys(O: Object): Array          [PUBLIC,   stub_CORE_Object.js
+METHOD     matchMedia(mediaQueryString: S  [PUBLIC]   stub_DOM_window.js
+METHOD     moveBy(deltaX: Number, deltaY:  [PUBLIC]   stub_DOM_window.js
+METHOD     moveTo(x: Number, y: Number):   [PUBLIC]   stub_DOM_window.js
+METHOD     open(strUrl: String, strWindow  [PUBLIC]   stub_DOM_window.js
+METHOD     openDialog(url: String, name:   [PUBLIC]   stub_DOM_window.js
+METHOD     postMessage(message: String, t  [PUBLIC]   stub_DOM_window.js
+METHOD     preventExtensions(O: Object):   [PUBLIC,   stub_CORE_Object.js
+METHOD     print(): undefined              [PUBLIC]   stub_DOM_window.js
+METHOD     prompt(text: String, value: St  [PUBLIC]   stub_DOM_window.js
+METHOD     propertyIsEnumerable(V: String  [PUBLIC]   stub_CORE_Object.js
+METHOD     removeEventListener(type: Stri  [PUBLIC]   stub_DOM_window.js
+METHOD     resizeBy(xDelta: Number, yDelt  [PUBLIC]   stub_DOM_window.js
+METHOD     resizeTo(iWidth: Number, iHeig  [PUBLIC]   stub_DOM_window.js
+METHOD     scroll(xcoord: Number, ycoord:  [PUBLIC]   stub_DOM_window.js
+METHOD     scrollBy(X: Number, Y: Number)  [PUBLIC]   stub_DOM_window.js
+METHOD     scrollByLines(lines: Number):   [PUBLIC]   stub_DOM_window.js
+METHOD     scrollByPages(pages: Number):   [PUBLIC]   stub_DOM_window.js
+METHOD     scrollTo(xcoord: Number, ycoor  [PUBLIC]   stub_DOM_window.js
+METHOD     seal(O: Object): Object         [PUBLIC,   stub_CORE_Object.js
+METHOD     setCursor(): undefined          [PUBLIC]   stub_DOM_window.js
+METHOD     setImmediate(func: Function):   [PUBLIC]   stub_DOM_window.js
+METHOD     setInterval(func: Function, de  [PUBLIC]   stub_DOM_window.js
+METHOD     setTimeout(func: Function, del  [PUBLIC]   stub_DOM_window.js
+METHOD     showModalDialog(uri: String):   [PUBLIC]   stub_DOM_window.js
+METHOD     sizeToContent(): undefined      [PUBLIC]   stub_DOM_window.js
+METHOD     stop(): undefined               [PUBLIC]   stub_DOM_window.js
+METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
+METHOD     toString(): String              [PUBLIC]   stub_CORE_Object.js
+METHOD     unescape(escaped: String): Str  [PUBLIC]   stub_DOM_window.js
+METHOD     updateCommands(sCommandName):   [PUBLIC]   stub_DOM_window.js
+METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
+FIELD      Components: window.Components   [PUBLIC]   stub_DOM_window.js
+FIELD      applicationCache: Object        [PUBLIC]   stub_DOM_window.js
+FIELD      closed: Boolean                 [PUBLIC]   stub_DOM_window.js
+FIELD      console: Console                [PUBLIC]   stub_DOM_window.js
+FIELD      constructor: Function           [PUBLIC]   stub_CORE_Object.js
+FIELD      content: Window                 [PUBLIC]   stub_DOM_window.js
+FIELD      controllers: XULControllers     [PUBLIC]   stub_DOM_window.js
+FIELD      crypto: Crypto                  [PUBLIC]   stub_DOM_window.js
+FIELD      defaultStatus: String           [PUBLIC]   stub_DOM_window.js
+FIELD      dialogArguments: Object         [PUBLIC]   stub_DOM_window.js
+FIELD      document: window.document       [PUBLIC]   stub_DOM_window.js
+FIELD      frameElement: Element           [PUBLIC]   stub_DOM_Window.js
+FIELD      frames: Array                   [PUBLIC]   stub_DOM_window.js
+FIELD      fullScreen: Boolean             [PUBLIC]   stub_DOM_window.js
+FIELD      history: History                [PUBLIC]   stub_DOM_window.js
+FIELD      innerHeight: Number             [PUBLIC]   stub_DOM_window.js
+FIELD      innerWidth: Number              [PUBLIC]   stub_DOM_window.js
+FIELD      length: Number                  [PUBLIC]   stub_DOM_window.js
+FIELD      localStorage: Storage           [PUBLIC]   stub_DOM_window.js
+FIELD      location: Location              [PUBLIC]   stub_DOM_Window.js
+FIELD      locationbar: Object             [PUBLIC]   stub_DOM_window.js
+FIELD      menubar: Object                 [PUBLIC]   stub_DOM_window.js
+FIELD      name: DOMString                 [PUBLIC]   stub_DOM_Window.js
+FIELD      navigator: Navigator            [PUBLIC]   stub_DOM_window.js
+FIELD      onabort: Function               [PUBLIC]   stub_DOM_window.js
+FIELD      onbeforeunload: Function        [PUBLIC]   stub_DOM_window.js
+FIELD      onblur: Function                [PUBLIC]   stub_DOM_window.js
+FIELD      onchange: Function              [PUBLIC]   stub_DOM_window.js
+FIELD      onclick: Function               [PUBLIC]   stub_DOM_window.js
+FIELD      onclose: Function               [PUBLIC]   stub_DOM_window.js
+FIELD      oncontextmenu: Function         [PUBLIC]   stub_DOM_window.js
+FIELD      ondragdrop: Function            [PUBLIC]   stub_DOM_window.js
+FIELD      onerror: Function               [PUBLIC]   stub_DOM_window.js
+FIELD      onfocus: Function               [PUBLIC]   stub_DOM_window.js
+FIELD      onhashchange: Function          [PUBLIC]   stub_DOM_window.js
+FIELD      onkeydown: Function             [PUBLIC]   stub_DOM_window.js
+FIELD      onkeypress: Function            [PUBLIC]   stub_DOM_window.js
+FIELD      onkeyup: Function               [PUBLIC]   stub_DOM_window.js
+FIELD      onload: Function                [PUBLIC]   stub_DOM_window.js
+FIELD      onmousedown: Function           [PUBLIC]   stub_DOM_window.js
+FIELD      onmousemove: Function           [PUBLIC]   stub_DOM_window.js
+FIELD      onmouseout: Function            [PUBLIC]   stub_DOM_window.js
+FIELD      onmouseover: Function           [PUBLIC]   stub_DOM_window.js
+FIELD      onmouseup: Function             [PUBLIC]   stub_DOM_window.js
+FIELD      onpagehide: Function            [PUBLIC]   stub_DOM_window.js
+FIELD      onpageshow: Function            [PUBLIC]   stub_DOM_window.js
+FIELD      onpaint: Function               [PUBLIC]   stub_DOM_window.js
+FIELD      onpopstate: Function            [PUBLIC]   stub_DOM_window.js
+FIELD      onreset: Function               [PUBLIC]   stub_DOM_window.js
+FIELD      onresize: Function              [PUBLIC]   stub_DOM_window.js
+FIELD      onscroll: Function              [PUBLIC]   stub_DOM_window.js
+FIELD      onselect: Function              [PUBLIC]   stub_DOM_window.js
+FIELD      onsubmit: Function              [PUBLIC]   stub_DOM_window.js
+FIELD      onunload: Function              [PUBLIC]   stub_DOM_window.js
+FIELD      opener: Window                  [PUBLIC]   stub_DOM_window.js
+FIELD      outerHeight: Number             [PUBLIC]   stub_DOM_window.js
+FIELD      outerWidth: Number              [PUBLIC]   stub_DOM_window.js
+FIELD      pageXOffset: Number             [PUBLIC]   stub_DOM_window.js
+FIELD      pageYOffset: Number             [PUBLIC]   stub_DOM_window.js
+FIELD      parent: Window                  [PUBLIC]   stub_DOM_Window.js
+FIELD      performance: Object             [PUBLIC]   stub_DOM_window.js
+FIELD      personalbar: Object             [PUBLIC]   stub_DOM_window.js
+FIELD      prototype                       [PUBLIC]   stub_DOM_window.js
+FIELD      screen: Screen                  [PUBLIC]   stub_DOM_window.js
+FIELD      scrollMaxX: Number              [PUBLIC]   stub_DOM_window.js
+FIELD      scrollMaxY: Number              [PUBLIC]   stub_DOM_window.js
+FIELD      scrollX: Number                 [PUBLIC]   stub_DOM_window.js
+FIELD      scrollY: Number                 [PUBLIC]   stub_DOM_window.js
+FIELD      scrollbars: Object              [PUBLIC]   stub_DOM_window.js
+FIELD      self: Window                    [PUBLIC]   stub_DOM_Window.js
+FIELD      sessionStorage: Storage         [PUBLIC]   stub_DOM_window.js
+FIELD      sidebar: Object                 [PUBLIC]   stub_DOM_window.js
+FIELD      status: String                  [PUBLIC]   stub_DOM_window.js
+FIELD      statusbar: Object               [PUBLIC]   stub_DOM_window.js
+FIELD      toolbar: Object                 [PUBLIC]   stub_DOM_window.js
+FIELD      top: Window                     [PUBLIC]   stub_DOM_Window.js
+FIELD      window: Window                  [PUBLIC]   stub_DOM_Window.js

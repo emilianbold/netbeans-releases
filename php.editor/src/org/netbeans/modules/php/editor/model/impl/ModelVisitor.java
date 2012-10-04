@@ -82,7 +82,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     private final FileScopeImpl fileScope;
     private IndexScope indexScope;
-    private Map<VariableNameFactory, Map<String, VariableNameImpl>> vars;
+    private Map<Scope, Map<String, VariableNameImpl>> vars;
     private final Map<String, List<PhpDocTypeTagInfo>> varTypeComments;
     private volatile OccurenceBuilder occurencesBuilder;
     private volatile CodeMarkerBuilder markerBuilder;
@@ -319,17 +319,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         lazyScan = true;
         modelBuilder.setProgram(program);
         fileScope.setBlockRange(program);
-        this.vars = new HashMap<VariableNameFactory, Map<String, VariableNameImpl>>();
-        try {
-            prepareVarComments(program);
-            super.visit(program);
-            handleVarComments();
-        } finally {
-            program = null;
-//            vars = null;
-//            buildOccurences();
-//            buildCodeMarks();
-        }
+        this.vars = new HashMap<Scope, Map<String, VariableNameImpl>>();
+        prepareVarComments(program);
+        super.visit(program);
+        handleVarComments();
     }
 
     @Override

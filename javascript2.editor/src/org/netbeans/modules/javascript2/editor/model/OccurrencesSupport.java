@@ -93,7 +93,7 @@ public class OccurrencesSupport {
                     return occurrence;
                 }
             }
-            if (kind == JsElement.Kind.CONSTRUCTOR || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD) {
+            if (kind.isFunction()) {
                 for(JsObject param : ((JsFunction)object).getParameters()) {
                  result = findOccurrence(param, offset);
                     if (result != null) {

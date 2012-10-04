@@ -50,7 +50,7 @@ public class TplCustomBracesMatchingTest extends TplTestBase {
 
     static {
         MATCHER_FACTORY = new TplBracesMatching();
-        TplBracesMatching.testMode = true;
+        TplBracesMatching.setTestMode(true);
     }
     private Document document;
 
@@ -188,6 +188,51 @@ public class TplCustomBracesMatchingTest extends TplTestBase {
         BracesMatcher matcher = createMatcher(6, false, 1);
         assertOrigin(0, 19, matcher);
         assertMatch(6, 6, matcher);
+    }
+
+    public void testCommentTagEnd() throws Exception {
+        setDocumentText("{[* any comment *]}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(19, false, 1);
+        assertOrigin(0, 19, matcher);
+        assertMatch(19, 19, matcher);
+    }
+
+    public void testCommentTagBegin1() throws Exception {
+        setDocumentText("{[* comment *]}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(0, false, 1);
+        assertOrigin(0, 15, matcher);
+        assertMatch(0, 0, matcher);
+    }
+
+    public void testCommentTagBegin2() throws Exception {
+        setDocumentText("{[* comment *]}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(2, false, 1);
+        assertOrigin(0, 15, matcher);
+        assertMatch(2, 2, matcher);
+    }
+
+    public void testCommentTagBegin3() throws Exception {
+        setDocumentText(" {[* comment *]}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(1, false, 1);
+        assertOrigin(1, 16, matcher);
+        assertMatch(1, 1, matcher);
+    }
+
+    public void testCommentTagBegin4() throws Exception {
+        setDocumentText("{[* comment *]}");
+        //               01234567890123456789012345678901234567890123456789012345678901234567890
+        //               0         1         2         3         4         5         6         7
+        BracesMatcher matcher = createMatcher(1, false, 1);
+        assertOrigin(0, 15, matcher);
+        assertMatch(1, 1, matcher);
     }
 
     public void testUnfinishedTag() throws Exception {

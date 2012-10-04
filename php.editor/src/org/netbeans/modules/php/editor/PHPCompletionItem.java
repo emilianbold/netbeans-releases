@@ -222,6 +222,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         case SMART:
                             generateAs = qn.getKind();
                             break;
+                        default:
+                            assert false : codeCompletionType;
                     }
 
                 } else if (generateAs.isQualified() && (ifq instanceof TypeElement)
@@ -269,6 +271,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     }
                     template.append(getName());
                     break;
+                default:
+                    assert false : generateAs;
             }
 
             return template.toString();
@@ -293,7 +297,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
         final String in = element.getIn();
         if (in != null && in.length() > 0) {
-            formatter.appendText(element.getIn());
+            formatter.appendText(in);
             return formatter.getText();
         } else if (element instanceof PhpElement) {
             PhpElement ie = (PhpElement) element;
@@ -302,18 +306,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             }
 
             String filename = ie.getFilenameUrl();
-            if (filename != null) {
-                int index = filename.lastIndexOf('/');
-                if (index != -1) {
-                    filename = filename.substring(index + 1);
-                }
-
-                formatter.appendText(filename);
-                return formatter.getText();
-            } else if (ie.getFileObject() != null) {
-                formatter.appendText(ie.getFileObject().getNameExt());
-                return formatter.getText();
+            int index = filename.lastIndexOf('/');
+            if (index != -1) {
+                filename = filename.substring(index + 1);
             }
+
+            formatter.appendText(filename);
+            return formatter.getText();
         }
 
 
@@ -340,8 +339,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            if (getElement().getIn() != null) {
-                String namespaceName = ((MethodElement) getElement()).getType().getNamespaceName().toString();
+            ElementHandle element = getElement();
+            if (element != null && element.getIn() != null) {
+                String namespaceName = ((MethodElement) element).getType().getNamespaceName().toString();
                 if (namespaceName != null && !NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(namespaceName)) {
                     formatter.appendText(namespaceName);
                     return formatter.getText();
@@ -352,7 +352,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getName() {
-            String in = getElement().getIn();
+            ElementHandle element = getElement();
+            String in = element == null ? null : element.getIn();
             return (in != null) ? in : super.getName();
         }
 
@@ -469,9 +470,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             Collection<? extends String> typeNames = variable.getTypeNames(caretOffset);
             if (!typeNames.isEmpty()) {
                 for (TypeResolver type : possibleTypes) {
-                    if (typeNames.contains(type.getRawTypeName()) || type.getRawTypeName().equals("mixed")
-                            || (typeNames.contains("real") && type.getRawTypeName().equals("float"))
-                            || (typeNames.contains("int") && type.getRawTypeName().equals("integer"))) { // NOI18N
+                    if (typeNames.contains(type.getRawTypeName()) || "mixed".equals(type.getRawTypeName())
+                            || (typeNames.contains("real") && "float".equals(type.getRawTypeName()))
+                            || (typeNames.contains("int") && "integer".equals(type.getRawTypeName()))) { // NOI18N
                         return true;
                     }
                 }
@@ -534,11 +535,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
             String superTemplate = super.getInsertPrefix();
-            if (superTemplate != null) {
-                template.append(superTemplate);
-            } else {
-                template.append(getName());
-            }
+            template.append(superTemplate);
 
             TokenHierarchy<?> tokenHierarchy = request.result.getSnapshot().getTokenHierarchy();
             TokenSequence<PHPTokenId> tokenSequence = (TokenSequence<PHPTokenId>) tokenHierarchy.tokenSequence();
@@ -547,26 +544,26 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 if (variableScope != null) {
                     tokenSequence = tokenSequence.subSequence(request.anchor, variableScope.getBlockRange().getEnd());
                 }
-            }
-            boolean wasWhitespace = false;
-            while (tokenSequence.moveNext()) {
-                Token<PHPTokenId> token = tokenSequence.token();
-                PHPTokenId id = token.id();
-                if (PHPTokenId.PHP_STRING.equals(id)) {
-                    if (wasWhitespace) {
-                        // this needs brackets: curl_set^ curl_setopt($ch, $option, $ch);
-                        break;
-                    } else {
-                        // this doesn't need brackets: curl_setopt^  ($ch, $option, $ch);
+                boolean wasWhitespace = false;
+                while (tokenSequence.moveNext()) {
+                    Token<PHPTokenId> token = tokenSequence.token();
+                    PHPTokenId id = token.id();
+                    if (PHPTokenId.PHP_STRING.equals(id)) {
+                        if (wasWhitespace) {
+                            // this needs brackets: curl_set^ curl_setopt($ch, $option, $ch);
+                            break;
+                        } else {
+                            // this doesn't need brackets: curl_setopt^  ($ch, $option, $ch);
+                            continue;
+                        }
+                    } else if (PHPTokenId.WHITESPACE.equals(id)) {
+                        wasWhitespace = true;
                         continue;
+                    } else if (PHPTokenId.PHP_TOKEN.equals(id) && token.toString().equals("(")) { //NOI18N
+                        return template.toString();
+                    } else {
+                        break;
                     }
-                } else if (PHPTokenId.WHITESPACE.equals(id)) {
-                    wasWhitespace = true;
-                    continue;
-                } else if (PHPTokenId.PHP_TOKEN.equals(id) && token.toString().equals("(")) { //NOI18N
-                    return template.toString();
-                } else {
-                    break;
                 }
             }
 
@@ -694,7 +691,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getName() {
-            final String name = getElement().getName();
+            ElementHandle element = getElement();
+            assert element != null;
+            final String name = element.getName();
             return name.startsWith("$") ? name.substring(1) : name;
         }
 
@@ -937,7 +936,6 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     static class KeywordItem extends PHPCompletionItem {
 
-        private String description = null;
         String keyword = null;
         private static final List<String> CLS_KEYWORDS =
                 Arrays.asList(PHPCodeCompletion.PHP_CLASS_KEYWORDS);
@@ -968,13 +966,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            if (description != null) {
-                formatter.appendHtml(description);
-                return formatter.getText();
-
-            } else {
-                return null;
-            }
+            return null;
         }
 
         @Override
@@ -1004,7 +996,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             }
             CodeStyle codeStyle = CodeStyle.get(EditorRegistry.lastFocusedComponent().getDocument());
             boolean appendSpace = true;
-            String name = null;
+            String name;
             switch (type) {
                 case SIMPLE:
                     return null;
@@ -1232,7 +1224,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            String value = ((ConstantElement) getElement()).getValue();
+            ElementHandle element = getElement();
+            assert element != null;
+            String value = ((ConstantElement) element).getValue();
             formatter.name(getKind(), true);
             if (emphasisName()) {
                 formatter.emphasis(true);
@@ -1304,11 +1298,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             final String superTemplate = super.getInsertPrefix();
             if (endWithDoubleColon) {
                 StringBuilder builder = new StringBuilder();
-                if (superTemplate != null) {
-                    builder.append(superTemplate);
-                } else {
-                    builder.append(getName());
-                }
+                builder.append(superTemplate);
                 boolean includeDoubleColumn = true;
                 if (EditorRegistry.lastFocusedComponent() != null) {
                     Document doc = EditorRegistry.lastFocusedComponent().getDocument();
@@ -1382,11 +1372,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             final String superTemplate = super.getInsertPrefix();
             if (endWithDoubleColon) {
                 StringBuilder builder = new StringBuilder();
-                if (superTemplate != null) {
-                    builder.append(superTemplate);
-                } else {
-                    builder.append(getName());
-                }
+                builder.append(superTemplate);
                 builder.append("::${cursor}"); //NOI18N
                 scheduleShowingCompletion();
                 return builder.toString();
@@ -1597,7 +1583,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
-    private class PhpVersionChangeListener implements PropertyChangeListener {
+    private static class PhpVersionChangeListener implements PropertyChangeListener {
 
         private final WeakReference<FileObject> fileObjectReference;
 

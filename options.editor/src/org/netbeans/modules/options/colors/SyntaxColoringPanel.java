@@ -83,8 +83,10 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.options.colors.ColorModel.Preview;
 import org.netbeans.modules.options.colors.spi.FontsColorsController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.ColorComboBox;
@@ -97,6 +99,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author  Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords={"syntax coloring"}, location=OptionsDisplayer.FONTSANDCOLORS, index=0)
 public class SyntaxColoringPanel extends JPanel implements ActionListener, 
     PropertyChangeListener, FontsColorsController, ItemListener {
     

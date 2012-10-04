@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -57,8 +58,8 @@ import org.netbeans.modules.parsing.api.Snapshot;
  */
 public final class JsDocumentationFallbackHolder extends JsDocumentationHolder {
 
-    public JsDocumentationFallbackHolder(Snapshot snapshot) {
-        super(snapshot);
+    public JsDocumentationFallbackHolder(JsDocumentationProvider provider, Snapshot snapshot) {
+        super(provider, snapshot);
     }
 
     @Override

@@ -59,7 +59,7 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.netbeans.modules.css.editor.Css3Utils;
-import org.netbeans.modules.css.editor.csl.CssColor;
+import org.netbeans.modules.css.lib.api.CssColor;
 import org.netbeans.modules.css.editor.csl.CssCompletion;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssValueElement;
@@ -171,7 +171,6 @@ public abstract class CssCompletionItem implements CompletionProposal {
         return new UnitItem(element);
     }
     
-    protected static String WHITE_COLOR_HEX_CODE = "ffffff"; //NOI18N
     protected static final int SORT_PRIORITY = 300;
 
     private CssCompletionItem() {
@@ -250,60 +249,6 @@ public abstract class CssCompletionItem implements CompletionProposal {
         return SORT_PRIORITY;
     }
 
-    private static ImageIcon createIcon(String colorCode) {
-        BufferedImage i = new BufferedImage(COLOR_ICON_SIZE, COLOR_ICON_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
-        Graphics g = i.createGraphics();
-
-
-        boolean defaultIcon = colorCode == null;
-        if (defaultIcon) {
-            //unknown color code, we still want a generic icon
-            colorCode = WHITE_COLOR_HEX_CODE;
-        }
-
-        if (colorCode.length() == 3) {
-            //shorthand color code #fc0 means #ffcc00
-            colorCode = new StringBuilder().append(colorCode.charAt(0)).
-                    append(colorCode.charAt(0)).
-                    append(colorCode.charAt(1)).
-                    append(colorCode.charAt(1)).
-                    append(colorCode.charAt(2)).
-                    append(colorCode.charAt(2)).toString();
-        }
-
-        Color transparent = new Color(0x00ffffff, true);
-        g.setColor(transparent);
-        g.fillRect(0, 0, COLOR_ICON_SIZE, COLOR_ICON_SIZE);
-
-        try {
-            g.setColor(Color.decode("0x" + colorCode)); //NOI18N
-        } catch (NumberFormatException ignoredException) {
-            //unparseable code
-            colorCode = WHITE_COLOR_HEX_CODE;
-            defaultIcon = true;
-        }
-        g.fillRect(COLOR_ICON_SIZE - COLOR_RECT_SIZE,
-                COLOR_ICON_SIZE - COLOR_RECT_SIZE - 1,
-                COLOR_RECT_SIZE - 1,
-                COLOR_RECT_SIZE - 1);
-
-        g.setColor(Color.DARK_GRAY);
-        g.drawRect(COLOR_ICON_SIZE - COLOR_RECT_SIZE - 1,
-                COLOR_ICON_SIZE - COLOR_RECT_SIZE - 2,
-                COLOR_RECT_SIZE,
-                COLOR_RECT_SIZE);
-
-        if (defaultIcon) {
-            //draw the X inside the icon
-            g.drawLine(COLOR_ICON_SIZE - COLOR_RECT_SIZE - 1,
-                    COLOR_ICON_SIZE - 2,
-                    COLOR_ICON_SIZE - 1,
-                    COLOR_ICON_SIZE - COLOR_RECT_SIZE - 2);
-        }
-
-        return new ImageIcon(i);
-    }
-
     static class RAWCompletionItem extends CssCompletionItem {
 
         private ElementKind kind;
@@ -356,9 +301,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
             return "<font color=999999>" + (origin == null ? "" : origin) + "</font>"; //NOI18N
         }
     }
-    private static final byte COLOR_ICON_SIZE = 16; //px
-    private static final byte COLOR_RECT_SIZE = 10; //px
-
+    
     //XXX fix the CssCompletionItem class so the Value and Property normally subclass it!!!!!!!!!
     static class ColorCompletionItem extends ValueCompletionItem {
 
@@ -375,7 +318,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
         @Override
         public ImageIcon getIcon() {
             CssColor color = CssColor.getColor(getName());
-            return createIcon(color == null ? null : color.colorCode());
+            return WebUtils.createColorIcon(color == null ? null : color.colorCode());
         }
     }
 
@@ -398,7 +341,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public ImageIcon getIcon() {
-            return createIcon(getName().substring(1)); //strip off the hash
+            return WebUtils.createColorIcon(getName().substring(1)); //strip off the hash
         }
 
         @Override
@@ -491,7 +434,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
         public ImageIcon getIcon() {
             Color c = COLOR_CHOOSER.getColor();
             String colorCode = c == null ? "ffffff" : WebUtils.toHexCode(c).substring(1); //strip off the hash
-            return createIcon(colorCode);
+            return WebUtils.createColorIcon(colorCode);
         }
 
         @Override

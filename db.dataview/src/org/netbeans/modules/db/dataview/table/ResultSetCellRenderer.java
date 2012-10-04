@@ -103,7 +103,7 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
         });
     }
 
-    public ResultSetCellRenderer(ComponentProvider componentProvider) {
+    public ResultSetCellRenderer(ComponentProvider<? extends JComponent> componentProvider) {
         super(componentProvider);
     }
 
@@ -121,7 +121,7 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
             return NULL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         } else if (value instanceof Number) {
             return NUMNBER_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        } else if (DataViewUtils.isSQLConstantString(value)) {
+        } else if (DataViewUtils.isSQLConstantString(value, null)) {
             Component c = DEFAULT_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             setTableCellToolTip(c, value);
             return c;            

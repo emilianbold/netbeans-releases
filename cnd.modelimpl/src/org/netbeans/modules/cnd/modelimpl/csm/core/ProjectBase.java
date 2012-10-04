@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
@@ -904,44 +905,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         long time = System.currentTimeMillis();
         final Set<NativeFileItem> removedFileItems = Collections.synchronizedSet(new HashSet<NativeFileItem>());
         final Set<NativeFileItem> readOnlyRemovedFilesSet = Collections.unmodifiableSet(removedFileItems);
-        NativeProjectItemsListener projectItemListener = new NativeProjectItemsListener() {
-
-            @Override
-            public void fileAdded(NativeFileItem fileItem) {
-            }
-
-            @Override
-            public void filesAdded(List<NativeFileItem> fileItems) {
-            }
-
-            @Override
-            public void fileRemoved(NativeFileItem fileItem) {
-                removedFileItems.add(fileItem);
-            }
-
+        NativeProjectItemsListener projectItemListener = new NativeProjectItemsAdapter() {
             @Override
             public void filesRemoved(List<NativeFileItem> fileItems) {
                 removedFileItems.addAll(fileItems);
-            }
-
-            @Override
-            public void fileRenamed(String oldPath, NativeFileItem newFileIetm) {
-            }
-
-            @Override
-            public void filePropertiesChanged(NativeFileItem fileItem) {
-            }
-
-            @Override
-            public void filesPropertiesChanged(List<NativeFileItem> fileItems) {
-            }
-
-            @Override
-            public void filesPropertiesChanged() {
-            }
-
-            @Override
-            public void projectDeleted(NativeProject nativeProject) {
             }
         };
         nativeProject.addProjectItemsListener(projectItemListener);
@@ -2368,8 +2335,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public abstract void onFileImplRemoved(Collection<FileImpl> files);
 
     public abstract void onFileRemoved(List<NativeFileItem> items);
-
-    public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
 
     public abstract void onFilePropertyChanged(List<NativeFileItem> items, boolean invalidateLibs);
 

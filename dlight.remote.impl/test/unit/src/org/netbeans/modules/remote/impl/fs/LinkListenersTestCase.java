@@ -108,10 +108,10 @@ public class LinkListenersTestCase extends RemoteFileTestBase {
             subdirLinkFO.getChildren(); // otherwise no file creation event occurs
             
             String prefix = baseDirFO.getPath();
-            FileSystemProvider.addRecursiveListener(new FCL("recursive", prefix, out, true), baseDirFO.getFileSystem(), baseDirFO.getPath());
-            baseDirFO.addFileChangeListener(new FCL("baseDir", prefix, out, true));
-            subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), prefix, out, true));
-            subdirLinkFO.addFileChangeListener(new FCL(subdirLinkFO.getNameExt(), prefix, out, true));
+            FileSystemProvider.addRecursiveListener(new DumpingFileChangeListener("recursive", prefix, out, true), baseDirFO.getFileSystem(), baseDirFO.getPath());
+            baseDirFO.addFileChangeListener(new DumpingFileChangeListener("baseDir", prefix, out, true));
+            subdirFO.addFileChangeListener(new DumpingFileChangeListener(subdirFO.getNameExt(), prefix, out, true));
+            subdirLinkFO.addFileChangeListener(new DumpingFileChangeListener(subdirLinkFO.getNameExt(), prefix, out, true));
             
             executeInDir(subdirFO.getPath(), env, "touch",  "file_1.h");
             baseDirFO.refresh();

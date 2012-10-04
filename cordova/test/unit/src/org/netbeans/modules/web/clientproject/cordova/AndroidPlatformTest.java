@@ -68,9 +68,9 @@ import org.netbeans.modules.cordova.android.Device;
 import org.netbeans.modules.cordova.android.Target;
 import org.netbeans.modules.cordova.ios.IOSPlatform;
 import org.netbeans.modules.cordova.ios.SDK;
-import org.netbeans.modules.netserver.websocket.ProtocolDraft;
-import org.netbeans.modules.netserver.websocket.WebSocketClient;
-import org.netbeans.modules.netserver.websocket.WebSocketReadHandler;
+import org.netbeans.modules.netserver.api.ProtocolDraft;
+import org.netbeans.modules.netserver.websocket.WebSocketClientImpl;
+import org.netbeans.modules.netserver.api.WebSocketReadHandler;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -229,7 +229,7 @@ public SyncPipe(InputStream istrm, OutputStream ostrm) {
     
     @Test
     public void testConnectIOS() throws Exception {
-        WebSocketClient client = new WebSocketClient(new URI("ws://[::1]:9999/devtools/page/1"), ProtocolDraft.getProtocol(76));
+        WebSocketClientImpl client = new WebSocketClientImpl(new URI("ws://[::1]:9999/devtools/page/1"), ProtocolDraft.getProtocol(76));
         WebSocketReadHandler handler = new ReadH(client);
         client.setWebSocketReadHandler(handler);
         Thread thread = new Thread(client);
@@ -242,7 +242,7 @@ public SyncPipe(InputStream istrm, OutputStream ostrm) {
     
        @Test
     public void testConnectChrome() throws Exception {
-        WebSocketClient client = new WebSocketClient(new URI("ws://localhost:9222/devtools/page/2_2"), ProtocolDraft.getRFC());
+        WebSocketClientImpl client = new WebSocketClientImpl(new URI("ws://localhost:9222/devtools/page/2_2"), ProtocolDraft.getRFC());
         WebSocketReadHandler handler = new ReadH(client);
         client.setWebSocketReadHandler(handler);
         Thread thread =  new Thread( client);
@@ -317,9 +317,9 @@ public SyncPipe(InputStream istrm, OutputStream ostrm) {
 //    }
 
     private static class ReadH implements WebSocketReadHandler {
-        private final WebSocketClient client;
+        private final WebSocketClientImpl client;
 
-        private ReadH(WebSocketClient client) {
+        private ReadH(WebSocketClientImpl client) {
             this.client = client;
         }
 

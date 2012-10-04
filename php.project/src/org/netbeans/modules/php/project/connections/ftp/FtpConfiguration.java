@@ -185,16 +185,18 @@ public final class FtpConfiguration extends RemoteConfiguration {
             return false;
         }
         final FtpConfiguration other = (FtpConfiguration) obj;
-        if (host != other.host && (host == null || !host.equals(other.host))) {
+        if ((this.host == null) ? (other.host != null) : !this.host.equals(other.host)) {
             return false;
         }
-        if (port != other.port) {
+        if (this.port != other.port) {
             return false;
         }
-        if (userName != other.userName && (userName == null || !userName.equals(other.userName))) {
+        if ((this.userName == null) ? (other.userName != null) : !this.userName.equals(other.userName)) {
             return false;
         }
-        if (password != other.password && (password == null || !password.equals(other.password))) {
+        String thisPassword = getPassword();
+        String otherPassword = other.getPassword();
+        if (!thisPassword.equals(otherPassword)) {
             return false;
         }
         return true;
@@ -206,7 +208,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
         hash = 97 * hash + (host != null ? host.hashCode() : 0);
         hash = 97 * hash + port;
         hash = 97 * hash + (userName != null ? userName.hashCode() : 0);
-        hash = 97 * hash + (password != null ? password.hashCode() : 0);
+        hash = 97 * hash + getPassword().hashCode();
         return hash;
     }
 
@@ -244,7 +246,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
     /**
      * Security of the FTP connection.
      */
-    public final class Security {
+    public static final class Security {
 
         private final Encryption encryption;
         private final boolean onlyLoginEncrypted;

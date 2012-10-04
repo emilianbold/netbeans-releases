@@ -59,7 +59,7 @@ import java.util.logging.Level;
  */
 class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHandler {
 
-    public WebSocketHandler76( WebSocketServer webSocketServer , SelectionKey key) {
+    public WebSocketHandler76( WebSocketServerImpl webSocketServer , SelectionKey key) {
         super(webSocketServer, key );
     }
 

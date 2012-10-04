@@ -560,9 +560,14 @@ public class RegisterPointbase implements DatabaseRuntime {
         // get the port info
         int port = 9092;
         Properties iniProps = new Properties();
-        iniProps.load(new FileInputStream(iniFile));
-        port = Integer.parseInt(iniProps.getProperty("server.port", "9092"));   //NOI18N
-        return port;
+        FileInputStream fis = new FileInputStream(iniFile);
+        try {
+            iniProps.load(fis);
+            port = Integer.parseInt(iniProps.getProperty("server.port", "9092"));   //NOI18N
+            return port;
+        } finally {
+            fis.close();
+        }
     }
     /* register the derby driver to the library manager of netbeans
      *

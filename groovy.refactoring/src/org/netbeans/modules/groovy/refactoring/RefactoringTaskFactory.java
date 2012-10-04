@@ -46,6 +46,8 @@ import java.util.Collection;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.refactoring.RefactoringTask.NodeToElementTask;
 import org.netbeans.modules.groovy.refactoring.RefactoringTask.TextComponentTask;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
+import org.netbeans.modules.groovy.refactoring.move.MoveRefactoringUI;
 import org.netbeans.modules.groovy.refactoring.rename.RenameRefactoringUI;
 import org.netbeans.modules.groovy.refactoring.ui.WhereUsedQueryUI;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
@@ -63,7 +65,7 @@ import org.openide.util.Lookup;
 public class RefactoringTaskFactory {
 
     public enum RefactoringType {
-        FIND_USAGES, RENAME
+        FIND_USAGES, RENAME, MOVE
     }
 
     public static RefactoringTask createRefactoringTask(Lookup lookup, RefactoringType type) {
@@ -85,18 +87,24 @@ public class RefactoringTaskFactory {
                 return new FindUsagesTextComponentTask(ec, fileObject);
             case RENAME:
                 return new RenameRefactoringTextComponentTask(ec, fileObject);
+            case MOVE:
+                return new MoveRefactoringTextComponentTask(ec, fileObject);
         }
         return null;
     }
 
     private static RefactoringTask getNodeToElementTask(Lookup lookup, RefactoringType type) {
         final FileObject fileObject = lookup.lookup(FileObject.class);
+        final Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
 
         switch (type) {
             case FIND_USAGES:
-                return new FindUsagesNodeToElementTask(lookup.lookupAll(Node.class), fileObject);
+                return new FindUsagesNodeToElementTask(nodes, fileObject);
             case RENAME:
                 // TODO: Implement as well
+                break;
+            case MOVE:
+                return new MoveNodeToElementTask(nodes, fileObject);
         }
         return null;
     }
@@ -128,7 +136,7 @@ public class RefactoringTaskFactory {
         }
 
         @Override
-        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
+        protected RefactoringUI createRefactoringUI(RefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
             if (selectedElement != null && selectedElement.getName() != null) {
                 return new WhereUsedQueryUI(selectedElement);
             }
@@ -143,7 +151,7 @@ public class RefactoringTaskFactory {
         }
 
         @Override
-        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, GroovyParserResult info) {
+        protected RefactoringUI createRefactoringUI(RefactoringElement selectedElement, GroovyParserResult info) {
             if (selectedElement != null && selectedElement.getName() != null) {
                 return new WhereUsedQueryUI(selectedElement);
             }
@@ -158,9 +166,39 @@ public class RefactoringTaskFactory {
         }
 
         @Override
-        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
+        protected RefactoringUI createRefactoringUI(RefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
             if (selectedElement != null && selectedElement.getName() != null) {
                 return new RenameRefactoringUI(selectedElement);
+            }
+            return null;
+        }
+    }
+
+    private static class MoveRefactoringTextComponentTask extends TextComponentTask {
+
+        public MoveRefactoringTextComponentTask(EditorCookie ec, FileObject fileObject) {
+            super(ec, fileObject);
+        }
+
+        @Override
+        protected RefactoringUI createRefactoringUI(RefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info) {
+            if (selectedElement != null && selectedElement.getFileObject() != null) {
+                return new MoveRefactoringUI(selectedElement);
+            }
+            return null;
+        }
+    }
+
+    private static class MoveNodeToElementTask extends NodeToElementTask {
+
+        public MoveNodeToElementTask(Collection<? extends Node> nodes, FileObject fileObject) {
+            super(nodes, fileObject);
+        }
+
+        @Override
+        protected RefactoringUI createRefactoringUI(RefactoringElement selectedElement, GroovyParserResult info) {
+            if (selectedElement != null && selectedElement.getFileObject() != null) {
+                return new MoveRefactoringUI(selectedElement);
             }
             return null;
         }

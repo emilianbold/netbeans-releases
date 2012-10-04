@@ -78,7 +78,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -108,14 +108,14 @@ import org.openide.windows.WindowManager;
  * @author Jan Stola
  */
 public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
+    /** Request processor used by this class. */
+    private static final RequestProcessor RP = new RequestProcessor(CSSStylesPanel.class);
     /** Action command for switching to document view. */
     static final String DOCUMENT_ACTION_COMMAND = "document"; // NOI18N
     /** Action command for switching to selection view. */
     static final String SELECTION_ACTION_COMMAND = "selection"; // NOI18N
     /** The default instance of this class. */
     private static final CSSStylesPanel DEFAULT = new CSSStylesPanel();
-    /** Request processor used by this class. */
-    private static final RequestProcessor RP = new RequestProcessor(CSSStylesPanel.class);
     /** Document section of CSS Styles view. */
     private CSSStylesDocumentPanel documentPanel = new CSSStylesDocumentPanel();
     /** Selection section of CSS Styles view. */
@@ -539,7 +539,16 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
          * 
          * @param pageModel current page model.
          */
-        void setPageModel(WebKitPageModel pageModel) {
+        void setPageModel(final WebKitPageModel pageModel) {
+            if (EventQueue.isDispatchThread()) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        setPageModel(pageModel);
+                    }
+                });
+                return;
+            }
             URL url = null;
             FileObject fob = null;
             Project project = null;

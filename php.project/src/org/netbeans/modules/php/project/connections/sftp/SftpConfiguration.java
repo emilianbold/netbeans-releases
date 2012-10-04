@@ -156,19 +156,21 @@ public final class SftpConfiguration extends RemoteConfiguration {
             return false;
         }
         final SftpConfiguration other = (SftpConfiguration) obj;
-        if (host != other.host && (host == null || !host.equals(other.host))) {
+        if ((this.host == null) ? (other.host != null) : !this.host.equals(other.host)) {
             return false;
         }
-        if (port != other.port) {
+        if (this.port != other.port) {
             return false;
         }
-        if (userName != other.userName && (userName == null || !userName.equals(other.userName))) {
+        if ((this.userName == null) ? (other.userName != null) : !this.userName.equals(other.userName)) {
             return false;
         }
-        if (password != other.password && (password == null || !password.equals(other.password))) {
+        if ((this.identityFile == null) ? (other.identityFile != null) : !this.identityFile.equals(other.identityFile)) {
             return false;
         }
-        if (identityFile != other.identityFile && (identityFile == null || !identityFile.equals(other.identityFile))) {
+        String thisPassword = getPassword();
+        String otherPassword = other.getPassword();
+        if (!thisPassword.equals(otherPassword)) {
             return false;
         }
         return true;
@@ -180,7 +182,7 @@ public final class SftpConfiguration extends RemoteConfiguration {
         hash = 97 * hash + (host != null ? host.hashCode() : 0);
         hash = 97 * hash + port;
         hash = 97 * hash + (userName != null ? userName.hashCode() : 0);
-        hash = 97 * hash + (password != null ? password.hashCode() : 0);
+        hash = 97 * hash + getPassword().hashCode();
         hash = 97 * hash + (identityFile != null ? identityFile.hashCode() : 0);
         return hash;
     }

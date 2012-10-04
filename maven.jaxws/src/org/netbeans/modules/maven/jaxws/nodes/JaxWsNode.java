@@ -575,22 +575,38 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                                     fireShortDescriptionChange();
 
                                     // replace nonJSR109 entries
-                                    if (!WSUtils.isJsr109Supported(project)) {
-                                        JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(implBean);
-                                        FileObject ddFolder = jaxWsSupport.getDeploymentDescriptorFolder();
-                                        if (ddFolder != null) {
+                                    if (!WSUtils.isJsr109Supported(project) ) {
+                                        JAXWSLightSupport jaxWsSupport = JAXWSLightSupport
+                                                .getJAXWSLightSupport(implBean);
+                                        FileObject ddFolder = jaxWsSupport
+                                                .getDeploymentDescriptorFolder();
+                                        if ( ddFolder != null ) {
                                             try {
-                                                WSUtils.replaceSunJaxWsEntries(ddFolder, oldServiceName, newServiceName[0]);
-                                            } catch (IOException ex) {
-                                                Logger.getLogger(JaxWsNode.class.getName()).log(Level.WARNING,
-                                                        "Cannot modify endpoint in sun-jaxws.xml file", ex); //NOI18N
+                                                WSUtils.replaceSunJaxWsEntries(
+                                                        ddFolder,
+                                                        oldServiceName,
+                                                        newServiceName[0]);
+                                            }
+                                            catch (IOException ex) {
+                                                Logger.getLogger(
+                                                        JaxWsNode.class
+                                                                .getName())
+                                                        .log(Level.WARNING,
+                                                                "Cannot modify endpoint in sun-jaxws.xml file",
+                                                                ex); // NOI18N
                                             }
                                         }
                                         try {
-                                            WSUtils.replaceServiceEntriesFromDD(project, oldServiceName, newServiceName[0]);
-                                        } catch (IOException ex) {
-                                            Logger.getLogger(JaxWsNode.class.getName()).log(Level.WARNING,
-                                                    "Cannot modify web.xml file", ex); //NOI18N
+                                            WSUtils.replaceServiceEntriesFromDD(
+                                                    project, oldServiceName,
+                                                    newServiceName[0]);
+                                        }
+                                        catch (IOException ex) {
+                                            Logger.getLogger(
+                                                    JaxWsNode.class.getName())
+                                                    .log(Level.WARNING,
+                                                            "Cannot modify web.xml file",
+                                                            ex); // NOI18N
                                         }
                                     }
                                 }

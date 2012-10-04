@@ -61,6 +61,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -175,6 +176,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         scannedRoots2Peers,
                         sourcesForBinaryRoots,
                         false,
+                        scannedRoots2DependenciesLamport,
                         suspendSupport.getSuspendStatus(),
                         LogContext.create(LogContext.EventType.PATH, null));
                 }
@@ -552,6 +554,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         scannedRoots2Peers,
                         sourcesForBinaryRoots,
                         !existingPathsChanged,
+                        scannedRoots2DependenciesLamport,
                         suspendSupport.getSuspendStatus(),
                         logContext),
                     false);
@@ -679,6 +682,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                     scannedRoots2Peers,
                                     sourcesForBinaryRoots,
                                     false,
+                                    scannedRoots2DependenciesLamport,
                                     suspendSupport.getSuspendStatus(),
                                     LogContext.create(LogContext.EventType.FILE, null).addRoots(Collections.singleton(root.first)));
                             } else {
@@ -1243,6 +1247,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     private static final String PROP_MODIFIED_UNDER_WRITE_LOCK = RepositoryUpdater.class.getName() + "-modified-under-write-lock"; //NOI18N
     private static final String PROP_OWNING_SOURCE_ROOT_URL = RepositoryUpdater.class.getName() + "-owning-source-root-url"; //NOI18N
     private static final String PROP_OWNING_SOURCE_ROOT = RepositoryUpdater.class.getName() + "-owning-source-root"; //NOI18N
+    private static final String PROP_OWNING_SOURCE_UNKNOWN_IN = RepositoryUpdater.class.getName() + "-owning-source-root-unknown-in"; //NOI18N
     private static final int VISIBILITY_CHANGE_WINDOW = 500;
     private static final String INDEX_DOWNLOAD_FOLDER = "index-download";   //NOI18N
 
@@ -1298,6 +1303,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
     });
    private final SuspendSupport suspendSupport = new SuspendSupport(WORKER);
+   private final AtomicLong scannedRoots2DependenciesLamport = new AtomicLong();
 
     private RepositoryUpdater () {
         LOGGER.log(Level.FINE, "netbeans.indexing.notInterruptible={0}", notInterruptible); //NOI18N
@@ -1499,6 +1505,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 scannedRoots2Peers,
                 sourcesForBinaryRoots,
                 true,
+                scannedRoots2DependenciesLamport,
                 suspendSupport.getSuspendStatus(),
                 work == null ?
                     LogContext.create(LogContext.EventType.PATH, null)
@@ -1545,6 +1552,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         FileObject file = null;
         Document doc = null;        
         List<URL> clone;
+        final long current = scannedRoots2DependenciesLamport.get();
         synchronized (lastOwningSourceRootCacheLock) {            
             if (fileOrDoc instanceof Document) {
                 doc = (Document) fileOrDoc;
@@ -1556,6 +1564,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 FileObject cachedSourceRoot = (FileObject) doc.getProperty(PROP_OWNING_SOURCE_ROOT);
                 if (cachedSourceRootUrl != null && cachedSourceRoot != null && cachedSourceRoot.isValid() && FileUtil.isParentOf(cachedSourceRoot, file)) {
                     return Pair.of(cachedSourceRootUrl, cachedSourceRoot);
+                } else {
+                    final Long unknownIn = (Long) doc.getProperty(PROP_OWNING_SOURCE_UNKNOWN_IN);
+                    if (unknownIn != null && unknownIn.longValue() == current) {
+                        return null;
+                    }
                 }
             } else if (fileOrDoc instanceof FileObject) {
                 file = (FileObject) fileOrDoc;
@@ -1597,6 +1610,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 }
                 return Pair.of(owningSourceRootUrl, owningSourceRoot);
             } else {
+                if (doc != null) {
+                    doc.putProperty(PROP_OWNING_SOURCE_UNKNOWN_IN, current);
+                }
                 return null;
             }
         }
@@ -3436,7 +3452,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
             boolean b = (newWork instanceof RootsWork);
             if (b) {
-                follow.add(new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), getLogContext()));
+                follow.add(new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), LogContext.createAndAbsorb(getLogContext())));
                 LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
             }
             return b;
@@ -3584,7 +3600,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
             boolean b = (newWork instanceof RootsWork);
             if (b) {
-                follow.add(new RefreshEifIndices(eifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), getLogContext()));
+                follow.add(new RefreshEifIndices(eifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), LogContext.createAndAbsorb(getLogContext())));
                 LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
             }
             return b;
@@ -3988,6 +4004,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private final Map<URL,List<URL>> scannedBinaries2InvDependencies;
         private final Map<URL,List<URL>> scannedRoots2Peers;
         private final Set<URL> sourcesForBinaryRoots;
+        private final AtomicLong scannedRoots2DependenciesLamport;
         private boolean useInitialState;
 
         private DependenciesContext depCtx;
@@ -4006,6 +4023,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 Map<URL,List<URL>> scannedRoots2Peers,
                 Set<URL> sourcesForBinaryRoots,
                 boolean useInitialState,
+                @NonNull final AtomicLong scannedRoots2DependenciesLamport,
                 @NonNull final SuspendStatus suspendStatus,
                 @NullAllowed LogContext logCtx) {
             super(false, suspendStatus, logCtx);
@@ -4014,6 +4032,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             this.scannedRoots2Peers = scannedRoots2Peers;
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
             this.useInitialState = useInitialState;
+            this.scannedRoots2DependenciesLamport = scannedRoots2DependenciesLamport;
         }
 
         public @Override String toString() {
@@ -4237,6 +4256,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 }
                 scannedRoots2Dependencies.put(root, deps);
             }
+            scannedRoots2DependenciesLamport.incrementAndGet();
             if (!missingRoots.isEmpty()) {
                 StringBuilder log = new StringBuilder("Missing dependencies for roots: ");  //NOI18N
                 printCollection(missingRoots, log);
@@ -4849,6 +4869,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 Map<URL,List<URL>>  scannedRoots2Peers,
                 Set<URL> sourcesForBinaryRoots,
                 boolean waitForProjects,
+                @NonNull final AtomicLong scannedRoots2DependenciesLamport,
                 @NonNull final SuspendStatus suspendStatus,
                 @NullAllowed final LogContext logCtx) {
             super(scannedRoots2Depencencies,
@@ -4856,6 +4877,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 scannedRoots2Peers,
                 sourcesForBinaryRoots,
                 true,
+                scannedRoots2DependenciesLamport,
                 suspendStatus,
                 logCtx);
             this.waitForProjects = waitForProjects;

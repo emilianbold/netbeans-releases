@@ -47,8 +47,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyEditor;
 import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.ComboBoxUI;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.plaf.metal.MetalLookAndFeel;
@@ -82,12 +85,15 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
     private static PopupChecker checker = null;
     protected PropertyEditor editor;
     protected PropertyEnv env;
+    private ListCellRenderer originalRenderer;
     protected PropertyModel mdl;
     boolean inSetUI = false;
     private boolean tableUI;
     private boolean connecting = false;
     private boolean hasBeenEditable = false;
     private boolean needLayout = false;
+
+    private boolean popupCancelled = false;
 
     /** Create a ComboInplaceEditor - the tableUI flag will tell it to use
      * less borders & such */
@@ -109,6 +115,28 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         if (tableUI) {
             updateUI();
         }
+        
+        addPopupMenuListener(new PopupMenuListener() {
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent pme) {
+                popupCancelled = false;
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent pme) {
+                if( !popupCancelled ) {
+                    ComboInplaceEditor.super.fireActionEvent();
+                }
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent pme) {
+                popupCancelled = true;
+            }
+        });
+        
+        originalRenderer = getRenderer();
     }
 
     /** Overridden to add a listener to the editor if necessary, since the
@@ -155,10 +183,22 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         editor = null;
         env = null;
     }
+    
+    static void disable_VK_UP_VK_DOWN_Keystrokes(JComponent component) {
+        String nonExistingActionName = "bleble";
+        component.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), nonExistingActionName);
+        component.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), nonExistingActionName);
+        
+        component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), nonExistingActionName);
+        component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), nonExistingActionName);
+        
+        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), nonExistingActionName);
+        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), nonExistingActionName);
+    }
 
     public void connect(PropertyEditor pe, PropertyEnv env) {
         connecting = true;
-
+        
         try {
             log("Combo editor connect to " + pe + " env=" + env);
 
@@ -173,10 +213,44 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             setEditable(editable);
             setActionCommand(COMMAND_SUCCESS);
             setupAutoComplete();
+            
+            //Support for custom ListCellRenderer injection via PropertyEnv
+            //The instance obtained from the env by the "customListCellRendererSupport" key
+            //must both implement ListCellRenderer and extend AtomicReference<ListCellRenderer> 
+            //The AtomicReference workaround it necessary since we somehow need to put 
+            //reference to the original ListCellRenderer to the custom one.
+            Object customRendererSupport = env.getFeatureDescriptor().getValue("customListCellRendererSupport"); //NOI18N
+            if(customRendererSupport != null) {
+                //set the actual renrerer to the custom one so it may delegate
+                AtomicReference<ListCellRenderer> ref = (AtomicReference<ListCellRenderer>)customRendererSupport;
+                ref.set(originalRenderer);
+                setRenderer((ListCellRenderer)customRendererSupport);
+            } 
+            
+            if(SheetTable.isValueIncrementEnabled(env)) {
+                disable_VK_UP_VK_DOWN_Keystrokes(this);
+                disable_VK_UP_VK_DOWN_Keystrokes(((JComponent)getEditor().getEditorComponent()));
+                
+                Object incrementSupport = env.getFeatureDescriptor().getValue( SheetTable.VALUE_INCREMENT );
+                if( null != incrementSupport && incrementSupport instanceof SpinnerModel ) {
+                    this.incrementSupport = (SpinnerModel)incrementSupport;
+                }
+                
+            }
+            
+            
+            
+            
             reset();
         } finally {
             connecting = false;
         }
+    }
+    
+    private SpinnerModel incrementSupport;
+    
+    SpinnerModel getIncrementSupport() {
+        return incrementSupport;
     }
 
     private void log(String s) {
@@ -185,16 +259,36 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         }
     }
 
+    /**
+     * Prevent the "autocomplete decorated" combobox to call setSelectedItem with empty
+     * value when one explicitly call InlineEditor.setValue(...)
+     */
+    private boolean in_setSelectedItem = false;
+    
     public void setSelectedItem(Object o) {
-        //Some property editors (i.e. IMT's choice editor) treat
-        //null as 0.  Probably not the right way to do it, but needs to
-        //be handled.
-        if ((o == null) && (editor != null) && (editor.getTags() != null) && (editor.getTags().length > 0)) {
-            o = editor.getTags()[0];
-        }
+        try {
+            if(in_setSelectedItem) {
+                in_setSelectedItem = false;
+                if(SheetTable.isValueIncrementEnabled(env)) {
+                    //return only when we are in the hack mode
+                    return ;
+                }
+            }
+            
+            in_setSelectedItem = true;
 
-        if (o != null) {
-            super.setSelectedItem(o);
+            //Some property editors (i.e. IMT's choice editor) treat
+            //null as 0.  Probably not the right way to do it, but needs to
+            //be handled.
+            if ((o == null) && (editor != null) && (editor.getTags() != null) && (editor.getTags().length > 0)) {
+                o = editor.getTags()[0];
+            }
+
+            if (o != null) {
+                super.setSelectedItem(o);
+            }
+        } finally {
+            in_setSelectedItem = false;
         }
     }
 
@@ -208,7 +302,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                 return;
             }
 
-            if( isAutoComplete() && isPopupVisible() ) {
+            if( isAutoComplete() && isPopupVisible()) {
                 return;
             }
 

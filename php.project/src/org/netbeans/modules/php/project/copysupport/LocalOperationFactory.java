@@ -61,6 +61,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Radek Matous
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
 final class LocalOperationFactory extends FileOperationFactory {
 
     private static final Logger LOGGER = Logger.getLogger(LocalOperationFactory.class.getName());

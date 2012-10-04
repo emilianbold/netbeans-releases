@@ -44,14 +44,14 @@ package org.netbeans.modules.web.clientproject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import org.netbeans.modules.javascript.jstestdriver.api.JsTestDriver;
-import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
-import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
-import org.netbeans.modules.web.clientproject.spi.webserver.WebServer;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
+import org.netbeans.modules.web.common.api.WebServer;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -78,12 +78,7 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
                 if (!root.endsWith("/")) { //NOI18N
                     root += "/"; //NOI18N
                 }
-                try {
-                    return new URL(root + relPath);
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                    return null;
-                }
+                return WebUtils.stringToUrl(root + relPath);
             }
         } else {
             return toJsTestDriverServer(projectFile);
@@ -97,7 +92,7 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
             fo = WebServer.getWebserver().fromServer(serverURL);
         } else {
             String root = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL);
-            String u = serverURL.toExternalForm();
+            String u = WebUtils.urlToString(serverURL);
             if (u.startsWith(root)) {
                 u = u.substring(root.length());
                 if (u.startsWith("/")) { //NOI18N
@@ -130,7 +125,7 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
     }
     
     private FileObject fromJsTestDriverServer(URL serverURL) {
-        String serverU = serverURL.toExternalForm();
+        String serverU = WebUtils.urlToString(serverURL);
         String prefix = JsTestDriver.getServerURL();
         if (!prefix.endsWith("/")) {
             prefix += "/";

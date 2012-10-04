@@ -94,6 +94,7 @@ public class LogCommand extends SvnCommand {
     private final File file;
     private final SVNRevision revStart;
     private final SVNRevision revEnd;    
+    private final SVNRevision pegRevision;    
     private final boolean stopOnCopy;
     private final boolean fetchChangePath;
     private final long limit;
@@ -102,10 +103,11 @@ public class LogCommand extends SvnCommand {
     private final String[] paths;
     
         
-    public LogCommand(File file, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath, long limit) {
+    public LogCommand(File file, SVNRevision revStart, SVNRevision revEnd, SVNRevision pegRevision, boolean stopOnCopy, boolean fetchChangePath, long limit) {
         this.file = file;
         this.revStart = revStart;
         this.revEnd = revEnd;
+        this.pegRevision = pegRevision;
         this.stopOnCopy = stopOnCopy;
         this.fetchChangePath = fetchChangePath;
         this.limit = limit;
@@ -116,9 +118,10 @@ public class LogCommand extends SvnCommand {
         paths = null;
     }
 
-    public LogCommand(SVNUrl url, String[] paths, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath, long limit) {        
+    public LogCommand(SVNUrl url, String[] paths, SVNRevision revStart, SVNRevision revEnd, SVNRevision pegRevision, boolean stopOnCopy, boolean fetchChangePath, long limit) {        
         this.revStart = revStart;
         this.revEnd = revEnd;
+        this.pegRevision = pegRevision;
         this.stopOnCopy = stopOnCopy;
         this.fetchChangePath = fetchChangePath;
         this.limit = limit;
@@ -159,10 +162,18 @@ public class LogCommand extends SvnCommand {
         
         switch(type) {
             case file:
-                arguments.add(file);
+                if (pegRevision == null) {
+                    arguments.add(file);
+                } else {
+                    arguments.add(file.getAbsolutePath() + "@" + pegRevision);
+                }
                 break;
             case url:
-                arguments.add(url);
+                if (pegRevision == null) {
+                    arguments.add(url);
+                } else {
+                    arguments.add(url, pegRevision);
+                }
                 if (paths != null) {            
                     arguments.addPathArguments(paths);
                 }        

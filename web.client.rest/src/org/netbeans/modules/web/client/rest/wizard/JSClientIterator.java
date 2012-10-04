@@ -198,7 +198,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         
         if ( existedBackbone == null ){
             if ( addBackbone!=null && addBackbone ){
-                FileObject libs = FileUtil.createFolder(getLibFolder(project),
+                FileObject libs = FileUtil.createFolder(getRootFolder(project),
                         WebClientLibraryManager.LIBS);
                 handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
                         "TXT_CreateLibs"));                                 // NOI18N
@@ -258,7 +258,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         myPanels = null;
     }
     
-    static FileObject getLibFolder(Project project){
+    static FileObject getRootFolder(Project project){
         SourceGroup[] groups =  ProjectUtils.getSources(project).getSourceGroups(
                 WebClientProjectConstants.SOURCES_TYPE_HTML5);
         if ( groups!= null && groups.length >0 ){
@@ -289,7 +289,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         if ( generator.hasUi() ){
             builder.append("<link rel='stylesheet' href='");                // NOI18N
             builder.append(JSClientGenerator.TABLESORTER_URL);
-            builder.append("css/blue/style.css'>\n");                       // NOI18N
+            builder.append("css/theme.blue.css'>\n");                       // NOI18N
             builder.append("<link rel='stylesheet' href='");                // NOI18N
             builder.append(JSClientGenerator.TABLESORTER_URL);
             builder.append("addons/pager/jquery.tablesorter.pager.css'>\n");// NOI18N
@@ -300,7 +300,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             builder.append("</script>\n");  // NOI18N
         }
         else {
-            String relativePath = FileUtil.getRelativePath(folder, underscore);
+            String relativePath = getRelativePath(folder, underscore);
             builder.append("<script src='");    // NOI18N
             builder.append(relativePath);
             builder.append("'></script>\n");    // NOI18N
@@ -309,7 +309,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             builder.append("<script src='http://code.jquery.com/jquery-1.7.2.min.js'></script>\n");// NOI18N
         }
         else {
-            String relativePath = FileUtil.getRelativePath(folder, jQuery);
+            String relativePath = getRelativePath(folder, jQuery);
             builder.append("<script src='");// NOI18N
             builder.append(relativePath);
             builder.append("'></script>\n");  // NOI18N
@@ -318,7 +318,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             builder.append("<script src='http://backbonejs.org/backbone-min.js'></script>\n");// NOI18N
         }
         else {
-            String relativePath = FileUtil.getRelativePath(folder, backbone);
+            String relativePath = getRelativePath(folder, backbone);
             builder.append("<script src='");// NOI18N
             builder.append(relativePath);
             builder.append("'></script>\n");  // NOI18N
@@ -334,7 +334,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             builder.append("</script>\n");                                  // NOI18N
         }
         
-        String relativePath = FileUtil.getRelativePath(folder, appFile );
+        String relativePath = getRelativePath(folder, appFile );
         builder.append("<script src='");    // NOI18N
         builder.append(relativePath);
         builder.append("'></script>");      // NOI18N
@@ -342,6 +342,37 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         
         return templateDO.createFromTemplate(dataFolder, 
                 name, map).getPrimaryFile();
+    }
+    
+    private String getRelativePath(FileObject folder, FileObject file){
+        String relativePath = FileUtil.getRelativePath(folder, file);
+        if ( relativePath != null ){
+            return relativePath;
+        }
+        Project project = Templates.getProject(myWizard);
+        FileObject rootFolder = getRootFolder(project);
+        relativePath = FileUtil.getRelativePath(rootFolder, file);
+        if ( relativePath == null ){
+            rootFolder = project.getProjectDirectory();
+            relativePath = FileUtil.getRelativePath(rootFolder, file);
+        }
+        int upCount = getNestingCount(rootFolder, folder);
+        StringBuilder builder = new StringBuilder();
+        for(int i=0; i<upCount ; i++){
+            builder.append("../");                          // NOI18N
+        }
+        builder.append(relativePath);
+        return builder.toString();
+    }
+    
+    private int getNestingCount(FileObject parent , FileObject child){
+        int count=0;
+        FileObject currentParent = child;
+        while( !parent.equals( currentParent)){
+            count++;
+            currentParent = currentParent.getParent();
+        }
+        return count;
     }
     
     private void setSteps() {

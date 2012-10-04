@@ -50,7 +50,6 @@ import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
 
@@ -58,7 +57,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Filip.Zamboj at Sun.com
  */
-public class PHPFormatterQATest extends PHPCodeCompletionTestBase {
+public class PHPFormatterQATest extends PHPFormatterTestBase {
 
     private String FORMAT_START_MARK = "/*FORMAT_START*/"; //NOI18N
     private String FORMAT_END_MARK = "/*FORMAT_END*/"; //NOI18N
@@ -518,6 +517,7 @@ public class PHPFormatterQATest extends PHPCodeCompletionTestBase {
         }
     }
 
+    @Override
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);

@@ -53,6 +53,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl.TemplateParameterBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -62,6 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -84,6 +87,13 @@ public final class TemplateDescriptor {
         this.inheritedTemplateParametersNumber = inheritedTemplateParametersNumber;
         this.specialization = specialization;
     }
+    
+    public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, int inheritedTemplateParametersNumber, boolean specialization) {
+        this.templateParams = UIDCsmConverter.objectsToUIDs(templateParams);
+        this.templateSuffix = NameCache.getManager().getString(templateSuffix);
+        this.inheritedTemplateParametersNumber = inheritedTemplateParametersNumber;
+        this.specialization = specialization;
+    }    
 
     private void register(List<CsmTemplateParameter> templateParams, boolean global){
         for (CsmTemplateParameter par : templateParams){
@@ -133,6 +143,37 @@ public final class TemplateDescriptor {
     public String toString() {
         return getTemplateSuffix().toString();
     }
+    
+    public static class TemplateDescriptorBuilder extends ScopedDeclarationBuilder {
+
+        private List<TemplateParameterBuilder> parameterBuilders = new ArrayList<TemplateParameterBuilder>();
+        
+        public void addParameterBuilder(TemplateParameterBuilder parameterBuilser) {
+            parameterBuilders.add(parameterBuilser);
+        }
+        
+        public TemplateDescriptor create() {
+            List<CsmTemplateParameter> templateParams = new ArrayList<CsmTemplateParameter>();
+            for (TemplateParameterBuilder paramBuilder : parameterBuilders) {
+                paramBuilder.setScope(getScope());
+                templateParams.add(paramBuilder.create());
+            }
+            for (CsmTemplateParameter param : templateParams){
+                if (isGlobal()) {
+                    RepositoryUtils.put(param);
+                } else {
+                    Utils.setSelfUID((CsmDeclaration)param);
+                }
+            }
+            
+            TemplateDescriptor descriptor = new TemplateDescriptor(templateParams, NameCache.getManager().getString(CharSequences.create("<T>")), 0, false); // NOI18N
+            return descriptor;
+        }
+    }      
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent    
+    
 
     public TemplateDescriptor(RepositoryDataInput input) throws IOException {
         int collSize = input.readInt();

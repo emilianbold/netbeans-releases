@@ -57,6 +57,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
@@ -68,6 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords = {"Fonts & Colors"}, location = OptionsDisplayer.FONTSANDCOLORS, index = 0)
 public class FontAndColorsPanel extends JPanel implements ActionListener {
     
     private final Collection<? extends FontsColorsController> panels;

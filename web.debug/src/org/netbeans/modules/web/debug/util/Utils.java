@@ -149,11 +149,12 @@ public class Utils {
             jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
         }
         JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (fo);
-        String translated = finder.getServletSourcePath(jspRelativePath);
-        if (translated != null) {
-            return translated;
+        if (finder != null) {
+            String translated = finder.getServletSourcePath(jspRelativePath);
+            if (translated != null) {
+                return translated;
+            }
         }
-        
         return jspRelativePath;
     }
     

@@ -2069,12 +2069,21 @@ widthcheck:  {
         try {
             Toolkit toolkit = Toolkit.getDefaultToolkit();
             Insets insets = toolkit.getScreenInsets(gconf);
+            //#218895 - invalid screen insets in dual screen setup on Linux
+            if( insets.left > bounds.x && bounds.x > 0 )
+                insets.left -= bounds.x;
+            if( insets.top > bounds.y && bounds.y > 0 )
+                insets.top -= bounds.y;
             bounds.y += insets.top;
             bounds.x += insets.left;
             bounds.height -= (insets.top + insets.bottom);
             bounds.width -= (insets.left + insets.right);
+
         } catch (Exception ex) {
             LOG.log(Level.WARNING, null, ex);
+        }
+        if( bounds.width <= 0 || bounds.height <= 0 ) {
+            bounds = new Rectangle(gconf.getBounds());
         }
 
         return bounds;

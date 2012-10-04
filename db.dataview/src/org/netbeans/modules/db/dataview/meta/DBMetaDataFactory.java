@@ -114,7 +114,7 @@ public final class DBMetaDataFactory {
     }
 
     private static int getDBTypeFromURL(String url) {
-        int dbtype = -1;
+        int dbtype;
 
         // get the database type based on the product name converted to lowercase
         url = url.toLowerCase();
@@ -237,7 +237,7 @@ public final class DBMetaDataFactory {
                         nfe);
             }
 
-            boolean isNullable = (rsMeta.isNullable(i) == rsMeta.columnNullable);
+            boolean isNullable = (rsMeta.isNullable(i) == ResultSetMetaData.columnNullable);
             String displayName = rsMeta.getColumnLabel(i);
             int displaySize = rsMeta.getColumnDisplaySize(i);
             boolean autoIncrement = rsMeta.isAutoIncrement(i);

@@ -186,7 +186,7 @@ public class VarDocHint extends AbstractRule {
         }
 
         private String getCommentText() {
-            return String.format("\n/* @var %s %s */", vName.getName(), getTypeTemplate());//NOI18N
+            return String.format("%n/* @var %s %s */", vName.getName(), getTypeTemplate());//NOI18N
         }
 
         private String getTypeTemplate() {

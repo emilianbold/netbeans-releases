@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.dbgp;
@@ -59,15 +59,15 @@ public final class SessionProgress implements Cancellable {
     private final ProgressHandle h;
     private volatile Session session;
     private volatile boolean  isFinished;
-    private volatile boolean  isStarted;    
-    
-    public static SessionProgress forSession(Session session) {	
-	SessionProgress newval = new SessionProgress(session);	
+    private volatile boolean  isStarted;
+
+    public static SessionProgress forSession(Session session) {
+	SessionProgress newval = new SessionProgress(session);
 	SessionProgress retval = instances.putIfAbsent(session, newval);
 	return (retval == null) ? newval : retval;
     }
 
-    public static SessionProgress forSessionId(SessionId sessionId) {	    
+    public static SessionProgress forSessionId(SessionId sessionId) {
        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
        Session retval = null;
         for (Session session : sessions) {
@@ -79,11 +79,11 @@ public final class SessionProgress implements Cancellable {
        }
        return (retval != null) ? forSession(retval) : null;
     }
-    
+
     private SessionProgress(Session session) {
-	this.session = session;
-	String displayName = NbBundle.getMessage(SessionProgress.class, "LBL_Progress_Connecting", session.getName());
-	h = ProgressHandleFactory.createHandle(displayName, this);	
+        this.session = session;
+        String displayName = NbBundle.getMessage(SessionProgress.class, "LBL_Progress_Connecting", session.getName());
+        h = ProgressHandleFactory.createHandle(displayName, this);
     }
 
     @Override
@@ -92,10 +92,10 @@ public final class SessionProgress implements Cancellable {
         SessionManager.getInstance().stopSession(session);
         return true;
     }
-    
-    void start() {        
+
+    void start() {
 	h.start();
-        isStarted = true;	
+        isStarted = true;
     }
 
     public void notifyConnectionFinished() {
@@ -103,7 +103,7 @@ public final class SessionProgress implements Cancellable {
         h.setDisplayName(session.getName());
         h.suspend(displayName);
     }
-    
+
     void finish() {
         if (isStarted && !isFinished) {
             isFinished = true;
@@ -112,8 +112,8 @@ public final class SessionProgress implements Cancellable {
             if (id != null) {
                 synchronized (id) {
                     id.notifyAll();
-                }    	 
-            }	                        
+                }
+            }
         }
         instances.remove(session);
     }

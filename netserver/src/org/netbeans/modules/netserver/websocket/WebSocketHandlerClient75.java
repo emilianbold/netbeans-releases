@@ -53,9 +53,9 @@ import java.nio.charset.Charset;
  * @author ads
  *
  */
-class WebSocketHandlerClient75 extends AbstractWSHandler75<WebSocketClient> {
+class WebSocketHandlerClient75 extends AbstractWSHandler75<WebSocketClientImpl> {
 
-    WebSocketHandlerClient75( WebSocketClient webSocketClient ) {
+    WebSocketHandlerClient75( WebSocketClientImpl webSocketClient ) {
         super(webSocketClient);
     }
     

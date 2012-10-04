@@ -47,6 +47,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
@@ -319,7 +320,9 @@ public class NPECheck {
             variable2State = new HashMap<VariableElement, NPECheck.State>(oldVariable2State);
             
             for (Map.Entry<VariableElement, State> entry : testedTo.entrySet()) {
-                variable2State.put(entry.getKey(), entry.getValue().reverse());
+                State reversed = entry.getValue().reverse();
+                if (reversed != null)
+                    variable2State.put(entry.getKey(), reversed);
             }
 
             scan(node.getElseStatement(), null);
@@ -379,7 +382,9 @@ public class NPECheck {
                 }
             } else {
                 for (Entry<VariableElement, State> test : testedTo.entrySet()) {
-                    variable2State.put(test.getKey(), test.getValue().reverse());
+                    State reversed = test.getValue().reverse();
+                    if (reversed != null)
+                        variable2State.put(test.getKey(), reversed);
                 }
             }
             
@@ -425,7 +430,9 @@ public class NPECheck {
                 variable2State = new HashMap<VariableElement, NPECheck.State>(variable2State);
                 
                 for (Entry<VariableElement, State> e : testedTo.entrySet()) {
-                    variable2State.put(e.getKey(), e.getValue().reverse());
+                    State reversed = e.getValue().reverse();
+                    if (reversed != null)
+                        variable2State.put(e.getKey(), reversed);
                 }
                 
                 testedTo = new HashMap<VariableElement, State>();
@@ -501,8 +508,8 @@ public class NPECheck {
             
             Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
 
-            if (isVariableElement(e) && variable2State.get(e) != State.NOT_NULL_BE_NPE) {
-                testedTo.put((VariableElement) e, State.NOT_NULL);
+            if (isVariableElement(e) && (variable2State.get(e) == null || !variable2State.get(e).isNotNull())) {
+                testedTo.put((VariableElement) e, State.NOT_NULL_TEST_ONLY);
             }
             
             return null;
@@ -524,7 +531,9 @@ public class NPECheck {
             variable2State = new HashMap<VariableElement, State>(variable2State);
             
             for (Entry<VariableElement, State> e : testedTo.entrySet()) {
-                variable2State.put(e.getKey(), e.getValue().reverse());
+                State reversed = e.getValue().reverse();
+                if (reversed != null)
+                    variable2State.put(e.getKey(), reversed);
             }
             
             State elseSection = scan(node.getFalseExpression(), p);
@@ -632,9 +641,10 @@ public class NPECheck {
         POSSIBLE_NULL,
         POSSIBLE_NULL_REPORT,
         NOT_NULL,
+        NOT_NULL_TEST_ONLY,
         NOT_NULL_BE_NPE;
         
-        public State reverse() {
+        public @CheckForNull State reverse() {
             switch (this) {
                 case NULL:
                     return NOT_NULL;
@@ -644,12 +654,14 @@ public class NPECheck {
                 case NOT_NULL:
                 case NOT_NULL_BE_NPE:
                     return NULL;
+                case NOT_NULL_TEST_ONLY:
+                    return null;
                 default: throw new IllegalStateException();
             }
         }
         
         public boolean isNotNull() {
-            return this == NOT_NULL || this == NOT_NULL_BE_NPE;
+            return this == NOT_NULL || this == NOT_NULL_BE_NPE || this == NOT_NULL_TEST_ONLY;
         }
         
         public static State collect(State s1, State s2) {

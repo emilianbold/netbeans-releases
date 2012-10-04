@@ -56,16 +56,17 @@ import org.netbeans.modules.php.editor.PHPCompletionItem.MethodDeclarationItem;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
-import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.elements.MethodElementImpl;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -79,6 +80,8 @@ import org.openide.util.NbBundle.Messages;
  * @author Radek Matous
  */
 public class IntroduceHint extends AbstractRule {
+
+    private static final String UNKNOWN_FILE_NAME = "?"; //NOI18N
 
     @Override
     public String getId() {
@@ -122,7 +125,7 @@ public class IntroduceHint extends AbstractRule {
         }
     }
 
-    private class IntroduceFixVisitor extends DefaultTreePathVisitor {
+    private static class IntroduceFixVisitor extends DefaultTreePathVisitor {
 
         private int lineBegin;
         private int lineEnd;
@@ -153,8 +156,8 @@ public class IntroduceHint extends AbstractRule {
                     classes = index.getClasses(NameKind.exact(clzName));
                 }
                 if (clzName != null && classes.isEmpty()) {
-                    ClassElement clz = clzName != null ? getIndexedClass(clzName) : null;
-                    if (clz == null && clzName != null) {
+                    ClassElement clz = getIndexedClass(clzName);
+                    if (clz == null) {
                         fix = IntroduceClassFix.getInstance(clzName, model, instanceCreation);
                     }
                 }
@@ -330,11 +333,13 @@ public class IntroduceHint extends AbstractRule {
             if (classes.size() == 1) {
                 retval = classes.iterator().next();
                 if ("parent".equals(name)) {
-                    String superClassName = retval.getSuperClassName().getName();
-
-                    if (superClassName != null) {
-                        classes = index.getClasses(NameKind.exact(superClassName));
-                        retval = (classes.size() == 1) ? classes.iterator().next() : null;
+                    QualifiedName superClassQualifiedName = retval.getSuperClassName();
+                    if (superClassQualifiedName != null) {
+                        String superClassName = superClassQualifiedName.getName();
+                        if (superClassName != null) {
+                            classes = index.getClasses(NameKind.exact(superClassName));
+                            retval = (classes.size() == 1) ? classes.iterator().next() : null;
+                        }
                     }
                 }
             }
@@ -344,24 +349,21 @@ public class IntroduceHint extends AbstractRule {
 
     private static class IntroduceClassFix extends IntroduceFix {
 
-        private Model model;
         private String clsName;
         private FileObject folder;
         private FileObject template;
 
         static IntroduceClassFix getInstance(String className, Model model, ClassInstanceCreation instanceCreation) {
             FileObject currentFile = model.getFileScope().getFileObject();
-            FileObject folder = currentFile.getParent();
+            FileObject folder = currentFile == null ? null : currentFile.getParent();
             String templatePath = "Templates/Scripting/PHPClass.php";//NOI18N
             FileObject template = FileUtil.getConfigFile(templatePath);
             return (template != null && folder != null && folder.canWrite())
-                    ? new IntroduceClassFix(className, template, folder, model, instanceCreation) : null;
+                    ? new IntroduceClassFix(className, template, folder, instanceCreation) : null;
         }
 
-        IntroduceClassFix(String className, FileObject template, FileObject folder,
-                Model model, ClassInstanceCreation instanceCreation) {
+        IntroduceClassFix(String className, FileObject template, FileObject folder, ClassInstanceCreation instanceCreation) {
             super(null, instanceCreation);
-            this.model = model;
             this.clsName = className;
             this.template = template;
             this.folder = folder;
@@ -447,7 +449,8 @@ public class IntroduceHint extends AbstractRule {
         })
         public String getDescription() {
             String clsName = type.getName();
-            String fileName = type.getFileObject().getNameExt();
+            FileObject fileObject = type.getFileObject();
+            String fileName = fileObject == null ? UNKNOWN_FILE_NAME : fileObject.getNameExt();
             return Bundle.IntroduceHintMethodDesc(item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);
 
         }
@@ -487,7 +490,8 @@ public class IntroduceHint extends AbstractRule {
         })
         public String getDescription() {
             String clsName = type.getName();
-            String fileName = type.getFileObject().getNameExt();
+            FileObject fileObject = type.getFileObject();
+            String fileName = fileObject == null ? UNKNOWN_FILE_NAME : fileObject.getNameExt();
             return Bundle.IntroduceHintStaticMethodDesc(item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);
         }
 
@@ -529,7 +533,8 @@ public class IntroduceHint extends AbstractRule {
         })
         public String getDescription() {
             String clsName = clz.getName();
-            String fileName = clz.getFileObject().getNameExt();
+            FileObject fileObject = clz.getFileObject();
+            String fileName = fileObject == null ? UNKNOWN_FILE_NAME : fileObject.getNameExt();
             return Bundle.IntroduceHintFieldDesc(templ, clsName, fileName);
         }
 
@@ -588,7 +593,8 @@ public class IntroduceHint extends AbstractRule {
         })
         public String getDescription() {
             String clsName = clz.getName();
-            String fileName = clz.getFileObject().getNameExt();
+            FileObject fileObject = clz.getFileObject();
+            String fileName = fileObject == null ? UNKNOWN_FILE_NAME : fileObject.getNameExt();
             return Bundle.IntroduceHintStaticFieldDesc(fieldName, clsName, fileName);
 
         }
@@ -639,7 +645,8 @@ public class IntroduceHint extends AbstractRule {
         })
         public String getDescription() {
             String clsName = type.getName();
-            String fileName = type.getFileObject().getNameExt();
+            FileObject fileObject = type.getFileObject();
+            String fileName = fileObject == null ? UNKNOWN_FILE_NAME : fileObject.getNameExt();
             return Bundle.IntroduceHintClassConstDesc(constantName, clsName, fileName);
         }
 
@@ -718,6 +725,8 @@ public class IntroduceHint extends AbstractRule {
                     elements.addAll(clz.getDeclaredFields());
                 }
                 break;
+            default:
+                assert false;
         }
         int newOffset = 0;
         for (ModelElement elem : elements) {

@@ -45,8 +45,9 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.dbgp.DebugSession;
@@ -83,9 +84,9 @@ public abstract class DbgpCommand {
             dataToSend.append( DATA_SEPARATOR );
             dataToSend.append( encodedData );
         }
-        Logger.getLogger( DbgpCommand.class.getName()).fine(
-                "command to send : "+dataToSend );             // NOI18N
-        byte[] bytes = dataToSend.toString().getBytes();
+        Logger.getLogger( DbgpCommand.class.getName()).log(
+                Level.FINE, "command to send : {0}", dataToSend);             // NOI18N
+        byte[] bytes = dataToSend.toString().getBytes(Charset.defaultCharset());
         byte[] sendBytes = new byte[ bytes.length + 1 ];
         System.arraycopy(bytes , 0, sendBytes, 0, bytes.length );
         sendBytes[ bytes.length ] = 0;
@@ -96,7 +97,7 @@ public abstract class DbgpCommand {
     private String encodeData() throws IOException {
         BASE64Encoder encoder = new BASE64Encoder();
         Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
-        byte[] bytes = getData().getBytes();
+        byte[] bytes = getData().getBytes(Charset.defaultCharset());
         if (session != null) {
             SessionId sessionId = session.lookupFirst(null, SessionId.class);
             if (sessionId != null) {

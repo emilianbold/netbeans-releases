@@ -198,7 +198,7 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
                             Charset.forName(Utils.UTF_8))));
         }
         catch (NoSuchAlgorithmException e) {
-            WebSocketServer.LOG.log(Level.WARNING, null , e);
+            WebSocketServerImpl.LOG.log(Level.WARNING, null , e);
             return null;
         } 
     }

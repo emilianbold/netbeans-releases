@@ -58,6 +58,7 @@ import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
@@ -65,6 +66,8 @@ import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.openide.util.Exceptions;
+import org.openide.util.UserQuestionException;
 
 /**
  * Utility class for the {@link NativeProcess external native process} creation.
@@ -164,19 +167,37 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @return new {@link NativeProcess} based on the properties configured
      *             in this builder
      * @throws IOException if the process could not be created
+     * @throws UserQuestionException in case the system is not yet connected
      */
+    @NbBundle.Messages({
+        "#{0} - display name of execution environment", // NOI18N
+        "EXC_NotConnectedQuestion=No connection to {0}. Connect now?" // NOI18N
+    })
     @Override
     public NativeProcess call() throws IOException {
         AbstractNativeProcess process = null;
 
-        ExecutionEnvironment execEnv = info.getExecutionEnvironment();
+        final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
 
         if (info.getCommand() == null) {
             throw new IllegalStateException("No executable nor command line is specified"); // NOI18N
         }
 
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            throw new IOException("No connection to " + execEnv.getDisplayName()); // NOI18N
+            throw new UserQuestionException("No connection to " + execEnv.getDisplayName()) {// NOI18N
+                @Override
+                public void confirmed() throws IOException {
+                    try {
+                        ConnectionManager.getInstance().connectTo(execEnv);
+                    } catch (CancellationException ex) {
+                        throw new IOException(ex);
+                    }
+                }
+                @Override
+                public String getLocalizedMessage() {
+                    return Bundle.EXC_NotConnectedQuestion(execEnv.getDisplayName());
+                }
+            };
         }
 
         if (info.isPtyMode() && PtySupport.isSupportedFor(info.getExecutionEnvironment())) {

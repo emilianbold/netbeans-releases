@@ -674,6 +674,17 @@ public class WSUtils {
             }
         }
     }
+    
+    public static boolean needNonJsr109Artifacts(Project prj){
+        FileObject ddFolder = getDeploymentDescriptorFolder(prj);
+        if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
+            // ask user if non jsr109 stuff should be generated
+            return WSUtils.generateNonJsr109Artifacts(prj);
+        } 
+        else {
+            return true;
+        }
+    }
 
     public static boolean generateNonJsr109Artifacts(Project prj) {
         Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
@@ -719,6 +730,12 @@ public class WSUtils {
         } else {
             return false;
         }
+    }
+    
+    public static FileObject getDeploymentDescriptorFolder(Project project) {
+        JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.
+                getJAXWSLightSupport(project.getProjectDirectory());
+        return jaxWsSupport.getDeploymentDescriptorFolder();
     }
 
     public static boolean isJsr109Supported(Project project) {
@@ -955,27 +972,33 @@ public class WSUtils {
                         }
                     }
                 } else {
-                    if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
-                        // generate non JSR109 artifacts
-                        if (generateNonJsr109Artifacts(prj)) {
-                            if (ddFolder != null) {
-                                try {
-                                    addJaxWsEntries(ddFolder, jaxWsSupport);
-                                } catch (IOException ex) {
-                                    Logger.getLogger(WSUtils.class.getName()).log(Level.WARNING,
-                                            "Cannot modify sun-jaxws.xml file", ex); //NOI18N
-                                }
-                                try {
-                                    addServicesToDD(prj, jaxWsSupport);
-                                } catch (IOException ex) {
-                                    Logger.getLogger(WSUtils.class.getName()).log(Level.WARNING,
-                                            "Cannot modify web.xml file", ex); //NOI18N
-                                }
-                            } else {
-                                String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
-                                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                                DialogDisplayer.getDefault().notify(desc);
+                    // generate non JSR109 artifacts
+                    if (WSUtils.needNonJsr109Artifacts(prj)) {
+                        if (ddFolder != null) {
+                            try {
+                                addJaxWsEntries(ddFolder, jaxWsSupport);
                             }
+                            catch (IOException ex) {
+                                Logger.getLogger(WSUtils.class.getName()).log(
+                                        Level.WARNING,
+                                        "Cannot modify sun-jaxws.xml file", ex); // NOI18N
+                            }
+                            try {
+                                addServicesToDD(prj, jaxWsSupport);
+                            }
+                            catch (IOException ex) {
+                                Logger.getLogger(WSUtils.class.getName()).log(
+                                        Level.WARNING,
+                                        "Cannot modify web.xml file", ex); // NOI18N
+                            }
+                        }
+                        else {
+                            String mes = NbBundle.getMessage(
+                                    MavenJAXWSSupportImpl.class,
+                                    "MSG_CannotFindWEB-INF"); // NOI18N
+                            NotifyDescriptor desc = new NotifyDescriptor.Message(
+                                    mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(desc);
                         }
                     }
                 }

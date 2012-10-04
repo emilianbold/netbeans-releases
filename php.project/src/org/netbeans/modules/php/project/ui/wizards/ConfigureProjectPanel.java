@@ -96,7 +96,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private volatile boolean canceled;
 
     public ConfigureProjectPanel(String[] steps, NewPhpProjectWizardIterator.WizardType wizardType) {
-        this.steps = steps;
+        this.steps = steps.clone();
         this.wizardType = wizardType;
     }
 

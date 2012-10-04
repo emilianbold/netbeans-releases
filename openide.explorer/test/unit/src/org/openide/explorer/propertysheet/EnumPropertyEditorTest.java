@@ -63,6 +63,7 @@ public class EnumPropertyEditorTest extends NbTestCase {
     public void testEnumPropEd() throws Exception {
         EProp prop = new EProp();
         PropertyEditor ed = PropUtils.getPropertyEditor(prop);
+        assertEquals( EnumPropertyEditor.class, ed.getClass());
         assertFalse(ed.supportsCustomEditor());
         assertFalse(ed.isPaintable());
         String[] tags = ed.getTags();
@@ -78,6 +79,7 @@ public class EnumPropertyEditorTest extends NbTestCase {
     public void testNulls() throws Exception {
         EProp prop = new EProp();
         PropertyEditor ed = PropUtils.getPropertyEditor(prop);
+        assertEquals( EnumPropertyEditor.class, ed.getClass());
         ed.setAsText("");
         assertEquals(null, ed.getValue());
         assertEquals("", ed.getAsText());
@@ -87,6 +89,7 @@ public class EnumPropertyEditorTest extends NbTestCase {
     public void testLocalizedNames() throws Exception {
         ABProp prop = new ABProp();
         PropertyEditor ed = PropUtils.getPropertyEditor(prop);
+        assertEquals( EnumPropertyEditor.class, ed.getClass());
         ed.setAsText("");
         assertEquals("myA", ed.getTags()[0]);
         assertEquals("myB", ed.getTags()[1]);

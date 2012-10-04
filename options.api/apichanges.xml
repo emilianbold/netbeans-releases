@@ -75,6 +75,20 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="optionsSearchAnnotation">
+      <api name="OptionsAPI"/>
+      <summary>Annotation to register keywords for some panel in the Options dialog</summary>
+      <version major="1" minor="29"/>
+      <date day="2" month="10" year="2012"/>
+      <author login="theofanis"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" semantic="compatible" modification="no" deletion="no"/>
+      <description>
+          Introduced an annotation inside <code>OptionsPanelController</code>
+          to register keywords for some panel in the Options dialog declaratively.
+      </description>
+      <class package="org.netbeans.spi.options" name="OptionsPanelController"/>
+      <issue number="218312"/>
+    </change>
     <change id="annotations">
         <api name="OptionsAPI"/>
         <summary>Annotations to register dialog panels</summary>

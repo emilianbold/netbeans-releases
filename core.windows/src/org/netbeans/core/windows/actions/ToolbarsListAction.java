@@ -79,17 +79,12 @@ public class ToolbarsListAction extends AbstractAction
         String label = NbBundle.getMessage(ToolbarsListAction.class, "CTL_ToolbarsListAction");
         final JMenu menu = new JMenu(label);
         Mnemonics.setLocalizedText(menu, label);
-        final ToolbarConfiguration curConf = 
-            ToolbarConfiguration.findConfiguration(ToolbarPool.getDefault().getConfiguration());
-        if (curConf == null) {
-            return null;
-        }
         if (EventQueue.isDispatchThread()) {
-            return curConf.getToolbarsMenu(menu);
+            return ToolbarConfiguration.getToolbarsMenu(menu);
         } else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    curConf.getToolbarsMenu(menu);
+                    ToolbarConfiguration.getToolbarsMenu(menu);
                 }
             });
             return menu;

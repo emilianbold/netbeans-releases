@@ -83,7 +83,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.explorer.ExplorerManager;
@@ -92,7 +92,6 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -147,6 +146,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             String propName = evt.getPropertyName();
             if (PageModel.PROP_DOCUMENT.equals(propName)) {
                 pageModelDocumentChanged();
+                List nodes = translate(manager.getSelectedNodes());
+                pageModel.setSelectedNodes(nodes);
             } else if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
                 updateSelection();
             } else if (PageModel.PROP_HIGHLIGHTED_NODES.equals(propName)) {
@@ -1013,20 +1014,21 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 }
             }
 
-            private List translate(Node[] selectedNodes) {
-                List result = new ArrayList();
-                for (Node n:selectedNodes) {
-                    if (n instanceof HtmlElementNode) {
-                        Node domNode = ((HtmlElementNode) n).getDOMNode();
-                        if (domNode!=null) {
-                            result.add(domNode);
-                        }
-                    }
-                }
-                return result;
-            }
         };
     }    
+
+    private List translate(Node[] selectedNodes) {
+        List result = new ArrayList();
+        for (Node n : selectedNodes) {
+            if (n instanceof HtmlElementNode) {
+                Node domNode = ((HtmlElementNode) n).getDOMNode();
+                if (domNode != null) {
+                    result.add(domNode);
+                }
+            }
+        }
+        return result;
+    }
     
     
 }

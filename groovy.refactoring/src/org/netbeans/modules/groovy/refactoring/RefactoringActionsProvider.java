@@ -60,32 +60,42 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
-        RefactoringTask findUsagesTask = findUsagesTask(lookup);
-        return isValid(lookup) && findUsagesTask != null && findUsagesTask.isValid();
-    }
-
-    @Override
-    public void doFindUsages(Lookup lookup) {
-        findUsagesTask(lookup).run();
-    }
-
-    private RefactoringTask findUsagesTask(Lookup lookup) {
-        return RefactoringTaskFactory.createRefactoringTask(lookup, RefactoringType.FIND_USAGES);
+        return canBeDone(lookup, RefactoringType.FIND_USAGES);
     }
 
     @Override
     public boolean canRename(Lookup lookup) {
-        RefactoringTask renameTask = renameTask(lookup);
-        return isValid(lookup) && renameTask != null && renameTask.isValid();
+        return canBeDone(lookup, RefactoringType.RENAME);
+    }
+
+    @Override
+    public boolean canMove(Lookup lookup) {
+        return false;
+        //return canBeDone(lookup, RefactoringType.MOVE);
+    }
+
+    @Override
+    public void doFindUsages(Lookup lookup) {
+        createTask(lookup, RefactoringType.FIND_USAGES).run();
     }
 
     @Override
     public void doRename(Lookup lookup) {
-        renameTask(lookup).run();
+        createTask(lookup, RefactoringType.RENAME).run();
     }
 
-    private RefactoringTask renameTask(Lookup lookup) {
-        return RefactoringTaskFactory.createRefactoringTask(lookup, RefactoringType.RENAME);
+    @Override
+    public void doMove(Lookup lookup) {
+        createTask(lookup, RefactoringType.MOVE).run();
+    }
+
+    private boolean canBeDone(Lookup lookup, RefactoringType type) {
+        RefactoringTask task = createTask(lookup, type);
+        return isValid(lookup) && task != null && task.isValid();
+    }
+
+    private RefactoringTask createTask(Lookup lookup, RefactoringType type) {
+        return RefactoringTaskFactory.createRefactoringTask(lookup, type);
     }
 
     private boolean isValid(Lookup lookup) {

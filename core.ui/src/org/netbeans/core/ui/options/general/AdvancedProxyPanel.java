@@ -45,6 +45,8 @@ package org.netbeans.core.ui.options.general;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
 
@@ -52,6 +54,7 @@ import org.openide.NotificationLineSupport;
  *
  * @author  Jiri Rechtacek
  */
+@OptionsPanelController.Keywords(keywords={"advanced proxy"}, location=OptionsDisplayer.GENERAL)
 public class AdvancedProxyPanel extends javax.swing.JPanel {
     private GeneralOptionsModel options;
     private String oldHttpsHost;

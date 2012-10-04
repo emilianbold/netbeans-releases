@@ -52,6 +52,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -587,6 +589,100 @@ public class FileUtilTest extends NbTestCase {
         fcl = null;
         assertGC("FileChangeListener not collected.", ref);
     }
+    
+    public void testNestedRecursiveListener() throws IOException {
+        doNestedRL(false);
+    }
+    
+    public void testNestedRecursiveListenerReverse() throws IOException {
+        doNestedRL(true);
+    }
+    
+    private void doNestedRL(boolean reverse) throws IOException {
+        clearWorkDir();
+        FileObject folder1 = FileUtil.toFileObject(getWorkDir());
+        
+        FileObject obj = FileUtil.createData(folder1, "my/sub/children/children.java");
+        final FileObject children = obj.getParent();
+        final FileObject sub = children.getParent();
+        final FileObject my = sub.getParent();
+
+        File fMy = FileUtil.toFile(my);
+        File fSub = FileUtil.toFile(sub);
+        File fChildren = FileUtil.toFile(children);
+
+        class L implements FileChangeListener {
+            StringBuilder sb = new StringBuilder();
+
+            public void fileFolderCreated(FileEvent fe) {
+                sb.append("FolderCreated");
+            }
+
+            public void fileDataCreated(FileEvent fe) {
+                sb.append("DataCreated");
+            }
+
+            public void fileChanged(FileEvent fe) {
+                sb.append("Changed");
+            }
+
+            public void fileDeleted(FileEvent fe) {
+                sb.append("Deleted");
+            }
+
+            public void fileRenamed(FileRenameEvent fe) {
+                sb.append("Renamed");
+            }
+
+            public void fileAttributeChanged(FileAttributeEvent fe) {
+                sb.append("AttributeChanged");
+            }
+
+            public void assertMessages(String txt, String msg) {
+                assertEquals(txt, msg, sb.toString());
+                sb.setLength(0);
+            }
+        }
+        L recursive = new L();
+
+        FileUtil.addRecursiveListener(recursive, fMy);
+        FileUtil.addRecursiveListener(recursive, fSub);
+        FileUtil.addRecursiveListener(recursive, fChildren);
+
+        FileObject fo = obj.getParent().createData("sibling.java");
+
+        recursive.assertMessages("3x of Creation", "DataCreatedDataCreatedDataCreated");
+
+        File[] removalOrder = { fMy, fSub, fChildren };
+        
+        if (reverse) {
+            Collections.reverse(Arrays.asList(removalOrder));
+        }
+        
+        FileUtil.removeRecursiveListener(recursive, removalOrder[0]);
+
+        FileLock lck = fo.lock();
+        fo.rename(lck, "ibling", "stava");
+        lck.releaseLock();
+
+        recursive.assertMessages("2x renames", "RenamedRenamed");
+
+        FileUtil.removeRecursiveListener(recursive, removalOrder[1]);
+
+        lck = fo.lock();
+        fo.rename(lck, "dibling", "trava");
+        lck.releaseLock();
+
+        recursive.assertMessages("1x rename", "Renamed");
+
+        FileUtil.removeRecursiveListener(recursive, removalOrder[2]);
+
+        fo.delete();
+
+        recursive.assertMessages("Nothing", "");
+        
+    }
+    
 
     public static enum EventType {
 

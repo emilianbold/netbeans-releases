@@ -310,7 +310,9 @@ public class AttachmentsPanel extends JPanel {
             prefix = prefix+"tmp"; // NOI18N
         }
         File file = File.createTempFile(prefix, suffix);
-        attachment.getAttachementData(new FileOutputStream(file));
+        FileOutputStream fos = new FileOutputStream(file);
+        attachment.getAttachementData(fos);
+        fos.close();
         return file;
     }
 
@@ -482,7 +484,9 @@ public class AttachmentsPanel extends JPanel {
                     @Override
                     public void run() {
                         try {
-                            attachment.getAttachementData(new FileOutputStream(file));
+                            FileOutputStream fos = new FileOutputStream(file);
+                            attachment.getAttachementData(fos);
+                            fos.close();
                         } catch (IOException ioex) {
                             ioex.printStackTrace();
                         } finally {

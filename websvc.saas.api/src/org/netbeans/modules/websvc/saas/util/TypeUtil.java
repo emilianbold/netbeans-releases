@@ -118,7 +118,12 @@ public class TypeUtil {
         // classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}:${libs.jsf12-support.classpath}"
         ArrayList<URL> urls = new ArrayList<URL>();
         Properties properties = new Properties();
-        properties.load(new FileInputStream(System.getProperty("netbeans.user") + "/build.properties"));
+        FileInputStream fis = new FileInputStream(System.getProperty("netbeans.user") + "/build.properties");
+        try {
+            properties.load(fis);
+        } finally {
+            fis.close();
+        }
         
         if (srcPath != null) {
             urls.add(srcPath.toURI().toURL());

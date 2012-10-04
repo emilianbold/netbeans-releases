@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -303,8 +302,9 @@ public final class NativeProjectProvider {
 	    synchronized( listenersLock ) {
 		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
 	    }
+            List<NativeFileItem> list = Collections.singletonList(item);            
 	    for( NativeProjectItemsListener listener : listenersCopy ) {
-		listener.filePropertiesChanged(item);
+		listener.filesPropertiesChanged(list);
 	    }
         }
 
@@ -317,8 +317,9 @@ public final class NativeProjectProvider {
 	    synchronized( listenersLock ) {
 		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
 	    }
+            List<NativeFileItem> list = Collections.singletonList(item);
 	    for( NativeProjectItemsListener listener : listenersCopy ) {
-		listener.fileAdded(item);
+		listener.filesAdded(list);
 	    }
         }
 

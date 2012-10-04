@@ -89,7 +89,7 @@ class ChromeInfoPanel extends javax.swing.JPanel {
         }
         String path = "";
         try {
-            path = file.toURI().toURL().toExternalForm();
+            path = parent.toURI().toURL().toExternalForm();
         }
         catch( MalformedURLException e ){
             LOGGER.log(Level.WARNING, null, e);
@@ -99,7 +99,8 @@ class ChromeInfoPanel extends javax.swing.JPanel {
                 path, name ));      
         text.append("</html>");         // NOI18N
         myEditorPane.setText(text.toString());
-
+        myEditorPane.setCaretPosition(0);
+        
         HyperlinkListener listener = new HyperlinkListener() {
 
             @Override
@@ -185,8 +186,8 @@ class ChromeInfoPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(myScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(51, Short.MAX_VALUE))
+                .addComponent(myScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

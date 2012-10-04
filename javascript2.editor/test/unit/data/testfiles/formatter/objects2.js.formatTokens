@@ -12,6 +12,8 @@ FormattingToken{kind=WHITESPACE, offset=11, text=  }
 FormattingToken{kind=BEFORE_OBJECT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=13, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
+FormattingToken{kind=AFTER_OBJECT_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_LEFT_BRACE, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=14, text=
 }
 FormattingToken{kind=WHITESPACE, offset=15, text=     }
@@ -186,6 +188,8 @@ FormattingToken{kind=WHITESPACE, offset=271, text=    }
 FormattingToken{kind=TEXT, offset=275, text=}}
 FormattingToken{kind=EOL, offset=276, text=
 }
+FormattingToken{kind=BEFORE_RIGHT_BRACE, offset=-1, text=null}
+FormattingToken{kind=BEFORE_OBJECT_END, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=277, text=}}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}

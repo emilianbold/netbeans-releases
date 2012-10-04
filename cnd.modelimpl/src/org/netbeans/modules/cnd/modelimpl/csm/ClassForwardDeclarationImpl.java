@@ -65,6 +65,8 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass.ForwardClassBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor.TemplateDescriptorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -106,6 +108,13 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, null, global);
     }
 
+    protected ClassForwardDeclarationImpl(CharSequence name, TemplateDescriptor templateDescriptor, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        this.name = name;
+        this.nameParts = Utils.splitQualifiedName(name.toString());
+        this.templateDescriptor = templateDescriptor;
+    }
+    
     public static ClassForwardDeclarationImpl create(AST ast, CsmFile file, CsmScope scope, MutableDeclarationsContainer container, boolean global) {
         ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, global);
         if (container != null) {
@@ -333,6 +342,40 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         // create fake class we refer to
         createForwardClassIfNeed(ast, scope, registerInProject);
     }
+    
+    public void init2(CsmScope scope, TemplateDescriptorBuilder templateDescriptor, boolean registerInProject) {
+        // we now know the scope - let's modify nameParts accordingly
+        if (CsmKindUtilities.isQualified(scope)) {
+            CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
+            if (scopeQName != null && scopeQName.length() > 0) {
+                List<CharSequence> l = new ArrayList<CharSequence>();
+                for (StringTokenizer stringTokenizer = new StringTokenizer(scopeQName.toString()); stringTokenizer.hasMoreTokens();) {
+                    l.add(NameCache.getManager().getString(stringTokenizer.nextToken()));
+                }
+                l.addAll(Arrays.asList(nameParts));
+                CharSequence[] newNameParts = new CharSequence[l.size()];
+                l.toArray(newNameParts);
+                nameParts = newNameParts;
+                if (registerInProject) {
+                    RepositoryUtils.put(this);
+                } else {
+                    Utils.setSelfUID(this);
+                }
+            }
+        }
+        
+        ForwardClassBuilder builder = new ForwardClassBuilder();
+        builder.setFile(getContainingFile());
+        builder.setStartOffset(getStartOffset());
+        builder.setEndOffset(getEndOffset());
+        builder.setName(name);
+        builder.setScope(scope);
+        builder.setTemplateDescriptorBuilder(templateDescriptor);
+        if(!registerInProject) {
+            builder.setLocal();
+        }
+        builder.create();
+    }    
 
     /**
      * Creates a fake class this forward declaration refers to
@@ -354,6 +397,26 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         ((ProjectBase) getContainingFile().getProject()).unregisterDeclaration(this);
     }
 
+    
+    public static class ClassForwardDeclarationBuilder extends SimpleDeclarationBuilder {
+
+        @Override
+        public ClassForwardDeclarationImpl create() {
+            TemplateDescriptor td = null;
+            if(getTemplateDescriptorBuilder() != null) {
+                getTemplateDescriptorBuilder().setScope(getScope());
+                td = getTemplateDescriptorBuilder().create();
+            }
+
+            ClassForwardDeclarationImpl fc = new ClassForwardDeclarationImpl(getName(), td, getFile(), getStartOffset(), getEndOffset());
+            
+            addDeclaration(fc);
+            
+            fc.init2(getScope(), getTemplateDescriptorBuilder(), isGlobal());
+            
+            return fc;
+        }
+    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent

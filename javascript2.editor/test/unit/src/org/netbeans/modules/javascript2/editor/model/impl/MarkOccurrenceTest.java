@@ -351,6 +351,42 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue218231.js", "var stylizeDisplayName = function(display^name, column, record) {", true);
     }
 
+    public void testIssue137317_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue137317.js", "        u^rl: url", true);
+    }
+
+    public void testIssue137317_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue137317.js", "        url: u^rl", true);
+    }
+
+    public void testIssue156832() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue156832.js", "CSSClass.remove = function(p^aram, c)", true);
+    }
+
+    public void testIssue198431() throws Exception {
+        checkOccurrences("testfiles/coloring/issue198431.js", "    this.doitPublic = do^it;", true);
+    }
+
+    public void testIssue218652_01() throws Exception {
+        checkOccurrences("testfiles/model/getterSettterInObjectLiteral.js", "    set years(count){this.old = coun^t + 1;},", true);
+    }
+
+    public void testIssue218652_02() throws Exception {
+        checkOccurrences("testfiles/model/getterSettterInObjectLiteral.js", "    set c(x^) {this.a = x / 2;}", true);
+    }
+
+    public void testIssue218561_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218561.js", "        test: function(pa^r1) {", true);
+    }
+
+    public void testIssue218561_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218561.js", "                par1: pa^r1 // par1 after : is marked green as member variable", true);
+    }
+
+    public void testIssue219067() throws Exception {
+        checkOccurrences("testfiles/coloring/issue219027.html", "                        product = generate^Product(element);", true);
+    }
+
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }

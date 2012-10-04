@@ -142,7 +142,7 @@ public class ActionProviderImpl implements ActionProvider {
         COMMAND_COPY
     };
     
-    private RequestProcessor RP = new RequestProcessor(ActionProviderImpl.class.getName(), 3);
+    private static RequestProcessor RP = new RequestProcessor(ActionProviderImpl.class.getName(), 3);
 
     public ActionProviderImpl(Project proj) {
         this.proj = proj;
@@ -536,10 +536,17 @@ public class ActionProviderImpl implements ActionProvider {
             putValue(Action.NAME, ACT_CloseRequired());
         }
         public @Override void actionPerformed(ActionEvent e) {
-            SubprojectProvider subs = project.getLookup().lookup(SubprojectProvider.class);
-            Set<? extends Project> lst = subs.getSubprojects();
-            Project[] arr = lst.toArray(new Project[lst.size()]);
-            OpenProjects.getDefault().close(arr);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    //mkleint: usage of subprojectprovider is correct here
+                    SubprojectProvider subs = project.getLookup().lookup(SubprojectProvider.class);
+                    Set<? extends Project> lst = subs.getSubprojects();
+                    Project[] arr = lst.toArray(new Project[lst.size()]);
+                    OpenProjects.getDefault().close(arr);
+                }
+            });
+            
         }
     }
 

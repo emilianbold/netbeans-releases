@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * Method, which contains it's body right at throws POD (point of declaration)
@@ -175,11 +176,14 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
     
     public static class MethodDDBuilder extends MethodBuilder implements StatementBuilderContainer {
 
-        CsmVisibility visibility = CsmVisibility.PUBLIC;
-        CompoundStatementBuilder bodyBuilder;
+        private CompoundStatementBuilder bodyBuilder;
         
         public void setBodyBuilder(CompoundStatementBuilder builder) {
             bodyBuilder = builder;
+        }
+
+        public CompoundStatementBuilder getBodyBuilder() {
+            return bodyBuilder;
         }
         
         @Override
@@ -189,7 +193,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
             boolean _explicit = false;
 
 
-            MethodDDImpl method = new MethodDDImpl(getName(), getRawName(), cls, visibility, _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            MethodDDImpl method = new MethodDDImpl(getName(), getRawName(), cls, getVisibility(), _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
             StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -197,6 +201,9 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
             //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
 
             //functionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+            if(getTemplateDescriptorBuilder() != null) {
+                method.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
+            }
 
             method.setReturnType(getType());
             ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(method);
@@ -208,8 +215,8 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
 
             addDeclaration(method);
             
-            bodyBuilder.setScope(method);
-            method.setCompoundStatement(bodyBuilder.create());
+            getBodyBuilder().setScope(method);
+            method.setCompoundStatement(getBodyBuilder().create());
 
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);

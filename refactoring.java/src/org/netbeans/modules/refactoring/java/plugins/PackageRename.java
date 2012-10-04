@@ -284,7 +284,7 @@ public class PackageRename implements RefactoringPluginFactory{
 
             private boolean isEmpty(FileObject folder) {
                 Boolean isVersioned = (Boolean) folder.getAttribute("ProvidedExtensions.VCSManaged");//NOI18N
-                if (!isVersioned) {
+                if (Boolean.FALSE == isVersioned) {
                     return folder.getChildren().length==0;
                 }
                 for (FileObject child:folder.getChildren()) {

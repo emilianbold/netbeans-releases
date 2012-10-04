@@ -666,7 +666,7 @@ public class Utilities {
         Set<Dependency> res = new HashSet<Dependency> ();
         AutomaticDependencies.Report rep = AutomaticDependencies.getDefault().refineDependenciesAndReport(el.getCodeName(), original);
         if (rep.isModified()) {
-            err.warning(rep.toString());
+            err.fine(rep.toString());
         }
         for (Dependency dep : original) {
             if (Dependency.TYPE_RECOMMENDS == dep.getType() && avoidRecommended) {

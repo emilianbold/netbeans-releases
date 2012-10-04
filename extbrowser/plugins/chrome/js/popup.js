@@ -114,7 +114,7 @@ NetBeans_PresetMenu._putPresets = function() {
     menu.innerHTML = '';
     for (p in this._presets) {
         var preset = this._presets[p];
-        var activePreset = NetBeans_ViewPort.width == preset.width && NetBeans_ViewPort.height == preset.height;
+        var activePreset = NetBeans_ViewPort.width === preset.width && NetBeans_ViewPort.height === preset.height;
         // item
         var item = document.createElement('a');
         item.setAttribute('href', '#');

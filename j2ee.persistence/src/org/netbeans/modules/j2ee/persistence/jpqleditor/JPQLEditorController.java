@@ -43,17 +43,32 @@ package org.netbeans.modules.j2ee.persistence.jpqleditor;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.ui.JPQLEditorTopComponent;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -80,6 +95,9 @@ public class JPQLEditorController {
             final ProgressHandle ph) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 
+        //
+        final HashMap<String, String> props = new HashMap<String, String>();
+        final List<String> initialProblems = new ArrayList<String>();
         //connection open
         final DatabaseConnection dbconn = JPAEditorUtil.findDatabaseConnection(pu, pe.getProject());
         if (dbconn != null) {
@@ -94,16 +112,17 @@ public class JPQLEditorController {
             }
         }
         //
-
+        final boolean containerManaged = Util.isSupportedJavaEEVersion(pe.getProject());
+        final Provider provider = ProviderUtil.getProvider(pu.getProvider(), pe.getProject());
+        if (containerManaged) {
+            Utils.substitutePersistenceProperties(pe, pu, dbconn, props);
+        }
         final ClassLoader defClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             ph.progress(10);
             ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionPrepare"));
             // Construct custom classpath here.
-            localResourcesURLList.addAll(pe.getProjectClassPath(pe.getLocation()));
-            localResourcesURLList.add(pe.getLocation().getParent().toURL());
-            localResourcesURLList.add(pe.getLocation().toURL());
-            localResourcesURLList.add(pe.getLocation().getFileObject("persistence.xml").toURL());
+            initialProblems.addAll(Utils.collectClassPathURLs(pe, pu, dbconn, localResourcesURLList));
 
             ClassLoader customClassLoader = pe.getProjectClassLoader(
                     localResourcesURLList.toArray(new URL[]{}));
@@ -111,23 +130,31 @@ public class JPQLEditorController {
             Thread t = new Thread() {
                 @Override
                 public void run() {
-                    //Thread.currentThread().setContextClassLoader(customClassLoader);
                     ClassLoader customClassLoader = Thread.currentThread().getContextClassLoader();
-                    JPQLExecutor queryExecutor = new JPQLExecutor();
                     JPQLResult jpqlResult = new JPQLResult();
-                    try {
-                        // Parse POJOs from JPQL
-                        // Check and if required compile POJO files mentioned in JPQL
+                    if (initialProblems.size() == 0) {
+                        JPQLExecutor queryExecutor = new JPQLExecutor();
+                        try {
+                            // Parse POJOs from JPQL
+                            // Check and if required compile POJO files mentioned in JPQL
 
-                        ph.progress(50);
-                        ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionPassControlToProvider"));
-                        jpqlResult = queryExecutor.execute(jpql, pu, pe, maxRowCount, ph, true);
-                        ph.progress(80);
-                        ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionProcessResults"));
+                            ph.progress(50);
+                            ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionPassControlToProvider"));
+                            jpqlResult = queryExecutor.execute(jpql, pu, pe, props, provider, maxRowCount, ph, true);
+                            ph.progress(80);
+                            ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionProcessResults"));
 
-                    } catch (Exception e) {
-                        logger.log(Level.INFO, "Problem in executing JPQL", e);
-                        jpqlResult.getExceptions().add(e);
+                        } catch (Exception e) {
+                            logger.log(Level.INFO, "Problem in executing JPQL", e);
+                            jpqlResult.getExceptions().add(e);
+                        }
+                    } else {
+                        StringBuilder sb = new StringBuilder();
+                        for (String txt : initialProblems) {
+                            sb.append(txt).append("\n");
+                        }
+                        jpqlResult.setQueryProblems(sb.toString());
+                        jpqlResult.getExceptions().add(new Exception(sb.toString()));
                     }
                     final JPQLResult jpqlResult0 = jpqlResult;
                     final ClassLoader customClassLoader0 = customClassLoader;

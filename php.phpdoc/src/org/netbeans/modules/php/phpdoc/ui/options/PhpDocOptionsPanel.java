@@ -65,6 +65,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.phpdoc.PhpDocScript;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
@@ -73,6 +74,8 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
+@NbBundle.Messages("PhpDocOptionsPanel.keywords.documentation=documentation")
+@OptionsPanelController.Keywords(keywords={"php phpdoc phpdocumentor", "#PhpDocOptionsPanel.keywords.documentation"}, location=UiUtils.OPTIONS_PATH, index=6)
 public final class PhpDocOptionsPanel extends JPanel {
     private static final long serialVersionUID = 18784654654113L;
     private static final String PHPDOC_LAST_FOLDER_SUFFIX = ".phpdoc"; // NOI18N

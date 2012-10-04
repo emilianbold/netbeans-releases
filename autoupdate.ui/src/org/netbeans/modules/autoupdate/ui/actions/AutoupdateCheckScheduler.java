@@ -188,6 +188,7 @@ public class AutoupdateCheckScheduler {
                 Collection<UpdateElement> updates = checkUpdateElements (OperationType.UPDATE, false);
                 hasUpdates = updates != null && ! updates.isEmpty ();
                 LazyUnit.storeUpdateElements (OperationType.UPDATE, updates);
+                Utilities.storeAcceptedLicenseIDs();
             }
             if (! hasUpdates && Utilities.shouldCheckAvailableNewPlugins ()) {
                 LazyUnit.storeUpdateElements (OperationType.INSTALL, checkUpdateElements (OperationType.INSTALL, false));
@@ -212,7 +213,9 @@ public class AutoupdateCheckScheduler {
             ProgressHandleFactory.createProgressComponent(dummyHandler);
             dummyHandler.start();
             Collection <String> updateProblems=refreshUpdateCenters (dummyHandler);
-            if(problems!=null && updateProblems!=null)problems.addAll(updateProblems);
+            if (problems != null && updateProblems != null) {
+                problems.addAll(updateProblems);
+            }
         }
         List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
         boolean handleUpdates = OperationType.UPDATE == type;

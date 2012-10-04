@@ -97,6 +97,8 @@ import org.openide.windows.TopComponent;
     position=373
 )
 public class TplDataObject extends MultiDataObject implements CookieSet.Factory {
+    
+    private static final long serialVersionUID = 1L;
 
     private transient TplEditorSupport tplEditorSupport;
 
@@ -112,7 +114,7 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
 
     private static final Logger LOG = Logger.getLogger(TplDataObject.class.getName());
 
-    public static final String DEFAULT_ENCODING = new InputStreamReader(System.in).getEncoding();
+    public static final String DEFAULT_CHARSET_NAME = Charset.defaultCharset().name();
 
     public TplDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
@@ -215,13 +217,13 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
             if (len > 1) {
                 int mark = (arr[0]&0xff)*0x100+(arr[1]&0xff);
                 if (mark == 0xfeff) {
-                    encoding = "UTF-16"; // NOI18N
+                    encoding = "UTF-16"; //NOI18N
                 } else if(mark == 0xfffe) {
-                    encoding = "UTF-16LE";
+                    encoding = "UTF-16LE"; //NOI18N
                 }
             }
             //try to read the file using some encodings
-            String[] encodings = new String[]{encoding != null ? encoding : DEFAULT_ENCODING, "UTF-16LE", "UTF-16BE"};
+            String[] encodings = new String[]{encoding != null ? encoding : DEFAULT_CHARSET_NAME, "UTF-16LE", "UTF-16BE"}; //NOI18N
             int i = 0;
             do {
                 encoding = findEncoding(makeString(arr, 0, len, encodings[i++]));
@@ -449,7 +451,7 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
 
             private String getEncoding () throws IOException {
                 String text = buffer.asReadOnlyBuffer().flip().toString();
-                InputStream in = new ByteArrayInputStream(text.getBytes());
+                InputStream in = new ByteArrayInputStream(text.getBytes(DEFAULT_CHARSET_NAME));
                 try {
                     return getFileEncoding(in);
                 } finally {

@@ -125,10 +125,12 @@ public final class UILookupMergerSupport {
     }
     
     private static class PrivilegedMerger implements LookupMerger<PrivilegedTemplates> {
+        @Override
         public Class<PrivilegedTemplates> getMergeableClass() {
             return PrivilegedTemplates.class;
         }
 
+        @Override
         public PrivilegedTemplates merge(Lookup lookup) {
             return new PrivilegedTemplatesImpl(lookup);
         }
@@ -136,10 +138,12 @@ public final class UILookupMergerSupport {
     
     private static class RecommendedMerger implements LookupMerger<RecommendedTemplates> {
         
+        @Override
         public Class<RecommendedTemplates> getMergeableClass() {
             return RecommendedTemplates.class;
         }
 
+        @Override
         public RecommendedTemplates merge(Lookup lookup) {
             return new RecommendedTemplatesImpl(lookup);
         }
@@ -151,10 +155,12 @@ public final class UILookupMergerSupport {
         OpenMerger(ProjectOpenedHook def) {
             defaultInstance = def;
         }
+        @Override
         public Class<ProjectOpenedHook> getMergeableClass() {
             return ProjectOpenedHook.class;
         }
 
+        @Override
         public ProjectOpenedHook merge(Lookup lookup) {
             return new OpenHookImpl(defaultInstance, lookup);
         }
@@ -183,6 +189,7 @@ public final class UILookupMergerSupport {
             this.lkp = lkp;
         }
         
+        @Override
         public String[] getPrivilegedTemplates() {
             Set<String> templates = new LinkedHashSet<String>();
             for (PrivilegedTemplates pt : lkp.lookupAll(PrivilegedTemplates.class)) {
@@ -204,6 +211,7 @@ public final class UILookupMergerSupport {
             this.lkp = lkp;
         }
         
+        @Override
         public String[] getRecommendedTypes() {
             Set<String> templates = new LinkedHashSet<String>();
             for (RecommendedTemplates pt : lkp.lookupAll(RecommendedTemplates.class)) {
@@ -230,6 +238,7 @@ public final class UILookupMergerSupport {
             // call close on the disappearing ones?
         }
         
+        @Override
         protected void projectOpened() {
             if (defaultInstance != null) {
                 ProjectOpenedTrampoline.DEFAULT.projectOpened(defaultInstance);
@@ -241,6 +250,7 @@ public final class UILookupMergerSupport {
             }
         }
 
+        @Override
         protected void projectClosed() {
             if (defaultInstance != null) {
                 ProjectOpenedTrampoline.DEFAULT.projectClosed(defaultInstance);

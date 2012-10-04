@@ -125,6 +125,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Panel for remote synchronization.
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("SE_BAD_FIELD_STORE")
 public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     private static final long serialVersionUID = 1674646546545121L;
@@ -1440,7 +1441,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     }
 
-    private final class HeaderRenderer implements TableCellRenderer {
+    private static final class HeaderRenderer implements TableCellRenderer {
 
         private static final long serialVersionUID = -6517698451435465L;
 
@@ -1720,7 +1721,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     }
 
-    private final class SyncItemImageIconComparator implements Comparator<ImageIcon> {
+    @org.netbeans.api.annotations.common.SuppressWarnings("SE_COMPARATOR_SHOULD_BE_SERIALIZABLE")
+    private static final class SyncItemImageIconComparator implements Comparator<ImageIcon> {
 
         @Override
         public int compare(ImageIcon icon1, ImageIcon icon2) {

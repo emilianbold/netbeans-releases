@@ -91,16 +91,33 @@ NetBeans.hidePageIcon = function(tabId) {
 
 // Creates the Select Mode context menu
 NetBeans.createContextMenu = function(tabId, url) {
+    var baseUrl = function(url) {
+        // Remove anchor
+        var index = url.indexOf('#');
+        if (index !== -1) {
+            url = url.substr(0, index);
+        }
+        return url;
+    };
+    NetBeans.contextMenuUrl = baseUrl(url);
+    if (NetBeans.contextMenuCreationInProgress) {
+        return;
+    } else {
+        NetBeans.contextMenuCreationInProgress = true;
+    }
     // Removing possible orphaned context menus of this extension
     chrome.contextMenus.removeAll(function() {
         chrome.contextMenus.create({
             id: 'selectionMode',
             title: NetBeans.contextMenuName(),
             contexts: ['all'],
-            documentUrlPatterns: [url],
+            documentUrlPatterns: [NetBeans.contextMenuUrl],
             onclick: function() {
                 NetBeans.setSelectionMode(!NetBeans.getSelectionMode());
             }
+        },
+        function() {
+            NetBeans.contextMenuCreationInProgress = false;
         });
     });
 };
@@ -119,7 +136,7 @@ NetBeans.updateContextMenu = function() {
 
 // Returns the name of 'Select Mode' context menu
 NetBeans.contextMenuName = function() {
-    return NetBeans.getSelectionMode() ? 'Stop Select Mode' : 'Start Select Mode';
+    return chrome.i18n.getMessage(NetBeans.getSelectionMode() ? '_StopSelectMode' : '_StartSelectMode');
 };
 
 // show infobar
@@ -131,14 +148,14 @@ NetBeans.showInfoBar = function(tabId) {
 };
 NetBeans.getWindowInfo = function(callback) {
     chrome.windows.getLastFocused(callback);
-}
+};
 NetBeans.detectViewPort = function(callback) {
     chrome.tabs.executeScript(null, {file: 'js/viewport.js'}, function() {
         if (callback) {
             callback();
         }
     });
-}
+};
 NetBeans.resetPageSize = function(callback) {
     chrome.windows.getLastFocused(function(win) {
         var opt = {};

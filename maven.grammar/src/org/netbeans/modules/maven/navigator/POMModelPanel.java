@@ -110,7 +110,8 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     private DataObject current;
     private Reference<JTextComponent> currentComponent;
     private int currentDot = -1;
-    private RequestProcessor.Task caretTask = RequestProcessor.getDefault().create(new Runnable() {
+    private static final RequestProcessor RP = new RequestProcessor(POMModelPanel.class.getName(), 2);
+    private final RequestProcessor.Task caretTask = RP.create(new Runnable() {
         @Override
         public void run() {
             if (currentDot != -1) {
@@ -118,7 +119,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             }
         }
     });
-    private final RequestProcessor.Task showTask = RequestProcessor.getDefault().create(this);
+    private final RequestProcessor.Task showTask = RP.create(this);
 
 
     private FileChangeAdapter adapter = new FileChangeAdapter(){

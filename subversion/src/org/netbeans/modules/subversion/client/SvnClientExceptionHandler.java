@@ -491,7 +491,12 @@ public class SvnClientExceptionHandler {
             char[] certPasswordChars = rc.getCertPassword();
             
             KeyStore ks = KeyStore.getInstance("pkcs12");                                   // NOI18N            
-            ks.load(new FileInputStream(certFile), certPasswordChars);
+            FileInputStream fis = new FileInputStream(certFile);
+            try {
+                ks.load(fis, certPasswordChars);
+            } finally {
+                fis.close();
+            }
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(ks, certPasswordChars);
             return kmf.getKeyManagers();

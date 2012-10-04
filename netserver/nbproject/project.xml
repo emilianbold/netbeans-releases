@@ -4,12 +4,20 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.netserver</code-name-base>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.27</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cordova</friend>
                 <friend>org.netbeans.modules.extbrowser</friend>
-                <package>org.netbeans.modules.netserver</package>
-                <package>org.netbeans.modules.netserver.websocket</package>
+                <package>org.netbeans.modules.netserver.api</package>
             </friend-packages>
         </data>
     </configuration>

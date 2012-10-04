@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -51,27 +51,19 @@ import org.netbeans.api.debugger.Session;
  * @author rmatous
  */
 public class ConversionUtils {
+
     private ConversionUtils() {}
 
-    
-    private static SessionId toSessionId(Session session) {
-        return (session != null) ? session.lookupFirst(null, SessionId.class) : null;
-    }
-    
-    private static SessionId toSessionId(DebuggerEngine debuggerEngine) {
-        return (debuggerEngine != null) ? debuggerEngine.lookupFirst(null, SessionId.class) : null;
-    }
-    
     private static DebugSession toDebugSession(DebuggerEngine debuggerEngine) {
         return (debuggerEngine != null) ? debuggerEngine.lookupFirst(null, DebugSession.class) : null;
     }
-        
+
     public static DebugSession toDebugSession(SessionId id) {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         DebugSession currentSession = toDebugSession(currentEngine);
         if (currentSession != null && id.equals(currentSession.getSessionId())) {
             return currentSession;
-        }        
+        }
         DebuggerEngine[] engines = DebuggerManager.getDebuggerManager().getDebuggerEngines();
         for (DebuggerEngine debuggerEngine : engines) {
             DebugSession debugSession = toDebugSession(debuggerEngine);
@@ -81,16 +73,11 @@ public class ConversionUtils {
         }
         return null;
     }
-    
+
     public static DebugSession toDebugSession(Session session) {
         return toDebugSession(session.getCurrentEngine());
     }
 
-    private static Session toSession(DebuggerEngine debuggerEngine) {
-        SessionId id = toSessionId(debuggerEngine);
-        return toSession(id);
-    }
-    
     public static Session toSession(DebugSession debugSession) {
         return toSession(debugSession.getSessionId());
     }
@@ -100,7 +87,7 @@ public class ConversionUtils {
         DebugSession currentDebugSession = toDebugSession(currentSession);
         if (currentDebugSession != null && sessionId.equals(currentDebugSession.getSessionId())) {
             return currentSession;
-        }                
+        }
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         for (Session session : sessions) {
             DebugSession debugSession = toDebugSession(session);
@@ -108,6 +95,6 @@ public class ConversionUtils {
                 return session;
             }
         }
-        return null;        
-    }    
+        return null;
+    }
 }

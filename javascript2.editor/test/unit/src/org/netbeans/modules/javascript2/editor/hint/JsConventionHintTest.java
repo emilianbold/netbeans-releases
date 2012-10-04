@@ -96,6 +96,10 @@ public class JsConventionHintTest extends HintTestBase {
         checkHints(this, createSemicolonHint(), "testfiles/hints/issue218042.js", null);
     }
 
+    public void testSemicolonIssue219193() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/issue219193.js", null);
+    }
+
     public void testBetterConditionIssue218042() throws Exception {
         checkHints(this, createBetterConditionHint(), "testfiles/hints/issue218042.js", null);
     }

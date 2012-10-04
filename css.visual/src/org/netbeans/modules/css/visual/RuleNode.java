@@ -47,13 +47,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
@@ -75,7 +77,9 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * A node representing a CSS rule with no children. The node properties
@@ -94,14 +98,10 @@ public class RuleNode extends AbstractNode {
 
     private static String COLOR_CODE_GRAY = "777777";
     private static String COLOR_CODE_RED = "ff7777";
-    
     public static String NONE_PROPERTY_NAME = "<none>";
-    
     private String filterPrefix;
-    
     private PropertyCategoryPropertySet[] propertySets;
     private RuleEditorPanel panel;
-    
     private Map<PropertyDefinition, Declaration> addedDeclarations = new HashMap<PropertyDefinition, Declaration>();
 
     public RuleNode(RuleEditorPanel panel) {
@@ -132,28 +132,102 @@ public class RuleNode extends AbstractNode {
     public boolean isAddPropertyMode() {
         return panel.isAddPropertyMode();
     }
-    
+
     //called by the RuleEditorPanel when user types into the filter text field
     void setFilterPrefix(String prefix) {
         this.filterPrefix = prefix;
-        fireContextChanged(); //recreate the property sets
+        fireContextChanged(true); //recreate the property sets
     }
 
     //called by the RuleEditorPanel when any of the properties affecting 
     //the PropertySet-s generation changes.
-    void fireContextChanged() {
-        final PropertySet[] old = getPropertySets();
-        propertySets = createPropertySets();
-        firePropertySetsChange(old, propertySets);
+    void fireContextChanged(boolean forceRefresh) {
+        PropertyCategoryPropertySet[] oldSets = getCachedPropertySets();
+        PropertyCategoryPropertySet[] newSets = createPropertySets();
+
+        if (!forceRefresh) {
+            //the client doesn't require the property sets to be really recreated,
+            //we may try to update them only if possible
+
+            //compare old and new sets, if they contain same sets with same properties,
+            //then update the PropertyDefinition-s so they contain reference to the current
+            //css model vertion.
+            //
+            //if there's a new PropertySet or one of the PropertySets contains more or less
+            //properties than the original, then do not do the incremental update but
+            //refresh the PropertySets completely.
+            update:
+            {
+                //old DeclarationProperty to new value map
+                if (oldSets.length == newSets.length) {
+                    for (int i = 0; i < oldSets.length; i++) {
+                        PropertyCategoryPropertySet o = oldSets[i];
+                        PropertyCategoryPropertySet n = newSets[i];
+
+                        Map<Declaration, DeclarationProperty> om = o.declaration2PropertyMap;
+                        Map<Declaration, DeclarationProperty> nm = n.declaration2PropertyMap;
+
+                        if (om.size() != nm.size()) {
+                            break update;
+                        }
+                        //same number of declarations
+
+                        //create declaration name -> declaration maps se we may compare 
+                        //(as the css source model elements do not comparable by equals/hashcode)
+                        Map<String, Declaration> oName2DeclarationMap = new HashMap<String, Declaration>();
+                        for (Declaration d : om.keySet()) {
+                            oName2DeclarationMap.put(d.getProperty().getContent().toString(), d);
+                        }
+                        Map<String, Declaration> nName2DeclarationMap = new HashMap<String, Declaration>();
+                        for (Declaration d : nm.keySet()) {
+                            nName2DeclarationMap.put(d.getProperty().getContent().toString(), d);
+                        }
+                        
+                        //compare the names of the properties in the old and new map,
+                        //they must be the same otherwise we wont' marge but recreate 
+                        //the whole property sets
+                        Collection<String> oldNames = oName2DeclarationMap.keySet();
+                        Collection<String> newNames = nName2DeclarationMap.keySet();
+                        Collection<String> comp = new HashSet<String>(oldNames);
+                        if(comp.retainAll(newNames)) { //assumption: the collections size are the same
+                            break update; //canot merge - the collections differ
+                        }
+                        
+                        for (String declarationName : oName2DeclarationMap.keySet()) {
+                            Declaration oldD = oName2DeclarationMap.get(declarationName);
+                            Declaration newD = nName2DeclarationMap.get(declarationName);
+
+                            //update the existing DeclarationProperty with the fresh
+                            //Declaration object from the new model instance
+                            DeclarationProperty declarationProperty = om.get(oldD);
+                            declarationProperty.updateDeclaration(newD);
+                            
+                            //also update the declaration2PropertyMap itself 
+                            //as we now use new Declaration object
+                            om.remove(oldD);
+                            om.put(newD, declarationProperty);
+                        }
+
+                    }
+
+                    return;
+                }
+
+            }
+        }
+
+        //refresh the sets completely
+        propertySets = newSets;
+        firePropertySetsChange(oldSets, newSets);
     }
 
     void fireDeclarationInfoChanged(Declaration declaration, DeclarationInfo declarationInfo) {
         DeclarationProperty dp = getDeclarationProperty(declaration);
-        if(dp != null) {
+        if (dp != null) {
             dp.setDeclarationInfo(declarationInfo);
         }
     }
-    
+
     DeclarationProperty getDeclarationProperty(Declaration declaration) {
         for (PropertyCategoryPropertySet set : getCachedPropertySets()) {
             DeclarationProperty declarationProperty = set.getDeclarationProperty(declaration);
@@ -175,19 +249,19 @@ public class RuleNode extends AbstractNode {
         }
         return propertySets;
     }
-    
+
     private boolean matchesFilterPrefix(PropertyDefinition pd) {
-        if(filterPrefix == null) {
+        if (filterPrefix == null) {
             return true;
         } else {
             return pd.getName().startsWith(filterPrefix);
         }
     }
-    
+
     private Collection<PropertyDefinition> filterByPrefix(Collection<PropertyDefinition> defs) {
         Collection<PropertyDefinition> filtered = new ArrayList<PropertyDefinition>();
-        for(PropertyDefinition pd : defs) {
-            if(matchesFilterPrefix(pd)) {
+        for (PropertyDefinition pd : defs) {
+            if (matchesFilterPrefix(pd)) {
                 filtered.add(pd);
             }
         }
@@ -214,7 +288,7 @@ public class RuleNode extends AbstractNode {
 
             Map<PropertyCategory, List<Declaration>> categoryToDeclarationsMap = new EnumMap<PropertyCategory, List<Declaration>>(PropertyCategory.class);
             for (Declaration d : declarations) {
-                if(addedDeclarations.containsValue(d)) {
+                if (addedDeclarations.containsValue(d)) {
                     continue; //skip those added declarations
                 }
                 //check the declaration
@@ -255,7 +329,7 @@ public class RuleNode extends AbstractNode {
                 for (PropertyCategory cat : PropertyCategory.values()) {
                     //now add all the remaining properties
                     List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(filterByPrefix(cat.getProperties()));
-                    if(allInCat.isEmpty()) {
+                    if (allInCat.isEmpty()) {
                         continue; //skip empty categories (when filtering)
                     }
                     Collections.sort(allInCat, PropertyUtils.PROPERTY_DEFINITIONS_COMPARATOR);
@@ -265,7 +339,7 @@ public class RuleNode extends AbstractNode {
                         propertySet = new PropertyCategoryPropertySet(cat);
                         sets.add(propertySet);
                     }
-                    
+
                     //remove already used
                     for (Declaration d : propertySet.getDeclarations()) {
                         PropertyDefinition def = Properties.getProperty(d.getProperty().getContent().toString());
@@ -275,7 +349,7 @@ public class RuleNode extends AbstractNode {
                     //add the rest of unused properties to the property set
                     for (PropertyDefinition pd : allInCat) {
                         Declaration alreadyAdded = addedDeclarations.get(pd);
-                        if(alreadyAdded != null) {
+                        if (alreadyAdded != null) {
                             propertySet.add(alreadyAdded, true);
                         } else {
                             propertySet.add(pd);
@@ -295,7 +369,7 @@ public class RuleNode extends AbstractNode {
 
             List<Declaration> filtered = new ArrayList<Declaration>();
             for (Declaration d : declarations) {
-                if(addedDeclarations.containsValue(d)) {
+                if (addedDeclarations.containsValue(d)) {
                     continue; //skip those added declarations
                 }
                 //check the declaration
@@ -334,7 +408,7 @@ public class RuleNode extends AbstractNode {
                     all.remove(def);
                 }
 
-                 //add the rest of unused properties to the property set
+                //add the rest of unused properties to the property set
                 for (PropertyDefinition pd : all) {
                     Declaration alreadyAdded = addedDeclarations.get(pd);
                     if (alreadyAdded != null) {
@@ -361,19 +435,13 @@ public class RuleNode extends AbstractNode {
         model.runReadTask(new Model.ModelTask() {
             @Override
             public void run(StyleSheet styleSheet) {
-                doc.runAtomic(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            model.applyChanges();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-
+                try {
+                    model.applyChanges();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         });
     }
@@ -419,18 +487,17 @@ public class RuleNode extends AbstractNode {
         }
     }
 
-     private PropertyDefinitionProperty createPropertyDefinitionProperty(PropertyDefinition definition) {
+    private Property createPropertyDefinitionProperty(PropertyDefinition definition) {
         PropertyModel pmodel = Properties.getPropertyModel(definition.getName());
         return new PropertyDefinitionProperty(definition, createPropertyValueEditor(pmodel, false));
     }
-    
-     private PropertyValuesEditor createPropertyValueEditor(PropertyModel pmodel, boolean addNoneProperty) {
+
+    private PropertyValuesEditor createPropertyValueEditor(PropertyModel pmodel, boolean addNoneProperty) {
         GroupGrammarElement rootElement = pmodel.getGrammarElement();
         final Collection<UnitGrammarElement> unitElements = new ArrayList<UnitGrammarElement>();
         final Collection<FixedTextGrammarElement> fixedElements = new ArrayList<FixedTextGrammarElement>();
 
         rootElement.accept(new GrammarElementVisitor() {
-
             @Override
             public void visit(UnitGrammarElement element) {
                 unitElements.add(element);
@@ -440,42 +507,50 @@ public class RuleNode extends AbstractNode {
             public void visit(FixedTextGrammarElement element) {
                 fixedElements.add(element);
             }
-            
         });
-        
-        if(!fixedElements.isEmpty()) {
-            return  new PropertyValuesEditor(fixedElements, unitElements, addNoneProperty);
+
+        if (!fixedElements.isEmpty()) {
+            return new PropertyValuesEditor(pmodel, getModel(), fixedElements, unitElements, addNoneProperty);
         }
-        
+
         return null;
-     }
-     
-    private class PropertyDefinitionProperty extends PropertySupport<String> {
+    }
+
+    private abstract class AbstractPDP<T> extends PropertySupport<T> {
 
         private PropertyDefinition def;
-        private static final String EMPTY = "";
-        
         private PropertyEditor editor;
 
-        public PropertyDefinitionProperty(PropertyDefinition def, PropertyEditor editor) {
-            super(def.getName(), String.class, def.getName(), Bundle.rule_properties_add_declaration_tooltip(), true, getRule().isValid());
+        public AbstractPDP(PropertyDefinition def, PropertyEditor editor, String name, Class<T> type, String displayName, String shortDescription, boolean canR, boolean canW) {
+            super(name, type, displayName, shortDescription, canR, canW);
             this.def = def;
             this.editor = editor;
         }
-        
+
+        public AbstractPDP(PropertyDefinition def, PropertyEditor editor, Class<T> clazz, String shortDescription) {
+            super(def.getName(),
+                    clazz,
+                    def.getName(),
+                    shortDescription,
+                    true,
+                    getRule().isValid());
+            this.def = def;
+            this.editor = editor;
+        }
+
         @Override
         public PropertyEditor getPropertyEditor() {
             return editor;
         }
 
         @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return EMPTY;
+        public T getValue() throws IllegalAccessException, InvocationTargetException {
+            return getEmptyValue();
         }
 
         @Override
-        public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            if (EMPTY.equals(val)) {
+        public void setValue(T val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            if (getEmptyValue().equals(val)) {
                 return; //no change
             }
 
@@ -492,7 +567,7 @@ public class RuleNode extends AbstractNode {
             }
 
             org.netbeans.modules.css.model.api.Property property = factory.createProperty(def.getName());
-            Expression expr = factory.createExpression(val);
+            Expression expr = factory.createExpression(convertToString(val));
             PropertyValue value = factory.createPropertyValue(expr);
             Declaration newDeclaration = factory.createDeclaration(property, value, false);
 
@@ -504,8 +579,39 @@ public class RuleNode extends AbstractNode {
             } else {
                 //add property mode - just refresh the content
                 addedDeclarations.put(def, newDeclaration); //remember what we've added during this dialog cycle
-                fireContextChanged();
+                fireContextChanged(true);
             }
+        }
+
+        protected abstract String convertToString(T val);
+
+        protected abstract T getEmptyValue();
+    }
+    private static String EMPTY = "";
+
+    private class PlainPDP extends AbstractPDP<String> {
+
+        public PlainPDP(PropertyDefinition def, PropertyEditor editor, String shortDescription) {
+            super(def, editor, String.class, shortDescription);
+        }
+
+        @Override
+        protected String convertToString(String val) {
+            return val;
+        }
+
+        @Override
+        protected String getEmptyValue() {
+            return EMPTY;
+        }
+    }
+
+    private class PropertyDefinitionProperty extends PlainPDP {
+
+        public PropertyDefinitionProperty(PropertyDefinition def, PropertyEditor editor) {
+            super(def,
+                    editor,
+                    Bundle.rule_properties_add_declaration_tooltip());
         }
     }
 
@@ -520,6 +626,8 @@ public class RuleNode extends AbstractNode {
         private DeclarationInfo info;
         private PropertyEditor editor;
         private boolean markAsModified;
+        
+        private String valueSet;
 
         public DeclarationProperty(Declaration declaration, boolean markAsModified, PropertyEditor editor) {
             super(declaration.getProperty().getContent().toString(),
@@ -529,27 +637,66 @@ public class RuleNode extends AbstractNode {
             this.declaration = declaration;
             this.markAsModified = markAsModified;
             this.editor = editor;
+
+            //one may set a custom inplace editor by 
+            //setValue("inplaceEditor", new MyInplaceEditor());
+            
         }
 
         public Declaration getDeclaration() {
             return declaration;
         }
-        
+
+        private void updateDeclaration(Declaration declaration) {
+            //update the declaration
+            String oldValue = getValue();
+            this.declaration = declaration;
+            String newValue = getValue();
+            String propertyName = getPropertyName();
+
+            /* Reset DeclarationInfo to default state (null) as the contract 
+             * doesn't require/expect the RuleEditorController.setDeclarationInfo(...) 
+             * to be called for each "plain" declaration with null DeclarationInfo argument.
+            */
+            this.info = null;
+            setDisplayName(getHtmlDisplayName());
+            
+            //and fire property change to the node 
+            //this will trigger the property name and value repaint
+            firePropertyChange(propertyName, oldValue, newValue);
+            
+        }
+
+        private String getPropertyName() {
+            Model model = getModel();
+            final AtomicReference<String> ret_ref = new AtomicReference<String>();
+            model.runReadTask(new Model.ModelTask() {
+                @Override
+                public void run(StyleSheet styleSheet) {
+                    ret_ref.set(declaration.getProperty().getContent().toString());
+
+                }
+            });
+            return ret_ref.get();
+        }
+
         @Override
         public PropertyEditor getPropertyEditor() {
             return editor;
         }
 
         public void setDeclarationInfo(DeclarationInfo info) {
-            String old = getHtmlDisplayName();
             this.info = info;
-            fireDisplayNameChange(old, getHtmlDisplayName());
+            setDisplayName(getHtmlDisplayName());
+            //force the property repaint - stupid way but there's
+            //doesn't seemt to be any better way
+            firePropertyChange(getPropertyName(), null, getValue());
         }
 
         private boolean isOverridden() {
             return info != null && info == DeclarationInfo.OVERRIDDEN;
         }
-        
+
         private boolean isInactive() {
             return info != null && info == DeclarationInfo.INACTIVE;
         }
@@ -561,51 +708,51 @@ public class RuleNode extends AbstractNode {
         @Override
         public String getHtmlDisplayName() {
             StringBuilder b = new StringBuilder();
-            
+
             String color = null;
             boolean bold = false;
             boolean strike = false;
 
             if (isShowAllProperties()) {
-                if(isAddPropertyMode() && !markAsModified) {
+                if (isAddPropertyMode() && !markAsModified) {
                     color = COLOR_CODE_GRAY;
                 } else {
                     bold = true;
                 }
             }
-            if(isOverridden()) {
+            if (isOverridden()) {
                 strike = true;
             }
-            if(isInactive()) {
+            if (isInactive()) {
                 color = COLOR_CODE_GRAY;
                 strike = true;
             }
-            if(isErroneous()) {
+            if (isErroneous()) {
                 color = COLOR_CODE_RED;
             }
 
             //render
-            if(bold) {
+            if (bold) {
                 b.append("<b>");//NOI18N
             }
             if (strike) {
                 b.append("<s>"); //use <del>?
             }
-            if(color != null) {
+            if (color != null) {
                 b.append("<font color="); //NOI18N
                 b.append(color);
                 b.append(">"); //NOI18N
             }
-            
-            b.append(declaration.getProperty().getContent());
-            
-            if(color != null) {
+
+            b.append(getPropertyName());
+
+            if (color != null) {
                 b.append("</font>"); //NOI18N
             }
             if (strike) {
                 b.append("</s>"); //use <del>?
             }
-            if(bold) {
+            if (bold) {
                 b.append("</b>");//NOI18N
             }
 
@@ -614,28 +761,90 @@ public class RuleNode extends AbstractNode {
 
         @Override
         public String getValue() {
-            return declaration.getPropertyValue().getExpression().getContent().toString();
+            if(valueSet != null) {
+                return valueSet;
+            }
+            
+            Model model = getModel();
+            final AtomicReference<String> ret_ref = new AtomicReference<String>();
+            model.runReadTask(new Model.ModelTask() {
+                @Override
+                public void run(StyleSheet styleSheet) {
+                    PropertyValue propertyValue = declaration.getPropertyValue();
+                    ret_ref.set(propertyValue == null ? null : propertyValue.getExpression().getContent().toString());
+                }
+            });
+            return ret_ref.get();
         }
+        
 
         @Override
-        public void setValue(Object o) {
-            String val = (String)o;
-            if (val.isEmpty() || NONE_PROPERTY_NAME.equals(val)) {
-                //remove the whole declaration
-                Declarations declarations = (Declarations) declaration.getParent();
-                declarations.removeDeclaration(declaration);
-            } else {
-                //update the value
-                declaration.getPropertyValue().getExpression().setContent(val);
+        public void setValue(final Object o) {
+            final String asString = (String) o;
+            if (asString == null || asString.isEmpty()) {
+                return;
+            }
+            String currentValue = getValue();
+            if (asString.equals(currentValue)) {
+                //same value, ignore
+                return;
             }
 
-            if (!isAddPropertyMode()) {
-                applyModelChanges();
-            } else {
-                fireContextChanged();
-            }
+            this.valueSet = asString;
+            SAVE_CHANGE_TASK.schedule(200);
+
         }
+        
+        private Task SAVE_CHANGE_TASK = RuleEditorPanel.RP.create(new Runnable() {
+            @Override
+            public void run() {
+                Mutex.EVENT.readAccess(new Runnable() {
 
+                    @Override
+                    public void run() {
+                        final String val = valueSet;
+                        
+                        Model model = getModel();
+                        model.runWriteTask(new Model.ModelTask() {
+                            @Override
+                            public void run(StyleSheet styleSheet) {
+                                if (NONE_PROPERTY_NAME.equals(val)) {
+                                    //remove the whole declaration
+                                    Declarations declarations = (Declarations) declaration.getParent();
+                                    declarations.removeDeclaration(declaration);
+                                } else {
+                                    //update the value
+                                    RuleEditorPanel.LOG.log(Level.FINE, "updating property to {0}", val);
+                                    declaration.getPropertyValue().getExpression().setContent(val);
+                                }
+                            }
+                        });
+
+                        //the fireContextChanged(false) resp. updateDeclaration(...) 
+                        //will be called automatically
+                        //via RuleEditorPanel's css model listener - the event
+                        //is fired synchronously once the model write task above finishes
+
+                        if (!isAddPropertyMode()) {
+                            //save changes
+                            applyModelChanges();
+
+                            //the model save request will cause the source model's 
+                            //Model.CHANGES_APPLIED_TO_DOCUMENT property change event fired
+                            //and the RuleEditorPanel's listener will ASYNCHRONOUSLY
+                            //refresh the css source model.
+
+                        } else {
+                            //for addPropertyMode only
+                            fireContextChanged(false); //will also trigger the updateDeclaration(...) method synchronously 
+                        }
+
+                    }
+                    
+                });
+
+            }
+        });
     }
 
     /**

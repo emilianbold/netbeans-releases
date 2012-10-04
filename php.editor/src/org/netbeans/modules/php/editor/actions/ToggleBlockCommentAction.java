@@ -95,7 +95,9 @@ public class ToggleBlockCommentAction extends BaseAction{
             if (ts != null) {
                 ts.move(caretOffset);
                 ts.moveNext();
-                if (ts.token().id() != PHPTokenId.T_INLINE_HTML) {
+                if (isAroundPhpComment(ts)) {
+                    processedHere = true;
+                } else if (ts.token().id() != PHPTokenId.T_INLINE_HTML) {
                     boolean newLine = false;
                     if (isNewLineBeforeCaretOffset(ts, caretOffset)) {
                         newLine = true;
@@ -155,6 +157,21 @@ public class ToggleBlockCommentAction extends BaseAction{
             }
             action.actionPerformed(evt, target);
         }
+    }
+
+    private static boolean isAroundPhpComment(final TokenSequence<PHPTokenId> ts) {
+        boolean result = isPhpComment(ts.token().id());
+        if (!result && PHPTokenId.WHITESPACE.equals(ts.token().id()) && ts.movePrevious()) {
+            result = isPhpComment(ts.token().id());
+            ts.moveNext();
+        }
+        return result;
+    }
+
+    private static boolean isPhpComment(final PHPTokenId tokenId) {
+        return PHPTokenId.PHP_COMMENT.equals(tokenId) || PHPTokenId.PHP_COMMENT_START.equals(tokenId)
+                || PHPTokenId.PHP_COMMENT_END.equals(tokenId) || PHPTokenId.PHPDOC_COMMENT.equals(tokenId)
+                || PHPTokenId.PHPDOC_COMMENT_START.equals(tokenId) || PHPTokenId.PHPDOC_COMMENT_END.equals(tokenId);
     }
 
     private static int countForgoingWhitespaces(final TokenSequence<PHPTokenId> tokenSequence) {

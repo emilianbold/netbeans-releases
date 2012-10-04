@@ -452,12 +452,16 @@ public class AntDebugger extends ActionsProviderSupport {
             nextTargetName = nextTarget.getName();
             topFrame = ((TargetOriginating) topFrame).getOriginatingTarget();
         }
-        currentLine = topFrame instanceof Task ?
-            ((Task) topFrame).getLine () :
-            Utils.getLine (
-                (TargetLister.Target) topFrame, 
-                nextTargetName
-            );
+        if (topFrame != null) {
+            currentLine = topFrame instanceof Task ?
+                ((Task) topFrame).getLine () :
+                Utils.getLine (
+                    (TargetLister.Target) topFrame, 
+                    nextTargetName
+                );
+        } else {
+            currentLine = null;
+        }
         if (currentLine != null) {
             updateOutputWindow (currentLine);
             Utils.markCurrent (currentLine);
@@ -499,6 +503,9 @@ public class AntDebugger extends ActionsProviderSupport {
     private static String getFrameName (Object frame) {
         if (frame instanceof TargetOriginating) {
             frame = ((TargetOriginating) frame).getOriginatingTarget();
+        }
+        if (frame == null) {
+            return "?";
         }
         return frame instanceof Task ?
             ((Task) frame).getTaskStructure ().getName () :

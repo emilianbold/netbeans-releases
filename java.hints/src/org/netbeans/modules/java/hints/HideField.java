@@ -34,16 +34,12 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -53,6 +49,7 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.modules.java.editor.rename.InstantRenamePerformer;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -65,7 +62,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -181,37 +177,12 @@ public class HideField extends AbstractHint {
                                                DEFAULT_WARN_HIDDEN_STATIC_FIELDS);
     }
 
-    private static Reference<CompilationInfo> allMembersCacheFrom;
-    private static Map<TypeElement, Iterable<? extends Element>> allMembersCacheTo;
-
+    private static final Object KEY_MEMBERS_CACHE = new Object();
     protected static synchronized Iterable<? extends Element> getAllMembers(CompilationInfo info, TypeElement clazz) {
-        class CleaningWR extends WeakReference<CompilationInfo> implements Runnable {
-            public CleaningWR(CompilationInfo info) {
-                super(info, Utilities.activeReferenceQueue());
-            }
-            @Override public void run() {
-                synchronized (HideField.class) {
-                    if (allMembersCacheFrom == null || allMembersCacheFrom.get() == null) {
-                        allMembersCacheFrom = null;
-                        allMembersCacheTo = null;
-                    }
-                }
-            }
-        }
+        Map<TypeElement, Iterable<? extends Element>> map = (Map<TypeElement, Iterable<? extends Element>>) info.getCachedValue(KEY_MEMBERS_CACHE);
 
-        CompilationInfo origInfo = allMembersCacheFrom != null ? allMembersCacheFrom.get() : null;
-        Map<TypeElement, Iterable<? extends Element>> map;
-
-        if (origInfo == info) {
-            map = allMembersCacheTo;
-        } else {
-            allMembersCacheFrom = new CleaningWR(info);
-            map = allMembersCacheTo = new HashMap<TypeElement, Iterable<? extends Element>>();
-
-            if (info.getFileObject() != null) {
-                Logger.getLogger("TIMER").log(Level.FINE, "HideField.allMembersCacheTo",    //NOI18N
-                        new Object[] {info.getFileObject(), map});
-            }
+        if (map == null) {
+            info.putCachedValue(KEY_MEMBERS_CACHE, map = new HashMap<TypeElement, Iterable<? extends Element>>(), CacheClearPolicy.ON_SIGNATURE_CHANGE);
         }
 
         Iterable<? extends Element> members = map.get(clazz);

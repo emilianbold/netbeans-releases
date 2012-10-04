@@ -92,10 +92,10 @@ import org.openide.filesystems.FileObject;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCodeCompletion implements CodeCompletionHandler {
+
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
+    final static Map<String, KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
 
-
-    final static Map<String,KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
     static {
         PHP_KEYWORDS.put("use", KeywordCompletionType.SIMPLE); //NOI18N
         PHP_KEYWORDS.put("namespace", KeywordCompletionType.SIMPLE); //NOI18N
@@ -145,67 +145,50 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHP_KEYWORDS.put("or", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
         PHP_KEYWORDS.put("xor", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
     }
-
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_QUOTES = {
         "echo", "include", "include_once", "require", "require_once", "print" // NOI18N
     };
-
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_PARENTHESES = {
         "die", "eval", "exit", "empty", "isset", "list", "unset" // NOI18N
     };
-
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_SEMICOLON = {
         "return" // NOI18N
     };
-
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_FOR_TYPE_HINTS = {
         "callable" //NOI18N
     };
-
     final static String PHP_CLASS_KEYWORD_THIS = "$this->"; //NOI18N
-
     final static String[] PHP_CLASS_KEYWORDS = {
         PHP_CLASS_KEYWORD_THIS, "self::", "parent::", "static::" //NOI18N
     };
-
     final static String[] PHP_STATIC_CLASS_KEYWORDS = {
         "self::", "parent::", "static::" //NOI18N
     };
-
     private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
             Arrays.asList('=', ';', '+', '-', '*', '/',
-                '%', '(', ')', '[', ']', '{', '}', '?'));
-
+            '%', '(', ')', '[', ']', '{', '}', '?'));
     private final static Collection<PHPTokenId> TOKENS_TRIGGERING_AUTOPUP_TYPES_WS =
             Arrays.asList(PHPTokenId.PHP_NEW, PHPTokenId.PHP_EXTENDS, PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.PHP_INSTANCEOF);
-
     private static final List<String> INVALID_PROPOSALS_FOR_CLS_MEMBERS =
-            Arrays.asList(new String[] {"__construct", "__destruct", "__call", "__callStatic",
+            Arrays.asList(new String[]{"__construct", "__destruct", "__call", "__callStatic",
                 "__clone", "__get", "__invoke", "__isset", "__set", "__set_state",
                 "__sleep", "__toString", "__unset", "__wakeup"});//NOI18N
-
     private static final List<String> CLASS_CONTEXT_KEYWORD_PROPOSAL =
-            Arrays.asList(new String[] {"abstract","const","function", "private", "final",
-            "protected", "public", "static", "var"});//NOI18N
-
+            Arrays.asList(new String[]{"abstract", "const", "function", "private", "final",
+                "protected", "public", "static", "var"});//NOI18N
     private static final List<String> INTERFACE_CONTEXT_KEYWORD_PROPOSAL =
-            Arrays.asList(new String[] {"const","function", "public", "static"});//NOI18N
-
+            Arrays.asList(new String[]{"const", "function", "public", "static"});//NOI18N
     private static final List<String> INHERITANCE_KEYWORDS =
-            Arrays.asList(new String[] {"extends","implements"});//NOI18N
-
+            Arrays.asList(new String[]{"extends", "implements"});//NOI18N
     private static final String EXCEPTION_CLASS_NAME = "\\Exception"; // NOI18N
-
     private boolean caseSensitive;
     private QuerySupport.Kind nameKind;
 
-
-
     @Override
     public CodeCompletionResult complete(CodeCompletionContext completionContext) {
-         long startTime = 0;
+        long startTime = 0;
 
-        if (LOGGER.isLoggable(Level.FINE)){
+        if (LOGGER.isLoggable(Level.FINE)) {
             startTime = System.currentTimeMillis();
         }
 
@@ -347,7 +330,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     autoCompleteClassMembers(completionResult, request, false);
                     break;
                 case STATIC_CLASS_MEMBER:
-                   autoCompleteClassMembers(completionResult, request, true);
+                    autoCompleteClassMembers(completionResult, request, true);
                     break;
                 case PHPDOC:
                     PHPDOCCodeCompletion.complete(completionResult, request);
@@ -373,9 +356,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case INHERITANCE:
                     autoCompleteKeywords(completionResult, request, INHERITANCE_KEYWORDS);
                     break;
-                case THROW_CATCH:
+                case THROW:
                     autoCompleteNamespaces(completionResult, request);
-                    autoCompleteExceptions(completionResult, request);
+                    autoCompleteExceptions(completionResult, request, true);
+                    break;
+                case CATCH:
+                    autoCompleteNamespaces(completionResult, request);
+                    autoCompleteExceptions(completionResult, request, false);
                     break;
                 case CLASS_MEMBER_IN_STRING:
                     autoCompleteClassFields(completionResult, request);
@@ -400,7 +387,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             //doc.readUnlock();
         }
 
-        if (LOGGER.isLoggable(Level.FINE)){
+        if (LOGGER.isLoggable(Level.FINE)) {
             long time = System.currentTimeMillis() - startTime;
             LOGGER.fine(String.format("complete() took %d ms, result contains %d items", time, completionResult.getItems().size()));
         }
@@ -467,6 +454,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     /**
      * Finding item after new keyword.
+     *
      * @param completionResult
      * @param request
      */
@@ -521,13 +509,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
     }
 
-    private void autoCompleteExceptions(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
+    private void autoCompleteExceptions(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, boolean withConstructors) {
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix, isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
         final Set<ClassElement> classes = request.index.getClasses(nameQuery);
+        final Model model = request.result.getModel();
+        final Set<QualifiedName> constructorClassNames = new HashSet<QualifiedName>();
         for (ClassElement classElement : classes) {
             if (isExceptionClass(classElement)) {
                 completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, false, null));
+                if (withConstructors) {
+                    constructorClassNames.add(classElement.getFullyQualifiedName());
+                }
                 continue;
             }
             if (classElement.getSuperClassName() != null) {
@@ -535,10 +528,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 for (ClassElement inheritedClass : inheritedClasses) {
                     if (isExceptionClass(inheritedClass)) {
                         completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, false, null));
+                        if (withConstructors) {
+                            constructorClassNames.add(inheritedClass.getFullyQualifiedName());
+                        }
                         break;
                     }
                 }
             }
+        }
+        for (QualifiedName qualifiedName : constructorClassNames) {
+            autoCompleteConstructors(completionResult, request, model, NameKind.exact(qualifiedName));
         }
     }
 
@@ -547,12 +546,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     private void autoCompleteClassNames(final PHPCompletionResult completionResult,
-            PHPCompletionItem.CompletionRequest request,boolean endWithDoubleColon) {
+            PHPCompletionItem.CompletionRequest request, boolean endWithDoubleColon) {
         autoCompleteClassNames(completionResult, request, endWithDoubleColon, null);
     }
 
     private void autoCompleteClassNames(final PHPCompletionResult completionResult,
-            PHPCompletionItem.CompletionRequest request,boolean endWithDoubleColon, QualifiedNameKind kind) {
+            PHPCompletionItem.CompletionRequest request, boolean endWithDoubleColon, QualifiedNameKind kind) {
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix,
                 isCamelCase ? Kind.CAMEL_CASE : Kind.CASE_INSENSITIVE_PREFIX);
@@ -566,9 +565,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
         }
     }
+
     private void autoCompleteInterfaceNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
         autoCompleteInterfaceNames(completionResult, request, null);
     }
+
     private void autoCompleteInterfaceNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind) {
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         final NameKind nameQuery = NameKind.create(request.prefix,
@@ -649,11 +650,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     }
 
-     private void autoCompleteNamespaces(final PHPCompletionResult completionResult,
+    private void autoCompleteNamespaces(final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request) {
-         autoCompleteNamespaces(completionResult, request, null);
-     }
-     private void autoCompleteNamespaces(final PHPCompletionResult completionResult,
+        autoCompleteNamespaces(completionResult, request, null);
+    }
+
+    private void autoCompleteNamespaces(final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind) {
         final QualifiedName prefix = QualifiedName.create(request.prefix).toNotFullyQualified();
         Model model = request.result.getModel();
@@ -741,13 +743,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
         TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(th, request.anchor);
 
-        if (tokenSequence == null){
+        if (tokenSequence == null) {
             return;
         }
 
         tokenSequence.move(request.anchor);
-        if (tokenSequence.movePrevious())
-        {
+        if (tokenSequence.movePrevious()) {
             boolean instanceContext = !staticContext;
 
             if (tokenSequence.token().id() != PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM
@@ -768,7 +769,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 return;
             }
             Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
-            boolean selfContext  = false;
+            boolean selfContext = false;
             boolean staticLateBindingContext = false;
             if (varName.equals("self")) { //NOI18N
                 staticContext = true;
@@ -798,19 +799,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                             ElementFilter.forName(NameKind.caseInsensitivePrefix(request.prefix)),
                             staticFlagFilter,
                             ElementFilter.forExcludedNames(invalidProposalsForClsMembers, PhpElementKind.METHOD),
-                            ElementFilter.forInstanceOf(MethodElement.class)
-                            );
+                            ElementFilter.forInstanceOf(MethodElement.class));
                     final ElementFilter fieldsFilter = ElementFilter.allOf(
                             ElementFilter.forKind(PhpElementKind.FIELD),
                             ElementFilter.forName(NameKind.caseInsensitivePrefix(request.prefix)),
                             staticFlagFilter,
-                            ElementFilter.forInstanceOf(FieldElement.class)
-                            );
+                            ElementFilter.forInstanceOf(FieldElement.class));
                     final ElementFilter constantsFilter = ElementFilter.allOf(
                             ElementFilter.forKind(PhpElementKind.TYPE_CONSTANT),
                             ElementFilter.forName(NameKind.caseInsensitivePrefix(request.prefix)),
-                            ElementFilter.forInstanceOf(TypeConstantElement.class)
-                            );
+                            ElementFilter.forInstanceOf(TypeConstantElement.class));
                     for (final PhpElement phpElement : request.index.getAccessibleTypeMembers(typeScope, enclosingType)) {
                         if (methodsFilter.isAccepted(phpElement)) {
                             MethodElement method = (MethodElement) phpElement;
@@ -839,10 +837,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         Model model = request.result.getModel();
         Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
         final ElementFilter fieldsFilter = ElementFilter.allOf(
-            ElementFilter.forKind(PhpElementKind.FIELD),
-            ElementFilter.forName(NameKind.caseInsensitivePrefix(request.prefix)),
-            ElementFilter.forInstanceOf(FieldElement.class)
-        );
+                ElementFilter.forKind(PhpElementKind.FIELD),
+                ElementFilter.forName(NameKind.caseInsensitivePrefix(request.prefix)),
+                ElementFilter.forInstanceOf(FieldElement.class));
         if (types != null) {
             TypeElement enclosingType = getEnclosingType(request, types);
             for (TypeScope typeScope : types) {
@@ -892,7 +889,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private static ClassDeclaration findEnclosingClass(ParserResult info, int offset) {
         List<ASTNode> nodes = NavUtils.underCaret(info, offset);
-        for(ASTNode node : nodes) {
+        for (ASTNode node : nodes) {
             if (node instanceof ClassDeclaration && node.getEndOffset() != offset) {
                 return (ClassDeclaration) node;
             }
@@ -939,7 +936,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         for (final PhpElement element : request.index.getTopLevelElements(prefix, aliasedNames, Trait.ALIAS)) {
             if (element instanceof FunctionElement) {
                 for (final PHPCompletionItem.FunctionElementItem functionItem :
-                    PHPCompletionItem.FunctionElementItem.getItems((FunctionElement) element, request)) {
+                        PHPCompletionItem.FunctionElementItem.getItems((FunctionElement) element, request)) {
                     completionResult.add(functionItem);
                 }
             } else if (element instanceof ClassElement) {
@@ -947,7 +944,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             } else if (element instanceof InterfaceElement) {
                 completionResult.add(new PHPCompletionItem.InterfaceItem((InterfaceElement) element, request, true));
             } else if (offerGlobalVariables && element instanceof VariableElement) {
-                globalVariables.add((VariableElement)element);
+                globalVariables.add((VariableElement) element);
             } else if (element instanceof ConstantElement) {
                 completionResult.add(new PHPCompletionItem.ConstantItem((ConstantElement) element, request));
             }
@@ -980,7 +977,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     /**
-     * @param globalVariables (can be bull) if null then will be looked up in index
+     * @param globalVariables (can be bull) if null then will be looked up in
+     * index
      */
     private Collection<CompletionProposal> getVariableProposals(final CompletionRequest request, Set<VariableElement> globalVariables) {
         final Map<String, CompletionProposal> proposals = new LinkedHashMap<String, CompletionProposal>();
@@ -1022,7 +1020,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         proposals.put(name, new PHPCompletionItem.VariableItem(
                                 VariableElementImpl.create(name, 0, realFileObject,
                                 varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames)), request) {
-
                             @Override
                             public boolean isSmart() {
                                 return true;
@@ -1046,29 +1043,29 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return proposals.values();
     }
 
-    private boolean isPrefix(String name, String prefix){
+    private boolean isPrefix(String name, String prefix) {
         return name != null && (name.startsWith(prefix)
                 || nameKind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX && name.toLowerCase().startsWith(prefix.toLowerCase()));
     }
-
 
     @Override
     public String document(ParserResult info, ElementHandle element) {
         if (element instanceof ModelElement) {
             ModelElement mElem = (ModelElement) element;
             ModelElement parentElem = mElem.getInScope();
-            String fName = mElem.getFileObject().getNameExt();
+            FileObject fileObject = mElem.getFileObject();
+            String fName = fileObject == null ? "?" : fileObject.getNameExt(); //NOI18N
             String tooltip = null;
             if (parentElem instanceof TypeScope) {
-                tooltip = mElem.getPhpElementKind()+": "+parentElem.getName()+"<b> "+mElem.getName() + " </b>"+ "("+ fName+")";//NOI18N
+                tooltip = mElem.getPhpElementKind() + ": " + parentElem.getName() + "<b> " + mElem.getName() + " </b>" + "(" + fName + ")";//NOI18N
             } else {
-                tooltip = mElem.getPhpElementKind()+":<b> "+mElem.getName() + " </b>"+ "("+ fName+")";//NOI18N
+                tooltip = mElem.getPhpElementKind() + ":<b> " + mElem.getName() + " </b>" + "(" + fName + ")";//NOI18N
             }
             return String.format("<div align=\"right\"><font size=-1>%s</font></div>", tooltip);
         }
 
-        return ((element instanceof MethodElement) && ((MethodElement)element).isMagic()) ? null :
-            DocRenderer.document(info, element);
+        return ((element instanceof MethodElement) && ((MethodElement) element).isMagic()) ? null
+                : DocRenderer.document(info, element);
     }
 
     @Override
@@ -1076,11 +1073,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return null;
     }
 
-    private static boolean isPHPIdentifierPart(char c){
+    private static boolean isPHPIdentifierPart(char c) {
         return Character.isJavaIdentifierPart(c) || c == '@';
     }
 
-    private static boolean isPrefixBreaker(char c){
+    private static boolean isPrefixBreaker(char c) {
         return !(isPHPIdentifierPart(c) || c == '\\' || c == '$' || c == ':');
     }
 
@@ -1168,13 +1165,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         if (isPrefixBreaker(c)) {
                             return null;
                         }
-                    } else if (!"<?".equals(prefix))    {    //NOI18N
+                    } else if (!"<?".equals(prefix)) {    //NOI18N
                         for (int i = prefix.length() - 2; i >= 0; i--) { // -2: the last position (-1) can legally be =, ! or ?
 
                             char c = prefix.charAt(i);
                             if (i == 0 && c == ':') {
                                 // : is okay at the begining of prefixes
-                                } else if (isPrefixBreaker(c)) {
+                            } else if (isPrefixBreaker(c)) {
                                 prefix = prefix.substring(i + 1);
                                 break;
                             }
@@ -1198,7 +1195,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
                 return prefix;
             }
-        // Else: normal identifier: just return null and let the machinery do the rest
+            // Else: normal identifier: just return null and let the machinery do the rest
         } catch (BadLocationException ble) {
             //Exceptions.printStackTrace(ble);
         }
@@ -1208,12 +1205,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
-        if(typedText.length() == 0) {
+        if (typedText.length() == 0) {
             return QueryType.NONE;
         }
         char lastChar = typedText.charAt(typedText.length() - 1);
 
-        if (AUTOPOPUP_STOP_CHARS.contains(Character.valueOf(lastChar))){
+        if (AUTOPOPUP_STOP_CHARS.contains(Character.valueOf(lastChar))) {
             return QueryType.STOP;
         }
 
@@ -1225,53 +1222,54 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             return QueryType.STOP;
         }
         int diff = ts.move(offset);
-        if(diff > 0 && ts.moveNext() || ts.movePrevious()) {
+        if (diff > 0 && ts.moveNext() || ts.movePrevious()) {
             Token t = ts.token();
-            if (OptionsUtils.autoCompletionTypes()) {
-                if (lastChar == ' ' || lastChar == '\t'){
-                    if (ts.movePrevious()
-                            && TOKENS_TRIGGERING_AUTOPUP_TYPES_WS.contains(ts.token().id())){
+            if (t != null) {
+                if (OptionsUtils.autoCompletionTypes()) {
+                    if (lastChar == ' ' || lastChar == '\t') {
+                        if (ts.movePrevious()
+                                && TOKENS_TRIGGERING_AUTOPUP_TYPES_WS.contains(ts.token().id())) {
 
+                            return QueryType.ALL_COMPLETION;
+                        } else {
+                            return QueryType.STOP;
+                        }
+                    }
+
+                    if (t.id() == PHPTokenId.PHP_OBJECT_OPERATOR || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
                         return QueryType.ALL_COMPLETION;
-                    } else {
-                        return QueryType.STOP;
                     }
                 }
-
-                if(t.id() == PHPTokenId.PHP_OBJECT_OPERATOR || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
+                if (OptionsUtils.autoCompletionVariables()) {
+                    if ((t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$')
+                            || (t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$')) {
                         return QueryType.ALL_COMPLETION;
                     }
                 }
-            if (OptionsUtils.autoCompletionVariables()) {
-                if((t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$') ||
-                        (t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$')) {
+                if (OptionsUtils.autoCompletionNamespaces()) {
+                    if (t.id() == PHPTokenId.PHP_NS_SEPARATOR) {
+                        return isPhp_53(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
+                    }
+                }
+                if (t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
                     return QueryType.ALL_COMPLETION;
                 }
-            }
-            if (OptionsUtils.autoCompletionNamespaces()) {
-                if(t.id() == PHPTokenId.PHP_NS_SEPARATOR) {
-                    return isPhp_53(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
-                }
-            }
-            if (t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
-                return QueryType.ALL_COMPLETION;
-            }
-            if (OptionsUtils.autoCompletionFull() && t != null) {
-                TokenId id = t.id();
-                if ((id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_VARIABLE)) && t.length() > 0) {
-                    return QueryType.ALL_COMPLETION;
+                if (OptionsUtils.autoCompletionFull()) {
+                    TokenId id = t.id();
+                    if ((id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_VARIABLE)) && t.length() > 0) {
+                        return QueryType.ALL_COMPLETION;
+                    }
                 }
             }
         }
         return QueryType.NONE;
     }
 
-    public static  boolean isPhp_53(Document document) {
+    public static boolean isPhp_53(Document document) {
         final FileObject fileObject = CodeUtils.getFileObject(document);
         assert fileObject != null;
         return CodeUtils.isPhp_53(fileObject);
     }
-
 
     @Override
     public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
@@ -1285,7 +1283,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public ParameterInfo parameters(final ParserResult info, final int caretOffset, CompletionProposal proposal) {
-        final org.netbeans.modules.php.editor.model.Model model = ((PHPParseResult)info).getModel();
+        final org.netbeans.modules.php.editor.model.Model model = ((PHPParseResult) info).getModel();
         ParameterInfoSupport infoSupport = model.getParameterInfoSupport(caretOffset);
         return infoSupport.getParameterInfo();
     }
@@ -1300,12 +1298,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     private static class StaticOrInstanceMembersFilter extends ElementFilter {
+
         private final boolean forStaticContext;
         private final boolean forInstanceContext;
         private final boolean forSelfContext;
         private final boolean staticAllowed;
         private final boolean nonstaticAllowed;
         private final boolean forStaticLateBinding;
+
         public StaticOrInstanceMembersFilter(final boolean forStaticContext, final boolean forInstanceContext,
                 final boolean forSelfContext, final boolean forStaticLateBinding) {
             this.forStaticContext = forStaticContext;
@@ -1356,4 +1356,4 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 //        }
         return false;
     }
- }
+}

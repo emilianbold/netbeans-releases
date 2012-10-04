@@ -60,6 +60,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.beaninfo.editors.HtmlBrowser;
 import org.netbeans.core.ProxySettings;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -75,6 +76,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords={"#KW_General"}, location=OptionsDisplayer.GENERAL)
 public class GeneralOptionsPanel extends JPanel implements ActionListener {
     
     private boolean                 changed = false;
@@ -290,10 +292,10 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(lWebBrowser)
                         .addGap(18, 18, 18)
-                        .addComponent(cbWebBrowser, 0, 1294, Short.MAX_VALUE)
+                        .addComponent(cbWebBrowser, 0, 1317, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(editBrowserButton))
-                    .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 1494, Short.MAX_VALUE)
+                    .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 1495, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lWebProxy)
                         .addGap(18, 18, 18)
@@ -307,7 +309,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(bMoreProxy)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 1254, Short.MAX_VALUE))
+                                        .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 1279, Short.MAX_VALUE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(lProxyHost)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -316,15 +318,13 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                                         .addComponent(lProxyPort)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(tfProxyPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                    .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 1494, Short.MAX_VALUE)
+                    .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 1495, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lUsage)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblUsageInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 1365, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jUsageCheck)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 838, Short.MAX_VALUE))
+                            .addComponent(lblUsageInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 1370, Short.MAX_VALUE)
+                            .addComponent(jUsageCheck)
                             .addComponent(lblLearnMore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(0, 0, 0))
         );
@@ -364,10 +364,10 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .addComponent(lUsage)
                     .addComponent(jUsageCheck))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblUsageInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(lblUsageInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblLearnMore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addGap(24, 24, 24))
         );
 
         bMoreProxy.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "LBL_GeneralOptionsPanel_bMoreProxy.AN")); // NOI18N

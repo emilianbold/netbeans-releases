@@ -243,7 +243,7 @@ public final class JXTableRowHeader extends JComponent {
     private final CountingTableModel ctm = new CountingTableModel();
     private final JXTable headerTable;
     private JXTable backingTable;
-    private RowSorter backingSorter;
+    private RowSorter<?> backingSorter;
 
     /**
      * Create a row header from the given {@code JTable}. This row header will

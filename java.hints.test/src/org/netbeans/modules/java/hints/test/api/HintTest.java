@@ -1176,17 +1176,15 @@ public class HintTest {
 
     private static Properties readProperties() {
         Properties result = new Properties();
-        InputStream is= null;
         try {
             File propFile = getPreferencesFile();
-            is= new FileInputStream(propFile);
-            result.load(is);
-        }  catch (IOException e) {
+            FileInputStream is = new FileInputStream(propFile);
             try {
-                if (is != null)
-                    is.close();
-            }  catch (IOException e1) {
+                result.load(is);
+            } finally {
+                is.close();
             }
+        }  catch (IOException e) {
         }
         
         return result;

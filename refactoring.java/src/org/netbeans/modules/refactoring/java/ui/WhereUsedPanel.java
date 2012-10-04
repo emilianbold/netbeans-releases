@@ -169,6 +169,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         innerPanel.add(panel, BorderLayout.CENTER);
                         panel.setVisible(true);
                         scope.setVisible(enableScope);
+                        jLabel1.setVisible(enableScope);
                     }
                 });
             }};

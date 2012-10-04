@@ -39,13 +39,16 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.ui.options.general.WebBrowsersOptionsModel.PropertyPanelDesc;
+import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  * Panel for customization of web browser preffered property
  * 
  * @author Milan Kubec
  */
+@OptionsPanelController.Keywords(keywords={"web browser"}, location=OptionsDisplayer.GENERAL)
 public class WebBrowsersOptionsPanel extends JPanel implements ListSelectionListener {
     
     private WebBrowsersOptionsModel browsersModel;

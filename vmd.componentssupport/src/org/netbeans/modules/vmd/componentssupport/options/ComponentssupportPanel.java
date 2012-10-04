@@ -44,12 +44,15 @@
 package org.netbeans.modules.vmd.componentssupport.options;
 
 import org.netbeans.api.visual.router.RouterFactory;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Karol Harezlak
  */
+@OptionsPanelController.Keywords(keywords={"java me"}, location=JavaOptions.JAVA, index=4)
 final class ComponentssupportPanel extends javax.swing.JPanel {
 
     private static final String VMD_STRUCTURE_SHOW = "vmd.structure.show"; // NOI18N

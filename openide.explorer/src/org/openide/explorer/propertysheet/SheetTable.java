@@ -88,6 +88,7 @@ import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SpinnerModel;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
@@ -419,6 +420,15 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
         am.put(ACTION_CUSTOM_EDITOR, getCustomEditorAction());
         am.put(ACTION_EDCLASS, edClassAction);
+
+        Action defaultAction = am.get( "selectNextRow" );
+        if( null != defaultAction ) {
+            am.put("selectNextRow", new IncrementAction(false, defaultAction));
+    }
+        defaultAction = am.get( "selectPreviousRow" );
+        if( null != defaultAction ) {
+            am.put("selectPreviousRow", new IncrementAction(true, defaultAction));
+        }
     }
 
     Action getCustomEditorAction() {
@@ -509,7 +519,17 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             FeatureDescriptor fd = psm.getFeatureDescriptor(i);
 
             if (null != fd && fd.getName().equals(name)) {
+                //repaint property value
                 Rectangle r = getCellRect(i, 1, true);
+
+                if (PropUtils.isLoggable(SheetTable.class)) {
+                    PropUtils.log(SheetTable.class, "Repainting " + r + " for property " + name);
+                }
+
+                repaint(r.x, r.y, r.width, r.height);
+                
+                //repaint property name as it may changed as well
+                r = getCellRect(i, 0, true);
 
                 if (PropUtils.isLoggable(SheetTable.class)) {
                     PropUtils.log(SheetTable.class, "Repainting " + r + " for property " + name);
@@ -1178,7 +1198,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
     boolean checkEditBoolean(int row) {
         FeatureDescriptor fd = getSheetModel().getPropertySetModel().getFeatureDescriptor(row);
 
-        if (fd.getValue("stringValues") != null) {
+        if (fd != null && fd.getValue("stringValues") != null) {
             return false; //NOI18N
         }
 
@@ -1783,5 +1803,50 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
             return false;
         }
+    }
+
+    private class IncrementAction extends AbstractAction {
+
+        private final boolean isIncrement;
+        private final Action changeRowAction;
+
+        private IncrementAction( boolean increment, Action defaultAction ) {
+            this.isIncrement = increment;
+            this.changeRowAction = defaultAction;
+}
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (isEditing()) {
+                SheetCellEditor cellEditor = getEditor();
+                InplaceEditor inplaceEditor = cellEditor.getInplaceEditor();
+                if (inplaceEditor instanceof ComboInplaceEditor) {
+                    SpinnerModel model = ((ComboInplaceEditor) inplaceEditor).getIncrementSupport();
+                    if (model != null) {
+                        Object newValue = isIncrement ? model.getNextValue() : model.getPreviousValue();
+                        if (null != newValue) {
+                            try {
+                                SheetCellEditor.ignoreStopCellEditing = true;
+                                inplaceEditor.setValue(newValue);
+                            } finally {
+                                SheetCellEditor.ignoreStopCellEditing = false;
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+            changeRowAction.actionPerformed(e);
+        }
+    }
+    
+    static String VALUE_INCREMENT = "valueIncrement"; //NOI18N
+    
+    static boolean isValueIncrementEnabled(PropertyEnv env) {
+        if(env == null) {
+            return false;
+        }
+        Object o = env.getFeatureDescriptor().getValue( VALUE_INCREMENT );
+        return o != null && ( o instanceof SpinnerModel );
     }
 }

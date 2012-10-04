@@ -45,23 +45,24 @@ package org.netbeans.modules.php.editor.elements;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.php.editor.api.FileElementQuery;
-import org.openide.filesystems.FileObject;
 import org.netbeans.modules.csl.api.OffsetRange;
-import  org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import  org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
-import  org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.FileElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 
@@ -150,9 +151,10 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
 
     public static VariableElement fromFrameworks(final PhpVariable variable, final ElementQuery elementQuery) {
         Parameters.notNull("variable", variable);
-        Set<TypeResolver> typeResolvers = variable.getType() == null
+        PhpClass variableType = variable.getType();
+        Set<TypeResolver> typeResolvers = variableType == null
                     ? Collections.<TypeResolver>emptySet()
-                    : Collections.<TypeResolver>singleton(new TypeResolverImpl(variable.getType().getFullyQualifiedName()));
+                    : Collections.<TypeResolver>singleton(new TypeResolverImpl(variableType.getFullyQualifiedName()));
         VariableElementImpl retval = new VariableElementImpl(variable.getName(), variable.getOffset(), null, elementQuery,
                 typeResolvers, typeResolvers);
         retval.fileObject = variable.getFile();

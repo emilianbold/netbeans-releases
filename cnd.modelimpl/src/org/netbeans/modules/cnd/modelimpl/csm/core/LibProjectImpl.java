@@ -146,11 +146,7 @@ public final class LibProjectImpl extends ProjectBase {
     @Override
     public void onFileAdded(List<NativeFileItem> file) {
     }
-
-    @Override
-    public void onFilePropertyChanged(NativeFileItem nativeFile) {
-    }
-
+    
     @Override
     public void onFilePropertyChanged(List<NativeFileItem> nativeFiles, boolean invalidateLibs) {
     }

@@ -75,10 +75,14 @@ import org.openide.util.Exceptions;
 public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
     private MatcherContext context;
-    protected static boolean testMode = false;
+    private static boolean testMode = false;
 
     public TplBracesMatching() {
         this(null);
+    }
+
+    protected static void setTestMode(boolean testMode) {
+        TplBracesMatching.testMode = testMode;
     }
 
     private TplBracesMatching(MatcherContext context) {
@@ -97,6 +101,7 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
             TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
 
             if (ts != null && ts.language() == TplTopTokenId.language()) {
+                int[] delims = findDelimsLength(ts);
                 while (searchOffset != context.getLimitOffset()) {
                     int diff = ts.move(searchOffset);
                     searchOffset = searchOffset + (context.isSearchingBackward() ? -1 : +1);
@@ -112,12 +117,13 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     }
 
                     Token<TplTopTokenId> t = ts.token();
-                    if (tokenInTag(t)) {
+                    boolean afterComment = afterCommentTag(th, ts, delims, searchOffset);
+                    if (tokenInTag(t) || afterComment) {
                         //find the tag beginning
                         do {
                             Token<TplTopTokenId> t2 = ts.token();
                             int t2offs = ts.offset();
-                            if (!tokenInTag(t2)) {
+                            if (!tokenInTag(t2) && !afterComment) {
                                 return null;
                             } else if (t2.id() == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
                                 //find end
@@ -186,7 +192,8 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
             ts.move(searchOffset);
             ts.moveNext();
             ts.movePrevious();
-            if (ts.token().id() == TplTopTokenId.T_COMMENT) {
+            if (ts.token().id() == TplTopTokenId.T_COMMENT
+                    || atCommentTag(TokenHierarchy.get(context.getDocument()), ts, delims, searchOffset)) {
                 return new int[]{searchOffset, searchOffset};
             }
         }
@@ -340,5 +347,50 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
             }
         }
         return new int[]{1, 1};
+    }
+
+    private boolean afterCommentTag(TokenHierarchy<Document> th, TokenSequence<TplTopTokenId> ts, int[] delimsLength, int searchOffset) {
+        if (ts.movePrevious()) {
+            Token<TplTopTokenId> prevToken = ts.token();
+            if (prevToken != null) {
+                ts.moveNext();
+                return searchOffset - prevToken.offset(th) <= delimsLength[1] + 1;
+            }
+        }
+        return false;
+    }
+
+    private boolean beforeCommentTag(TokenHierarchy<Document> th, TokenSequence<TplTopTokenId> ts, int[] delimsLength, int searchOffset) {
+        if (ts.moveNext()) {
+            Token<TplTopTokenId> nextToken = ts.token();
+            if (nextToken != null) {
+                if (nextToken.id() == TplTopTokenId.T_COMMENT) {
+                    ts.movePrevious();
+                    return nextToken.offset(th) - searchOffset <= delimsLength[0];
+                } else if (nextToken.id() == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
+                    if (ts.moveNext()) {
+                        Token<TplTopTokenId> nextNextToken = ts.token();
+                        ts.movePrevious();
+                        if (nextNextToken != null) {
+                            if (nextNextToken.id() == TplTopTokenId.T_COMMENT) {
+                                ts.movePrevious();
+                                return nextToken.offset(th) - searchOffset <= delimsLength[0];
+                            }
+                        }
+                    }
+                    ts.movePrevious();
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean atCommentTag(TokenHierarchy<Document> get, TokenSequence<TplTopTokenId> ts, int[] delims, int searchOffset) {
+        boolean end = ts.token().id() == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER
+                && afterCommentTag(get, ts, delims, searchOffset);
+        boolean start = (ts.token().id() == TplTopTokenId.T_SMARTY_OPEN_DELIMITER || ts.token().id() == TplTopTokenId.T_HTML)
+                && beforeCommentTag(get, ts, delims, searchOffset);
+
+        return end || start;
     }
 }

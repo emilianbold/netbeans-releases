@@ -138,7 +138,6 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
                         tk = LexUtilities.findPrevious(ts, Arrays.asList(TplTopTokenId.T_SMARTY));
                         if (tk != null) {
                             ts.moveNext();
-                            tk = LexUtilities.findNext(ts, Arrays.asList(TplTopTokenId.T_SMARTY));
                         }
                     }
                     return ts.offset();

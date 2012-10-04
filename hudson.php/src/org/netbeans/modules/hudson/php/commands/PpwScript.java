@@ -136,14 +136,12 @@ public final class PpwScript {
         try {
             Integer status = new PhpExecutable(ppwPath)
                     .additionalParameters(allParams)
-                    .run(executionDescriptor)
-                    .get();
-
-            // refresh fs
-            projectDirectory.refresh();
-            return status != null && status == 0;
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
+                    .runAndWait(executionDescriptor, "Creating project files"); // NOI18N
+            if (status != null) {
+                // refresh fs
+                projectDirectory.refresh();
+                return status == 0;
+            }
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }

@@ -48,12 +48,15 @@ import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.util.*;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  * UI panel for CVS settings.
  * 
  * @author Maros Sandor
  */
+@OptionsPanelController.Keywords(keywords={"cvs"}, location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
 class CvsOptionsPanel extends javax.swing.JPanel {
     
     /** Creates new form CvsOptionsPanel */

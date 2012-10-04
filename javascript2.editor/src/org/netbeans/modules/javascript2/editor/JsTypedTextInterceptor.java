@@ -795,7 +795,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                      // and search for the same bracket to the right in the text
                      // The search would stop on an extra right brace if found
                 braceBalance = 0;
-                bracketBalance = 1; // simulate one extra left bracket
+                bracketBalance = 0;
 
                 //token = lastRBracket.getNext();
                 TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
@@ -808,7 +808,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 finished = false;
 
                 while (!finished && (token != null)) {
-                    //int tokenIntId = token.getTokenID().getNumericID();
                     if ((token.id() == JsTokenId.BRACKET_LEFT_PAREN) || (token.id() == JsTokenId.BRACKET_LEFT_BRACKET)) {
                         if (token.id().ordinal() == leftBracketIntId) {
                             bracketBalance++;
@@ -837,13 +836,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                         braceBalance++;
                     } else if (token.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
                         braceBalance--;
-
-                        if (braceBalance < 0) { // stop on extra right brace
-                            finished = true;
-                        }
                     }
 
-                    //token = token.getPrevious(); // done regardless of finished flag state
                     if (!ts.movePrevious()) {
                         break;
                     }
@@ -851,9 +845,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                     token = ts.token();
                 }
 
-                // If bracketBalance == 0 the bracket would be matched
-                // by the bracket that follows the last right bracket.
-                //skipClosingBracket = (bracketBalance == 0);
+                skipClosingBracket = ((braceBalance == 0) && (bracketId == JsTokenId.BRACKET_RIGHT_CURLY))
+                        || ((bracketBalance > 0) && (bracketId == JsTokenId.BRACKET_RIGHT_BRACKET || bracketId == JsTokenId.BRACKET_RIGHT_PAREN));
             }
         }
 

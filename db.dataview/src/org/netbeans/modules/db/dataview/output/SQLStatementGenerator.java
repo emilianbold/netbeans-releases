@@ -77,8 +77,8 @@ class SQLStatementGenerator {
         StringBuilder insertSql = new StringBuilder();
         insertSql.append("INSERT INTO "); // NOI18N
 
-        String colNames = " ("; // NOI18N
-        String values = "";     // NOI18N
+        StringBuilder colNames = new StringBuilder(" ("); // NOI18N
+        StringBuilder values = new StringBuilder();
         String commaStr = ", "; // NOI18N
         boolean comma = false;
         for (int i = 0; i < insertedRow.length; i++) {
@@ -94,8 +94,8 @@ class SQLStatementGenerator {
             }
 
             if (comma) {
-                values += commaStr;
-                colNames += commaStr;
+                values.append(commaStr);
+                colNames.append(commaStr);
             } else {
                 comma = true;
             }
@@ -103,15 +103,19 @@ class SQLStatementGenerator {
             // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
             if (val != null && DataViewUtils.isSQLConstantString(val, dbcol)) {
                 String constStr = ((String) val).substring(1, ((String) val).length() - 1);
-                values += constStr;
+                values.append(constStr);
             } else { // ELSE literals
-                values += insertedRow[i] == null ? " NULL " : "?"; // NOI18N
+                values.append(insertedRow[i] == null ? " NULL " : "?"); // NOI18N
             }
-            colNames += dbcol.getQualifiedName(true);
+            colNames.append(dbcol.getQualifiedName(true));
         }
 
-        colNames += ")"; // NOI18N
-        insertSql.append(tblMeta.getFullyQualifiedName(0, true) + colNames + " Values(" + values + ")"); // NOI18N
+        colNames.append(")"); // NOI18N
+        insertSql.append(tblMeta.getFullyQualifiedName(0, true));
+        insertSql.append(colNames.toString());
+        insertSql.append(" Values("); // NOI18N
+        insertSql.append(values.toString());
+        insertSql.append(")"); // NOI18N
 
         return insertSql.toString();
     }
@@ -154,7 +158,11 @@ class SQLStatementGenerator {
         }
 
         rawcolNames += ")"; // NOI18N
-        rawInsertSql.append(tblMeta.getFullyQualifiedName(0, false) + rawcolNames + " \n\tVALUES (" + rawvalues + ")"); // NOI18N
+        rawInsertSql.append(tblMeta.getFullyQualifiedName(0, false));
+        rawInsertSql.append(rawcolNames);
+        rawInsertSql.append(" \n\tVALUES (");  // NOI18N
+        rawInsertSql.append(rawvalues);
+        rawInsertSql.append(")"); // NOI18N
 
         return rawInsertSql.toString();
     }
@@ -269,7 +277,7 @@ class SQLStatementGenerator {
 
         boolean isdb2 = table.getParentObject().getDBType() == DBMetaDataFactory.DB2 ? true : false;
 
-        StringBuffer sql = new StringBuffer();
+        StringBuilder sql = new StringBuilder();
         List<DBColumn> columns = table.getColumnList();
         sql.append("CREATE TABLE ").append(table.getQualifiedName(false)).append(" ("); // NOI18N
         int count = 0;

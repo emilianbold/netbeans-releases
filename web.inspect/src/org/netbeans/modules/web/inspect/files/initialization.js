@@ -216,7 +216,9 @@ NetBeans.setSelectionMode = function(selectionMode) {
 // Repaints the glass-pane
 NetBeans.repaintGlassPane = function() {
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
-    if (canvas.getContext) {
+    if (canvas === null) {
+        console.log("canvas not found!");
+    } else if (canvas.getContext) {
         var ctx = canvas.getContext('2d'); 
         var width = window.innerWidth;
         var height = window.innerHeight;

@@ -1004,7 +1004,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             setterBody.append("{");//NOI18N
 
             if (propertyChange != null || vetoableChange != null) {
-                setterBody.append(field.asType().toString()).append(" ").append(oldName).append(" = ").append(fieldName).append(";");//NOI18N
+                setterBody.append(field.asType().toString()).append(" ").append(oldName).append(" = ").append(longName).append(";");//NOI18N
             }
             if (vetoableChange != null) {
                 setterBody.append(vetoableChange.getName()).append(".fireVetoableChange(").append(propName.getName()).append(", ").append(oldName).append(", ").append(fieldName).append(");");//NOI18N

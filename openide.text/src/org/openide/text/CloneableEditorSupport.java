@@ -266,6 +266,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     
     private DocFilter docFilter;
 
+    private final Object LOCK_NOTIFY_MODIFIED = new Object();
+
     /** Classes that have been warned about overriding asynchronousOpen() */
     private static final Set<Class> warnedClasses = new WeakSet<Class>();
     
@@ -1107,16 +1109,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     // update cached info about lines
                     updateLineSet(true);
                     // updateTitles(); radim #58266
+                    if (doMarkAsUnmodified) {
+                        callNotifyUnmodified();
+                    }
+
                 } catch (IOException e) {
                     this.ex = e;
                 }
             }
 
             public void after() throws IOException {
-                if (doMarkAsUnmodified) {
-                    callNotifyUnmodified();
-                }
-
                 if (ex != null) {
                     throw ex;
                 }
@@ -1965,12 +1967,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @return true if the modification was allowed, false if it should be prohibited
      */
     final boolean callNotifyModified() {
-        if (!isAlreadyModified() && !documentReloading) {
-            setAlreadyModified(true);
-            
-            if (!notifyModified()) {
-                setAlreadyModified(false);
-                return false;
+        synchronized (LOCK_NOTIFY_MODIFIED) {
+            if (!isAlreadyModified() && !documentReloading) {
+                setAlreadyModified(true);
+                if (!notifyModified()) {
+                    setAlreadyModified(false);
+                    return false;
+                }
             }
         }
 
@@ -1978,8 +1981,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     }
 
     final void callNotifyUnmodified() {
-        setAlreadyModified(false);
-        notifyUnmodified();
+        synchronized (LOCK_NOTIFY_MODIFIED) {
+            setAlreadyModified(false);
+            notifyUnmodified();
+        }
     }
 
     /** Called when the document is being modified.

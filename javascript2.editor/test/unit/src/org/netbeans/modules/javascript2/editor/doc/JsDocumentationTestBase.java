@@ -104,7 +104,7 @@ public abstract class JsDocumentationTestBase extends JsTestBase {
      * @param parserResult parser result of the JS file
      * @return appropriate {@code JsDocumentationHolder} to given source
      */
-    public static JsDocumentationHolder getDocumentationHolder(JsParserResult parserResult) {
+    public JsDocumentationHolder getDocumentationHolder(JsParserResult parserResult) {
         return JsDocumentationSupport.getDocumentationHolder(parserResult);
     }
 
@@ -115,7 +115,7 @@ public abstract class JsDocumentationTestBase extends JsTestBase {
      * @param provider which provider should be used to create the {@code JsDocumentationHolder}
      * @return requested type of {@code JsDocumentationHolder}
      */
-    public static JsDocumentationHolder getDocumentationHolder(JsParserResult parserResult, JsDocumentationProvider provider) {
+    public JsDocumentationHolder getDocumentationHolder(JsParserResult parserResult, JsDocumentationProvider provider) {
         return provider.createDocumentationHolder(parserResult.getSnapshot());
     }
 
