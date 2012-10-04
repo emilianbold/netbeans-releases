@@ -326,6 +326,21 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
     }
 
+    public void testIssue189443() throws Exception {
+        insertChar("function x() {\n"
+            + "for(var j in child)^\n"
+            + "            alert(child.item(j));\n"
+            + "            child.item(j).checked = true;\n"
+            + "\n"
+            +"}\n",
+            '{',
+            "function x() {\n"
+            + "for(var j in child){^\n"
+            + "            alert(child.item(j));\n"
+            + "            child.item(j).checked = true;\n"
+            + "\n"
+            +"}\n");
+    }
     public void testIssue195515() throws Exception {
         insertChar("function name() { {^}", '}', "function name() { {}^");
     }
