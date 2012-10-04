@@ -44,7 +44,6 @@ package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
 import java.util.List;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.PropertyNode;
@@ -52,7 +51,6 @@ import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.VariableRefactoringElement;
 
@@ -71,11 +69,6 @@ public class FindVariableUsages extends AbstractFindUsages {
         return singleVisitor(new FindVariableUsagesVisitor(moduleNode));
     }
 
-    @Override
-    protected ElementKind getElementKind() {
-        return ElementKind.VARIABLE;
-    }
-
 
     private class FindVariableUsagesVisitor extends AbstractFindUsagesVisitor {
 
@@ -85,7 +78,7 @@ public class FindVariableUsages extends AbstractFindUsages {
         
         public FindVariableUsagesVisitor(ModuleNode moduleNode) {
            super(moduleNode);
-           assert (element instanceof VariableRefactoringElement) : "Expected VariableRefactoringElement but it was: " + element.getClass().getSimpleName();
+           assert (element instanceof VariableRefactoringElement) : "Expected VariableRefactoringElement but it was: " + element.getClass().getSimpleName(); // NOI18N
            final VariableRefactoringElement varElement = (VariableRefactoringElement) element;
 
            this.variableType = varElement.getVariableTypeName();
@@ -127,7 +120,7 @@ public class FindVariableUsages extends AbstractFindUsages {
                 final VariableExpression varExpression = ((VariableExpression) objectExpression);
 
                 final String varType;
-                if ("this".equals(varExpression.getName())) {
+                if ("this".equals(varExpression.getName())) { // NOI18N
                     String fileName = getSourceUnit().getName();            // returns file name (e.g. Tester.groovy)
                     varType = fileName.substring(0, fileName.indexOf(".")); // remove the .groovy suffix
                 } else {
@@ -149,7 +142,7 @@ public class FindVariableUsages extends AbstractFindUsages {
             if (variable != null) {
                 final String varName = variableExpression.getText();
                 final String fileName = getSourceUnit().getName();
-                final String varType = fileName.substring(0, fileName.indexOf("."));
+                final String varType = fileName.substring(0, fileName.indexOf(".")); // NOI18N
 
                 addIfEqual(expression, varType, varName);
             }
@@ -159,13 +152,13 @@ public class FindVariableUsages extends AbstractFindUsages {
         private void addIfEqual(ASTNode nodeToAdd, String type, String name) {
             // Currently visited field is dynamic --> Just check for the correct name
             // because we want to add everything that can possibly match the finding one
-            if ("java.lang.Object".equals(type)) {
+            if ("java.lang.Object".equals(type)) { // NOI18N
                 addIfNameEquals(nodeToAdd, name);
             }
 
             // Finding field is dynamic --> Just check for the correct name because
             // we want to add everything that can possibly match it
-            if ("java.lang.Object".equals(variableType)) {
+            if ("java.lang.Object".equals(variableType)) { // NOI18N
                 addIfNameEquals(nodeToAdd, name);
             }
 
