@@ -276,6 +276,11 @@ public abstract class TokenAcceptor {
             return POSTFIXES;
         }
 
+        //http://www.w3.org/TR/css3-values/#lengths
+        //Lengths refer to distance measurements and are denoted by <length> 
+        //in the property definitions. A length is a dimension. A zero length 
+        //may be represented instead as the <number> ‘0’. (In other words, 
+        //for zero lengths the unit identifier is optional.) 
         @Override
         public boolean accepts(String text) {
             boolean sa = super.accepts(text);
@@ -285,6 +290,19 @@ public abstract class TokenAcceptor {
                 return sa;
             }
         }
+
+        @Override
+        public Float getNumberValue(CharSequence image) {
+            Float f = super.getNumberValue(image);
+            if(f == null) {
+                if(image.length() > 0 && image.charAt(0) == '0') {
+                    f = new Float(0);
+                }
+            } 
+            return f;
+        }
+        
+        
     }
 
     public static class NonNegativeInteger extends TokenImageAcceptor {
