@@ -120,6 +120,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.ClassEnumBase;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ParserQueue.Position;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
@@ -1048,27 +1049,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         initFields();
     }
 
-    /**
-     * Creates FileImpl instance for the given file item if it hasn't yet been created.
-     * Is called when initializing the project or new file is added to project.
-     * Isn't intended to be used in #included file processing.
-     */
-    final protected void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile) {
-        FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile, isSourceFile);
-        if (fileAndHandler == null) {
-            return;
-        }
-        // put directly into parser queue if needed
-        ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
-    }
-
-    private FileAndHandler preCreateIfNeed(NativeFileItem nativeFile, boolean isSourceFile){
+    private FileAndHandler preCreateIfNeed(NativeFileItem nativeFile){
         // file object can be invalid for not existing file (#194357)
         assert (nativeFile != null && nativeFile.getFileObject() != null);
         if (!Utils.acceptNativeItem(nativeFile)) {
             return null;
         }
-        FileImpl.FileType fileType = isSourceFile ? Utils.getFileType(nativeFile) : FileImpl.FileType.HEADER_FILE;
+        FileImpl.FileType fileType = Utils.getFileType(nativeFile);
 
         FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.createFileBuffer(nativeFile.getFileObject()), nativeFile, fileType);
 
@@ -1078,10 +1065,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return fileAndHandler;
     }
 
-    final FileImpl createIfNeed(NativeFileItem nativeFile, boolean isSourceFile, FileModel lwm,
+    /*package*/final FileImpl createIfNeed(NativeFileItem nativeFile, FileModel lwm,
             ProjectSettingsValidator validator, Collection<FileImpl> reparseOnEdit, Collection<NativeFileItem> reparseOnPropertyChanged) {
 
-        FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile, isSourceFile);
+        FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile);
         if (fileAndHandler == null) {
             return null;
         }
@@ -2411,8 +2398,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         try {
             ParserQueue.instance().onStartAddingProjectFiles(this);
             for (NativeFileItem item : items) {
-                if (Utils.acceptNativeItem(item)) {
-                    createIfNeed(item, isSourceFile(item));
+                FileAndHandler fileAndHandler = preCreateIfNeed(item);
+                if (fileAndHandler != null) {
+                    // put into parser queue
+                    Position queuePosition = isSourceFile(item) ? ParserQueue.Position.HEAD : ParserQueue.Position.TAIL;
+                    ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), queuePosition);
                 }
             }
         } finally {
