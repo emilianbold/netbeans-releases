@@ -82,10 +82,15 @@ public final class IdentifiersUtil {
             return rename.getNewName() + "." + unqualify(fqn);
         }
 
-        FileObject folder = rename.getRefactoringSource().lookup(FileObject.class);
-        FileObject root = ClassPath.getClassPath(folder, ClassPath.SOURCE).findOwnerRoot(folder);
+        final FileObject folder = rename.getRefactoringSource().lookup(FileObject.class);
+        final ClassPath classPath = ClassPath.getClassPath(folder, ClassPath.SOURCE);
+        if (classPath == null) {
+            return "Cannot construct new name!"; //NOI18N
+        }
 
-        String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.');
+        final FileObject root = classPath.findOwnerRoot(folder);
+
+        String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.'); //NOI18N
         String oldName = buildName(prefix, folder.getName());
         String newName = buildName(prefix, rename.getNewName());
         int oldNameIndex = fqn.lastIndexOf(oldName) + oldName.length();
