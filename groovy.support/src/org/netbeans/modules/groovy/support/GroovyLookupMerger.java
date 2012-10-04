@@ -55,6 +55,8 @@ import org.openide.util.Lookup;
  * Create a simple instance of LookupMerger for ActionProvider. It takes all
  * implementations it finds in the provided lookup and iterates them until a
  * result is found.
+ *
+ * Maybe, this should rather be in the web.project and j2ee.ejbjarproject modules?
  */
 @LookupMerger.Registration(projectType={
     "org-netbeans-modules-web-project",
