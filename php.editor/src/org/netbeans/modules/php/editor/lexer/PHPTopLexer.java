@@ -265,6 +265,8 @@ public class PHPTopLexer implements Lexer<PHPTopTokenId> {
                                     }
                                 }
                                 break;
+                            default:
+                                //no-op
                         }
                 }
                 c = input.read();
