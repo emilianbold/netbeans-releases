@@ -85,13 +85,17 @@ public class AssistantMessages {
         Enumeration enumeration = bundle.getKeys();
         while (enumeration.hasMoreElements()) {
             String bundleKey = (String)enumeration.nextElement();
+            String message = bundle.getString(bundleKey);
+            if (message == null || message.trim().length() == 0) {
+                continue; // some messages can be filtered out via branding
+            }
             String context = getContext(bundleKey);
             Set<String> messages = contextToSet.get(context);
             if (messages == null) {
                 messages = new HashSet<String>();
                 contextToSet.put(context, messages);
             }
-            messages.add(bundle.getString(bundleKey));
+            messages.add(message);
         }
 
         // Transform sets into arrays
