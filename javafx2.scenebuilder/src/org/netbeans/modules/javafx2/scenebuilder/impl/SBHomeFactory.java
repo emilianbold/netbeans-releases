@@ -111,17 +111,37 @@ public class SBHomeFactory {
         }
     };
     private static final HomeFactory UX_HOME_LOCATOR = new HomeFactory() {
+        final private String WKIP = NbBundle.getMessage(SBHomeFactory.class, "UX_WKIP"); // NOI18N
+        final private String WKIP_MIX = NbBundle.getMessage(SBHomeFactory.class, "UX_WKIP_MIX"); // NOI18N
         final private String LAUNCHER_PATH = NbBundle.getMessage(SBHomeFactory.class, "UX_LAUNCHER"); // NOI18N
         final private String PROPERTIES_PATH = NbBundle.getMessage(SBHomeFactory.class, "UX_PROPERTIES"); // NOI18N
         
         @Override
         public Home defaultHome() {
-            return null;
+            Home h = null;
+            for(String s : VER_CURRENT) {
+                h = loadHome(WKIP + s); // NOI18N
+                if(h != null) {
+                    return h;
+                }
+                h = loadHome(WKIP_MIX + s); // NOI18N
+                if(h != null) {
+                    return h;
+                }
+            }            
+            return h;
         }
 
         @Override
         public Home loadHome(String customPath) {
-            return getHomeForPath(customPath, LAUNCHER_PATH, PROPERTIES_PATH);
+            String ver = "";
+            for(String s : VER_CURRENT) {
+                if(customPath.lastIndexOf(s) == customPath.length()- s.length()) {
+                    ver = s;
+                    break;
+                }
+            }            
+            return getHomeForPath(customPath, LAUNCHER_PATH + ver, PROPERTIES_PATH);
         }
     };
     
@@ -136,7 +156,12 @@ public class SBHomeFactory {
     }
     
     private static Home getHomeForPath(String path, String launcherPath, String propertiesPath) {
-        File installDir = new File(path);
+        String homePath = path;
+        if(path.startsWith("~")) {
+            String userHome = System.getProperty("user.home");
+            homePath = userHome + path.substring(1);
+        }
+        File installDir = new File(homePath);
         if (installDir != null && installDir.exists() && installDir.isDirectory()) {
             FileObject installDirFO = FileUtil.toFileObject(installDir);
 
@@ -150,7 +175,7 @@ public class SBHomeFactory {
                     } finally {
                         reader.close();
                     }
-                    return new Home(path, launcherPath, propertiesPath, props.getProperty("version", "1.0")); // NOI18N
+                    return new Home(homePath, launcherPath, propertiesPath, props.getProperty("version", "1.0")); // NOI18N
                 } catch (IOException e) {
                 }
             }
