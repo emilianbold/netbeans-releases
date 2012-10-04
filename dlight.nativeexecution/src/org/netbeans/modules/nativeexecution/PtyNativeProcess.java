@@ -177,8 +177,8 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
             if (line.startsWith("PID=")) { // NOI18N
                 pidLine = line.substring(4);
-            } else if (line.startsWith("TTY=")) {
-                ttyLine = line.substring(4); // NOI18N
+            } else if (line.startsWith("TTY=")) { // NOI18N
+                ttyLine = line.substring(4);
             }
         }
 

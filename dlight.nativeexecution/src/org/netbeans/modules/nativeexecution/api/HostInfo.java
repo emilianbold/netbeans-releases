@@ -169,4 +169,6 @@ public interface HostInfo {
      * @return time difference in milliseconds between remote and localhost
      */
     public long getClockSkew();
+
+    public String getEnvironmentFile();
 }
