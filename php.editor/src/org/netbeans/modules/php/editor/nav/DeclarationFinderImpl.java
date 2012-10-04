@@ -213,7 +213,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     }
 
-    private class ReferenceSpanCrateFetcher implements Callable<ReferenceSpanCrate> {
+    private static class ReferenceSpanCrateFetcher implements Callable<ReferenceSpanCrate> {
         private final Source source;
 
         public ReferenceSpanCrateFetcher(final Source source) {

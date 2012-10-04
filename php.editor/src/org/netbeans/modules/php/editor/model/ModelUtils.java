@@ -482,6 +482,8 @@ public class ModelUtils {
                         result =  true;
                     }
                     break;
+                default:
+                    //no-op
             }
         }
         return result;
