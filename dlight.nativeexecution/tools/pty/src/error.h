@@ -21,8 +21,8 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
-
     void err_sys(const char *fmt, ...);
+    void warn_sys(const char *fmt, ...);
     void err_quit(const char *fmt, ...);
 
 #ifdef	__cplusplus

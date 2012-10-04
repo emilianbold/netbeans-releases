@@ -34,6 +34,13 @@ void err_sys(const char *fmt, ...) {
     exit(1);
 }
 
+void warn_sys(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    err_doit(1, errno, fmt, ap);
+    va_end(ap);
+}
+
 /*
  * Fatal error unrelated to a system call.
  * Print a message and terminate.

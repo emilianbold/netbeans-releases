@@ -1,11 +1,12 @@
-OBJS := $(OBJFILES:%=$(OBJ_DIR)/%)
+OBJS := $(SOURCES:$(ROOT_DIR)/%.c=$(OBJ_DIR)/%.o)
+OBJ_DIRS := $(SRC_DIRS:$(ROOT_DIR)/%=$(OBJ_DIR)/%)
 DEPS := $(OBJS:%.o=%.d)
 DEPFLAGS := -MMD -MP
 
 clean_deps:
 	$(RM) $(DEPS)
 
-$(OBJS): $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+$(OBJS): $(OBJ_DIR)/%.o: $(ROOT_DIR)/%.c | $(OBJ_DIRS)
 	$(COMPILE.c) $(DEPFLAGS) -MF $(@:%.o=%.d) -o $@ $<
 
 -include $(DEPS)

@@ -1,10 +1,10 @@
-OBJS = $(OBJFILES:%=$(OBJ_DIR)/%)
-$(OBJS) := DEP = $(@:$(OBJ_DIR)/%.o=$(SRC_DIR)/%.c)
+OBJS = $(SOURCES:$(ROOT_DIR)/%.c=$(OBJ_DIR)/%.o)
+OBJ_DIRS = $(SRC_DIRS:$(ROOT_DIR)/%=$(OBJ_DIR)/%)
+$(OBJS) := DEP = $(@:$(OBJ_DIR)/%.o=$(ROOT_DIR)/%.c)
 
 clean_deps:
-	$(RM) .make.state.$(CONF)
 
-$(OBJS): $(OBJ_DIR) $$(DEP)
+$(OBJS): $(OBJ_DIRS) $$(DEP)
 	$(COMPILE.c) -o $@ $(DEP)
 
 .KEEP_STATE:
