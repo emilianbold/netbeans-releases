@@ -73,6 +73,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -111,8 +112,7 @@ public class InstantRenameAction extends BaseAction {
                 Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenameAction.class, "scanning-in-progress"));
                 return;
             }
-
-            Source js = Source.create (DataLoadersBridge.getDefault().getFileObject(target));
+            Source js = Source.create(target.getDocument());
             if (js == null) {
                 return;
             }
