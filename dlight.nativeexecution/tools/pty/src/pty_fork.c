@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <stdarg.h>
-#if !defined __APPLE__ && !defined __CYGWIN__
+#ifdef SOLARIS
 #include <stropts.h>
 #else
 #include <sys/ioctl.h>
@@ -21,8 +21,8 @@ int posix_openpt(int flags) {
 }
 
 #endif
-extern int  grantpt(int);
-extern int  unlockpt(int);
+extern int grantpt(int);
+extern int unlockpt(int);
 extern char *ptsname(int);
 
 static void dup_fd(int pty_fd);
@@ -32,6 +32,11 @@ static int pts_open(int masterfd);
 int ptm_open(void) {
     int masterfd;
 
+    /*
+     * O_NOCTTY (?) we'll be a group leader in any case (?)
+     * So will get a controlling terminal.. O_NOCTTY - do we need it?
+     * 
+     */
     if ((masterfd = posix_openpt(O_RDWR | O_NOCTTY)) == -1) {
         return -1;
     }
@@ -81,10 +86,29 @@ int pts_open(int masterfd) {
     return slavefd;
 }
 
-pid_t pty_fork(int *ptrfdm, char** pts_name) {
+pid_t pty_fork(int *ptrfdm) {
     pid_t pid;
     char* name;
     int master_fd, pty_fd;
+    struct termios termios;
+    struct termios* ptermios = NULL;
+    struct winsize wsize;
+    struct winsize* pwinsize = NULL;
+
+    // If we are in a terminal - get it's params and set them to 
+    // a newly allocated one...
+
+    if (isatty(STDIN_FILENO)) {
+        ptermios = &termios;
+        if (tcgetattr(STDIN_FILENO, ptermios) == -1) {
+            err_sys("tcgetattr failed");
+        }
+
+        pwinsize = &wsize;
+        if (ioctl(STDIN_FILENO, TIOCGWINSZ, pwinsize) == -1) {
+            err_sys("ioctl(TIOCGWINSZ) failed");
+        }
+    }
 
     if ((master_fd = ptm_open()) < 0) {
         err_sys("ERROR: ptm_open() failed [%d]\n", master_fd);
@@ -96,11 +120,10 @@ pid_t pty_fork(int *ptrfdm, char** pts_name) {
     }
 
     // Put values to the output params
-    *pts_name = name;
     *ptrfdm = master_fd;
 
     if ((pid = fork()) < 0) {
-        printf("FAILED");
+        err_sys("fork failed");
         return (-1);
     }
 
@@ -113,6 +136,18 @@ pid_t pty_fork(int *ptrfdm, char** pts_name) {
             err_sys("can't open slave pty");
         }
 
+        if (ptermios != NULL) {
+            if (tcsetattr(pty_fd, TCSANOW, ptermios) == -1) {
+                err_sys("tcsetattr(TCSANOW) failed");
+            }
+        }
+
+        if (pwinsize != NULL) {
+            if (ioctl(pty_fd, TIOCSWINSZ, pwinsize) == -1) {
+                err_sys("ioctl(TIOCSWINSZ) failed");
+            }
+        }
+
         close(master_fd);
         dup_fd(pty_fd);
 
@@ -123,7 +158,7 @@ pid_t pty_fork(int *ptrfdm, char** pts_name) {
 
 }
 
-pid_t pty_fork1(char *pty) {
+pid_t pty_fork1(const char *pty) {
     pid_t pid;
     int pty_fd;
 
@@ -133,19 +168,31 @@ pid_t pty_fork1(char *pty) {
     }
 
     if (pid == 0) { /* child */
+        /*
+         * Create a new process session for this child.
+         */
         if (setsid() < 0) {
             err_sys("setsid error");
         }
 
+        /*
+         * Open a terminal descriptor...
+         */
         if ((pty_fd = open(pty, O_RDWR)) == -1) {
             err_sys("ERROR cannot open pty \"%s\" -- %s\n",
                     pty, strerror(errno));
         }
 
+        /*
+         * Associate pty_fd with I/O and close it
+         */
         dup_fd(pty_fd);
         return (0);
     } else {
-        return (pid); /* parent returns pid of child */
+        /* 
+         * parent just returns a pid of the child 
+         */
+        return (pid);
     }
 }
 
@@ -157,7 +204,7 @@ static void dup_fd(int pty_fd) {
     sigaction(SIGINT, &act, NULL);
 
 
-#if defined(TIOCSCTTY) && !defined(__sun)
+#if defined(TIOCSCTTY) && !defined(__sun) && !defined(__APPLE__)
     if (ioctl(pty_fd, TIOCSCTTY, 0) == -1) {
         printf("ERROR ioctl(TIOCSCTTY) failed on \"pty %d\" -- %s\n",
                 pty_fd, strerror(errno));

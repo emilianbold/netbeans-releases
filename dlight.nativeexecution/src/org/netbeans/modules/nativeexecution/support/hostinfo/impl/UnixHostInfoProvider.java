@@ -53,13 +53,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.JschSupport;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.pty.NbStartUtility;
 import org.netbeans.modules.nativeexecution.support.EnvReader;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -98,15 +102,18 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             return null;
         }
 
-        final Properties info;
-        final Map<String, String> environment;
+        final Properties info = execEnv.isLocal()
+                ? getLocalHostInfo()
+                : getRemoteHostInfo(execEnv);
+
+        final Map<String, String> environment = new HashMap<String, String>();
+
+        HostInfo result = HostInfoFactory.newHostInfo(execEnv, info, environment);
 
         if (execEnv.isLocal()) {
-            environment = new HashMap<String, String>(System.getenv());
-            info = getLocalHostInfo();
+            getLocalUserEnvironment(result, environment);
         } else {
-            environment = new HashMap<String, String>();
-            info = getRemoteHostInfo(execEnv, environment);
+            getRemoteUserEnvironment(execEnv, result, environment);
         }
 
         // Add /bin:/usr/bin
@@ -118,7 +125,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
         environment.put(PATH_VAR, path); // NOI18N
 
-        return HostInfoFactory.newHostInfo(info, environment);
+        return result;
     }
 
     private Properties getLocalHostInfo() throws IOException {
@@ -162,7 +169,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         return hostInfo;
     }
 
-    private Properties getRemoteHostInfo(ExecutionEnvironment execEnv, Map<String, String> environmentToFill) throws IOException {
+    private Properties getRemoteHostInfo(ExecutionEnvironment execEnv) throws IOException {
         Properties hostInfo = new Properties();
         ChannelStreams sh_channels = null;
 
@@ -217,10 +224,60 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             }
         }
 
+        return hostInfo;
+    }
+
+    private void fillProperties(Properties hostInfo, InputStream inputStream) {
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            String s;
+            while ((s = br.readLine()) != null) {
+                String[] data = s.split("=", 2); // NOI18N
+                if (data.length == 2) {
+                    hostInfo.put(data[0], data[1]);
+                }
+            }
+        } catch (IOException ex) {
+        }
+    }
+
+    private void getRemoteUserEnvironment(ExecutionEnvironment execEnv, HostInfo hostInfo, Map<String, String> environmentToFill) {
+        // If NbStartUtility is available for target host will invoke it for
+        // dumping environment to a file ...
+        // 
+        // The only thing - we cannot use builders at this point, so
+        // need to do everything here... 
+
+        String nbstart = null;
+        String envPath = null;
+
+        if (NbStartUtility.getInstance().isSupported(execEnv)) {
+            String localPath = NbStartUtility.getInstance().getLocalFileLocationFor(hostInfo);
+            if (localPath != null) {
+                final File localFile = new File(localPath);
+                final String fileName = localFile.getName();
+                final String remotePath = hostInfo.getTempDir() + '/' + fileName;
+                envPath = hostInfo.getEnvironmentFile();
+
+                Future<UploadStatus> uploadResult = CommonTasksSupport.uploadFile(localFile, execEnv, remotePath, 0700);
+
+                try {
+                    UploadStatus result = uploadResult.get();
+                    if (result.isOK()) {
+                        nbstart = remotePath;
+                    }
+                } catch (Exception ex) {
+                }
+            }
+        }
+
         ChannelStreams login_shell_channels = null;
 
         try {
             login_shell_channels = JschSupport.startLoginShellSession(execEnv);
+            if (nbstart != null && envPath != null) {
+                login_shell_channels.in.write((nbstart + " --dumpenv " + envPath).getBytes()); // NOI18N
+            }
             login_shell_channels.in.write(("/usr/bin/env || /bin/env\n").getBytes()); // NOI18N
             login_shell_channels.in.flush();
             login_shell_channels.in.close();
@@ -239,21 +296,9 @@ public class UnixHostInfoProvider implements HostInfoProvider {
                 }
             }
         }
-
-        return hostInfo;
     }
 
-    private void fillProperties(Properties hostInfo, InputStream inputStream) {
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            String s;
-            while ((s = br.readLine()) != null) {
-                String[] data = s.split("=", 2); // NOI18N
-                if (data.length == 2) {
-                    hostInfo.put(data[0], data[1]);
-                }
-            }
-        } catch (IOException ex) {
-        }
+    private void getLocalUserEnvironment(HostInfo hostInfo, Map<String, String> environmentToFill) {
+        environmentToFill.putAll(System.getenv());
     }
 }
