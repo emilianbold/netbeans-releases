@@ -53,13 +53,10 @@ import java.util.Map.Entry;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyUtility;
-import org.netbeans.modules.nativeexecution.support.SignalSupport;
 
 /**
  *
@@ -92,7 +89,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         }
 
         if (fixEraseKeyInTerminal) {
-            newArgs.add("-w"); // NOI18N
+            newArgs.add("--set-erase-key"); // NOI18N
         }
 
         final MacroMap envMap = info.getEnvironment();
@@ -155,12 +152,14 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         }
 
         delegate.createAndStart();
+        
+        InputStream inputStream = delegate.getInputStream();
 
         if (pty != null) {
             setInputStream(pty.getInputStream());
             setOutputStream(pty.getOutputStream());
         } else {
-            setInputStream(delegate.getInputStream());
+            setInputStream(inputStream);
             setOutputStream(delegate.getOutputStream());
         }
 
@@ -168,17 +167,19 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         String pidLine = null;
         String ttyLine = null;
+        String line;
 
-        String line = readLine(delegate.getInputStream());
+        while ((line = readLine(inputStream)) != null) {
+            line = line.trim();
+            if (line.isEmpty()) {
+                break;
+            }
 
-        if (line != null && line.startsWith("PID=")) { // NOI18N
-            pidLine = line.substring(4);
-        }
-
-        line = readLine(delegate.getInputStream());
-
-        if (line != null && line.startsWith("TTY=")) { // NOI18N
-            ttyLine = line.substring(4);
+            if (line.startsWith("PID=")) { // NOI18N
+                pidLine = line.substring(4);
+            } else if (line.startsWith("TTY=")) {
+                ttyLine = line.substring(4); // NOI18N
+            }
         }
 
         if (pidLine == null || ttyLine == null) {
@@ -190,11 +191,6 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         ByteArrayInputStream bis = new ByteArrayInputStream(pidLine.getBytes());
         readPID(bis);
-
-        if (fixEraseKeyInTerminal) {
-            PtySupport.setBackspaceAsEraseChar(env, tty);
-            SignalSupport.getSignalSupportFor(env).kill(Signal.SIGUSR1, getPID());
-        }
     }
 
     @Override
