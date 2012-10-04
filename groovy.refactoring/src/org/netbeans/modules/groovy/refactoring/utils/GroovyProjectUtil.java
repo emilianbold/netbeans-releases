@@ -237,13 +237,13 @@ public class GroovyProjectUtil {
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(FileObject fileObject) {
-        DataObject dob = null;
         try {
-            dob = DataObject.find(fileObject);
+            final DataObject dob = DataObject.find(fileObject);
+            return GroovyProjectUtil.findCloneableEditorSupport(dob);
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return GroovyProjectUtil.findCloneableEditorSupport(dob);
+        return null;
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {

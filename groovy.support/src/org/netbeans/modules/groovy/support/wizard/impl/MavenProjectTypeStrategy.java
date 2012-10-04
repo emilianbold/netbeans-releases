@@ -175,7 +175,7 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
         public void performOperation(POMModel model) {
             Dependency jUnitDependency = ModelUtils.checkModelDependency(model, JUNIT_GROUP_ID, JUNIT_ARTIFACT_ID, false);
             if (jUnitDependency == null) {
-                jUnitVersion = JUnit.NOT_DECLARED;
+                MavenProjectTypeStrategy.this.jUnitVersion = JUnit.NOT_DECLARED;
             } else {
                 String declaredVersion = jUnitDependency.getVersion();
                 int indexOfFirstDot = declaredVersion.indexOf("."); //NOI18N
@@ -186,12 +186,12 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
 
                 try {
                     if (Integer.parseInt(majorVersion) < 4) {
-                        jUnitVersion = JUnit.JUNIT3;
+                        MavenProjectTypeStrategy.this.jUnitVersion = JUnit.JUNIT3;
                     } else {
-                        jUnitVersion = JUnit.JUNIT4;
+                        MavenProjectTypeStrategy.this.jUnitVersion = JUnit.JUNIT4;
                     }
                 } catch (NumberFormatException exception) {
-                    jUnitVersion = JUnit.NOT_DECLARED;
+                    MavenProjectTypeStrategy.this.jUnitVersion = JUnit.NOT_DECLARED;
                 }
             }
         }

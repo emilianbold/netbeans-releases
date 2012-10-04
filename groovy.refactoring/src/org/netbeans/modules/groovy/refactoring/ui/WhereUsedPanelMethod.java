@@ -173,14 +173,10 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
                 ClassNode classNode = ((ClassNode) value);
                 setText(ElementUtils.getNameWithoutPackage(classNode));
 
-                if (classNode != null) {
-                    if (classNode.isInterface()) {
-                        setIcon(UiUtils.getElementIcon(ElementKind.INTERFACE, null));
-                    } else {
-                        setIcon(UiUtils.getElementIcon(ElementKind.CLASS, null));
-                    }
+                if (classNode.isInterface()) {
+                    setIcon(UiUtils.getElementIcon(ElementKind.INTERFACE, null));
                 } else {
-                    setIcon(getEmptyIcon());
+                    setIcon(UiUtils.getElementIcon(ElementKind.CLASS, null));
                 }
             }
             if (isSelected) {

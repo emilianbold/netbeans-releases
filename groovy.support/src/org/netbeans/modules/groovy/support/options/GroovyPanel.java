@@ -65,17 +65,19 @@ import org.openide.util.LookupListener;
  *
  * @author Jan Jancura
  */
-public final class GroovyPanel extends JPanel {    
-    JTabbedPane     tabbedPanel;    
-    private LookupListener listener = new LookupListenerImpl();
-    private Model   model = new Model (listener);
-    private ChangeListener changeListener = new ChangeListener () {
-            public void stateChanged(ChangeEvent e) {
-                handleTabSwitched();
-            }
-        };
+public final class GroovyPanel extends JPanel {
     
-    GroovyPanel () {}
+    private final transient LookupListener listener;
+    private final transient ChangeListener changeListener;
+    private Model model;
+    JTabbedPane tabbedPanel;    
+
+
+    GroovyPanel () {
+        listener = new LookupListenerImpl();
+        changeListener = new ChangeListenerImpl();
+        model = new Model(listener);
+    }
         
     public void update () {
         String category = tabbedPanel.getTitleAt(tabbedPanel.getSelectedIndex());
@@ -140,10 +142,20 @@ public final class GroovyPanel extends JPanel {
     }
     
     private class LookupListenerImpl implements LookupListener {
+        
+        @Override
         public void resultChanged(LookupEvent ev) {
             Lookup masterLookup = model.getLookup();
             model = new Model(listener);
             initTabbedPane(masterLookup);
         }        
+    }
+
+    private class ChangeListenerImpl implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            handleTabSwitched();
+        }
     }
 }
