@@ -218,7 +218,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
                         return new VariableRefactoringElement(fileObject, field.getOwner(), field.getName());
                     }
                 default:
-                    throw new IllegalStateException("Unknown element kind. Refactoring shouldn't be enabled in this context !");
+                    throw new IllegalStateException("Unknown element kind. Refactoring shouldn't be enabled in this context !"); // NOI18N
             }
         }
 

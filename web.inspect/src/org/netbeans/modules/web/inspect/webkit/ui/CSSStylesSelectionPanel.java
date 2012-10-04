@@ -97,7 +97,7 @@ import org.w3c.dom.Document;
  */
 public class CSSStylesSelectionPanel extends JPanel {
     /** Request processor used by this class. */
-    private static final RequestProcessor RP = new RequestProcessor(CSSStylesSelectionPanel.class);
+    static final RequestProcessor RP = new RequestProcessor(CSSStylesSelectionPanel.class);
     /** Lookup of this panel. */
     private Lookup lookup;
     /** The current inspected page. */
