@@ -98,7 +98,7 @@ public class NbStartUtility extends HelperUtility {
                 case MACOSX:
                 case SUNOS:
                 case LINUX:
-                    return getPath(executionEnvironment) != null;
+                    return true;
                 case WINDOWS:
                     // For now will disable it on Windows, as there are some
                     // side-effects with paths (need deeper studying)
