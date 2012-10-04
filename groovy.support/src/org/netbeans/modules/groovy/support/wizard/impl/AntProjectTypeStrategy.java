@@ -383,7 +383,7 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
         return (result != null) ? result : Collections.<FileObject>emptyList();
     }
 
-    final class JUnitLibraryComparator implements Comparator<Library> {
+    private static class JUnitLibraryComparator implements Comparator<Library> {
 
         @Override
         public int compare(Library l1, Library l2) {
