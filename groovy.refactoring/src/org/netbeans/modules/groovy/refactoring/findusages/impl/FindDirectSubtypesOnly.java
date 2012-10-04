@@ -66,7 +66,7 @@ public class FindDirectSubtypesOnly extends AbstractFindUsages {
     }
 
 
-    private class FindDirectSubtypesOnlyVisitor extends AbstractFindUsagesVisitor {
+    private static class FindDirectSubtypesOnlyVisitor extends AbstractFindUsagesVisitor {
 
         private final String findingFqn;
 
