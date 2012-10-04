@@ -139,7 +139,7 @@ public class VariousUtils {
             varBase = stack.pop();
             String tmpType = extractVariableTypeFromVariableBase(varBase, allAssignments);
             if (tmpType == null) {
-                typeName = tmpType;
+                typeName = null;
                 break;
             }
             if (typeName == null) {
@@ -227,6 +227,7 @@ public class VariousUtils {
             Expression name = className.getName();
             if (name instanceof NamespaceName) {
                 QualifiedName qn = QualifiedName.create(name);
+                assert qn != null : name;
                 return qn.toString();
             }
             return CodeUtils.extractClassName(className);
@@ -544,10 +545,14 @@ public class VariousUtils {
         QualifiedName result;
         final QualifiedName query = QualifiedName.create(semiTypeName);
         final String translatedName = translateSpecialClassName(scope, query.getName());
-        if (translatedName != null && translatedName.startsWith("\\")) { //NOI18N
-            result = QualifiedName.create(translatedName);
+        if (translatedName != null) {
+            if (translatedName.startsWith("\\")) { //NOI18N
+                result = QualifiedName.create(translatedName);
+            } else {
+                result = query.toNamespaceName(query.getKind().isFullyQualified()).append(translatedName);
+            }
         } else {
-            result = query.toNamespaceName(query.getKind().isFullyQualified()).append(translatedName);
+            result = query.toNamespaceName(query.getKind().isFullyQualified());
         }
         return result;
     }
@@ -991,6 +996,8 @@ public class VariousUtils {
                         }
                         state = State.STOP;
                         break;
+                    default:
+                        //no-op
                 }
             } else {
                 if (state.equals(State.VARBASE)) {
@@ -1452,24 +1459,22 @@ public class VariousUtils {
      * @return Fully qualified type names in the format: string|\Foo\ClassName|null
      */
     public static String qualifyTypeNames(String typeNames, int offset, Scope inScope) {
-        String retval = ""; //NOI18N
+        StringBuilder retval = new StringBuilder();
         final String typeSeparator = "|"; //NOI18N
         if (typeNames != null) {
             for (String typeName : typeNames.split("\\" + typeSeparator)) { //NOI18N
                 if (!typeName.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) && !VariousUtils.isPrimitiveType(typeName)) {
                     QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), offset, inScope);
-                    retval += fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) ? "" : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR; //NOI18N
-                    retval += fullyQualifiedName.toString() + typeSeparator;
+                    retval.append(fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) ? "" : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR); //NOI18N
+                    retval.append(fullyQualifiedName.toString()).append(typeSeparator);
                 } else {
-                    retval += typeName + typeSeparator;
+                    retval.append(typeName).append(typeSeparator);
                 }
             }
             assert retval.length() - typeSeparator.length() >= 0 : "retval:" + retval + "# typeNames:"+typeNames; //NOI18N
-            retval = retval.substring(0, retval.length() - typeSeparator.length());
-        } else {
-            retval = typeNames;
+            retval = new StringBuilder(retval.toString().substring(0, retval.length() - typeSeparator.length()));
         }
-        return retval;
+        return retval.toString();
     }
 
     /**
