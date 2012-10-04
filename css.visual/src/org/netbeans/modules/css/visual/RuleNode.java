@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
@@ -427,10 +428,6 @@ public class RuleNode extends AbstractNode {
 
     public void applyModelChanges() {
         final Model model = getModel();
-        final NbEditorDocument doc = (NbEditorDocument) model.getLookup().lookup(Document.class);
-        if (doc == null) {
-            return;
-        }
         model.runReadTask(new Model.ModelTask() {
             @Override
             public void run(StyleSheet styleSheet) {
@@ -802,7 +799,6 @@ public class RuleNode extends AbstractNode {
                     @Override
                     public void run() {
                         final String val = valueSet;
-                        valueSet = null;
                         
                         Model model = getModel();
                         model.runWriteTask(new Model.ModelTask() {
@@ -814,7 +810,7 @@ public class RuleNode extends AbstractNode {
                                     declarations.removeDeclaration(declaration);
                                 } else {
                                     //update the value
-                                    System.out.println("updating property to " + val);
+                                    RuleEditorPanel.LOG.log(Level.FINE, "updating property to {0}", val);
                                     declaration.getPropertyValue().getExpression().setContent(val);
                                 }
                             }
@@ -834,9 +830,6 @@ public class RuleNode extends AbstractNode {
                             //and the RuleEditorPanel's listener will ASYNCHRONOUSLY
                             //refresh the css source model.
 
-                        } else {
-                            //for addPropertyMode only
-                            fireContextChanged(false); //will also trigger the updateDeclaration(...) method synchronously 
                         }
 
                     }

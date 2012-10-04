@@ -193,12 +193,13 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                     new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
+                            //disalog confirmed
                             color_ref.set(COLOR_CHOOSER.getColor());
                         }
                     }, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    //no-op
+                    //dialog cancelled
                 }
             });
             dialog.setVisible(true);
@@ -207,7 +208,9 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
             Color color = color_ref.get();
             if(color != null) {
                 str = WebUtils.toHexCode(color);
-                
+            } else {
+                //dialog cancelled, no value - do not allow the CHOOSE_COLOR_ITEM marker to be set the to property
+                return ;
             }
 
         }
@@ -266,11 +269,13 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                         TokenAcceptor.NumberPostfixAcceptor acceptor = (TokenAcceptor.NumberPostfixAcceptor) genericAcceptor;
                         if (acceptor.accepts(value)) {
                             int i = acceptor.getNumberValue(value).intValue();
-                            String postfix = acceptor.getPostfix(value).toString();
+                            CharSequence postfix = acceptor.getPostfix(value);
 
                             StringBuilder newVal = new StringBuilder();
                             newVal.append(i + (forward ? 1 : -1));
-                            newVal.append(postfix);
+                            if(postfix != null) {
+                                newVal.append(postfix);
+                            }
 
                             return newVal.toString();
                         }

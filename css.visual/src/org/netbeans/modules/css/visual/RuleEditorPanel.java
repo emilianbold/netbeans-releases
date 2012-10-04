@@ -152,9 +152,11 @@ import org.openide.util.actions.Presenter;
 })
 public class RuleEditorPanel extends JPanel {
 
+    private static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
+    static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
+    
     static RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
-    public static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
-    private static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
+    
     private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
     private static final Icon APPLIED_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/database.gif")); //NOI18N
     private static final JLabel ERROR_LABEL = new JLabel(ERROR_ICON);
@@ -207,7 +209,7 @@ public class RuleEditorPanel extends JPanel {
                                             if (resultIterator != null) {
                                                 CssCslParserResult result = (CssCslParserResult) resultIterator.getParserResult();
                                                 final Model model = result.getModel();
-                                                LOG.info("Setting new model upon Model.applyChanges()");
+                                                LOG.log(Level.INFO, "Model.CHANGES_APPLIED_TO_DOCUMENT event handler - setting new model {0}", model);
                                                 setModel(model);
                                             }
                                         }
@@ -533,19 +535,16 @@ public class RuleEditorPanel extends JPanel {
 
     //runs in EDT
     public void setModel(final Model model) {
-        LOG.log(Level.FINE, "setModel({0})", model);
-
+        assert SwingUtilities.isEventDispatchThread();
         if (model == null) {
             throw new NullPointerException();
         }
 
-        assert SwingUtilities.isEventDispatchThread();
-        if (this.model == model) {
-            LOG.log(Level.FINE, "no update - attempt to set the same model");
-            return; //no change
-        }
-
         if (this.model != null) {
+            if(model.getSerialNumber() <= this.model.getSerialNumber()) {
+                LOG.log(Level.FINE, "attempt to set the same or older model");
+                return; //no change
+            }
             this.model.removePropertyChangeListener(MODEL_LISTENER);
         }
 
@@ -553,6 +552,7 @@ public class RuleEditorPanel extends JPanel {
         final Rule oldRule = this.rule;
 
         this.model = model;
+        LOG.log(Level.FINE, "set new model ({0})", model);
 
         this.model.addPropertyChangeListener(MODEL_LISTENER);
 
@@ -599,17 +599,27 @@ public class RuleEditorPanel extends JPanel {
     }
     
     public void setRule(final Rule rule) {
-        LOG.log(Level.FINE, "setRule({0})", rule);
-
         assert SwingUtilities.isEventDispatchThread();
+        if (rule == null) {
+            throw new NullPointerException();
+        }
         if (model == null) {
             throw new IllegalStateException("you must call setModel(Model model) beforehand!"); //NOI18N
         }
+
+        Model ruleModel = rule.getModel();
+        if(ruleModel != this.model) {
+            LOG.log(Level.FINE, "attempt to set rule from different model {0}, while the current is {1}!", new Object[]{ruleModel, this.model});
+            return; //no change
+        }
+        
         if (this.rule == rule) {
+            LOG.log(Level.FINE, "attempt to set the same rule");
             return; //no change
         }
         Rule old = this.rule;
         this.rule = rule;
+        LOG.log(Level.FINE, "set new rule ({0})", rule);
         
         //refresh new AddPropertyComboBoxModel so the add property combobox doesn't contain 
         //already existing properties

@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -296,7 +297,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         }        
 
         public boolean isGlobal() {
-            return global;
+            return global && !(scope instanceof CompoundStatementImpl);
         }
 
         public void setLocal() {
@@ -326,6 +327,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     public static class SimpleDeclarationBuilder extends ScopedDeclarationBuilder {
         
         private boolean typedefSpecifier = false;
+        private boolean friendSpecifier = false;
         private boolean typeSpecifier = false;
         private boolean inDeclSpecifiers = false;
         private DeclaratorBuilder declaratorBuilder;
@@ -354,6 +356,14 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
 
         public boolean isDestructor() {
             return destructor;
+        }
+
+        public void setFriend() {
+            friendSpecifier = true;
+        }
+                
+        public boolean isFriend() {
+            return friendSpecifier;
         }
         
         public void setStatic() {

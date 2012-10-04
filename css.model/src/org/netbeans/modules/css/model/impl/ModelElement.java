@@ -82,6 +82,11 @@ public abstract class ModelElement implements Element {
     }
 
     @Override
+    public Model getModel() {
+        return this.model;
+    }
+
+    @Override
     public void accept(ModelVisitor modelVisitor) {
         for (int i = 0; i < getElementsCount(); i++) {
             Element child = getElementAt(i);

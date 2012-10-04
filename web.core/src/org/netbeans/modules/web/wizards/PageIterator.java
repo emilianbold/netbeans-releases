@@ -214,7 +214,8 @@ public class PageIterator implements TemplateWizard.Iterator {
     }
     private static boolean isJSF20(WebModule wm) {
         ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
-        boolean isJSF20 = classpath.findResource("javax/faces/application/ProjectStage.class") != null; //NOI18N
+        boolean isJSF20 = classpath != null
+                && classpath.findResource("javax/faces/application/ProjectStage.class") != null; //NOI18N
         return isJSF20;
     }
 

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor.actions;
 
+import java.io.Serializable;
 import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -378,7 +379,7 @@ public class FixUsesPerformer {
         }
     }
 
-    private static class UsePartsComparator implements Comparator<String> {
+    private static class UsePartsComparator implements Comparator<String>, Serializable {
 
         @Override
         public int compare(String o1, String o2) {

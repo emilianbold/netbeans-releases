@@ -106,6 +106,9 @@ public final class Model {
 
     private boolean changesApplied;
     
+    private int modelSerialNumber;
+    private static int globalModelSerialNumber;
+    
     /**
      * Gets the Model instance for given CssParserResult.
      *
@@ -138,13 +141,19 @@ public final class Model {
 
         return model;
     }
+    
+    private Model(int modelSerialNumber) {
+        this.modelSerialNumber = modelSerialNumber;
+    }
 
     /* package visibility for unit tests */ Model() {
+        this(++globalModelSerialNumber);
         MODEL_LOOKUP = Lookups.fixed(
                 getElementFactory().createStyleSheet());
     }
 
     /* package visibility for unit tests */ Model(CssParserResult parserResult) {
+        this(++globalModelSerialNumber);
         Node styleSheetNode = NodeUtil.query(parserResult.getParseTree(), NodeType.styleSheet.name());
 
         Collection<Object> lookupContent = new ArrayList<Object>();
@@ -172,6 +181,21 @@ public final class Model {
         }
 
         MODEL_LOOKUP = Lookups.fixed(lookupContent.toArray());
+    }
+    
+    /**
+     * Returns a serial number of the model. 
+     * 
+     * The number represents the number of created models before this one +1 inside
+     * one JVM session.
+     * 
+     * First model has serial number 1.
+     * 
+     * @since 1.6
+     * @return serial number of the model instance.
+     */
+    public int getSerialNumber() {
+        return modelSerialNumber;
     }
 
     public Lookup getLookup() {
@@ -470,7 +494,7 @@ public final class Model {
         return new StringBuilder()
                 .append(getClass().getSimpleName())
                 .append(':')
-                .append(System.identityHashCode(this))
+                .append(getSerialNumber())
                 .append(", file=")
                 .append(file != null ? file.getNameExt() : null)
                 .append(", saved=")
