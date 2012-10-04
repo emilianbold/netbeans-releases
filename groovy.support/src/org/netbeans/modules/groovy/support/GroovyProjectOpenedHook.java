@@ -43,49 +43,35 @@
 package org.netbeans.modules.groovy.support;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Petr Hejl
+ * @author Martin Janicek
  */
-@LookupProvider.Registration(projectType={
+@ProjectServiceProvider(
+    service =
+        ProjectOpenedHook.class,
+    projectType = {
         "org-netbeans-modules-java-j2seproject",
         "org-netbeans-modules-web-project",
         "org-netbeans-modules-j2ee-ejbjarproject"
     })
-public class GroovyLookupProvider implements LookupProvider {
+public class GroovyProjectOpenedHook extends ProjectOpenedHook {
+
+    private final Project project;
+
+    public GroovyProjectOpenedHook(Project project) {
+        this.project = project;
+    }
 
     @Override
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        if (project == null) {
-            return Lookup.EMPTY;
-        }
-
-        return Lookups.fixed(new J2seProjectOpenedHook(project));
+    protected void projectOpened() {
+        BuildScriptHelper.refreshBuildScript(project, true);
     }
 
-    private static class J2seProjectOpenedHook extends ProjectOpenedHook {
-
-        private final Project project;
-
-        public J2seProjectOpenedHook(Project project) {
-            this.project = project;
-        }
-
-        @Override
-        protected void projectOpened() {
-            BuildScriptHelper.refreshBuildScript(project, true);
-        }
-
-        @Override
-        protected void projectClosed() {
-
-        }
+    @Override
+    protected void projectClosed() {
     }
-
 }
