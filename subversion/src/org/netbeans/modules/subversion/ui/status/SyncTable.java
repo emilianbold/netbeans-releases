@@ -253,8 +253,10 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         if (Arrays.equals(columns, tableColumns)) return;
         setModelProperties(columns);
         tableColumns = columns;
-        for (int i = 0; i < columns.length; ++i) {
-            ((ETableColumn) table.getColumnModel().getColumn(i)).setNestedComparator(NodeComparator);
+        TableColumnModel cModel = table.getColumnModel();
+        int columnCount = cModel.getColumnCount();
+        for (int i = 0; i < columnCount; ++i) {
+            ((ETableColumn) cModel.getColumn(i)).setNestedComparator(NodeComparator);
         }
         setDefaultColumnSizes();        
     }
