@@ -263,9 +263,10 @@ public final class ParameterElementImpl implements ParameterElement {
                 ParameterElement parsedParameter = parseOneParameter(signature);
                 assert getName().equals(parsedParameter.getName()) : signature;
                 assert hasDeclaredType() == parsedParameter.hasDeclaredType() : signature;
-                if (getDefaultValue() != null) {
+                String defValue = getDefaultValue();
+                if (defValue != null) {
                     String paramDefaultValue = parsedParameter.getDefaultValue();
-                    assert paramDefaultValue != null && getDefaultValue().equals(paramDefaultValue) : signature;
+                    assert paramDefaultValue != null && defValue.equals(paramDefaultValue) : signature;
                 }
                 assert isMandatory() == parsedParameter.isMandatory() : signature;
                 assert isReference() == parsedParameter.isReference() : signature;

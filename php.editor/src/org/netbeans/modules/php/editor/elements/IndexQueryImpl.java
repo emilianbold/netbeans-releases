@@ -1033,6 +1033,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                             ifaceTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstantsImpl(NameKind.exact(iface), NameKind.empty(),
                                     EnumSet.of(PhpElementKind.IFACE))));
                             break;
+                        default:
+                            //no-op
                     }
                 }
                 if (ifaceTypes.isEmpty()) {
