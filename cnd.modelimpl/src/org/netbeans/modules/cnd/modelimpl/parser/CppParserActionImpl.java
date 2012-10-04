@@ -71,6 +71,10 @@ import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDDImpl.FriendFunctionDDBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDefinitionImpl.FriendFunctionDefinitionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionImpl.FriendFunctionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionImplEx.FriendFunctionExBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl.FunctionDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl.FunctionDefinitionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl.FunctionBuilder;
@@ -571,74 +575,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     public void simple_declaration(int kind, Token token) {
         if(kind == SIMPLE_DECLARATION__SEMICOLON) {
             if(builderContext.top(1) instanceof ClassBuilder) {
-                SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
-                if(declBuilder.hasTypedefSpecifier()) {
-                    MemberTypedefBuilder builder = new MemberTypedefBuilder();
-
-                    CsmObjectBuilder parent = builderContext.top(1);
-
-                    builder.setParent(parent);
-                    builder.setFile(currentContext.file);
-
-                    builder.setStartOffset(declBuilder.getStartOffset());
-                    builder.setEndOffset(((APTToken)token).getOffset());
-
-                    builder.setName(declBuilder.getDeclaratorBuilder().getName());
-                    builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                    if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                        builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                        builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                    }        
-
-                    ((ClassBuilder)parent).addChild(builder);
-                } else if(declBuilder.isFunction()) {
-                    MethodBuilder builder;
-
-                    if(declBuilder.isConstructor()) {
-                        builder = new ConstructorBuilder();
-                    } else if(declBuilder.isDestructor()) {
-                        builder = new DestructorBuilder();
-                    } else {
-                        builder = new MethodBuilder();
-                    }
-
-                    CsmObjectBuilder parent = builderContext.top(1);
-
-                    builder.setParent(parent);
-                    builder.setFile(currentContext.file);
-
-                    builder.setStartOffset(declBuilder.getStartOffset());
-                    builder.setEndOffset(((APTToken)token).getOffset());
-
-                    builder.setName(declBuilder.getDeclaratorBuilder().getName());
-                    builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                    if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                        builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                        builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                    }        
-                    builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
-
-                    ((ClassBuilder)parent).addChild(builder);
-                } else {            
-                    FieldBuilder builder = new FieldBuilder(currentContext.file.getParsingFileContent());
-
-                    CsmObjectBuilder parent = builderContext.top(1);
-
-                    builder.setParent(parent);
-                    builder.setFile(currentContext.file);
-
-                    builder.setStartOffset(declBuilder.getStartOffset());
-                    builder.setEndOffset(((APTToken)token).getOffset());
-
-                    builder.setName(declBuilder.getDeclaratorBuilder().getName());
-                    builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                    if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                        builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                        builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                    }        
-
-                    ((ClassBuilder)parent).addChild(builder);
-                }                
+                simple_member_declaration(SIMPLE_MEMBER_DECLARATION__SEMICOLON, token);
             } else {
                 SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
 
@@ -753,8 +690,10 @@ public class CppParserActionImpl implements CppParserActionEx {
             if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
                 builderContext.getSimpleDeclarationBuilderIfExist().setTypedefSpecifier();
             }
-        }
-        if(kind == DECL_SPECIFIER__TYPE_SPECIFIER) {
+        } else if(kind == DECL_SPECIFIER__LITERAL_FRIEND) {
+            if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
+                builderContext.getSimpleDeclarationBuilderIfExist().setFriend();
+            }
         }
     }
 
@@ -1653,8 +1592,16 @@ public class CppParserActionImpl implements CppParserActionEx {
 
         CsmObjectBuilder parent = builderContext.top(1);
         if(parent instanceof ClassBuilder) {
-            MethodDDBuilder builder;
-            if(declBuilder.isConstructor()) {
+            FunctionBuilder builder;
+            CharSequence name = declBuilder.getDeclaratorBuilder().getName();
+                
+            if(declBuilder.isFriend()) {
+                if(name != null && !name.toString().contains("::")) { //NOI18N
+                    builder = new FriendFunctionDDBuilder();
+                } else {
+                    builder = new FriendFunctionDefinitionBuilder();
+                }
+            } else if(declBuilder.isConstructor()) {
                 builder = new ConstructorDDBuilder();
             } else if(declBuilder.isDestructor()) {
                 builder = new DestructorDDBuilder();
@@ -1666,7 +1613,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             builder.setFile(currentContext.file);
             builder.setStartOffset(declBuilder.getStartOffset());
 
-            builder.setName(declBuilder.getDeclaratorBuilder().getName());
+            builder.setName(name);
             builder.setTypeBuilder(declBuilder.getTypeBuilder());
             if(declBuilder.getTemplateDescriptorBuilder() != null) {
                 builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
@@ -1794,9 +1741,17 @@ public class CppParserActionImpl implements CppParserActionEx {
 
                 ((ClassBuilder)parent).addChild(builder);
             } else if(declBuilder.isFunction()) {
-                MethodBuilder builder;
+                FunctionBuilder builder;
 
-                if(declBuilder.isConstructor()) {
+                CharSequence name = declBuilder.getDeclaratorBuilder().getName();
+                
+                if(declBuilder.isFriend()) {
+                    if(name != null && !name.toString().contains("::")) { //NOI18N
+                        builder = new FriendFunctionBuilder();
+                    } else {
+                        builder = new FriendFunctionExBuilder();
+                    }
+                } else if(declBuilder.isConstructor()) {
                     builder = new ConstructorBuilder();
                 } else if(declBuilder.isDestructor()) {
                     builder = new DestructorBuilder();
@@ -1812,7 +1767,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                 builder.setStartOffset(declBuilder.getStartOffset());
                 builder.setEndOffset(((APTToken)token).getOffset());
 
-                builder.setName(declBuilder.getDeclaratorBuilder().getName());
+                builder.setName(name);
                 builder.setTypeBuilder(declBuilder.getTypeBuilder());
                 if(declBuilder.getTemplateDescriptorBuilder() != null) {
                     builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        

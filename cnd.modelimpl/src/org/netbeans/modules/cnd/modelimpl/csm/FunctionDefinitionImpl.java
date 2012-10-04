@@ -321,7 +321,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         return this;
     }
 
-    public static class FunctionDefinitionBuilder extends FunctionBuilder implements StatementBuilderContainer {
+    public static class FunctionDefinitionBuilder extends FunctionExBuilder implements StatementBuilderContainer {
 
         private CompoundStatementBuilder bodyBuilder;
         
@@ -373,6 +373,11 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             setBodyBuilder((CompoundStatementBuilder)builder);
         }
 
+        protected void setBody(FunctionDefinitionImpl fun) {
+            bodyBuilder.setScope(fun);
+            fun.setCompoundStatement(bodyBuilder.create());
+        }        
+        
     }
     
     ////////////////////////////////////////////////////////////////////////////

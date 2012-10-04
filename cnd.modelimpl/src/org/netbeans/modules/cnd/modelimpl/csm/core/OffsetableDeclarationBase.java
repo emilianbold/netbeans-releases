@@ -327,6 +327,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     public static class SimpleDeclarationBuilder extends ScopedDeclarationBuilder {
         
         private boolean typedefSpecifier = false;
+        private boolean friendSpecifier = false;
         private boolean typeSpecifier = false;
         private boolean inDeclSpecifiers = false;
         private DeclaratorBuilder declaratorBuilder;
@@ -355,6 +356,14 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
 
         public boolean isDestructor() {
             return destructor;
+        }
+
+        public void setFriend() {
+            friendSpecifier = true;
+        }
+                
+        public boolean isFriend() {
+            return friendSpecifier;
         }
         
         public void setStatic() {
