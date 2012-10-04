@@ -220,10 +220,9 @@ public class RuleEditorPanel extends JPanel {
                             }
                         }
                     } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
-                        //refresh the PS content
-                        node.fireContextChanged(false);
                         if (createdDeclaration != null) {
                             //select & edit the property corresponding to the created declaration
+                            node.fireContextChanged(false);
                             editCreatedDeclaration();
                         }
                     }
