@@ -359,9 +359,9 @@ public class GroovyActionProvider implements ActionProvider {
 
         List<String> result = new ArrayList<String>();
 
-        for (String key : map.keySet()) {
-            if (key.startsWith("test.") && key.endsWith(".dir")) { // NOI18N
-                result.add(map.get(key));
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            if (entry.getKey().startsWith("test.") && entry.getKey().endsWith(".dir")) { // NOI18N
+                result.add(entry.getValue());
             }
         }
 

@@ -1235,7 +1235,7 @@ public class JsFormatter implements Formatter {
             startOffset = Utilities.getRowStart(doc, startOffset);
             int endLineOffset = Utilities.getRowStart(doc, endOffset);
             final boolean indentOnly = (startOffset == endLineOffset)
-                    && endLineOffset == context.caretOffset()
+                    && (endOffset == context.caretOffset() || startOffset == context.caretOffset())
                     && (Utilities.isRowEmpty(doc, startOffset)
                     || Utilities.isRowWhite(doc, startOffset)
                     || Utilities.getFirstNonWhiteFwd(doc, startOffset) == context.caretOffset());
