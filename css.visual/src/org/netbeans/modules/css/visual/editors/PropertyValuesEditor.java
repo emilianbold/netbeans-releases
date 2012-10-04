@@ -119,7 +119,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
             Collection<String> fixedElementNames = new TreeSet<String>();
             for (FixedTextGrammarElement element : fixedElements) {
                 String value = element.getValue();
-                if (Character.isLetter(value.charAt(0))) { //filter operators & similar
+                if (value.length() > 0 && Character.isLetter(value.charAt(0))) { //filter operators & similar
                     fixedElementNames.add(value);
                     tags2fixedElement.put(value, element);
 
