@@ -100,7 +100,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         final FileObject file = result.getSnapshot().getSource().getFileObject();
         final String mimeType = file.getMIMEType();
 
-        LOG.log(Level.FINE, "run(), file: {0}", new Object[]{file});
+        LOG.log(Level.FINER, "run(), file: {0}", new Object[]{file});
 
         cancelled = false;
 
@@ -128,10 +128,10 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
     }
 
     private void runInEDT(final CssCslParserResult result, Model model, final FileObject file, String mimeType, int caretOffset) {
-        LOG.log(Level.FINE, "runInEDT(), file: {0}, caret: {1}", new Object[]{file, caretOffset});
+        LOG.log(Level.FINER, "runInEDT(), file: {0}, caret: {1}", new Object[]{file, caretOffset});
 
         if (cancelled) {
-            LOG.log(Level.INFO, "cancelled");
+            LOG.log(Level.FINER, "cancelled");
             return;
         }
 
@@ -186,6 +186,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         
         //update the RuleEditor TC name
         RuleEditorController controller = ruleEditorTC.getRuleEditorController();
+        LOG.log(Level.FINE, "SourceTask: calling controller.setModel({0})", model);
         controller.setModel(result.getModel());
 
         if (rule == null) {
