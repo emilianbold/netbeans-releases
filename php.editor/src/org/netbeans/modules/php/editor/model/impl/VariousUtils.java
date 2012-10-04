@@ -82,6 +82,7 @@ public class VariousUtils {
     public static final String ARRAY_TYPE_PREFIX = "array" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
     private static final Collection<String> SPECIAL_CLASS_NAMES = new LinkedList<String>();
     private static final String VAR_TYPE_COMMENT_PREFIX = "@var"; //NOI18N
+    private static final String SPACES_AND_TYPE_DELIMITERS = "[| ]*"; //NOI18N
 
     static {
         SPECIAL_CLASS_NAMES.add("self"); //NOI18N
@@ -1462,17 +1463,19 @@ public class VariousUtils {
         StringBuilder retval = new StringBuilder();
         final String typeSeparator = "|"; //NOI18N
         if (typeNames != null) {
-            for (String typeName : typeNames.split("\\" + typeSeparator)) { //NOI18N
-                if (!typeName.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) && !VariousUtils.isPrimitiveType(typeName)) {
-                    QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), offset, inScope);
-                    retval.append(fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) ? "" : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR); //NOI18N
-                    retval.append(fullyQualifiedName.toString()).append(typeSeparator);
-                } else {
-                    retval.append(typeName).append(typeSeparator);
+            if (!typeNames.matches(SPACES_AND_TYPE_DELIMITERS)) { //NOI18N
+                for (String typeName : typeNames.split("\\" + typeSeparator)) { //NOI18N
+                    if (!typeName.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) && !VariousUtils.isPrimitiveType(typeName)) {
+                        QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), offset, inScope);
+                        retval.append(fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) ? "" : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR); //NOI18N
+                        retval.append(fullyQualifiedName.toString()).append(typeSeparator);
+                    } else {
+                        retval.append(typeName).append(typeSeparator);
+                    }
                 }
+                assert retval.length() - typeSeparator.length() >= 0 : "retval:" + retval + "# typeNames:"+typeNames; //NOI18N
+                retval = new StringBuilder(retval.toString().substring(0, retval.length() - typeSeparator.length()));
             }
-            assert retval.length() - typeSeparator.length() >= 0 : "retval:" + retval + "# typeNames:"+typeNames; //NOI18N
-            retval = new StringBuilder(retval.toString().substring(0, retval.length() - typeSeparator.length()));
         }
         return retval.toString();
     }
