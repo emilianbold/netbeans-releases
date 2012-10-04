@@ -141,6 +141,48 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
         return Kind.FUNCTION_FRIEND_DEFINITION;
     }
 
+    public static class FriendFunctionDDBuilder extends FunctionDDBuilder {
+    
+        @Override
+        public CsmScope getScope() {
+            CsmScope scope = super.getScope();
+            while (CsmKindUtilities.isClass(scope)) {
+               CsmScope newScope = ((CsmClass)scope).getScope(); 
+               if (newScope != null) {
+                   scope = newScope;
+               } else {
+                   break;
+               }
+            }
+            return AstRenderer.FunctionRenderer.getScope(scope, getFile(), isStatic(), true);
+        } 
+        
+        public CsmClass getCls() {
+            return (CsmClass) super.getScope();
+        } 
+        
+        @Override
+        public FriendFunctionDDImpl create() {
+            FriendFunctionDDImpl fun = new FriendFunctionDDImpl(getName(), getRawName(), getScope(), getCls(), isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), isGlobal());
+            init(fun);
+            return fun;
+        }
+        
+        protected void init(FunctionDDImpl fun) {
+            temporaryRepositoryRegistration(isGlobal(), fun);
+
+            setTemplateDescriptor(fun);
+            setReturnType(fun);
+            setParameters(fun);
+            setBody(fun);
+                        
+            postObjectCreateRegistration(isGlobal(), fun);
+            addReference(fun);
+            
+            addDeclaration(fun);
+        }        
+    }    
+    
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);

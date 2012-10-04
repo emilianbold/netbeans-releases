@@ -817,28 +817,43 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         public FunctionImpl create() {
             CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), false);
 
-            FunctionImpl fun = new FunctionImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
-            temporaryRepositoryRegistration(true, fun);
-
-            StringBuilder clsTemplateSuffix = new StringBuilder();
+            FunctionImpl fun = new FunctionImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), isGlobal());
             
-            //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
-            //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+            init(fun);
+            
+            return fun;
+        }
+        
+        protected void init(FunctionImpl fun) {
+            temporaryRepositoryRegistration(isGlobal(), fun);
 
+            setTemplateDescriptor(fun);
+            setReturnType(fun);
+            setParameters(fun);
+
+            postObjectCreateRegistration(isGlobal(), fun);
+            addReference(fun);
+            
+            addDeclaration(fun);
+        }
+        
+        protected void setReturnType(FunctionImpl fun) {
+            fun.setReturnType(getType());
+        }
+
+        protected void setParameters(FunctionImpl fun) {
+            if(getParametersListBuilder() instanceof FunctionParameterListBuilder) {
+                ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(fun);
+                fun.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(), true);
+            }
+        }
+        
+        protected void setTemplateDescriptor(FunctionImpl fun) {
             if(getTemplateDescriptorBuilder() != null) {
                 fun.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
             }
+        }        
 
-            fun.setReturnType(getType());
-            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(fun);
-            fun.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(), true);
-
-            postObjectCreateRegistration(true, fun);
-            getNameHolder().addReference(getFileContent(), fun);
-
-            addDeclaration(fun);
-            return fun;
-        }
     }          
     
     
