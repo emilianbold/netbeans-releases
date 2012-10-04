@@ -2381,14 +2381,55 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getProjectRoots().isMySource(includePath);
     }
 
-    //// were extracted into NativeProjectListener methods
-    public void onFileItemRenamed(String oldPath, NativeFileItem newFileIetm) {}
+    ////////////////////////////////////////////////////////////////////////////
+    // handling events from NativeProject about NativeFileItem manipulations
+    ////////////////////////////////////////////////////////////////////////////
+    public void onFileItemsRemoved(List<NativeFileItem> items) {
+        CndUtils.assertTrueInConsole(!isArtificial(), "library is not expected here ", this);
+        try {
+            ParserQueue.instance().onStartAddingProjectFiles(this);           
+            checkForRemoved();
+        } finally {
+            ParserQueue.instance().onEndAddingProjectFiles(this);
+        }
+    }
 
-    public void onFileItemsAdded(List<NativeFileItem> items) {}
+    public void onFileItemRenamed(String oldPath, NativeFileItem newFileIetm) {
+        CndUtils.assertTrueInConsole(!isArtificial(), "library is not expected here ", this);
+        try {
+            ParserQueue.instance().onStartAddingProjectFiles(this);
+            // TODO: for now we consider this as pair "remove"/"add" file item
+            checkForRemoved();
+            onFileItemsAdded(Collections.singletonList(newFileIetm));
+        } finally {
+            ParserQueue.instance().onEndAddingProjectFiles(this);
+        }
+    }
 
-    public void onFileItemsRemoved(List<NativeFileItem> items) {}
+    public void onFileItemsAdded(List<NativeFileItem> items) {
+        CndUtils.assertTrueInConsole(!isArtificial(), "library is not expected here ", this);
+        try {
+            ParserQueue.instance().onStartAddingProjectFiles(this);
+            for (NativeFileItem item : items) {
+                if (Utils.acceptNativeItem(item)) {
+                    createIfNeed(item, isSourceFile(item));
+                }
+            }
+        } finally {
+            Notificator.instance().flush();
+            ParserQueue.instance().onEndAddingProjectFiles(this);
+        }
+    }
 
-    public void onFileItemsPropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {}
+    public void onFileItemsPropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {
+        CndUtils.assertTrueInConsole(!isArtificial(), "library is not expected here ", this);
+        if (!this.isValid()) {
+            return;
+        }
+        if (items.size() > 0) {
+            DeepReparsingUtils.reparseOnPropertyChanged(items, this, invalidateLibs);
+        }
+    }
 
     ////
     protected abstract ParserQueue.Position getIncludedFileParserQueuePosition();

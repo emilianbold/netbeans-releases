@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -210,55 +209,7 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFileItemsRemoved(List<NativeFileItem> items) {
-        try {
-            ParserQueue.instance().onStartAddingProjectFiles(this);           
-            checkForRemoved();
-        } finally {
-            ParserQueue.instance().onEndAddingProjectFiles(this);
-        }
-    }
-
-    @Override
-    public void onFileItemRenamed(String oldPath, NativeFileItem newFileIetm) {
-        try {
-            ParserQueue.instance().onStartAddingProjectFiles(this);
-            // TODO: for now we consider this as pair "remove"/"add" file item
-            checkForRemoved();
-            onFileItemsAdded(Collections.singletonList(newFileIetm));
-        } finally {
-            ParserQueue.instance().onEndAddingProjectFiles(this);
-        }
-    }
-
-    @Override
-    public void onFileItemsAdded(List<NativeFileItem> items) {
-        try {
-            ParserQueue.instance().onStartAddingProjectFiles(this);
-            for (NativeFileItem item : items) {
-                if (Utils.acceptNativeItem(item)) {
-                    createIfNeed(item, isSourceFile(item));
-                }
-            }
-        } finally {
-            Notificator.instance().flush();
-            ParserQueue.instance().onEndAddingProjectFiles(this);
-        }
-    }
-
-    @Override
-    public void onFileItemsPropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {
-        if (!this.isValid()) {
-            return;
-        }
-        if (items.size() > 0) {
-            DeepReparsingUtils.reparseOnPropertyChanged(items, this, invalidateLibs);
-        }
-    }
-    
-    protected 
-    @Override
-    void ensureChangedFilesEnqueued() {
+    protected void ensureChangedFilesEnqueued() {
         List<FileImpl> addToParse = new ArrayList<FileImpl>();
         synchronized (editedFiles) {
             super.ensureChangedFilesEnqueued();
