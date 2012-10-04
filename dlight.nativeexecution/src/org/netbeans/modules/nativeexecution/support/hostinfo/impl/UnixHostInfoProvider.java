@@ -251,7 +251,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         String nbstart = null;
         String envPath = null;
 
-        if (NbStartUtility.getInstance().isSupported(execEnv)) {
+        if (NbStartUtility.getInstance().isSupported(hostInfo)) {
             String localPath = NbStartUtility.getInstance().getLocalFileLocationFor(hostInfo);
             if (localPath != null) {
                 final File localFile = new File(localPath);
