@@ -81,6 +81,7 @@ public final class NativeProcessInfo {
     private boolean runInPty;
     private boolean expandMacros = true;
     private Charset charset;
+    private boolean statusEx;
 
     public NativeProcessInfo(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
@@ -113,6 +114,7 @@ public final class NativeProcessInfo {
         this.runInPty = info.runInPty;
         this.expandMacros = info.expandMacros;
         this.charset = info.charset;
+        this.statusEx = info.statusEx;
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -275,6 +277,10 @@ public final class NativeProcessInfo {
         }
 
         return sb.toString();
+    }
+
+    public void setStatusEx(boolean getStatus) {
+        this.statusEx = getStatus;
     }
 
     public String getCommandLineForShell() {
@@ -454,5 +460,13 @@ public final class NativeProcessInfo {
         }
 
         return cmd;
+    }
+
+    boolean isStatusEx() {
+        return statusEx;
+    }
+
+    boolean isCommandLineDefined() {
+        return commandLine != null;
     }
 }

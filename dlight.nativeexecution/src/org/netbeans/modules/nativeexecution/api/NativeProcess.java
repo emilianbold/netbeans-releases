@@ -81,6 +81,17 @@ public abstract class NativeProcess extends Process {
     public abstract ProcessInfo getProcessInfo();
 
     /**
+     * Returns an extended information of the process exit status.
+     *
+     * Could be null.
+     *
+     * @return an extended information of the process exit status.
+     * @exception IllegalThreadStateException if the subprocess represented by
+     * this <code>Process</code> object has not yet terminated.
+     */
+    public abstract ProcessStatusEx getExitStatusEx();
+
+    /**
      * Enumerates possible states of the {@link NativeProcess}.
      */
     public static enum State {

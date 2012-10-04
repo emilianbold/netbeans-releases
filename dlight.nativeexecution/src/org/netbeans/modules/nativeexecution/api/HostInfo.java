@@ -75,6 +75,29 @@ public interface HostInfo {
                     throw new IllegalStateException("Unexpected OSFamily: " + this); //NOI18N
             }
         }
+
+        /**
+         * Returns CamelCase name of the family. Like: SunOS; Linux; Windows;
+         * MacOSX.
+         *
+         * @return CamelCase name
+         */
+        public String cname() {
+            switch (this) {
+                case LINUX:
+                    return "Linux"; // NOI18N
+                case MACOSX:
+                    return "MacOSX"; // NOI18N
+                case SUNOS:
+                    return "SunOS"; // NOI18N
+                case WINDOWS:
+                    return "Windows"; // NOI18N
+                case UNKNOWN:
+                    return "UNKNOWN"; // NOI18N
+                default:
+                    throw new IllegalStateException("Unexpected OSFamily: " + this); //NOI18N
+            }
+        }
     }
 
     public static enum Bitness {
@@ -146,4 +169,6 @@ public interface HostInfo {
      * @return time difference in milliseconds between remote and localhost
      */
     public long getClockSkew();
+
+    public String getEnvironmentFile();
 }

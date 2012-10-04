@@ -45,15 +45,13 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 import javax.swing.event.ChangeListener;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.AbstractNativeProcess;
-import org.netbeans.modules.nativeexecution.PtyNativeProcess;
 import org.netbeans.modules.nativeexecution.LocalNativeProcess;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
+import org.netbeans.modules.nativeexecution.NbLocalNativeProcess;
+import org.netbeans.modules.nativeexecution.NbRemoteNativeProcess;
+import org.netbeans.modules.nativeexecution.PtyNativeProcess;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
@@ -66,8 +64,12 @@ import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.pty.NbStartUtility;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
+import org.openide.util.Utilities;
 
 /**
  * Utility class for the {@link NativeProcess external native process} creation.
@@ -193,6 +195,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
                         throw new IOException(ex);
                     }
                 }
+
                 @Override
                 public String getLocalizedMessage() {
                     return Bundle.EXC_NotConnectedQuestion(execEnv.getDisplayName());
@@ -200,59 +203,67 @@ public final class NativeProcessBuilder implements Callable<Process> {
             };
         }
 
-        if (info.isPtyMode() && PtySupport.isSupportedFor(info.getExecutionEnvironment())) {
-            process = new PtyNativeProcess(info);
-        } else {
-            if (info.getExecutionEnvironment().isRemote()) {
-                process = new RemoteNativeProcess(info);
+        if (externalTerminal == null && NbStartUtility.getInstance().isSupported(info.getExecutionEnvironment())) {
+            if (info.getExecutionEnvironment().isLocal()) {
+                process = new NbLocalNativeProcess(info);
             } else {
-                if (externalTerminal != null) {
-                    boolean canProceed = true;
-                    boolean available = externalTerminal.isAvailable(info.getExecutionEnvironment());
+                process = new NbRemoteNativeProcess(info);
+            }
+        } else {
+            if (info.isPtyMode() && PtySupport.isSupportedFor(info.getExecutionEnvironment())) {
+                process = new PtyNativeProcess(info);
+            } else {
+                if (info.getExecutionEnvironment().isRemote()) {
+                    process = new RemoteNativeProcess(info);
+                } else {
+                    if (externalTerminal != null) {
+                        boolean canProceed = true;
+                        boolean available = externalTerminal.isAvailable(info.getExecutionEnvironment());
 
-                    if (!available) {
-                        if (Boolean.getBoolean("nativeexecution.mode.unittest") || "true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
-                            System.err.println(loc("NativeProcessBuilder.processCreation.NoTermianl.text"));
-                        } else {
-                            DialogDisplayer.getDefault().notify(
-                                    new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoTermianl.text"), // NOI18N
-                                    NotifyDescriptor.WARNING_MESSAGE));
-                        }
-                        canProceed = false;
-                    } else {
-                        if (Utilities.isWindows()) {
-                            Shell shell = WindowsSupport.getInstance().getActiveShell();
-                            if (shell == null) {
-                                if (Boolean.getBoolean("nativeexecution.mode.unittest") || "true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
-                                    System.err.println(loc("NativeProcessBuilder.processCreation.NoShell.text"));
-                                } else {
-                                    DialogDisplayer.getDefault().notify(
-                                            new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoShell.text"), // NOI18N
-                                            NotifyDescriptor.WARNING_MESSAGE));
-                                }
-                                canProceed = false;
+                        if (!available) {
+                            if (Boolean.getBoolean("nativeexecution.mode.unittest") || "true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
+                                System.err.println(loc("NativeProcessBuilder.processCreation.NoTermianl.text"));
                             } else {
-                                ShellValidationStatus validationStatus = ShellValidationSupport.getValidationStatus(shell);
+                                DialogDisplayer.getDefault().notify(
+                                        new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoTermianl.text"), // NOI18N
+                                        NotifyDescriptor.WARNING_MESSAGE));
+                            }
+                            canProceed = false;
+                        } else {
+                            if (Utilities.isWindows()) {
+                                Shell shell = WindowsSupport.getInstance().getActiveShell();
+                                if (shell == null) {
+                                    if (Boolean.getBoolean("nativeexecution.mode.unittest") || "true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
+                                        System.err.println(loc("NativeProcessBuilder.processCreation.NoShell.text"));
+                                    } else {
+                                        DialogDisplayer.getDefault().notify(
+                                                new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoShell.text"), // NOI18N
+                                                NotifyDescriptor.WARNING_MESSAGE));
+                                    }
+                                    canProceed = false;
+                                } else {
+                                    ShellValidationStatus validationStatus = ShellValidationSupport.getValidationStatus(shell);
 
-                                if (!validationStatus.isValid()) {
-                                    canProceed = ShellValidationSupport.confirm(
-                                            loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationHeader.text"), // NOI18N
-                                            loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationFooter.text"), // NOI18N
-                                            validationStatus);
+                                    if (!validationStatus.isValid()) {
+                                        canProceed = ShellValidationSupport.confirm(
+                                                loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationHeader.text"), // NOI18N
+                                                loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationFooter.text"), // NOI18N
+                                                validationStatus);
+                                    }
                                 }
                             }
-                        }
 
-                        if (canProceed) {
-                            process = new TerminalLocalNativeProcess(info, externalTerminal);
+                            if (canProceed) {
+                                process = new TerminalLocalNativeProcess(info, externalTerminal);
+                            }
                         }
                     }
                 }
-            }
 
-            if (process == null) {
-                // Either externalTerminal is null or there are some problems with it
-                process = new LocalNativeProcess(info);
+                if (process == null) {
+                    // Either externalTerminal is null or there are some problems with it
+                    process = new LocalNativeProcess(info);
+                }
             }
         }
 
@@ -377,6 +388,11 @@ public final class NativeProcessBuilder implements Callable<Process> {
 
     public NativeProcessBuilder setCharset(Charset charset) {
         info.setCharset(charset);
+        return this;
+    }
+
+    public NativeProcessBuilder setStatusEx(boolean b) {
+        info.setStatusEx(b);
         return this;
     }
 }
