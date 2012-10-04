@@ -153,13 +153,11 @@ public final class CopyPathToClipboardAction implements ActionListener,
         if (null != dataObject) {
             final FileObject primaryFile = getFileObjectWithShadowSupport(
                     dataObject);
-            if (null != primaryFile.getPath()) {
-                fileName = primaryFile.getPath();
-            }
+            fileName = getNativePath(primaryFile);
             //support selected items in jars
             if (null != FileUtil.getArchiveFile(primaryFile)) {
                 String fullJARPath =
-                        FileUtil.getArchiveFile(primaryFile).getPath();
+                        getNativePath(FileUtil.getArchiveFile(primaryFile));
                 String archiveFileName = primaryFile.getPath();
                 if (!archiveFileName.isEmpty()) {
                     fileName = fullJARPath + File.pathSeparator
@@ -170,6 +168,15 @@ public final class CopyPathToClipboardAction implements ActionListener,
             }
         }
         return fileName;
+    }
+
+    /**
+     * Get native path of a FileObject. If it does not exists, return
+     * {@link FileObject#getPath()}
+     */
+    private String getNativePath(FileObject fo) {
+        File f = FileUtil.toFile(fo);
+        return f != null ? f.getAbsolutePath() : fo.getPath();
     }
 
     /**
