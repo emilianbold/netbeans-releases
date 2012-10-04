@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -98,12 +98,13 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
         this.forceReload = forceReload;
     }
     
+    @Override
     public Component getComponent() {
         if (component == null) {
             JPanel body;
-            String tableTitle = null;
-            String head = null;
-            String content = null;
+            String tableTitle;
+            String head;
+            String content;
             switch (operationType) {
             case INSTALL :
                 tableTitle = getBundle (TABLE_TITLE_INSTALL);
@@ -144,6 +145,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     private void checkRealUpdates () {
         final Collection<String> problems=new ArrayList<String>();
         checkRealUpdatesTask = Installer.RP.post (new Runnable () {
+            @Override
             public void run () {
                 final Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType,problems, forceReload);
                 hasUpdates = updates != null && ! updates.isEmpty ();
@@ -174,6 +176,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                         }
                         final WizardDescriptor.Iterator<WizardDescriptor> panels = new InstallUnitWizardIterator (model, true);
                         SwingUtilities.invokeLater (new Runnable () {
+                            @Override
                             public void run () {
                                 wd.setPanelsAndSettings (panels, wd);
                                 fireChange ();
@@ -199,7 +202,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
             
             @Override
             public void run() {
-                JPanel body = null;
+                JPanel body;
                 if(problems==null || problems.isEmpty())
                 {
                     body = new OperationDescriptionPanel (
@@ -252,15 +255,18 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
         return s.trim ();
     }
 
+    @Override
     public HelpCtx getHelp() {
         return null;
     }
 
+    @Override
     public void readSettings (WizardDescriptor wd) {
         this.wd = wd;
         //new InstallUnitWizardModel (null, null).modifyOptionsForStartWizard (wd);
     }
 
+    @Override
     public void storeSettings(WizardDescriptor wd) {
         if (WizardDescriptor.CANCEL_OPTION.equals (wd.getValue ()) || WizardDescriptor.CLOSED_OPTION.equals (wd.getValue ())) {
             if (checkRealUpdatesTask != null && ! checkRealUpdatesTask.isFinished ()) {
@@ -270,14 +276,17 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
         }
     }
 
+    @Override
     public boolean isValid () {
         return canClose;
     }
 
+    @Override
     public synchronized void addChangeListener (ChangeListener l) {
         listeners.add (l);
     }
 
+    @Override
     public synchronized void removeChangeListener (ChangeListener l) {
         listeners.remove (l);
     }
