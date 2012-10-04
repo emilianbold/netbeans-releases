@@ -528,7 +528,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         }
     } // End of HtmlTranslator class
 
-    /** @return True iff we're still in the middle of an embedded token */
+    /** @return True if we're still in the middle of an embedded token */
     private static void extractJavaScriptFromHtml(Snapshot snapshot, TokenSequence<? extends HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
         // NOI18N
         // Process the HTML content: look for embedded script blocks,

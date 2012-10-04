@@ -269,6 +269,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         EVENT_HANDLER_NAMES.add("onreset"); // NOI18N
         EVENT_HANDLER_NAMES.add("onselect"); // NOI18N
         EVENT_HANDLER_NAMES.add("onchange"); // NOI18N
+        EVENT_HANDLER_NAMES.add("ondrag"); // NOI18N
+        EVENT_HANDLER_NAMES.add("ondrop"); // NOI18N
 
         // IMPORTANT - if you add any that DON'T start with "o" here,
         // make sure you update the optimized firstchar look in isJavaScriptArgument
