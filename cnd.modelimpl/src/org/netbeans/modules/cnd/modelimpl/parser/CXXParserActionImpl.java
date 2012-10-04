@@ -510,6 +510,9 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     @Override public void member_declaration(Token token){orig.member_declaration(convertToken(token));}
     @Override public void member_declaration(int kind, Token token){orig.member_declaration(kind, convertToken(token));}
     @Override public void end_member_declaration(Token token){orig.end_member_declaration(convertToken(token));}    
+    @Override public void simple_member_declaration(Token token){orig.simple_member_declaration(convertToken(token));}
+    @Override public void simple_member_declaration(int kind, Token token){orig.simple_member_declaration(kind, convertToken(token));}
+    @Override public void end_simple_member_declaration(Token token){orig.end_simple_member_declaration(convertToken(token));}    
     @Override public void member_declarator(Token token) {orig.member_declarator(convertToken(token));}
     @Override public void end_member_declarator(Token token) {orig.end_member_declarator(convertToken(token));}
     @Override public void pure_specifier(Token token) {orig.pure_specifier(convertToken(token));}

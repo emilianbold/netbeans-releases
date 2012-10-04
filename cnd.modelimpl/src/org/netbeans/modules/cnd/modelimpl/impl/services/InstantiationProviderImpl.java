@@ -767,7 +767,8 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(file, filter);
                 for (Iterator<CsmOffsetableDeclaration> it = declarations; it.hasNext();) {
                     CsmOffsetableDeclaration decl = it.next();
-                    if (((CsmClassForwardDeclaration) decl).getCsmClass().equals(cls)) {
+                    CsmClass fwdCls = ((CsmClassForwardDeclaration) decl).getCsmClass();
+                    if (fwdCls != null && fwdCls.equals(cls)) {
                         return (CsmClassForwardDeclaration) decl;
                     }
                 }
@@ -787,7 +788,8 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(nsd, filter);
                 for (Iterator<CsmOffsetableDeclaration> it = declarations; it.hasNext();) {
                     CsmOffsetableDeclaration decl = it.next();
-                    if (((CsmClassForwardDeclaration) decl).getCsmClass().equals(cls)) {
+                    CsmClass fwdCls = ((CsmClassForwardDeclaration) decl).getCsmClass();
+                    if (fwdCls != null && fwdCls.equals(cls)) {
                         return (CsmClassForwardDeclaration) decl;
                     }
                 }
