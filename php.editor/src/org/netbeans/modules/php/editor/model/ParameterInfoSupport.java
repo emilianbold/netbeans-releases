@@ -46,9 +46,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -59,7 +59,6 @@ import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
-import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement.OutputType;
@@ -221,11 +220,15 @@ public class ParameterInfoSupport {
                         }
                     case VARIABLE:
                         metaAll.insert(0, VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VariousUtils.VAR_TYPE_PREFIX);
+                        state = State.STOP;
+                        break;
                     case CLASSNAME:
                         //TODO: self, parent not handled yet
                         //TODO: maybe rather introduce its own State for self, parent
                         state = State.STOP;
                         break;
+                    default:
+                        //no-op
                 }
             } else {
                 if (state.equals(State.METHOD)) {
@@ -363,7 +366,7 @@ public class ParameterInfoSupport {
             }
 
             private ParameterInfo createParameterInfo(ASTNodeInfo nodeInfo, List<Expression> parameters) {
-                int idx = -1;
+                int idx;
                 ASTNode node = nodeInfo.getOriginalNode();
                 int anchor  = nodeInfo.getRange().getEnd();
                 OffsetRange offsetRange = new OffsetRange(anchor, node.getEndOffset());
@@ -416,7 +419,7 @@ public class ParameterInfoSupport {
         return ParameterInfo.NONE;
     }
 
-    @CheckForNull
+    @NonNull
     private static List<String> toParamNames(FunctionScope functionScope) {
         List<String> paramNames = new ArrayList<String>();
         List<? extends ParameterElement> parameters = functionScope.getParameters();
