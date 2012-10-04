@@ -42,12 +42,15 @@
 package org.netbeans.modules.nativeexecution.pty;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -87,18 +90,26 @@ public class NbStartUtility extends HelperUtility {
     }
 
     public boolean isSupported(ExecutionEnvironment executionEnvironment) {
+        try {
+            return isSupported(HostInfoUtils.getHostInfo(executionEnvironment));
+        } catch (IOException ex) {
+            return false;
+        } catch (CancellationException ex) {
+            return false;
+        }
+    }
+
+    public boolean isSupported(HostInfo hostInfo) {
         if (DISABLED) {
             return false;
         }
 
         try {
-            HostInfo info = HostInfoUtils.getHostInfo(executionEnvironment);
-
-            switch (info.getOS().getFamily()) {
+            switch (hostInfo.getOS().getFamily()) {
                 case MACOSX:
                 case SUNOS:
                 case LINUX:
-                    return getPath(executionEnvironment) != null;
+                    return true;
                 case WINDOWS:
                     // For now will disable it on Windows, as there are some
                     // side-effects with paths (need deeper studying)
