@@ -157,7 +157,7 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
                     : Collections.<TypeResolver>singleton(new TypeResolverImpl(variableType.getFullyQualifiedName()));
         VariableElementImpl retval = new VariableElementImpl(variable.getName(), variable.getOffset(), null, elementQuery,
                 typeResolvers, typeResolvers);
-        retval.fileObject = variable.getFile();
+        retval.setFileObject(variable.getFile());
         return retval;
     }
 

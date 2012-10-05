@@ -1364,7 +1364,7 @@ public class FormatVisitor extends DefaultVisitor {
                 String part2 = text.substring(part1.length(), text.indexOf(')'));
                 String part3 = text.substring(part1.length() + part2.length());
                 StringBuilder ws1 = new StringBuilder();
-                String ws2 = "";
+                StringBuilder ws2 = new StringBuilder();
                 int index = 0;
                 while (index < part2.length() && part2.charAt(index) == ' ') {
                     ws1.append(' ');
@@ -1372,7 +1372,7 @@ public class FormatVisitor extends DefaultVisitor {
                 }
                 index = part2.length() - 1;
                 while (index > 0 && part2.charAt(index) == ' ') {
-                    ws2 = ws2 + ' ';
+                    ws2.append(' ');
                     index--;
                 }
                 part2 = part2.trim();
@@ -1387,7 +1387,7 @@ public class FormatVisitor extends DefaultVisitor {
                 tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset() + length, part2));
                 length += part2.length();
                 if (ws2.length() > 0) {
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + length, ws2));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + length, ws2.toString()));
                     length += ws2.length();
                 }
                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_TYPE_CAST_PARENS, ts.offset() + length));
@@ -1592,13 +1592,9 @@ public class FormatVisitor extends DefaultVisitor {
             int tokenEndOffset = tokenStartOffset + ts.token().length();
             if (GsfUtilities.isCodeTemplateEditing(document) && caretOffset > tokenStartOffset && caretOffset < tokenEndOffset && tokenStartOffset > startOffset && tokenEndOffset < endOffset) {
                 int devideIndex = caretOffset - tokenStartOffset;
-                if (tokenText == null) {
-                    result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, tokenText));
-                } else {
-                    String firstTextPart = tokenText.substring(0, devideIndex);
-                    result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, firstTextPart));
-                    result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset + firstTextPart.length(), tokenText.substring(devideIndex)));
-                }
+                String firstTextPart = tokenText.substring(0, devideIndex);
+                result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, firstTextPart));
+                result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset + firstTextPart.length(), tokenText.substring(devideIndex)));
             } else {
                 result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, tokenText));
             }

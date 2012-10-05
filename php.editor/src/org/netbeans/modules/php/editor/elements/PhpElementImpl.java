@@ -105,7 +105,8 @@ public abstract class PhpElementImpl implements PhpElement {
     private final String fileUrl;
     private final int offset;
     private final ElementQuery elementQuery;
-    protected FileObject fileObject;
+    //@GuardedBy("this")
+    private FileObject fileObject;
 
     public static PhpElementImpl create(final String variableName, final String in, final int offset, final FileObject fo, final PhpElementKind kind) {
         return new PhpElementImpl(variableName, in, null, offset, null) {
@@ -177,6 +178,10 @@ public abstract class PhpElementImpl implements PhpElement {
             fileObject = resolveFileObject(urlStr);
         }
         return fileObject;
+    }
+
+    public synchronized void setFileObject(FileObject fileObject) {
+        this.fileObject = fileObject;
     }
 
     public static FileObject resolveFileObject(final String urlStr) {
