@@ -450,13 +450,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, productCombo, IssueField.PRODUCT, productWarning, productLabel);
             reloadField(force, componentCombo, IssueField.COMPONENT, componentWarning, componentLabel);
             reloadField(force, releaseCombo, IssueField.MILESTONE, releaseWarning, releaseLabel);
-            reloadField(force, resolutionCombo, IssueField.RESOLUTION, resolutionWarning, "resolution"); // NOI18N
             reloadField(force, descriptionPanel, IssueField.DESCRIPTION, descriptionPanel.getWarningLabel(), descriptionLabel); // NOI18N
             String status = reloadField(force, statusCombo, IssueField.STATUS, statusWarning, statusLabel);
             initStatusCombo(status, issue.getFieldValue(IssueField.STATUS));
+            reloadField(force, resolutionCombo, IssueField.RESOLUTION, resolutionWarning, "resolution"); // NOI18N
             String initialResolution = initialValues.get(IssueField.RESOLUTION.getKey());
             if (RESOLUTION_DUPLICATE.equals(initialResolution)) { // NOI18N // XXX no string gvalues
                 duplicateField.setEditable(false);
+                duplicateButton.setVisible(false);
                 duplicateField.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
                 duplicateField.setBackground(getBackground());
             } else {
@@ -2319,9 +2320,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         } else {
             storeFieldValue(IssueField.RESOLUTION, ""); //NOI18N
         }
-//        if (duplicateField.isVisible() && duplicateField.isEditable()) {
-//            storeFieldValue(IssueField., ""); //NOI18N
-//        }
+        if (duplicateField.isVisible() && duplicateField.isEditable()) {
+            storeFieldValue(IssueField.DUPLICATE, duplicateField); //NOI18N
+        }
         if (!isNew && !"".equals(addCommentPanel.getCodePane().getText().trim())) { // NOI18N
             issue.addComment(addCommentPanel.getCodePane().getText().trim());
         }

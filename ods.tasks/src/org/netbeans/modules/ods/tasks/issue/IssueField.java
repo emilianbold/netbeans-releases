@@ -66,6 +66,7 @@ public class IssueField {
     public static final IssueField PRODUCT = new IssueField(TaskAttribute.PRODUCT, "LBL_PRODUCT"); // NOI18N
     public static final IssueField STATUS = new IssueField(TaskAttribute.STATUS, "LBL_STATUS"); // NOI18N
     public static final IssueField RESOLUTION = new IssueField(TaskAttribute.RESOLUTION, "LBL_RESOLUTION"); // NOI18N
+    public static final IssueField DUPLICATE = new IssueField(C2CData.ATTR_DUPLICATE_OF, "LBL_DUPLICATE"); // NOI18N
     public static final IssueField SEVERITY = new IssueField(TaskAttribute.SEVERITY, "LBL_SEVERITY"); // NOI18N
     public static final IssueField VERSION = new IssueField(C2CData.ATTR_VERSION, "LBL_VERSION"); // NOI18N
     public static final IssueField TASK_TYPE = new IssueField(C2CData.ATTR_TASK_TYPE, "LBL_TASK_TYPE"); // NOI18N

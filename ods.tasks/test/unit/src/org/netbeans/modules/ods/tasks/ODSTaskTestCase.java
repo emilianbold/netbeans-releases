@@ -222,6 +222,24 @@ public class ODSTaskTestCase extends AbstractC2CTestCase {
         assertEquals("", taskData.getRoot().getMappedAttribute(C2CData.ATTR_SUBTASK).getValue());
         assertNotNull(taskData);
         
+        // duplicate
+        rta = taskData.getRoot();
+        ta = rta.getMappedAttribute(TaskAttribute.STATUS);
+        ta.setValue("RESOLVED");
+        ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
+        ta.setValue("DUPLICATE");
+        ta = rta.getMappedAttribute(C2CData.ATTR_DUPLICATE_OF);
+        ta.setValue(taskData2.getTaskId());
+
+        rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
+        assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
+                
+        taskData = rc.getTaskData(taskRepository, rr.getTaskId(), nullProgressMonitor);
+        assertNotNull(taskData);
+        assertEquals("RESOLVED", taskData.getRoot().getMappedAttribute(TaskAttribute.STATUS).getValue());
+        assertEquals("DUPLICATE", taskData.getRoot().getMappedAttribute(TaskAttribute.RESOLUTION).getValue());
+        assertEquals(taskData2.getTaskId(), taskData.getRoot().getMappedAttribute(C2CData.ATTR_DUPLICATE_OF).getValue());
+        
             // get history
 //            TaskHistory history = rc.getTaskHistory(taskRepository, new ITaskImpl(taskData), nullProgressMonitor);
 //            List<TaskRevision> revisions = history.getRevisions();
