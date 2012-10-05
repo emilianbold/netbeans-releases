@@ -972,7 +972,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final LinkedHashSet<TypeMemberElement> directTypes = new LinkedHashSet<TypeMemberElement>();
         if (typeKinds.contains(PhpElementKind.CLASS) && (typeElement instanceof ClassElement)) {
             final Set<TypeMemberElement> classTypes = new LinkedHashSet<TypeMemberElement>();
-            QualifiedName superClassName = null;
+            QualifiedName superClassName;
             Collection<QualifiedName> possibleFQSuperClassNames = ((ClassElement) typeElement).getPossibleFQSuperClassNames();
             if (possibleFQSuperClassNames.size() == 1) {
                 superClassName = possibleFQSuperClassNames.iterator().next();
@@ -998,6 +998,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                             classTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(
                                     getTypeConstantsImpl(NameKind.exact(superClassName), NameKind.empty(), EnumSet.of(PhpElementKind.CLASS))));
                             break;
+                        default:
+                            //no-op
                     }
                 }
                 if (classTypes.isEmpty()) {
@@ -1007,7 +1009,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             directTypes.addAll(classTypes);
         }
         if (typeKinds.contains(PhpElementKind.IFACE)) {
-            Collection<QualifiedName> interfaceNames = null;
+            Collection<QualifiedName> interfaceNames;
             Collection<QualifiedName> fQSuperInterfaceNames = typeElement.getFQSuperInterfaceNames();
             if (!fQSuperInterfaceNames.isEmpty()) {
                 interfaceNames = fQSuperInterfaceNames;
@@ -1031,6 +1033,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                             ifaceTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstantsImpl(NameKind.exact(iface), NameKind.empty(),
                                     EnumSet.of(PhpElementKind.IFACE))));
                             break;
+                        default:
+                            //no-op
                     }
                 }
                 if (ifaceTypes.isEmpty()) {
@@ -1464,7 +1468,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     private LinkedHashSet<TypeElement> getDirectInheritedTypes(final TypeElement typeElement, final boolean includeClasses, final boolean includeIfaces) {
         final LinkedHashSet<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
         if (includeClasses && (typeElement instanceof ClassElement)) {
-            QualifiedName superClassName = null;
+            QualifiedName superClassName;
             Collection<QualifiedName> possibleFQSuperClassNames = ((ClassElement) typeElement).getPossibleFQSuperClassNames();
             if (possibleFQSuperClassNames.size() == 1) {
                 superClassName = possibleFQSuperClassNames.iterator().next();

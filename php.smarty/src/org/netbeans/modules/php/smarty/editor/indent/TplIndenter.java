@@ -243,7 +243,10 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
                     if (embeddingLevel == 0) {
                         assert item.state == StackItemState.IN_RULE;
                         if (isSmartyBodyCommand) {
-                            if (!blockStack.isEmpty() && TplSyntax.isInRelatedCommand(lastTplCommand, blockStack.peek().getCommand())) {
+                            if (!blockStack.isEmpty()
+                                    // issue #219375 - happens when the selection ends inside the Smarty tag
+                                    && blockStack.peek().getCommand() != null
+                                    && TplSyntax.isInRelatedCommand(lastTplCommand, blockStack.peek().getCommand())) {
                                 if (isSmartyElseCommand) {
                                     String command = blockStack.pop().command;
                                     blockStack.push(new TplStackItem(StackItemState.IN_BODY, command));

@@ -1821,12 +1821,12 @@ T_SEMICOLON /* abstract method */
 variable_modifiers ::=
 ppp_modifiers:modifier
 {:
-    RESULT = Integer.valueOf(modifier.intValue());
+    RESULT = modifier;
 :}
-
+Integer.valueOf(modifier.intValue())
 | static_modifier:modifier
 {:
-    RESULT = Integer.valueOf(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | static_modifier:fModifier ppp_modifiers:sModifier
@@ -1859,17 +1859,17 @@ method_modifiers ::=
 
 | af_modifiers:modifier
 {:
-    RESULT = Integer.valueOf(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | static_modifier:modifier
 {:
-    RESULT = Integer.valueOf(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | ppp_modifiers:modifier
 {:
-    RESULT = Integer.valueOf(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | static_modifier:fModifier ppp_modifiers:sModifier

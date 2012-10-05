@@ -52,6 +52,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -120,7 +122,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     }
                     for(JsObject param: ((JsFunction)object).getParameters()) {
                         count(result, param, highlights);
-                        if(param.getOccurrences().isEmpty()) {
+                        if (!hasSourceOccurences(result, param)) {
                             OffsetRange range = param.getDeclarationName().getOffsetRange();
                             if (range.getStart() < range.getEnd()) {
                                 // only for declared parameters
@@ -225,5 +227,20 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     protected final synchronized void resume() {
         cancelled = false;
     }
-    
+
+    private boolean hasSourceOccurences(JsParserResult result, JsObject param) {
+        if (param.getOccurrences().isEmpty()) {
+            return false;
+        }
+
+        JsDocumentationHolder docHolder = result.getDocumentationHolder();
+        for (Occurrence occurrence : param.getOccurrences()) {
+            JsComment comment = docHolder.getCommentForOffset(occurrence.getOffsetRange().getStart(), docHolder.getCommentBlocks());
+            if (comment == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

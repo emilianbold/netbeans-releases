@@ -43,12 +43,12 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.model.ConstantElement;
-import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.ConstantElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
@@ -78,6 +78,7 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement, F
         sb.append(getName()).append(Signature.ITEM_DELIMITER);
         sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        assert namespaceScope != null;
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         sb.append(getValue() != null ? Signature.encodeItem(getValue()) : "?").append(Signature.ITEM_DELIMITER);//NOI18N

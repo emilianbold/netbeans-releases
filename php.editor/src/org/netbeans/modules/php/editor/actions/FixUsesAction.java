@@ -175,6 +175,7 @@ public class FixUsesAction extends BaseAction {
         Map<String, List<UsedNamespaceName>> filteredExistingNames = new UsedNamesComputer(parserResult, caretPosition).computeNames();
         Index index = parserResult.getModel().getIndexScope().getIndex();
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), caretPosition);
+        assert namespaceScope != null;
         ImportData importData = new ImportDataCreator(filteredExistingNames, index, namespaceScope.getNamespaceName(), createOptions(parserResult)).create();
         importData.caretPosition = caretPosition;
         return importData;

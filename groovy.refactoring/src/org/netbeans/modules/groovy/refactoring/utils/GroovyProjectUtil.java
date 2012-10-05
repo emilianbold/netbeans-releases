@@ -45,6 +45,8 @@
 package org.netbeans.modules.groovy.refactoring.utils;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -121,39 +123,57 @@ public class GroovyProjectUtil {
     }
 
     public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
-        assert files.length >0;
-        Set<URL> dependentRoots = new HashSet<URL>();
+        assert files.length > 0;
+        final Set<URI> dependentRoots = new HashSet<URI>();
         for (FileObject fo : files) {
             if (fo != null) {
                 Project p = FileOwnerQuery.getOwner(fo);
 
-                if (p != null) {
-                    ClassPath sourceClasspath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                    if (sourceClasspath != null) {
-                        URL sourceRoot = URLMapper.findURL(sourceClasspath.findOwnerRoot(fo), URLMapper.INTERNAL);
-                        dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
-                    }
+                try {
+                    if (p != null) {
+                        ClassPath sourceClasspath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                        if (sourceClasspath != null) {
+                            final URL sourceRoot = URLMapper.findURL(sourceClasspath.findOwnerRoot(fo), URLMapper.INTERNAL);
+                            for (URL root : SourceUtils.getDependentRoots(sourceRoot)) {
+                                dependentRoots.add(root.toURI());
+                            }
+                        }
 
-                    for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                        dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
-                    }
-                    
-                } else {
-                    for(ClassPath cp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
-                        for (FileObject root : cp.getRoots()) {
-                            dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+                        for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                            dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL).toURI());
+                        }
+
+                    } else {
+                        for(ClassPath cp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+                            for (FileObject root : cp.getRoots()) {
+                                dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL).toURI());
+                            }
                         }
                     }
+                } catch (URISyntaxException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }
 
-        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
-        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
-        ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
-        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
-        return cpInfo;
+        final ClassPath bootCP = getClassPath(files[0], ClassPath.BOOT);
+        final ClassPath compileCP = getClassPath(files[0], ClassPath.COMPILE);
+        final ClassPath sourceCP = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
+
+        return ClasspathInfo.create(bootCP, compileCP, sourceCP);
+    }
+
+    private static ClassPath getClassPath(FileObject fo, String classPathType) {
+        if (fo != null) {
+            final ClassPath classPath = ClassPath.getClassPath(fo, classPathType);
+            if (classPath != null) {
+                return classPath;
+            } else {
+                return ClassPath.EMPTY;
+            }
+        } else {
+            return ClassPath.EMPTY;
+        }
     }
 
     public static List<FileObject> getGroovyFilesInProject(FileObject fileInProject) {
@@ -217,13 +237,13 @@ public class GroovyProjectUtil {
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(FileObject fileObject) {
-        DataObject dob = null;
         try {
-            dob = DataObject.find(fileObject);
+            final DataObject dob = DataObject.find(fileObject);
+            return GroovyProjectUtil.findCloneableEditorSupport(dob);
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return GroovyProjectUtil.findCloneableEditorSupport(dob);
+        return null;
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {

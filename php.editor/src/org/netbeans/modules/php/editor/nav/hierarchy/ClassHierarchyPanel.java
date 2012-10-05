@@ -382,6 +382,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         return retval;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings({"DLS_DEAD_LOCAL_STORE"})
     private static TypeNode createTypeNode(
             final TreeNode parent, final TreeElement<TypeElement> classElement, Set<TypeElement> recursionDetection, Integer stackDepth) {
         stackDepth++;

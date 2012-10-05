@@ -70,6 +70,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -94,7 +95,7 @@ import org.openide.util.lookup.InstanceContent;
 public class InstantRenameAction extends BaseAction {
     /** Creates a new instance of InstantRenameAction */
     public InstantRenameAction() {
-        super("in-place-refactoring", MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+        super("in-place-refactoring", MAGIC_POSITION_RESET | UNDO_MERGE_RESET); //NOI18N
     }
 
     public @Override void actionPerformed(ActionEvent evt, final JTextComponent target) {
@@ -111,8 +112,7 @@ public class InstantRenameAction extends BaseAction {
                 Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenameAction.class, "scanning-in-progress"));
                 return;
             }
-
-            Source js = Source.create (DataLoadersBridge.getDefault().getFileObject(target));
+            Source js = Source.create(target.getDocument());
             if (js == null) {
                 return;
             }
@@ -125,7 +125,8 @@ public class InstantRenameAction extends BaseAction {
                     public @Override void run (ResultIterator resultIterator) throws Exception {
                         Map<String, Parser.Result> embeddedResults = new HashMap<String, Parser.Result>();
                         outer:for(;;) {
-                            embeddedResults.put(resultIterator.getParserResult().getSnapshot().getMimeType(),
+                            final Result parserResult = resultIterator.getParserResult();
+                            embeddedResults.put(parserResult.getSnapshot().getMimeType(),
                                     resultIterator.getParserResult());
                             
                             Iterable<Embedding> embeddings = resultIterator.getEmbeddings();

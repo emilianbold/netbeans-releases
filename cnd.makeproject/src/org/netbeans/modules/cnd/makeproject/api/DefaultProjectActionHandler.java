@@ -175,6 +175,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         boolean unbuffer = false;
         boolean runInInternalTerminal;
         boolean runInExternalTerminal;
+        boolean statusEx = false;
         String commandLine = null;
         CompilerSet cs;
 
@@ -183,6 +184,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         // Used if not RUN. Also in case of QMake args are tweaked...
 
         if (actionType == ProjectActionEvent.PredefinedType.RUN) {
+            statusEx = true;
             runInInternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_INTERNAL;
             runInExternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL;
             if (runInExternalTerminal && (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null)) {
@@ -287,7 +289,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
                 setWorkingDirectory(workingDirectory).
-                unbufferOutput(unbuffer).
+                unbufferOutput(unbuffer).setStatusEx(statusEx).
                 addNativeProcessListener(processChangeListener);
 
         if (commandLine != null) {
@@ -299,7 +301,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             }
             npb.setExecutable(exe).setArguments(args.toArray(new String[args.size()]));
         }
-
+        
         if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             npb.redirectError();
         }

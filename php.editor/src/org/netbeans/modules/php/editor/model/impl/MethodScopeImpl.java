@@ -100,7 +100,9 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     }
 
     public static MethodScopeImpl createElement(Scope scope, PHPDocMethodTag node) {
-        return new MethodScopeImpl(scope, MagicMethodDeclarationInfo.create(node));
+        MagicMethodDeclarationInfo nodeInfo = MagicMethodDeclarationInfo.create(node);
+        assert nodeInfo != null;
+        return new MethodScopeImpl(scope, nodeInfo);
     }
 
     @Override
@@ -235,6 +237,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         sb.append(typeName).append(Signature.ITEM_DELIMITER);
         sb.append(getSignatureLastPart());
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        assert namespaceScope != null;
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         return sb.toString();

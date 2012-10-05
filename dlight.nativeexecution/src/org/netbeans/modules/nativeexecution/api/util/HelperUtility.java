@@ -63,7 +63,7 @@ public class HelperUtility {
 
     private final HashMap<ExecutionEnvironment, String> cache = new HashMap<ExecutionEnvironment, String>();
     private final String pattern;
-    private final String codeNameBase;
+    protected final String codeNameBase;
 
     public HelperUtility(String searchPattern) {
         this("org.netbeans.modules.dlight.nativeexecution", searchPattern); // NOI18N
@@ -85,7 +85,7 @@ public class HelperUtility {
             throw new IllegalStateException(env.toString() + " is not connected"); // NOI18N
         }
 
-        String result = null;
+        String result;
 
         synchronized (cache) {
             result = cache.get(env);

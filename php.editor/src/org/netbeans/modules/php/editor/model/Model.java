@@ -101,22 +101,18 @@ public final class Model {
         return visitor.getIndexScope();
     }
 
-    public OccurencesSupport getOccurencesSupport(final OffsetRange range) {
+    public synchronized OccurencesSupport getOccurencesSupport(final OffsetRange range) {
         final ModelVisitor visitor = getModelVisitor();
-        synchronized(this) {
-            if (occurencesSupport == null || !range.containsInclusive(occurencesSupport.offset)) {
-                occurencesSupport = new OccurencesSupport(visitor, range.getStart()+1);
-            }
+        if (occurencesSupport == null || !range.containsInclusive(occurencesSupport.offset)) {
+            occurencesSupport = new OccurencesSupport(visitor, range.getStart()+1);
         }
         return occurencesSupport;
     }
 
-    public OccurencesSupport getOccurencesSupport(final int offset) {
+    public synchronized OccurencesSupport getOccurencesSupport(final int offset) {
         final ModelVisitor visitor = getModelVisitor();
-        synchronized(this) {
-            if (occurencesSupport == null || occurencesSupport.offset != offset) {
-                occurencesSupport = new OccurencesSupport(visitor, offset);
-            }
+        if (occurencesSupport == null || occurencesSupport.offset != offset) {
+            occurencesSupport = new OccurencesSupport(visitor, offset);
         }
         return occurencesSupport;
     }
@@ -146,8 +142,7 @@ public final class Model {
             modelVisitor.scan(Utils.getRoot(info));
             long end = System.currentTimeMillis();
             LOGGER.log(Level.FINE, "Building model took: {0}", (end - start));
-            }
-
+        }
         return modelVisitor;
     }
 }

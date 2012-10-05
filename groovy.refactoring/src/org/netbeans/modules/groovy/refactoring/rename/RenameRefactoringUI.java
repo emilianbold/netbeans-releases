@@ -65,7 +65,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
-    private final AbstractRefactoring refactoring;
+    private final RenameRefactoring refactoring;
     private final String name;
     private RenamePanel panel;
 
@@ -106,10 +106,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
     @Override
     public Problem setParameters() {
-        String newName = panel.getNameValue();
-        if (refactoring instanceof RenameRefactoring) {
-            ((RenameRefactoring) refactoring).setNewName(newName);
-        }
+        refactoring.setNewName(panel.getNameValue());
         return refactoring.checkParameters();
     }
 
@@ -118,9 +115,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         if (!panel.isUpdateReferences()) {
             return null;
         }
-        if (refactoring instanceof RenameRefactoring) {
-            ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
-        }
+        refactoring.setNewName(panel.getNameValue());
         return refactoring.checkParameters();
     }
 

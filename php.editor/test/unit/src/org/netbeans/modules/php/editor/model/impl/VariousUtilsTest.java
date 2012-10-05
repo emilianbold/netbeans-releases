@@ -250,4 +250,10 @@ public class VariousUtilsTest extends ModelTestBase{
         assertEquals("\" " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " " + VariousUtils.POST_OPERATION_TYPE_DELIMITER_SUBS + " \"", VariousUtils.encodeVariableName("\" : : \""));
     }
 
+    public void testIssue209530() throws Exception {
+        assertEquals("", VariousUtils.qualifyTypeNames("|", 0, null));
+        assertEquals("", VariousUtils.qualifyTypeNames("| |", 0, null));
+        assertEquals("", VariousUtils.qualifyTypeNames("   |     |  ||  ", 0, null));
+    }
+
 }

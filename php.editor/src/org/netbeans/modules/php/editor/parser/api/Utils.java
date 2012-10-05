@@ -201,7 +201,7 @@ public class Utils {
                 // probably no node was found except whole file.
                 // try to look for a documentation node
                 processComments((Program) node);
-            } else if (programNode instanceof Program) {
+            } else if (programNode != null) {
                 // we need to handle comment nodes too,
                 // but we need a program node for that
                 processComments((Program) programNode);
