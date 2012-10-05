@@ -141,7 +141,7 @@ public class ModelUtils {
        int ruleIndex = ruleRef.getRuleIndex();
        assert ruleIndex != -1; //the rule must be found
        
-       CharSequence ruleId = ruleRef.getRuleId();
+       CharSequence ruleId = LexerUtils.trim(ruleRef.getRuleId());
        
        //now resolve the rule ref to the current model
        final ResolveRuleRefModelVisitor resolveRuleRef = new ResolveRuleRefModelVisitor(this.model, ruleId, ruleIndex);
@@ -203,7 +203,7 @@ public class ModelUtils {
     }
     
     /**
-     * Finds an instance of {@link Rule} corrsponding to the given ruleid and the rule index.
+     * Finds an instance of {@link Rule} corresponding to the given ruleid and the rule index.
      */
     private static class ResolveRuleRefModelVisitor extends ModelVisitor.Adapter {
         
@@ -227,7 +227,7 @@ public class ModelUtils {
                 return ;
             }
             
-            CharSequence foundRuleId = model.getElementSource(rule.getSelectorsGroup());
+            CharSequence foundRuleId = LexerUtils.trim(model.getElementSource(rule.getSelectorsGroup()));
             if (LexerUtils.equals(ruleId, foundRuleId, false, false)) {
                 if(index == ruleIndex) {
                     this.rule = rule;
