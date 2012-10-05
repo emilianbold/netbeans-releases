@@ -101,6 +101,34 @@ public class DeclarationsITest extends ModelTestBase {
         
     }
     
+    public void testRemoveNewDeclaration() {
+        String code = "div {}\n";
+        Model model = createModel(code);
+        StyleSheet styleSheet = getStyleSheet(model);
+        Rule rule = styleSheet.getBody().getRules().get(0);
+        assertNotNull(rule);
+        Declarations ds = rule.getDeclarations();
+        assertNull(ds);
+        
+        ElementFactory ef = model.getElementFactory();
+        ds = ef.createDeclarations();
+        rule.setDeclarations(ds);
+        
+        assertNotNull(rule.getDeclarations());
+        
+        Declaration newMargin = ef.createDeclaration(
+                ef.createProperty("margin"),
+                ef.createPropertyValue(ef.createExpression("3px")),
+                false);
+        
+        ds.addDeclaration(newMargin);
+        assertEquals(1, ds.getDeclarations().size());
+        
+        ds.removeDeclaration(newMargin);
+        assertEquals(0, ds.getDeclarations().size());
+        
+    }
+    
     public void testAddRemoveDeclarationWithComments() {
         String code = "div {\n"
                 + "    font-size: 222px;\n"
