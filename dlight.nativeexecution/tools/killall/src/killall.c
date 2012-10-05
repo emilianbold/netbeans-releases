@@ -12,36 +12,141 @@ typedef struct signame {
 } signame_t;
 
 static signame_t signames[] = {
-    { "EXIT", 0},
-    { "HUP", SIGHUP},
-    { "INT", SIGINT},
-    { "QUIT", SIGQUIT},
-    { "ILL", SIGILL},
-    { "TRAP", SIGTRAP},
-    { "ABRT", SIGABRT},
-    { "BUS", SIGBUS},
-    { "FPE", SIGFPE},
-    { "KILL", SIGKILL},
-    { "USR1", SIGUSR1},
-    { "SEGV", SIGSEGV},
-    { "USR2", SIGUSR2},
-    { "PIPE", SIGPIPE},
-    { "ALRM", SIGALRM},
-    { "TERM", SIGTERM},
-    { "CHLD", SIGCHLD},
-    { "CONT", SIGCONT},
-    { "STOP", SIGSTOP},
-    { "TSTP", SIGTSTP},
-    { "TTIN", SIGTTIN},
-    { "TTOU", SIGTTOU},
-    { "URG", SIGURG},
-    { "XCPU", SIGXCPU},
-    { "XFSZ", SIGXFSZ},
-    { "VTALRM", SIGVTALRM},
-    { "PROF", SIGPROF},
-    { "WINCH", SIGWINCH},
-    { "IO", SIGIO},
-    { "SYS", SIGSYS}
+#ifdef SIGABRT
+    {"SIGABRT", SIGABRT},
+#endif
+#ifdef SIGALRM
+    {"SIGALRM", SIGALRM},
+#endif
+#ifdef SIGBUS
+    {"SIGBUS", SIGBUS},
+#endif
+#ifdef SIGCANCEL
+    {"SIGCANCEL", SIGCANCEL},
+#endif
+#ifdef SIGCHLD
+    {"SIGCHLD", SIGCHLD},
+#endif
+#ifdef SIGCLD
+    {"SIGCLD", SIGCLD},
+#endif
+#ifdef SIGCONT
+    {"SIGCONT", SIGCONT},
+#endif
+#ifdef SIGEMT
+    {"SIGEMT", SIGEMT},
+#endif
+#ifdef SIGFPE
+    {"SIGFPE", SIGFPE},
+#endif
+#ifdef SIGFREEZE
+    {"SIGFREEZE", SIGFREEZE},
+#endif
+#ifdef SIGHUP
+    {"SIGHUP", SIGHUP},
+#endif
+#ifdef SIGILL
+    {"SIGILL", SIGILL},
+#endif
+#ifdef SIGINFO
+    {"SIGINFO", SIGINFO},
+#endif
+#ifdef SIGINT
+    {"SIGINT", SIGINT},
+#endif
+#ifdef SIGIO
+    {"SIGIO", SIGIO},
+#endif
+#ifdef SIGIOT
+    {"SIGIOT", SIGIOT},
+#endif
+#ifdef SIGJVM1
+    {"SIGJVM1", SIGJVM1},
+#endif
+#ifdef SIGJVM2
+    {"SIGJVM2", SIGJVM2},
+#endif
+#ifdef SIGKILL
+    {"SIGKILL", SIGKILL},
+#endif
+#ifdef SIGLOST
+    {"SIGLOST", SIGLOST},
+#endif
+#ifdef SIGLWP
+    {"SIGLWP", SIGLWP},
+#endif
+#ifdef SIGPIPE
+    {"SIGPIPE", SIGPIPE},
+#endif
+#ifdef SIGPOLL
+    {"SIGPOLL", SIGPOLL},
+#endif
+#ifdef SIGPROF
+    {"SIGPROF", SIGPROF},
+#endif
+#ifdef SIGPWR
+    {"SIGPWR", SIGPWR},
+#endif
+#ifdef SIGQUIT
+    {"SIGQUIT", SIGQUIT},
+#endif
+#ifdef SIGSEGV
+    {"SIGSEGV", SIGSEGV},
+#endif
+#ifdef SIGSTKFLT
+    {"SIGSTKFLT", SIGSTKFLT},
+#endif
+#ifdef SIGSTOP
+    {"SIGSTOP", SIGSTOP},
+#endif
+#ifdef SIGSYS
+    {"SIGSYS", SIGSYS},
+#endif
+#ifdef SIGTERM
+    {"SIGTERM", SIGTERM},
+#endif
+#ifdef SIGTHAW
+    {"SIGTHAW", SIGTHAW},
+#endif
+#ifdef SIGTRAP
+    {"SIGTRAP", SIGTRAP},
+#endif
+#ifdef SIGTSTP
+    {"SIGTSTP", SIGTSTP},
+#endif
+#ifdef SIGTTIN
+    {"SIGTTIN", SIGTTIN},
+#endif
+#ifdef SIGTTOU
+    {"SIGTTOU", SIGTTOU},
+#endif
+#ifdef SIGURG
+    {"SIGURG", SIGURG},
+#endif
+#ifdef SIGUSR1
+    {"SIGUSR1", SIGUSR1},
+#endif
+#ifdef SIGUSR2
+    {"SIGUSR2", SIGUSR2},
+#endif
+#ifdef SIGVTALRM
+    {"SIGVTALRM", SIGVTALRM},
+#endif
+#ifdef SIGWAITING
+    {"SIGWAITING", SIGWAITING},
+#endif
+#ifdef SIGWINCH
+    {"SIGWINCH", SIGWINCH},
+#endif
+#ifdef SIGXCPU
+    {"SIGXCPU", SIGXCPU},
+#endif
+#ifdef SIGXFSZ
+    {"SIGXFSZ", SIGXFSZ},
+#endif
+#ifdef SIGXRES
+    {"SIGXRES", SIGXRES},
+#endif
 };
 
 #define SIGCNT  (sizeof (signames) / sizeof (struct signame))
@@ -61,17 +166,15 @@ int str2sig(const char *name, int *sig_ret) {
 static int sendsignal(sigscope_t scope, int id, int sig) {
     switch (scope) {
         case S_PID:
-            kill((pid_t) id, sig);
-            break;
+            return kill((pid_t) id, sig);
         case S_PGID:
-            killpg((pid_t) id, sig);
-            break;
+            return killpg((pid_t) id, sig);
 #ifdef SOLARIS
         case S_SID:
-            sigsend(P_SID, (id_t) id, sig);
+            return sigsend(P_SID, (id_t) id, sig);
 #endif
             // not supported on other systems?
-            break;
+            return -1;
     }
 }
 
@@ -117,7 +220,5 @@ int main(int argc, char** argv) {
 #endif        
     }
 
-    sendsignal(params.scope, params.id, params.sig);
-
-    return 0;
+    return sendsignal(params.scope, params.id, params.sig);
 }
