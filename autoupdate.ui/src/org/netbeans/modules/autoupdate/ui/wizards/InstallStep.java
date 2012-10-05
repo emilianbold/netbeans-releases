@@ -349,7 +349,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             panel.waitAndSetProgressComponents (mainLabel, progressComponent, detailLabel);
 
             validator = support.doDownload (handle, Utilities.isGlobalInstallation(), userdirAsFallback);
-            if (validator == null) return true;
+            if (validator == null) {
+                handleCancel();
+                return true;
+            }
             panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("InstallStep_Done")));
             if (spareHandle != null && spareHandleStarted) {
                 spareHandle.finish ();

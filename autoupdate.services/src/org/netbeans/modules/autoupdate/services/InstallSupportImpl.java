@@ -181,7 +181,10 @@ public class InstallSupportImpl {
                 
                 try {
                     for (OperationInfo info : infos) {
-                        if (cancelled()) return false;
+                        if (cancelled()) {
+                            LOG.log (Level.INFO, "InstallSupport.doDownload was canceled"); // NOI18N
+                            return false;
+                        }
                         
                         int increment = doDownload(info, progress, aggregateDownload, size);
                         if (increment == -1) {
@@ -699,7 +702,8 @@ public class InstallSupportImpl {
     
     private int doDownload (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int aggregateDownload, final int totalSize) throws OperationException {
         if (cancelled()) {
-                return -1;
+            LOG.log (Level.INFO, "InstallSupport.doDownload was canceled, returns -1"); // NOI18N
+            return -1;
         }
         
         UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
@@ -1033,7 +1037,7 @@ public class InstallSupportImpl {
         }
         if (contentLength != -1 && increment != contentLength) {
             if(canceled) {
-                LOG.log(Level.FINE, "Download of " + source + " was cancelled");
+                LOG.log(Level.INFO, "Download of " + source + " was cancelled");
             } else {
                 LOG.log(Level.INFO, "Content length was reported as " + contentLength + " byte(s) but read " + increment + " byte(s)");
             }
