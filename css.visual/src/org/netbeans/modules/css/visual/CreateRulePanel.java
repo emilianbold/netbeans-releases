@@ -49,21 +49,29 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.live.LiveUpdater;
 import org.netbeans.modules.css.model.api.Body;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.ElementFactory;
 import org.netbeans.modules.css.model.api.Media;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.Selector;
@@ -73,8 +81,20 @@ import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -195,10 +215,51 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
                 try {
                     model.applyChanges();
-                } catch (IOException ex) {
+                    selectTheRuleInEditorIfOpened(model, rule);
+                } catch (Exception /*ParseException, IOException, BadLocationException*/ ex) {
                     Exceptions.printStackTrace(ex);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+    }
+
+    private void selectTheRuleInEditorIfOpened(final Model omodel, final Rule orule) throws DataObjectNotFoundException, ParseException {
+        FileObject file = omodel.getLookup().lookup(FileObject.class);
+        DataObject dobj = DataObject.find(file);
+        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+        //first get instance of the new model so we can resolve the element's positions
+        final AtomicInteger ruleOffset = new AtomicInteger(-1);
+        Source source = Source.create(file);
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                resultIterator = WebUtils.getResultIterator(resultIterator, "text/css");
+                if (resultIterator != null) {
+                    CssCslParserResult result = (CssCslParserResult) resultIterator.getParserResult();
+                    final Model model = result.getModel();
+                    model.runReadTask(new Model.ModelTask() {
+                        @Override
+                        public void run(StyleSheet styleSheet) {
+                            ModelUtils utils = new ModelUtils(model);
+                            Rule match = utils.findMatchingRule(omodel, orule);
+                            if(match != null) {
+                                ruleOffset.set(match.getStartOffset());
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        if(ruleOffset.get() == -1) {
+            return ;
+        }
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                JEditorPane[] openedPanes = ec.getOpenedPanes();
+                if (openedPanes != null && openedPanes.length > 0) {
+                    JEditorPane pane = openedPanes[0];
+                    pane.setCaretPosition(ruleOffset.get());
                 }
             }
         });
