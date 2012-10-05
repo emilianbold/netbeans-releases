@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl.MethodDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl.MethodBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl.NamespaceAliasBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.ParameterEllipsisImpl.ParameterEllipsisBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl.ParameterBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor.TemplateDescriptorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl.TemplateParameterBuilder;
@@ -1551,7 +1552,17 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void end_parameters_and_qualifiers(Token token) {}
     
     @Override public void parameter_declaration_clause(Token token) {}
-    @Override public void parameter_declaration_clause(int kind, Token token) {}
+    @Override public void parameter_declaration_clause(int kind, Token token) {
+        if(kind == PARAMETER_DECLARATION_CLAUSE__ELLIPSIS || kind == PARAMETER_DECLARATION_CLAUSE__ELLIPSIS2) {
+            ParameterEllipsisBuilder builder = new ParameterEllipsisBuilder();
+            builder.setFile(currentContext.file);
+            builder.setStartOffset(((APTToken)token).getOffset());
+            builder.setEndOffset(((APTToken)token).getEndOffset());
+            if(builderContext.top() instanceof FunctionParameterListBuilder) {
+                ((FunctionParameterListBuilder)builderContext.top()).addParameterBuilder(builder);
+            }
+        }
+    }
     @Override public void end_parameter_declaration_clause(Token token) {}
     @Override public void parameter_declaration_list(Token token) {}
     @Override public void end_parameter_declaration_list(int kind, Token token) {}
