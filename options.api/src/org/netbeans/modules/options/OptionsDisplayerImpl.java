@@ -86,6 +86,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -477,8 +478,14 @@ public class OptionsDisplayerImpl {
                 descriptorRef = new WeakReference<DialogDescriptor>(null);
                 // #156947 - close dialog when categories change
                 if (dialog != null) {
-                    dialog.setVisible(false);
-                    dialog = null;
+                    Mutex.EVENT.readAccess(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            dialog.setVisible(false);
+                            dialog = null;
+                        }
+                    });
                 }
             }
         }
