@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl.FunctionDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl.FunctionDefinitionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl.FunctionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl.MethodDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl.MethodBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl.NamespaceAliasBuilder;
@@ -1837,8 +1838,30 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void class_or_decltype(Token token) {}
     @Override public void class_or_decltype(int kind, Token token) {}
     @Override public void end_class_or_decltype(Token token) {}
-    @Override public void base_type_specifier(Token token) {}
-    @Override public void end_base_type_specifier(Token token) {}
+    @Override public void base_type_specifier(Token token) {
+        InheritanceBuilder builder = new InheritanceBuilder();
+        builder.setStartOffset(((APTToken)token).getOffset());
+        builder.setFile(currentContext.file);
+        builderContext.push(builder);
+        builderContext.push(new NameBuilder());
+    }
+    @Override public void end_base_type_specifier(Token token) {
+        NameBuilder nameBuilder = (NameBuilder)builderContext.top();
+        builderContext.pop();
+        
+        TypeBuilder typeBuilder = new TypeBuilder();
+        typeBuilder.setFile(currentContext.file);
+        typeBuilder.setStartOffset(((APTToken)token).getOffset());
+        typeBuilder.setEndOffset(((APTToken)token).getEndOffset());
+        typeBuilder.setNameBuilder(nameBuilder);
+        
+        InheritanceBuilder builder = (InheritanceBuilder)builderContext.top();
+        builder.setEndOffset(((APTToken)token).getEndOffset());
+        builder.setTypeBuilder(typeBuilder);
+        builderContext.pop();
+        ClassBuilder clsBuilder = (ClassBuilder)builderContext.top();
+        clsBuilder.addInheritanceBuilder(builder);
+    }
     @Override public void access_specifier(int kind, Token token) {}
     @Override public void conversion_function_id(Token token) {}
     @Override public void end_conversion_function_id(Token token) {}

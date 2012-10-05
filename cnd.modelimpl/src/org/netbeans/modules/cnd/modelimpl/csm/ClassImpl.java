@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl.MethodBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor.TemplateDescriptorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl.UsingDeclarationBuilder;
@@ -438,7 +439,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
     
     
-    public static class ClassBuilder implements CsmObjectBuilder {
+    public static class ClassBuilder extends ScopedDeclarationBuilder {
         
         private CharSequence name;// = CharSequences.empty();
         private int nameStartOffset;
@@ -456,6 +457,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private NameHolder nameHolder;
         
         private List<CsmObjectBuilder> children = new ArrayList<CsmObjectBuilder>();
+        private List<InheritanceBuilder> inheritanceBuilders = new ArrayList<InheritanceBuilder>();
 
         private TemplateDescriptorBuilder templateDescriptorBuilder;
         
@@ -504,6 +506,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             this.instance.addMember(member, true);
         }        
 
+        public void addInheritanceBuilder(InheritanceBuilder i) {
+            this.inheritanceBuilders.add(i);
+        }        
+        
         public void setTemplateDescriptorBuilder(TemplateDescriptorBuilder templateDescriptorBuilder) {
             this.templateDescriptorBuilder = templateDescriptorBuilder;
         }
@@ -573,6 +579,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     }
                 } else {
                     fileContent.addDeclaration(cls);
+                }
+                for (InheritanceBuilder inheritanceBuilder : inheritanceBuilders) {
+                    inheritanceBuilder.setScope(cls);
+                    cls.addInheritance(inheritanceBuilder.create(), isGlobal());
                 }
                 for (CsmObjectBuilder builder : children) {
                     if(builder instanceof ClassBuilder) {
