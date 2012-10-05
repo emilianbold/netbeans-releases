@@ -106,7 +106,7 @@ import org.netbeans.swing.etable.ETableColumn;
 class SyncTable implements MouseListener, ListSelectionListener, AncestorListener, PropertyChangeListener {
 
     private NodeTableModel  tableModel;
-    private JTable          table;
+    private ETable          table;
     private JScrollPane     component;
     private SyncFileNode [] nodes = new SyncFileNode[0];
     
@@ -159,6 +159,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         this.modeKeeper = modeKeeper;
         tableModel = new NodeTableModel();
         table = new ETable(tableModel);
+        table.setColumnHidingAllowed(false);
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         component.getViewport().setBackground(table.getBackground());
