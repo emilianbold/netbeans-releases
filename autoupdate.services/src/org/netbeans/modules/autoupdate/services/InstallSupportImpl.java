@@ -429,8 +429,8 @@ public class InstallSupportImpl {
                                                 new RefreshModulesListener (progress),
                                                 NbBundle.getBranding()
                                             );
-                                        } catch (InterruptedException ex) {
-                                            Exceptions.printStackTrace(ex);
+                                        } catch (InterruptedException ie) {
+                                            LOG.log (Level.INFO, ie.getMessage (), ie);
                                         }
                                     }
                                 });
@@ -774,6 +774,12 @@ public class InstallSupportImpl {
                             }
                             real.close();
                             if (check.getValue() != crc.get()) {
+                                dest.delete();
+                                LOG.log(Level.INFO, "Deleting file with uncomplete external content(cause: wrong CRC) " + dest);
+                                dest.delete();
+                                synchronized(downloadedFiles) {
+                                    downloadedFiles.remove(FileUtil.normalizeFile (dest));
+                                }
                                 external.delete();
                                 throw new IOException("Wrong CRC for " + jarEntry.getName());
                             }
