@@ -13,139 +13,139 @@ typedef struct signame {
 
 static signame_t signames[] = {
 #ifdef SIGABRT
-    {"SIGABRT", SIGABRT},
+    {"ABRT", SIGABRT},
 #endif
 #ifdef SIGALRM
-    {"SIGALRM", SIGALRM},
+    {"ALRM", SIGALRM},
 #endif
 #ifdef SIGBUS
-    {"SIGBUS", SIGBUS},
+    {"BUS", SIGBUS},
 #endif
 #ifdef SIGCANCEL
-    {"SIGCANCEL", SIGCANCEL},
+    {"CANCEL", SIGCANCEL},
 #endif
 #ifdef SIGCHLD
-    {"SIGCHLD", SIGCHLD},
+    {"CHLD", SIGCHLD},
 #endif
 #ifdef SIGCLD
-    {"SIGCLD", SIGCLD},
+    {"CLD", SIGCLD},
 #endif
 #ifdef SIGCONT
-    {"SIGCONT", SIGCONT},
+    {"CONT", SIGCONT},
 #endif
 #ifdef SIGEMT
-    {"SIGEMT", SIGEMT},
+    {"EMT", SIGEMT},
 #endif
 #ifdef SIGFPE
-    {"SIGFPE", SIGFPE},
+    {"FPE", SIGFPE},
 #endif
 #ifdef SIGFREEZE
-    {"SIGFREEZE", SIGFREEZE},
+    {"FREEZE", SIGFREEZE},
 #endif
 #ifdef SIGHUP
-    {"SIGHUP", SIGHUP},
+    {"HUP", SIGHUP},
 #endif
 #ifdef SIGILL
-    {"SIGILL", SIGILL},
+    {"ILL", SIGILL},
 #endif
 #ifdef SIGINFO
-    {"SIGINFO", SIGINFO},
+    {"INFO", SIGINFO},
 #endif
 #ifdef SIGINT
-    {"SIGINT", SIGINT},
+    {"INT", SIGINT},
 #endif
 #ifdef SIGIO
-    {"SIGIO", SIGIO},
+    {"IO", SIGIO},
 #endif
 #ifdef SIGIOT
-    {"SIGIOT", SIGIOT},
+    {"IOT", SIGIOT},
 #endif
 #ifdef SIGJVM1
-    {"SIGJVM1", SIGJVM1},
+    {"JVM1", SIGJVM1},
 #endif
 #ifdef SIGJVM2
-    {"SIGJVM2", SIGJVM2},
+    {"JVM2", SIGJVM2},
 #endif
 #ifdef SIGKILL
-    {"SIGKILL", SIGKILL},
+    {"KILL", SIGKILL},
 #endif
 #ifdef SIGLOST
-    {"SIGLOST", SIGLOST},
+    {"LOST", SIGLOST},
 #endif
 #ifdef SIGLWP
-    {"SIGLWP", SIGLWP},
+    {"LWP", SIGLWP},
 #endif
 #ifdef SIGPIPE
-    {"SIGPIPE", SIGPIPE},
+    {"PIPE", SIGPIPE},
 #endif
 #ifdef SIGPOLL
-    {"SIGPOLL", SIGPOLL},
+    {"POLL", SIGPOLL},
 #endif
 #ifdef SIGPROF
-    {"SIGPROF", SIGPROF},
+    {"PROF", SIGPROF},
 #endif
 #ifdef SIGPWR
-    {"SIGPWR", SIGPWR},
+    {"PWR", SIGPWR},
 #endif
 #ifdef SIGQUIT
-    {"SIGQUIT", SIGQUIT},
+    {"QUIT", SIGQUIT},
 #endif
 #ifdef SIGSEGV
-    {"SIGSEGV", SIGSEGV},
+    {"SEGV", SIGSEGV},
 #endif
 #ifdef SIGSTKFLT
-    {"SIGSTKFLT", SIGSTKFLT},
+    {"STKFLT", SIGSTKFLT},
 #endif
 #ifdef SIGSTOP
-    {"SIGSTOP", SIGSTOP},
+    {"STOP", SIGSTOP},
 #endif
 #ifdef SIGSYS
-    {"SIGSYS", SIGSYS},
+    {"SYS", SIGSYS},
 #endif
 #ifdef SIGTERM
-    {"SIGTERM", SIGTERM},
+    {"TERM", SIGTERM},
 #endif
 #ifdef SIGTHAW
-    {"SIGTHAW", SIGTHAW},
+    {"THAW", SIGTHAW},
 #endif
 #ifdef SIGTRAP
-    {"SIGTRAP", SIGTRAP},
+    {"TRAP", SIGTRAP},
 #endif
 #ifdef SIGTSTP
-    {"SIGTSTP", SIGTSTP},
+    {"TSTP", SIGTSTP},
 #endif
 #ifdef SIGTTIN
-    {"SIGTTIN", SIGTTIN},
+    {"TTIN", SIGTTIN},
 #endif
 #ifdef SIGTTOU
-    {"SIGTTOU", SIGTTOU},
+    {"TTOU", SIGTTOU},
 #endif
 #ifdef SIGURG
-    {"SIGURG", SIGURG},
+    {"URG", SIGURG},
 #endif
 #ifdef SIGUSR1
-    {"SIGUSR1", SIGUSR1},
+    {"USR1", SIGUSR1},
 #endif
 #ifdef SIGUSR2
-    {"SIGUSR2", SIGUSR2},
+    {"USR2", SIGUSR2},
 #endif
 #ifdef SIGVTALRM
-    {"SIGVTALRM", SIGVTALRM},
+    {"VTALRM", SIGVTALRM},
 #endif
 #ifdef SIGWAITING
-    {"SIGWAITING", SIGWAITING},
+    {"WAITING", SIGWAITING},
 #endif
 #ifdef SIGWINCH
-    {"SIGWINCH", SIGWINCH},
+    {"WINCH", SIGWINCH},
 #endif
 #ifdef SIGXCPU
-    {"SIGXCPU", SIGXCPU},
+    {"XCPU", SIGXCPU},
 #endif
 #ifdef SIGXFSZ
-    {"SIGXFSZ", SIGXFSZ},
+    {"XFSZ", SIGXFSZ},
 #endif
 #ifdef SIGXRES
-    {"SIGXRES", SIGXRES},
+    {"XRES", SIGXRES},
 #endif
 };
 
