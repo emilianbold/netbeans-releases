@@ -143,7 +143,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         ClassElementImpl retval = new ClassElementImpl(QualifiedName.create(fullyQualifiedName == null ? clz.getName() : fullyQualifiedName),
                 clz.getOffset(), null, Collections.<QualifiedName>emptySet(), Collections.<QualifiedName>emptySet(),
                 Collections.<QualifiedName>emptySet(), PhpModifiers.NO_FLAGS, Collections.<QualifiedName>emptySet(), null, elementQuery);
-        retval.fileObject = clz.getFile();
+        retval.setFileObject(clz.getFile());
         return retval;
     }
 
