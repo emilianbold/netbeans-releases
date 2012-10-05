@@ -48,11 +48,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.elements.DiffElement;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
@@ -62,6 +66,7 @@ import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -216,26 +221,63 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         if (startFile.equals(scopeFile)) {
             return Collections.singleton(scopeFile);
         } else {
+            Collection<CsmFile> relevantFiles;
+            Collection<CsmProject> relevantPrjs = new HashSet<CsmProject>();
             CsmProject[] prjs = refactoring.getContext().lookup(CsmProject[].class);
             CsmFile declFile = CsmRefactoringUtils.getCsmFile(referencedObject);
             if (prjs == null || prjs.length == 0 || declFile == null) {
                 CsmProject prj = startFile.getProject();
-                return prj.getAllFiles();
+                relevantPrjs.add(prj);
+                relevantFiles = prj.getAllFiles();
             } else {
                 CsmProject declPrj = declFile.getProject();
-                Collection<CsmProject> relevantPrjs = new HashSet<CsmProject>();
                 for (CsmProject csmProject : prjs) {
                     // if the same project or declaration from shared library
                     if (csmProject.equals(declPrj) || csmProject.getLibraries().contains(declPrj)) {
                         relevantPrjs.add(csmProject);
                     }
                 }
-                Collection<CsmFile> relevantFiles = new HashSet<CsmFile>();
+                relevantFiles = new HashSet<CsmFile>();
                 for (CsmProject csmProject : relevantPrjs) {
                     relevantFiles.addAll(csmProject.getAllFiles());
                 }
-                return relevantFiles;
             }
+            if (CndTraceFlags.TEXT_INDEX) {
+                CharSequence name = "";
+                if (CsmKindUtilities.isNamedElement(referencedObject)) {
+                    name = ((CsmNamedElement)referencedObject).getName();
+                } else if (CsmKindUtilities.isStatement(referencedObject)) {
+                    if (referencedObject instanceof CsmLabel) {
+                        name = ((CsmLabel)referencedObject).getLabel();
+                    } else if (referencedObject instanceof CsmGotoStatement){
+                        name = ((CsmGotoStatement)referencedObject).getLabel();
+                    }
+                }
+                Map<FileSystem, Collection<CsmProject>> relevantFilesystems = new HashMap<FileSystem, Collection<CsmProject>>();
+                for (CsmProject csmProject : relevantPrjs) {
+                    final FileSystem fileSystem = csmProject.getFileSystem();
+                    Collection<CsmProject> projects = relevantFilesystems.get(fileSystem);
+                    if (projects == null) {
+                        projects = new HashSet<CsmProject>();
+                        relevantFilesystems.put(fileSystem, projects);
+                    }
+                    projects.add(csmProject);
+                }
+                Collection<CsmFile> filteredRelevantFiles = new HashSet<CsmFile>();
+                for (Map.Entry<FileSystem, Collection<CsmProject>> entry : relevantFilesystems.entrySet()) {
+                    Collection<FSPath> files = CndTextIndex.query(entry.getKey(), name.toString());
+                    for (FSPath fSPath : files) {
+                        for (CsmProject csmProject : entry.getValue()) {
+                            CsmFile file = csmProject.findFile(fSPath, false, false);
+                            if (file != null) {
+                                filteredRelevantFiles.add(file);
+                            }
+                        }
+                    }
+                }
+                relevantFiles = filteredRelevantFiles;
+            }
+            return relevantFiles;
         }
     }
 
