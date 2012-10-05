@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Collections;
+import org.glassfish.tools.ide.utils.StringPrefixTree;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -244,7 +245,7 @@ public class LogHyperLinkSupport {
                     return;
                 }
                 editorCookie.open();
-                Line errorLine = null;
+                Line errorLine;
                 try {
                     errorLine = editorCookie.getLineSet().getCurrent(line - 1);
                 } catch (IndexOutOfBoundsException ex) {
@@ -289,16 +290,143 @@ public class LogHyperLinkSupport {
      */
     public static class AppServerLogSupport extends LogHyperLinkSupport {
 
+        /**
+         * Search for class in global class registry and cache known search
+         * results.
+         * <p/>
+         * Search results are stored in prefix tree based structure to speed up
+         * text matching as much as possible.
+         * <i>Known drawback:</i> Cache does not implement any kind of dirty
+         * flags so search won't find newly added classes and if will keep
+         * finding removed classes.
+         */
+        private static class PathAccess {
+
+            /** Particular source file search result to be cached. */
+            private static class ClassAccess {
+
+                /**
+                 * Is source file accessible in NetBeans?
+                 */
+                boolean accessible;
+                /**
+                 * Source file path from full class name (including package).
+                 */
+                String path;
+
+                /**
+                 * Creates an instance of particular source file search result.
+                 * <p/>
+                 * @param accessible Is source file accessible in NetBeans?
+                 * @param path Source file path from full class name (including
+                 * package).
+                 */
+                ClassAccess(boolean accessible, String path) {
+                    this.accessible = accessible;
+                    this.path = path;
+                }
+            }
+
+            /** Classes search results cache.
+             *  <p/>
+             *  Shared data structure which is not thread safe. Accessing code
+             *  should use locking on this cache instance.
+             */
+            private static final StringPrefixTree<ClassAccess> accessCache
+                    = new StringPrefixTree<ClassAccess>(true);
+
+            /** NetBeans global class path registry. */
+            private final GlobalPathRegistry globalPathRegistry;
+
+            /** GlassFish server installation root. */
+            private final String serverRoot;
+
+            /** GlassFish server application context. */
+            private final String appContext;
+
+            /**
+             * Creates an instance of global class registry cached search.
+             * <p/>
+             * @param globalPathRegistry NetBeans global class path registry.
+             * @param serverRoot         GlassFish server installation root.
+             * @param appContext         GlassFish server application context.
+             */
+            PathAccess(final GlobalPathRegistry globalPathRegistry,
+                    final String serverRoot, final String appContext) {
+                this.globalPathRegistry = globalPathRegistry;
+                this.serverRoot = serverRoot;
+                this.appContext = appContext;
+            }
+
+            /**
+             * Search for class in global class registry and cache known search
+             * results.
+             * <p/>
+             * Search results are stored in prefix tree based structure
+             * to speed up text matching as much as possible.
+             * <p/>
+             * <i>Known drawback:</i> Cache does not implement any kind of dirty
+             * flags so search won't find newly added classes and if will keep
+             * finding removed classes.
+             * <p/>
+             * @param className
+             * @return 
+             */
+            ClassAccess find(String className) {
+                ClassAccess result;
+                synchronized(accessCache) {
+                    result = accessCache.match(className);
+                }
+                if (result == null) {
+                    String path = className.replace('.', '/') + ".java";
+
+                    boolean accessible;
+                    if (className.startsWith("org.apache.jsp.")
+                            && appContext != null) {
+                        String contextPath = appContext.equals("/")
+                                ? "/_" // hande ROOT context
+                                : appContext;
+                        path = serverRoot + contextPath + "/" + path;
+                        accessible = new File(path).exists();
+                    } else {
+                        accessible
+                                = globalPathRegistry.findResource(path) != null;
+                    }
+                    synchronized(accessCache) {
+                        result = accessCache.match(className);
+                        if (result == null) {
+                            result = new ClassAccess(accessible, path);
+                            accessCache.add(className, result);
+                        }
+                    }
+                }
+                return result;
+            }
+            
+        }
+
+        /** GlassFish server installation root. */
         private final String appServerInstallDir;
-        private String context = null;
+
+        /** GlassFish server application context. */
+        private String context;
+
         private String prevMessage = null;
         private static final String STANDARD_CONTEXT = "StandardContext["; // NOI18N
         private static final int STANDARD_CONTEXT_LENGTH = STANDARD_CONTEXT.length();
-        private GlobalPathRegistry globalPathReg = GlobalPathRegistry.getDefault();
+
+        /** NetBeans global class path registry. */
+        private final GlobalPathRegistry globalPathReg;
+
+        /** Support to search for class in global class registry and cache known
+         *  search results. */
+        private final PathAccess pathAccess;
 
         public AppServerLogSupport(String catalinaWork, String webAppContext) {
             appServerInstallDir = catalinaWork;
             context = webAppContext;
+            globalPathReg = GlobalPathRegistry.getDefault();
+            pathAccess = new PathAccess(globalPathReg, catalinaWork, webAppContext);
         }
 
         public LineInfo analyzeLine(String logLine) {
@@ -381,15 +509,22 @@ public class LogHyperLinkSupport {
                         }
                         int firstDolarIdx = classWithMethod.indexOf('$'); // > -1 for inner classes
                         String className = classWithMethod.substring(0, firstDolarIdx > -1 ? firstDolarIdx : lastDotIdx);
-                        path = className.replace('.', '/') + ".java"; // NOI18N
-                        accessible = globalPathReg.findResource(path) != null;
-                        if (className.startsWith("org.apache.jsp.") && context != null) { // NOI18N
-                            String contextPath = context.equals("/")
-                                    ? "/_" // hande ROOT context
-                                    : context;
-                            path = appServerInstallDir + contextPath + "/" + path;
-                            accessible = new File(path).exists();
-                        }
+
+                        PathAccess.ClassAccess access
+                                = pathAccess.find(className);
+                        accessible = access.accessible;
+                        path = access.path;
+
+//                        path = className.replace('.', '/') + ".java"; // NOI18N
+//                        accessible = globalPathReg.findResource(path) != null;
+//                        if (className.startsWith("org.apache.jsp.") && context != null) { // NOI18N
+//                            String contextPath = context.equals("/")
+//                                    ? "/_" // hande ROOT context
+//                                    : context;
+//                            path = appServerInstallDir + contextPath + "/" + path;
+//                            accessible = new File(path).exists();
+//                        }
+                        
                     }
                 }
             } // every other message treat as normal info message

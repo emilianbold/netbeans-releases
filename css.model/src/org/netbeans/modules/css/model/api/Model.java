@@ -93,8 +93,21 @@ import org.openide.util.lookup.Lookups;
  */
 public final class Model {
 
-    //property names:
+    /**
+     * Property fired when one calls {@link #applyChanges()} and there were some 
+     * written to the document.
+     */
     public static final String CHANGES_APPLIED_TO_DOCUMENT = "changes.applied"; //NOI18N
+    
+    /**
+     * Property fired when one calls {@link #applyChanges()} but there were no 
+     * actual changes written (no difference between original and model source).
+     */
+    public static final String NO_CHANGES_APPLIED_TO_DOCUMENT = "no.changes.to.apply"; //NOI18N
+    
+    /**
+     * Property fired when {@link #runWriteTask(org.netbeans.modules.css.model.api.Model.ModelTask) } finished.
+     */
     public static final String MODEL_WRITE_TASK_FINISHED = "model.write.task.finished"; //NOI18N
     
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -285,8 +298,11 @@ public final class Model {
      *
      * <b> It is up to the client to ensure that the document has not changed 
      * since the model creation.</b>
+     * 
+     * @return true if there was something written to the source document, 
+     * false otherwise.
      */
-    public void applyChanges() throws IOException, BadLocationException {
+    public boolean applyChanges() throws IOException, BadLocationException {
         if(changesApplied) {
             throw new IllegalStateException("Trying to save already saved model!");
         }
@@ -294,17 +310,23 @@ public final class Model {
         if (doc == null) {
             throw new IOException("Not document based model instance!"); //NOI18N
         }
-
-        Snapshot snapshot = getLookup().lookup(Snapshot.class);
-        applyChanges_AtomicLock(doc, new SnapshotOffsetConvertor(snapshot));
-
-        changesApplied = true;
-        LOGGER.log(Level.INFO, "{0}: changes applied to document", this);
-        support.firePropertyChange(CHANGES_APPLIED_TO_DOCUMENT, null, null);
         
+        Difference[] diff = getModelSourceDiff();
+        if(diff.length > 0) {
+            Snapshot snapshot = getLookup().lookup(Snapshot.class);
+            applyChanges_AtomicLock(doc, diff, new SnapshotOffsetConvertor(snapshot));
+            LOGGER.log(Level.INFO, "{0}: changes applied to document", this);
+            changesApplied = true;
+            support.firePropertyChange(CHANGES_APPLIED_TO_DOCUMENT, null, null);
+            return true;
+        } else {
+            LOGGER.log(Level.INFO, "{0}: requested applyChanges, but there were none", this);
+            support.firePropertyChange(NO_CHANGES_APPLIED_TO_DOCUMENT, null, null);
+            return false;
+        }
     }
 
-    private void applyChanges_AtomicLock(final Document document, final OffsetConvertor convertor) throws IOException, BadLocationException {
+    private void applyChanges_AtomicLock(final Document document, final Difference[] diff, final OffsetConvertor convertor) throws IOException, BadLocationException {
         BaseDocument bdoc = (BaseDocument) document;
         final AtomicReference<IOException> io_exc_ref = new AtomicReference<IOException>();
         final AtomicReference<BadLocationException> ble_exc_ref = new AtomicReference<BadLocationException>();
@@ -313,7 +335,7 @@ public final class Model {
             @Override
             public void run() {
                 try {
-                    applyChanges(document, convertor);
+                    applyChanges(document, diff, convertor);
                 } catch (IOException ex) {
                     io_exc_ref.set(ex);
                 } catch (BadLocationException ex) {
@@ -388,9 +410,9 @@ public final class Model {
         }
     }
 
-    private void applyChanges(Document document, OffsetConvertor convertor) throws IOException, BadLocationException {
+    private void applyChanges(Document document, Difference[] diff, OffsetConvertor convertor) throws IOException, BadLocationException {
         int sourceDelta = 0;
-        for (Difference d : getModelSourceDiff()) {
+        for (Difference d : diff) {
             int firstStart = d.getFirstStart();
             int from = convertor.getOriginalOffset(LexerUtils.getLineBeginningOffset(getOriginalSource(), (firstStart == 0 ? 0 : firstStart - 1)));
             switch (d.getType()) {

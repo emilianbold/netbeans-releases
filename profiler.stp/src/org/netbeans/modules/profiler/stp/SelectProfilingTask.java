@@ -78,11 +78,9 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
 import org.netbeans.lib.profiler.ui.UIUtils;
-import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProfilingSettingsManager;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
@@ -98,7 +96,6 @@ import org.netbeans.modules.profiler.stp.icons.STPIcons;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -557,6 +554,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             welcomePanel = welcomePanelReference.get();
         }
 
+        welcomePanel.displaying();
         return welcomePanel;
     }
 
@@ -1032,12 +1030,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         if (!hasContext) {
             // Attach, no project selected
             taskChooser.setEnabled(false);
-
-            // TODO: cleanup
-            contentsPanel.removeAll();
-            contentsPanel.add(getWelcomePanel(), BorderLayout.CENTER);
-            contentsPanel.doLayout();
-            contentsPanel.repaint();
         } else {
             configurator = Utils.getSettingsConfigurator(project);
             configurator.setContext(project, profiledFile, isAttach, isModify, enableOverride);
@@ -1059,6 +1051,11 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             taskChooser.setEnabled(true);
         }
         
+        contentsPanel.removeAll();
+        contentsPanel.add(getWelcomePanel(), BorderLayout.CENTER);
+        contentsPanel.doLayout();
+        contentsPanel.repaint();
+        
         ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
             @Override
             public void run() {
@@ -1066,6 +1063,8 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                         ProfilingSettingsManager.getProfilingSettings(project);
                 Runnable projectUpdater = new Runnable() {
                     public void run() {
+                        if (SelectProfilingTask.this.dd == null) return; // STP has already been closed when loading settings
+                        
                         if (hasContext) {
                             ProfilingSettings[] profilingSettings = profilingSettingsDescriptor.getProfilingSettings();
                             ProfilingSettings lastSelectedSettings = profilingSettingsDescriptor.getLastSelectedProfilingSettings();
