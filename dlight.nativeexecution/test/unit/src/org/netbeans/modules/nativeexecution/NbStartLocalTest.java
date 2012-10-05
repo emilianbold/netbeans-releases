@@ -114,7 +114,8 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
             if (!whoami.exists()) {
                 whoami = new File("/usr/local/bin/whoami");
                 if (!whoami.exists()) {
-                    fail("Unable to find local whoami program");
+                    System.out.println("Unable to find local whoami program");
+                    return;
                 }
             }
         }
@@ -148,11 +149,18 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
             npb.setCommandLine("echo TEST > " + out.getAbsolutePath());
             NativeProcess process = npb.call();
             int rc = process.waitFor();
+
+            if (!(process instanceof NbNativeProcess)) {
+                System.out.println("Test testShellCommandProcess is not applicable for " + process.getClass().getName() + " - skipped");
+                return;
+            }
+
+
             assertEquals("echo with redirection status", 0, rc);
 
             BufferedReader br = new BufferedReader(new FileReader(out));
             StringBuilder sb = new StringBuilder();
-            
+
             String line;
             while ((line = br.readLine()) != null) {
                 sb.append(line);
@@ -187,7 +195,7 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
         RequestProcessor rp = new RequestProcessor("testStartSuspendedProcess", 1);
 
         NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder();
-        String tempDir = HostInfoUtils.getHostInfo(env).getTempDir();
+        String tempDir = HostInfoUtils.getHostInfo(env).getTempDirFile().getAbsolutePath();
         npb.setWorkingDirectory(tempDir);
         npb.setExecutable("pwd");
         npb.setInitialSuspend(true);
@@ -197,7 +205,6 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
         final NativeProcess process = npb.call();
 
         Task waitTask = rp.post(new Runnable() {
-
             @Override
             public void run() {
                 try {
