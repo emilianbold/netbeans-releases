@@ -133,6 +133,7 @@ public final class ActionsManager {
     private boolean                 doiingDo = false;
     private boolean                 destroy = false;
     private List<? extends ActionsProvider> aps;
+    private PropertyChangeListener  providersChangeListener;
     
     /**
      * Create a new instance of ActionManager.
@@ -487,7 +488,7 @@ public final class ActionsManager {
 
     private void initActionImpls () {
         aps = lookup.lookup(null, ActionsProvider.class);
-        ((Customizer) aps).addPropertyChangeListener(new PropertyChangeListener() {
+        providersChangeListener = new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     synchronized (actionProvidersLock) {
@@ -495,7 +496,8 @@ public final class ActionsManager {
                     }
                     registerActionsProviders(aps);
                 }
-        });
+        };
+        ((Customizer) aps).addPropertyChangeListener(providersChangeListener);
         registerActionsProviders(aps);
         synchronized (actionProvidersInitialized) {
             actionProvidersInitialized.set(true);
@@ -531,6 +533,7 @@ public final class ActionsManager {
     }
     
     private void destroyIn () {
+        ((Customizer) aps).removePropertyChangeListener(providersChangeListener);
         synchronized (this) {
             if (lazyListeners != null) {
                 int i, k = lazyListeners.size ();
