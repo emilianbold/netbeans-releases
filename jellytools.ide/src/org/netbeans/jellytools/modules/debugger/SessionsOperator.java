@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools.modules.debugger;
 
 import java.awt.Component;
@@ -55,49 +54,52 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
 
 /**
- * Provides access to the Sessions tom component.
- * <p>
- * Usage:<br>
+ * Provides access to the Sessions tom component. <p> Usage:<br>
  * <pre>
  *      SessionsOperator so = SessionsOperator.invoke();
  *      so.makeCurrent("MyClass");
  *      so.finishAll();
  *      so.close();
  * </pre>
- * 
- * 
- * @author Jiri.Skrivanek@sun.com
+ *
+ *
+ * @author Jiri Skrivanek
  */
 public class SessionsOperator extends TopComponentOperator {
 
     private static final SessionsAction invokeAction = new SessionsAction();
-    
-    /** Waits for Sessions top component and creates a new operator for it. */
+
+    /**
+     * Waits for Sessions top component and creates a new operator for it.
+     */
     public SessionsOperator() {
-        super(waitTopComponent(null, 
+        super(waitTopComponent(null,
                 Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle",
-                                        "CTL_Sessions_view"),
+                "CTL_Sessions_view"),
                 0, viewSubchooser));
     }
-    
+
     /**
      * Opens Sessions top component from main menu Window|Debugging|Sessions and
      * returns SessionsOperator.
-     * 
+     *
      * @return instance of SessionsOperator
      */
     public static SessionsOperator invoke() {
         invokeAction.perform();
         return new SessionsOperator();
     }
-    
+
     public TreeTableOperator treeTable() {
         return new TreeTableOperator(this);
     }
-    
-    /********************************** Actions ****************************/
-    
-    /** Performs Finish All action on Sessions view. */
+
+    /**
+     * ******************************** Actions ***************************
+     */
+    /**
+     * Performs Finish All action on Sessions view.
+     */
     public void finishAll() {
         FinishAllAction faa = new FinishAllAction();
         try {
@@ -109,35 +111,48 @@ public class SessionsOperator extends TopComponentOperator {
             faa.perform(this);
         }
     }
-    
-    /** Calls Make Current popup on given session.
+
+    /**
+     * Calls Make Current popup on given session. It throws TimeoutExpiredException
+     * if session with given name not found.
+     *
      * @param sessionName display name of session
      */
-    public void makeCurrent(String sessionName) {
-        JTableOperator table = new JTableOperator(this);
-        for (int i = 0; i < table.getRowCount(); i++) {
-            String text = table.getValueAt(i, 0).toString();
-            if (text.contains(sessionName)){
-                table.clickOnCell(i, 0, 2);
-                break;
+    public void makeCurrent(final String sessionName) {
+        final JTableOperator table = new JTableOperator(this);
+        table.waitState(new ComponentChooser() {
+            @Override
+            public boolean checkComponent(Component comp) {
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    String text = table.getValueAt(i, 0).toString();
+                    if (table.getComparator().equals(text, sessionName)) {
+                        table.clickOnCell(i, 0, 2);
+                        return true;
+                    }
+                }
+                return false;
             }
-        }
+
+            @Override
+            public String getDescription() {
+                return "Session " + sessionName + " in table of sessions";
+            }
+        });
     }
-    
-    /** SubChooser to determine OutputWindow TopComponent
-     * Used in constructor.
+    /**
+     * SubChooser to determine OutputWindow TopComponent Used in constructor.
      */
     private static final ComponentChooser viewSubchooser = new ComponentChooser() {
-        private static final String CLASS_NAME="org.netbeans.modules.debugger.ui.views.View";
-        
+        private static final String CLASS_NAME = "org.netbeans.modules.debugger.ui.views.View";
+
         @Override
         public boolean checkComponent(Component comp) {
             return comp.getClass().getName().endsWith(CLASS_NAME);
         }
-        
+
         @Override
         public String getDescription() {
-            return "component instanceof "+CLASS_NAME;// NOI18N
+            return "component instanceof " + CLASS_NAME;// NOI18N
         }
     };
 }
