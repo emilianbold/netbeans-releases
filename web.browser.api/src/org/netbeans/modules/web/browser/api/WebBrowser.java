@@ -79,7 +79,7 @@ public final class WebBrowser {
      * Is IDE embedded browser or external browser.
      */
     public boolean isEmbedded() {
-        return factoryDesc.getFactory().createHtmlBrowserImpl().getComponent() != null;
+        return getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW;
     }
 
     /**
