@@ -189,7 +189,12 @@ public class RuleEditorPanel extends JPanel {
             Mutex.EVENT.readAccess(new Runnable() {
                 @Override
                 public void run() {
-                    if (Model.CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
+                    if (Model.NO_CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
+                        //Model.applyChanges() requested, but no changes were done,
+                        //which means no new model will be created and hence no property sets refreshed
+                        node.fireContextChanged(false);
+                        
+                    } else if (Model.CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
                         northWestPanel.add(APPLIED_LABEL);
                         northWestPanel.revalidate();
                         northWestPanel.repaint();
