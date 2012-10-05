@@ -2674,6 +2674,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             case CLASS:
             case INTERFACE:
             case ENUM:
+            case ANNOTATION_TYPE:
                 TypeElement te = (TypeElement) elm;
                 String className = ElementUtilities.getBinaryName(te);
                 VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
