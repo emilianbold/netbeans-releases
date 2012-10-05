@@ -68,7 +68,9 @@ public class ComponentInfoFromBeanContext {
     public static Transform TRANSFORM; // Initialized from EngineComponentsProvider
     
     static List<ComponentInfo> transform(List<? extends BeanContextChildComponentProxy> componentProxies) {
-        ComponentInfo.class.getName(); // Initializes TRANSFORM
+        try {
+            Class.forName(ComponentInfo.class.getName(), true, ComponentInfo.class.getClassLoader()); // Initializes TRANSFORM
+        } catch (ClassNotFoundException cnfex) {}
         List<ComponentInfo> cinfos = new ArrayList<ComponentInfo>(componentProxies.size());
         for (final BeanContextChildComponentProxy cp : componentProxies) {
             final Component[] c = new Component[] { null };

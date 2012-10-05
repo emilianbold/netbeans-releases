@@ -1466,11 +1466,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitConditionalExpression(ConditionalExpressionTree arg0, EvaluationContext evaluationContext) {
-        Mirror condition = arg0.getCondition().accept(this, evaluationContext);
-        if (!(condition instanceof BooleanValue)) {
-            throw new IllegalStateException("Condition must be boolean: "+arg0.getCondition());
-        }
-        boolean isTrue = ((BooleanValue) condition).value();
+        boolean isTrue = evaluateCondition(arg0, evaluationContext, arg0.getCondition());
         if (isTrue) {
             return arg0.getTrueExpression().accept(this, evaluationContext);
         } else {
@@ -1490,7 +1486,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitDoWhileLoop(DoWhileLoopTree arg0, EvaluationContext evaluationContext) {
-        Tree condition = arg0.getCondition();
+        ExpressionTree condition = arg0.getCondition();
         Tree statement = arg0.getStatement();
         Mirror result = null;
         do {
@@ -1508,7 +1504,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             } finally {
                 evaluationContext.popBlock();
             }
-        } while (((BooleanValue)condition.accept(this, evaluationContext)).value());
+        } while (evaluateCondition(arg0, evaluationContext, condition));
         return result;
     }
 
@@ -1622,7 +1618,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             ExpressionTree condition = arg0.getCondition();
             List<? extends ExpressionStatementTree> updateList = arg0.getUpdate();
             StatementTree statement = arg0.getStatement();
-            while (condition == null || ((BooleanValue)condition.accept(this, evaluationContext)).value()) {
+            while (condition == null || evaluateCondition(arg0, evaluationContext, condition)) {
                 Mirror value = null;
                 try {
                     evaluationContext.pushBlock();
@@ -1648,6 +1644,21 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } finally {
             evaluationContext.popBlock();
         }
+    }
+    
+    private boolean evaluateCondition(Tree arg0, EvaluationContext evaluationContext, ExpressionTree condition) {
+        Mirror conditionValue = condition.accept(this, evaluationContext);
+        if (conditionValue instanceof ObjectReference) {
+            conditionValue = unboxIfCan(arg0, (ObjectReference) conditionValue, evaluationContext);
+        }
+        if (!(conditionValue instanceof BooleanValue)) {
+            String type = "N/A";    // NOI18N
+            if (conditionValue instanceof Value) {
+                type = ((Value) conditionValue).type().name();
+            }
+            Assert.error(arg0, "notABoolean", condition.toString(), conditionValue, type);
+        }
+        return ((BooleanValue) conditionValue).value();
     }
 
     private Mirror getIdentifierByName(IdentifierTree arg0, EvaluationContext evaluationContext) {
@@ -2042,19 +2053,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitIf(IfTree arg0, EvaluationContext evaluationContext) {
-        Mirror conditionValue = arg0.getCondition().accept(this, evaluationContext);
+        boolean evaluatedCondition = evaluateCondition(arg0, evaluationContext, arg0.getCondition());
         StatementTree statement;
-        if (conditionValue instanceof ObjectReference) {
-            conditionValue = unboxIfCan(arg0, (ObjectReference) conditionValue, evaluationContext);
-        }
-        if (!(conditionValue instanceof BooleanValue)) {
-            String type = "N/A";    // NOI18N
-            if (conditionValue instanceof Value) {
-                type = ((Value) conditionValue).type().name();
-            }
-            Assert.error(arg0, "notABoolean", arg0.getCondition().toString(), conditionValue, type);
-        }
-        if (((BooleanValue)conditionValue).value()) {
+        if (evaluatedCondition) {
             statement = arg0.getThenStatement();
         } else {
             statement = arg0.getElseStatement();
@@ -3228,10 +3229,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitWhileLoop(WhileLoopTree arg0, EvaluationContext evaluationContext) {
-        Tree condition = arg0.getCondition();
+        ExpressionTree condition = arg0.getCondition();
         Tree statement = arg0.getStatement();
         Mirror result = null;
-        while (((BooleanValue)condition.accept(this, evaluationContext)).value()) {
+        while (evaluateCondition(arg0, evaluationContext, condition)) {
             try {
                 evaluationContext.pushBlock();
                 Mirror res = statement.accept(this, evaluationContext);
