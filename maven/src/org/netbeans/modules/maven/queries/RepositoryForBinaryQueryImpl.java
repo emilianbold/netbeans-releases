@@ -101,6 +101,9 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
     private final Map<URL, WeakReference<SrcResult>> srcCache = Collections.synchronizedMap(new HashMap<URL, WeakReference<SrcResult>>());
     private final Map<URL, WeakReference<JavadocResult>> javadocCache = Collections.synchronizedMap(new HashMap<URL, WeakReference<JavadocResult>>());
     
+    //http://maven.apache.org/guides/mini/guide-attached-tests.html
+    //issue 219453
+    private static final String CLASSIFIER_TESTS = "tests";
     
     private static final RequestProcessor RP = new RequestProcessor("Maven Repository SFBQ result change");
 
@@ -132,7 +135,8 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
 //                        File pom = new File(parent, artifact + "-" + version + ".pom");
 //                        // maybe this condition is already overkill..
 //                        if (pom.exists()) {
-                    if (jarFile.getName().startsWith(artifact + "-" + version)) { //one last perf check before calling the embedder
+                    String start = artifact + "-" + version;
+                    if (jarFile.getName().startsWith(start)) { //one last perf check before calling the embedder
                         URI localRepo = Utilities.toURI(EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile());
                         URI rel = localRepo.relativize(Utilities.toURI(parentParent.getParentFile()));
                         if (!rel.isAbsolute()) {
@@ -142,8 +146,16 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                                 if (groupId.endsWith(".")) {
                                     groupId = groupId.substring(0, groupId.length() - 1);
                                 }
-                                File srcs = new File(parent, artifact + "-" + version + "-sources.jar"); //NOI18N
-                                SrcResult result = new SrcResult(groupId, artifact, version, FileUtil.getArchiveFile(url), srcs);
+                                String classifier = null;
+                                if (jarFile.getName().startsWith(start + "-")) {
+                                    //we have classifier here..
+                                    String end = jarFile.getName().substring((start + "-").length());
+                                    if (end.indexOf('.') > -1) {
+                                        classifier = end.substring(0, end.indexOf('.'));
+                                    }
+                                }
+                                File srcs = new File(parent, start + (classifier != null ? ("-" + classifier) : "") + "-sources.jar"); //NOI18N
+                                SrcResult result = new SrcResult(groupId, artifact, version, classifier, FileUtil.getArchiveFile(url), srcs);
                                 srcCache.put(url, new WeakReference<SrcResult>(result));
                                 return result;
                             }
@@ -194,7 +206,8 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                     // each repository artifact should have this structure
                     String artifact = parentParent.getName();
                     String version = parent.getName();
-                    if (jarFile.getName().startsWith(artifact + "-" + version)) { //one last perf check before calling the embedder
+                    String start = artifact + "-" + version;
+                    if (jarFile.getName().startsWith(start)) { //one last perf check before calling the embedder
                         URI localRepo = Utilities.toURI(EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile());
                         URI rel = localRepo.relativize(Utilities.toURI(parentParent.getParentFile()));
                         if (!rel.isAbsolute()) {
@@ -204,8 +217,16 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                                 if (groupId.endsWith(".")) {
                                     groupId = groupId.substring(0, groupId.length() - 1);
                                 }
-                                File javadoc = new File(parent, artifact + "-" + version + "-javadoc.jar"); //NOI18N
-                                JavadocResult result = new JavadocResult(groupId, artifact, version, binRoot, javadoc);
+                                String classifier = null;
+                                if (jarFile.getName().startsWith(start + "-")) {
+                                    //we have classifier here..
+                                    String end = jarFile.getName().substring((start + "-").length());
+                                    if (end.indexOf('.') > -1) {
+                                        classifier = end.substring(end.indexOf('.'));
+                                    }
+                                }
+                                File javadoc = new File(parent, start + (classifier != null ? ("-" + classifier) : "") + "-javadoc.jar"); //NOI18N
+                                JavadocResult result = new JavadocResult(groupId, artifact, version, classifier, binRoot, javadoc);
                                 javadocCache.put(url, new WeakReference<JavadocResult>(result));
                                 return result;
                             }
@@ -230,17 +251,19 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         private final String groupId;
         private final String artifactId;
         private final String version;
+        private final String classifier;
         private final URL binary;
         
         private Project currentProject;
         private FileObject[] cached;
         
-        SrcResult(String groupId, String artifactId, String version, URL binary, File sourceJar) {
+        SrcResult(String groupId, String artifactId, String version, String classifier, URL binary, File sourceJar) {
             sourceJarFile = sourceJar;
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;
             this.binary = binary;
+            this.classifier = classifier;
             
             support = new ChangeSupport(this);
             mfoListener = new ChangeListener() {
@@ -311,8 +334,10 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             FileObject[] toRet;
             checkCurrentProject();
             Project prj = currentProject;
-            if (prj != null) {
+            if (prj != null && classifier == null) {
                 toRet = getProjectSrcRoots(prj);
+            } else if (prj != null && CLASSIFIER_TESTS.equals(classifier)) {
+                toRet = getProjectTestSrcRoots(prj);
             } else {
                 File f = SourceJavadocByHash.find(binary, false);
                 if (f != null && f.exists()) {
@@ -384,11 +409,14 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         @Override
         public boolean preferSources() {
             Project prj = currentProject;
-            if (prj != null) {
+            if (prj != null && classifier == null) {
                 if (!NbMavenProject.isErrorPlaceholder(prj.getLookup().lookup(NbMavenProject.class).getMavenProject())) {
                     return prj.getLookup().lookup(ForeignClassBundler.class).preferSources();
                 }
+            } else if (prj != null && CLASSIFIER_TESTS.equals(classifier)) {
+                return true;
             }
+            
             return false;
         }
         
@@ -399,6 +427,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         private final String groupId;
         private final String artifactId;
         private final String version;
+        private final String classifier;
         private final URL binary;
         private final String gav;
         private final ChangeSupport support;
@@ -410,14 +439,13 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         private static final String ATTR_STAMP = "lastRootCheckStamp"; //NOI18N
         private final ChangeListener mfoListener;
         
-
-        
-        JavadocResult(String groupId, String artifactId, String version, URL binary, File javadocJar) {
+        JavadocResult(String groupId, String artifactId, String version, String classifier, URL binary, File javadocJar) {
             javadocJarFile = javadocJar;
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;
             this.binary = binary;
+            this.classifier = classifier;
             this.gav = MavenFileOwnerQueryImpl.cacheKey(groupId, artifactId, version);
             
             support = new ChangeSupport(this);
