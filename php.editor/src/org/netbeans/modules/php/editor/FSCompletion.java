@@ -172,6 +172,7 @@ public class FSCompletion implements CompletionProvider {
         return 0;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings({"DMI_HARDCODED_ABSOLUTE_FILENAME"})
     private static List<? extends CompletionItem> computeRelativeItems(Collection<? extends FileObject> relativeTo, final String prefix, int anchor, FileObjectFilter filter) throws IOException {
         final String GO_UP = "../";
         assert relativeTo != null;
