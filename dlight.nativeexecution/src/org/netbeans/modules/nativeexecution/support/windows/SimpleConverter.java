@@ -55,12 +55,18 @@ import org.openide.util.Exceptions;
 public final class SimpleConverter implements PathConverter {
 
     private String cygwinPrefix = null;
+    private String shellRootWinPath = null;
 
     @Override
     public String convert(PathType srcType, PathType trgType, String path) {
         if (cygwinPrefix == null
                 && (srcType == PathType.CYGWIN || trgType == PathType.CYGWIN)) {
             initCygwinPrefix();
+        }
+
+        if (shellRootWinPath == null) {
+            final Shell shell = WindowsSupport.getInstance().getActiveShell();
+            shellRootWinPath = shell == null ? "" : shell.bindir.getParent(); // NOI18N
         }
 
         String result = path;
@@ -71,6 +77,8 @@ public final class SimpleConverter implements PathConverter {
             if (path.length() > plen && path.startsWith(prefix)) {
                 result = path.charAt(plen) + ":"; // NOI18N
                 result += path.substring(plen + 1);
+            } else if (path.startsWith("/")) { // NOI18N
+                result = shellRootWinPath + result;
             }
             return result.replace('/', '\\'); // NOI18N
         }

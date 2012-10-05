@@ -48,7 +48,9 @@ import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
@@ -63,9 +65,11 @@ import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.findusages.model.ClassRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.MethodRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.VariableRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.FindMethodUtils;
 import org.netbeans.modules.groovy.refactoring.utils.FindPossibleMethods;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.groovy.refactoring.utils.TypeResolver;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -197,21 +201,24 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
                             return new MethodRefactoringElement(fileObject, leafParent);
                         }
                     }
-                    
+
                     assert false; // Should never happened!
                 case VARIABLE:
-//                  Not activated - it's not fully implemented yet
-//                  return new VariableRefactoringElement(fileObject, currentNode);
+                    final ClassNode variableType = TypeResolver.resolveType(path);
+                    return new VariableRefactoringElement(fileObject, variableType, currentNode.getText());
                 case PROPERTY:
                 case FIELD:
                     if (currentNode instanceof ClassNode) {
                         return new ClassRefactoringElement(fileObject, currentNode);
-                    } else {
-//                      Not activated - it's not fully implemented yet
-//                      return new VariableRefactoringElement(fileObject, currentNode);
+                    } else if (currentNode instanceof FieldNode) {
+                        final FieldNode field = (FieldNode) currentNode;
+                        return new VariableRefactoringElement(fileObject, field.getOwner(), field.getName());
+                    } else if (currentNode instanceof PropertyNode) {
+                        final FieldNode field = ((PropertyNode) currentNode).getField();
+                        return new VariableRefactoringElement(fileObject, field.getOwner(), field.getName());
                     }
                 default:
-                    throw new IllegalStateException("Unknown element kind. Refactoring shouldn't be enabled in this context !");
+                    throw new IllegalStateException("Unknown element kind. Refactoring shouldn't be enabled in this context !"); // NOI18N
             }
         }
 

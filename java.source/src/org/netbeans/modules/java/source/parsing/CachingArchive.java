@@ -79,7 +79,8 @@ public class CachingArchive implements Archive, FileChangeListener {
     private final File archiveFile;
     private final boolean keepOpened;
     private ZipFile zipFile;
-        
+
+    //@GuardedBy("this")
     byte[] names;// = new byte[16384];
     private int nameOffset = 0;
     final static int[] EMPTY = new int[0];
@@ -192,6 +193,7 @@ public class CachingArchive implements Archive, FileChangeListener {
     }
 
     private void trunc() {
+        assert Thread.holdsLock(this);
         // strip the name array:
         byte[] newNames = new byte[nameOffset];
         System.arraycopy(names, 0, newNames, 0, nameOffset);
@@ -273,7 +275,10 @@ public class CachingArchive implements Archive, FileChangeListener {
         return map;
     }
 
-    private String getString(int off, int len) {
+    private synchronized String getString(int off, int len) {
+        if (names == null) {
+            return null;
+        }
         byte[] name = new byte[len];
         System.arraycopy(names, off, name, 0, len);
         try {
@@ -293,7 +298,7 @@ public class CachingArchive implements Archive, FileChangeListener {
             final @NonNull int off,
             final @NonNull Predicate<String> predicate) {
         String baseName = getString(f.indices[off], f.indices[off+1]);
-        if (predicate.apply(baseName)) {
+        if (baseName != null && predicate.apply(baseName)) {
             long mtime = join(f.indices[off+3], f.indices[off+2]);
             if (zipFile == null) {
                 if (f.delta == 4) {
@@ -311,7 +316,7 @@ public class CachingArchive implements Archive, FileChangeListener {
         return null;
     }    
             
-    /*test*/ int putName(byte[] name) {
+    /*test*/ synchronized int putName(byte[] name) {
         int start = nameOffset;
 
         if ((start + name.length) > names.length) {

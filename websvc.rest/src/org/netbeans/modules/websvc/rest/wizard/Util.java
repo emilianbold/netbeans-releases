@@ -48,9 +48,15 @@ import java.awt.Component;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
@@ -59,6 +65,8 @@ import javax.swing.JComponent;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -119,8 +127,11 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
 
 /**
  * Copy of j2ee/utilities Util class
@@ -133,6 +144,9 @@ public class Util {
     
     public static final String XMLROOT_ANNOTATION = 
         "javax.xml.bind.annotation.XmlRootElement";         // NOI18N
+    
+    public static final String XML_TRANSIENT = 
+            "javax.xml.bind.annotation.XmlTransient";       // NOI18N
     
     public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
     
@@ -668,7 +682,8 @@ public class Util {
                     controller.toPhase(Phase.RESOLVED);
                     
                     isIncomplete[0] = controller.getElements().getTypeElement(
-                            XMLROOT_ANNOTATION) == null;
+                            XMLROOT_ANNOTATION) == null || controller.getElements().
+                                getTypeElement(XML_TRANSIENT) == null;
                 }
             };
             
@@ -721,45 +736,9 @@ public class Util {
                         {
                             working.toPhase(Phase.RESOLVED);
 
-                            TreeMaker make = working.getTreeMaker();
-                            
-                            if ( working.getElements().getTypeElement(
-                                    XMLROOT_ANNOTATION) == null)
-                            {
-                                return;
-                            }
-                            
-                            TypeElement entityElement = 
-                                working.getTopLevelElements().get(0);
-                            List<? extends AnnotationMirror> annotationMirrors = 
-                                working.getElements().getAllAnnotationMirrors(
-                                        entityElement);
-                            boolean hasXmlRootAnnotation = false;
-                            for (AnnotationMirror annotationMirror : annotationMirrors)
-                            {
-                                DeclaredType type = annotationMirror.getAnnotationType();
-                                Element annotationElement = type.asElement();
-                                if ( annotationElement instanceof TypeElement ){
-                                    Name annotationName = ((TypeElement)annotationElement).
-                                        getQualifiedName();
-                                    if ( annotationName.contentEquals(XMLROOT_ANNOTATION))
-                                    {
-                                        hasXmlRootAnnotation = true;
-                                    }
-                                }
-                            }
-                            if ( !hasXmlRootAnnotation ){
-                                ClassTree classTree = working.getTrees().getTree(
-                                        entityElement);
-                                GenerationUtils genUtils = GenerationUtils.
-                                    newInstance(working);
-                                ModifiersTree modifiersTree = make.addModifiersAnnotation(
-                                        classTree.getModifiers(),
-                                        genUtils.createAnnotation(XMLROOT_ANNOTATION));
-
-                                working.rewrite( classTree.getModifiers(), 
-                                        modifiersTree);
-                            }
+                            TreeMaker maker = working.getTreeMaker();
+                            addXmlRootAnnotation(working, maker );
+                            addXmlTransientAnnotation(working, maker);
                         }
                     });
             result.commit();
@@ -767,6 +746,162 @@ public class Util {
         catch (IOException e) {
             Logger.getLogger(Util.class.getName()).
                 log( Level.SEVERE, null, e);
+        }
+    }
+    
+    private static void addXmlTransientAnnotation(WorkingCopy workingCopy, 
+            TreeMaker maker)
+    {
+        GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+        AnnotationTree xmlTransientAn = genUtils.createAnnotation(XML_TRANSIENT);
+        TypeElement jsonIgnore = workingCopy.getElements().getTypeElement(
+            "org.codehaus.jackson.annotate.JsonIgnore");    // NOI18N
+        List<AnnotationTree> annotationTrees = null;
+        if ( jsonIgnore == null ){
+            annotationTrees = Collections.singletonList(xmlTransientAn);
+        }
+        else {
+            AnnotationTree jsonIgnoreAn = genUtils.createAnnotation(
+                jsonIgnore.getQualifiedName().toString());
+            annotationTrees = new ArrayList<AnnotationTree>(2);
+            annotationTrees.add( xmlTransientAn);
+            annotationTrees.add(jsonIgnoreAn);
+        }
+        TypeElement entityElement = 
+                workingCopy.getTopLevelElements().get(0);
+        List<ExecutableElement> methods = ElementFilter.methodsIn(
+                workingCopy.getElements().getAllMembers(entityElement));
+        List<VariableElement> fields = ElementFilter.fieldsIn(
+                workingCopy.getElements().getAllMembers(entityElement));
+        Map<String,VariableElement> fieldsMap = new HashMap<String, VariableElement>();
+        for (VariableElement variableElement : fields) {
+            fieldsMap.put( variableElement.getSimpleName().toString(), variableElement);
+        }
+        for (ExecutableElement method : methods) {
+            if ( !method.getModifiers().contains( Modifier.PUBLIC)){
+                continue;
+            }
+            List<? extends AnnotationMirror> annotations = method.getAnnotationMirrors();
+            boolean foundXmlTransient = false;
+            for (AnnotationMirror annotationMirror : annotations) {
+                Element annotation = annotationMirror.getAnnotationType().asElement();
+                if ( annotation instanceof TypeElement ){
+                    if ( ((TypeElement)annotation).getQualifiedName().
+                            contentEquals(XML_TRANSIENT))
+                    {
+                        foundXmlTransient = true;
+                        break;
+                    }
+                }
+            }
+            if (foundXmlTransient){
+                continue;
+            }
+            VariableElement field = getField(method, fieldsMap, workingCopy);
+            if ( field == null ){
+                continue;
+            }
+            List<? extends AnnotationMirror> annotation = workingCopy.getElements().
+                    getAllAnnotationMirrors(field);
+            for (AnnotationMirror annotationMirror : annotation) {
+                Element element =annotationMirror.getAnnotationType().asElement();
+                if ( element instanceof TypeElement){
+                    String fqn = ((TypeElement)element).getQualifiedName().toString();
+                    if ( fqn.equals("javax.persistence.OneToMany")
+                            ||fqn.equals("javax.persistence.ManyToMany"))
+                    {
+                        Tree methodTree = workingCopy.getTrees().getTree(method);
+                        if ( methodTree instanceof MethodTree){
+                            MethodTree newMethod = (MethodTree)methodTree;
+                            for(AnnotationTree annTree : annotationTrees ){
+                                newMethod = genUtils.addAnnotation(
+                                    newMethod, annTree);
+                            }
+                            workingCopy.rewrite(methodTree, newMethod);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private static VariableElement getField(ExecutableElement method, 
+            Map<String,VariableElement> fields, CompilationController controller)
+    {
+        String name = method.getSimpleName().toString();
+        TypeMirror returnType = method.getReturnType();
+        if ( returnType.getKind()== TypeKind.VOID){
+            return null;
+        }
+        if ( !method.getParameters().isEmpty()){
+            return null;
+        }
+        int start =0;
+        if ( name.startsWith("get")){                                   // NOI18N
+            start =3;
+        }
+        else if ( name.startsWith( "is")){                              // NOI18N
+            start =2;
+        }
+        String fieldName = lowerFirstLetter(name.substring(start));
+        VariableElement field = fields.get(fieldName);
+        if ( field == null){
+            return null;
+        }
+        if ( controller.getTypes().isSameType(field.asType(),returnType)){
+            return field;
+        }
+        return null;
+    }
+    
+    private static String lowerFirstLetter( String name ){
+        if ( name.length() <=1){
+            return name;
+        }
+        char firstLetter = name.charAt(0);
+        if ( Character.isUpperCase(firstLetter)){
+            return Character.toLowerCase(firstLetter) +name.substring(1);
+        }
+        return name;
+    }
+    
+    private static void addXmlRootAnnotation(WorkingCopy working, TreeMaker make){
+        if ( working.getElements().getTypeElement(
+                XMLROOT_ANNOTATION) == null)
+        {
+            return;
+        }
+        
+        TypeElement entityElement = 
+            working.getTopLevelElements().get(0);
+        List<? extends AnnotationMirror> annotationMirrors = 
+            working.getElements().getAllAnnotationMirrors(
+                    entityElement);
+        boolean hasXmlRootAnnotation = false;
+        for (AnnotationMirror annotationMirror : annotationMirrors)
+        {
+            DeclaredType type = annotationMirror.getAnnotationType();
+            Element annotationElement = type.asElement();
+            if ( annotationElement instanceof TypeElement ){
+                Name annotationName = ((TypeElement)annotationElement).
+                    getQualifiedName();
+                if ( annotationName.contentEquals(XMLROOT_ANNOTATION))
+                {
+                    hasXmlRootAnnotation = true;
+                }
+            }
+        }
+        if ( !hasXmlRootAnnotation ){
+            ClassTree classTree = working.getTrees().getTree(
+                    entityElement);
+            GenerationUtils genUtils = GenerationUtils.
+                newInstance(working);
+            ModifiersTree modifiersTree = make.addModifiersAnnotation(
+                    classTree.getModifiers(),
+                    genUtils.createAnnotation(XMLROOT_ANNOTATION));
+
+            working.rewrite( classTree.getModifiers(), 
+                    modifiersTree);
         }
     }
     

@@ -62,17 +62,19 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Utilities;
 
 /**
- * This map is a wrapper of Map&lt;String, String&gt; that expangs
- * macros on insertion...
+ * This map is a wrapper of Map&lt;String, String&gt; that expands macros on
+ * insertion...
  */
 public final class MacroMap implements Cloneable {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
     private final ExecutionEnvironment execEnv;
     private final MacroExpander macroExpander;
+    private final TreeMap<String, String> hostEnv;
     private final TreeMap<String, String> map;
     private final Set<String> varsForExport = new HashSet<String>();
     private final boolean isWindows;
+    private final Object lock = new Object();
 
     private MacroMap(final ExecutionEnvironment execEnv, final MacroExpander macroExpander, boolean init) {
         this.execEnv = execEnv;
@@ -81,14 +83,16 @@ public final class MacroMap implements Cloneable {
 
         if (isWindows) {
             map = new TreeMap<String, String>(new CaseInsensitiveComparator());
+            hostEnv = new TreeMap<String, String>(new CaseInsensitiveComparator());
         } else {
             map = new TreeMap<String, String>();
+            hostEnv = new TreeMap<String, String>();
         }
 
         if (init && HostInfoUtils.isHostInfoAvailable(execEnv)) {
             // This always should be true
             try {
-                map.putAll(HostInfoUtils.getHostInfo(execEnv).getEnvironment());
+                hostEnv.putAll(HostInfoUtils.getHostInfo(execEnv).getEnvironment());
             } catch (IOException ex) {
             } catch (CancellationException ex) {
             }
@@ -98,19 +102,20 @@ public final class MacroMap implements Cloneable {
     }
 
     /**
-     * Create a MacroMap populated with macros defined in specified ExecutionEnvironment
+     * Create a MacroMap populated with macros defined in specified
+     * ExecutionEnvironment
      */
     public static MacroMap forExecEnv(final ExecutionEnvironment execEnv) {
         return new MacroMap(execEnv, MacroExpanderFactory.getExpander(execEnv), true);
     }
-    
+
     /**
      * Create empty MacroMap for specified ExecutionEnvironment
      */
     public static MacroMap createEmpty(final ExecutionEnvironment execEnv) {
         return new MacroMap(execEnv, MacroExpanderFactory.getExpander(execEnv), false);
     }
-    
+
     public final void putAll(final MacroMap envVariables) {
         if (envVariables == null) {
             return;
@@ -152,20 +157,22 @@ public final class MacroMap implements Cloneable {
 
         TreeMap<String, String> oneElementMap = isWindows ? new TreeMap<String, String>(new CaseInsensitiveComparator()) : new TreeMap<String, String>();
 
-        String val = map.get(key);
+        synchronized (lock) {
+            if (!map.containsKey(key) && hostEnv.containsKey(key)) {
+                oneElementMap.put(key, hostEnv.remove(key));
+            } else if (map.containsKey(key)) {
+                oneElementMap.put(key, map.get(key));
+            }
 
-        if (val != null) {
-            oneElementMap.put(key, val);
+            try {
+                result = macroExpander.expandMacros(value, oneElementMap);
+            } catch (ParseException ex) {
+            }
+
+            varsForExport.add(key);
+
+            return map.put(key, result);
         }
-
-        try {
-            result = macroExpander.expandMacros(value, oneElementMap);
-        } catch (ParseException ex) {
-        }
-
-        varsForExport.add(key);
-
-        return map.put(key, result);
     }
 
     public String get(String key) {
@@ -173,7 +180,22 @@ public final class MacroMap implements Cloneable {
             throw new NullPointerException();
         }
 
-        return map.get(key);
+        synchronized (lock) {
+            if (map.containsKey(key)) {
+                return map.get(key);
+            }
+
+            return hostEnv.get(key);
+        }
+    }
+
+    public Map<String, String> getUserDefinedMap() {
+        TreeMap<String, String> result;
+        synchronized (lock) {
+            result = new TreeMap<String, String>(map.comparator());
+            result.putAll(map);
+        }
+        return result;
     }
 
     public Set<String> getExportVariablesSet() {
@@ -185,11 +207,19 @@ public final class MacroMap implements Cloneable {
         StringBuilder buf = new StringBuilder();
         buf.append("{"); // NOI18N
 
-        for (Entry<String, String> entry : map.entrySet()) {
-            buf.append(entry.getKey());
-            buf.append(" = "); // NOI18N
-            buf.append(entry.getValue());
-            buf.append(", "); // NOI18N
+        synchronized (lock) {
+            for (Entry<String, String> entry : map.entrySet()) {
+                buf.append(entry.getKey());
+                buf.append(" = "); // NOI18N
+                buf.append(entry.getValue());
+                buf.append(", "); // NOI18N
+            }
+            for (Entry<String, String> entry : hostEnv.entrySet()) {
+                buf.append(entry.getKey());
+                buf.append(" = "); // NOI18N
+                buf.append(entry.getValue());
+                buf.append(", "); // NOI18N
+            }
         }
 
         buf.append("}"); // NOI18N
@@ -197,18 +227,29 @@ public final class MacroMap implements Cloneable {
     }
 
     public final boolean isEmpty() {
-        return map.isEmpty();
+        synchronized (lock) {
+            return map.isEmpty() && hostEnv.isEmpty();
+        }
     }
 
     public final Set<Entry<String, String>> entrySet() {
-        return map.entrySet();
+        Set<Entry<String, String>> joint = new HashSet<Entry<String, String>>();
+        synchronized (lock) {
+            joint.addAll(map.entrySet());
+            joint.addAll(hostEnv.entrySet());
+        }
+        return joint;
     }
 
     @Override
     public MacroMap clone() {
-        MacroMap clone = new MacroMap(execEnv, macroExpander, false);
-        clone.map.putAll(map);
-        clone.varsForExport.addAll(varsForExport);
+        MacroMap clone;
+        synchronized (lock) {
+            clone = new MacroMap(execEnv, macroExpander, false);
+            clone.map.putAll(map);
+            clone.hostEnv.putAll(hostEnv);
+            clone.varsForExport.addAll(varsForExport);
+        }
         return clone;
     }
 
@@ -231,7 +272,7 @@ public final class MacroMap implements Cloneable {
         }
 
         String oldpath = get(name);
-        String newPath = (oldpath == null ? "" : oldpath + (isWindows ? ';' : ':')) + path;
+        String newPath = (oldpath == null ? "" : oldpath + (isWindows ? ';' : ':')) + path; // NOI18N
         put(name, newPath);
     }
 
@@ -242,11 +283,29 @@ public final class MacroMap implements Cloneable {
     }
 
     public String remove(String name) {
-        return map.remove(name);
+        synchronized (lock) {
+            if (map.containsKey(name)) {
+                return map.remove(name);
+            }
+            return hostEnv.remove(name);
+        }
     }
 
     public Map<String, String> toMap() {
-        return new TreeMap<String, String>(map);
+        TreeMap<String, String> result;
+        synchronized (lock) {
+            result = new TreeMap<String, String>(map.comparator());
+            result.putAll(hostEnv);
+            result.putAll(map);
+        }
+        return result;
+    }
+
+    public void clear() {
+        synchronized (lock) {
+            hostEnv.clear();
+            map.clear();
+        }
     }
 
     private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {

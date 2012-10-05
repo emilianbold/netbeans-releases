@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor.actions;
 
+import java.io.Serializable;
 import java.util.*;
 import javax.swing.Icon;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
@@ -215,7 +216,7 @@ public class ImportDataCreator {
         return result;
     }
 
-    private class VariantsComparator implements Comparator<String> {
+    private static class VariantsComparator implements Comparator<String>, Serializable {
 
         @Override
         public int compare(String o1, String o2) {
@@ -223,7 +224,7 @@ public class ImportDataCreator {
         }
     }
 
-    private static class TypeElementsComparator implements Comparator<TypeElement> {
+    private static class TypeElementsComparator implements Comparator<TypeElement>, Serializable {
 
         @Override
         public int compare(TypeElement o1, TypeElement o2) {

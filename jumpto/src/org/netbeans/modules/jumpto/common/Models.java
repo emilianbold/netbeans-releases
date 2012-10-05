@@ -42,10 +42,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.jumpto.type;
+package org.netbeans.modules.jumpto.common;
 
 import java.util.List;
+import javax.swing.AbstractListModel;
 import javax.swing.ListModel;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * (copied from org.netbeans.modules.java.source.util.Models
@@ -65,6 +67,12 @@ public final class Models {
      */
     public static <T,P> ListModel translating( ListModel model, Factory<T,P> factory ) {
         return new TranslatingListModel<T,P>( model, factory );
+    }
+
+    public static <R,P> ListModel refreshable(
+            @NonNull final ListModel model,
+            @NonNull Factory<R,Pair<P,Runnable>> convertor) {
+        return new RefreshableListModel(model, convertor);
     }
  
     // Private innerclasses ----------------------------------------------------        
@@ -133,6 +141,56 @@ public final class Models {
         }
 
 
+    }
+
+    private static final class RefreshableListModel<R,P> extends AbstractListModel {
+
+        private final ListModel delegate;
+        private final Factory<R,Pair<P,Runnable>> convertor;
+        private final Object[] cache;
+
+        RefreshableListModel(
+                @NonNull final ListModel delegate,
+                @NonNull final Factory<R,Pair<P,Runnable>> convertor) {
+            this.delegate = delegate;
+            this.convertor = convertor;
+            this.cache = new Object[delegate.getSize()];
+        }
+
+        @Override
+        public int getSize() {
+            if (cache.length != delegate.getSize()) {
+                throw new IllegalStateException("Base model changed, only static models are suported.");    //NOI18N
+            }
+            return cache.length;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public Object getElementAt(final int index) {
+            if (index < 0 || index >= cache.length) {
+                throw new IllegalArgumentException(
+                    String.format(
+                        "Invalid index: %d, model size: %d.",    //NOI18M
+                        index,
+                        cache.length));
+            }
+            R result = (R) cache[index];
+            if (result != null) {
+                return result;
+            }
+            final P param = (P) delegate.getElementAt(index);
+            result = convertor.create(Pair.<P,Runnable>of(
+                param,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        fireContentsChanged(RefreshableListModel.this, index, index);
+                    }
+                }));
+            cache[index] = result;
+            return result;
+        }
     }
     
 }

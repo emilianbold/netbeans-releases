@@ -124,4 +124,38 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation im
     public int compareTo(FindUsagesElement comparedElement) {
         return this.lineNumber - comparedElement.lineNumber;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + (this.element != null ? this.element.hashCode() : 0);
+        hash = 29 * hash + (this.doc != null ? this.doc.hashCode() : 0);
+        hash = 29 * hash + (this.line != null ? this.line.hashCode() : 0);
+        hash = 29 * hash + this.lineNumber;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FindUsagesElement other = (FindUsagesElement) obj;
+        if (this.element != other.element && (this.element == null || !this.element.equals(other.element))) {
+            return false;
+        }
+        if (this.doc != other.doc && (this.doc == null || !this.doc.equals(other.doc))) {
+            return false;
+        }
+        if (this.line != other.line && (this.line == null || !this.line.equals(other.line))) {
+            return false;
+        }
+        if (this.lineNumber != other.lineNumber) {
+            return false;
+        }
+        return true;
+    }
 }

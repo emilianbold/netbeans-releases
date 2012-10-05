@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.nativeexecution.api.execution;
 
+import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
+import org.netbeans.modules.nativeexecution.api.ProcessStatusEx;
 import org.openide.util.NbBundle;
 
 /**
@@ -48,9 +50,11 @@ import org.openide.util.NbBundle;
  */
 public interface PostMessageDisplayer {
 
-    public String getPostMessage(NativeProcess.State state, int rc, long time);
+    public String getPostMessage(NativeProcess process, long time);
 
-    public String getPostStatusString(NativeProcess.State state, int rc);
+    public String getPostStatusString(NativeProcess process);
+
+    public String getPostMessage(NativeProcess.State state, int rc, long time);
 
     public final static class Default implements PostMessageDisplayer {
 
@@ -97,14 +101,21 @@ public interface PostMessageDisplayer {
         }
 
         @Override
-        public String getPostStatusString(State state, int rc) {
+        public String getPostStatusString(NativeProcess process) {
+            ProcessStatusEx exitStatusEx = process.getExitStatusEx();
+
+            if (exitStatusEx != null) {
+                return NbBundle.getMessage(PostMessageDisplayer.class, "MSG_FINISHED", actionName); // NOI18N
+            }
+
+            State state = process.getState();
             switch (state) {
                 case ERROR:
                     return NbBundle.getMessage(PostMessageDisplayer.class, "MSG_FAILED", actionName); // NOI18N
                 case CANCELLED:
                     return NbBundle.getMessage(PostMessageDisplayer.class, "MSG_TERMINATED", actionName); // NOI18N
                 case FINISHED:
-                    if (rc == 0) {
+                    if (process.exitValue() == 0) {
                         return NbBundle.getMessage(PostMessageDisplayer.class, "MSG_SUCCESSFUL", actionName);
                     } else {
                         return NbBundle.getMessage(PostMessageDisplayer.class, "MSG_FAILED", actionName);
@@ -116,6 +127,10 @@ public interface PostMessageDisplayer {
         }
 
         private static String formatTime(long millis) {
+            if (millis == 0) {
+                return " 0" + NbBundle.getMessage(PostMessageDisplayer.class, "MILLISECOND"); // NOI18N
+            }
+
             StringBuilder res = new StringBuilder();
             long seconds = millis / 1000;
             long minutes = seconds / 60;
@@ -132,10 +147,47 @@ public interface PostMessageDisplayer {
             if (seconds > 0) {
                 res.append(" ").append(seconds - minutes * 60).append(NbBundle.getMessage(PostMessageDisplayer.class, "SECOND")); // NOI18N
             } else {
-                res.append(" ").append(millis - seconds * 1000).append(NbBundle.getMessage(PostMessageDisplayer.class, "MILLISECOND")); // NOI18N
+                res.append(" ").append(millis).append(NbBundle.getMessage(PostMessageDisplayer.class, "MILLISECOND")); // NOI18N
             }
 
             return res.toString();
+        }
+
+        @Override
+        public String getPostMessage(NativeProcess process, long time) {
+            State state = process.getState();
+            StringBuilder res = new StringBuilder();
+            ProcessStatusEx statusEx = process.getExitStatusEx();
+            int status = process.exitValue();
+
+            if (statusEx != null) {
+                if (state == State.ERROR) {
+                    return NbBundle.getMessage(PostMessageDisplayer.class, "FAILED", actionName.toUpperCase()); // NOI18N
+                }
+
+                res.append(NbBundle.getMessage(PostMessageDisplayer.class, "FINISHED", actionName.toUpperCase())); // NOI18N
+
+                res.append("; "); // NOI18N
+                if (statusEx.ifExited()) {
+                    res.append(NbBundle.getMessage(PostMessageDisplayer.class, "EXIT_VALUE", statusEx.getExitCode())); // NOI18N
+                } else {
+                    res.append(statusEx.termSignal());
+                    if (statusEx.ifCoreDump()) {
+                        res.append("; "); // NOI18N
+                        res.append(NbBundle.getMessage(PostMessageDisplayer.class, "COREDUMPED")); // NOI18N
+                    }
+                }
+
+                res.append("; "); // NOI18N
+                res.append(NbBundle.getMessage(PostMessageDisplayer.class, "TOTAL_TIME_EX", // NOI18N
+                        formatTime(statusEx.realTime(TimeUnit.MILLISECONDS)),
+                        formatTime(statusEx.sysTime(TimeUnit.MILLISECONDS)),
+                        formatTime(statusEx.usrTime(TimeUnit.MILLISECONDS))));
+                return res.toString();
+
+            }
+
+            return getPostMessage(state, status, time);
         }
     }
 }

@@ -138,6 +138,19 @@ public final class PtySupport {
         SttySupport.apply(exEnv, tty, "-echo"); //NOI18N
     }
 
+    /**
+     * Sets 'erase' key of a terminal to ^H.
+     *
+     * There are some bugs in Solaris (7009510, 7045666, 7164170) that make this
+     * approach unreliable. So it is better not to use it.
+     *
+     * (it is recommended not to use stty utility for controlling any terminal
+     * other than the one in which it is running in.)
+     *
+     * There is an option in pty utility - --set-erase-key that could be used to
+     * achieve needed effect.
+     */
+    @Deprecated
     public static void setBackspaceAsEraseChar(ExecutionEnvironment exEnv, String tty) {
         SttySupport.apply(exEnv, tty, "erase \\^H"); // NOI18N
     }

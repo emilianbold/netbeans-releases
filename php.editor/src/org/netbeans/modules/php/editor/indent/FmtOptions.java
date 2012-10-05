@@ -76,8 +76,6 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-//import static org.netbeans.modules.javascript.editing.options.CodeStyle.*;
-
 /**
  *
  * @author phrebejk
@@ -86,7 +84,6 @@ import org.openide.util.NbBundle;
 public class FmtOptions {
 
     private static final Logger LOGGER = Logger.getLogger(FmtOptions.class.getName());
-
     public static final String expandTabToSpaces = SimpleValueNames.EXPAND_TABS;
     public static final String tabSize = SimpleValueNames.TAB_SIZE;
     public static final String spacesPerTab = SimpleValueNames.SPACES_PER_TAB;
@@ -97,7 +94,6 @@ public class FmtOptions {
     public static final String indentHtml = "indentHtml"; //NOI18N
     public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
     public static final String initialIndent = "init.indent"; //NOI18N
-
     public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
     public static final String methodDeclBracePlacement = "methodDeclBracePlacement"; //NOI18N
     public static final String ifBracePlacement = "ifBracePlacement"; //NOI18N
@@ -107,7 +103,6 @@ public class FmtOptions {
     public static final String catchBracePlacement = "catchBracePlacement"; //NOI18N
     public static final String useTraitBodyBracePlacement = "useTraitBodyBracePlacement"; //NOI18N
     public static final String otherBracePlacement = "otherBracePlacement"; //NOI18N
-
     public static final String blankLinesBeforeNamespace = "blankLinesBeforeNamespace"; //NOI18N
     public static final String blankLinesAfterNamespace = "blankLinesAfterNamespace"; //NOI18N
     public static final String blankLinesBeforeUse = "blankLinesBeforeUse"; //NOI18N
@@ -127,7 +122,6 @@ public class FmtOptions {
     public static final String blankLinesAfterOpenPHPTag = "blankLinesAfterOpenPHPTag"; //NOI18N
     public static final String blankLinesAfterOpenPHPTagInHTML = "blankLinesAfterOpenPHPTagInHTML"; //NOI18N
     public static final String blankLinesBeforeClosePHPTag = "blankLinesBeforeClosePHPTag"; //NOI18N
-
     public static final String spaceBeforeWhile = "spaceBeforeWhile"; //NOI18N
     public static final String spaceBeforeElse = "spaceBeforeElse"; //NOI18N
     public static final String spaceBeforeCatch = "spaceBeforeCatch"; //NOI18N
@@ -139,7 +133,6 @@ public class FmtOptions {
     public static final String spaceBeforeCatchParen = "spaceBeforeCatchParen"; //NOI18N
     public static final String spaceBeforeSwitchParen = "spaceBeforeSwitchParen"; //NOI18N
     public static final String spaceBeforeArrayDeclParen = "spaceBeforeArrayDeclParen"; //NOI18N
-
     public static final String spaceAroundUnaryOps = "spaceAroundUnaryOps"; //NOI18N
     public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
     public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
@@ -158,10 +151,6 @@ public class FmtOptions {
     public static final String spaceBeforeTryLeftBrace = "spaceBeforeTryLeftBrace"; //NOI18N
     public static final String spaceBeforeCatchLeftBrace = "spaceBeforeCatchLeftBrace"; //NOI18N
     public static final String spaceBeforeUseTraitBodyLeftBrace = "spaceBeforeUseTraitBodyLeftBrace"; //NOI18N
-//    public static final String spaceBeforeSynchronizedLeftBrace = "spaceBeforeSynchronizedLeftBrace"; //NOI18N
-//    public static final String spaceBeforeStaticInitLeftBrace = "spaceBeforeStaticInitLeftBrace"; //NOI18N
-//    public static final String spaceBeforeArrayInitLeftBrace = "spaceBeforeArrayInitLeftBrace"; //NOI18N
-//    public static final String spaceWithinParens = "spaceWithinParens"; //NOI18N
     public static final String spaceWithinArrayDeclParens = "spaceWithinArrayDeclParens"; //NOI18N
     public static final String spaceWithinMethodDeclParens = "spaceWithinMethodDeclParens"; //NOI18N
     public static final String spaceWithinMethodCallParens = "spaceWithinMethodCallParens"; //NOI18N
@@ -170,22 +159,16 @@ public class FmtOptions {
     public static final String spaceWithinWhileParens = "spaceWithinWhileParens"; //NOI18N
     public static final String spaceWithinSwitchParens = "spaceWithinSwitchParens"; //NOI18N
     public static final String spaceWithinCatchParens = "spaceWithinCatchParens"; //NOI18N
-//    public static final String spaceWithinSynchronizedParens = "spaceWithinSynchronizedParens"; //NOI18N
     public static final String spaceWithinTypeCastParens = "spaceWithinTypeCastParens"; //NOI18N
-//    public static final String spaceWithinAnnotationParens = "spaceWithinAnnotationParens"; //NOI18N
-//    public static final String spaceWithinBraces = "spaceWithinBraces"; //NOI18N
     public static final String spaceWithinArrayBrackets = "spaceWithinArrayBrackets"; //NOI18N
     public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
     public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
     public static final String spaceBeforeSemi = "spaceBeforeSemi"; //NOI18N
     public static final String spaceAfterSemi = "spaceAfterSemi"; //NOI18N
-//    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
-//    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
     public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
     public static final String spaceCheckAfterKeywords = "spaceCheckAfterKeywords"; //NOI18N
     public static final String spaceAfterShortPHPTag = "spaceAfterShortPHPTag"; //NOI18N
     public static final String spaceBeforeClosePHPTag = "spaceBeforeClosePHPTag"; //NOI18N
-
     public static final String placeElseOnNewLine = "placeElseOnNewLine"; //NOI18N
     public static final String placeWhileOnNewLine = "placeWhileOnNewLine"; //NOI18N
     public static final String placeCatchOnNewLine = "placeCatchOnNewLine"; //NOI18N
@@ -199,10 +182,8 @@ public class FmtOptions {
     public static final String alignMultilineAssignment = "alignMultilineAssignment"; //NOI18N
     public static final String alignMultilineFor = "alignMultilineFor"; //NOI18N
     public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
-
     public static final String groupAlignmentAssignment = "groupAlignmentAssignment"; //NOI18N
     public static final String groupAlignmentArrayInit = "groupAlignmentArrayInit"; //NOI18N
-
     public static final String wrapExtendsImplementsKeyword = "wrapExtendsImplementsKeyword"; //NOI18N
     public static final String wrapExtendsImplementsList = "wrapExtendsImplementsList"; //NOI18N
     public static final String wrapMethodParams = "wrapMethodParams"; //NOI18N
@@ -221,15 +202,14 @@ public class FmtOptions {
     public static final String wrapStatementsOnTheLine = "wrapStateMentsOnTheLine"; // NOI18N
     public static final String wrapAfterBinOps = "wrapAfterBinOps"; // NOI18N
     public static final String wrapAfterAssignOps = "wrapAfterAssignOps"; // NOI18N
-
     public static final String preferFullyQualifiedNames = "preferFullyQualifiedNames"; //NOI18N
     public static final String preferMultipleUseStatementsCombined = "preferMultipleUseStatementsCombined"; //NOI18N
     public static final String startUseWithNamespaceSeparator = "startUseWithNamespaceSeparator"; //NOI18N
     public static final String aliasesCapitalsOfNamespaces = "aliasesCapitalsOfNamespacesNames"; //NOI18N
-
     public static CodeStyleProducer codeStyleProducer;
 
-    private FmtOptions() {}
+    private FmtOptions() {
+    }
 
     public static int getDefaultAsInt(String key) {
         return Integer.parseInt(defaults.get(key));
@@ -242,23 +222,18 @@ public class FmtOptions {
     public static String getDefaultAsString(String key) {
         return defaults.get(key);
     }
-
     // Private section ---------------------------------------------------------
-
     private static final String TRUE = "true";      // NOI18N
     private static final String FALSE = "false";    // NOI18N
-
     //opening brace styles
     public static final String OBRACE_NEWLINE = CodeStyle.BracePlacement.NEW_LINE.name();
     public static final String OBRACE_SAMELINE = CodeStyle.BracePlacement.SAME_LINE.name();
     public static final String OBRACE_PRESERVE = CodeStyle.BracePlacement.PRESERVE_EXISTING.name();
     public static final String OBRACE_NEWLINE_INDENTED = CodeStyle.BracePlacement.NEW_LINE_INDENTED.name();
-
     public static final String WRAP_ALWAYS = CodeStyle.WrapStyle.WRAP_ALWAYS.name();
     public static final String WRAP_IF_LONG = CodeStyle.WrapStyle.WRAP_IF_LONG.name();
     public static final String WRAP_NEVER = CodeStyle.WrapStyle.WRAP_NEVER.name();
-
-    private static Map<String,String> defaults;
+    private static Map<String, String> defaults;
 
     static {
         createDefaults();
@@ -266,146 +241,133 @@ public class FmtOptions {
 
     private static void createDefaults() {
         String defaultValues[][] = {
-            { expandTabToSpaces, TRUE}, //NOI18N
-            { tabSize, "8"}, //NOI18N
-            { indentSize, "4"}, //NOI18N
-            { continuationIndentSize, "8"}, //NOI18N
-            { itemsInArrayDeclarationIndentSize, "4"}, // NOI18N
-            { reformatComments, FALSE }, //NOI18N
-            { indentHtml, TRUE }, //NOI18N
-            { rightMargin, "80"}, //NOI18N
-            { initialIndent, "0"}, //NOI18N
+            {expandTabToSpaces, TRUE}, //NOI18N
+            {tabSize, "8"}, //NOI18N
+            {indentSize, "4"}, //NOI18N
+            {continuationIndentSize, "8"}, //NOI18N
+            {itemsInArrayDeclarationIndentSize, "4"}, // NOI18N
+            {reformatComments, FALSE}, //NOI18N
+            {indentHtml, TRUE}, //NOI18N
+            {rightMargin, "80"}, //NOI18N
+            {initialIndent, "0"}, //NOI18N
 
-	    { classDeclBracePlacement, OBRACE_SAMELINE },
-	    { methodDeclBracePlacement, OBRACE_SAMELINE },
-	    { ifBracePlacement, OBRACE_SAMELINE },
-	    { forBracePlacement, OBRACE_SAMELINE },
-	    { whileBracePlacement, OBRACE_SAMELINE },
-	    { switchBracePlacement, OBRACE_SAMELINE },
-	    { catchBracePlacement, OBRACE_SAMELINE },
-        { useTraitBodyBracePlacement, OBRACE_SAMELINE },
-	    { otherBracePlacement, OBRACE_SAMELINE },
+            {classDeclBracePlacement, OBRACE_SAMELINE},
+            {methodDeclBracePlacement, OBRACE_SAMELINE},
+            {ifBracePlacement, OBRACE_SAMELINE},
+            {forBracePlacement, OBRACE_SAMELINE},
+            {whileBracePlacement, OBRACE_SAMELINE},
+            {switchBracePlacement, OBRACE_SAMELINE},
+            {catchBracePlacement, OBRACE_SAMELINE},
+            {useTraitBodyBracePlacement, OBRACE_SAMELINE},
+            {otherBracePlacement, OBRACE_SAMELINE},
+            {blankLinesBeforeNamespace, "1"}, //NOI18N
+            {blankLinesAfterNamespace, "1"}, //NOI18N
+            {blankLinesBeforeUse, "1"}, //NOI18N
+            {blankLinesBeforeUseTrait, "1"}, //NOI18N
+            {blankLinesAfterUse, "1"}, //NOI18N
+            {blankLinesBeforeClass, "1"}, //NOI18N
+            {blankLinesAfterClass, "1"}, //NOI18N
+            {blankLinesAfterClassHeader, "0"}, //NOI18N
+            {blankLinesBeforeClassEnd, "0"}, //NOI18N
+            {blankLinesBeforeFields, "1"}, //NOI18N
+            {blankLinesGroupFieldsWithoutDoc, TRUE}, //NOI18N
+            {blankLinesBetweenFields, "1"}, //NOI18N
+            {blankLinesAfterFields, "1"}, //NOI18N
+            {blankLinesBeforeFunction, "1"}, //NOI18N
+            {blankLinesAfterFunction, "1"}, //NOI18N
+            {blankLinesBeforeFunctionEnd, "0"}, //NOI18N
+            {blankLinesAfterOpenPHPTag, "1"}, //NOI18N
+            {blankLinesAfterOpenPHPTagInHTML, "0"}, //NOI18N
+            {blankLinesBeforeClosePHPTag, "0"}, //NOI18N
 
-            { blankLinesBeforeNamespace, "1"}, //NOI18N
-            { blankLinesAfterNamespace, "1"}, //NOI18N
-            { blankLinesBeforeUse, "1"}, //NOI18N
-            { blankLinesBeforeUseTrait, "1"}, //NOI18N
-            { blankLinesAfterUse, "1"}, //NOI18N
-            { blankLinesBeforeClass, "1"}, //NOI18N
-            { blankLinesAfterClass, "1"}, //NOI18N
-            { blankLinesAfterClassHeader, "0"}, //NOI18N
-            { blankLinesBeforeClassEnd, "0"}, //NOI18N
-            { blankLinesBeforeFields, "1"}, //NOI18N
-	    { blankLinesGroupFieldsWithoutDoc, TRUE}, //NOI18N
-	    { blankLinesBetweenFields, "1"}, //NOI18N
-            { blankLinesAfterFields, "1"}, //NOI18N
-            { blankLinesBeforeFunction, "1"}, //NOI18N
-            { blankLinesAfterFunction, "1"}, //NOI18N
-            { blankLinesBeforeFunctionEnd, "0"}, //NOI18N
-	    { blankLinesAfterOpenPHPTag, "1"}, //NOI18N
-	    { blankLinesAfterOpenPHPTagInHTML, "0"}, //NOI18N
-	    { blankLinesBeforeClosePHPTag, "0"}, //NOI18N
-
-            { spaceBeforeWhile, TRUE},
-            { spaceBeforeElse, TRUE},
-            { spaceBeforeCatch, TRUE},
-            { spaceBeforeMethodDeclParen, FALSE},
-            { spaceBeforeMethodCallParen, FALSE},
-            { spaceBeforeIfParen, TRUE},
-            { spaceBeforeForParen, TRUE},
-            { spaceBeforeWhileParen, TRUE},
-            { spaceBeforeCatchParen, TRUE},
-            { spaceBeforeSwitchParen, TRUE},
-	    { spaceBeforeArrayDeclParen, FALSE},
-            { spaceAroundUnaryOps, FALSE},
-            { spaceAroundBinaryOps, TRUE},
-            { spaceAroundTernaryOps, TRUE},
-	    { spaceAroundStringConcatOps, TRUE},
-	    { spaceAroundKeyValueOps, TRUE},
-            { spaceAroundAssignOps, TRUE},
-	    { spaceAroundObjectOps, FALSE},
-            { spaceBeforeClassDeclLeftBrace, TRUE},
-            { spaceBeforeMethodDeclLeftBrace, TRUE},
-            { spaceBeforeIfLeftBrace, TRUE},
-            { spaceBeforeElseLeftBrace, TRUE},
-            { spaceBeforeWhileLeftBrace, TRUE},
-            { spaceBeforeForLeftBrace, TRUE},
-            { spaceBeforeDoLeftBrace, TRUE},
-            { spaceBeforeSwitchLeftBrace, TRUE},
-            { spaceBeforeTryLeftBrace, TRUE},
-            { spaceBeforeCatchLeftBrace, TRUE},
-            { spaceBeforeUseTraitBodyLeftBrace, TRUE},
-//            { spaceBeforeSynchronizedLeftBrace, TRUE},
-//            { spaceBeforeStaticInitLeftBrace, TRUE},
-//            { spaceBeforeArrayInitLeftBrace, FALSE},
-//            { spaceWithinParens, FALSE},
-	    { spaceWithinArrayDeclParens, FALSE},
-            { spaceWithinMethodDeclParens, FALSE},
-            { spaceWithinMethodCallParens, FALSE},
-            { spaceWithinIfParens, FALSE},
-            { spaceWithinForParens, FALSE},
-            { spaceWithinWhileParens, FALSE},
-            { spaceWithinSwitchParens, FALSE},
-            { spaceWithinCatchParens, FALSE},
-//            { spaceWithinSynchronizedParens, FALSE},
-            { spaceWithinTypeCastParens, FALSE},
-//            { spaceWithinAnnotationParens, FALSE},
-//            { spaceWithinBraces, FALSE},
-            { spaceWithinArrayBrackets, FALSE},
-            { spaceBeforeComma, FALSE},
-            { spaceAfterComma, TRUE},
-            { spaceBeforeSemi, FALSE},
-            { spaceAfterSemi, TRUE},
-//            { spaceBeforeColon, TRUE},
-//            { spaceAfterColon, TRUE},
-            { spaceAfterTypeCast, TRUE},
-	    { spaceCheckAfterKeywords, TRUE},
-            { spaceAfterShortPHPTag, TRUE},
-	    { spaceBeforeClosePHPTag, TRUE},
-
-	    { alignMultilineMethodParams, FALSE}, //NOI18N
-            { alignMultilineCallArgs, FALSE}, //NOI18N
-            { alignMultilineImplements, FALSE}, //NOI18N
-            { alignMultilineParenthesized, FALSE}, //NOI18N
-            { alignMultilineBinaryOp, FALSE}, //NOI18N
-            { alignMultilineTernaryOp, FALSE}, //NOI18N
-            { alignMultilineAssignment, FALSE}, //NOI18N
-            { alignMultilineFor, FALSE}, //NOI18N
-            { alignMultilineArrayInit, FALSE}, //NOI18N
-            { placeElseOnNewLine, FALSE}, //NOI18N
-            { placeWhileOnNewLine, FALSE}, //NOI18N
-            { placeCatchOnNewLine, FALSE}, //NOI18N
-            { placeNewLineAfterModifiers, FALSE}, //NOI18N
+            {spaceBeforeWhile, TRUE},
+            {spaceBeforeElse, TRUE},
+            {spaceBeforeCatch, TRUE},
+            {spaceBeforeMethodDeclParen, FALSE},
+            {spaceBeforeMethodCallParen, FALSE},
+            {spaceBeforeIfParen, TRUE},
+            {spaceBeforeForParen, TRUE},
+            {spaceBeforeWhileParen, TRUE},
+            {spaceBeforeCatchParen, TRUE},
+            {spaceBeforeSwitchParen, TRUE},
+            {spaceBeforeArrayDeclParen, FALSE},
+            {spaceAroundUnaryOps, FALSE},
+            {spaceAroundBinaryOps, TRUE},
+            {spaceAroundTernaryOps, TRUE},
+            {spaceAroundStringConcatOps, TRUE},
+            {spaceAroundKeyValueOps, TRUE},
+            {spaceAroundAssignOps, TRUE},
+            {spaceAroundObjectOps, FALSE},
+            {spaceBeforeClassDeclLeftBrace, TRUE},
+            {spaceBeforeMethodDeclLeftBrace, TRUE},
+            {spaceBeforeIfLeftBrace, TRUE},
+            {spaceBeforeElseLeftBrace, TRUE},
+            {spaceBeforeWhileLeftBrace, TRUE},
+            {spaceBeforeForLeftBrace, TRUE},
+            {spaceBeforeDoLeftBrace, TRUE},
+            {spaceBeforeSwitchLeftBrace, TRUE},
+            {spaceBeforeTryLeftBrace, TRUE},
+            {spaceBeforeCatchLeftBrace, TRUE},
+            {spaceBeforeUseTraitBodyLeftBrace, TRUE},
+            {spaceWithinArrayDeclParens, FALSE},
+            {spaceWithinMethodDeclParens, FALSE},
+            {spaceWithinMethodCallParens, FALSE},
+            {spaceWithinIfParens, FALSE},
+            {spaceWithinForParens, FALSE},
+            {spaceWithinWhileParens, FALSE},
+            {spaceWithinSwitchParens, FALSE},
+            {spaceWithinCatchParens, FALSE},
+            {spaceWithinTypeCastParens, FALSE},
+            {spaceWithinArrayBrackets, FALSE},
+            {spaceBeforeComma, FALSE},
+            {spaceAfterComma, TRUE},
+            {spaceBeforeSemi, FALSE},
+            {spaceAfterSemi, TRUE},
+            {spaceAfterTypeCast, TRUE},
+            {spaceCheckAfterKeywords, TRUE},
+            {spaceAfterShortPHPTag, TRUE},
+            {spaceBeforeClosePHPTag, TRUE},
+            {alignMultilineMethodParams, FALSE}, //NOI18N
+            {alignMultilineCallArgs, FALSE}, //NOI18N
+            {alignMultilineImplements, FALSE}, //NOI18N
+            {alignMultilineParenthesized, FALSE}, //NOI18N
+            {alignMultilineBinaryOp, FALSE}, //NOI18N
+            {alignMultilineTernaryOp, FALSE}, //NOI18N
+            {alignMultilineAssignment, FALSE}, //NOI18N
+            {alignMultilineFor, FALSE}, //NOI18N
+            {alignMultilineArrayInit, FALSE}, //NOI18N
+            {placeElseOnNewLine, FALSE}, //NOI18N
+            {placeWhileOnNewLine, FALSE}, //NOI18N
+            {placeCatchOnNewLine, FALSE}, //NOI18N
+            {placeNewLineAfterModifiers, FALSE}, //NOI18N
 
             {groupAlignmentArrayInit, FALSE},
             {groupAlignmentAssignment, FALSE},
-
-	    { wrapExtendsImplementsKeyword, WRAP_NEVER}, //NOI18N
-            { wrapExtendsImplementsList, WRAP_NEVER}, //NOI18N
-            { wrapMethodParams, WRAP_NEVER}, //NOI18N
-            { wrapMethodCallArgs, WRAP_NEVER}, //NOI18N
-            { wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N
-            { wrapArrayInit, WRAP_NEVER}, //NOI18N
-            { wrapFor, WRAP_NEVER}, //NOI18N
-            { wrapForStatement, WRAP_ALWAYS}, //NOI18N
-            { wrapIfStatement, WRAP_ALWAYS}, //NOI18N
-            { wrapWhileStatement, WRAP_ALWAYS}, //NOI18N
-            { wrapDoWhileStatement, WRAP_ALWAYS}, //NOI18N
-            { wrapBinaryOps, WRAP_NEVER}, //NOI18N
-            { wrapTernaryOps, WRAP_NEVER},
-            { wrapAssignOps, WRAP_NEVER},
-            { wrapBlockBraces, TRUE},
-            { wrapStatementsOnTheLine, TRUE},
-            { wrapAfterBinOps, FALSE},
-            { wrapAfterAssignOps, FALSE},
-
-            { preferFullyQualifiedNames, FALSE},
-            { preferMultipleUseStatementsCombined, FALSE},
-            { startUseWithNamespaceSeparator, FALSE},
-            { aliasesCapitalsOfNamespaces, FALSE }
+            {wrapExtendsImplementsKeyword, WRAP_NEVER}, //NOI18N
+            {wrapExtendsImplementsList, WRAP_NEVER}, //NOI18N
+            {wrapMethodParams, WRAP_NEVER}, //NOI18N
+            {wrapMethodCallArgs, WRAP_NEVER}, //NOI18N
+            {wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N
+            {wrapArrayInit, WRAP_NEVER}, //NOI18N
+            {wrapFor, WRAP_NEVER}, //NOI18N
+            {wrapForStatement, WRAP_ALWAYS}, //NOI18N
+            {wrapIfStatement, WRAP_ALWAYS}, //NOI18N
+            {wrapWhileStatement, WRAP_ALWAYS}, //NOI18N
+            {wrapDoWhileStatement, WRAP_ALWAYS}, //NOI18N
+            {wrapBinaryOps, WRAP_NEVER}, //NOI18N
+            {wrapTernaryOps, WRAP_NEVER},
+            {wrapAssignOps, WRAP_NEVER},
+            {wrapBlockBraces, TRUE},
+            {wrapStatementsOnTheLine, TRUE},
+            {wrapAfterBinOps, FALSE},
+            {wrapAfterAssignOps, FALSE},
+            {preferFullyQualifiedNames, FALSE},
+            {preferMultipleUseStatementsCombined, FALSE},
+            {startUseWithNamespaceSeparator, FALSE},
+            {aliasesCapitalsOfNamespaces, FALSE}
         };
 
-        defaults = new HashMap<String,String>();
+        defaults = new HashMap<String, String>();
 
         for (java.lang.String[] strings : defaultValues) {
             defaults.put(strings[0], strings[1]);
@@ -414,42 +376,35 @@ public class FmtOptions {
     }
 
     protected static Map<String, String> getDefaults() {
-	return defaults;
+        return defaults;
     }
 
-     // Support section ---------------------------------------------------------
-
+    // Support section ---------------------------------------------------------
     public static class CategorySupport implements ActionListener, DocumentListener, PreviewProvider, PreferencesCustomizer {
 
+        private static enum Operation {
+            LOAD,
+            STORE,
+            ADD_LISTENERS
+        }
+
         public static final String OPTION_ID = "org.netbeans.modules.php.editor.indent.FormatingOptions.ID";
-
-        private static final int LOAD = 0;
-        private static final int STORE = 1;
-        private static final int ADD_LISTENERS = 2;
-
-        private static final ComboItem  bracePlacement[] = new ComboItem[] {
-                new ComboItem( OBRACE_NEWLINE, "LBL_bp_NEWLINE" ), // NOI18N
-		new ComboItem( OBRACE_NEWLINE_INDENTED, "LBL_bp_NEWLINE_INDENTED" ), // NOI18N
-                new ComboItem( OBRACE_SAMELINE, "LBL_bp_SAMELINE" ), // NOI18N
-                new ComboItem( OBRACE_PRESERVE, "LBL_bp_PRESERVE" ), // NOI18N
-            };
-
-	private static final ComboItem  wrap[] = new ComboItem[] {
-                new ComboItem( WrapStyle.WRAP_ALWAYS.name(), "LBL_wrp_WRAP_ALWAYS" ), // NOI18N
-                new ComboItem( WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG" ), // NOI18N
-                new ComboItem( WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER" ) // NOI18N
-            };
-
+        private static final ComboItem bracePlacement[] = new ComboItem[]{
+            new ComboItem(OBRACE_NEWLINE, "LBL_bp_NEWLINE"), // NOI18N
+            new ComboItem(OBRACE_NEWLINE_INDENTED, "LBL_bp_NEWLINE_INDENTED"), // NOI18N
+            new ComboItem(OBRACE_SAMELINE, "LBL_bp_SAMELINE"), // NOI18N
+            new ComboItem(OBRACE_PRESERVE, "LBL_bp_PRESERVE"), // NOI18N
+        };
+        private static final ComboItem wrap[] = new ComboItem[]{
+            new ComboItem(WrapStyle.WRAP_ALWAYS.name(), "LBL_wrp_WRAP_ALWAYS"), // NOI18N
+            new ComboItem(WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG"), // NOI18N
+            new ComboItem(WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER") // NOI18N
+        };
         private final String previewText;
-//        private String forcedOptions[][];
-
-//        private boolean changed = false;
-//        private boolean loaded = false;
         private final String id;
         protected final JPanel panel;
         private final List<JComponent> components = new LinkedList<JComponent>();
         private JEditorPane previewPane;
-
         private final Preferences preferences;
         private final Preferences previewPrefs;
 
@@ -465,7 +420,7 @@ public class FmtOptions {
             // Initialize the preview preferences
             Preferences forcedPrefs = new PreviewPreferences();
             for (String[] option : forcedOptions) {
-                forcedPrefs.put( option[0], option[1]);
+                forcedPrefs.put(option[0], option[1]);
             }
             this.previewPrefs = new ProxyPreferences(preferences, forcedPrefs);
 
@@ -475,39 +430,29 @@ public class FmtOptions {
         }
 
         protected void addListeners() {
-            scan(ADD_LISTENERS, null);
+            scan(Operation.ADD_LISTENERS, null);
         }
 
         protected void loadFrom(Preferences preferences) {
-//            loaded = true;
-            scan(LOAD, preferences);
-//            loaded = false;
+            scan(Operation.LOAD, preferences);
         }
-//
-//        public void applyChanges() {
-//            storeTo(preferences);
-//        }
-//
+
         protected void storeTo(Preferences p) {
-            scan(STORE, p);
+            scan(Operation.STORE, p);
         }
 
         public void notifyChanged() {
-//            if (loaded)
-//                return;
             storeTo(preferences);
             refreshPreview();
         }
 
         // ActionListener implementation ---------------------------------------
-
         @Override
         public void actionPerformed(ActionEvent e) {
             notifyChanged();
         }
 
         // DocumentListener implementation -------------------------------------
-
         @Override
         public void insertUpdate(DocumentEvent e) {
             notifyChanged();
@@ -524,14 +469,12 @@ public class FmtOptions {
         }
 
         // PreviewProvider methods -----------------------------------------------------
-
         @Override
         public JComponent getPreviewComponent() {
             if (previewPane == null) {
                 previewPane = new JEditorPane();
                 previewPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FmtOptions.class, "AN_Preview")); //NOI18N
                 previewPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FmtOptions.class, "AD_Preview")); //NOI18N
-                //previewPane.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
                 previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(FileUtils.PHP_MIME_TYPE));
                 previewPane.setEditable(false);
             }
@@ -544,8 +487,7 @@ public class FmtOptions {
             try {
                 int rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
                 pane.putClientProperty("TextLimitLine", rm); //NOI18N
-            }
-            catch( NumberFormatException e ) {
+            } catch (NumberFormatException e) {
                 // Ignore it
             }
 
@@ -582,7 +524,6 @@ public class FmtOptions {
         }
 
         // PreferencesCustomizer implementation --------------------------------
-
         @Override
         public JComponent getComponent() {
             return panel;
@@ -604,7 +545,6 @@ public class FmtOptions {
         }
 
         // PreferencesCustomizer.Factory implementation ------------------------
-
         public static final class Factory implements PreferencesCustomizer.Factory {
 
             private final String id;
@@ -631,28 +571,27 @@ public class FmtOptions {
         } // End of CategorySupport.Factory class
 
         // Private methods -----------------------------------------------------
-
-        private void performOperation(int operation, JComponent jc, String optionID, Preferences p) {
-            switch(operation) {
-            case LOAD:
-                loadData(jc, optionID, p);
-                break;
-            case STORE:
-                storeData(jc, optionID, p);
-                break;
-            case ADD_LISTENERS:
-                addListener(jc);
-                break;
+        private void performOperation(Operation operation, JComponent jc, String optionID, Preferences p) {
+            switch (operation) {
+                case LOAD:
+                    loadData(jc, optionID, p);
+                    break;
+                case STORE:
+                    storeData(jc, optionID, p);
+                    break;
+                case ADD_LISTENERS:
+                    addListener(jc);
+                    break;
             }
         }
 
-        private void scan(int what, Preferences p ) {
+        private void scan(Operation what, Preferences p) {
             for (JComponent jc : components) {
                 Object o = jc.getClientProperty(OPTION_ID);
                 if (o instanceof String) {
-                    performOperation(what, jc, (String)o, p);
+                    performOperation(what, jc, (String) o, p);
                 } else if (o instanceof String[]) {
-                    for(String oid : (String[])o) {
+                    for (String oid : (String[]) o) {
                         performOperation(what, jc, oid, p);
                     }
                 }
@@ -662,32 +601,34 @@ public class FmtOptions {
         private void scan(Container container, List<JComponent> components) {
             for (Component c : container.getComponents()) {
                 if (c instanceof JComponent) {
-                    JComponent jc = (JComponent)c;
+                    JComponent jc = (JComponent) c;
                     Object o = jc.getClientProperty(OPTION_ID);
-                    if (o instanceof String || o instanceof String[])
+                    if (o instanceof String || o instanceof String[]) {
                         components.add(jc);
+                    }
                 }
-                if (c instanceof Container)
-                    scan((Container)c, components);
+                if (c instanceof Container) {
+                    scan((Container) c, components);
+                }
             }
         }
 
-        /** Very smart method which tries to set the values in the components correctly
+        /**
+         * Very smart method which tries to set the values in the components
+         * correctly
          */
-        private void loadData( JComponent jc, String optionID, Preferences node ) {
+        private void loadData(JComponent jc, String optionID, Preferences node) {
 
-            if ( jc instanceof JTextField ) {
-                JTextField field = (JTextField)jc;
-                field.setText( node.get(optionID, getDefaultAsString(optionID)) );
-            }
-            else if ( jc instanceof JCheckBox ) {
-                JCheckBox checkBox = (JCheckBox)jc;
+            if (jc instanceof JTextField) {
+                JTextField field = (JTextField) jc;
+                field.setText(node.get(optionID, getDefaultAsString(optionID)));
+            } else if (jc instanceof JCheckBox) {
+                JCheckBox checkBox = (JCheckBox) jc;
                 boolean df = getDefaultAsBoolean(optionID);
-                checkBox.setSelected( node.getBoolean(optionID, df));
-            }
-            else if ( jc instanceof JComboBox) {
-                JComboBox cb  = (JComboBox)jc;
-                String value = node.get(optionID, getDefaultAsString(optionID) );
+                checkBox.setSelected(node.getBoolean(optionID, df));
+            } else if (jc instanceof JComboBox) {
+                JComboBox cb = (JComboBox) jc;
+                String value = node.get(optionID, getDefaultAsString(optionID));
                 ComboBoxModel model = createModel(value);
                 cb.setModel(model);
                 ComboItem item = whichItem(value, model);
@@ -695,22 +636,22 @@ public class FmtOptions {
             } else if (jc instanceof JRadioButton) {
                 JRadioButton radioButton = (JRadioButton) jc;
                 boolean df = getDefaultAsBoolean(optionID);
-                radioButton.setSelected( node.getBoolean(optionID, df));
+                radioButton.setSelected(node.getBoolean(optionID, df));
             }
 
         }
 
-        private void storeData( JComponent jc, String optionID, Preferences node ) {
+        private void storeData(JComponent jc, String optionID, Preferences node) {
 
-            if ( jc instanceof JTextField ) {
-                JTextField field = (JTextField)jc;
+            if (jc instanceof JTextField) {
+                JTextField field = (JTextField) jc;
 
                 String text = field.getText();
 
                 // XXX test for numbers
-                if ( isInteger(optionID) ) {
+                if (isInteger(optionID)) {
                     try {
-                        int i = Integer.parseInt(text);
+                        Integer.parseInt(text);
                     } catch (NumberFormatException e) {
                         return;
                     }
@@ -721,64 +662,60 @@ public class FmtOptions {
                 // which is why we must not remove them. Proper solution would be to
                 // store formatting preferences to MimeLookup and not use NbPreferences.
                 // The problem currently is that MimeLookup based Preferences do not support subnodes.
-                if (!optionID.equals(tabSize) &&
-                    !optionID.equals(spacesPerTab) && !optionID.equals(indentSize) &&
-                    getDefaultAsString(optionID).equals(text)
-                ) {
+                if (!optionID.equals(tabSize)
+                        && !optionID.equals(spacesPerTab) && !optionID.equals(indentSize)
+                        && getDefaultAsString(optionID).equals(text)) {
                     node.remove(optionID);
                 } else {
                     node.put(optionID, text);
                 }
-            }
-            else if ( jc instanceof JCheckBox ) {
-                JCheckBox checkBox = (JCheckBox)jc;
-                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected())
+            } else if (jc instanceof JCheckBox) {
+                JCheckBox checkBox = (JCheckBox) jc;
+                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected()) {
                     node.remove(optionID);
-                else
+                } else {
                     node.putBoolean(optionID, checkBox.isSelected());
-            }
-            else if ( jc instanceof JComboBox) {
-                JComboBox cb  = (JComboBox)jc;
+                }
+            } else if (jc instanceof JComboBox) {
+                JComboBox cb = (JComboBox) jc;
                 ComboItem comboItem = ((ComboItem) cb.getSelectedItem());
                 String value = comboItem == null ? getDefaultAsString(optionID) : comboItem.value;
 
-                if (getDefaultAsString(optionID).equals(value))
+                if (getDefaultAsString(optionID).equals(value)) {
                     node.remove(optionID);
-                else
-                    node.put(optionID,value);
+                } else {
+                    node.put(optionID, value);
+                }
             }
         }
 
-        private void addListener( JComponent jc ) {
-            if ( jc instanceof JTextField ) {
-                JTextField field = (JTextField)jc;
+        private void addListener(JComponent jc) {
+            if (jc instanceof JTextField) {
+                JTextField field = (JTextField) jc;
                 field.addActionListener(this);
                 field.getDocument().addDocumentListener(this);
-            }
-            else if ( jc instanceof JCheckBox ) {
-                JCheckBox checkBox = (JCheckBox)jc;
+            } else if (jc instanceof JCheckBox) {
+                JCheckBox checkBox = (JCheckBox) jc;
                 checkBox.addActionListener(this);
-            }
-            else if ( jc instanceof JComboBox) {
-                JComboBox cb  = (JComboBox)jc;
+            } else if (jc instanceof JComboBox) {
+                JComboBox cb = (JComboBox) jc;
                 cb.addActionListener(this);
             }
         }
 
-
-        private ComboBoxModel createModel( String value ) {
+        private ComboBoxModel createModel(String value) {
 
             // is it braces placement?
             for (ComboItem comboItem : bracePlacement) {
-                if ( value.equals( comboItem.value) ) {
-                    return new DefaultComboBoxModel( bracePlacement );
+                if (value.equals(comboItem.value)) {
+                    return new DefaultComboBoxModel(bracePlacement);
                 }
             }
 
-	    // is it wrap
+            // is it wrap
             for (ComboItem comboItem : wrap) {
-                if ( value.equals( comboItem.value) ) {
-                    return new DefaultComboBoxModel( wrap );
+                if (value.equals(comboItem.value)) {
+                    return new DefaultComboBoxModel(wrap);
                 }
             }
 
@@ -788,8 +725,8 @@ public class FmtOptions {
         private static ComboItem whichItem(String value, ComboBoxModel model) {
 
             for (int i = 0; i < model.getSize(); i++) {
-                ComboItem item = (ComboItem)model.getElementAt(i);
-                if ( value.equals(item.value)) {
+                ComboItem item = (ComboItem) model.getElementAt(i);
+                if (value.equals(item.value)) {
                     return item;
                 }
             }
@@ -810,13 +747,12 @@ public class FmtOptions {
             public String toString() {
                 return displayName;
             }
-
         }
     }
 
     public static class PreviewPreferences extends AbstractPreferences {
 
-        private Map<String,Object> map = new HashMap<String, Object>();
+        private Map<String, Object> map = new HashMap<String, Object>();
 
         public PreviewPreferences() {
             super(null, ""); // NOI18N
@@ -829,7 +765,7 @@ public class FmtOptions {
 
         @Override
         protected String getSpi(String key) {
-            return (String)map.get(key);
+            return (String) map.get(key);
         }
 
         @Override
@@ -845,7 +781,7 @@ public class FmtOptions {
         @Override
         protected String[] keysSpi() throws BackingStoreException {
             String array[] = new String[map.keySet().size()];
-            return map.keySet().toArray( array );
+            return map.keySet().toArray(array);
         }
 
         @Override
@@ -886,7 +822,7 @@ public class FmtOptions {
 
         @Override
         protected String getSpi(String key) {
-            for(Preferences p : delegates) {
+            for (Preferences p : delegates) {
                 String value = p.get(key, null);
                 if (value != null) {
                     return value;
@@ -908,10 +844,10 @@ public class FmtOptions {
         @Override
         protected String[] keysSpi() throws BackingStoreException {
             Set<String> keys = new HashSet<String>();
-            for(Preferences p : delegates) {
+            for (Preferences p : delegates) {
                 keys.addAll(Arrays.asList(p.keys()));
             }
-            return keys.toArray(new String[ keys.size() ]);
+            return keys.toArray(new String[keys.size()]);
         }
 
         @Override
@@ -937,8 +873,7 @@ public class FmtOptions {
 
     public static interface CodeStyleProducer {
 
-        public CodeStyle create( Preferences preferences );
-
+        public CodeStyle create(Preferences preferences);
     }
 
     public static boolean isInteger(String optionID) {

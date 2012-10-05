@@ -42,10 +42,11 @@
 
 package org.netbeans.modules.groovy.refactoring.findusages.model;
 
-import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -53,8 +54,34 @@ import org.openide.filesystems.FileObject;
  */
 public class VariableRefactoringElement extends RefactoringElement {
 
-    public VariableRefactoringElement(FileObject fileObject, ASTNode node) {
-        super(fileObject, node);
+    private final ClassNode variableType;
+    private final String variableName;
+
+
+    /**
+     * Basically we have two situations in which we want to create new Variable refactoring.
+     * 1. Choosing field/property name (in this case the important information for us is an
+     *    owner of the field/property - we don't care about type)
+     * 2. Choosing variable name (this is more complicated because we need to resolve 
+     *    proper variable type - which might be also dynamic)
+     *
+     * @param fileObject
+     * @param variableType
+     * @param variableName
+     */
+    public VariableRefactoringElement(
+            @NonNull final FileObject fileObject,
+            @NonNull final ClassNode variableType,
+            @NonNull final String variableName) {
+        
+        super(fileObject, variableType);
+
+        Parameters.notNull("fileObject", fileObject);
+        Parameters.notNull("variableType", variableType);
+        Parameters.notNull("variableName", variableName);
+
+        this.variableType = variableType;
+        this.variableName = variableName;
     }
 
     
@@ -65,16 +92,22 @@ public class VariableRefactoringElement extends RefactoringElement {
 
     @Override
     public String getShowcase() {
-        return getName() + " : " + getTypeName(); // NOI18N
+        return variableName + " : " + variableType.getNameWithoutPackage(); // NOI18N
+    }
+
+    public String getVariableName() {
+        return variableName;
     }
 
     /**
-     * Returns type of the refactoring element. (e.g. for field declaration
+     * Returns the type name of the refactoring element. (e.g. for field declaration
      * "private GalacticMaster master" the method return "GalacticMaster")
+     *
+     * If the type is dynamic, the method returns "java.lang.Object".
      *
      * @return type of the refactoring element
      */
-    private String getTypeName() {
-        return ElementUtils.getTypeNameWithoutPackage(node);
+    public String getVariableTypeName() {
+        return variableType.getName();
     }
 }

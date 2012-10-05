@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.model.api;
 
 import java.util.Collection;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  * Various utilities for css source modifications.
@@ -114,4 +115,134 @@ public class ModelUtils {
 
         return factory.createDeclaration(property, propertyValue, false);
     }
+    
+    /**
+     * Finds corresponding {@link Rule} in another instance of {@link Model}.
+     * 
+     * Should not be called under Model's read lock! It does it own locking
+     * 
+     * @since 1.5
+     * @param model
+     * @param rule
+     * @return An instance of {@link Rule} belonging to current model and corresponding to 
+     * the given rule from the other model.
+     */
+    public Rule findMatchingRule(Model model, Rule rule) {
+       
+       //find id of the given rule in the given model 
+       final RuleRefModelVisitor ruleRef = new RuleRefModelVisitor(model, rule);
+       model.runReadTask(new Model.ModelTask() {
+            @Override
+            public void run(StyleSheet styleSheet) {
+                styleSheet.accept(ruleRef);
+            }
+       });
+       
+       int ruleIndex = ruleRef.getRuleIndex();
+       assert ruleIndex != -1; //the rule must be found
+       
+       CharSequence ruleId = LexerUtils.trim(ruleRef.getRuleId());
+       
+       //now resolve the rule ref to the current model
+       final ResolveRuleRefModelVisitor resolveRuleRef = new ResolveRuleRefModelVisitor(this.model, ruleId, ruleIndex);
+       this.styleSheet.accept(resolveRuleRef); //we are under lock already, at least should be
+       
+       return resolveRuleRef.getResolvedRule();
+        
+    }
+    
+    /**
+     * Finds an index of the given rule in rules with same ID (selectors group).
+     * 
+     * If there's just one rule of the name index will be 0, if there are 
+     * for example two div rules and the second is passed then the index will be 1.
+     */
+    private static class RuleRefModelVisitor extends ModelVisitor.Adapter {
+        
+        private final Model model;
+        private final Rule rule;
+        private CharSequence ruleId;
+        
+        private int ruleIndex = -1; //if there're more Rules with same ID
+        
+        private boolean cancelled;
+
+        public RuleRefModelVisitor(Model model, Rule rule) {
+            this.model = model;
+            this.rule = rule;
+        }
+        
+        @Override
+        public void visitRule(Rule rule) {
+            if(cancelled) {
+                return ;
+            }
+            
+            CharSequence foundRuleId = model.getElementSource(rule.getSelectorsGroup());
+            if (LexerUtils.equals(getRuleId(), foundRuleId, false, false)) {
+                ruleIndex++;
+            }
+            
+            if(this.rule == rule) {
+                cancelled = true;
+            }
+            
+        }
+        
+        public int getRuleIndex() {
+            return ruleIndex;
+        }
+        
+        public synchronized CharSequence getRuleId() {
+            if(ruleId == null) {
+                ruleId = model.getElementSource(rule.getSelectorsGroup());
+            }
+            return ruleId;
+        }
+        
+    }
+    
+    /**
+     * Finds an instance of {@link Rule} corresponding to the given ruleid and the rule index.
+     */
+    private static class ResolveRuleRefModelVisitor extends ModelVisitor.Adapter {
+        
+        private final Model model;
+        private final CharSequence ruleId;
+        private final int ruleIndex;
+        
+        private int index;
+        private Rule rule;
+        private boolean cancelled;
+
+        public ResolveRuleRefModelVisitor(Model model, CharSequence ruleId, int ruleIndex) {
+            this.model = model;
+            this.ruleId = ruleId;
+            this.ruleIndex = ruleIndex;
+        }
+        
+        @Override
+        public void visitRule(Rule rule) {
+            if(cancelled) {
+                return ;
+            }
+            
+            CharSequence foundRuleId = LexerUtils.trim(model.getElementSource(rule.getSelectorsGroup()));
+            if (LexerUtils.equals(ruleId, foundRuleId, false, false)) {
+                if(index == ruleIndex) {
+                    this.rule = rule;
+                    cancelled = true;
+                } else {
+                    index++;
+                }
+            }
+        }
+        
+        public Rule getResolvedRule() {
+            return rule;
+        }
+        
+    }
+    
+   
 }

@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.jumpto.type;
+package org.netbeans.modules.jumpto.common;
 
 /**
  * (copied from org.netbeans.modules.java.source.util.Factory

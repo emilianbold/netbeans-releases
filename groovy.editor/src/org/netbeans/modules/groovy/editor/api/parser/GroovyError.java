@@ -59,7 +59,7 @@ import org.openide.filesystems.FileObject;
  *
  * http://jira.codehaus.org/browse/GROOVY-3827
  */
-public class GroovyError implements org.netbeans.modules.csl.api.Error {
+public class GroovyError implements org.netbeans.modules.csl.api.Error.Badging {
 
     private final String displayName;
     private final String description;
@@ -187,4 +187,8 @@ public class GroovyError implements org.netbeans.modules.csl.api.Error {
         return hash;
     }
 
+    @Override
+    public boolean showExplorerBadge() {
+        return true;
+    }
 }
