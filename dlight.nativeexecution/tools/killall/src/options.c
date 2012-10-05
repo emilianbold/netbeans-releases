@@ -10,7 +10,10 @@ static void setsig(options_t* params, char* opt, char* sigstr) {
     if (sigstr == NULL || sigstr[0] == '\0') {
         err_quit("missing signal after %s\n", opt);
     }
-    if (str2sig(sigstr, &params->sig) == -1) {
+
+    if (strcmp("NULL", sigstr) == 0) {
+        params->sig = 0;
+    } else if (str2sig(sigstr, &params->sig) == -1) {
         err_quit("Unknown signal %s\n", sigstr);
     }
 }
