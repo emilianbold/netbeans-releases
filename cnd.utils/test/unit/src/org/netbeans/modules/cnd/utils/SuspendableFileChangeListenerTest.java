@@ -46,6 +46,8 @@ import java.io.PrintStream;
 import java.util.LinkedList;
 import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
@@ -96,6 +98,9 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
     
     @Test
     public void testRemoveThenCreateAsChange() throws Throwable {
+        if (HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+            return;
+        }
         String[] dirStruct = new String[]{
             "d real_dir_1",
             "- real_dir_1/file_1",

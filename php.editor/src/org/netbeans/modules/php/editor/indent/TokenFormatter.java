@@ -1144,7 +1144,7 @@ public class TokenFormatter {
                                                     //sometimes the html formatter doesn't catch the first line.
                                                     suggestedIndent = suggestedLineIndents.get(lineNumber + 1) != null
                                                             ? suggestedLineIndents.get(lineNumber + 1)
-                                                            : new Integer(0);
+                                                            : Integer.valueOf(0);
                                                 }
 
                                                 int lineOffset = Utilities.getRowStart(doc, offset);

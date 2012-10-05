@@ -204,6 +204,8 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
                         result = true;
                     }
                     break;
+                default:
+                    //no-op
             }
         }
         return result;

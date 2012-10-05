@@ -66,6 +66,7 @@ public class ImportDataCreator {
     private ImportData data;
     private boolean shouldShowUsesPanel = false;
     private final Options options;
+    private final List<PossibleItem> possibleItems = new LinkedList<PossibleItem>();
 
     private static Collection<TypeElement> sortTypeElements(final Collection<TypeElement> filteredTypeElements) {
         final List<TypeElement> sortedTypeElements = new ArrayList<TypeElement>(filteredTypeElements);
@@ -81,25 +82,30 @@ public class ImportDataCreator {
     }
 
     public ImportData create() {
-        data = new ImportData(usedNames.size());
-        int index = 0;
         for (String typeName : usedNames.keySet()) {
-            processTypeName(index, typeName);
+            processTypeName(typeName);
+        }
+        data = new ImportData(possibleItems.size());
+        int index = 0;
+        for (PossibleItem possibleItem : possibleItems) {
+            possibleItem.insertData(data, index);
             index++;
         }
         data.shouldShowUsesPanel = shouldShowUsesPanel;
         return data;
     }
 
-    private void processTypeName(final int index, final String typeName) {
-        data.names[index] = typeName;
+    private void processTypeName(final String typeName) {
         Collection<TypeElement> possibleTypes = fetchPossibleTypes(typeName);
         Collection<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
-        Collection<TypeElement> filteredTypeElements = filterExactUnqualifiedName(filteredDuplicates, typeName);
-        if (filteredTypeElements.isEmpty()) {
-            insertEmptyData(index);
+        Collection<TypeElement> filteredExactUnqualifiedNames = filterExactUnqualifiedName(filteredDuplicates, typeName);
+        if (filteredExactUnqualifiedNames.isEmpty()) {
+            possibleItems.add(new EmptyItem(typeName));
         } else {
-            insertPossibleData(index, filteredTypeElements, typeName);
+            Collection<TypeElement> filteredTypeElements = filterTypesFromCurrentNamespace(filteredExactUnqualifiedNames);
+            if (!filteredTypeElements.isEmpty()) {
+                possibleItems.add(new ValidItem(typeName, filteredTypeElements));
+            }
         }
     }
 
@@ -110,45 +116,6 @@ public class ImportDataCreator {
         possibleTypes.addAll(possibleClasses);
         possibleTypes.addAll(possibleIfaces);
         return possibleTypes;
-    }
-
-    @NbBundle.Messages("CanNotBeResolved=<html><font color='#FF0000'>&lt;cannot be resolved&gt;")
-    private void insertEmptyData(final int index) {
-        data.variants[index] = new String[1];
-        data.variants[index][0] = Bundle.CanNotBeResolved();
-        data.defaults[index] = data.variants[index][0];
-        data.icons[index] = new Icon[1];
-        data.icons[index][0] = IconsUtils.getErrorGlyphIcon();
-    }
-
-    private void insertPossibleData(final int index, final Collection<TypeElement> filteredTypeElements, final String typeName) {
-        Collection<TypeElement> sortedTypeElements = sortTypeElements(filteredTypeElements);
-        data.variants[index] = new String[sortedTypeElements.size() + 1];
-        data.icons[index] = new Icon[data.variants[index].length];
-        data.usedNamespaceNames.put(index, usedNames.get(typeName));
-        int i = -1;
-        for (TypeElement typeElement : sortedTypeElements) {
-            data.variants[index][++i] = typeElement.getFullyQualifiedName().toString();
-            data.icons[index][i] = IconsUtils.getElementIcon(typeElement.getPhpElementKind());
-            if (i == 0) {
-                data.defaults[index] = data.variants[index][i];
-            }
-            shouldShowUsesPanel = true;
-        }
-        data.variants[index][++i] = Bundle.DoNotUseType();
-        data.icons[index][i] = null;
-        QualifiedName qualifiedTypeName = QualifiedName.create(typeName);
-        if (qualifiedTypeName.getKind().isFullyQualified()) {
-            if (options.preferFullyQualifiedNames()) {
-                data.defaults[index] = data.variants[index][i];
-            }
-        } else {
-            QualifiedName exactMatchName = createExactMatchName(qualifiedTypeName);
-            if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(sortedTypeElements)) || hasExactName(sortedTypeElements, exactMatchName)) {
-                data.defaults[index] = data.variants[index][i];
-            }
-        }
-        Arrays.sort(data.variants[index], new VariantsComparator());
     }
 
     private Collection<TypeElement> filterDuplicates(final Collection<TypeElement> possibleTypes) {
@@ -168,6 +135,16 @@ public class ImportDataCreator {
         Collection<TypeElement> result = new HashSet<TypeElement>();
         for (TypeElement typeElement : possibleTypes) {
             if (typeElement.getFullyQualifiedName().toString().endsWith(typeName)) {
+                result.add(typeElement);
+            }
+        }
+        return result;
+    }
+
+    private Collection<TypeElement> filterTypesFromCurrentNamespace(final Collection<TypeElement> possibleTypes) {
+        Collection<TypeElement> result = new HashSet<TypeElement>();
+        for (TypeElement typeElement : possibleTypes) {
+            if (!typeElement.getNamespaceName().equals(currentNamespace)) {
                 result.add(typeElement);
             }
         }
@@ -214,6 +191,75 @@ public class ImportDataCreator {
             }
         }
         return result;
+    }
+
+    private interface PossibleItem {
+
+        public void insertData(ImportData data, int index);
+
+    }
+
+    private static class EmptyItem implements PossibleItem {
+        private final String typeName;
+
+        public EmptyItem(String typeName) {
+            this.typeName = typeName;
+        }
+
+        @Override
+        @NbBundle.Messages("CanNotBeResolved=<html><font color='#FF0000'>&lt;cannot be resolved&gt;")
+        public void insertData(ImportData data, int index) {
+            data.names[index] = typeName;
+            data.variants[index] = new String[1];
+            data.variants[index][0] = Bundle.CanNotBeResolved();
+            data.defaults[index] = data.variants[index][0];
+            data.icons[index] = new Icon[1];
+            data.icons[index][0] = IconsUtils.getErrorGlyphIcon();
+        }
+
+    }
+
+    private class ValidItem implements PossibleItem {
+        private final Collection<TypeElement> filteredTypeElements;
+        private final String typeName;
+
+        private ValidItem(String typeName, Collection<TypeElement> filteredTypeElements) {
+            this.typeName = typeName;
+            this.filteredTypeElements = filteredTypeElements;
+        }
+
+        @Override
+        public void insertData(ImportData data, int index) {
+            data.names[index] = typeName;
+            Collection<TypeElement> sortedTypeElements = sortTypeElements(filteredTypeElements);
+            data.variants[index] = new String[sortedTypeElements.size() + 1];
+            data.icons[index] = new Icon[data.variants[index].length];
+            data.usedNamespaceNames.put(index, usedNames.get(typeName));
+            int i = -1;
+            for (TypeElement typeElement : sortedTypeElements) {
+                data.variants[index][++i] = typeElement.getFullyQualifiedName().toString();
+                data.icons[index][i] = IconsUtils.getElementIcon(typeElement.getPhpElementKind());
+                if (i == 0) {
+                    data.defaults[index] = data.variants[index][i];
+                }
+                shouldShowUsesPanel = true;
+            }
+            data.variants[index][++i] = Bundle.DoNotUseType();
+            data.icons[index][i] = null;
+            QualifiedName qualifiedTypeName = QualifiedName.create(typeName);
+            if (qualifiedTypeName.getKind().isFullyQualified()) {
+                if (options.preferFullyQualifiedNames()) {
+                    data.defaults[index] = data.variants[index][i];
+                }
+            } else {
+                QualifiedName exactMatchName = createExactMatchName(qualifiedTypeName);
+                if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(sortedTypeElements)) || hasExactName(sortedTypeElements, exactMatchName)) {
+                    data.defaults[index] = data.variants[index][i];
+                }
+            }
+            Arrays.sort(data.variants[index], new VariantsComparator());
+        }
+
     }
 
     private static class VariantsComparator implements Comparator<String>, Serializable {

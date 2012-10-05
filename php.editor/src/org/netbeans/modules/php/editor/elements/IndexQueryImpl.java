@@ -1059,6 +1059,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                         case FIELD:
                             traitTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getFields(NameKind.exact(trait), NameKind.empty())));
                             break;
+                        default:
+                            //no-op
                     }
                 }
                 if (traitTypes.isEmpty()) {

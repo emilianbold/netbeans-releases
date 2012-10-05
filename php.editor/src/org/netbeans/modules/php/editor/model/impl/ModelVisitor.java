@@ -212,10 +212,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         String name = variable.getName();
                         String type = resolveVariableType(name, functionScope, node);
                         String qualifiedType = VariousUtils.qualifyTypeNames(type, node.getStartOffset(), currentScope);
-                        if (qualifiedType == null) {
-                            var2Type = Collections.emptyMap();
-                            break;
-                        }
                         var2Type.put(name, qualifiedType);
                     }
                     if (!var2Type.isEmpty()) {

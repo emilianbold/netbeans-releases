@@ -84,6 +84,7 @@
                 <friend>com.sun.tools.dwarf.lwmodel</friend>
                 <friend>org.netbeans.modules.cnd.folding</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
+                <friend>org.netbeans.modules.cnd.indexing</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
                 <package>org.netbeans.modules.cnd.apt.debug</package>

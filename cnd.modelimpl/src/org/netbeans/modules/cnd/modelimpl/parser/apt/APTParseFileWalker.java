@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.APTIndexingSupport;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -68,6 +69,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
@@ -128,7 +130,12 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     }
 
     public TokenStream getFilteredTokenStream(APTLanguageFilter lang) {
-        return lang.getFilteredStream(getTokenStream());
+        TokenStream ts = lang.getFilteredStream(getTokenStream());
+        // apply preprocessed text indexing
+        if (CndTraceFlags.TEXT_INDEX) {
+            ts = APTIndexingSupport.index(getStartProject().getFileSystem(), getFile().getAbsolutePath().toString(), ts);
+        }
+        return ts;
     }
 
     @Override

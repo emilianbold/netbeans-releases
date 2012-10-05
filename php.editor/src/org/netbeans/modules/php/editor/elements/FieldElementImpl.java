@@ -163,7 +163,7 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
                 : Collections.<TypeResolver>emptySet();
         FieldElementImpl retval = new FieldElementImpl(type, field.getName(), field.getOffset(),
                 PhpModifiers.NO_FLAGS, null, elementQuery, typeResolvers, typeResolvers);
-        retval.fileObject = field.getFile();
+        retval.setFileObject(field.getFile());
         return retval;
     }
 
