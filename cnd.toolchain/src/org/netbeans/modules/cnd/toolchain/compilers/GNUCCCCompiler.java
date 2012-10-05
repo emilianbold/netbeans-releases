@@ -126,7 +126,7 @@ import org.openide.util.NbBundle;
                 line = line.substring(getIncludeFilePathPrefix().length());
             } else {
                 String wpath = WindowsSupport.getInstance().convertToShellPath(getIncludeFilePathPrefix().toLowerCase());
-                if (lline.startsWith(wpath)) {
+                if (wpath != null && lline.startsWith(wpath)) {
                     line = line.substring(wpath.length());
                 } else if (lline.startsWith(remove)) {
                     line = line.substring(remove.length());
