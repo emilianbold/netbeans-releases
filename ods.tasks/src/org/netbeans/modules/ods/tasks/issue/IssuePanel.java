@@ -125,6 +125,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -953,6 +954,36 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (defaultSeverity != null) {
             severityCombo.setSelectedItem(defaultSeverity);
         }
+    }
+
+    @Messages({
+        "# {0} - issue id",
+        "IssuePanel.refreshMessage=Refreshing issue {0}"
+    })
+    private void refreshIssue (final boolean force) {
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.IssuePanel_refreshMessage(issue.getID()));
+        handle.start();
+        handle.switchToIndeterminate();
+        skipReload = true;
+        enableComponents(false);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    issue.refresh();
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            enableComponents(true);
+                            skipReload = false;
+                        }
+                    });
+                    handle.finish();
+                    reloadFormInAWT(force);
+                }
+            }
+        });
     }
 
     private static class ClientDataRenderer extends DefaultListCellRenderer {
@@ -2119,31 +2150,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_reloadButtonActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-//        String refreshMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshMessage"); // NOI18N
-//        String refreshMessage = MessageFormat.format(refreshMessageFormat, issue.getID());
-//        final ProgressHandle handle = ProgressHandleFactory.createHandle(refreshMessage);
-//        handle.start();
-//        handle.switchToIndeterminate();
-//        skipReload = true;
-//        enableComponents(false);
-//        RP.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    issue.refresh();
-//                } finally {
-//                    EventQueue.invokeLater(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            enableComponents(true);
-//                            skipReload = false;
-//                        }
-//                    });
-//                    handle.finish();
-//                    reloadFormInAWT(true);
-//                }
-//            }
-//        });
+        refreshIssue(true);
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void issueTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_issueTypeComboActionPerformed
