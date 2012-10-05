@@ -98,37 +98,37 @@ public class EvaluationException extends RuntimeException {
         if (reason.equals("internalError"))
             msgParams = new String [] { null };
         else if (reason.equals("invalidArrayInitializer"))
-            msgParams = new String [] { params[0] == null ? null : params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("arraySizeBadType"))
-            msgParams = new String [] { params[0] == null ? null : params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("notArrayType"))
-            msgParams = new String [] { params[0] == null ? null : params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("arrayCreateError"))
-            msgParams = new String [] { params[0] == null ? null : params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("instantiateInterface"))
-            msgParams = new String [] { params[0] == null ? null : params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("castToBooleanRequired"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("castFromBooleanRequired"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("castError"))
-            msgParams = new String [] { params[0].toString(), params[1].toString() };
+            msgParams = new String [] { String.valueOf(params[0]), String.valueOf(params[1]) };
         else if (reason.equals("badOperandForPostfixOperator"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("postfixOperatorEvaluationError"))
-            msgParams = new String [] { params[1].toString() };
+            msgParams = new String [] { String.valueOf(params[1]) };
         else if (reason.equals("badOperandForPrefixOperator"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("prefixOperatorEvaluationError"))
-            msgParams = new String [] { params[1].toString() };
+            msgParams = new String [] { String.valueOf(params[1]) };
         else if (reason.equals("badOperandForUnaryOperator"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("unaryOperatorEvaluationError"))
-            msgParams = new String [] { params[1].toString() };
+            msgParams = new String [] { String.valueOf(params[1]) };
         else if (reason.equals("unknownType"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("internalErrorResolvingType"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("instanceOfLeftOperandNotAReference"))
             msgParams = new String [] { TypeWrapper.name(ValueWrapper.type((Value) params[0])) };
         else if (reason.equals("conditionalOrAndBooleanOperandRequired"))
@@ -140,11 +140,11 @@ public class EvaluationException extends RuntimeException {
         else if (reason.equals("objectReferenceRequiredOnDereference"))
             msgParams = new String [] { TypeWrapper.name(ValueWrapper.type((Value) params[0])) };
         else if (reason.equals("badArgument"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("argumentsBadSyntax"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("ambigousMethod"))
-            msgParams = new String [] { params[0].toString(),  params[1].toString() };
+            msgParams = new String [] { String.valueOf(params[0]),  String.valueOf(params[1]) };
         else if (reason.equals("noSuchMethod"))
             msgParams = new String [] { (String) params[0], (String) params[1] };
         else if (reason.equals("noSuchMethodWithArgs"))
@@ -152,54 +152,54 @@ public class EvaluationException extends RuntimeException {
         else if (reason.equals("noSuchConstructorWithArgs"))
             msgParams = new String [] { (String) params[0], (String) params[1] };
         else if (reason.equals("callException"))
-            msgParams = new String [] { params[1].toString(), params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[1]), String.valueOf(params[0]) };
         else if (reason.equals("calleeException"))
             msgParams = new String [] { null, null, ((Exception) params[0]).getLocalizedMessage() };
         else if (reason.equals("identifierNotAReference"))
             msgParams = new String [] { TypeWrapper.name(ValueWrapper.type((Value) params[0])) };
         else if (reason.equals("notarray"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("arrayIndexNAN"))
-            msgParams = new String [] { params[1].toString() };
+            msgParams = new String [] { String.valueOf(params[1]) };
         else if (reason.equals("arrayIndexOutOfBounds"))
-            msgParams = new String [] { params[1].toString(), Integer.toString(ArrayReferenceWrapper.length0((ArrayReference) params[0]) - 1) };
+            msgParams = new String [] { String.valueOf(params[1]), Integer.toString(ArrayReferenceWrapper.length0((ArrayReference) params[0]) - 1) };
         else if (reason.equals("unknownVariable"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("integerLiteralTooBig"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("badFormatOfIntegerLiteral"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("unknownLiteralType"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("evaluateError"))
 //            return Assert.error(node, "evaluateError", value, ((Token) operators[i-1]).image, next);
-            msgParams = new String [] { params[1].toString(), params[0].toString(), params[2].toString() };
+            msgParams = new String [] { String.valueOf(params[1]), String.valueOf(params[0]), String.valueOf(params[2]) };
         else if (reason.equals("evaluateErrorUnary"))
-            msgParams = new String [] { params[0].toString(), params[1].toString() };
+            msgParams = new String [] { String.valueOf(params[0]), String.valueOf(params[1]) };
         else if (reason.equals("notEnclosingType"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("accessInstanceVariableFromStaticContext"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("invokeInstanceMethodAsStatic"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("methodCallOnNull"))
-            msgParams = new String[] { params[0].toString() };
+            msgParams = new String[] { String.valueOf(params[0]) };
         else if (reason.equals("fieldOnNull"))
-            msgParams = new String[] { params[0].toString() };
+            msgParams = new String[] { String.valueOf(params[0]) };
         else if (reason.equals("cannotApplyOperator"))
-            msgParams = new String[] { params[0].toString() };
+            msgParams = new String[] { String.valueOf(params[0]) };
         else if (reason.equals("invalidMemberReference"))
-            msgParams = new String[] { params[0].toString() };
+            msgParams = new String[] { String.valueOf(params[0]) };
         else if (reason.equals("arrayIsNull"))
-            msgParams = new String[] { params[0].toString() };
+            msgParams = new String[] { String.valueOf(params[0]) };
         else if (reason.equals("unsupported"))
             msgParams = new String[] { node.toString() };
         else if (reason.equals("errorneous"))
             msgParams = new String[] { node.toString() };
         else if (reason.equals("unknownField"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("unknownOuterClass"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("notExpression"))
             msgParams = new String [] {  };
         else if (reason.equals("methOnArray"))
@@ -207,13 +207,13 @@ public class EvaluationException extends RuntimeException {
         else if (reason.equals("forEachNotApplicable"))
             msgParams = new String [] {  };
         else if (reason.equals("localVariableAlreadyDefined"))
-            msgParams = new String [] { params[0].toString() };
+            msgParams = new String [] { String.valueOf(params[0]) };
         else if (reason.equals("unsupportedStringCreation")) {
             msgParams = new String [] {  };
         } else if (reason.equals("canNotInvokeMethods")) {
             msgParams = new String [] {  };
         } else if (reason.equals("notABoolean")) {
-            msgParams = new String [] { params[0].toString(), params[1].toString(), params[2].toString() };
+            msgParams = new String [] { String.valueOf(params[0]), String.valueOf(params[1]), String.valueOf(params[2]) };
         } else if (reason.equals("noNewClassWithBody")) {
             msgParams = new String [] { };
         }
