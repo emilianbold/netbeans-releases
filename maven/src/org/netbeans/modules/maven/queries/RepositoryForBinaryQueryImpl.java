@@ -57,8 +57,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
@@ -80,6 +78,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -134,8 +133,8 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
 //                        // maybe this condition is already overkill..
 //                        if (pom.exists()) {
                     if (jarFile.getName().startsWith(artifact + "-" + version)) { //one last perf check before calling the embedder
-                        URI localRepo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile().toURI();
-                        URI rel = localRepo.relativize(parentParent.getParentFile().toURI());
+                        URI localRepo = Utilities.toURI(EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile());
+                        URI rel = localRepo.relativize(Utilities.toURI(parentParent.getParentFile()));
                         if (!rel.isAbsolute()) {
                             String groupId = rel.getPath();
                             if (groupId != null && !groupId.equals("")) {
@@ -196,8 +195,8 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                     String artifact = parentParent.getName();
                     String version = parent.getName();
                     if (jarFile.getName().startsWith(artifact + "-" + version)) { //one last perf check before calling the embedder
-                        URI localRepo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile().toURI();
-                        URI rel = localRepo.relativize(parentParent.getParentFile().toURI());
+                        URI localRepo = Utilities.toURI(EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile());
+                        URI rel = localRepo.relativize(Utilities.toURI(parentParent.getParentFile()));
                         if (!rel.isAbsolute()) {
                             String groupId = rel.getPath();
                             if (groupId != null && !groupId.equals("")) {
@@ -533,14 +532,14 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                     URL[] url;
                     if (path != null) {
                         url = new URL[1];
-                        URL root = FileUtil.getArchiveRoot(file.toURI().toURL());
+                        URL root = FileUtil.getArchiveRoot(Utilities.toURI(file).toURL());
                         if (!path.endsWith("/")) { //NOI18N
                             path = path + "/"; //NOI18N
                         }
                         url[0] = new URL(root, path);
                     } else {
                          url = new URL[1];
-                        url[0] = FileUtil.getArchiveRoot(file.toURI().toURL());
+                        url[0] = FileUtil.getArchiveRoot(Utilities.toURI(file).toURL());
                     }
                     return url;
                 }
@@ -587,7 +586,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             try {
                 File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", "org.netbeans.modules.j2ee.platform", false); // NOI18N
                 if (j2eeDoc != null) {
-                    URL url = FileUtil.getArchiveRoot(j2eeDoc.toURI().toURL());
+                    URL url = FileUtil.getArchiveRoot(Utilities.toURI(j2eeDoc).toURL());
                     url = new URL(url + "docs/api/"); //NOI18N
                     return new URL[]{url};
                 }
