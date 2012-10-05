@@ -1,0 +1,6 @@
+[ {
+   "available" : true,
+   "url" : "https://hostname/s/pet-clinic/scm/pet-clinic.git",
+   "serviceType" : "SCM",
+   "id" : 1234
+} ]

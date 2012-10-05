@@ -75,7 +75,7 @@ import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
 /**
  * Manages warning/error/stack trace hyperlinking in the Output Window.
  */
-class Hyperlinker {
+public class Hyperlinker {
 
     private static final Logger LOG = Logger.getLogger(Hyperlinker.class.getName());
 
