@@ -110,6 +110,7 @@
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.microchip.mplab.nbide.embedded</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
+                <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.tools.analytics.codemodel.bridge</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.oss.support</friend>
@@ -190,6 +191,7 @@
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
+                <friend>org.netbeans.modules.cnd.indexing</friend>
                 <package>org.netbeans.modules.cnd.debug</package>
                 <package>org.netbeans.modules.cnd.spi.editor</package>
                 <package>org.netbeans.modules.cnd.spi.utils</package>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.apt.support;
 
-package org.netbeans.modules.cnd.debug;
+import org.netbeans.modules.cnd.apt.support.spi.*;
+import java.util.Collection;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Egor Ushakov
  */
-public interface CndTraceFlags {
-    public static final boolean TRACE_SLICE_DISTIBUTIONS = DebugUtils.getBoolean("cnd.slice.trace", false); // NOI18N
-
-    public static final boolean LANGUAGE_FLAVOR_CPP11 = DebugUtils.getBoolean("cnd.language.flavor.cpp11", false); // NOI18N
-
-    // use of weak refs instead of soft to allow quicker GC
-    public static final boolean WEAK_REFS_HOLDERS = DebugUtils.getBoolean("cnd.weak.refs", false); // NOI18N
+public abstract class APTIndexingSupport {
+    public static String PATH = "APT/Indexer"; // NOI18N
+    private static final Collection<? extends APTIndexingFilterProvider> providers = Lookups.forPath(APTIndexingFilterProvider.PATH).lookupAll(APTIndexingFilterProvider.class);
     
-    public static final boolean TEXT_INDEX = DebugUtils.getBoolean("cnd.model.text.index", false); // NOI18N
+    public static TokenStream index(FileSystem fs, CharSequence path, TokenStream ts) {
+        for (APTIndexingFilterProvider provider : providers) {
+            ts = provider.getIndexed(fs, path, ts);
+        }
+        return ts;
+    }
 }

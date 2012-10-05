@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.indexing.api;
 
-package org.netbeans.modules.cnd.debug;
+import org.netbeans.modules.cnd.indexing.impl.CndTextIndexManager;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.IndexDocument;
+import org.netbeans.modules.parsing.lucene.support.Queries;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Egor Ushakov
  */
-public interface CndTraceFlags {
-    public static final boolean TRACE_SLICE_DISTIBUTIONS = DebugUtils.getBoolean("cnd.slice.trace", false); // NOI18N
-
-    public static final boolean LANGUAGE_FLAVOR_CPP11 = DebugUtils.getBoolean("cnd.language.flavor.cpp11", false); // NOI18N
-
-    // use of weak refs instead of soft to allow quicker GC
-    public static final boolean WEAK_REFS_HOLDERS = DebugUtils.getBoolean("cnd.weak.refs", false); // NOI18N
+public final class CndTextIndex {
+    private CndTextIndex() {
+    }
     
-    public static final boolean TEXT_INDEX = DebugUtils.getBoolean("cnd.model.text.index", false); // NOI18N
+    public static Collection<FSPath> query(FileSystem fs, CharSequence text) {
+        DocumentIndex index = CndTextIndexManager.get(fs);
+        if (index == null) {
+            return Collections.emptySet();
+        }
+        
+        try {
+            Collection<? extends IndexDocument> docs = index.query(CndTextIndexManager.FIELD_IDS, text.toString(), 
+                    Queries.QueryKind.EXACT, CndTextIndexManager.FIELD_PATH);
+            HashSet<FSPath> res = new HashSet<FSPath>(docs.size());
+            for (IndexDocument doc : docs) {
+                res.add(new FSPath(fs, doc.getValue(CndTextIndexManager.FIELD_PATH)));
+            }
+            return res;
+        } catch (Exception ex) {
+            Logger.getLogger(CndTextIndex.class.getName()).log(Level.SEVERE, null, ex);
+            return Collections.emptySet();
+        }
+    }
 }

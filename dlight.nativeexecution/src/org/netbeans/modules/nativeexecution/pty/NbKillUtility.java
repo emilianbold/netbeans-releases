@@ -206,7 +206,7 @@ public final class NbKillUtility extends HelperUtility {
 
             List<String> args = new ArrayList<String>();
             args.add(scope);
-            args.add(signal == Signal.NULL ? signal.name() : signal.name().substring(3));
+            args.add(signal.name());
             if (magicEnv != null) {
                 args.add("-m"); // NOI18N
                 args.add(magicEnv); // NOI18N
