@@ -55,7 +55,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.SIGNAL_SCOPE;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
@@ -215,7 +214,8 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
         CommonTasksSupport.sendSignal(env, process.getPID(), Signal.SIGCONT, null);
 
         try {
-            waitTask.waitFinished(100);
+            int threshold = process instanceof NbNativeProcess ? 100 : 1500;
+            waitTask.waitFinished(threshold);
         } catch (InterruptedException ex) {
             fail("Process must continue after senging the SIGCONT");
         }
