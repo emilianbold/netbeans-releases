@@ -518,6 +518,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, subtaskField, IssueField.SUBTASK, subtaskWarning, subtaskLabel);
             reloadField(force, parentField, IssueField.PARENT, parentWarning, parentLabel);
             reloadField(force, dueDateField, IssueField.DUEDATE, dueDateWarning, dueDateLabel);
+            reloadField(force, estimateField, IssueField.ESTIMATE, estimateWarning, estimateLabel);
+            reloadField(force, foundInField, IssueField.FOUNDIN, foundInWarning, foundInLabel);
 //            reloadCustomFields(force); XXX
         }
         int newCommentCount = issue.getComments().length;
@@ -801,7 +803,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         StringTokenizer st = new StringTokenizer(tagsField.getText(), ", \t\n\r\f"); // NOI18N
         while (st.hasMoreTokens()) {
             String token = st.nextToken();
-            if (!tags.contains(token.toUpperCase())) {
+            if (!tags.contains(token)) {
                 invalidFound = true;
                 break;
             }
@@ -1139,6 +1141,28 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             } catch (NumberFormatException nfex) {}
         }
         return bugs;
+    }
+    
+    private List<String> tags (String values) {
+        List<String> items = new LinkedList<String>();
+        StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); //NOI18N
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if (tags.contains(token)) {
+                items.add(token);
+            }
+        }
+        return items;
+    }
+    
+    private List<String> list (String values) {
+        List<String> items = new LinkedList<String>();
+        StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); //NOI18N
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            items.add(token);
+        }
+        return items;
     }
 
     class RevalidatingListener implements DocumentListener, Runnable {
@@ -2280,14 +2304,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         storeFieldValue(IssueField.PRIORITY, priorityCombo);
         storeFieldValue(IssueField.SEVERITY, severityCombo);
         storeFieldValue(IssueField.STATUS, statusCombo);
-        storeFieldValue(IssueField.CC, ccField);
+        storeFieldValues(IssueField.CC, list(ccField.getText()));
         storeFieldValue(IssueField.DUEDATE, Long.toString(C2CUtil.parseDate(dueDateField.getText().trim(), 
                 new DateFormat[] { DEFAULT_DATE_FORMAT }).getTime()));
         storeFieldValue(IssueField.OWNER, ((TaskUserProfile) ownerCombo.getSelectedItem()).getLoginName());
         storeFieldValues(IssueField.PARENT, bugs(parentField.getText()));
         storeFieldValues(IssueField.SUBTASK, bugs(subtaskField.getText()));
-        storeFieldValue(IssueField.TAGS, tagsField);
+        storeFieldValues(IssueField.TAGS, tags(tagsField.getText()));
         storeFieldValue(IssueField.TASK_TYPE, issueTypeCombo);
+        storeFieldValue(IssueField.ESTIMATE, estimateField);
+        storeFieldValue(IssueField.FOUNDIN, foundInField);
         if (resolutionCombo.isVisible()) {
             storeFieldValue(IssueField.RESOLUTION, resolutionCombo);
         } else {

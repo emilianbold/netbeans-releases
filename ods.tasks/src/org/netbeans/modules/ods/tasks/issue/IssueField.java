@@ -58,6 +58,8 @@ public class IssueField {
     public static final IssueField COMPONENT = new IssueField(TaskAttribute.COMPONENT, "LBL_COMPONENT"); // NOI18N
     public static final IssueField DESCRIPTION = new IssueField(TaskAttribute.DESCRIPTION, "LBL_DESCRIPTION"); // NOI18N
     public static final IssueField DUEDATE = new IssueField(C2CData.ATTR_DUEDATE, "LBL_DUEDATE"); // NOI18N
+    public static final IssueField ESTIMATE = new IssueField(C2CData.ATTR_ESTIMATE_WITH_UNITS, "LBL_ESTIMATE"); //NOI18N
+    public static final IssueField FOUNDIN = new IssueField(C2CData.ATTR_FOUND_IN_RELEASE, "LBL_FOUNDIN"); //NOI18N
     public static final IssueField ITERATION = new IssueField(C2CData.ATTR_ITERATION, "LBL_ITERATION"); // NOI18N
     public static final IssueField MILESTONE = new IssueField(C2CData.ATTR_MILESTONE, "LBL_MILESTONE"); // NOI18N
     public static final IssueField PRIORITY = new IssueField(TaskAttribute.PRIORITY, "LBL_PRIORITY"); // NOI18N
