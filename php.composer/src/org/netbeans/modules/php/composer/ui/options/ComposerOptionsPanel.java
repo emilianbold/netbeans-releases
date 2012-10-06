@@ -85,7 +85,7 @@ import org.openide.util.NbBundle;
     "#ComposerOptionsPanel.keywords.dependencies",
     "ComposerOptionsPanel.keywords.package",
     "ComposerOptionsPanel.keywords.packages"
-}, location=UiUtils.OPTIONS_PATH, index=7)
+}, location=UiUtils.OPTIONS_PATH, tabTitle= "#Options.name")
 public class ComposerOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 871513576876878676L;

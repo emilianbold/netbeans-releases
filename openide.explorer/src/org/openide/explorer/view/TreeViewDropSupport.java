@@ -686,7 +686,9 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
             ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( false );
 
             // finally perform the drop
-            dtde.acceptDrop(dropAction);
+            if( dropAction != DnDConstants.ACTION_NONE ) {
+                dtde.acceptDrop(dropAction);
+            }
 
             if (!canDrop(dropNode, dropAction, dtde.getTransferable())) {
                 if( null != dragNodes && canReorderWhenMoving(dropNode, dragNodes)) {

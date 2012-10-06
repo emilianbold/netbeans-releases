@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@OptionsPanelController.Keywords(keywords={"#KW_General_Editor"}, location=OptionsDisplayer.EDITOR, index=0)
+@OptionsPanelController.Keywords(keywords={"#KW_General_Editor"}, location=OptionsDisplayer.EDITOR, tabTitle= "org.netbeans.modules.options.editor.Bundle#CTL_General_DisplayName")
 @NbBundle.Messages({"KW_General_Editor=general editor"})
 public class GeneralEditorPanel extends JPanel implements ActionListener {
 
