@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Martin Fousek
  */
-@OptionsPanelController.Keywords(keywords={"php smarty"}, location=UiUtils.OPTIONS_PATH, index=11)
+@OptionsPanelController.Keywords(keywords={"php smarty"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_OptionsName")
 public class SmartyOptionsPanel extends JPanel {
     private static final long serialVersionUID = -1384644114740L;
 

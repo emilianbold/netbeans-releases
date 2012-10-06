@@ -43,6 +43,7 @@ Other names may be trademarks of their respective owners.
  */
 package org.netbeans.modules.db.dataview.table;
 
+import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Date;
@@ -82,15 +83,19 @@ public class ResultSetTableModel extends DefaultTableModel {
             case -100:
                 return Timestamp.class;
             case Types.BIGINT:
+                return Long.class;
             case Types.DOUBLE:
+                return Double.class;
             case Types.FLOAT:
             case Types.REAL:
+                return Float.class;
             case Types.DECIMAL:
             case Types.NUMERIC:
+                return BigDecimal.class;
             case Types.INTEGER:
             case Types.SMALLINT:
             case Types.TINYINT:
-                return Number.class;
+                return Integer.class;
 
             case Types.CHAR:
             case Types.VARCHAR:

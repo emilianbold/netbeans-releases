@@ -192,7 +192,7 @@ public class DBReadWriteHelper {
                 if (rs.wasNull() || bdata == null) {
                     return null;
                 } else {
-                    Byte[] internal = new Byte[bdata.length];
+                    byte[] internal = new byte[bdata.length];
                     for (int i = 0; i < bdata.length; i++) {
                         internal[i] = new Byte(bdata[i]);
                     }

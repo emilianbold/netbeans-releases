@@ -48,7 +48,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
-@OptionsPanelController.Keywords(keywords={"java debugger"}, location=JavaOptions.JAVA, index=3)
+@OptionsPanelController.Keywords(keywords={"java debugger"}, location=JavaOptions.JAVA, tabTitle= "#LBL_JavaDebugger")
 final class JavaDebuggerPanel extends StorablePanel {
 
     private static final String SHOW_FORMATTERS_PROP_NAME = "org.netbeans.modules.debugger.jpda.ui.options.SHOW_FORMATTERS";

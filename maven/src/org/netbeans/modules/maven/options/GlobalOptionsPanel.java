@@ -53,7 +53,7 @@ import org.netbeans.spi.options.OptionsPanelController;
  *
  * @author mkleint
  */
-@OptionsPanelController.Keywords(keywords={"maven global"}, location=JavaOptions.JAVA, index=5)
+@OptionsPanelController.Keywords(keywords={"maven global,maven index, maven download, maven home"}, location=JavaOptions.JAVA, tabTitle= "#TIT_Maven_Category")
 public class GlobalOptionsPanel extends javax.swing.JPanel {
     private HashMap<String, String> descMap;
 

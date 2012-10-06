@@ -217,7 +217,7 @@ public class MavenProjectSupport {
         NbMavenProject proj = project.getLookup().lookup(NbMavenProject.class);
         
         boolean isBundlePackaging = "bundle".equals(packaging); // NOI18N
-        boolean webAppDirExists = new File(proj.getWebAppDirectory()).exists();
+        boolean webAppDirExists = org.openide.util.Utilities.toFile(proj.getWebAppDirectory()).exists();
         
         if (isBundlePackaging && webAppDirExists) {
             return true;
