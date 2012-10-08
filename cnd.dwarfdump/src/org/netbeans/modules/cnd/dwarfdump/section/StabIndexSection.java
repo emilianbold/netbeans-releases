@@ -97,7 +97,7 @@ public class StabIndexSection extends ElfSection {
             int other = reader.readByte() & 0xFF;
             int desc = reader.readShort();
             int value = reader.readInt();
-            System.err.println(" "+offset+" "+type+" "+other+" "+desc+" "+value );
+            //System.err.println(" "+offset+" "+type+" "+other+" "+desc+" "+value );
             if (type == N_UNDF || type == N_ILDPAD) {
                 /* Start of new stab section (or padding) */
                 StabStrtab += StrTabSize;
