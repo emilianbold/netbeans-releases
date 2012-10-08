@@ -387,6 +387,23 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue219027.html", "                        product = generate^Product(element);", true);
     }
 
+    public void testIssue219634_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue219634.js", "    var mon^_yr = getInputValue(document.form1.mon_yr),", true);
+    }
+
+    public void testIssue219634_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue219634.js", "    if (!disallowBlank(document.form1.mo^n_yr, 'Pls. select Month /Year.'))", true);
+    }
+
+    public void testIssue219634_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue219634.js", "    var mon_yr = getInputValue(document.for^m1.mon_yr),", true);
+    }
+
+    public void testIssue219634_04() throws Exception {
+        checkOccurrences("testfiles/coloring/issue219634.js", "    $.getJSON('json_txt.php', {mon^_yr: mon_yr, period: period},", true);
+    }
+
+
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
