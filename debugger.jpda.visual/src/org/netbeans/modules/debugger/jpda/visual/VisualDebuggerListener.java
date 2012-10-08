@@ -300,7 +300,16 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                         ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                     }
                 }
-            } catch (VMDisconnectedExceptionWrapper vmd) {                
+            } catch (VMDisconnectedExceptionWrapper vmd) {
+            } catch (InvocationException iex) {
+                InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(iex, t.getDebugger());
+                iextr.setPreferredThread(t);
+                iextr.getMessage();
+                iextr.getLocalizedMessage();
+                iextr.getCause();
+                iextr.getStackTrace();
+                Exceptions.printStackTrace(iextr);
+                Exceptions.printStackTrace(iex);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
