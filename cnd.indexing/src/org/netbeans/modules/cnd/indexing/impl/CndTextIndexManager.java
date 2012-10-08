@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.filesystems.FileSystem;
@@ -62,7 +63,10 @@ public class CndTextIndexManager {
     private static final Map<String, DocumentIndex> indexMap = new HashMap<String, DocumentIndex>();
     
     public static synchronized DocumentIndex get(FileSystem fs) {
-        String fsKey = fs.toString();
+        String fsKey = "local"; //NOI18N
+        if (!CndFileUtils.isLocalFileSystem(fs)) {
+            fsKey = fs.getDisplayName();
+        }
         DocumentIndex index = indexMap.get(fsKey);
         if (index == null) {
             //TODO: use LuceneIndexFactory?
