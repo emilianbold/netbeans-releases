@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
-import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
@@ -768,7 +768,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
             CompilationUnitIterator units = dump.iteratorCompilationUnits();
             if (units != null && units.hasNext()) {
                 while (units.hasNext()) {
-                    CompilationUnit cu = units.next();
+                    CompilationUnitInterface cu = units.next();
                     CompilerSettings settings = new CompilerSettings(new ProjectProxy() {
                         @Override
                         public boolean createSubProjects() { return false; }
