@@ -148,7 +148,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
             }
         }
         this.branches.setBranches(l);
-        validateBeforeNext();
+        stateChanged(new ChangeEvent(this));
     }
     
     @Override
