@@ -69,7 +69,6 @@ public class NbDialogFactory implements DialogFactory {
     private static HashMap helpIDs;
     
     private static final String HELP_ID_MacroSavePanel = "editing.macros.recording"; // !!! NOI18N
-    private static final String HELP_ID_FindPanel = "editing.find"; // !!! NOI18N
     private static final String HELP_ID_JavaFastImportPanel = "editing.fastimport"; // !!! NOI18N
     private static final String HELP_ID_ScrollCompletionPane = "editing.codecompletion"; // !!! NOI18N
     
@@ -78,8 +77,7 @@ public class NbDialogFactory implements DialogFactory {
         if (helpIDs == null)
         {
             helpIDs = new HashMap(7);
-            helpIDs.put("org.netbeans.editor.MacroSavePanel", HELP_ID_MacroSavePanel); // NOI18N
-            helpIDs.put("org.netbeans.editor.ext.FindDialogSupport$FindPanel", HELP_ID_FindPanel); // NOI18N
+            helpIDs.put("org.netbeans.editor.MacroSavePanel", HELP_ID_MacroSavePanel); // NOI18Nq
             helpIDs.put("org.netbeans.editor.ext.ScrollCompletionPane", HELP_ID_ScrollCompletionPane); // NOI18N
             helpIDs.put("org.netbeans.editor.ext.java.JavaFastImportPanel", HELP_ID_JavaFastImportPanel); // NOI18N
         }
