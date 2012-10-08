@@ -138,7 +138,7 @@ public class BlameCommand extends GitCommand {
         
         private static int trimTrailingEoL(byte[] raw, int start, int end) {
             int ptr = end - 1;
-            while (start <= ptr && raw[ptr] == '\r' || raw[ptr] == '\n') {
+            while (start <= ptr && (raw[ptr] == '\r' || raw[ptr] == '\n')) {
                 ptr--;
             }
 
