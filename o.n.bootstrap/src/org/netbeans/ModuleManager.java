@@ -70,6 +70,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -85,6 +86,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Union2;
 import org.openide.util.Utilities;
@@ -1975,6 +1977,17 @@ public final class ModuleManager extends Modules {
             char otherChar = File.separatorChar == '/' ? '\\' : '/';
             if (is != null) try {
                 DataInputStream dis = new DataInputStream(is);
+                
+                String locale = dis.readUTF();
+                String branding = dis.readUTF();
+                
+                if (!Locale.getDefault().toString().equals(locale)) {
+                    throw new IOException();
+                }
+                if (!branding.equals(nonNullBranding())) {
+                    throw new IOException();
+                }
+                
                 map = new HashMap<String, byte[]>();
                 osgi = new HashMap<String, Boolean>();
                 cnbs = new HashMap<String, String>();
@@ -2037,6 +2050,9 @@ public final class ModuleManager extends Modules {
         
         @Override
         public void flushCaches(DataOutputStream os) throws IOException {
+            os.writeUTF(Locale.getDefault().toString());
+            os.writeUTF(nonNullBranding());
+            
             Set<Module> store = getModules();
             os.writeInt(store.size());
             for (Module m : store) {
@@ -2127,6 +2143,11 @@ public final class ModuleManager extends Modules {
             for (String s : cnbs) {
                 os.writeUTF(s);
             }
+        }
+
+        private String nonNullBranding() {
+            String s = NbBundle.getBranding();
+            return s == null ? "" : s;
         }
     }
 }
