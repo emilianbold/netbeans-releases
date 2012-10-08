@@ -270,7 +270,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         }
         for (Resource resource : res) {
             FileObject fo = FileUtilities.convertStringToFileObject(resource.getDirectory());
-            if (FileUtil.isParentOf(project.getProjectDirectory(), fo)) {
+            if (fo != null && FileUtil.isParentOf(project.getProjectDirectory(), fo)) {
                 return FileUtil.getRelativePath(project.getProjectDirectory(), fo);
             }
         }
