@@ -106,7 +106,7 @@ public class DebuggerTest extends NbTestCase {
         testWrapper.assertTested();//sometimes, randomly fails
     }
 
-    protected static Breakpoint addBreakpoint(final FileObject fo, final int line, final TestWrapper testObj, final Continuation move) {
+    private static Breakpoint addBreakpoint(final FileObject fo, final int line, final TestWrapper testObj, final Continuation move) {
         Breakpoint breakpoint = new TestLineBreakpoint(createDummyLine(fo, line - 1, testObj, move));
         DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
         return breakpoint;
@@ -139,40 +139,49 @@ public class DebuggerTest extends NbTestCase {
     static Line createDummyLine(final FileObject fo, final int editorLineNum, final TestWrapper testObj, final Continuation move) {
         return new Line(Lookups.singleton(fo)) {
 
+            @Override
             public int getLineNumber() {
                 return editorLineNum;
             }
 
+            @Override
             public void show(int kind) {
                 testObj.test();
                 move.goAhead();
             }
 
+            @Override
             public void show(int kind, int column) {
                 testObj.test();
                 move.goAhead();
             }
 
+            @Override
             public void setBreakpoint(boolean b) {
                 throw new UnsupportedOperationException("Not supported.");
             }
 
+            @Override
             public boolean isBreakpoint() {
                 throw new UnsupportedOperationException("Not supported.");
             }
 
+            @Override
             public void markError() {
                 throw new UnsupportedOperationException("Not supported.");
             }
 
+            @Override
             public void unmarkError() {
                 throw new UnsupportedOperationException("Not supported.");
             }
 
+            @Override
             public void markCurrentLine() {
                 throw new UnsupportedOperationException("Not supported.");
             }
 
+            @Override
             public void unmarkCurrentLine() {
                 throw new UnsupportedOperationException("Not supported.");
             }
@@ -301,6 +310,7 @@ public class DebuggerTest extends NbTestCase {
 
     private Runnable getTestForSuspendState(final SessionId sessionId) {
     return  new Runnable() {
+        @Override
             public void run() {
                 //TODO: can be tested much more here - not ready yet
                 Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
@@ -317,17 +327,18 @@ public class DebuggerTest extends NbTestCase {
     }
 
     private void startDebugging(final SessionId sessionId, File scriptFile) {
-        final Process[] processes =  new Process[1];
         final ProcessBuilder processBuilder = new ProcessBuilder(new String[]{gePHPInterpreter(), scriptFile.getAbsolutePath()});
         processBuilder.directory(scriptFile.getParentFile());
         processBuilder.environment().put("XDEBUG_CONFIG", "idekey=" + sessionId.getId()); //NOI18N
         final DebuggerOptions options = DebuggerOptions.getGlobalInstance();
         options.pathMapping = Collections.emptyList();
         SessionManager.getInstance().startSession(sessionId, options, new Callable<Cancellable>() {
+            @Override
             public Cancellable call() throws Exception {
-                processes[0] = processBuilder.start();
+                processBuilder.start();
                 return new Cancellable() {
 
+                    @Override
                     public boolean cancel() {
                         return true;
                     }
