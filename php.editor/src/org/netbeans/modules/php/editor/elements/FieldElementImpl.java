@@ -178,15 +178,15 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
     public final String getSignature() {
         StringBuilder sb = new StringBuilder();
         final String noDollarName = getName().substring(1);
-        sb.append(noDollarName.toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(noDollarName).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getOffset()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getPhpModifiers().toFlags()).append(SEPARATOR.SEMICOLON);
+        sb.append(noDollarName.toLowerCase()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(noDollarName).append(Separator.SEMICOLON);//NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(getPhpModifiers().toFlags()).append(Separator.SEMICOLON);
         for (TypeResolver typeResolver : getInstanceTypes()) {
             TypeResolverImpl resolverImpl = (TypeResolverImpl) typeResolver;
             sb.append(resolverImpl.getSignature());
         }
-        sb.append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(Separator.SEMICOLON);//NOI18N
         checkSignature(sb);
         return sb.toString();
     }

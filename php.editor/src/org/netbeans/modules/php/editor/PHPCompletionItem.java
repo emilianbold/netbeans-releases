@@ -247,8 +247,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         break;
                     }
                 case UNQUALIFIED:
+                    String enclosingScopeName = ifq.getIn();
                     boolean fncOrConstFromDefaultNamespace = (((ifq instanceof FunctionElement) || (ifq instanceof ConstantElement))
-                            && (ifq.getIn() == null || ifq.getIn().isEmpty())
+                            && (enclosingScopeName == null || enclosingScopeName.isEmpty())
                             && NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName().toString()));
                     final boolean isUnqualified = ifq.isAliased()
                             && (ifq instanceof AliasedElement) && ((AliasedElement) ifq).isNameAliased();

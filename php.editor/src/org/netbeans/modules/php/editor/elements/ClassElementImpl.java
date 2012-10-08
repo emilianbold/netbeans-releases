@@ -171,9 +171,9 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getName()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getOffset()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(getName()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON);//NOI18N
         QualifiedName superClassName = getSuperClassName();
         if (superClassName != null) {
             sb.append(superClassName.toString());
@@ -188,19 +188,19 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
                 sb.append(qualifiedName.toString());
             }
         }
-        sb.append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(Separator.SEMICOLON);//NOI18N
         QualifiedName namespaceName = getNamespaceName();
-        sb.append(namespaceName.toString()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(namespaceName.toString()).append(Separator.SEMICOLON);//NOI18N
         StringBuilder ifaceSb = new StringBuilder();
         for (QualifiedName ifaceName : getSuperInterfaces()) {
             if (ifaceSb.length() > 0) {
-                ifaceSb.append(SEPARATOR.COMMA);//NOI18N
+                ifaceSb.append(Separator.COMMA);//NOI18N
             }
             ifaceSb.append(ifaceName.toString());//NOI18N
         }
         sb.append(ifaceSb);
-        sb.append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getPhpModifiers().toFlags()).append(SEPARATOR.SEMICOLON);
+        sb.append(Separator.SEMICOLON);//NOI18N
+        sb.append(getPhpModifiers().toFlags()).append(Separator.SEMICOLON);
         if (!usedTraits.isEmpty()) {
             StringBuilder traitSb = new StringBuilder();
             for (QualifiedName usedTrait : usedTraits) {
@@ -329,7 +329,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
             if (separatedIfaces != null && separatedIfaces.length() > 0 && (index = separatedIfaces.indexOf('|')) > 0) { //NOI18N
                 String field = separatedIfaces.substring(0, index);
                 ifaces = new HashSet<QualifiedName>();
-                final String[] ifaceNames = field.split(SEPARATOR.COMMA.toString());
+                final String[] ifaceNames = field.split(Separator.COMMA.toString());
                 for (String ifName : ifaceNames) {
                     ifaces.add(QualifiedName.create(ifName));
                 }
@@ -363,7 +363,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         public Collection<QualifiedName> getUsedTraits() {
             Collection<QualifiedName> retval = new HashSet<QualifiedName>();
             String traits = signature.string(7);
-            final String[] traitNames = traits.split(SEPARATOR.COMMA.toString());
+            final String[] traitNames = traits.split(Separator.COMMA.toString());
             for (String trait : traitNames) {
                 retval.add(QualifiedName.create(trait));
             }

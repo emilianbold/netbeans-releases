@@ -52,44 +52,34 @@ import org.netbeans.spi.project.LookupMerger;
 import org.openide.util.Lookup;
 
 /**
- * Factory class for creation of {@link org.netbeans.spi.project.LookupMerger} instances.
+ * Create a simple instance of LookupMerger for ActionProvider. It takes all
+ * implementations it finds in the provided lookup and iterates them until a
+ * result is found.
  *
- * @author Martin Adamek
+ * Maybe, this should rather be in the web.project and j2ee.ejbjarproject modules?
  */
-public final class LookupMergerSupport {
-
-    /**
-     * Create a simple instance of LookupMerger for ActionProvider. It takes
-     * all implemntations it finds int he provided lookup and iterates them until a result
-     * is found.
-     * @return
-     */
-    @LookupMerger.Registration(projectType={
-        "org-netbeans-modules-java-j2seproject",
+@LookupMerger.Registration(
+    projectType = {
         "org-netbeans-modules-web-project",
         "org-netbeans-modules-j2ee-ejbjarproject"
-    })
-    public static LookupMerger<ActionProvider> createActionProviderLookupMerger() {
-        return new ActionProviderMerger();
+    }
+)
+public class GroovyLookupMerger implements LookupMerger<ActionProvider> {
+
+    @Override
+    public Class<ActionProvider> getMergeableClass() {
+        return ActionProvider.class;
     }
 
-    private static class ActionProviderMerger implements LookupMerger<ActionProvider> {
-
-        @Override
-        public Class<ActionProvider> getMergeableClass() {
-            return ActionProvider.class;
-        }
-
-        @Override
-        public ActionProvider merge(Lookup lookup) {
-            return new MergedActionProvider(lookup);
-        }
+    @Override
+    public ActionProvider merge(Lookup lookup) {
+        return new MergedActionProvider(lookup);
     }
-    
+
     private static class MergedActionProvider implements ActionProvider {
 
         private final Lookup lookup;
-        
+
         public MergedActionProvider(Lookup lookup) {
             this.lookup = lookup;
         }
