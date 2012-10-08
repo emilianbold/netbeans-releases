@@ -174,7 +174,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
 
         ModifiableCloseTag match = null;
         for (ModifiableCloseTag n : physicalEndTagsQueue) {
-            if (LexerUtils.equals(n.name(), t.name(), false, false)) {
+            if (LexerUtils.equals(n.name(), t.name(), true, false)) {
                 match = n;
                 break;
             }
