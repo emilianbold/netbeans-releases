@@ -80,7 +80,6 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Scope;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -200,6 +199,7 @@ public class EditorContextImpl extends EditorContext {
      * @param lineNumber a number of line to be shown
      * @param timeStamp a time stamp to be used
      */
+    @Override
     public boolean showSource (String url, int lineNumber, Object timeStamp) {
         Line l = showSourceLine(url, lineNumber, timeStamp);
         if (l != null) {
@@ -280,6 +280,7 @@ public class EditorContextImpl extends EditorContext {
      *
      * @param timeStamp a new time stamp
      */
+    @Override
     public void createTimeStamp (Object timeStamp) {
         LineTranslations.getTranslations().createTimeStamp(timeStamp);
     }
@@ -289,10 +290,12 @@ public class EditorContextImpl extends EditorContext {
      *
      * @param timeStamp a time stamp to be disposed
      */
+    @Override
     public void disposeTimeStamp (Object timeStamp) {
         LineTranslations.getTranslations().disposeTimeStamp(timeStamp);
     }
 
+    @Override
     public Object annotate (
         String url,
         int lineNumber,
@@ -314,7 +317,9 @@ public class EditorContextImpl extends EditorContext {
             lineNumber,
             (timeStamp instanceof Breakpoint) ? null : timeStamp
         );
-        if (l == null) return null;
+        if (l == null) {
+            return null;
+        }
         Annotation annotation;
         if (timeStamp instanceof Breakpoint) {
             annotation = new DebuggerBreakpointAnnotation(annotationType, l, (Breakpoint) timeStamp);
@@ -345,9 +350,7 @@ public class EditorContextImpl extends EditorContext {
             annotation = new DebuggerAnnotation(annotationType, attrs, startPosition, endPosition,
                     URLMapper.findFileObject(new URL(url)));
         } catch (MalformedURLException ex) {
-            RuntimeException rex = new RuntimeException("Bad URL: "+url);
-            rex.initCause(ex);
-            throw rex;
+            throw new RuntimeException("Bad URL: "+url, ex);
         }
         annotationToURL.put (annotation, url);
 
@@ -377,6 +380,7 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return true if annotation has been successfully removed
      */
+    @Override
     public void removeAnnotation (
         Object a
     ) {
@@ -403,6 +407,7 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return line number given annotation is associated with
      */
+    @Override
     public int getLineNumber (
         Object annotation,
         Object timeStamp
@@ -425,8 +430,9 @@ public class EditorContextImpl extends EditorContext {
         } else {
             line = ((DebuggerAnnotation) annotation).getLine();
         }
-        if (timeStamp == null)
+        if (timeStamp == null) {
             return line.getLineNumber () + 1;
+        }
         String url = (String) annotationToURL.get (annotation);
         Line.Set lineSet = LineTranslations.getTranslations().getLineSet (url, timeStamp);
         return lineSet.getOriginalLineNumber (line) + 1;
@@ -438,6 +444,7 @@ public class EditorContextImpl extends EditorContext {
      * @param timeStamp time stamp to be updated
      * @param url an url
      */
+    @Override
     public void updateTimeStamp (Object timeStamp, String url) {
         LineTranslations.getTranslations().updateTimeStamp(timeStamp, url);
     }
@@ -447,6 +454,7 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return number of line currently selected in editor or <code>-1</code>
      */
+    @Override
     public int getCurrentLineNumber () {
         return contextDispatcher.getCurrentLineNumber();
     }
@@ -458,9 +466,13 @@ public class EditorContextImpl extends EditorContext {
      */
     public int getCurrentOffset () {
         JEditorPane ep = contextDispatcher.getCurrentEditor();
-        if (ep == null) return -1;
+        if (ep == null) {
+            return -1;
+        }
         Caret caret = ep.getCaret ();
-        if (caret == null) return -1;
+        if (caret == null) {
+            return -1;
+        }
         return caret.getDot();
     }
 
@@ -469,10 +481,14 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return name of class currently selected in editor or empty string
      */
+    @Override
     public String getCurrentClassName () {
         String currentClass = getCurrentElement(ElementKind.CLASS);
-        if (currentClass == null) return "";
-        else return currentClass;
+        if (currentClass == null) {
+            return "";
+        } else {
+            return currentClass;
+        }
     }
 
     /**
@@ -482,8 +498,11 @@ public class EditorContextImpl extends EditorContext {
      */
     public String getMostRecentClassName () {
         String clazz = getMostRecentElement(ElementKind.CLASS);
-        if (clazz == null) return "";
-        else return clazz;
+        if (clazz == null) {
+            return "";
+        } else {
+            return clazz;
+        }
     }
 
     /**
@@ -491,6 +510,7 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return URL of source currently selected in editor or empty string
      */
+    @Override
     public String getCurrentURL () {
         return contextDispatcher.getCurrentURLAsString();
     }
@@ -500,10 +520,14 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return name of method currently selected in editor or empty string
      */
+    @Override
     public String getCurrentMethodName () {
         String currentMethod = getCurrentElement(ElementKind.METHOD);
-        if (currentMethod == null) return "";
-        else return currentMethod;
+        if (currentMethod == null) {
+            return "";
+        } else {
+            return currentMethod;
+        }
     }
 
     /**
@@ -513,8 +537,11 @@ public class EditorContextImpl extends EditorContext {
      */
     public String getMostRecentMethodName () {
         String method = getMostRecentElement(ElementKind.METHOD);
-        if (method == null) return "";
-        else return method;
+        if (method == null) {
+            return "";
+        } else {
+            return method;
+        }
     }
 
     /**
@@ -559,10 +586,14 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return name of field currently selected in editor or <code>null</code>
      */
+    @Override
     public String getCurrentFieldName () {
         String currentField = getCurrentElement(ElementKind.FIELD);
-        if (currentField == null) return "";
-        else return currentField;
+        if (currentField == null) {
+            return "";
+        } else {
+            return currentField;
+        }
         //return getSelectedIdentifier ();
     }
 
@@ -573,8 +604,11 @@ public class EditorContextImpl extends EditorContext {
      */
     public String getMostRecentFieldName () {
         String field = getMostRecentElement(ElementKind.FIELD);
-        if (field == null) return "";
-        else return field;
+        if (field == null) {
+            return "";
+        } else {
+            return field;
+        }
     }
 
 
@@ -583,12 +617,19 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return identifier currently selected in editor or <code>null</code>
      */
+    @Override
     public String getSelectedIdentifier () {
         JEditorPane ep = contextDispatcher.getCurrentEditor ();
-        if (ep == null) return null;
+        if (ep == null) {
+            return null;
+        }
         String s = ep.getSelectedText ();
-        if (s == null) return null;
-        if (Utilities.isJavaIdentifier (s)) return s;
+        if (s == null) {
+            return null;
+        }
+        if (Utilities.isJavaIdentifier (s)) {
+            return s;
+        }
         return null;
     }
 
@@ -597,6 +638,7 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return method name currently selected in editor or empty string
      */
+    @Override
     public String getSelectedMethodName () {
         if (SwingUtilities.isEventDispatchThread()) {
             return getSelectedMethodName_();
@@ -604,6 +646,7 @@ public class EditorContextImpl extends EditorContext {
             final String[] mn = new String[1];
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         mn[0] = getSelectedMethodName_();
                     }
@@ -619,11 +662,15 @@ public class EditorContextImpl extends EditorContext {
 
     private String getSelectedMethodName_() {
         JEditorPane ep = contextDispatcher.getCurrentEditor ();
-        if (ep == null) return "";
+        if (ep == null) {
+            return "";
+        }
         StyledDocument doc = (StyledDocument) ep.getDocument ();
-        if (doc == null) return "";
+        if (doc == null) {
+            return "";
+        }
         int offset = ep.getCaret ().getDot ();
-        String t = null;
+        String t;
 //        if ( (ep.getSelectionStart () <= offset) &&
 //             (offset <= ep.getSelectionEnd ())
 //        )   t = ep.getSelectedText ();
@@ -642,7 +689,9 @@ public class EditorContextImpl extends EditorContext {
                 org.openide.text.NbDocument.findLineRootElement (doc).
                 getElement (line);
 
-            if (lineElem == null) return "";
+            if (lineElem == null) {
+                return "";
+            }
             int lineStartOffset = lineElem.getStartOffset ();
             int lineLen = lineElem.getEndOffset () - lineStartOffset;
             // t contains current line in editor
@@ -653,7 +702,9 @@ public class EditorContextImpl extends EditorContext {
                     Character.isJavaIdentifierPart (
                         t.charAt (identStart - 1)
                     )
-            )   identStart--;
+            ) {
+                identStart--;
+            }
 
             int identEnd = col;
             while (identEnd < lineLen &&
@@ -662,10 +713,16 @@ public class EditorContextImpl extends EditorContext {
                 identEnd++;
             }
             int i = t.indexOf ('(', identEnd);
-            if (i < 0) return "";
-            if (t.substring (identEnd, i).trim ().length () > 0) return "";
+            if (i < 0) {
+                return "";
+            }
+            if (t.substring (identEnd, i).trim ().length () > 0) {
+                return "";
+            }
 
-            if (identStart == identEnd) return "";
+            if (identStart == identEnd) {
+                return "";
+            }
             return t.substring (identStart, identEnd);
         } catch (javax.swing.text.BadLocationException ex) {
             return "";
@@ -695,13 +752,16 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return line number or -1
      */
+    @Override
     public int getFieldLineNumber (
         String url,
         final String className,
         final String fieldName
     ) {
         final DataObject dataObject = getDataObject (url);
-        if (dataObject == null) return -1;
+        if (dataObject == null) {
+            return -1;
+        }
         Future<Integer> fi = getFieldLineNumber(dataObject.getPrimaryFile(), className, fieldName);
         if (fi == null) {
             return -1;
@@ -728,7 +788,9 @@ public class EditorContextImpl extends EditorContext {
         final String fieldName
     ) {
         JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return null;
+        if (js == null) {
+            return null;
+        }
         final int[] result = new int[] {-1};
         final StyledDocument doc = findDocument(fo);
         if (doc == null) {
@@ -740,7 +802,9 @@ public class EditorContextImpl extends EditorContext {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
-                    if (ci == null) return;
+                    if (ci == null) {
+                        return;
+                    }
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -750,7 +814,9 @@ public class EditorContextImpl extends EditorContext {
                     }
                     Elements elms = ci.getElements();
                     TypeElement classElement = getTypeElement(ci, className, null);
-                    if (classElement == null) return ;
+                    if (classElement == null) {
+                        return ;
+                    }
                     if (fieldName == null) {
                         // If no field name is provided, just find the beginning of the class:
                         SourcePositions positions =  ci.getTrees().getSourcePositions();
@@ -792,23 +858,28 @@ public class EditorContextImpl extends EditorContext {
             if (!f.isDone()) {
                 return new Future<Integer>() {
 
+                    @Override
                     public boolean cancel(boolean mayInterruptIfRunning) {
                         return f.cancel(mayInterruptIfRunning);
                     }
 
+                    @Override
                     public boolean isCancelled() {
                         return f.isCancelled();
                     }
 
+                    @Override
                     public boolean isDone() {
                         return f.isDone();
                     }
 
+                    @Override
                     public Integer get() throws InterruptedException, ExecutionException {
                         f.get();
                         return result[0];
                     }
 
+                    @Override
                     public Integer get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                         f.get(timeout, unit);
                         return result[0];
@@ -843,7 +914,9 @@ public class EditorContextImpl extends EditorContext {
         final String methodSignature
     ) {
         final DataObject dataObject = getDataObject (url);
-        if (dataObject == null) return -1;
+        if (dataObject == null) {
+            return -1;
+        }
         Future<int[]> flns = getMethodLineNumbers(dataObject.getPrimaryFile(), className, null, methodName, methodSignature);
         if (flns == null) {
             return -1;
@@ -880,16 +953,22 @@ public class EditorContextImpl extends EditorContext {
         final String methodSignature
     ) {
         JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return null;
+        if (js == null) {
+            return null;
+        }
         final List<Integer> result = new ArrayList<Integer>();
         final StyledDocument doc = findDocument(fo);
-        if (doc == null) return null;
+        if (doc == null) {
+            return null;
+        }
         try {
             final Future f = parseWhenScanFinishedReallyLazy(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
-                    if (ci == null) return;
+                    if (ci == null) {
+                        return;
+                    }
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -898,7 +977,9 @@ public class EditorContextImpl extends EditorContext {
                         return;
                     }
                     TypeElement classElement = getTypeElement(ci, className, classExcludeNames);
-                    if (classElement == null) return ;
+                    if (classElement == null) {
+                        return ;
+                    }
                     List classMemberElements = ci.getElements().getAllMembers(classElement);
                     for (Iterator it = classMemberElements.iterator(); it.hasNext(); ) {
                         Element elm = (Element) it.next();
@@ -965,23 +1046,28 @@ public class EditorContextImpl extends EditorContext {
             if (!f.isDone()) {
                 return new Future<int[]>() {
 
+                    @Override
                     public boolean cancel(boolean mayInterruptIfRunning) {
                         return f.cancel(mayInterruptIfRunning);
                     }
 
+                    @Override
                     public boolean isCancelled() {
                         return f.isCancelled();
                     }
 
+                    @Override
                     public boolean isDone() {
                         return f.isDone();
                     }
 
+                    @Override
                     public int[] get() throws InterruptedException, ExecutionException {
                         f.get();
                         return getResultArray();
                     }
 
+                    @Override
                     public int[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                         f.get(timeout, unit);
                         return getResultArray();
@@ -1010,9 +1096,13 @@ public class EditorContextImpl extends EditorContext {
 
     private static boolean egualMethodSignatures(String s1, String s2) {
         int i = s1.lastIndexOf(")");
-        if (i > 0) s1 = s1.substring(0, i);
+        if (i > 0) {
+            s1 = s1.substring(0, i);
+        }
         i = s2.lastIndexOf(")");
-        if (i > 0) s2 = s2.substring(0, i);
+        if (i > 0) {
+            s2 = s2.substring(0, i);
+        }
         return s1.equals(s2);
     }
 
@@ -1028,16 +1118,22 @@ public class EditorContextImpl extends EditorContext {
         final String[] classExcludeNames
     ) {
         JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return null;
+        if (js == null) {
+            return null;
+        }
         final Integer[] result = new Integer[] { null };
         final StyledDocument doc = findDocument(fo);
-        if (doc == null) return null;
+        if (doc == null) {
+            return null;
+        }
         try {
             final Future f = parseWhenScanFinishedReallyLazy(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
-                    if (ci == null) return;
+                    if (ci == null) {
+                        return;
+                    }
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1046,7 +1142,9 @@ public class EditorContextImpl extends EditorContext {
                         return;
                     }
                     TypeElement classElement = getTypeElement(ci, className, classExcludeNames);
-                    if (classElement == null) return ;
+                    if (classElement == null) {
+                        return ;
+                    }
                     SourcePositions positions =  ci.getTrees().getSourcePositions();
                     Tree tree = ci.getTrees().getTree(classElement);
                     if (tree == null) {
@@ -1084,23 +1182,28 @@ public class EditorContextImpl extends EditorContext {
             if (!f.isDone()) {
                 return new Future<Integer>() {
 
+                    @Override
                     public boolean cancel(boolean mayInterruptIfRunning) {
                         return f.cancel(mayInterruptIfRunning);
                     }
 
+                    @Override
                     public boolean isCancelled() {
                         return f.isCancelled();
                     }
 
+                    @Override
                     public boolean isDone() {
                         return f.isDone();
                     }
 
+                    @Override
                     public Integer get() throws InterruptedException, ExecutionException {
                         f.get();
                         return result[0];
                     }
 
+                    @Override
                     public Integer get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                         f.get(timeout, unit);
                         return result[0];
@@ -1119,18 +1222,24 @@ public class EditorContextImpl extends EditorContext {
      */
     public String getCurrentClassDeclaration() {
         FileObject fo = contextDispatcher.getCurrentFile();
-        if (fo == null) return null;
+        if (fo == null) {
+            return null;
+        }
         JEditorPane ep = contextDispatcher.getCurrentEditor();
         JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return null;
+        if (js == null) {
+            return null;
+        }
         final int currentOffset = (ep == null) ? 0 : ep.getCaretPosition();
         //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
         final String[] currentClassPtr = new String[] { null };
         final Future<Void> scanFinished;
         try {
             scanFinished = runWhenScanFinishedReallyLazy(js, new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
@@ -1144,7 +1253,9 @@ public class EditorContextImpl extends EditorContext {
                     String text = ci.getText();
                     int l = text.length();
                     char c = 0;
-                    while (offset < l && (c = text.charAt(offset)) != '{' && c != '}' && c != '\n' && c != '\r') offset++;
+                    while (offset < l && (c = text.charAt(offset)) != '{' && c != '}' && c != '\n' && c != '\r') {
+                        offset++;
+                    }
                     if (offset >= l) {
                         return ;
                     }
@@ -1175,7 +1286,9 @@ public class EditorContextImpl extends EditorContext {
                         if (hend > 0) {
                             pos = hend;
                         }
-                        while (pos < l && text.charAt(pos) != '{') pos++;
+                        while (pos < l && text.charAt(pos) != '{') {
+                            pos++;
+                        }
                         if (pos < offset) { // We are after the class declaration!
                             return ;
                         }
@@ -1257,17 +1370,23 @@ public class EditorContextImpl extends EditorContext {
     @Override
     public String[] getCurrentMethodDeclaration() {
         FileObject fo = contextDispatcher.getCurrentFile();
-        if (fo == null) return null;
+        if (fo == null) {
+            return null;
+        }
         JEditorPane ep = contextDispatcher.getCurrentEditor();
         JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return null;
+        if (js == null) {
+            return null;
+        }
         final int currentOffset = (ep == null) ? 0 : ep.getCaretPosition();
         final String[] currentMethodPtr = new String[] { null, null, null };
         final Future<Void> scanFinished;
         try {
             scanFinished = runWhenScanFinishedReallyLazy(js, new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
@@ -1281,11 +1400,15 @@ public class EditorContextImpl extends EditorContext {
                     String text = ci.getText();
                     int l = text.length();
                     char c = 0;
-                    while (offset < l && (c = text.charAt(offset)) != '(' && c != ')' && c != '\n' && c != '\r') offset++;
+                    while (offset < l && (c = text.charAt(offset)) != '(' && c != ')' && c != '\n' && c != '\r') {
+                        offset++;
+                    }
                     if (offset >= l) {
                         return ;
                     }
-                    if (c == '(') offset--;
+                    if (c == '(') {
+                        offset--;
+                    }
 
                     Tree tree = ci.getTreeUtilities().pathFor(offset).getLeaf();
                     if (tree.getKind() == Tree.Kind.METHOD) {
@@ -1427,14 +1550,19 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return binary class name for given url and line number or null
      */
+    @Override
     public String getClassName (
         String url,
         int lineNumber
     ) {
         DataObject dataObject = getDataObject (url);
-        if (dataObject == null) return null;
+        if (dataObject == null) {
+            return null;
+        }
         JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-        if (js == null) return "";
+        if (js == null) {
+            return "";
+        }
         final StyledDocument doc = findDocument(dataObject);
         if (doc == null) {
             return "";
@@ -1446,7 +1574,9 @@ public class EditorContextImpl extends EditorContext {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
-                    if (ci == null) return;
+                    if (ci == null) {
+                        return;
+                    }
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1520,7 +1650,7 @@ public class EditorContextImpl extends EditorContext {
                 return null;
             }
             Date lastModified = fo.lastModified();
-            Date storedStamp = null;
+            Date storedStamp;
             JavaSourceUtil.Handle handle;
             synchronized (sourceHandles) {
                 handle = sourceHandles.get(js);
@@ -1544,11 +1674,17 @@ public class EditorContextImpl extends EditorContext {
     public Operation[] getOperations(String url, final int lineNumber,
                                      final BytecodeProvider bytecodeProvider) {
         DataObject dataObject = getDataObject (url);
-        if (dataObject == null) return null;
+        if (dataObject == null) {
+            return null;
+        }
         JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-        if (js == null) return null;
-        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-        if (ec == null) return null;
+        if (js == null) {
+            return null;
+        }
+        EditorCookie ec = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
+        if (ec == null) {
+            return null;
+        }
         final StyledDocument doc;
         try {
             doc = ec.openDocument();
@@ -1566,7 +1702,9 @@ public class EditorContextImpl extends EditorContext {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         CompilationController ci = retrieveController(resultIterator, doc);
-                        if (ci == null) return;
+                        if (ci == null) {
+                            return;
+                        }
                         result[0] = computeOperations(ci, offset, lineNumber, bytecodeProvider);
                     }
                 });
@@ -1613,7 +1751,9 @@ public class EditorContextImpl extends EditorContext {
                     for (int backIndex = treeIndex - 1; backIndex >= 0; backIndex--) {
                         node = treeNodes.get(backIndex);
                         op = nodeOperations.get(node);
-                        if (op != null) break;
+                        if (op != null) {
+                            break;
+                        }
                     }
                 }
                 if (op != null) {
@@ -1696,18 +1836,26 @@ public class EditorContextImpl extends EditorContext {
     @Override
     public MethodArgument[] getArguments(String url, final Operation operation) {
         DataObject dataObject = getDataObject (url);
-        if (dataObject == null) return null;
+        if (dataObject == null) {
+            return null;
+        }
         JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-        if (js == null) return null;
+        if (js == null) {
+            return null;
+        }
         final StyledDocument doc = findDocument(dataObject);
-        if (doc == null) return null;
+        if (doc == null) {
+            return null;
+        }
         final MethodArgument args[][] = new MethodArgument[1][];
         try {
             ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
-                    if (ci == null) return;
+                    if (ci == null) {
+                        return;
+                    }
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1740,9 +1888,13 @@ public class EditorContextImpl extends EditorContext {
     @Override
     public MethodArgument[] getArguments(String url, final int methodLineNumber) {
         DataObject dataObject = getDataObject (url);
-        if (dataObject == null) return null;
+        if (dataObject == null) {
+            return null;
+        }
         JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-        if (js == null) return null;
+        if (js == null) {
+            return null;
+        }
         final StyledDocument doc = findDocument(dataObject);
         if (doc == null) {
             return null;
@@ -1754,7 +1906,9 @@ public class EditorContextImpl extends EditorContext {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
-                    if (ci == null) return;
+                    if (ci == null) {
+                        return;
+                    }
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1790,22 +1944,31 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return list of imports for given source url
      */
+    @Override
     public String[] getImports (
         String url
     ) {
         DataObject dataObject = getDataObject (url);
-        if (dataObject == null) return new String [0];
+        if (dataObject == null) {
+            return new String [0];
+        }
         JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-        if (js == null) return new String [0];
+        if (js == null) {
+            return new String [0];
+        }
         final StyledDocument doc = findDocument(dataObject);
-        if (doc == null) return new String [0];
+        if (doc == null) {
+            return new String [0];
+        }
         final List<String> imports = new ArrayList<String>();
         try {
             ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
-                    if (ci == null) return;
+                    if (ci == null) {
+                        return;
+                    }
                     if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
@@ -1959,7 +2122,7 @@ public class EditorContextImpl extends EditorContext {
             }
             try {
                 DataObject od = DataObject.find(file);
-                EditorCookie ec = od.getCookie(EditorCookie.class);
+                EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
                 if (ec != null) {
                     return  ec.openDocument();
                 } else {
@@ -1972,9 +2135,11 @@ public class EditorContextImpl extends EditorContext {
             }
         }
 
+        @Override
         public void run(CompilationController ci) throws Exception {
-            if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0)
+            if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0) {
                 return ;
+            }
             Scope scope = null;
             int offset = 0;
             StyledDocument doc = getDocument(ci);
@@ -2024,7 +2189,7 @@ public class EditorContextImpl extends EditorContext {
                     treePath = new TreePath(treePath, tree);
                     setTreePathMethod.invoke(context, treePath);
                 }
-            } catch (Exception ex) { return;}
+            } catch (Exception ex) {}
         }
 
         public TreePath getTreePath() {
@@ -2066,6 +2231,7 @@ public class EditorContextImpl extends EditorContext {
      *
      * @param l the listener to add
      */
+    @Override
     public void addPropertyChangeListener (PropertyChangeListener l) {
         pcs.addPropertyChangeListener (l);
     }
@@ -2075,6 +2241,7 @@ public class EditorContextImpl extends EditorContext {
      *
      * @param l the listener to remove
      */
+    @Override
     public void removePropertyChangeListener (PropertyChangeListener l) {
         pcs.removePropertyChangeListener (l);
     }
@@ -2085,6 +2252,7 @@ public class EditorContextImpl extends EditorContext {
      * @param propertyName the name of property
      * @param l the listener to add
      */
+    @Override
     public void addPropertyChangeListener (
         String propertyName,
         PropertyChangeListener l
@@ -2098,6 +2266,7 @@ public class EditorContextImpl extends EditorContext {
      * @param propertyName the name of property
      * @param l the listener to remove
      */
+    @Override
     public void removePropertyChangeListener (
         String propertyName,
         PropertyChangeListener l
@@ -2148,9 +2317,13 @@ public class EditorContextImpl extends EditorContext {
                                      final ElementKind kind, final String[] elementSignaturePtr)
             throws java.awt.IllegalComponentStateException {
 
-        if (fo == null) return null;
+        if (fo == null) {
+                    return null;
+                }
         JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return null;
+        if (js == null) {
+                    return null;
+                }
         final int currentOffset;
         final String selectedIdentifier;
         if (ep != null) {
@@ -2173,8 +2346,10 @@ public class EditorContextImpl extends EditorContext {
         final Future<Void> scanFinished;
         try {
             scanFinished = runWhenScanFinishedReallyLazy(js, new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
@@ -2249,14 +2424,18 @@ public class EditorContextImpl extends EditorContext {
                             while (offset < l && (c = text.charAt(offset)) != '\n' && c != '\r' && Character.isWhitespace(c)) {
                                 offset++;
                             }
-                            if (!Character.isWhitespace(c)) offset++;
+                            if (!Character.isWhitespace(c)) {
+                                offset++;
+                            }
                         }
                         TreePath tp = ci.getTreeUtilities().pathFor(offset);
                         Tree tree = tp.getLeaf();
                         if (selectedIdentifier == null) {
                             while (tree.getKind() != Tree.Kind.VARIABLE) {
                                 tp = tp.getParentPath();
-                                if (tp == null) break;
+                                if (tp == null) {
+                                    break;
+                                }
                                 tree = tp.getLeaf();
                                 if (tree.getKind() == Tree.Kind.METHOD) {
                                     break; // We're inside a method, do not search for fields here.
@@ -2350,7 +2529,9 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
 
-        if (file == null) return null;
+        if (file == null) {
+            return null;
+        }
         try {
             return DataObject.find (file);
         } catch (DataObjectNotFoundException ex) {
@@ -2365,8 +2546,10 @@ public class EditorContextImpl extends EditorContext {
         } catch (DataObjectNotFoundException ex) {
             return null;
         }
-        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-        if (ec == null) return null;
+        EditorCookie ec = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
+        if (ec == null) {
+            return null;
+        }
         StyledDocument doc;
         try {
             doc = ec.openDocument();
@@ -2377,8 +2560,10 @@ public class EditorContextImpl extends EditorContext {
     }
 
     private static StyledDocument findDocument(DataObject dataObject) {
-        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-        if (ec == null) return null;
+        EditorCookie ec = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
+        if (ec == null) {
+            return null;
+        }
         StyledDocument doc;
         try {
             doc = ec.openDocument();
@@ -2421,7 +2606,7 @@ public class EditorContextImpl extends EditorContext {
         List<Tree> expTrees = methodTree.accept(scanner, info);
 
         //com.sun.source.tree.ExpressionTree expTree = scanner.getExpressionTree();
-        if (expTrees == null || expTrees.size() == 0) {
+        if (expTrees == null || expTrees.isEmpty()) {
             return new Operation[] {};
         }
         SourcePositions sp = ci.getTrees().getSourcePositions();
@@ -2579,7 +2764,9 @@ public class EditorContextImpl extends EditorContext {
                     }
                     long s2 = System.nanoTime();
                     timeout -= unit.convert(s2 - s1, TimeUnit.NANOSECONDS);
-                    if (timeout < 0) timeout = 1;
+                    if (timeout < 0) {
+                        timeout = 1;
+                    }
                 }
                 if (excPtr[0] != null) {
                     throw new ExecutionException(excPtr[0]);
@@ -2600,13 +2787,18 @@ public class EditorContextImpl extends EditorContext {
             this.result = result;
         }
 
+        @Override
         public boolean cancel(boolean mayInterruptIfRunning) { return false; }
+        @Override
         public boolean isCancelled() { return false; }
+        @Override
         public boolean isDone() { return true; }
 
+        @Override
         public T get() throws InterruptedException, ExecutionException {
             return result;
         }
+        @Override
         public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return result;
         }
@@ -2614,6 +2806,7 @@ public class EditorContextImpl extends EditorContext {
 
     private class EditorContextDispatchListener extends Object implements PropertyChangeListener {
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             pcs.firePropertyChange (org.openide.windows.TopComponent.Registry.PROP_CURRENT_NODES, null, null);
         }
@@ -2632,6 +2825,7 @@ public class EditorContextImpl extends EditorContext {
                      bytecodeIndex);
          }
          */
+        @Override
          public Operation createMethodOperation(
                  Position startPosition,
                  Position endPosition,
@@ -2649,6 +2843,7 @@ public class EditorContextImpl extends EditorContext {
                      methodClassType,
                      bytecodeIndex);
          }
+        @Override
          public Position createPosition(
                  int offset,
                  int line,
@@ -2658,6 +2853,7 @@ public class EditorContextImpl extends EditorContext {
                      line,
                      column);
          }
+        @Override
          public void addNextOperationTo(Operation operation, Operation next) {
              EditorContextImpl.this.addNextOperationTo(operation, next);
          }
