@@ -68,10 +68,14 @@ public class TokenFormatter {
     private static String EMPTY_STRING = "";
     private static final Logger LOGGER = Logger.getLogger(TokenFormatter.class.getName());
     // it's for testing
-    protected static int unitTestCarretPosition = -1;
+    private static int unitTestCarretPosition = -1;
 
 
     public TokenFormatter() {
+    }
+
+    protected static void setUnitTestCarretPosition(int unitTestCarretPosition) {
+        TokenFormatter.unitTestCarretPosition = unitTestCarretPosition;
     }
 
     protected static class DocumentOptions {
@@ -166,7 +170,8 @@ public class TokenFormatter {
         public CodeStyle.WrapStyle wrapMethodParams;
         public CodeStyle.WrapStyle wrapMethodCallArgs;
         public CodeStyle.WrapStyle wrapChainedMethodCalls;
-        public CodeStyle.WrapStyle wrapArrayInit;
+        @org.netbeans.api.annotations.common.SuppressWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+        public CodeStyle.WrapStyle wrapArrayInit; // not implemented yet
         public CodeStyle.WrapStyle wrapFor;
         public CodeStyle.WrapStyle wrapForStatement;
         public CodeStyle.WrapStyle wrapIfStatement;
@@ -182,11 +187,17 @@ public class TokenFormatter {
         public boolean alignMultilineMethodParams;
         public boolean alignMultilineCallArgs;
         public boolean alignMultilineImplements;
+        @org.netbeans.api.annotations.common.SuppressWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public boolean alignMultilineParenthesized; // not implemented yet
+        @org.netbeans.api.annotations.common.SuppressWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public boolean alignMultilineBinaryOp; // not implemented yet
+        @org.netbeans.api.annotations.common.SuppressWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public boolean alignMultilineTernaryOp; // not implemented yet
-        public boolean alignMultilineAssignment;    // not implemented yet
-        public boolean alignMultilineFor;       // not implemented yet
+        @org.netbeans.api.annotations.common.SuppressWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+        public boolean alignMultilineAssignment; // not implemented yet
+        @org.netbeans.api.annotations.common.SuppressWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+        public boolean alignMultilineFor; // not implemented yet
+        @org.netbeans.api.annotations.common.SuppressWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public boolean alignMultilineArrayInit; //not implemented yet
         public boolean groupMulitilineAssignment;
         public boolean groupMulitilineArrayInit;
@@ -1373,7 +1384,7 @@ public class TokenFormatter {
                                     newLines = 1;
                                 }
                                 if (afterSemi) {
-                                    if (oldText == null || (oldText != null && countOfNewLines(oldText) == 0)) {
+                                    if (oldText == null || countOfNewLines(oldText) == 0) {
                                         if (formatToken.getId() == FormatToken.Kind.TEXT) {
                                             if (docOptions.wrapStatementsOnTheSameLine) {
                                                 if (docOptions.wrapBlockBrace || !"}".equals(formatToken.getOldText())) {
@@ -1832,23 +1843,6 @@ public class TokenFormatter {
                 return sb.toString();
             }
 
-            private boolean isAfterOpenBrace(int offset) {
-                boolean value = false;
-                if (offset < doc.getLength()) {
-                    String ch = "";
-                    int index = offset;
-                    try {
-                        do {
-                            ch = doc.getText(index, 1);
-                            index--;
-                        } while (index > 0 && "\n\t ".contains(ch));
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    value = "{".equals(ch); // NOI18N
-                }
-                return value;
-            }
             private int startOffset = -1;
             private int endOffset = -1;
             // prviousIndentDelta keeps information, when a template is inserted and

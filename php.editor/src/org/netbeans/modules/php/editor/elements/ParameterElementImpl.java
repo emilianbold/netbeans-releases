@@ -49,7 +49,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
-import org.netbeans.modules.php.editor.elements.PhpElementImpl.SEPARATOR;
+import org.netbeans.modules.php.editor.elements.PhpElementImpl.Separator;
 import org.openide.util.Exceptions;
 
 /**
@@ -85,7 +85,7 @@ public final class ParameterElementImpl implements ParameterElement {
     static List<ParameterElement> parseParameters(final String signature) {
         List<ParameterElement> retval = new ArrayList<ParameterElement>();
         if (signature != null && signature.length() > 0) {
-            final String regexp = String.format("\\%s", SEPARATOR.COMMA.toString());//NOI18N
+            final String regexp = String.format("\\%s", Separator.COMMA.toString());//NOI18N
             for (String sign : signature.split(regexp)) {
                 try {
                     final ParameterElement param = parseOneParameter(sign);
@@ -105,7 +105,7 @@ public final class ParameterElementImpl implements ParameterElement {
 
     private static ParameterElement parseOneParameter(String sig) throws NumberFormatException {
         ParameterElement retval = null;
-        final String regexp = String.format("\\%s", SEPARATOR.COLON.toString());//NOI18N
+        final String regexp = String.format("\\%s", Separator.COLON.toString());//NOI18N
         String[] parts = sig.split(regexp);
         if (parts.length > 0) {
             String paramName = parts[0];
@@ -124,28 +124,28 @@ public final class ParameterElementImpl implements ParameterElement {
         StringBuilder sb = new StringBuilder();
         final String parameterName = getName().trim();
         assert parameterName.equals(encode(parameterName)) : parameterName;
-        sb.append(parameterName).append(SEPARATOR.COLON);
+        sb.append(parameterName).append(Separator.COLON);
         StringBuilder typeBuilder = new StringBuilder();
         for (TypeResolver typeResolver : getTypes()) {
             TypeResolverImpl resolverImpl = (TypeResolverImpl) typeResolver;
             if (typeBuilder.length() > 0) {
-                typeBuilder.append(SEPARATOR.PIPE);
+                typeBuilder.append(Separator.PIPE);
             }
             typeBuilder.append(resolverImpl.getSignature());
         }
         String typeSignatures = typeBuilder.toString().trim();
         sb.append(typeSignatures);
-        sb.append(SEPARATOR.COLON);//NOI18N
+        sb.append(Separator.COLON);//NOI18N
         sb.append(isRawType ? 1 : 0);
-        sb.append(SEPARATOR.COLON);//NOI18N
+        sb.append(Separator.COLON);//NOI18N
         if (!isMandatory()) {
             final String defVal = getDefaultValue();
             assert defVal != null;
             sb.append(encode(defVal));
         }
-        sb.append(SEPARATOR.COLON);//NOI18N
+        sb.append(Separator.COLON);//NOI18N
         sb.append(isMandatory ? 1 : 0);
-        sb.append(SEPARATOR.COLON);//NOI18N
+        sb.append(Separator.COLON);//NOI18N
         sb.append(isReference ? 1 : 0);
         checkSignature(sb);
         return sb.toString();
@@ -182,16 +182,16 @@ public final class ParameterElementImpl implements ParameterElement {
     }
 
     static String encode(String inStr) {
-        return encode(inStr, SEPARATOR.toEnumSet());
+        return encode(inStr, Separator.toEnumSet());
     }
-    static String encode(String inStr, final EnumSet<SEPARATOR> separators) {
+    static String encode(String inStr, final EnumSet<Separator> separators) {
         StringBuilder outStr = new StringBuilder(6 * inStr.length());
 
         for (int i = 0; i < inStr.length(); i++) {
             final char charAt = inStr.charAt(i);
             boolean encode = isEncodedChar(i, inStr);
             if (!encode) {
-                for (SEPARATOR separator : separators) {
+                for (Separator separator : separators) {
                     char separatorChar = separator.toString().charAt(0);
                     if (charAt == separatorChar) {
                         encode = true;

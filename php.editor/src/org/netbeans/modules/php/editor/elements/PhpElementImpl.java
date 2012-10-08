@@ -71,33 +71,28 @@ import org.openide.util.Utilities;
  */
 public abstract class PhpElementImpl implements PhpElement {
 
-    static enum SEPARATOR {
-        SEMICOLON,
-        COMMA,
-        COLON,
-        PIPE;
+    static enum Separator {
+        SEMICOLON(";"), //NOI18N
+        COMMA(","), //NOI18N
+        COLON(":"), //NOI18N
+        PIPE("|"); //NOI18N
 
-        public static EnumSet<SEPARATOR> toEnumSet() {
-            return EnumSet.allOf(SEPARATOR.class);
+        public static EnumSet<Separator> toEnumSet() {
+            return EnumSet.allOf(Separator.class);
+        }
+
+        private final String value;
+
+        private Separator(final String value) {
+            this.value = value;
         }
 
         @Override
         public String toString() {
-            switch (this) {
-                case SEMICOLON:
-                    return ";";//NOI18N
-                case COMMA:
-                    return ",";//NOI18N
-                case COLON:
-                    return ":";//NOI18N
-                case PIPE:
-                    return "|";//NOI18N
-                default:
-                    assert false;
-            }
-            return super.toString();
+            return value;
         }
     }
+    
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
     private static String clusterUrl = null;
     private final String name;

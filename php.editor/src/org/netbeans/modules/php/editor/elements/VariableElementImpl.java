@@ -182,10 +182,10 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
         final String varName = getName();
-        sb.append(varName.toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(varName).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getOffset()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(varName.toLowerCase()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(varName).append(Separator.SEMICOLON);//NOI18N
+        sb.append(Separator.SEMICOLON);//NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON);//NOI18N
         checkSignature(sb);
         return sb.toString();
     }
