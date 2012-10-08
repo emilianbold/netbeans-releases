@@ -1025,7 +1025,9 @@ public class EditorContextImpl extends EditorContext {
                                         String text = ci.getText();
                                         int l = text.length();
                                         char c = 0;
-                                        while (pos < l && (c = text.charAt(pos)) != '(' && c != ')') pos++;
+                                        while (pos < l && (c = text.charAt(pos)) != '(' && c != ')') {
+                                            pos++;
+                                        }
                                         if (pos >= l) {
                                             // We went somewhere wrong. Re-initialize original values
                                             c = 0;
@@ -1033,7 +1035,9 @@ public class EditorContextImpl extends EditorContext {
                                         }
                                         if (c == '(') {
                                             pos--;
-                                            while (pos > 0 && Character.isWhitespace(text.charAt(pos))) pos--;
+                                            while (pos > 0 && Character.isWhitespace(text.charAt(pos))) {
+                                                pos--;
+                                            }
                                         }
                                     }
                                     result.add(new Integer(NbDocument.findLineNumber(doc, pos) + 1));
@@ -1785,7 +1789,7 @@ public class EditorContextImpl extends EditorContext {
                             }
                             int[] indexes = bytecodeProvider.indexAtLines(treeStartLine, treeEndLine);
                             Map<Tree, Operation> newNodeOperations = new HashMap<Tree, Operation>();
-                            Operation[] newOps = AST2Bytecode.matchSourceTree2Bytecode(
+                            /*Operation[] newOps = */AST2Bytecode.matchSourceTree2Bytecode(
                                     cu,
                                     ci,
                                     newExpTrees, newInfo, bytecodeProvider.byteCodes(),
