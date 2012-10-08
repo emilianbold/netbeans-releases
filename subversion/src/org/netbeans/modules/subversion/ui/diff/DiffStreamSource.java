@@ -92,7 +92,7 @@ public class DiffStreamSource extends StreamSource {
      * @param title title to use in diff panel
      */ 
     public DiffStreamSource(File baseFile, String propertyName, String revision, String title) {
-        this.baseFile = baseFile;
+        this.baseFile = Utilities.isMac() || Utilities.isWindows() ? FileUtil.normalizeFile(baseFile) : baseFile;
         this.propertyName = propertyName;
         this.revision = revision;
         this.title = title;

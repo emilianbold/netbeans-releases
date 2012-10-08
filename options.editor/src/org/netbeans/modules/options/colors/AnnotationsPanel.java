@@ -82,7 +82,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Jan Jancura
  */
-@OptionsPanelController.Keywords(keywords = {"annotations"}, location = OptionsDisplayer.FONTSANDCOLORS, index = 2)
+@OptionsPanelController.Keywords(keywords = {"annotations"}, location = OptionsDisplayer.FONTSANDCOLORS, tabTitle="Annotations")
 public class AnnotationsPanel extends JPanel implements ActionListener, 
     ItemListener, FontsColorsController {
     

@@ -67,6 +67,71 @@ public class ChangeParametersTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test215256() throws Exception { // #215256 - Refactoring "change method parameters" confuses parameters of newly created delegate
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "import java.io.File;\n"
+                + "import java.util.Scanner;\n"
+                + "\n"
+                + "public class A\n"
+                + "{\n"
+                + "    public static void main(String[] args) throws Exception\n"
+                + "    {\n"
+                + "        File file = new File(\"example\");\n"
+                + "        analyzeFile(file);\n"
+                + "    }\n"
+                + "\n"
+                + "    private static void analyzeFile(final File file) throws\n"
+                + "java.io.FileNotFoundException\n"
+                + "    {\n"
+                + "        Scanner scanner = new Scanner(file);\n"
+                + "\n"
+                + "        while(scanner.hasNext())\n"
+                + "        {\n"
+                + "            String nextLine = scanner.nextLine();\n"
+                + "            System.out.println(nextLine);\n"
+                + "        }\n"
+                + "    }\n"
+                + "\n"
+                + "}"));
+        ParameterInfo[] paramTable = new ParameterInfo[] {new ParameterInfo(0, "is", "java.io.InputStream", null)};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 2, true, new Problem(false, "WRN_isNotAssignable"));
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "import java.io.File;\n"
+                + "import java.util.Scanner;\n"
+                + "\n"
+                + "public class A\n"
+                + "{\n"
+                + "    public static void main(String[] args) throws Exception\n"
+                + "    {\n"
+                + "        File file = new File(\"example\");\n"
+                + "        analyzeFile(file);\n"
+                + "    }\n"
+                + "\n"
+                + "    private static void analyzeFile(final File file) throws\n"
+                + "java.io.FileNotFoundException\n"
+                + "    {\n"
+                + "        analyzeFile(file);\n"
+                + "    }\n"
+                + "\n"
+                + "    private static void analyzeFile(final java.io.InputStream is) throws\n"
+                + "java.io.FileNotFoundException\n"
+                + "    {\n"
+                + "        Scanner scanner = new Scanner(is);\n"
+                + "\n"
+                + "        while(scanner.hasNext())\n"
+                + "        {\n"
+                + "            String nextLine = scanner.nextLine();\n"
+                + "            System.out.println(nextLine);\n"
+                + "        }\n"
+                + "    }\n"
+                + "\n"
+                + "}"));
+    }
+    
     public void test218053() throws Exception { // #218053 - IllegalArgumentException after ChangeMethodParameters refactoring
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"

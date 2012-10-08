@@ -71,7 +71,7 @@ import org.netbeans.spi.options.OptionsPanelController;
  * copied from editor/options.
  * @author Maros Sandor
  */
-@OptionsPanelController.Keywords(keywords={"diff colors"}, location=OptionsDisplayer.FONTSANDCOLORS, index=3)
+@OptionsPanelController.Keywords(keywords={"diff colors"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "#LBL_DiffOptions")
 public class DiffColorsPanel extends javax.swing.JPanel implements ActionListener, FontsColorsController, PropertyChangeListener {
     
     private static final String ATTR_NAME_ADDED = "added";

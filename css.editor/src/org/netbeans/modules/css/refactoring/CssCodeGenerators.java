@@ -49,6 +49,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.css.editor.ui.CssRuleCreateActionDialog;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -60,6 +61,7 @@ public class CssCodeGenerators {
 
     public static class Factory implements CodeGenerator.Factory {
 
+        @Override
 	public List<? extends CodeGenerator> create(Lookup context) {
 	    JTextComponent component = context.lookup(JTextComponent.class);
 	    return Collections.singletonList(new GenerateCssRule());
@@ -68,10 +70,12 @@ public class CssCodeGenerators {
 
     public static class GenerateCssRule implements CodeGenerator {
 
+        @Override
 	public String getDisplayName() {
 	    return NbBundle.getMessage(CssCodeGenerators.class, "MSG_CreateCssRule"); //NOI18N
 	}
 
+        @Override
 	public void invoke() {
 	    final JTextComponent target = EditorRegistry.lastFocusedComponent();
 
@@ -82,75 +86,12 @@ public class CssCodeGenerators {
 		final BaseDocument doc = (BaseDocument) target.getDocument();
 		doc.runAtomic(new Runnable() {
 
+                    @Override
 		    public void run() {
-			int searchPos = target.getCaret().getDot() - 1;
-			int insertPos = doc.getLength() + 1;
-			try {
-			    if (searchPos > 0) {
-				String txtBefore = doc.getText(searchPos, 1);
-				while (!(txtBefore.equals("{") || txtBefore.equals("}"))) {
-				    if (txtBefore.equals("/")) {
-					if ((searchPos - 1) >= 0) {
-					    if (doc.getText(searchPos - 1, 1).equals("*")) {
-						break;
-					    } else if ((searchPos + 1) <= doc.getLength()) {
-						if (doc.getText(searchPos + 1, 1).equals("*")) {
-						    break;
-						}
-					    }
-					}
-				    }
-				    searchPos--;
-				    if (searchPos < 0) {
-					break;
-				    }
-				    txtBefore = doc.getText(searchPos, 1);
-				}
-				if (searchPos < 0) {
-				    insertPos = 0;
-				} else if (txtBefore.equals("}")) {
-				    insertPos = searchPos + 1;
-				} else if (txtBefore.equals("/")) {
-				    if ((searchPos - 1) >= 0) {
-					if (doc.getText(searchPos - 1, 1).equals("*")) {
-					    insertPos = searchPos + 1;
-					} else if ((searchPos + 1) <= doc.getLength()) {
-					    if (doc.getText(searchPos + 1, 1).equals("*")) {
-						insertPos = searchPos - 1;
-					    }
-					}
-				    }
-				} else if (txtBefore.equals("{")) {
-				    searchPos = target.getCaret().getDot();
-				    String txtAfter = doc.getText(searchPos, 1);
-				    while (!txtAfter.equals("}")) {
-					searchPos++;
-					if (searchPos > doc.getLength()) {
-					    break;
-					}
-					txtAfter = doc.getText(searchPos, 1);
-				    }
-				    if (txtAfter.equals("}")) {
-					insertPos = searchPos + 1;
-				    }
-				}
-			    } else {
-				insertPos = 0;
-			    }
-			    doc.insertString(insertPos, "\n" + styleRuleName + " {\n\n}", null);
-			    searchPos = insertPos;
-			    String txtAfter = doc.getText(searchPos, 1);
-			    while (!txtAfter.equals("{")) {
-				searchPos++;
-				if (searchPos > doc.getLength()) {
-				    break;
-				}
-				txtAfter = doc.getText(searchPos, 1);
-			    }
-			    searchPos += 2;
-			    target.setCaretPosition(searchPos);
+                        try {
+			    doc.insertString(target.getCaretPosition(), "\n" + styleRuleName + " {\n\n}", null);
 			} catch (BadLocationException exc) {
-			    exc.printStackTrace();
+                            Exceptions.printStackTrace(exc);
 			}
 		    }
 		});

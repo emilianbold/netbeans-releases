@@ -110,9 +110,9 @@ public class BaseFunctionElementSupport  {
                     methdodInvocation = methdodInvocation.substring(1);
                 }
                 if (returns.size() > 0) {
-                    template.append(String.format("{\nreturn parent::%s;\n}", methdodInvocation));//NOI18N
+                    template.append(String.format("{%nreturn parent::%s;%n}", methdodInvocation));//NOI18N
                 } else {
-                    template.append(String.format("{\nparent::%s;\n}", methdodInvocation));//NOI18N
+                    template.append(String.format("{%nparent::%s;%n}", methdodInvocation));//NOI18N
                 }
                 break;
             case ReturnSemiTypes:
@@ -120,13 +120,17 @@ public class BaseFunctionElementSupport  {
                     if (typeResolver.isResolved()) {
                         QualifiedName typeName = typeResolver.getTypeName(false);
                         if (typeName != null) {
-                            if (template.length() > 0) template.append("|");//NOI18N
+                            if (template.length() > 0) {
+                                template.append("|"); //NOI18N
+                            }
                             template.append(typeNameResolver.resolve(typeName).toString());
                         }
                     } else {
                         String typeName = typeResolver.getRawTypeName();
                         if (typeName != null) {
-                            if (template.length() > 0) template.append("|");//NOI18N
+                            if (template.length() > 0) {
+                                template.append("|"); //NOI18N
+                            }
                             template.append(typeName);
                         }
                     }
@@ -137,7 +141,9 @@ public class BaseFunctionElementSupport  {
                     if (typeResolver.isResolved()) {
                         QualifiedName typeName = typeResolver.getTypeName(false);
                         if (typeName != null) {
-                            if (template.length() > 0) template.append("|");//NOI18N
+                            if (template.length() > 0) {
+                                template.append("|"); //NOI18N
+                            }
                             template.append(typeNameResolver.resolve(typeName).toString());
                         }
                     }

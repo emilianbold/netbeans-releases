@@ -50,17 +50,16 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.elements.FieldElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
-import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.php.editor.api.elements.FieldElement;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
 
 /**
  *
@@ -123,7 +122,7 @@ public class InstantRenamerImpl implements InstantRenamer {
             retval.add(occurence.getOccurenceRange());
         }
         allOccurences.clear();
-        return retval != null ? retval : Collections.<OffsetRange>emptySet();
+        return retval;
     }
 
     private boolean checkAll(Occurence caretOccurence) {

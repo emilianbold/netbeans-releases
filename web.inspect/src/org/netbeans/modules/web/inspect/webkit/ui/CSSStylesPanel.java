@@ -270,10 +270,29 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
             documentPanel.updateContent(pageModel, keepSelection);
             selectionPanel.updateContent(pageModel, keepSelection);
         } finally {
+            // Ugly hack that ensures that contentUpdateInProgress
+            // is not set to false before the update of Document
+            // and Selection panes is finished
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    contentUpdateInProgress = false;
+                    CSSStylesDocumentPanel.RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            CSSStylesSelectionPanel.RP.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    EventQueue.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            contentUpdateInProgress = false;
+                                            updateRulesEditor(ruleLookupResult.allInstances());
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
                 }
             });
         }

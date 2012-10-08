@@ -87,10 +87,6 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         insertBreak("x = {^}", "x = {\n    ^\n}");
     }
 
-    public void testInsertEnd1() throws Exception {
-        insertBreak("x^", "x\n^");
-    }
-
     public void testInsertBlockComment() throws Exception {
         insertBreak("/**^", "/**\n * ^\n */");
     }
@@ -141,12 +137,20 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
 //        insertBreak("  x = /test^/", "  x = /test\\n\\\n^/");
 //    }
 
-    public void testInsertEnd2() throws Exception {
+    public void testInsertNewLine1() throws Exception {
+        insertBreak("x^", "x\n^");
+    }
+
+    public void testInsertNewLine2() throws Exception {
         insertBreak("function foo() {^", "function foo() {\n    ^\n}");
     }
 
-    public void testInsertEnd3() throws Exception {
+    public void testInsertNewLine3() throws Exception {
         insertBreak("function foo() {^\n}", "function foo() {\n    ^\n}");
+    }
+
+    public void testInsertNewLine4() throws Exception {
+        insertBreak("function foo() {\n    if(bar())^\n\n}", "function foo() {\n    if(bar())\n        ^\n\n}");
     }
 
     public void testInsertIf1() throws Exception {

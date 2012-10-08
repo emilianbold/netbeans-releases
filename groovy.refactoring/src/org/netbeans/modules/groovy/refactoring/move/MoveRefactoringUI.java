@@ -110,8 +110,11 @@ public class MoveRefactoringUI  implements RefactoringUI, RefactoringUIBypass {
 
     private static String getPackageName(final FileObject fo) {
         final ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        final String fileName = cp.getResourceName(fo, '.', false); //NOI18N
+        if (cp == null) {
+            return ""; //NOI18N
+        }
 
+        final String fileName = cp.getResourceName(fo, '.', false); //NOI18N
         return fileName.substring(0, fileName.lastIndexOf(".")); //NOI18N
     }
 

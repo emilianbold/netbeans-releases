@@ -99,6 +99,7 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
         sb.append(getName()).append(Signature.ITEM_DELIMITER);
         sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        assert namespaceScope != null;
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         if (!usedTraits.isEmpty()) {

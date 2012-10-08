@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.classview.model.ProjectNode;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -326,6 +327,11 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
 
         @Override
         public String getDisplayName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public FileSystem getFileSystem() {
             throw new UnsupportedOperationException();
         }
 

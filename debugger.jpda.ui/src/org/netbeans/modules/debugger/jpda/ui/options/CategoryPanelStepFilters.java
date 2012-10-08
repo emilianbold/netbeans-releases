@@ -64,17 +64,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 import org.netbeans.api.debugger.Properties;
-import org.netbeans.modules.options.java.api.JavaOptions;
-import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
  * @author Martin Entlicher
  */
-@OptionsPanelController.Keywords(keywords={"#CategoryPanelStepFilters.kw1",
-                                           "#CategoryPanelStepFilters.kw2",
-                                           "#CategoryPanelStepFilters.kw3"},
-                                 location=JavaOptions.JAVA, index=3)
 class CategoryPanelStepFilters extends StorablePanel {
 
     /** Creates new form CategoryPanelStepFilters */

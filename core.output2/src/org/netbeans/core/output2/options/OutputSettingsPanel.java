@@ -68,9 +68,17 @@ import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
 @NbBundle.Messages({
-    "LBL_Description=Output Window Settings"
+    "LBL_Description=Output Window Settings",
+    "KW_Output_Window=Output Window",
+    "KW_Font=Font",
+    "KW_Color=Color",
+    "KW_Underline=Underline",
+    "KW_Background=Background"
 })
-@OptionsPanelController.Keywords(keywords={"Output Window Font Color"}, location=OptionsDisplayer.ADVANCED, tabTitle="Output")
+@OptionsPanelController.Keywords(
+    location = OptionsDisplayer.ADVANCED, tabTitle = "Output",
+    keywords = {"#KW_Output_Window", "#KW_Font", "#KW_Color", "#KW_Underline",
+    "#KW_Background", "Output Window", "Font", "Color", "Underline"})
 public final class OutputSettingsPanel extends javax.swing.JPanel {
 
     private OutputOptions outputOptions;

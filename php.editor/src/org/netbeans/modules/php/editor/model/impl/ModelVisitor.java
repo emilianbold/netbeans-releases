@@ -81,8 +81,9 @@ import org.openide.util.Parameters;
 public final class ModelVisitor extends DefaultTreePathVisitor {
 
     private final FileScopeImpl fileScope;
+    //@GuardedBy("this")
     private IndexScope indexScope;
-    private Map<VariableNameFactory, Map<String, VariableNameImpl>> vars;
+    private Map<Scope, Map<String, VariableNameImpl>> vars;
     private final Map<String, List<PhpDocTypeTagInfo>> varTypeComments;
     private volatile OccurenceBuilder occurencesBuilder;
     private volatile CodeMarkerBuilder markerBuilder;
@@ -211,10 +212,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         String name = variable.getName();
                         String type = resolveVariableType(name, functionScope, node);
                         String qualifiedType = VariousUtils.qualifyTypeNames(type, node.getStartOffset(), currentScope);
-                        if (qualifiedType == null) {
-                            var2Type = Collections.emptyMap();
-                            break;
-                        }
                         var2Type.put(name, qualifiedType);
                     }
                     if (!var2Type.isEmpty()) {
@@ -319,17 +316,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         lazyScan = true;
         modelBuilder.setProgram(program);
         fileScope.setBlockRange(program);
-        this.vars = new HashMap<VariableNameFactory, Map<String, VariableNameImpl>>();
-        try {
-            prepareVarComments(program);
-            super.visit(program);
-            handleVarComments();
-        } finally {
-            program = null;
-//            vars = null;
-//            buildOccurences();
-//            buildCodeMarks();
-        }
+        this.vars = new HashMap<Scope, Map<String, VariableNameImpl>>();
+        prepareVarComments(program);
+        super.visit(program);
+        handleVarComments();
     }
 
     @Override
@@ -769,9 +759,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 varN.createLazyFieldAssignment(fieldAccess, node, scope);
             }
         } else if (leftHandSide instanceof StaticFieldAccess) {
-            StaticFieldAccess sfa = (StaticFieldAccess) leftHandSide;
-            //TODO:
-            //CodeUtils.extractQualifiedName(sfa);
+            //TODO
         }
 
         super.scan(rightHandSide);
@@ -1061,11 +1049,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return fileScope;
     }
 
-    public IndexScope getIndexScope() {
-        synchronized(this) {
-            if (indexScope == null) {
-                indexScope = new IndexScopeImpl(info);
-            }
+    public synchronized IndexScope getIndexScope() {
+        if (indexScope == null) {
+            indexScope = new IndexScopeImpl(info);
         }
         return indexScope;
     }
@@ -1286,34 +1272,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
     }
 
-
-//    private Occurence findStrictOccurence(FileScopeImpl scope, int offset) {
-//        Occurence retval = null;
-//        //FileObject fileObject = scope.getFileObject();
-//        List<Occurence> occurences = scope.getOccurences();
-//        for (Occurence occ : occurences) {
-//            assert occ != null;
-//            if (occ.getOccurenceRange().containsInclusive(offset)) {
-//                retval = occ;
-//            }
-//        }
-//        return retval;
-//    }
-//
-//    private Occurence findStrictOccurence(FileScopeImpl scope, ModelElement element) {
-//        Occurence retval = null;
-////        buildOccurences(offset);
-////        //FileObject fileObject = scope.getFileObject();
-////        List<Occurence> occurences = scope.getOccurences();
-////        for (Occurence occ : occurences) {
-////            assert occ != null;
-////            if (occ.getDeclaration().equals(element)) {
-////                retval = occ;
-////            }
-////        }
-//        return retval;
-//    }
-
     private VariableScope findNearestVarScope(Scope scope, int offset, VariableScope atOffset) {
         Collection<? extends ModelElement> elements = scope.getElements();
         for (ModelElement varScope : elements) {
@@ -1323,14 +1281,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (varScope instanceof VariableScope) {
                 if (varScope.getNameRange().getStart() <= offset) {
                     if (atOffset == null || atOffset.getOffset() < varScope.getOffset()) {
-                        if (varScope instanceof VariableScope) {
-                            FileObject fileObject = varScope.getFileObject();
-                            if (fileObject == scope.getFileObject()) {
-                                VariableScope variableScope = (VariableScope) varScope;
-                                OffsetRange blockRange = variableScope.getBlockRange();
-                                if (blockRange == null || blockRange.containsInclusive(offset)) {
-                                    atOffset = variableScope;
-                                }
+                        FileObject fileObject = varScope.getFileObject();
+                        if (fileObject == scope.getFileObject()) {
+                            VariableScope variableScope = (VariableScope) varScope;
+                            OffsetRange blockRange = variableScope.getBlockRange();
+                            if (blockRange == null || blockRange.containsInclusive(offset)) {
+                                atOffset = variableScope;
                             }
                         }
                     }
@@ -1378,13 +1334,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     private void handleVarAssignment(final String name, final VariableScope varScope, final PhpDocTypeTagInfo phpDocTypeTagInfo) {
-        VariableNameImpl varInstance = null;
-        if (varScope instanceof Scope) {
-            Scope scp = (Scope) varScope;
-            varInstance = (VariableNameImpl) ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), name));
-            if (varInstance == null) {
-                varInstance = new VariableNameImpl(scp, name, scp.getFile(), phpDocTypeTagInfo.getRange(), scp instanceof NamespaceScopeImpl);
-            }
+        VariableNameImpl varInstance;
+        varInstance = (VariableNameImpl) ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), name));
+        if (varInstance == null) {
+            varInstance = new VariableNameImpl(varScope, name, varScope.getFile(), phpDocTypeTagInfo.getRange(), varScope instanceof NamespaceScopeImpl);
         }
         if (varInstance != null) {
             ASTNode conditionalNode = findConditionalStatement(getPath());

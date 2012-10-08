@@ -164,8 +164,8 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     public static int CLASS_VIRTUAL_SPECIFIER__FINAL = 99;
     public static int CLASS_VIRTUAL_SPECIFIER__EXPLICIT = 100;
     public static int MEMBER_SPECIFICATION__COLON = 101;
-    public static int MEMBER_DECLARATION__COMMA2 = 101;
-    public static int MEMBER_DECLARATION__SEMICOLON = 102;    
+    public static int SIMPLE_MEMBER_DECLARATION__COMMA2 = 101;
+    public static int SIMPLE_MEMBER_DECLARATION__SEMICOLON = 102;    
     public static int VIRT_SPECIFIER__OVERRIDE = 102;
     public static int VIRT_SPECIFIER__FINAL = 103;
     public static int VIRT_SPECIFIER__NEW = 104;
@@ -426,6 +426,9 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     void member_declaration(Token token);
     void member_declaration(int kind, Token token);
     void end_member_declaration(Token token);
+    void simple_member_declaration(Token token);
+    void simple_member_declaration(int kind, Token token);
+    void end_simple_member_declaration(Token token);
     void member_declarator(Token token);
     void end_member_declarator(Token token);
     void pure_specifier(Token token);

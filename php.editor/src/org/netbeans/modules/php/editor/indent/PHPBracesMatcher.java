@@ -109,7 +109,7 @@ public final class PHPBracesMatcher implements BracesMatcher {
                     return new int [] { ts.offset(), ts.offset() + token.length() };
                 } else if (LexUtilities.textEquals(token.text(), ':')) {
                     do{
-                        ts.movePrevious();;
+                        ts.movePrevious();
                         token = LexUtilities.findPreviousToken(ts,
                                 Arrays.asList(PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF,
                                 PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_SWITCH,

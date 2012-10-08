@@ -48,6 +48,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Pisl
  */
+@org.netbeans.api.annotations.common.SuppressWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class GSFPHPError implements org.netbeans.modules.csl.api.Error.Badging {
 
     private final String displayName;

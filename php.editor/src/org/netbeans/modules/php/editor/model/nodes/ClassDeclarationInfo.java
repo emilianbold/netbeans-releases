@@ -48,15 +48,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -139,7 +139,7 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
         return visitor.getUsedTraits();
     }
 
-    private class UsedTraitsVisitor extends DefaultVisitor {
+    private static class UsedTraitsVisitor extends DefaultVisitor {
         private List<UseTraitStatementPart> useParts = new LinkedList<UseTraitStatementPart>();
 
         @Override

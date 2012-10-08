@@ -98,7 +98,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Jan Jancura
  */
-@OptionsPanelController.Keywords(keywords={"indentation"}, location=OptionsDisplayer.EDITOR, index=1)
+@OptionsPanelController.Keywords(keywords={"indentation"}, location=OptionsDisplayer.EDITOR, tabTitle= "org.netbeans.modules.options.editor.Bundle#CTL_Formating_DisplayName")
 public class IndentationPanel extends JPanel implements ChangeListener, ActionListener, PreferenceChangeListener {
 
     private static final Logger LOG = Logger.getLogger(IndentationPanel.class.getName());

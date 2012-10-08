@@ -45,8 +45,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -59,17 +57,18 @@ public class JsDocumentationReader {
     public static Set<String> getAllTags(Snapshot snapshot) {
         Set<String> tags = new HashSet<String>();
 
-        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.javascriptLanguage());
-        if (tokenSequence == null) {
-            return tags;
-        }
-
-        while (tokenSequence.moveNext()) {
-            if (tokenSequence.token().id() == JsTokenId.DOC_COMMENT) {
-                tags.addAll(getCommentTags(tokenSequence.token().text()));
-                continue;
-            }
-        }
+//        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.javascriptLanguage());
+//        if (tokenSequence == null) {
+//            return tags;
+//        }
+//
+//        while (tokenSequence.moveNext()) {
+//            if (tokenSequence.token().id() == JsTokenId.DOC_COMMENT) {
+//                tags.addAll(getCommentTags(tokenSequence.token().text()));
+//                continue;
+//            }
+//        }
+        tags.addAll(getCommentTags(snapshot.getText()));
 
         return tags;
     }

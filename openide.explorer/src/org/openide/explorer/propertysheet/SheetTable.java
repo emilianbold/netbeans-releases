@@ -519,7 +519,17 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             FeatureDescriptor fd = psm.getFeatureDescriptor(i);
 
             if (null != fd && fd.getName().equals(name)) {
+                //repaint property value
                 Rectangle r = getCellRect(i, 1, true);
+
+                if (PropUtils.isLoggable(SheetTable.class)) {
+                    PropUtils.log(SheetTable.class, "Repainting " + r + " for property " + name);
+                }
+
+                repaint(r.x, r.y, r.width, r.height);
+                
+                //repaint property name as it may changed as well
+                r = getCellRect(i, 0, true);
 
                 if (PropUtils.isLoggable(SheetTable.class)) {
                     PropUtils.log(SheetTable.class, "Repainting " + r + " for property " + name);

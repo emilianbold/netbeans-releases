@@ -107,7 +107,7 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
         return "FIELD " + super.toString(); // NOI18N
     }
     
-    public static class FieldBuilder implements CsmObjectBuilder {
+    public static class FieldBuilder extends SimpleDeclarationBuilder {
         
         private CharSequence name;// = CharSequences.empty();
         private boolean _static = false;

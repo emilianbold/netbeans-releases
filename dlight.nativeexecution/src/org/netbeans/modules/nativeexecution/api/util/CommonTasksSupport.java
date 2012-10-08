@@ -55,6 +55,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
+import org.netbeans.modules.nativeexecution.pty.NbKillUtility;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.support.SignalSupport;
 import org.openide.util.Exceptions;
@@ -165,7 +166,7 @@ public final class CommonTasksSupport {
             npb.setExecutable("/bin/dd").setArguments("if=" + srcFileName, "ibs=" + bs, "count=" + cnt); // NOI18N
         }
 
-        int actual = -1;
+        int actual;
 
         try {
             NativeProcess process = npb.call();
@@ -460,6 +461,32 @@ public final class CommonTasksSupport {
                 "mkdir -p " + dirname); // NOI18N
     }
 
+    public enum SIGNAL_SCOPE {
+        PROCESS,
+        GROUP,
+        SESSION
+    }
+
+    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, final SIGNAL_SCOPE scope, final int id, final Signal signal, final Writer error) {
+        final String descr = "Sending signal " + signal + " to " + scope + " " + id; // NOI18N
+        return NativeTaskExecutorService.submit(new Callable<Integer>() {
+
+            @Override
+            public Integer call() throws Exception {
+                switch (scope) {
+                    case PROCESS:
+                        return NbKillUtility.getInstance().signalProcess(execEnv, signal, id);
+                    case GROUP:
+                        return NbKillUtility.getInstance().signalGroup(execEnv, signal, id);
+                    case SESSION:
+                        return NbKillUtility.getInstance().signalSession(execEnv, signal, id);
+                    default:
+                        return -1;
+                }
+            }
+        }, descr);
+    }
+
     /**
      * Sends the signal to the process.
      *
@@ -473,15 +500,7 @@ public final class CommonTasksSupport {
      *         means failure.
      */
     public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, final int pid, final Signal signal, final Writer error) {
-        final String descr = "Sending signal " + signal + " to " + pid; // NOI18N
-
-        return NativeTaskExecutorService.submit(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                SignalSupport support = SignalSupport.getSignalSupportFor(execEnv);
-                return support.kill(signal, pid);
-            }
-        }, descr);
+        return sendSignal(execEnv, SIGNAL_SCOPE.PROCESS, pid, signal, error);
     }
 
     /**
@@ -497,15 +516,11 @@ public final class CommonTasksSupport {
      *         means failure.
      */
     public static Future<Integer> sendSignalGrp(final ExecutionEnvironment execEnv, final int pid, final Signal signal, final Writer error) {
-        final String descr = "Sending signal " + signal + " to " + pid + " group"; // NOI18N
+        return sendSignal(execEnv, SIGNAL_SCOPE.GROUP, pid, signal, error);
+    }
 
-        return NativeTaskExecutorService.submit(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                SignalSupport support = SignalSupport.getSignalSupportFor(execEnv);
-                return support.killgrp(signal, pid);
-            }
-        }, descr);
+    public static Future<Integer> sendSignalSession(final ExecutionEnvironment execEnv, final int pid, final Signal signal, final Writer error) {
+        return sendSignal(execEnv, SIGNAL_SCOPE.SESSION, pid, signal, error);
     }
 
     public static class UploadStatus {

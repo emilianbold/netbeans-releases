@@ -62,7 +62,7 @@ import org.openide.filesystems.FileObject;
 public abstract class RefactoringElement {
 
     protected final FileObject fileObject;
-    protected ASTNode node;
+    protected final ASTNode node;
     protected Set<Modifier> modifiers;
     
 

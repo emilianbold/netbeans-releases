@@ -459,20 +459,11 @@ public final class DashboardViewer implements PropertyChangeListener {
             if (isCategoryInFilter(newNode)) {
                 addCategoryToModel(newNode);
             }
-
             storeClosedCategories();
-//            if (newNode.isOpened()) {
-//                SwingUtilities.invokeLater(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        newNode.setExpanded(true);
-//                    }
-//                });
-//            }
         }
     }
 
-    private void addCategoryToModel(CategoryNode categoryNode) {
+    private void addCategoryToModel(final CategoryNode categoryNode) {
         int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
         int size = model.getRootNodes().size();
         boolean added = false;
@@ -481,19 +472,19 @@ public final class DashboardViewer implements PropertyChangeListener {
             if (node instanceof CategoryNode) {
                 CategoryNode displNode = (CategoryNode) node;
                 if (categoryNode.compareTo(displNode) < 0) {
-                    model.addRoot(model.getRootNodes().indexOf(node), categoryNode);
+                    addRootToModel(model.getRootNodes().indexOf(node), categoryNode);
                     added = true;
                     break;
                 }
             } else {
                 // the end of category list, add
-                model.addRoot(model.getRootNodes().indexOf(node), categoryNode);
+                addRootToModel(model.getRootNodes().indexOf(node), categoryNode);
                 added = true;
                 break;
             }
         }
         if (!added) {
-            model.addRoot(-1, categoryNode);
+            addRootToModel(-1, categoryNode);
         }
     }
 
@@ -566,7 +557,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             //add repository to the model - sorted
             RepositoryNode repositoryNode = new RepositoryNode(repository, false);
             repositoryNodes.add(repositoryNode);
-            addRepositoryToModel(repositoryNode);
+            addRepositoryToModel(repositoryNode, true);
         }
     }
 
@@ -614,17 +605,9 @@ public final class DashboardViewer implements PropertyChangeListener {
             }
             repositoryNodes.add(newNode);
             if (isRepositoryInFilter(newNode)) {
-                addRepositoryToModel(newNode);
+                addRepositoryToModel(newNode, newNode.isOpened());
             }
             storeClosedRepositories();
-            if (newNode.isOpened()) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        newNode.setExpanded(true);
-                    }
-                });
-            }
         }
     }
 
@@ -646,7 +629,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    private void addRepositoryToModel(RepositoryNode repositoryNode) {
+    private void addRepositoryToModel(final RepositoryNode repositoryNode, boolean expand) {
         int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
         int size = model.getRootNodes().size();
         boolean added = false;
@@ -655,19 +638,30 @@ public final class DashboardViewer implements PropertyChangeListener {
             if (node instanceof RepositoryNode) {
                 RepositoryNode displNode = (RepositoryNode) node;
                 if (repositoryNode.compareTo(displNode) < 0) {
-                    model.addRoot(model.getRootNodes().indexOf(node), repositoryNode);
+                    addRootToModel(model.getRootNodes().indexOf(node), repositoryNode);
                     added = true;
                     break;
                 }
             } else {
                 // the end of category list, add
-                model.addRoot(model.getRootNodes().indexOf(node), repositoryNode);
+                addRootToModel(model.getRootNodes().indexOf(node), repositoryNode);
                 added = true;
                 break;
             }
         }
         if (!added) {
-            model.addRoot(-1, repositoryNode);
+            addRootToModel(-1, repositoryNode);
+        }
+
+        if (expand) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (repositoryNode.isOpened()) {
+                        repositoryNode.setExpanded(true);
+                    }
+                }
+            });
         }
     }
 
@@ -900,7 +894,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 RepositoryNode repositoryNode = new RepositoryNode(newRepository, false);
                 repositoryNodes.add(repositoryNode);
                 if (isRepositoryInFilter(repositoryNode)) {
-                    addRepositoryToModel(repositoryNode);
+                    addRepositoryToModel(repositoryNode, repositoryNode.isOpened());
                 }
             }
         }

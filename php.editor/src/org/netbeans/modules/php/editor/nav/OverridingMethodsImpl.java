@@ -58,7 +58,6 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -88,7 +87,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
             final Set<MethodElement> overridenMethods = methodNameFilter.filter(getInheritedMethods(info, method));
             List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
             for (MethodElement methodElement : overridenMethods) {
-                retval.add(new MethodLocation(methodElement));
+                retval.add(MethodLocation.newInstance(methodElement));
             }
             return retval;
         }
@@ -104,13 +103,13 @@ public class OverridingMethodsImpl implements OverridingMethods {
             final Set<MethodElement> overridenByMethods = methodNameFilter.filter(getInheritedByMethods(info, method));
             List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
             for (MethodElement methodElement : overridenByMethods) {
-                retval.add(new MethodLocation(methodElement));
+                retval.add(MethodLocation.newInstance(methodElement));
             }
             return retval;
         } else if (handle instanceof TypeScope) {
             List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
             for (TypeElement typeElement : getInheritedByTypes(info, (TypeScope) handle)) {
-                retval.add(new TypeLocation(typeElement));
+                retval.add(TypeLocation.newInstance(typeElement));
             }
             return retval;
         }
@@ -129,7 +128,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
      */
     private Set<MethodElement> getInheritedMethods(final ParserResult info, final MethodScope method) {
         final String signature = method.getInScope().getIndexSignature();
-        if (!signature.equals(classSignatureForInheritedMethods)) {
+        if (signature != null && !signature.equals(classSignatureForInheritedMethods)) {
             Index index = ElementQueryFactory.getIndexQuery(info);
             inheritedMethods = index.getInheritedMethods((TypeScope) method.getInScope());
         }
@@ -143,7 +142,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
      */
     private LinkedHashSet<TypeElement> getInheritedByTypes(final ParserResult info, final TypeScope type) {
         final String signature = type.getIndexSignature();
-        if (!signature.equals(classSignatureForInheritedByTypes)) {
+        if (signature != null && !signature.equals(classSignatureForInheritedByTypes)) {
             Index index = ElementQueryFactory.getIndexQuery(info);
             inheritedByTypes = index.getInheritedByTypes(type);
         }
@@ -156,7 +155,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
      */
     private Set<MethodElement> getInheritedByMethods(final ParserResult info, final MethodScope method) {
         final String signature = method.getInScope().getIndexSignature();
-        if (!signature.equals(classSignatureForInheritedByMethods)) {
+        if (signature != null && !signature.equals(classSignatureForInheritedByMethods)) {
             Index index = ElementQueryFactory.getIndexQuery(info);
             TypeScope type = (TypeScope) method.getInScope();
             inheritedByMethods = new HashSet<MethodElement>();
@@ -169,8 +168,15 @@ public class OverridingMethodsImpl implements OverridingMethods {
     }
 
     private static class MethodLocation extends DeclarationFinderImpl.AlternativeLocationImpl {
-        public MethodLocation(PhpElement modelElement) {
-            super(modelElement, new DeclarationLocation(modelElement.getFileObject(), modelElement.getOffset(), modelElement));
+
+        public static MethodLocation newInstance(PhpElement modelElement) {
+            FileObject fileObject = modelElement.getFileObject();
+            DeclarationLocation declarationLocation = fileObject == null ? DeclarationLocation.NONE : new DeclarationLocation(fileObject, modelElement.getOffset(), modelElement);
+            return new MethodLocation(modelElement, declarationLocation);
+        }
+
+        private MethodLocation(PhpElement modelElement, DeclarationLocation declarationLocation) {
+            super(modelElement, declarationLocation);
         }
 
         @Override
@@ -189,8 +195,15 @@ public class OverridingMethodsImpl implements OverridingMethods {
         }
     }
     private static class TypeLocation extends DeclarationFinderImpl.AlternativeLocationImpl {
-        public TypeLocation(PhpElement modelElement) {
-            super(modelElement, new DeclarationLocation(modelElement.getFileObject(), modelElement.getOffset(), modelElement));
+
+        public static TypeLocation newInstance(PhpElement modelElement) {
+            FileObject fileObject = modelElement.getFileObject();
+            DeclarationLocation declarationLocation = fileObject == null ? DeclarationLocation.NONE : new DeclarationLocation(fileObject, modelElement.getOffset(), modelElement);
+            return new TypeLocation(modelElement, declarationLocation);
+        }
+
+        private TypeLocation(PhpElement modelElement, DeclarationLocation declarationLocation) {
+            super(modelElement, declarationLocation);
         }
 
         @Override
@@ -198,9 +211,10 @@ public class OverridingMethodsImpl implements OverridingMethods {
             StringBuilder sb = new StringBuilder(30);
             TypeElement type = (TypeElement) getElement();
             sb.append(type.getFullyQualifiedName().toNotFullyQualified().toString());
-            if (type.getFileObject() != null) {
+            FileObject fileObject = type.getFileObject();
+            if (fileObject != null) {
                 sb.append(" ("); // NOI18N
-                sb.append(type.getFileObject().getNameExt());
+                sb.append(fileObject.getNameExt());
                 sb.append(")"); // NOI18N
             }
             return sb.toString();

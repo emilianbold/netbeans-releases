@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import javax.lang.model.util.Elements;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 import org.eclipse.persistence.jpa.internal.jpql.JPQLQueryProblemResourceBundle;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
@@ -117,15 +118,18 @@ public class JPQLExecutor {
             boolean execute) {
         JPQLResult result = new JPQLResult();
         jpql = jpql.trim();
+        EntityManagerFactory emf = null;
+        EntityManager em = null;
+        EntityTransaction transaction = null;
         try {
             ph.progress(60);
 
             Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");//NOI18N
             javax.persistence.Persistence p = (javax.persistence.Persistence) pClass.newInstance();
             
-            EntityManagerFactory emf = p.createEntityManagerFactory(pu.getName(), props);
+            emf = p.createEntityManagerFactory(pu.getName(), props);
 
-            EntityManager em = emf.createEntityManager();
+            em = emf.createEntityManager();
 
             Logger.getLogger("org.hibernate.hql.internal.ast.ErrorCounter").setFilter(new Filter() {//NOI18N
                 @Override
@@ -180,6 +184,8 @@ public class JPQLExecutor {
             //
             ph.progress(70);
             if (execute) {
+                transaction = em.getTransaction();
+                transaction.begin();
                 query.setMaxResults(maxRowCount);
 
                 
@@ -190,6 +196,7 @@ public class JPQLExecutor {
                 } else {
                     result.setQueryResults(query.getResultList());
                 }
+                transaction.commit();
             }
         } catch (Exception e) {
             result.getExceptions().add(e);
@@ -235,6 +242,18 @@ public class JPQLExecutor {
                     }
                 }, false);
             } catch (IOException ex) {
+            } finally {
+                if(transaction != null){
+                    transaction.isActive();
+                    transaction.rollback();
+                }
+                if(em != null) {
+                    em.clear();
+                    em.close();
+                }
+                if(emf != null) {
+                    emf.close();
+                }
             }
             if (problems.size() > 0) {
                 //use parsed result for errors

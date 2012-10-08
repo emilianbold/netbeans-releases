@@ -48,7 +48,6 @@ import java.util.List;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
@@ -81,8 +80,6 @@ public abstract class AbstractFindUsages {
     }
 
     protected abstract List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass);
-
-    protected abstract ElementKind getElementKind();
 
     protected List<AbstractFindUsagesVisitor> singleVisitor(AbstractFindUsagesVisitor visitor) {
         return Collections.singletonList(visitor);
