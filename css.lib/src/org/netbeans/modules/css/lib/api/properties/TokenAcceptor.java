@@ -263,9 +263,12 @@ public abstract class TokenAcceptor {
          * mm: millimeters pt: points -- the points used by CSS2 are equal to
          * 1/72th of an inch. pc: picas -- 1 pica is equal to 12 points.
          */
+        
+        //!!! if a longer postfix has sub-postfix which equals to any of the shortest
+        //postfixes, then it needs to be before the sub-postfix postfix (e.g. rem - em)!!!
         private static final List<String> POSTFIXES = Arrays.asList(new String[]{
-            "px", "ex", "em", "in", "gd", "rem", 
-            "vw", "vh", "vm", "ch", "cm", "mm", "pt", "pc"}); //NOI18N
+            "rem", "vmin", "vmax", "ex", "em", "vw", "vh", "ch",
+            "cm", "mm", "in", "pt", "pc", "px"}); //NOI18N
 
         public Length(String id) {
             super(id);
