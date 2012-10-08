@@ -63,7 +63,7 @@ import org.openide.util.lookup.Lookups;
 /**
  * Replaces the old project system options panel.
  */
-@OptionsPanelController.Keywords(keywords={"c/c++ project options"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, tabTitle= "#TAB_ProjectsTab")
+@OptionsPanelController.Keywords(keywords={"#ProjectsOptionsKeywords"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, tabTitle= "#TAB_ProjectsTab")
 public class ProjectOptionsPanel extends JPanel {
 
     private boolean changed;

@@ -51,7 +51,14 @@ import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
  *
  * @author Petr Hejl
  */
-@ProjectServiceProvider(service=ProjectXmlSavedHook.class, projectType="org-netbeans-modules-java-j2seproject")
+@ProjectServiceProvider(
+    service = ProjectXmlSavedHook.class,
+    projectType = {
+        "org-netbeans-modules-java-j2seproject",
+        "org-netbeans-modules-web-project",
+        "org-netbeans-modules-j2ee-ejbjarproject"
+    }
+)
 public class GroovyXmlSavedHook extends ProjectXmlSavedHook {
 
     private final Project project;

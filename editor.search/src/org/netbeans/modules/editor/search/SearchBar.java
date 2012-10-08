@@ -740,11 +740,13 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 // valid regexp
                 incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
                 org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
+                changeHighlightCheckboxName(getCountFindMatches(findSupport));
             } else {
                 // invalid regexp
                 incSearchTextField.setForeground(INVALID_REGEXP);
                 org.netbeans.editor.Utilities.setStatusBoldText(getActualTextComponent(), NbBundle.getMessage(
                         SearchBar.class, "incremental-search-invalid-regexp", patternErrorMsg)); //NOI18N
+                changeHighlightCheckboxName(0);
             }
         } else {
             if (findSupport.incSearch(searchProps.getProperties(), caretPosition) || empty) {

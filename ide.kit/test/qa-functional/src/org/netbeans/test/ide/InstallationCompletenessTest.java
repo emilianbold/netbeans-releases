@@ -64,11 +64,11 @@ public class InstallationCompletenessTest extends NbTestCase {
 
     public enum Type {
 
-        JAVASE("base,javase"),
-        JAVAEE("base,javase,javaee"),
-        PHP("base,php"),
+        JAVASE("base,javase,websvccommon"),
+        JAVAEE("base,javase,websvccommon,javaee,webcommon"),
+        PHP("base,php,websvccommon,webcommon"),
         CND("base,cnd"),
-        FULL("base,java,javaee,php,cnd");
+        FULL("base,javase,javaee,php,cnd,webcommon,websvccommon,full");
         private String parts;
 
         private Type(String parts) {

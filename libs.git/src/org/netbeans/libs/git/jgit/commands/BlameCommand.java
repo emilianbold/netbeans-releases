@@ -121,11 +121,9 @@ public class BlameCommand extends GitCommand {
         @Override
         protected int hashRegion (final byte[] raw, int ptr, int end) {
             int hash = 5381;
-            if (ptr > -1) {
-                end = trimTrailingEoL(raw, ptr, end);
-                for (; ptr < end; ptr++) {
-                    hash = ((hash << 5) + hash) + (raw[ptr] & 0xff);
-                }
+            end = trimTrailingEoL(raw, ptr, end);
+            for (; ptr < end; ptr++) {
+                hash = ((hash << 5) + hash) + (raw[ptr] & 0xff);
             }
             return hash;
         }
@@ -140,7 +138,7 @@ public class BlameCommand extends GitCommand {
         
         private static int trimTrailingEoL(byte[] raw, int start, int end) {
             int ptr = end - 1;
-            while (start <= ptr && raw[ptr] == '\r' || raw[ptr] == '\n') {
+            while (start <= ptr && (raw[ptr] == '\r' || raw[ptr] == '\n')) {
                 ptr--;
             }
 

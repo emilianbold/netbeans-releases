@@ -272,9 +272,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /* Was the document modified by doing inert/remove */
     protected boolean modified;
 
-    /** Listener to changes in find support */
-    PropertyChangeListener findSupportListener;
-
     /** Default element - lazily inited */
     protected Element defaultRootElem;
 
@@ -559,17 +556,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             ((BaseKit) kit).initDocument(this);
         }
 
-        // Start listen on find-support
-        findSupportListener = new PropertyChangeListener() {
-                                  public @Override void propertyChange(PropertyChangeEvent evt) {
-                                      findSupportChange(evt);
-                                  }
-                              };
-        findSupportChange(null); // update doc by find settings
-
-        FindSupport.getFindSupport().addPropertyChangeListener(findSupportListener);
-        findSupportChange(null); // update doc by find settings
-
         ModRootElement modElementRoot = new ModRootElement(this);
         this.addUpdateDocumentListener(modElementRoot);
         modElementRoot.setEnabled(true);
@@ -601,13 +587,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 return text.charAt(index);
             }
         };
-    }
-
-    private void findSupportChange(PropertyChangeEvent evt) {
-        // set all finders to null
-        putProperty(STRING_FINDER_PROP, null);
-        putProperty(STRING_BWD_FINDER_PROP, null);
-        putProperty(BLOCKS_FINDER_PROP, null);
     }
 
     Syntax getFreeSyntax() {

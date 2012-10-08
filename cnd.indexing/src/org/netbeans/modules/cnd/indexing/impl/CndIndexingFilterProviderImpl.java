@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.indexing.impl;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -56,6 +57,7 @@ import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -77,7 +79,23 @@ public class CndIndexingFilterProviderImpl implements APTIndexingFilterProvider 
             @Override
             public void run() {
                 DocumentIndex index = CndTextIndexManager.get(fs);
-                IndexDocument doc = IndexManager.createDocument(name);
+                IndexDocument doc = null;
+//                Collection<? extends IndexDocument> existing;
+//                try {
+//                    existing = index.findByPrimaryKey(name, Queries.QueryKind.EXACT, null);
+//                    if (!existing.isEmpty()) {
+//                        if (existing.size() > 1) {
+//                            Logger.getLogger(CndIndexingFilterProviderImpl.class.getName()).warning("More than one document in the index: " + name); //NOI18N
+//                        }
+//                        doc = existing.iterator().next();
+//                    }
+//                } catch (Exception ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+                if (doc == null) {
+                    doc = IndexManager.createDocument(name);
+                }
+                
                 doc.addPair(CndTextIndexManager.FIELD_PATH, name, true, true);
                 for (String id : ids) {
                     doc.addPair(CndTextIndexManager.FIELD_IDS, id, true, true);
@@ -85,7 +103,7 @@ public class CndIndexingFilterProviderImpl implements APTIndexingFilterProvider 
                 index.addDocument(doc);
                 
                 // store
-                if (false) {
+                if (true) {
                     try {
                         index.store(false);
                     } catch (IOException ex) {

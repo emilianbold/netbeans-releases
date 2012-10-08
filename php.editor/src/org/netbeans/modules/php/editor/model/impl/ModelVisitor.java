@@ -89,6 +89,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private volatile CodeMarkerBuilder markerBuilder;
     private final ModelBuilder modelBuilder;
     private final PHPParseResult info;
+    //@GuardedBy("this")
     private boolean  askForEditorExtensions = true;
     private List<PhpBaseElement> baseElements;
     private final Cache<Scope, Map<String, AssignmentImpl>> assignmentMapCache = new Cache<Scope, Map<String, AssignmentImpl>>();
