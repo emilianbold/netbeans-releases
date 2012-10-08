@@ -141,7 +141,7 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
                             final ClassNode node = createClassNode(name, typeElement);
                             if (node != null) {
                                 cache.put(name, node);
-                            } 
+                            }
                             //else type exists but groovy support cannot create it from javac
                             //delegate to slow class loading, workaround of fix of issue # 206811
                             holder[0] = node;
@@ -159,24 +159,26 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
         }
 
         private ClassNode createClassNode(String name, TypeElement typeElement) {
-            if (typeElement.getKind().isInterface()) {
+            ElementKind kind = typeElement.getKind();
+            if (kind == ElementKind.ANNOTATION_TYPE) {
+                return createAnnotationType(name, typeElement);
+            } else if (kind == ElementKind.INTERFACE) {
                 return createInterfaceKind(name, typeElement);
             } else {
                 return createClassType(name, typeElement);
             }
         }
 
+        private ClassNode createAnnotationType(String name, TypeElement typeElement) {
+            final int modifiers = Opcodes.ACC_ANNOTATION;
+            final ClassNode[] interfaces = new ClassNode[] {ClassHelper.Annotation_TYPE};
+
+            return new ClassNode(name, modifiers, null, interfaces, MixinNode.EMPTY_ARRAY);
+        }
+
         private ClassNode createInterfaceKind(String name, TypeElement typeElement) {
             int modifiers = 0;
             Set<ClassNode> interfaces = new HashSet<ClassNode>();
-
-            // FIXME give it up and use classloader - annotations created in sources won't work
-            // OTOH it will not resolve annotation coming from java source file :( 170517
-            if (typeElement.getKind() == ElementKind.ANNOTATION_TYPE) {
-                return null;
-                // modifiers |= Opcodes.ACC_ANNOTATION;
-                // interfaces.add(ClassHelper.Annotation_TYPE);
-            }
 
             // Fix for issue 206811 --> This still needs to be improved and we have
             // to create ClassNodes for generics paremeters and add them into the

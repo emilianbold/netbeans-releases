@@ -45,6 +45,7 @@
 package org.netbeans.modules.groovy.refactoring.utils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -124,34 +125,30 @@ public class GroovyProjectUtil {
 
     public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
         assert files.length > 0;
-        final Set<URI> dependentRoots = new HashSet<URI>();
+        final Set<URL> dependentRoots = new HashSet<URL>();
         for (FileObject fo : files) {
             if (fo != null) {
                 Project p = FileOwnerQuery.getOwner(fo);
 
-                try {
-                    if (p != null) {
-                        ClassPath sourceClasspath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                        if (sourceClasspath != null) {
-                            final URL sourceRoot = URLMapper.findURL(sourceClasspath.findOwnerRoot(fo), URLMapper.INTERNAL);
-                            for (URL root : SourceUtils.getDependentRoots(sourceRoot)) {
-                                dependentRoots.add(root.toURI());
-                            }
-                        }
-
-                        for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                            dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL).toURI());
-                        }
-
-                    } else {
-                        for(ClassPath cp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
-                            for (FileObject root : cp.getRoots()) {
-                                dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL).toURI());
-                            }
+                if (p != null) {
+                    ClassPath sourceClasspath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                    if (sourceClasspath != null) {
+                        final URL sourceRoot = URLMapper.findURL(sourceClasspath.findOwnerRoot(fo), URLMapper.INTERNAL);
+                        for (URL root : SourceUtils.getDependentRoots(sourceRoot)) {
+                            dependentRoots.add(root);
                         }
                     }
-                } catch (URISyntaxException ex) {
-                    Exceptions.printStackTrace(ex);
+
+                    for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                        dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+                    }
+
+                } else {
+                    for(ClassPath cp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+                        for (FileObject root : cp.getRoots()) {
+                            dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+                        }
+                    }
                 }
             }
         }
@@ -159,7 +156,7 @@ public class GroovyProjectUtil {
         final ClassPath bootCP = getClassPath(files[0], ClassPath.BOOT);
         final ClassPath compileCP = getClassPath(files[0], ClassPath.COMPILE);
         final ClassPath sourceCP = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
-
+        
         return ClasspathInfo.create(bootCP, compileCP, sourceCP);
     }
 

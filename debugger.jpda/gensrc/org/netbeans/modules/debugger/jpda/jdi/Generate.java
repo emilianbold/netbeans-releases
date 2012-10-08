@@ -168,6 +168,8 @@ public class Generate {
         ThreadReferenceExceptions.put("forceEarlyReturn", new LinkedHashSet<Class>(Arrays.asList(
                 new Class[] { com.sun.jdi.NativeMethodException.class,
                               com.sun.jdi.InvalidStackFrameException.class })));
+        ThreadReferenceExceptions.put("threadGroup", new LinkedHashSet<Class>(Arrays.asList(
+                new Class[] { com.sun.jdi.VMOutOfMemoryException.class })));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ThreadReference.class.getName(), ThreadReferenceExceptions);
 
         Map<String, Set<Class>> StackFrameExceptions = new LinkedHashMap<String, Set<Class>>();

@@ -43,6 +43,7 @@
 package org.netbeans.modules.groovy.support.wizard.impl;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -383,7 +384,7 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
         return (result != null) ? result : Collections.<FileObject>emptyList();
     }
 
-    private static class JUnitLibraryComparator implements Comparator<Library> {
+    private static class JUnitLibraryComparator implements Comparator<Library>, Serializable {
 
         @Override
         public int compare(Library l1, Library l2) {

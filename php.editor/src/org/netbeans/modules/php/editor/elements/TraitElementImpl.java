@@ -123,21 +123,21 @@ public class TraitElementImpl extends TypeElementImpl implements TraitElement {
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(SEPARATOR.SEMICOLON);
-        sb.append(getName()).append(SEPARATOR.SEMICOLON);
-        sb.append(getOffset()).append(SEPARATOR.SEMICOLON);
-        sb.append(getNamespaceName()).append(SEPARATOR.SEMICOLON);
+        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON);
+        sb.append(getName()).append(Separator.SEMICOLON);
+        sb.append(getOffset()).append(Separator.SEMICOLON);
+        sb.append(getNamespaceName()).append(Separator.SEMICOLON);
         if (!usedTraits.isEmpty()) {
             StringBuilder traitSb = new StringBuilder();
             for (QualifiedName usedTrait : usedTraits) {
                 if (traitSb.length() > 0) {
-                    traitSb.append(SEPARATOR.COMMA);
+                    traitSb.append(Separator.COMMA);
                 }
                 traitSb.append(usedTrait.toString());
             }
             sb.append(traitSb);
         }
-        sb.append(SEPARATOR.SEMICOLON);
+        sb.append(Separator.SEMICOLON);
         return sb.toString();
     }
 
@@ -175,7 +175,7 @@ public class TraitElementImpl extends TypeElementImpl implements TraitElement {
         private Collection<QualifiedName> getUsedTraits() {
             Collection<QualifiedName> retval = new HashSet<QualifiedName>();
             String traits = signature.string(4);
-            final String[] traitNames = traits.split(SEPARATOR.COMMA.toString());
+            final String[] traitNames = traits.split(Separator.COMMA.toString());
             for (String trait : traitNames) {
                 retval.add(QualifiedName.create(trait));
             }
