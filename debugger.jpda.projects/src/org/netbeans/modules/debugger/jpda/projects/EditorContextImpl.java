@@ -167,7 +167,7 @@ import org.openide.util.RequestProcessor;
 public class EditorContextImpl extends EditorContext {
 
     private static String fronting =
-        System.getProperty ("netbeans.debugger.fronting");
+        System.getProperty ("netbeans.debugger.fronting", "true");
 
     private PropertyChangeSupport   pcs;
     private Map                     annotationToURL = new HashMap ();
@@ -217,7 +217,7 @@ public class EditorContextImpl extends EditorContext {
         }
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         boolean reuseEditorTabs = p.getBoolean("ReuseEditorTabs", true);
-        if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows() || Utilities.isMac()) {
+        if ("true".equalsIgnoreCase(fronting)) {
             if (reuseEditorTabs) {
                 l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
             }
@@ -246,7 +246,7 @@ public class EditorContextImpl extends EditorContext {
                     "Show Source: Have no line for URL = "+url+", line number = "+lineNumber);
             return false;
         }
-        if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows() || Utilities.isMac()) {
+        if ("true".equalsIgnoreCase(fronting)) {
             l.show (ShowOpenType.OPEN, ShowVisibilityType.FRONT, column); //FIX 47825
         } else {
             l.show (ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column);
