@@ -77,7 +77,7 @@ public class DebuggerTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Utils.lineFactory = new TestLineFactory();
+        Utils.setLineFactory(new TestLineFactory());
         System.setProperty("TestRun", "On");
     }
 
