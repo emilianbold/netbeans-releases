@@ -75,7 +75,7 @@ import org.openide.util.RequestProcessor;
  * Implementation of one panel in Options Dialog.
  * @author Jan Jancura, Jesse Glick
  */
-@OptionsPanelController.Keywords(keywords={"ant"}, location=JavaOptions.JAVA, index=0)
+@OptionsPanelController.Keywords(keywords={"ant"}, location=JavaOptions.JAVA, tabTitle= "#Ant")
 public class AntCustomizer extends JPanel implements ActionListener {
     
     private List<File> classpath = Collections.emptyList();

@@ -924,7 +924,9 @@ class OccurenceBuilder {
                     isTheRightType = true;
                 } else {
                     final Collection<QualifiedName> queryComposedNames = VariousUtils.getComposedNames(queryQN, nodeCtxInfo.getNamespaceScope());
-                    final Collection<QualifiedName> nodeQomposedNames = VariousUtils.getComposedNames(nodeQN, ModelUtils.getNamespaceScope(entry.getValue()));
+                    NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(entry.getValue());
+                    assert namespaceScope != null;
+                    final Collection<QualifiedName> nodeQomposedNames = VariousUtils.getComposedNames(nodeQN, namespaceScope);
                     queryComposedNames.retainAll(nodeQomposedNames);
                     isTheRightType = !queryComposedNames.isEmpty();
                 }
@@ -1931,7 +1933,9 @@ class OccurenceBuilder {
                 return true;
             }
             final Collection<QualifiedName> queryComposedNames = VariousUtils.getComposedNames(queryQN, query.getNamespaceScope());
-            final Collection<QualifiedName> nodeQomposedNames = VariousUtils.getComposedNames(nodeQN, ModelUtils.getNamespaceScope(nodeScope));
+            NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(nodeScope);
+            assert namespaceScope != null;
+            final Collection<QualifiedName> nodeQomposedNames = VariousUtils.getComposedNames(nodeQN, namespaceScope);
             queryComposedNames.retainAll(nodeQomposedNames);
             return !queryComposedNames.isEmpty();
         }
@@ -2041,7 +2045,7 @@ class OccurenceBuilder {
 
         public QualifiedName getTypeQualifiedName() {
             ASTNodeInfo nodeInfo = getNodeInfo();
-            QualifiedName qualifiedName = null;
+            QualifiedName qualifiedName;
             if (nodeInfo != null) {
                 ASTNode originalNode = nodeInfo.getOriginalNode();
                 if (nodeInfo instanceof ClassConstantDeclarationInfo && originalNode instanceof Identifier) {
@@ -2076,7 +2080,7 @@ class OccurenceBuilder {
 
         public QualifiedName getQualifiedName() {
             ASTNodeInfo nodeInfo = getNodeInfo();
-            QualifiedName qualifiedName = null;
+            QualifiedName qualifiedName;
             if (nodeInfo != null) {
                 qualifiedName = nodeInfo.getQualifiedName();
             } else {

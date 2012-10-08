@@ -77,7 +77,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Dusan Balek
  */
-@OptionsPanelController.Keywords(keywords={"formatting"}, location=OptionsDisplayer.EDITOR, index=1)
+@OptionsPanelController.Keywords(keywords={"formatting"}, location=OptionsDisplayer.EDITOR, tabTitle= "org.netbeans.modules.options.editor.Bundle#CTL_Formating_DisplayName")
 public final class FormattingPanel extends JPanel implements PropertyChangeListener {
     
     /** Creates new form FormattingPanel */

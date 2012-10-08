@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.FS;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.ResolvedPath;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
@@ -329,7 +330,11 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (existed.getUserMacros().size() < f.getUserMacros().size()) {
                         map.put(name, f);
                     } else if (existed.getUserMacros().size() == f.getUserMacros().size()) {
-                        // ignore
+                        if (macrosWeight(existed) < macrosWeight(f)) {
+                            map.put(name, f);
+                        } else {
+                            // ignore
+                        }
                     } else {
                         // ignore
                     }
@@ -344,6 +349,16 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             }
         }
         return false;
+    }
+    
+    private int macrosWeight(SourceFileProperties f) {
+        int sum = 0;
+        for(String m : f.getUserMacros().keySet()) {
+            for(int i = 0; i < m.length(); i++) {
+                sum += m.charAt(i);
+            }
+        }
+        return sum;
     }
     
     protected ApplicableImpl sizeComilationUnit(String objFileName, Set<String> dlls, boolean findMain){
@@ -361,9 +376,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             dump = new Dwarf(objFileName);
             Dwarf.CompilationUnitIterator iterator = dump.iteratorCompilationUnits();
             while (iterator.hasNext()) {
-                CompilationUnit cu = iterator.next();
+                CompilationUnitInterface cu = iterator.next();
                 if (cu != null) {
-                    if (cu.getRoot() == null || cu.getSourceFileName() == null) {
+                    if (cu.getSourceFileName() == null) {
                         continue;
                     }
                     String lang = cu.getSourceLanguage();
@@ -418,17 +433,23 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         sunStudio++;
                     }
                     if (findMain && position == null) {
-                        List<DwarfEntry> topLevelEntries = cu.getTopLevelEntries();
-                        for(DwarfEntry entry : topLevelEntries) {
-                            if (entry.getKind() == TAG.DW_TAG_subprogram) {
-                                if ("main".equals(entry.getName())) { // NOI18N
-                                    if (entry.isExternal()) {
-                                        //VIS visibility = entry.getVisibility();
-                                        //if (visibility == VIS.DW_VIS_exported) {
-                                            position = new MyPosition(path, entry.getLine());
-                                        //}
+                        if (cu.hasMain()) {
+                            if (cu instanceof CompilationUnit) {
+                                List<DwarfEntry> topLevelEntries = ((CompilationUnit)cu).getTopLevelEntries();
+                                for(DwarfEntry entry : topLevelEntries) {
+                                    if (entry.getKind() == TAG.DW_TAG_subprogram) {
+                                        if ("main".equals(entry.getName())) { // NOI18N
+                                            if (entry.isExternal()) {
+                                                //VIS visibility = entry.getVisibility();
+                                                //if (visibility == VIS.DW_VIS_exported) {
+                                                    position = new MyPosition(path, entry.getLine());
+                                                //}
+                                            }
+                                        }
                                     }
                                 }
+                            } else {
+                                position = new MyPosition(path, 1);
                             }
                         }
                     }
@@ -611,12 +632,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             dump = new Dwarf(objFileName);
             Dwarf.CompilationUnitIterator iterator = dump.iteratorCompilationUnits();
             while (iterator.hasNext()) {
-                CompilationUnit cu = iterator.next();
+                CompilationUnitInterface cu = iterator.next();
                 if (cu != null) {
                     if (isStoped.get()) {
                         break;
                     }
-                    if (cu.getRoot() == null || cu.getSourceFileName() == null) {
+                    if (cu.getSourceFileName() == null) {
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "Compilation unit has broken name in file {0}", objFileName);  // NOI18N
                         }

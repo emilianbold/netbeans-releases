@@ -161,23 +161,29 @@ public class InterfaceElementImpl extends TypeElementImpl implements InterfaceEl
         StringBuilder retval = new StringBuilder();
         switch (as) {
             case NameAndSuperTypes:
-                retval.append(getName()); //NOI18N
+                retval.append(getName());
+                printAsSuperTypes(retval);
+                break;
             case SuperTypes:
-                Set<QualifiedName> superIfaces = getSuperInterfaces();
-                if (!superIfaces.isEmpty()) {
-                    retval.append(" extends ");//NOI18N
-                }
-                StringBuilder ifacesBuffer = new StringBuilder();
-                for (QualifiedName qualifiedName : superIfaces) {
-                    if (ifacesBuffer.length() > 0) {
-                        ifacesBuffer.append(", ");//NOI18N
-                    }
-                    ifacesBuffer.append(qualifiedName.getName());
-                }
-                retval.append(ifacesBuffer);
+                printAsSuperTypes(retval);
                 break;
         }
         return retval.toString();
+    }
+
+    private void printAsSuperTypes(StringBuilder sb) {
+        Set<QualifiedName> superIfaces = getSuperInterfaces();
+        if (!superIfaces.isEmpty()) {
+            sb.append(" extends ");//NOI18N
+        }
+        StringBuilder ifacesBuffer = new StringBuilder();
+        for (QualifiedName qualifiedName : superIfaces) {
+            if (ifacesBuffer.length() > 0) {
+                ifacesBuffer.append(", ");//NOI18N
+            }
+            ifacesBuffer.append(qualifiedName.getName());
+        }
+        sb.append(ifacesBuffer);
     }
 
     private void checkInterfaceSignature(StringBuilder sb) {

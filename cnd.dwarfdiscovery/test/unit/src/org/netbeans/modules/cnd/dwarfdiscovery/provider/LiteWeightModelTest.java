@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.dwarfdiscovery.litemodel.DwarfRenderer;
-import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
@@ -205,7 +205,7 @@ public class LiteWeightModelTest extends NbTestCase {
             dump = new Dwarf(objFileName);
             CompilationUnitIterator iterator = dump.iteratorCompilationUnits();
             while (iterator.hasNext()) {
-                CompilationUnit cu = iterator.next();
+                CompilationUnitInterface cu = iterator.next();
                 if (cu != null) {
                     if (cu.getRoot() == null || cu.getSourceFileName() == null) {
                         continue;

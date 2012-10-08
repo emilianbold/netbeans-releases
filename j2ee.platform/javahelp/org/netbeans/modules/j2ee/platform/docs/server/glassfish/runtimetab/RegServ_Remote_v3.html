@@ -46,15 +46,33 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                 (<tt>asadmin deploy --target cluster1 --name myapp myapp.war</tt>).
             
                 <p>When no Target value is specified (default) all commands will be applied to the domain administration server instance.</p>
-                </li>
+            </li>
+            <li><strong>Username.</strong> Type the username for the server instance.</li>
+            <li><strong>Password.</strong> Type the password for the server instance.</li>
         </ul>
 
         <p>Click Finish to add the instance to the list of servers in the Services window.</p>
 
         
         
-        
-        <ul class="note"><li>When you register an existing domain, the IDE uses the port numbers and other properties specified in the domain configuration.</li></ul>
+        <p><strong>Notes.</strong></p>
+        <ul class="note">
+            <li>When you register an existing domain, the IDE uses the port numbers and other properties specified in the domain configuration.</li>
+            <li>A username and password are required to work with a remote instance of GlassFish Server 3.1.2.
+                To accept remote admin requests the secure administration feature on the remote instance must be enabled.
+                The secure administration feature cannot be enabled if any admin accounts on the remote instance have an empty password.
+
+                <p>For more details, see the following GlassFish Server documentation.</p>
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://docs.oracle.com/cd/E26576_01/doc.312/e24940/administrative-security.htm">
+                <param name="text" value="<html><u>Managing Administrative Security</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>
+                
+                
+            </li>
+        </ul>
 
         
         <dl>

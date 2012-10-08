@@ -301,7 +301,11 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
             assert builder instanceof CompoundStatementBuilder;
             setBodyBuilder((CompoundStatementBuilder)builder);
         }
-
+        
+        protected void setBody(FunctionDDImpl fun) {
+            bodyBuilder.setScope(fun);
+            fun.setCompoundStatement(bodyBuilder.create());
+        }        
     }
     
     ////////////////////////////////////////////////////////////////////////////

@@ -57,6 +57,7 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
@@ -107,6 +108,8 @@ public final class ElementUtils {
         } else if (node instanceof Parameter) {
             return ElementKind.VARIABLE;
         } else if (node instanceof DeclarationExpression) {
+            return ElementKind.VARIABLE;
+        } else if ((node instanceof ConstantExpression) && (leafParent instanceof PropertyExpression)) {
             return ElementKind.VARIABLE;
         }
         return ElementKind.OTHER;

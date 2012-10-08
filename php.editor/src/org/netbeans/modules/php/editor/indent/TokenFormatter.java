@@ -70,7 +70,7 @@ public class TokenFormatter {
     // it's for testing
     protected static int unitTestCarretPosition = -1;
 
-//    private final Context context;
+
     public TokenFormatter() {
     }
 
@@ -392,15 +392,15 @@ public class TokenFormatter {
                     boolean caretInTemplateSolved = false;
                     int htmlIndent = -1;
                     int index = 0;
-                    int newLines = 0;
-                    int countSpaces = 0;
+                    int newLines;
+                    int countSpaces;
                     int column = 0;
                     int indentOfOpenTag = 0;
                     final Deque<Integer> lastBracedBlockIndent = new ArrayDeque<Integer>();
 
                     FormatToken formatToken;
                     String newText = null;
-                    String oldText = null;
+                    String oldText;
                     int changeOffset = -1;
                     int deltaForLastMoveBeforeLineComment = 0;
                     FormatToken.AnchorToken lastAnchor = null;
@@ -1138,13 +1138,13 @@ public class TokenFormatter {
                                                 int lineNumber = Utilities.getLineOffset(doc, offset);
                                                 Integer suggestedIndent = suggestedLineIndents != null
                                                         ? suggestedLineIndents.get(lineNumber)
-                                                        : new Integer(0);
+                                                        : Integer.valueOf(0);
                                                 if (suggestedIndent == null) {
                                                     // XXX this is a hack
                                                     //sometimes the html formatter doesn't catch the first line.
                                                     suggestedIndent = suggestedLineIndents.get(lineNumber + 1) != null
                                                             ? suggestedLineIndents.get(lineNumber + 1)
-                                                            : new Integer(0);
+                                                            : Integer.valueOf(0);
                                                 }
 
                                                 int lineOffset = Utilities.getRowStart(doc, offset);
@@ -1398,11 +1398,8 @@ public class TokenFormatter {
                                             newLines = countOfNewLines(oldText);
                                         }
                                     }
-                                    afterSemi = false;
                                 }
-//                                if (indentLine && indentRule && formatToken.getId() != FormatToken.Kind.CLOSE_TAG) {
-//                                    countSpaces = Math.max(countSpaces, indent);
-//                                }
+
                                 newText = createWhitespace(docOptions, newLines, countSpaces);
                                 if (wsBetweenBraces) {
                                     if (lastBracePlacement == CodeStyle.BracePlacement.PRESERVE_EXISTING) {
@@ -1419,12 +1416,7 @@ public class TokenFormatter {
                                     int caretPosition = caretOffset + delta;
                                     if (caretPosition == formatContext.endOffset() && oldText.length() > 0 && newText.length() > 0
                                             && oldText.charAt(0) == ' ' && newText.charAt(0) != ' ' && 0 != countOfNewLines(oldText)) {
-//                                        int positionOldText = caretPosition - realOffset - 1;
-//                                        if (positionOldText > -1 && positionOldText < oldText.length()
-//                                                && oldText.charAt(positionOldText) == ' '
-//                                                && newText.charAt(0) != ' ') {
                                         newText = ' ' + newText;   // templates like public, return ...
-//                                        }
                                         caretInTemplateSolved = true;
                                     }
                                 }
@@ -1518,6 +1510,8 @@ public class TokenFormatter {
                                         deltaForLastMoveBeforeLineComment = delta;
                                     }
                                     break;
+                                default:
+                                    //no-op
                             }
                         }
 
@@ -1603,9 +1597,9 @@ public class TokenFormatter {
             }
 
             private Whitespace countWhiteSpaceBeforeRightBrace(CodeStyle.BracePlacement placement, int currentLine, int addLine, int indent, List<FormatToken> formatTokens, int currentIndex, CharSequence oldText, int lastBracedBlockIndent) {
-                int lines = 0;
-                int spaces = 0;
-                Whitespace result = null;
+                int lines;
+                int spaces;
+                Whitespace result;
                 if (placement == CodeStyle.BracePlacement.PRESERVE_EXISTING) {
                     result = countWhiteSpaceForPreserveExistingBracePlacement(oldText, lastBracedBlockIndent);
                 } else {
@@ -1641,8 +1635,8 @@ public class TokenFormatter {
             }
 
             private Whitespace countWSBeforeKeyword(boolean placeOnNewLine, boolean placeSpaceBefore, int currentIndent, List<FormatToken> formatTokens, int currentIndex) {
-                int lines = 0;
-                int spaces = 0;
+                int lines;
+                int spaces;
                 if (placeOnNewLine) {
                     lines = 1;
                     spaces = currentIndent;
@@ -1673,7 +1667,7 @@ public class TokenFormatter {
             }
 
             private boolean isOpenAndCloseTagOnOneLine(List<FormatToken> formatTokens, int currentIndex) {
-                boolean result = false;
+                boolean result;
                 FormatToken token = formatTokens.get(currentIndex);
                 do {
                     token = formatTokens.get(currentIndex);
@@ -2003,7 +1997,7 @@ public class TokenFormatter {
                                 if (indexOldText >= oldText.length()
                                         && indexNewText < newText.length()) {
                                     StringBuilder sb = new StringBuilder();
-                                    boolean addNewLine = false;
+                                    boolean addNewLine;
                                     do {
                                         indexNewTextLine = newText.indexOf('\n', indexNewText); // NOI18N
                                         addNewLine = (indexNewTextLine != -1);
@@ -2090,7 +2084,7 @@ public class TokenFormatter {
 
             private boolean isBeforeEmptyStatement(List<FormatToken> formatTokens, int index) {
                 FormatToken token = formatTokens.get(index);
-                boolean value = false;
+                boolean value;
                 index++;
                 while (index < formatTokens.size() && (token.getOldText() == null
                         && token.getId() != FormatToken.Kind.WHITESPACE)) {
@@ -2209,7 +2203,7 @@ public class TokenFormatter {
         return sb.toString();
     }
 
-    private class SpacesCounter {
+    private static class SpacesCounter {
 
         private final DocumentOptions documentOptions;
 
@@ -2226,7 +2220,7 @@ public class TokenFormatter {
         }
 
         private int countSpacesForGroupedToken(final FormatToken.AssignmentAnchorToken token) {
-            int spaces = 0;
+            int spaces;
             if (documentOptions.expandTabsToSpaces) {
                 spaces = token.getMaxLength() - token.getLenght();
             } else {
@@ -2236,7 +2230,7 @@ public class TokenFormatter {
         }
 
         private int countSpacesWhenNotExpandingTabs(final FormatToken.AssignmentAnchorToken token) {
-            int spaces = 0;
+            int spaces;
             // 1 tabSize will be reduced to tabWidthToComplete...
             int tabWidthToCompleteMaxLengthToTab = documentOptions.tabSize - (token.getMaxLength() % documentOptions.tabSize);
             int tabWidthToCompleteLengthToTab = documentOptions.tabSize - (token.getLenght() % documentOptions.tabSize);
@@ -2267,7 +2261,7 @@ public class TokenFormatter {
         }
 
         private int countSpacesForCommonItem(final FormatToken.AssignmentAnchorToken token, final int tabWidthToCompleteLengthToTab, final int tabWidthToCompleteMaxLengthToTab) {
-            int spaces = 0;
+            int spaces;
             if (tabWidthToCompleteMaxLengthToTab == 0) {
                 if (tabWidthToCompleteLengthToTab == 0) {
                     spaces = token.getMaxLength() - token.getLenght();

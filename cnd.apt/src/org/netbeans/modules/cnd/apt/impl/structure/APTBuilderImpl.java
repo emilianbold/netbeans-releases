@@ -54,11 +54,13 @@ import org.netbeans.modules.cnd.apt.impl.support.generated.APTLexer;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTPragma;
+import org.netbeans.modules.cnd.apt.support.APTIndexingSupport;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
@@ -128,6 +130,10 @@ public final class APTBuilderImpl {
 
     private void buildFileAPT(APTFileNode aptFile, TokenStream ts) throws TokenStreamException {
         GuardDetector guardDetector = new GuardDetector(aptFile, ts);
+        // apply text indexing
+        if (CndTraceFlags.TEXT_INDEX) {
+            ts = APTIndexingSupport.index(aptFile.getFileSystem(), aptFile.getPath().toString(), ts);
+        }
         APTToken lastToken = nonRecursiveBuild(aptFile, ts, guardDetector);
         aptFile.setGuard(guardDetector.getGuard());
         assert (APTUtils.isEOF(lastToken));
@@ -357,13 +363,17 @@ public final class APTBuilderImpl {
         public GuardDetector(APTFile aptFile, TokenStream ts) {
             this.guard = CharSequences.empty();
             this.aptFile = aptFile;
-            if (ts instanceof APTLexer) {
-                this.plainLexer = (APTLexer) ts;
-            } else {
-                this.plainLexer = null;
-            }
+            this.plainLexer = findLexer(ts);
             state = State.INITIAL;
             attachLexerCallback();
+        }
+        
+        private APTLexer findLexer(TokenStream ts) {
+            if (ts instanceof APTLexer) {
+                return (APTLexer) ts;
+            } else {
+                return null;
+            }
         }
 
         public void invalidate() {

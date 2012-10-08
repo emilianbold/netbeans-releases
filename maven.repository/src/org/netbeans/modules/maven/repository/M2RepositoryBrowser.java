@@ -200,7 +200,12 @@ public final class M2RepositoryBrowser extends AbstractNode {
             RepositoryPreferences.getInstance().removeChangeListener(this);
             removeChangeListener(this);
             if (addNotifyCalled) { //#213038
-                FileUtil.removeFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
+                try {
+                    FileUtil.removeFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
+                } catch (IllegalArgumentException exc) {
+                    //we just ignore, who cares
+                }
+                addNotifyCalled = false;
             }
         }
         @Override public void stateChanged(ChangeEvent e) {

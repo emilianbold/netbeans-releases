@@ -218,22 +218,6 @@ public class RefactoringUtils {
         }
         return FileUtil.getArchiveFile(file) != null;
     }
-    
-    /**
-     * @param element
-     * @param info
-     * @return true if given element comes from library
-     * @deprecated
-     */
-    @SuppressWarnings("deprecation")
-    public static boolean isFromLibrary(Element element, ClasspathInfo info) {
-        FileObject file = SourceUtils.getFile(element, info);
-        if (file == null) {
-            //no source for given element. Element is from library
-            return true;
-        }
-        return FileUtil.getArchiveFile(file) != null;
-    }
 
     /**
      * is given name valid package name

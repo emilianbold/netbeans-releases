@@ -72,9 +72,12 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettingsBridge;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.util.Lookup;
 
@@ -532,7 +535,10 @@ public final class DebugTarget implements Record {
 	engine = e;
 	getEngineProfile().setEngineType(engine);
     }
-
+    
+    public void setCompilerSet(CompilerSet cs) {
+        configuration.getCompilerSet().assign(new CompilerSet2Configuration(new DevelopmentHostConfiguration(configuration.getFileSystemHost()), cs));
+    }
     /**
      * for settings from decoder
      * @param id

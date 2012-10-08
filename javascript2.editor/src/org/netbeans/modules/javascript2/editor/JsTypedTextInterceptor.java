@@ -183,7 +183,9 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                     skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_PAREN);
                 } else if (ch == '}') {
                     skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_CURLY);
-                } else if ((ch == '[') || (ch == '(') || (ch == '{')) {
+                // the curly is not completed intentionally see #189443
+                // java and php don't do that as well
+                } else if ((ch == '[') || (ch == '(')) {
                     completeOpeningBracket(doc, dotPos, caret, ch);
                 }
             }

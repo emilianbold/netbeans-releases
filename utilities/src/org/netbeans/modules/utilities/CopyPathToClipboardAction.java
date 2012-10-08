@@ -88,11 +88,7 @@ import org.openide.util.datatransfer.ExClipboard;
 })
 @Messages({
     "CTL_CopyPaths=Copy File Path(s)",
-    "CTL_CopyPath=Copy File Path",
-    "# {0} - copied file path",
-    "CTL_Status_CopyToClipboardSingle=Copy to Clipboard: {0}",
-    "# {0} - numer of copied paths",
-    "CTL_Status_CopyToClipboardMulti={0} paths were copied to clipboard"
+    "CTL_CopyPath=Copy File Path"
 })
 public final class CopyPathToClipboardAction implements ActionListener,
         ClipboardOwner {
@@ -105,15 +101,14 @@ public final class CopyPathToClipboardAction implements ActionListener,
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        String lineSeparator = System.getProperty("line.separator");    //NOI18N
         Collection<String> paths = getSelectedPaths();
         StringBuilder sb = new StringBuilder();
         int items = 0;
         for (String path : paths) {
             if (items > 0) {
-                sb.append(lineSeparator);
+                sb.append(" ");                                         //NOI18N
             }
-            sb.append(path);
+            sb.append(quoteIfNeeded(path));
             items++;
         }
         if (items > 0) {
@@ -137,6 +132,17 @@ public final class CopyPathToClipboardAction implements ActionListener,
         return paths;
     }
 
+    /**
+     * Quote a path if it contains space characters.
+     */
+    private String quoteIfNeeded(String s) {
+        if (s.contains(" ")) { //NOI18N
+            return "\"" + s + "\""; //NOI18N
+        } else {
+            return s;
+        }
+    }
+
     @Override
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
         // do nothing
@@ -147,17 +153,13 @@ public final class CopyPathToClipboardAction implements ActionListener,
         if (null != dataObject) {
             final FileObject primaryFile = getFileObjectWithShadowSupport(
                     dataObject);
-            if (null != primaryFile.getPath()) {
-                fileName = primaryFile.getPath();
-            }
+            fileName = getNativePath(primaryFile);
             //support selected items in jars
             if (null != FileUtil.getArchiveFile(primaryFile)) {
                 String fullJARPath =
-                        FileUtil.getArchiveFile(primaryFile).getPath();
+                        getNativePath(FileUtil.getArchiveFile(primaryFile));
                 String archiveFileName = primaryFile.getPath();
-                boolean hasFileName = null != archiveFileName
-                        && !"".equals(archiveFileName);                 //NOI18N
-                if (hasFileName) {
+                if (!archiveFileName.isEmpty()) {
                     fileName = fullJARPath + File.pathSeparator
                             + archiveFileName;
                 } else {
@@ -166,6 +168,15 @@ public final class CopyPathToClipboardAction implements ActionListener,
             }
         }
         return fileName;
+    }
+
+    /**
+     * Get native path of a FileObject. If it does not exists, return
+     * {@link FileObject#getPath()}
+     */
+    private String getNativePath(FileObject fo) {
+        File f = FileUtil.toFile(fo);
+        return f != null ? f.getAbsolutePath() : fo.getPath();
     }
 
     /**
@@ -188,6 +199,12 @@ public final class CopyPathToClipboardAction implements ActionListener,
      *
      * @param content
      */
+    @Messages({
+        "# {0} - copied file path",
+        "CTL_Status_CopyToClipboardSingle=Copy to Clipboard: {0}",
+        "# {0} - numer of copied paths",
+        "CTL_Status_CopyToClipboardMulti={0} paths were copied to clipboard"
+    })
     private void setClipboardContents(String content, int items) {
         Clipboard clipboard = Lookup.getDefault().lookup(ExClipboard.class);
         if (clipboard == null) {

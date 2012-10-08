@@ -1643,34 +1643,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         return null;
     }
     
-    public static String getDebuggerString(NativeDebuggerInfo ndi) {
-        // Figure out dbx command
-        // Copied from GdbProfile
-        MakeConfiguration conf = (MakeConfiguration) ndi.getConfiguration();
-        CompilerSetManager csm = CompilerSetManager.get(conf.getFileSystemHost());
-        CompilerSet2Configuration csconf = conf.getCompilerSet();
-        
-	if (csm == null || ! csconf.isValid()) {
-	    return null;
-        }
-        
-        for (CompilerSet cs : csm.getCompilerSets()) {
-            if (ndi.debuggerType() == getDebuggerType(cs)) {
-                return cs.getTool(PredefinedToolKind.DebuggerTool).getPath();
-            }
-        }
-        return null;
-    }
-    
-    private static EngineType getDebuggerType(CompilerSet cs) {
-        Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
-        if (debuggerTool != null) {
-            ToolchainManager.DebuggerDescriptor descriptor = (ToolchainManager.DebuggerDescriptor) debuggerTool.getDescriptor();
-            return EngineTypeManager.getEngineTypeForDebuggerDescriptor(descriptor);
-        }
-        return null;
-    }
-    
     public void registerMemoryWindow(MemoryWindow w) {
     }
 

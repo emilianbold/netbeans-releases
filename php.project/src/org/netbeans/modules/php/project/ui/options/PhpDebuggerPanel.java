@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
 /**
  * UI for PHP debugging options.
  */
-@OptionsPanelController.Keywords(keywords={"php debugger"}, location=UiUtils.OPTIONS_PATH, index=1)
+@OptionsPanelController.Keywords(keywords={"php debugger debugging xdebug"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_DebuggerOptions")
 public class PhpDebuggerPanel extends JPanel {
 
     private static final long serialVersionUID = 9465641111345L;

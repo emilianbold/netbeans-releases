@@ -501,13 +501,19 @@ public class ModelVisitor extends PathNodeVisitor {
 
             List<DocParameter> docParams = docHolder.getParameters(functionNode);
             for (DocParameter docParameter : docParams) {
-                JsObjectImpl param = (JsObjectImpl) fncScope.getParameter(docParameter.getParamName().getName());
-                if (param != null) {
-                    for (Type type : docParameter.getParamTypes()) {
-                        param.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), param.getOffset());
+                DocIdentifier paramName = docParameter.getParamName();
+                if (paramName != null) {
+                    String sParamName = paramName.getName();
+                    if(sParamName != null && !sParamName.isEmpty()) {
+                        JsObjectImpl param = (JsObjectImpl) fncScope.getParameter(sParamName);
+                        if (param != null) {
+                            for (Type type : docParameter.getParamTypes()) {
+                                param.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), param.getOffset());
+                            }
+                            // param occurence in the doc
+                            addDocNameOccurence(param);
+                        }
                     }
-                    // param occurence in the doc
-                    addDocNameOccurence(param);
                 }
             }
 

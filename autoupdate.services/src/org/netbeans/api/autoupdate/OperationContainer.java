@@ -49,6 +49,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.modules.autoupdate.services.OperationContainerImpl;
 
 /**
@@ -238,7 +239,7 @@ public final class OperationContainer<Support> {
                 return support;
             } else {
                 if (upToDate != null) {
-                    OperationContainerImpl.LOGGER.info("Support is null, either listAll[" + listAll() + "] empty, or there are invalid[" + listInvalid() + "]");
+                    OperationContainerImpl.LOGGER.log(Level.INFO, "Support is null, either listAll[" + listAll() + "] empty, or there are invalid[" + listInvalid() + "]", new Throwable());
                 }
                 return null;
             }

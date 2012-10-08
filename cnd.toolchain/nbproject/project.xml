@@ -213,6 +213,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.oracle.tools.ide.projectless.debug.impl</friend>
                 <friend>com.microchip.mdbcore</friend>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>

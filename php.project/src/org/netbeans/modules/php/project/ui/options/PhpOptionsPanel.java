@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
 /**
  * @author  Tomas Mysik
  */
-@OptionsPanelController.Keywords(keywords={"php"}, location=UiUtils.OPTIONS_PATH, index=0)
+@OptionsPanelController.Keywords(keywords={"php"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_GeneralOptions")
 public final  class PhpOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 10985641247986428L;

@@ -402,7 +402,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         so.finishAll();
         // wait until Debug toolbar dismiss
         debugToolbarOper.waitComponentShowing(false);
-        so.close();
     }
 
     /** Stop server just for clean-up.

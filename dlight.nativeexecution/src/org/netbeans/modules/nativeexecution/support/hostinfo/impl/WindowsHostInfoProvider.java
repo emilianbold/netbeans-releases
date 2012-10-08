@@ -52,7 +52,10 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.pty.NbStartUtility;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import org.openide.util.Utilities;
@@ -73,6 +76,27 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         HostInfoImpl info = new HostInfoImpl();
         info.initTmpDirs();
         info.initUserDirs();
+
+        Shell activeShell = WindowsSupport.getInstance().getActiveShell();
+
+        if (activeShell != null && Shell.ShellType.CYGWIN.equals(activeShell.type)) {
+            String nbstart = NbStartUtility.getInstance().getLocalFileLocationFor(info);
+            String envPath = info.getTempDir() + "/env"; // NOI18N
+            ProcessBuilder pb = new ProcessBuilder(nbstart, "--dumpenv", envPath); // NOI18N
+            String pathKey = WindowsSupport.getInstance().getPathKey();
+            pb.environment().put(pathKey, "/usr/local/bin;" + activeShell.bindir.getAbsolutePath() + ";/bin;"+ pb.environment().get(pathKey)); // NOI18N
+            try {
+                Process p = pb.start();
+                int stat = p.waitFor();
+                if (stat != 0) {
+                    Logger.getInstance().log(Level.FINE, "Failed to call nbstart", ProcessUtils.readProcessErrorLine(p)); // NOI18N
+                }
+            } catch (InterruptedException ex) {
+                Logger.getInstance().log(Level.FINE, "Failed to call nbstart", ex); // NOI18N
+            }
+        }
+
+
         return info;
     }
 
@@ -161,10 +185,9 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             }
 
             /**
-             * Some magic with temp dir...
-             * In case of non-ascii chars in username use hashcode instead of
-             * plain name as in case of MinGW (without cygwin) execution may (will)
-             * fail...
+             * Some magic with temp dir... In case of non-ascii chars in
+             * username use hashcode instead of plain name as in case of MinGW
+             * (without cygwin) execution may (will) fail...
              */
             String username = environment.get("USERNAME"); // NOI18N
 
@@ -202,7 +225,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             if (!tmpDirBase.canWrite()) {
                 tmpDirBase = ioTmpDirFile;
             }
-            
+
             if (!tmpDirBase.canWrite()) {
                 log.log(Level.WARNING, "WindowsHostInfoProvider: {0} is not writable", tmpDirBase.getPath()); // NOI18N
             }
@@ -219,10 +242,9 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             String ioUserDir = System.getProperty("user.home"); // NOI18N
 
             /**
-             * Some magic with temp dir...
-             * In case of non-ascii chars in username use hashcode instead of
-             * plain name as in case of MinGW (without cygwin) execution may (will)
-             * fail...
+             * Some magic with temp dir... In case of non-ascii chars in
+             * username use hashcode instead of plain name as in case of MinGW
+             * (without cygwin) execution may (will) fail...
              */
             String username = environment.get("USERNAME"); // NOI18N
 
@@ -328,12 +350,12 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         public int getUserId() {
             return 0; // no implementation for Windows so far
         }
-        
+
         @Override
         public int getGroupId() {
             return 0; // no implementation for Windows so far
         }
-        
+
         @Override
         public int[] getAllGroupIDs() {
             return new int[0]; // no implementation for Windows so far
@@ -348,7 +370,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         public String[] getAllGroups() {
             return new String[0]; // no implementation for Windows so far
         }
-        
+
         private boolean checkForNonLatin(String str) {
             if (str == null) {
                 // NULL is OK?
@@ -376,6 +398,11 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             }
 
             return true;
+        }
+
+        @Override
+        public String getEnvironmentFile() {
+            return getTempDir() + "/env"; // NOI18N
         }
     }
 }
