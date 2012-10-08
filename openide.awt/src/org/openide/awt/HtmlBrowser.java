@@ -461,21 +461,23 @@ public class HtmlBrowser extends JPanel {
         }
 
         class URLSetter implements Runnable {
-            private boolean sameHosts = false;
+            private boolean doReload = false;
 
             @Override
             public void run() {
                 if (!SwingUtilities.isEventDispatchThread()) {
+                    boolean sameHosts = false;
                     if ("nbfs".equals(url.getProtocol())) { // NOI18N
                         sameHosts = true;
                     } else {
                         sameHosts = (url.getHost() != null) && (browserImpl.getURL() != null) &&
                             (url.getHost().equals(browserImpl.getURL().getHost()));
                     }
+                    doReload = sameHosts && url.equals(browserImpl.getURL()); // see bug 9470
 
                     SwingUtilities.invokeLater(this);
                 } else {
-                    if (sameHosts && url.equals(browserImpl.getURL())) { // see bug 9470
+                    if (doReload) {
                         browserImpl.reloadDocument();
                     } else {
                         browserImpl.setURL(url);
