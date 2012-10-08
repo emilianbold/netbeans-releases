@@ -113,6 +113,7 @@ import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMOutOfMemoryExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.BreakpointRequestWrapper;
@@ -254,6 +255,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         } catch (ObjectCollectedExceptionWrapper ex) {
             return null;
         } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
+        } catch (VMOutOfMemoryExceptionWrapper ex) {
             return null;
         } catch (InternalExceptionWrapper ex) {
             return null;

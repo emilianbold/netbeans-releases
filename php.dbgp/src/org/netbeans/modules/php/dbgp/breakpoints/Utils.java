@@ -71,10 +71,14 @@ public class Utils {
     //keep synchronized with PHPOptionsCategory.PATH_IN_LAYER
     public static final String PATH_IN_LAYER = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory/Debugger"; //NOI18N
     final static String  MIME_TYPE = "text/x-php5"; //NOI18N
-    public static LineFactory lineFactory = new LineFactory();
+    private static LineFactory lineFactory = new LineFactory();
 
     private Utils(){
         // avoid inst-ion
+    }
+
+    public static void setLineFactory(LineFactory lineFactory) {
+        Utils.lineFactory = lineFactory;
     }
 
     public static Line getCurrentLine() {

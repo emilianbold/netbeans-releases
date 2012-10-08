@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.openide.nodes;
 
-package org.netbeans.modules.groovy.support;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- *
- * @author Petr Hejl
+ * Add the annotated package to the list of package names that will be used for finding property editors. 
+ * At runtime the path is registered by {@link NodeOp#registerPropertyEditors() }
+ * 
+ * @since 7.30
+ * @author Jan Horvath <jhorvath@netbeans.org>
  */
-@LookupProvider.Registration(projectType={
-        "org-netbeans-modules-java-j2seproject",
-        "org-netbeans-modules-web-project",
-        "org-netbeans-modules-j2ee-ejbjarproject"
-    })
-public class GroovyLookupProvider implements LookupProvider {
-
-    @Override
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        if (project == null) {
-            return Lookup.EMPTY;
-        }
-
-        return Lookups.fixed(new J2seProjectOpenedHook(project));
-    }
-
-    private static class J2seProjectOpenedHook extends ProjectOpenedHook {
-
-        private final Project project;
-
-        public J2seProjectOpenedHook(Project project) {
-            this.project = project;
-        }
-
-        @Override
-        protected void projectOpened() {
-            BuildScriptHelper.refreshBuildScript(project, true);
-        }
-
-        @Override
-        protected void projectClosed() {
-
-        }
-    }
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.PACKAGE)
+public @interface PropertyEditorSearchPath {  
 
 }

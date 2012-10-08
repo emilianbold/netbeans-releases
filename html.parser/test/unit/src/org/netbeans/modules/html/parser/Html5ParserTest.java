@@ -1245,6 +1245,20 @@ public class Html5ParserTest extends NbTestCase {
 //        return null;
 //    }
     
+    
+    //Bug 218027 - case sensitive for HTML tags
+    public void testIssue218027() throws ParseException {
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        String code = "<html><body><TABLE></table></body></html>";
+        //             01234567 8 901234
+        //             0         1         
+        Node root = parse(code).root();
+//        ElementUtils.dumpTree(root);
+        OpenTag a = ElementUtils.query(root, "html/body/TABLE");
+        assertNotNull(a);
+        assertNotNull(a.matchingCloseTag());
+    }
+    
     private void assertNodeOffsets(final Node root) {
         //assert semantic ends are set
         ElementVisitor check = new ElementVisitor() {

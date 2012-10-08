@@ -68,7 +68,7 @@ keywords="#KW_TerminalOptions", // NOI18N
 keywordsCategory="Advanced/TermAdvancedOption"// NOI18N
 //tooltip="#CTL_Term_options" // NOI18N
 )
-@OptionsPanelController.Keywords(keywords={"terminal"}, location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_Term_options")
+@OptionsPanelController.Keywords(keywords={"#KW_TerminalOptions2"}, location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_Term_options")
 public final class TermAdvancedOption extends OptionsPanelController {
     private TermOptions termOptions;
     private TermOptions clonedTermOptions;

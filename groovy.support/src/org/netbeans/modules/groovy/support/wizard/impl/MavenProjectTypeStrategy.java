@@ -197,7 +197,7 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
         }
     }
 
-    private class AddJUnitDependency implements ModelOperation<POMModel> {
+    private static class AddJUnitDependency implements ModelOperation<POMModel> {
 
         private JUnit jUnit;
 

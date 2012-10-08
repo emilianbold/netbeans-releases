@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,42 +42,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.beaninfo.editors;
+package org.netbeans.modules.debugger.jpda.jdi;
 
-import java.beans.PropertyEditorManager;
-import junit.textui.TestRunner;
-import org.netbeans.junit.*;
-import org.openide.filesystems.FileUtil;
-
-/** Test finding of property editors registred by core.
- * @author Jiri Rechtacek
+/**
+ * Wrapper for VMOutOfMemoryException JDI exception.
+ * The calling code must count with this exception being thrown.
  */
-public class FindEditorTest extends NbTestCase {
+public final class VMOutOfMemoryExceptionWrapper extends Exception {
 
-    static {
-        //issue 31879, force registration of NB editors so this
-        //test can pass when editor tests are run standalone
-       org.netbeans.core.CoreBridgeImpl.getDefault().registerPropertyEditors(); 
-    }
-    
-    public FindEditorTest(String name) {
-        super(name);
-    }
-    
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(FindEditorTest.class));
-    }
-    
-    public void testFindStringEditor () throws Exception {
-        assertFind (String.class, org.netbeans.beaninfo.editors.StringEditor.class);
+    public VMOutOfMemoryExceptionWrapper(com.sun.jdi.VMOutOfMemoryException ex) {
+        super(ex);
     }
 
-    public void testFindStringArrayEditor () throws Exception {
-        assertFind ((new String[] { "" }).getClass (), org.netbeans.beaninfo.editors.StringArrayEditor.class);
+    @Override
+    public com.sun.jdi.VMOutOfMemoryException getCause() {
+        return (com.sun.jdi.VMOutOfMemoryException) super.getCause();
     }
 
-    private void assertFind (Class propertyTypeClass, Class editorClass) {
-        assertNotNull ("PropertyEditor for " + propertyTypeClass + " found.", PropertyEditorManager.findEditor (propertyTypeClass));
-        assertEquals ("Editor is instance of ", editorClass, PropertyEditorManager.findEditor (propertyTypeClass).getClass ());
-    }
 }
