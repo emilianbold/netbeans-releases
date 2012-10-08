@@ -91,12 +91,11 @@ public final class JschSupport {
 
                 echannel.setCommand(command);
                 echannel.setXForwarding(params == null ? false : params.x11forward);
+                InputStream is = echannel.getInputStream();
+                InputStream es = echannel.getErrStream();
+                OutputStream os = echannel.getOutputStream();
                 echannel.connect(JSCH_CONNECTION_TIMEOUT);
-
-                return new ChannelStreams(echannel,
-                        echannel.getInputStream(),
-                        echannel.getErrStream(),
-                        echannel.getOutputStream());
+                return new ChannelStreams(echannel, is, es, os);
             }
 
             @Override
@@ -120,12 +119,11 @@ public final class JschSupport {
                 }
 
                 shell.setPty(false);
+                InputStream is = shell.getInputStream();
+                InputStream es = new ByteArrayInputStream(new byte[0]);
+                OutputStream os = shell.getOutputStream();
                 shell.connect(JSCH_CONNECTION_TIMEOUT);
-
-                return new ChannelStreams(shell,
-                        shell.getInputStream(),
-                        new ByteArrayInputStream(new byte[0]),
-                        shell.getOutputStream());
+                return new ChannelStreams(shell, is, es, os);
             }
 
             @Override
