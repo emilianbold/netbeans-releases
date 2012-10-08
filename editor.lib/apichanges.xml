@@ -107,6 +107,59 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="removing-find">
+            <summary>Removing old deprecatted find implementations</summary>
+            <version major="3" minor="30"/>
+            <date day="5" month="10" year="2012"/>
+            <author login="mkristofic"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="no" deprecation="yes" deletion="yes" modification="yes"/>
+            <description>
+                <p>
+                    The old find apis and implementations (<code>org.netbeans.editor.FindSupport</code> &amp; co.)
+                    has been removed. The current implementation is in editor.lib2 and editor.search
+                </p>
+                <p>The exact API changes are listed in the sigtest report below.</p>
+<pre>
+-sigtest-init:
+     [echo] sigtest check: editor.lib; cnb: org-netbeans-modules-editor-lib; email: api-changes@netbeans.org; type: check
+
+check-sigtest:
+    [mkdir] Created dir: /home/mito/nb/develop/editor.lib/build/test/sigtest/results
+  [sigtest] /home/mito/nb/develop/editor.lib/build/test/sigtest/results/org.netbeans.modules.editor.lib
+  [sigtest] Packages: org.netbeans.editor.*, org.netbeans.editor.ext.*, org.netbeans.editor.view.spi.*, org.netbeans.lib.editor.hyperlink.spi.*, org.netbeans.lib.editor.view.*
+  [sigtest]
+  [sigtest] email: api-changes@netbeans.org
+  [sigtest] SignatureTest report
+  [sigtest] Base version: 3.29.0
+  [sigtest] Tested version: 3.29.0
+  [sigtest] Check mode: bin [throws removed]
+  [sigtest] Constant checking: on
+  [sigtest]
+  [sigtest]
+  [sigtest] Class org.netbeans.editor.FindSupport
+  [sigtest]   "E1.2 - API type removed" : CLASS public org.netbeans.editor.FindSupport
+  [sigtest]
+  [sigtest] Class org.netbeans.editor.FindSupport$SearchPatternWrapper
+  [sigtest]   "E1.2 - API type removed" : CLASS public static org.netbeans.editor.FindSupport$SearchPatternWrapper
+  [sigtest]
+  [sigtest] Class org.netbeans.editor.ext.ExtKit$FindAction
+  [sigtest]   "E1.2 - API type removed" : CLASS public static org.netbeans.editor.ext.ExtKit$FindAction
+  [sigtest]
+  [sigtest] Class org.netbeans.editor.ext.ExtKit$ReplaceAction
+  [sigtest]   "E1.2 - API type removed" : CLASS public static org.netbeans.editor.ext.ExtKit$ReplaceAction
+  [sigtest]
+  [sigtest] Class org.netbeans.editor.ext.FindDialogPanel
+  [sigtest]   "E1.2 - API type removed" : CLASS public org.netbeans.editor.ext.FindDialogPanel
+  [sigtest]
+  [sigtest] Class org.netbeans.editor.ext.FindDialogSupport
+  [sigtest]   "E1.2 - API type removed" : CLASS public org.netbeans.editor.ext.FindDialogSupport
+  [sigtest]
+  [sigtest] /home/mito/nb/develop/editor.lib/build/test/sigtest/results/org-netbeans-modules-editor-lib.xml: 1 failures in /home/mito/nb/develop/editor.lib/nbproject/org-netbeans-modules-editor-lib.sig
+
+</pre>
+            </description>
+            <issue number="189638"/>
+        </change>
         <change id="programmatic.tooltips.visible">
             <summary>Support to show tooltips not tied to the view hierarchy</summary>
             <version major="3" minor="28"/>

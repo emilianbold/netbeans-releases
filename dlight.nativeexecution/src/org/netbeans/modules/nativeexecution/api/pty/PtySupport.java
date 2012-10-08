@@ -42,12 +42,12 @@
 package org.netbeans.modules.nativeexecution.api.pty;
 
 import java.io.IOException;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.PtyNativeProcess;
+import org.netbeans.modules.nativeexecution.ExProcessInfoProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
@@ -79,11 +79,11 @@ public final class PtySupport {
      * if ptocess was started in non-pty mode.
      */
     public static String getTTY(NativeProcess process) {
-        if (!(process instanceof PtyNativeProcess)) {
-            return null;
+        if (process instanceof ExProcessInfoProvider) {
+            return ((ExProcessInfoProvider) process).getTTY();
         }
 
-        return ((PtyNativeProcess) process).getTTY();
+        return null;
     }
 
     /**

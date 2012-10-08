@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +58,7 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 import org.netbeans.modules.cnd.dwarfdump.reader.MyRandomAccessFile;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfDebugInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
+import org.netbeans.modules.cnd.dwarfdump.section.StabIndexSection;
 
 /**
  *
@@ -145,16 +145,6 @@ public class Dwarf {
         }
     }
     
-    public List<CompilationUnit> getCompilationUnits() throws IOException {
-        if (mode == Mode.Archive) {
-            return getArchiveCompilationUnits(magic.getReader());
-        } else if (mode == Mode.Normal) {
-            return getFileCompilationUnits();
-        } else {// mode = Mode.MachoLOF
-            return getMachoLOFCompilationUnits();
-        }
-    }
-    
     private void skipFirstHeader(RandomAccessFile reader) throws IOException{
         reader.seek(8);
         byte[] next = new byte[60];
@@ -220,63 +210,27 @@ public class Dwarf {
         return length;
     }
 
-    private List<CompilationUnit> getFileCompilationUnits() throws IOException {
-        DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)dwarfReader.getSection(SECTIONS.DEBUG_INFO);
-        List<CompilationUnit> result;
-        if (debugInfo != null) {
-            result = debugInfo.getCompilationUnits();
-        } else {
-            result = new LinkedList<CompilationUnit>();
-        }
-        return result;
-    }
-
     private CompilationUnitIterator iteratorFileCompilationUnits() throws IOException {
         DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)dwarfReader.getSection(SECTIONS.DEBUG_INFO);
         CompilationUnitIterator result;
         if (debugInfo != null) {
             result = debugInfo.iteratorCompilationUnits();
         } else {
-            result = new CompilationUnitIterator() {
+            StabIndexSection stab = (StabIndexSection) dwarfReader.getSection(SECTIONS.STAB_INDEX);
+            if (stab != null) {
+                result = stab.compilationUnits();
+            } else {
+                result = new CompilationUnitIterator() {
 
-                public boolean hasNext() throws IOException{
-                    return false;
-                }
+                    public boolean hasNext() throws IOException{
+                        return false;
+                    }
 
-                public CompilationUnit next() throws IOException{
-                    return null;
-                }
-            };
-        }
-        return result;
-    }
-
-    private List<CompilationUnit> getMachoLOFCompilationUnits() throws IOException {
-        List<CompilationUnit> result = new LinkedList<CompilationUnit>();
-        for (String string : dwarfReader.getLinkedObjectFiles()) {
-            Dwarf gimli = new Dwarf(string);
-            result.addAll(gimli.getCompilationUnits());
-            toDispose.add(gimli.magic);
-        }
-        return result;
-    }
-
-    private List<CompilationUnit> getArchiveCompilationUnits(MyRandomAccessFile reader) throws IOException {
-        List<CompilationUnit> result = new LinkedList<CompilationUnit>();
-        for (MemberHeader member : offsets) {
-            long shiftIvArchive = member.getOffset();
-            int length = member.getLength();
-            reader.seek(shiftIvArchive);
-            byte[] bytes = new byte[8];
-            reader.readFully(bytes);
-            if (FileMagic.isElfMagic(bytes)) {
-                dwarfReader = new DwarfReader(fileName, reader, Magic.Elf, shiftIvArchive, length);
-            } else if (FileMagic.isCoffMagic(bytes)) {
-                dwarfReader = new DwarfReader(fileName, reader, Magic.Coff, shiftIvArchive, length);
-            } else if (FileMagic.isMachoMagic(bytes)) {
-                dwarfReader = new DwarfReader(fileName, reader, Magic.Macho, shiftIvArchive, length);
+                    public CompilationUnit next() throws IOException{
+                        return null;
+                    }
+                };
             }
-            result.addAll(getFileCompilationUnits());
         }
         return result;
     }
@@ -394,7 +348,7 @@ public class Dwarf {
         }
 
         @Override
-        public CompilationUnit next() throws IOException {
+        public CompilationUnitInterface next() throws IOException {
             return currentList.next();
         }
 
@@ -458,7 +412,7 @@ public class Dwarf {
         }
 
         @Override
-        public CompilationUnit next() throws IOException {
+        public CompilationUnitInterface next() throws IOException {
             return currentIterator.next();
         }
 
@@ -499,6 +453,6 @@ public class Dwarf {
     
     public interface CompilationUnitIterator {
         boolean hasNext() throws IOException;
-        CompilationUnit next() throws IOException;
+        CompilationUnitInterface next() throws IOException;
     }
 }
