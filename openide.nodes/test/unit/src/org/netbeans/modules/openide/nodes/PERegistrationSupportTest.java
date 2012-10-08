@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,55 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.openide.nodes;
 
-package demo.rest;
+import org.netbeans.junit.NbTestCase;
 
-import java.util.Date;
-import javax.xml.bind.annotation.XmlRootElement;
-
-@XmlRootElement
-public class Message {
-
-    private Date created;
-    private String message;
-    private int uniqueId;
-
-    public Message() {
+/**
+ *
+ * @author Jan Horvath <jhorvath@netbeans.org>
+ */
+public class PERegistrationSupportTest extends NbTestCase {
+    
+    public PERegistrationSupportTest(String name) {
+        super(name);
     }
-
-    public Message(Date created, String message, int uniqueId) {
-        this.created = created;
-        this.message = message;
-        this.uniqueId = uniqueId;
+    
+    public void doTest(String type) throws ClassNotFoundException {
+        Class<?> cls = PERegistrationSupport.getClassFromCanonicalName(type);
+        assertEquals(type, cls.getCanonicalName());
     }
-
-    public int getUniqueId() {
-        return uniqueId;
+    
+    public void testPrimitives() throws ClassNotFoundException {
+        String[] classNames = {"int", "boolean", "float", "short", "char"};
+        for (int i = 0; i < classNames.length; i++) {
+            doTest(classNames[i]);
+        }
     }
-
-    public Date getCreated() {
-        return created;
+    
+    public void testArrays() throws ClassNotFoundException {
+        String[] classNames = {"int[][][]", "boolean[]", "java.lang.String[]"};
+        for (int i = 0; i < classNames.length; i++) {
+            doTest(classNames[i]);
+        }
     }
-
-    public void setCreated(Date created) {
-        this.created = created;
+    
+    public void testTypes() throws ClassNotFoundException {
+        String[] classNames = {"java.lang.String", "java.lang.Integer"};
+        for (int i = 0; i < classNames.length; i++) {
+            doTest(classNames[i]);
+        }
     }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public void setUniqueId(int uniqueId) {
-        this.uniqueId = uniqueId;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    @Override
-    public String toString() {
-        return "<span class='created'>CREATED: " + created + "</span> <span class='uniqueId'>ID: " + uniqueId + "</span> <span class='message'>MESSAGE: " + message + "</span>"; //NOI18N
-    }
+    
+    
 }

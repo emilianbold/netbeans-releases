@@ -26,5 +26,7 @@
             <true/>
 	<key>IFPkgFlagUpdateInstalledLanguages</key>
             <false/>	
+    <key>NSHighResolutionCapable</key>
+    <true/>
 </dict>
 </plist>
