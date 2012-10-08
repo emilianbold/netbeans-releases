@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,44 +34,27 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.openide.nodes;
 
-package org.netbeans.beaninfo.editors;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.beans.PropertyEditorManager;
-import junit.textui.TestRunner;
-import org.netbeans.junit.*;
-import org.openide.filesystems.FileUtil;
-
-/** Test finding of property editors registred by core.
- * @author Jiri Rechtacek
+/**
+ * Add the annotated package to the list of package names that will be used for finding property editors. 
+ * At runtime the path is registered by {@link NodeOp#registerPropertyEditors() }
+ * 
+ * @since 7.30
+ * @author Jan Horvath <jhorvath@netbeans.org>
  */
-public class FindEditorTest extends NbTestCase {
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.PACKAGE)
+public @interface PropertyEditorSearchPath {  
 
-    static {
-        //issue 31879, force registration of NB editors so this
-        //test can pass when editor tests are run standalone
-       org.netbeans.core.CoreBridgeImpl.getDefault().registerPropertyEditors(); 
-    }
-    
-    public FindEditorTest(String name) {
-        super(name);
-    }
-    
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(FindEditorTest.class));
-    }
-    
-    public void testFindStringEditor () throws Exception {
-        assertFind (String.class, org.netbeans.beaninfo.editors.StringEditor.class);
-    }
-
-    public void testFindStringArrayEditor () throws Exception {
-        assertFind ((new String[] { "" }).getClass (), org.netbeans.beaninfo.editors.StringArrayEditor.class);
-    }
-
-    private void assertFind (Class propertyTypeClass, Class editorClass) {
-        assertNotNull ("PropertyEditor for " + propertyTypeClass + " found.", PropertyEditorManager.findEditor (propertyTypeClass));
-        assertEquals ("Editor is instance of ", editorClass, PropertyEditorManager.findEditor (propertyTypeClass).getClass ());
-    }
 }
