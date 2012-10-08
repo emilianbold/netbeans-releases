@@ -118,9 +118,9 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
         final QualifiedName qualifiedName = getFullyQualifiedName();
         final String name = qualifiedName.toName().toString();
         final String namespaceName = qualifiedName.toNamespaceName().toString();
-        sb.append(name.toLowerCase()).append(SEPARATOR.SEMICOLON);
-        sb.append(name).append(SEPARATOR.SEMICOLON);
-        sb.append(namespaceName).append(SEPARATOR.SEMICOLON);
+        sb.append(name.toLowerCase()).append(Separator.SEMICOLON);
+        sb.append(name).append(Separator.SEMICOLON);
+        sb.append(namespaceName).append(Separator.SEMICOLON);
         checkSignature(sb);
         return sb.toString();
     }

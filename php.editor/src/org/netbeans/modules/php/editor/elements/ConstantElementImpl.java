@@ -136,12 +136,12 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getName()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getOffset()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(getName()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON);//NOI18N
         QualifiedName namespaceName = getNamespaceName();
-        sb.append(namespaceName.toString()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getValue()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(namespaceName.toString()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(getValue()).append(Separator.SEMICOLON);//NOI18N
         checkConstantSignature(sb);
         return sb.toString();
     }
