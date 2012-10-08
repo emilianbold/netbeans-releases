@@ -342,7 +342,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
-    private void addInheritance(CsmInheritance inheritance, boolean global) {
+    protected void addInheritance(CsmInheritance inheritance, boolean global) {
         if (global) {
             RepositoryUtils.put(inheritance);
         }
@@ -438,96 +438,57 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }
     
+    public static interface MemberBuilder {
+        public CsmMember create();
+        public void setScope(CsmScope scope);
+    }
     
-    public static class ClassBuilder extends ScopedDeclarationBuilder {
+    public static class ClassBuilder extends SimpleDeclarationBuilder implements MemberBuilder {
         
-        private CharSequence name;// = CharSequences.empty();
-        private int nameStartOffset;
-        private int nameEndOffset;
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
-        private CsmFile file;
-        private final FileContent fileContent;
-        private int startOffset = 0;
-        private int endOffset = 0;
-        private CsmObjectBuilder parent;
-
-        private NamespaceImpl namespace;
-        private CsmScope scope;
-        private ClassImpl instance;
-        private NameHolder nameHolder;
-        
-        private List<CsmObjectBuilder> children = new ArrayList<CsmObjectBuilder>();
+        private List<MemberBuilder> memberBuilders = new ArrayList<MemberBuilder>();
         private List<InheritanceBuilder> inheritanceBuilders = new ArrayList<InheritanceBuilder>();
+        
+        private ClassImpl instance;
 
-        private TemplateDescriptorBuilder templateDescriptorBuilder;
-        
-        public ClassBuilder(FileContent fileContent) {
-            assert fileContent != null;
-            this.fileContent = fileContent;
-        }
-        
         public void setKind(Kind kind) {
             this.kind = kind;
         }
-        
-        public void setName(CharSequence name, int startOffset, int endOffset) {
-            if(this.name == null) {
-                this.name = name;
-                this.nameStartOffset = startOffset;
-                this.nameEndOffset = endOffset;
-            }
+
+        public Kind getKind() {
+            return kind;
         }
 
-        public CharSequence getName() {
-            return name;
+        public void addMemberBuilder(MemberBuilder builder) {
+            this.memberBuilders.add(builder);
         }
-        
-        public void setFile(CsmFile file) {
-            this.file = file;
+
+        public List<MemberBuilder> getMemberBuilders() {
+            return memberBuilders;
         }
         
-        public void setEndOffset(int endOffset) {
-            this.endOffset = endOffset;
-        }
-
-        public void setStartOffset(int startOffset) {
-            this.startOffset = startOffset;
-        }
-
-        public void setParent(CsmObjectBuilder parent) {
-            this.parent = parent;
-        }
-
-        public void addChild(CsmObjectBuilder builder) {
-            this.children.add(builder);
-        }
-        
-        public void addMember(CsmMember member) {
-            this.instance.addMember(member, true);
-        }        
-
         public void addInheritanceBuilder(InheritanceBuilder i) {
             this.inheritanceBuilders.add(i);
         }        
-        
-        public void setTemplateDescriptorBuilder(TemplateDescriptorBuilder templateDescriptorBuilder) {
-            this.templateDescriptorBuilder = templateDescriptorBuilder;
+
+        public List<InheritanceBuilder> getInheritanceBuilders() {
+            return inheritanceBuilders;
         }
         
-        public ClassImpl getClassDefinitionInstance() {
+        private ClassImpl getClassDefinitionInstance() {
             if(instance != null) {
                 return instance;
             }
             MutableDeclarationsContainer container = null;
-            if (parent == null) {
-                container = fileContent;
+            if (getParent() == null) {
+                container = getFileContent();
             } else {
-                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
-                    container = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespaceDefinitionInstance();
+                if(getParent() instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    container = ((NamespaceDefinitionImpl.NamespaceBuilder)getParent()).getNamespaceDefinitionInstance();
                 }
             }
-            if(container != null && name != null) {
-                CsmOffsetableDeclaration decl = container.findExistingDeclaration(startOffset, name, kind);
+            if(container != null && getName() != null) {
+                CsmOffsetableDeclaration decl = container.findExistingDeclaration(getStartOffset(), getName(), getKind());
                 if (decl != null && ClassImpl.class.equals(decl.getClass())) {
                     instance = (ClassImpl) decl;
                 }
@@ -535,81 +496,26 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return instance;
         }
         
-        public CsmScope getScope() {
-            if(scope != null) {
-                return scope;
-            }
-            if (parent == null) {
-                scope = (NamespaceImpl) file.getProject().getGlobalNamespace();
-            } else {
-                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
-                    scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
-                }
-            }
-            return scope;
-        }
-
-        public void setScope(CsmScope scope) {
-            assert scope != null;
-            this.scope = scope;
-        }
-        
+        @Override
         public ClassImpl create() {
             ClassImpl cls = getClassDefinitionInstance();
             CsmScope s = getScope();
-            if (cls == null && s != null && name != null && endOffset != 0) {
-                nameHolder = NameHolder.createName(name, nameStartOffset, nameEndOffset);
-                cls = new ClassImpl(nameHolder, kind, file, startOffset, endOffset);
-                cls.init3(s, true);
-                
-                if(templateDescriptorBuilder != null) {
-                    templateDescriptorBuilder.setScope(cls);
-                    cls.setTemplateDescriptor(templateDescriptorBuilder.create());
+            if (cls == null && s != null && getName() != null && getEndOffset() != 0) {
+                instance = cls = new ClassImpl(getNameHolder(), getKind(), getFile(), getStartOffset(), getEndOffset());
+                cls.init3(s, isGlobal());
+                if(getTemplateDescriptorBuilder() != null) {
+                    cls.setTemplateDescriptor(getTemplateDescriptor());
                 }
-                
-                instance = cls;
-                if (nameHolder != null) {
-                    nameHolder.addReference(fileContent, cls);
-                }                
-                if(parent != null) {
-                    if(parent instanceof ClassBuilder) {
-                        ((ClassBuilder)parent).getClassDefinitionInstance().addMember(cls, true);
-                    } else if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
-                        ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(cls);
-                    }
-                } else {
-                    fileContent.addDeclaration(cls);
-                }
-                for (InheritanceBuilder inheritanceBuilder : inheritanceBuilders) {
+                for (InheritanceBuilder inheritanceBuilder : getInheritanceBuilders()) {
                     inheritanceBuilder.setScope(cls);
                     cls.addInheritance(inheritanceBuilder.create(), isGlobal());
                 }
-                for (CsmObjectBuilder builder : children) {
-                    if(builder instanceof ClassBuilder) {
-                        ((ClassBuilder)builder).setScope(cls);
-                        ((ClassBuilder)builder).create();
-                    }
-                    if(builder instanceof EnumBuilder) {
-                        ((EnumBuilder)builder).setScope(cls);
-                        ((EnumBuilder)builder).create(true);
-                    }
-                    if(builder instanceof UsingDeclarationBuilder) {
-                        ((UsingDeclarationBuilder)builder).setScope(cls);
-                        ((UsingDeclarationBuilder)builder).create();
-                    }
-                    if(builder instanceof FieldBuilder) {
-                        ((FieldBuilder)builder).setScope(cls);
-                        ((FieldBuilder)builder).create();
-                    }
-                    if(builder instanceof MethodBuilder) {
-                        ((MethodBuilder)builder).setScope(cls);
-                        ((MethodBuilder)builder).create();
-                    }
-                    if(builder instanceof SimpleDeclarationBuilder) {
-                        ((SimpleDeclarationBuilder)builder).setScope(cls);
-                        ((SimpleDeclarationBuilder)builder).create();
-                    }
+                for (MemberBuilder builder : getMemberBuilders()) {
+                    builder.setScope(cls);
+                    cls.addMember(builder.create(), isGlobal());
                 }                
+                getNameHolder().addReference(getFileContent(), cls);
+                addDeclaration(cls);
             }
             return cls;
         }
@@ -1248,7 +1154,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return (CsmClass) getScope();
         }
 
-        public static class MemberTypedefBuilder extends TypedefBuilder implements CsmObjectBuilder {
+        public static class MemberTypedefBuilder extends TypedefBuilder implements CsmObjectBuilder, MemberBuilder {
         
             @Override
             public MemberTypedef create() {
@@ -1267,10 +1173,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
                 if (!isGlobal()) {
                     Utils.setSelfUID(td);
-                }
-
-                if (getParent() instanceof ClassImpl.ClassBuilder) {
-                    ((ClassImpl.ClassBuilder) getParent()).addMember(td);
                 }
 
                 return td;

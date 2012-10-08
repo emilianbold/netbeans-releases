@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl.ClassForwardDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberTypedef.MemberTypedefBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ConstructorImpl.ConstructorBuilder;
@@ -272,10 +273,10 @@ public class CppParserActionImpl implements CppParserActionEx {
     public void enum_declaration(Token token) {        
         //System.out.println("enum_declaration " + ((APTToken)token).getOffset());
         
-        EnumBuilder enumBuilder = new EnumBuilder(currentContext.file.getParsingFileContent());
+        EnumBuilder enumBuilder = new EnumBuilder();
         CsmObjectBuilder parent = builderContext.top(2);
         if(parent instanceof ClassBuilder) {
-            ((ClassBuilder)parent).addChild(enumBuilder);
+            ((ClassBuilder)parent).addMemberBuilder(enumBuilder);
         }        
         enumBuilder.setParent(parent);
         enumBuilder.setFile(currentContext.file);
@@ -367,7 +368,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             EnumBuilder enumBuilder = builderContext.getEnumBuilder();
             CsmObjectBuilder parent = builderContext.top(3);
             if(parent == null || parent instanceof NamespaceBuilder) {
-                EnumImpl e = enumBuilder.create(true);
+                EnumImpl e = enumBuilder.create();
                 if(e != null) {
                     currentContext.objects.put(e.getStartOffset(), e);
                     SymTabEntry enumEntry = globalSymTab.lookupLocal(e.getName());
@@ -387,10 +388,10 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     @Override
     public void class_declaration(Token token) {
-        ClassBuilder classBuilder = new ClassBuilder(currentContext.file.getParsingFileContent());
+        ClassBuilder classBuilder = new ClassBuilder();
         CsmObjectBuilder parent = builderContext.top(2);
         if(parent instanceof ClassBuilder) {
-            ((ClassBuilder)parent).addChild(classBuilder);
+            ((ClassBuilder)parent).addMemberBuilder(classBuilder);
         }
         classBuilder.setParent(parent);
         classBuilder.setFile(currentContext.file);
@@ -440,7 +441,9 @@ public class CppParserActionImpl implements CppParserActionEx {
                 // error
             }
 
-            classBuilder.setName(name, aToken.getOffset(), aToken.getEndOffset());
+            classBuilder.setName(name);
+            classBuilder.setNameStartOffset(aToken.getOffset());
+            classBuilder.setNameEndOffset(aToken.getEndOffset());
         }
     }
     
@@ -1386,7 +1389,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         builder.setStartOffset(((APTToken)token).getOffset());
         CsmObjectBuilder parent = builderContext.top(2);
         if(parent instanceof ClassBuilder) {
-            ((ClassBuilder)parent).addChild(builder);
+//            ((ClassBuilder)parent).addChild(builder);
         }
         builder.setParent(parent);        
         SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder)builderContext.top(1);
@@ -1679,7 +1682,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             MethodDDBuilder builder = (MethodDDBuilder)top;
             builder.setEndOffset(((APTToken)token).getEndOffset());
             builderContext.pop();
-            ((ClassBuilder)builderContext.top(1)).addChild(builder);
+            ((ClassBuilder)builderContext.top(1)).addMemberBuilder(builder);
         }
     }
     @Override public void function_declaration(Token token) {}
@@ -1751,19 +1754,13 @@ public class CppParserActionImpl implements CppParserActionEx {
                     builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
                 }        
 
-                ((ClassBuilder)parent).addChild(builder);
+                ((ClassBuilder)parent).addMemberBuilder(builder);
             } else if(declBuilder.isFunction()) {
                 FunctionBuilder builder;
 
                 CharSequence name = declBuilder.getDeclaratorBuilder().getName();
                 
-                if(declBuilder.isFriend()) {
-                    if(name != null && !name.toString().contains("::")) { //NOI18N
-                        builder = new FriendFunctionBuilder();
-                    } else {
-                        builder = new FriendFunctionExBuilder();
-                    }
-                } else if(declBuilder.isConstructor()) {
+                if(declBuilder.isConstructor()) {
                     builder = new ConstructorBuilder();
                 } else if(declBuilder.isDestructor()) {
                     builder = new DestructorBuilder();
@@ -1787,7 +1784,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                 }        
                 builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
 
-                ((ClassBuilder)parent).addChild(builder);
+                ((ClassBuilder)parent).addMemberBuilder((MemberBuilder)builder);
             } else {            
                 FieldBuilder builder = new FieldBuilder(currentContext.file.getParsingFileContent());
 
@@ -1806,7 +1803,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                     builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
                 }        
 
-                ((ClassBuilder)parent).addChild(builder);
+                ((ClassBuilder)parent).addMemberBuilder(builder);
             }
         }    
     }
