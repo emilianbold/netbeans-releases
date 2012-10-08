@@ -45,16 +45,16 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import org.netbeans.modules.nativeexecution.PtyNativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IONotifier;
+import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -82,12 +82,11 @@ public final class IOConnector {
             return false;
         }
 
-        if (IOResizable.isSupported(io) && (process instanceof PtyNativeProcess)) {
-            PtyNativeProcess p = (PtyNativeProcess) process;
-            String tty = p.getTTY();
+        if (IOResizable.isSupported(io)) {
+            String tty = PtySupport.getTTY(process);
             if (tty != null) {
                 try {
-                    IONotifier.addPropertyChangeListener(io, new ResizeListener(p.getExecutionEnvironment(), tty));
+                    IONotifier.addPropertyChangeListener(io, new ResizeListener(process.getExecutionEnvironment(), tty));
                 } catch (CancellationException ex) {
                     Exceptions.printStackTrace(ex); // TODO:CancellationException error processing
                 } catch (IOException ex) {

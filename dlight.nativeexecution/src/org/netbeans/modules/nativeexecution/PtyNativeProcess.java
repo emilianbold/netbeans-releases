@@ -65,15 +65,10 @@ import org.netbeans.modules.nativeexecution.pty.PtyUtility;
 public final class PtyNativeProcess extends AbstractNativeProcess {
 
     private static final Boolean fixEraseKeyInTerminal = Boolean.valueOf(System.getProperty("fixEraseKeyInTerminal", "true")); // NOI18N;
-    private String tty;
     private AbstractNativeProcess delegate = null;
 
     public PtyNativeProcess(final NativeProcessInfo info) {
         super(new NativeProcessInfo(info, true));
-    }
-
-    public String getTTY() {
-        return tty;
     }
 
     @Override
@@ -178,7 +173,8 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
             if (line.startsWith("PID=")) { // NOI18N
                 pidLine = line.substring(4);
             } else if (line.startsWith("TTY=")) { // NOI18N
-                ttyLine = line.substring(4);
+                addProcessInfo(line);
+                ttyLine = line;
             }
         }
 
@@ -186,8 +182,6 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
             String error = ProcessUtils.readProcessErrorLine(this);
             throw new IOException("Unable to start pty process: " + error); // NOI18N
         }
-
-        tty = ttyLine;
 
         ByteArrayInputStream bis = new ByteArrayInputStream(pidLine.getBytes());
         readPID(bis);
