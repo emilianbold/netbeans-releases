@@ -51,8 +51,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
-import java.util.Iterator;
 import javax.swing.*;
 import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.modules.profiler.api.JavaPlatform;
@@ -107,9 +105,20 @@ import org.netbeans.spi.options.OptionsPanelController;
     "ProfilerOptionsPanel_OomeComboAccessDescr=Specifies action on OutOfMemoryError",
     "ProfilerOptionsPanel_HeapWalkerLabelText=HeapWalker:",
     "ProfilerOptionsPanel_JavaPlatformComboAccessDescr=Java platform used for running the profiled application",
-    "ProfilerOptionsPanel_IfThreadsMonitoringEnabledHint=if threads monitoring is enabled"
+    "ProfilerOptionsPanel_IfThreadsMonitoringEnabledHint=if threads monitoring is enabled",
+    "ProfilerOptionsPanel_KW_profiler=profiler",
+    "ProfilerOptionsPanel_KW_profile=profile",
+    "ProfilerOptionsPanel_KW_profiling=profiling",
+    "ProfilerOptionsPanel_KW_cpu=cpu",
+    "ProfilerOptionsPanel_KW_memory=memory",
+    "ProfilerOptionsPanel_KW_threads=threads",
+    "ProfilerOptionsPanel_KW_telemetry=telemetry"
 })
-@OptionsPanelController.Keywords(keywords={"profiler"}, location=JavaOptions.JAVA, tabTitle="org.netbeans.modules.profiler.options.Bundle#ProfilerOptionsCategory_Title")
+@OptionsPanelController.Keywords(keywords={"#ProfilerOptionsPanel_KW_profiler",
+    "#ProfilerOptionsPanel_KW_profile", "#ProfilerOptionsPanel_KW_profiling",
+    "#ProfilerOptionsPanel_KW_cpu", "#ProfilerOptionsPanel_KW_memory",
+    "#ProfilerOptionsPanel_KW_threads", "#ProfilerOptionsPanel_KW_telemetry"},
+        location=JavaOptions.JAVA, tabTitle="org.netbeans.modules.profiler.options.Bundle#ProfilerOptionsCategory_Title")
 public final class ProfilerOptionsPanel extends JPanel implements ActionListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
