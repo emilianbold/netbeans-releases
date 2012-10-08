@@ -161,7 +161,7 @@ public abstract class PHPFormatterTestBase extends PHPCodeCompletionTestBase {
                 text = text.substring(0, carretPosition) + text.substring(carretPosition + 1);
             }
 
-            TokenFormatter.unitTestCarretPosition = carretPosition;
+            TokenFormatter.setUnitTestCarretPosition(carretPosition);
             doc.remove(0, doc.getLength());
             doc.insertString(0, text, null);
             doc.putProperty(TokenFormatter.TEMPLATE_HANDLER_PROPERTY, new Object());

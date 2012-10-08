@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.index;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
@@ -63,6 +64,7 @@ public abstract class PHPElement implements Element {
     @Override
     public abstract ElementKind getKind();
 
+    @NonNull
     @Override
     public String getMimeType() {
         return FileUtils.PHP_MIME_TYPE;

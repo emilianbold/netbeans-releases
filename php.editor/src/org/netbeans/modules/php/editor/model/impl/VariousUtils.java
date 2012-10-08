@@ -866,6 +866,7 @@ public class VariousUtils {
         STATIC_REFERENCE, FUNCTION, FIELD, VARIABLE, ARRAY_FIELD, ARRAY_VARIABLE, CLASSNAME, STOP, IDX
     };
 
+    @org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH"})
     public static String getSemiType(TokenSequence<PHPTokenId> tokenSequence, State state, VariableScope varScope) throws IllegalStateException {
         int commasCount = 0;
         String possibleClassName = ""; //NOI18N
