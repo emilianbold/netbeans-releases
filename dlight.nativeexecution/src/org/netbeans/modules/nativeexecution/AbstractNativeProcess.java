@@ -79,7 +79,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public abstract class AbstractNativeProcess extends NativeProcess {
+public abstract class AbstractNativeProcess extends NativeProcess implements ExProcessInfoProvider {
 
     protected final static java.util.logging.Logger LOG = Logger.getInstance();
     private final static Integer PID_TIMEOUT =
@@ -531,6 +531,11 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 break;
             }
         }
+    }
+
+    @Override
+    public String getTTY() {
+        return getProcessInfo("TTY"); // NOI18N
     }
 
     @Override
