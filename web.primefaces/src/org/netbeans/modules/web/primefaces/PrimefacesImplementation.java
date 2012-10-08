@@ -308,12 +308,20 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     /**
      * Updates index page of the webmodule - includes link to PrimeFaces's welcome page.
      */
+    @NbBundle.Messages({
+        "PrimefacesImplementation.index.welcome.primefaces.lbl=Primefaces welcome page"
+    })
     private static void updateIndexPage(WebModule webModule) throws DataObjectNotFoundException {
         FileObject indexFO = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
-        DataObject indexDO = DataObject.find(indexFO);
-        JsfComponentUtils.enhanceFileBody(indexDO, "</h:body>", "<br />\n<h:link outcome=\"welcomePrimefaces\" value=\"Primefaces welcome page\" />"); //NOI18N
-        if (indexFO.isValid() && indexFO.canWrite()) {
-            JsfComponentUtils.reformat(indexDO);
+        if (indexFO == null || !indexFO.isValid() || !indexFO.canWrite()) {
+            return;
         }
+
+        DataObject indexDO = DataObject.find(indexFO);
+        JsfComponentUtils.enhanceFileBody(
+                indexDO,
+                "</h:body>", //NOI18N
+                "<br />\n<h:link outcome=\"welcomePrimefaces\" value=\"" + Bundle.PrimefacesImplementation_index_welcome_primefaces_lbl() + "\" />"); //NOI18N
+        JsfComponentUtils.reformat(indexDO);
     }
 }
