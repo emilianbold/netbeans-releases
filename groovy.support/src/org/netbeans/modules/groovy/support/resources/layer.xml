@@ -4,19 +4,16 @@
     <folder name="Projects">
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
             <folder name="Lookup">
-                <file name="org-netbeans-modules-groovy-support-GroovyLookupProvider.instance_hidden"/>
                 <file name="org-netbeans-modules-groovy-support-GroovyProjectOpenedHook.instance"/>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Lookup">
-                <file name="org-netbeans-modules-groovy-support-GroovyLookupProvider.instance_hidden"/>
                 <file name="org-netbeans-modules-groovy-support-GroovyProjectOpenedHook.instance"/>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-web-project">
             <folder name="Lookup">
-                <file name="org-netbeans-modules-groovy-support-GroovyLookupProvider.instance_hidden"/>
                 <file name="org-netbeans-modules-groovy-support-GroovyProjectOpenedHook.instance"/>
             </folder>
         </folder>
