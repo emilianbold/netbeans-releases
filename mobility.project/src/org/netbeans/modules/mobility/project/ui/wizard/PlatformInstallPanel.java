@@ -80,7 +80,7 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
     public PlatformInstallPanel(String pt) {
         platformType=pt.toUpperCase();
         try {
-            platformType = NbBundle.getMessage(PlatformInstallPanel.class, "LBL_PlatformType_" + platformType);//NOI18N
+            platformType = NbBundle.getMessage(PlatformInstallPanel.class, "LBL_PlatformType_" + platformType); //NOI18N
         } catch (MissingResourceException mre) {
             //ignore
         }
@@ -175,8 +175,9 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
     
     private void bInstallActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bInstallActionPerformed
         openPlatformInstallWizard();
-        if (listener != null)
+        if (listener != null) {
             listener.actionPerformed(null);
+        }
     }//GEN-LAST:event_bInstallActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -196,20 +197,26 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         if (subType==null || !(platformType.equals(CDCPlatform.PLATFORM_CDC) || platformType.equals(J2MEPlatform.SPECIFICATION_NAME))){
             int cnt = platforms.length;
             for (JavaPlatform javaPlatform : platforms) {
-                if (javaPlatform.getInstallFolders().size() == 0){ //invalid platform
+                if (javaPlatform.getInstallFolders().isEmpty()){ //invalid platform
                     cnt--;
                 }
             }
             return cnt > 0;
         } else {
             for (JavaPlatform platform : platforms) {
-                if (platform.getInstallFolders().size() == 0){ //platform is not valid
+                if (platform.getInstallFolders().isEmpty()){ //platform is not valid
                     continue;
                 }
-                if (platform instanceof J2MEPlatform)
-                    if (subType.equals(((J2MEPlatform)platform).getType())) return true;
-                if (platform instanceof CDCPlatform)
-                    if (subType.equals(((CDCPlatform)platform).getType())) return true;
+                if (platform instanceof J2MEPlatform) {
+                    if (subType.equals(((J2MEPlatform)platform).getType())) {
+                        return true;
+                    }
+                }
+                if (platform instanceof CDCPlatform) {
+                    if (subType.equals(((CDCPlatform)platform).getType())) {
+                        return true;
+                    }
+                }
             }
             return false;
         }
@@ -240,14 +247,17 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
             platformSubType=name;
         }
         
+        @Override
         public void addChangeListener(final javax.swing.event.ChangeListener changeListener) {
             listeners.add(changeListener);
         }
         
+        @Override
         public void removeChangeListener(final javax.swing.event.ChangeListener changeListener) {
             listeners.remove(changeListener);
         }
         
+        @Override
         public java.awt.Component getComponent() {
             if (component == null) {
                 component = new PlatformInstallPanel(platformType);
@@ -257,28 +267,35 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
             return component;
         }
         
+        @Override
         public org.openide.util.HelpCtx getHelp() {
-            return new HelpCtx(PlatformInstallPanel.class);
+            return new HelpCtx(PlatformInstallPanel.class.getName());
         }
         
+        @Override
         public boolean isFinishPanel() {
             return false;
         }
         
         public void showError(final String message) {
-            if (wizard != null)
-                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
+            if (wizard != null) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+            }
         }
         
+        @Override
         public boolean isValid() {
             final boolean valid = PlatformInstallPanel.isPlatformInstalled(platformSubType,platformType);
-            if (! valid)
+            if (! valid) {
                 showError(NbBundle.getMessage(PlatformInstallPanel.class, "ERR_Platform_NoPlatform",platformType.toUpperCase())); // NOI18N
-            else
+            }
+            else {
                 showError(null);
+            }
             return valid;
         }
         
+        @Override
         public void readSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
             Component component = getComponent();
@@ -288,6 +305,7 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
             }
         }
         
+        @Override
         public void storeSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
         }
@@ -295,13 +313,15 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         void fireStateChange() {
             ChangeListener[] ll;
             synchronized (this) {
-                if (listeners.isEmpty())
+                if (listeners.isEmpty()) {
                     return;
+                }
                 ll = listeners.toArray(new ChangeListener[listeners.size()]);
             }
             final ChangeEvent ev = new ChangeEvent(this);
-            for (int i = 0; i < ll.length; i++)
+            for (int i = 0; i < ll.length; i++) {
                 ll[i].stateChanged(ev);
+            }
         }
         
         void checkValid() {
@@ -311,6 +331,7 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
             }
         }
         
+        @Override
         public void actionPerformed(@SuppressWarnings("unused")
 		final java.awt.event.ActionEvent e) {
             checkValid();
