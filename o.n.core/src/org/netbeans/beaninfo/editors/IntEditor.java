@@ -158,7 +158,7 @@ public class IntEditor extends ExPropertyEditorSupport {
                     }
                 }
                 if (idx != -1) {
-                    result = keys [((Integer) super.getValue()).intValue()];
+                    result = keys [idx];
                 } else {
                     throw new IllegalArgumentException(
                     "This property editor uses a set of keyed values, " +  //NOI18N
@@ -210,17 +210,9 @@ public class IntEditor extends ExPropertyEditorSupport {
                                          new java.util.Date());
                 throw iae;
             } else {
-                setValue(Integer.valueOf(idx));
+                setValue(Integer.valueOf(values[idx]));
             }
         }
-    }
-    
-    public Object getValue () {
-        Integer v = (Integer) super.getValue();
-        if (values != null) {
-            v = Integer.valueOf (values[v.intValue()]);
-        }
-        return v;
     }
     
     //issue 34037 - make setValue calls with illegal values fail-fast
