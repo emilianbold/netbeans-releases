@@ -2,7 +2,6 @@
 <!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
 <plist version="0.9">
   <dict>
-
     <key>CFBundleName</key>
     <string>@APPNAME@</string>
     
@@ -43,5 +42,8 @@
 		</array>
 	</dict>
     </array>
+    
+    <key>NSHighResolutionCapable</key>
+    <true/>
   </dict>
 </plist>
