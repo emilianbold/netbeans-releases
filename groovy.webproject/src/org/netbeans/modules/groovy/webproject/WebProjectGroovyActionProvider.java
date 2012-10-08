@@ -50,6 +50,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -162,12 +163,8 @@ public class WebProjectGroovyActionProvider implements ActionProvider {
             @Override
             public void run () {
                 Properties p = new Properties();
-                String[] targetNames;
+                String[] targetNames = getTargetNames(command, context, p);
 
-                targetNames = getTargetNames(command, context, p);
-                if (targetNames == null) {
-                    return;
-                }
                 if (targetNames.length == 0) {
                     targetNames = null;
                 }
@@ -333,9 +330,9 @@ public class WebProjectGroovyActionProvider implements ActionProvider {
         Map<String, String> map = PropertyUtils.propertiesFilePropertyProvider(propFile).getProperties();
 
         List<String> result = new ArrayList<String>();
-        for (String key : map.keySet()) {
-            if (key.startsWith("test.") && key.endsWith(".dir")) { // NOI18N
-                result.add(map.get(key));
+        for (Entry<String, String> entry : map.entrySet()) {
+            if (entry.getKey().startsWith("test.") && entry.getKey().endsWith(".dir")) { // NOI18N
+                result.add(entry.getValue());
             }
         }
 
