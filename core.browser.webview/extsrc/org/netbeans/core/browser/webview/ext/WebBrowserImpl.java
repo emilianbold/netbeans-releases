@@ -699,16 +699,21 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     private WebEngine _createNewBrowserWindow() {
         final WebView newView = new WebView();
         final WebEngine newEngine = newView.getEngine();
-        Platform.runLater( new Runnable() {
+        SwingUtilities.invokeLater( new Runnable() {
             @Override
             public void run() {
                 final WebBrowserImpl browserImpl = new WebBrowserImpl( newView );
-                browserImpl.initBrowser( newView );
-                SwingUtilities.invokeLater( new Runnable() {
-
+                browserImpl.INIT_LOCK.release();
+                Platform.runLater( new Runnable() {
                     @Override
                     public void run() {
-                        openNewBrowserWindow( browserImpl );
+                        browserImpl.initBrowser( newView );
+                        SwingUtilities.invokeLater( new Runnable() {
+                            @Override
+                            public void run() {
+                                openNewBrowserWindow( browserImpl );
+                            }
+                        });
                     }
                 });
             }
