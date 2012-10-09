@@ -169,6 +169,11 @@ public class JspJsfELPlugin extends ELPlugin {
         // Get Classes of parameters from attribute method signature.
         String attributeName = attribute.getName();
         int atributeNameIndex = methodSignature.indexOf(attributeName);
+        if (atributeNameIndex == -1) {
+            LOGGER.log(Level.FINE, "Attribute not found in the method signature: element={0},attribute={1}",
+                    new Object[]{executableElement.getSimpleName(), attributeName});
+            return false;
+        }
         String attributeReturnType = methodSignature.substring(0, atributeNameIndex).trim();
         String attributeParametersStr = methodSignature.substring(atributeNameIndex + attributeName.length()).replaceAll("[()]", "").trim();
 
