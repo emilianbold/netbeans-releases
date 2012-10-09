@@ -83,8 +83,8 @@ import org.openide.util.NbBundle;
     "php composer dependency dependencies package packages",
     "#ComposerOptionsPanel.keywords.dependency",
     "#ComposerOptionsPanel.keywords.dependencies",
-    "ComposerOptionsPanel.keywords.package",
-    "ComposerOptionsPanel.keywords.packages"
+    "#ComposerOptionsPanel.keywords.package",
+    "#ComposerOptionsPanel.keywords.packages"
 }, location=UiUtils.OPTIONS_PATH, tabTitle= "#Options.name")
 public class ComposerOptionsPanel extends JPanel {
 
