@@ -309,7 +309,9 @@ public final class JPQLEditorTopComponent extends TopComponent {
     }
 
     public void setFocusToEditor() {
-        jpqlEditor.requestFocus();
+        if(!jpqlEditor.isFocusOwner()) {
+            jpqlEditor.requestFocus();
+        }
     }
 
     private class ParseJPQL extends Thread {
@@ -428,6 +430,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
     @Override
     protected void componentActivated() {
         super.componentActivated();
+        setFocusToEditor();
         requestProcessor = new RequestProcessor("hql-parser", 1, true);
     }
 

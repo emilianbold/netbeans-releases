@@ -82,12 +82,12 @@ import org.openide.util.NbBundle;
  *
  */
 @NbBundle.Messages({
-    "KW_Job=Job", "KW_Build=Build"
+    "HudsonOptionsPanel.keywords.job=Job",
+    "HudsonOptionsPanel.keywords.build=Build"
 })
 @OptionsPanelController.Keywords(
-    location = UiUtils.OPTIONS_PATH, tabTitle= "#LBL_OptionsName",
-    keywords = {"php hudson", "ppw", "jenkins", "job", "build", "#KW_Job",
-    "KW_Build"})
+        location = UiUtils.OPTIONS_PATH, tabTitle= "#LBL_OptionsName",
+        keywords = {"php", "hudson", "jenkins", "ppw", "job", "build", "#HudsonOptionsPanel.keywords.job", "#HudsonOptionsPanel.keywords.build"})
 public class HudsonOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = -464132465732132L;

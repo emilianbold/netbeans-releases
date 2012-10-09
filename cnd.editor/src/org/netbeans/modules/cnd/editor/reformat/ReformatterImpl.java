@@ -903,6 +903,14 @@ public class ReformatterImpl {
                             codeStyle.spaceBeforeCatchLeftBrace(), 1);
                     return;
                 }
+                case ARROW: //("catch", "keyword-directive"), //C++
+                {
+//    private void newLine(Token<CppTokenId> previous, Token<CppTokenId> current,
+//            CodeStyle.BracePlacement where, boolean spaceBefore, int newLineAfter){
+                    newLine(previous, current, codeStyle.getFormatNewlineBeforeBrace(),
+                        codeStyle.spaceBeforeMethodDeclLeftBrace(), 1);
+                    return;
+                }
             }
         }
         if (entry != null && entry.isLikeToFunction()) {
@@ -1365,6 +1373,13 @@ public class ReformatterImpl {
         Token<CppTokenId> nextImportant = ts.lookNextImportant();
         if (nextImportant != null) {
             switch (nextImportant.id()) {
+                case LPAREN:
+                {
+                    if (entry != null && entry.getImportantKind() == ARROW) {
+                        return;
+                    }
+                    break;
+                }
                 case WHILE:
                 {
                     StackEntry top = braces.peek();

@@ -311,7 +311,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
     protected void assertDocumentText(String msg, String expectedText) {
         String docText = getDocumentText();
         if (!docText.equals(expectedText)) {
-            CndUtils.threadsDump();
+            //CndUtils.threadsDump();
             StringBuffer sb = new StringBuffer();
             sb.append(msg);
             sb.append("\n----- expected text: -----\n");
@@ -339,6 +339,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
                     break;
                 }
             }
+            System.err.println(sb.toString());
             fail(sb.toString());
         }
     }
