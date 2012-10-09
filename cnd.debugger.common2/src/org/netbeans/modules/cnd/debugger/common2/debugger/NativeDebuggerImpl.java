@@ -901,6 +901,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                 } else {
                     if (getVisitedLocation() != null && getVisitedLocation().pc() != 0) {
                         Disassembly.open();
+                        annotateDis(andShow);   // In order to update current line when source is unavailable
                     }
                 }
             }
