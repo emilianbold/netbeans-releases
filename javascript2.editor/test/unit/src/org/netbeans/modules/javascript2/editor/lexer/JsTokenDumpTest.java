@@ -62,8 +62,18 @@ public class JsTokenDumpTest extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
-    public void testInput() throws Exception {
+    public void testTestInput() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.js",
+                JsTokenId.javascriptLanguage());
+    }
+
+    public void testScriptInput() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/scriptInput.js",
+                JsTokenId.javascriptLanguage());
+    }
+
+    public void testScriptInputBroken() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/scriptInputBroken.js",
                 JsTokenId.javascriptLanguage());
     }
 }
