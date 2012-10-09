@@ -54,6 +54,7 @@ import org.netbeans.junit.Filter;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.random.RandomTestContainer;
 import org.netbeans.lib.editor.util.random.RandomText;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 public class EditorDocumentContentTest extends NbTestCase {
 
@@ -148,6 +149,26 @@ public class EditorDocumentContentTest extends NbTestCase {
         Position pos11 = DocumentContentTesting.createPosition(context, 1);
         assertSame(pos2, pos11); // Reuse last position among ones with the same offset
         DocumentContentTesting.insert(context, 1, "b");
+
+        // Check subsequences correctness
+        Document doc = DocumentContentTesting.getDocument(container);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        CharSequence txt1 = docText.subSequence(0, 3);
+        assertEquals('a', txt1.charAt(0));
+        assertEquals('b', txt1.charAt(1));
+        assertEquals('o', txt1.charAt(2));
+        assertEquals("abo", txt1.toString());
+        CharSequence subTxt1 = txt1.subSequence(1, 3);
+        assertEquals("bo", subTxt1.toString());
+        CharSequence subTxt2 = txt1.subSequence(0, 1);
+        assertEquals("a", subTxt2.toString());
+        CharSequence txt2 = docText.subSequence(0, 1);
+        assertEquals('a', txt2.charAt(0));
+        assertEquals("a", txt2.toString());
+        CharSequence txt3 = docText.subSequence(2, 3);
+        assertEquals('o', txt3.charAt(0));
+        assertEquals("o", txt3.toString());
+
         Position pos111 = DocumentContentTesting.createPosition(context, 1);
         assertNotSame(pos2, pos111);
         DocumentContentTesting.undo(context, 1);

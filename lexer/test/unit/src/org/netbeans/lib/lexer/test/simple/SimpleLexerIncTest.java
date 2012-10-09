@@ -398,13 +398,6 @@ public class SimpleLexerIncTest extends NbTestCase {
         
 
         doc.insertString(0, id1, null); // Insert extra chars
-        
-        // Now force the tokenText to become cached (after insert)
-        for (int i = 0; i < 10; i++) {
-            tokenText.toString();
-        }
-        assert (token.text() instanceof String) : "Expecting String instance";
-        
 
         ts = hi.tokenSequence();
         offset = 0;
