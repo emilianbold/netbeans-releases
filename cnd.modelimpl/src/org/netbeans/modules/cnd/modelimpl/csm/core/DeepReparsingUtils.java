@@ -369,14 +369,15 @@ public final class DeepReparsingUtils {
         }
     }
 
-    static void reparseOnRemoved(Collection<FileImpl> toReparse, ProjectBase project) {
+    static void reparseOnRemoved(Collection<FileImpl> removedPhysically, Collection<FileImpl> removedAsExcluded, ProjectBase project) {
         if (TRACE) {
-            LOG.log(Level.INFO, "reparseOnRemoved {0}", toString(toReparse));
+            LOG.log(Level.INFO, "reparseOnRemoved \nPHYSICAL:{0}\nEXCLUDED:{1}", new Object[] {toString(removedPhysically), toString(removedAsExcluded)});
         }
         CndFileUtils.clearFileExistenceCache();
         Set<CsmFile> topParents = new HashSet<CsmFile>();
         Set<CsmFile> coherence = new HashSet<CsmFile>();
-        for (FileImpl impl : toReparse) {
+        // physically removed can cause broken #includes => we need to reparse parent and coherence files
+        for (FileImpl impl : removedPhysically) {
             if (impl != null) {
                 topParents.addAll(project.getGraph().getTopParentFiles(impl).getCompilationUnits());
                 coherence.addAll(project.getGraph().getCoherenceFiles(impl).getCoherenceFiles());
@@ -384,6 +385,13 @@ public final class DeepReparsingUtils {
                 topParents.remove(impl);
                 coherence.remove(impl);
             }
+        }
+        // excluded are just removed, because their model excluded from model
+        // but physically they could be in place, no need to reparse those who includes them
+        for (FileImpl impl : removedAsExcluded) {
+            project.getGraph().removeFile(impl);
+            topParents.remove(impl);
+            coherence.remove(impl);
         }
         addToReparse(project, topParents, coherence, false);
     }

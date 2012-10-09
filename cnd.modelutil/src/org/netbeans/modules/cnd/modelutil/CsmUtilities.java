@@ -358,8 +358,8 @@ public class CsmUtilities {
      * @return project that contains file under its root directory,
      *      or <code>null</code> if there is no such project
      */
-    public static CsmProject getCsmProject(FileObject fo) {
-        CsmProject pathBasedCandidate = null;
+    public static Collection<CsmProject> getOwnerCsmProjects(FileObject fo) {
+        Collection<CsmProject> out = new ArrayList<CsmProject>();
         if (fo != null && fo.isValid()) {
             String path = fo.getPath();
             FileSystem fileSystem = null;
@@ -375,9 +375,8 @@ public class CsmUtilities {
                     if (nativeProject.getFileSystem().equals(fileSystem)) {
                         NativeFileItem item = nativeProject.findFileItem(fo);
                         if (item != null) {
-                            return csmProject;
-                        }
-                        if (pathBasedCandidate == null) {
+                            out.add(csmProject);
+                        } else {
                             final List<String> sourceRoots = new ArrayList<String>();
                             sourceRoots.add(nativeProject.getProjectRoot());
                             sourceRoots.addAll(nativeProject.getSourceRoots());
@@ -385,7 +384,7 @@ public class CsmUtilities {
                                 if (path.startsWith(src)) {
                                     final int length = src.length();
                                     if (path.length() == length || path.charAt(length) == '\\' || path.charAt(length) == '/') {
-                                        pathBasedCandidate = csmProject;
+                                        out.add(csmProject);
                                     }
                                 }
                             }
@@ -394,7 +393,7 @@ public class CsmUtilities {
                 }
             }
         }
-        return pathBasedCandidate;
+        return out;
     }
 
     public static boolean isAnyNativeProjectOpened() {

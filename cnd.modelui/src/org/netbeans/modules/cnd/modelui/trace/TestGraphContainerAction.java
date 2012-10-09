@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,31 +34,64 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.api.project;
 
-import java.util.List;
+package org.netbeans.modules.cnd.modelui.trace;
 
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
+        
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
+ * A test action that dump graph container for the given project
+ * 
+ * @author Vladimir Voskrsensky
  */
-public interface NativeProjectChangeSupport {
+public class TestGraphContainerAction extends TestProjectActionBase {
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(getClass(), "CTL_TestGraphContainerAction"); //NOI18N
+    }
+
     
-    public void fireFilesAdded(List<NativeFileItem> fileItems);
+    @Override
+    protected void performAction(Collection<CsmProject> csmProjects) {
+        if (csmProjects != null && !csmProjects.isEmpty()) {
+            testGraphContainer(csmProjects);
+        }
+    }
 
-    public void fireFilesRemoved(List<NativeFileItem> fileItems);
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 
-    public void fireFileRenamed(String oldPath, NativeFileItem newFileItem);
-
-    public void fireFilesPropertiesChanged(List<NativeFileItem> fileItems);
-
-    public void fireFilesPropertiesChanged();
+    private void testGraphContainer(Collection<CsmProject> projects) {
+        for (CsmProject p : projects) {
+            testFileContainer((ProjectBase) p);
+        }
+    }
     
-    public void fireFileOperationsStarted();
     
-    public void fireFileOperationsFinished();
+    private void testFileContainer(ProjectBase project) {
+        InputOutput io = IOProvider.getDefault().getIO("graph container for " + project.getName(), false); // NOI18N
+        io.select();
+        final OutputWriter out = io.getOut();
+        ProjectBase.dumpProjectGrapthContainer(project, out);
+        for(CsmProject lib : project.getLibraries()){
+            if (lib instanceof ProjectBase) {
+                ProjectBase.dumpProjectGrapthContainer((ProjectBase)lib, out);
+            }
+        }
+        out.close();
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.api.project;
+package org.netbeans.modules.cnd.makeproject.api.support;
 
-import java.util.List;
+import org.netbeans.modules.cnd.makeproject.actions.RunDialogAction;
+import org.openide.filesystems.FileObject;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
+ *
+ * @author inikiforov
  */
-public interface NativeProjectChangeSupport {
+public final class MakeProjectPublicUtils {
     
-    public void fireFilesAdded(List<NativeFileItem> fileItems);
-
-    public void fireFilesRemoved(List<NativeFileItem> fileItems);
-
-    public void fireFileRenamed(String oldPath, NativeFileItem newFileItem);
-
-    public void fireFilesPropertiesChanged(List<NativeFileItem> fileItems);
-
-    public void fireFilesPropertiesChanged();
+    private MakeProjectPublicUtils() {}
     
-    public void fireFileOperationsStarted();
+    public static void askToCreateProjectFromBinary(FileObject fo) {
+        RunDialogAction action = new RunDialogAction();
+        action.perform(fo, false);
+    }
     
-    public void fireFileOperationsFinished();
 }
