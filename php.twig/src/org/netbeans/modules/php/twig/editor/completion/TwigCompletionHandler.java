@@ -189,12 +189,12 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     @Override
     public CodeCompletionResult complete(CodeCompletionContext codeCompletionContext) {
         final List<CompletionProposal> completionProposals = new ArrayList<CompletionProposal>();
-        int caretOffset = codeCompletionContext.getCaretOffset();
         ParserResult parserResult = codeCompletionContext.getParserResult();
         if (parserResult instanceof TwigParserResult) {
             TwigParserResult twigParserResult = (TwigParserResult) parserResult;
             CompletionRequest request = new CompletionRequest();
             request.prefix = codeCompletionContext.getPrefix();
+            int caretOffset = codeCompletionContext.getCaretOffset();
             String properPrefix = getPrefix(twigParserResult, caretOffset, true);
             request.anchorOffset = caretOffset - (properPrefix == null ? 0 : properPrefix.length());
             request.parserResult = twigParserResult;
