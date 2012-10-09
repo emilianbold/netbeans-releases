@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -347,6 +348,33 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
 
+    private final AtomicBoolean fileOperationsProgress = new AtomicBoolean(false);
+    @Override
+    public void fireFileOperationsStarted() {
+        if (TRACE) {
+            new Exception().printStackTrace(System.err);
+            System.out.println("fireFileOperationsStarted " + fileOperationsProgress); // NOI18N
+        }
+        if (fileOperationsProgress.compareAndSet(false, true)) {
+            for (NativeProjectItemsListener listener : getListenersCopy()) {
+                listener.fileOperationsStarted(this);
+            }
+        }
+    }
+
+    @Override
+    public void fireFileOperationsFinished() {
+        if (TRACE) {
+            new Exception().printStackTrace(System.err);
+            System.out.println("fireFileOperationsFinished " + fileOperationsProgress); // NOI18N
+        }
+        if (fileOperationsProgress.compareAndSet(true, false)) {
+            for (NativeProjectItemsListener listener : getListenersCopy()) {
+                listener.fileOperationsFinished(this);
+            }
+        }
+    }
+    
     public void fireProjectDeleted() {
         if (TRACE) {
             System.out.println("fireProjectDeleted "); // NOI18N

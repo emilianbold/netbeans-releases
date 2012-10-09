@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,56 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.twig.editor.lexer;
+package org.netbeans.modules.cnd.makeproject.api.support;
 
-import java.io.File;
-import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.cnd.makeproject.actions.RunDialogAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
- * Base class for tests.
+ *
+ * @author inikiforov
  */
-public abstract class TwigTestBase extends CslTestBase {
-
-    public TwigTestBase(String testName) {
-        super(testName);
+public final class MakeProjectPublicUtils {
+    
+    private MakeProjectPublicUtils() {}
+    
+    public static void askToCreateProjectFromBinary(FileObject fo) {
+        RunDialogAction action = new RunDialogAction();
+        action.perform(fo, false);
     }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    protected abstract String getTestResult(String filename) throws Exception;
-
-    protected void performTest(String filename) throws Exception {
-        // parse the file
-        String result = getTestResult(filename);
-        String fullClassName = this.getClass().getName();
-        String goldenFileDir = fullClassName.replace('.', '/');
-        // try to find golden file
-        String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
-        File goldenFile = new File(goldenFolder + filename + ".pass");
-        if (!goldenFile.exists()) {
-            // if doesn't exist, create it
-            FileObject goldenFO = touch(goldenFolder, filename + ".pass");
-            copyStringToFileObject(goldenFO, result);
-        } else {
-            // if exist, compare it.
-            goldenFile = getGoldenFile(filename + ".pass");
-            FileObject resultFO = touch(getWorkDir(), filename + ".result");
-            copyStringToFileObject(resultFO, result);
-            assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
-        }
-    }
-
+    
 }

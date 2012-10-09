@@ -58,6 +58,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.modules.nativeexecution.pty.NbStartUtility;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
@@ -95,6 +96,13 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+    }
+
+    @Override
+    public boolean canRun() {
+        boolean res = super.canRun();
+        res = res && NbStartUtility.getInstance().isSupported(env);
+        return res;
     }
 
     @Override
@@ -203,6 +211,11 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
         final AtomicReference<Integer> status = new AtomicReference<Integer>(null);
 
         final NativeProcess process = npb.call();
+
+        if (!(process instanceof NbNativeProcess)) {
+            System.out.println("Test testStartSuspendedProcess is not applicable for " + process.getClass().getName() + " - skipped");
+            return;
+        }
 
         Task waitTask = rp.post(new Runnable() {
             @Override

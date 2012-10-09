@@ -134,22 +134,19 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 carretOffset = sb.length();
                 sb.append("\n"); // NOI18N
                 sb.append(IndentUtils.createIndentString(doc, indent));
+                sb.append("}"); // NOI18N
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
                 String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite)-offset);
                 sb.append("\n"); // XXX On Windows, do \r\n?
                 sb.append(IndentUtils.createIndentString(doc, indent + IndentUtils.indentLevelSize(doc)));
+                // right brace must be included into the correct context - issue #219683
                 carretOffset = sb.length();
+                sb.append("\n}"); // NOI18N
                 sb.append(restOfLine.trim());
-                sb.append("\n");
-                sb.append(IndentUtils.createIndentString(doc, indent));
                 // FIXME can we avoid this ?
                 doc.remove(offset, restOfLine.length());
-            }
-
-            if (insertRightBrace) {
-                sb.append("}"); // NOI18N
             }
 
             context.setText(sb.toString(), 0, carretOffset);
