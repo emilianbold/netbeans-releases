@@ -331,6 +331,7 @@ public class NewFileWizardsTest extends JellyTestCase {
         NewJavaFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
                 servletName, servletPkg, null);
         nop.finish();
+        nop.waitClosed();
     }
 
     /**
@@ -380,6 +381,7 @@ public class NewFileWizardsTest extends JellyTestCase {
             new JCheckBoxOperator(nop, "Remote").changeSelection(remote);
         }
         nop.finish();
+        nop.waitClosed();
         Ejb ejb = (hasMoreSrcRoots)
                 ? new Ejb(ejbPkg + "." + ejbName, p, remoteJavaProjectDir, local, remote, srcRoot)
                 : new Ejb(ejbPkg + "." + ejbName, p, remoteJavaProjectDir, local, remote);
@@ -428,6 +430,7 @@ public class NewFileWizardsTest extends JellyTestCase {
         NewJavaFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
                 name, pkg, srcRoot);
         nop.finish();
+        nop.waitClosed();
         List<File> files = new ArrayList<File>(1);
         File prjDir = (hasMoreSrcRoots)
                 ? new File(prjRoot).getCanonicalFile()
@@ -450,6 +453,7 @@ public class NewFileWizardsTest extends JellyTestCase {
         JComboBoxOperator jcbo = new JComboBoxOperator(nfwo, 1);
         jcbo.selectItem("jdbc/sample");
         nfwo.finish();
+        nfwo.waitClosed();
         List<File> files = new ArrayList<File>();
         File prjDir = new File(new File(projectLocation), prjRoot).getCanonicalFile();
         files.add(new File(prjDir, "src/conf/persistence.xml"));
@@ -467,6 +471,7 @@ public class NewFileWizardsTest extends JellyTestCase {
         NewJavaFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
                 name, pkg, srcRoot);
         nop.finish();
+        nop.waitClosed();
         List<File> files = new ArrayList<File>();
         File prjDir = (hasMoreSrcRoots)
                 ? new File(prjRoot).getCanonicalFile()
