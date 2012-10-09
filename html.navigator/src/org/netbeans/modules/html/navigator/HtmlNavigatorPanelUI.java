@@ -419,6 +419,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 root.setDescription(WebKitNodeDescription.empty(WebKitNodeDescription.DOM));
             }
             
+            domToNb.clear();
+            cacheDomToNb(root);
+            
             LOGGER.fine("root.refreshDOMStatus() called");
         }
     }
