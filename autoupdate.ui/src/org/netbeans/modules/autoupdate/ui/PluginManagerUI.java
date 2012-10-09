@@ -233,7 +233,10 @@ public class PluginManagerUI extends javax.swing.JPanel  {
             final List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes ());
             Utilities.loadAcceptedLicenseIDs(uu.size());
             List<UnitCategory> precompute1 = Utilities.makeUpdateCategories (uu, false);
-            List<UnitCategory> precompute2 = Utilities.makeUpdateCategories (uu, true);
+            if (localTable != null) {
+                final List<UpdateUnit> nbms = new ArrayList<UpdateUnit>(((LocallyDownloadedTableModel) localTable.getModel()).getLocalDownloadSupport().getUpdateUnits());
+                List<UnitCategory> precompute2 = Utilities.makeUpdateCategories (nbms, true);
+            }
             // postpone later
             // getLocalDownloadSupport().getUpdateUnits();
             SwingUtilities.invokeAndWait (new Runnable () {
