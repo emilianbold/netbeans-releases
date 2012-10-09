@@ -190,4 +190,15 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
         
     }
     
+      public void testBorderImage() {
+        assertPropertyDeclaration("border-image: url(img/examp/li/borderimage1.png)");
+        assertPropertyDeclaration("border-image: 1 / 2px");
+        assertPropertyDeclaration("border-image: 1 / 2px / 3");
+        assertPropertyDeclaration("border-image: 1 / / 3");
+        assertPropertyDeclaration("border-image: 1  / / 3 repeat");
+        assertPropertyDeclaration("border-image: 1 repeat");
+        assertPropertyDeclaration("border-image: 1 round");
+        assertPropertyDeclaration("border-image: url(img/examp/li/borderimage1.png) 9 round");
+    }
+    
 }
