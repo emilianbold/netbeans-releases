@@ -76,7 +76,8 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Peter Williams
  */
-public class CommonServerSupport implements GlassfishModule3, RefreshModulesCookie {
+public class CommonServerSupport
+        implements GlassfishModule3, RefreshModulesCookie {
 
 
     ////////////////////////////////////////////////////////////////////////////
@@ -102,29 +103,80 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
             this.css = css;
         }
 
+        private String adminCommandFailedMsg(String resName, String[] args) {
+            String serverName = args[0];
+            String command = args[1];
+            String exMessage = args.length > 2 ? args[2] : null;
+            return args.length > 2
+                    ? NbBundle.getMessage(CommonServerSupport.class, resName,
+                    args[0], args[1], args[2])
+                    : NbBundle.getMessage(CommonServerSupport.class, resName,
+                    args[0], args[1]);
+        }
         /**
          * Callback to notify about GlassFish __locations command execution
          * state change.
          * <p/>
+         * <code>String</codce> arguments passed to state listener
+         * from runner:<ul>
+         *   <li><code>args[0]</code> server name</li>
+         *   <li><code>args[1]</code> administration command</li>
+         *   <li><code>args[2]</code> exception message</li>
+         *   <li><code>args[3]</code> display message in GUI</li></ul>
+         * <p/>
          * @param newState New command execution state.
          * @param event    Event related to execution state change.
-         * @param args     Additional String arguments.
+         * @param args     <code>String</codce> arguments passed to state
+         *                 listener.
          */
         @Override
         public void operationStateChanged(
                 TaskState newState, TaskEvent event,
                 String[] args) {
-            String message = args.length > 0 ? args[0] : null;
-            synchronized (css) {
-                long lastDisplayed = css.getLatestWarningDisplayTime();
-                long currentTime = System.currentTimeMillis();
-                if (TaskState.FAILED == newState
-                        && !"".equals(message)
-                        && currentTime - lastDisplayed > 5000) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(message);
-                    DialogDisplayer.getDefault().notifyLater(nd);
-                    css.setLatestWarningDisplayTime(currentTime);
-                    Logger.getLogger("glassfish").log(Level.INFO, message);
+            // Server name and command are mandatory.
+            if (args.length > 1) {
+                String exMessage = args.length > 2 ? args[2] : null;
+                boolean display = args.length > 3
+                        ? Boolean.parseBoolean(args[3]) : false;
+                if (display) {
+                    long lastDisplayed = css.getLatestWarningDisplayTime();
+                    long currentTime = System.currentTimeMillis();
+                    if (TaskState.FAILED == newState
+                            && currentTime - lastDisplayed > 5000) {
+                        String message;
+
+                        switch (event) {
+                            case EXCEPTION:
+                                if (exMessage != null
+                                        && exMessage.length() > 0) {
+                                    message = adminCommandFailedMsg(
+                                            "MSG_ADMIN_EXCEPTION", args);
+                                } else {
+                                    message = adminCommandFailedMsg(
+                                            "MSG_ADMIN_FAILED", args);
+                                }
+                                break;
+                            case LOCAL_AUTH_FAILED:
+                                message = adminCommandFailedMsg(
+                                        "MSG_ADMIN_LOCAL_AUTH_FAILED", args);
+                                break;
+                            case REMOTE_AUTH_FAILED:
+                                message = adminCommandFailedMsg(
+                                        "MSG_ADMIN_LOCAL_AUTH_FAILED", args);
+                                break;
+                            default:
+                                message = adminCommandFailedMsg(
+                                        "MSG_ADMIN_FAILED", args);
+                        }
+                        synchronized (css) {
+                            NotifyDescriptor nd
+                                    = new NotifyDescriptor.Message(message);
+                            DialogDisplayer.getDefault().notifyLater(nd);
+                            css.setLatestWarningDisplayTime(currentTime);
+                            Logger.getLogger("glassfish")
+                                    .log(Level.INFO, message);
+                        }
+                    }
                 }
             }
         }
@@ -160,15 +212,9 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
         this.instance = instance;
         this.isRemote = instance.getProperties().get(
                 GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
-        // !PW FIXME hopefully temporary patch for JavaONE 2008 to make it easier
+        // !PW FIXME temporary patch for JavaONE 2008 to make it easier
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
- 
-        // Bug# 218526 - Refresh (admin command call) on startup causes deadlock
-        //               because of Keryring access.
-        //if (!isRemote) {
-        //    refresh();
-        //}
     }
 
     /**
@@ -184,7 +230,8 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
         FileObject dir = FileUtil.getConfigFile(
                 instance.getInstanceProvider().getInstancesDirName());
         if(dir != null) {
-            String instanceFN = instance.getProperty(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
+            String instanceFN = instance
+                    .getProperty(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
             if(instanceFN != null) {
                 return dir.getFileObject(instanceFN);
             }
