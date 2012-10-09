@@ -43,12 +43,10 @@ package org.netbeans.modules.web.clientproject.problems;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
@@ -56,6 +54,7 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -76,15 +75,10 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             ClientSideProjectConstants.PROJECT_TEST_FOLDER,
             ClientSideProjectConstants.PROJECT_CONFIG_FOLDER));
 
-    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     private final ClientSideProject project;
-    private final Object problemsLock = new Object();
     private final PropertyChangeListener projectPropertiesListener = new ProjectPropertiesListener();
 
-    // @GuardedBy("problemsLock")
-    private Collection<ProjectProblem> problems;
-    // @GuardedBy("problemsLock")
-    private long eventId;
     private volatile FileChangeListener fileChangesListener = new FileChangesListener();
 
 
@@ -101,42 +95,26 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
+        problemsProviderSupport.addPropertyChangeListener(listener);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.removePropertyChangeListener(listener);
+        problemsProviderSupport.removePropertyChangeListener(listener);
     }
 
     @Override
     public Collection<? extends ProjectProblem> getProblems() {
-        Collection<ProjectProblem> currentProblems;
-        long curEventId;
-        synchronized (problemsLock) {
-            currentProblems = problems;
-            curEventId = eventId;
-        }
-        if (currentProblems != null) {
-            return currentProblems;
-        }
-        // check all problems
-        currentProblems = new ArrayList<ProjectProblem>();
-        checkSiteRootDir(currentProblems);
-        checkTestDir(currentProblems);
-        checkConfigDir(currentProblems);
-        if (currentProblems.isEmpty()) {
-            currentProblems = Collections.<ProjectProblem>emptySet();
-        }
-        synchronized (problemsLock) {
-            if (curEventId == eventId) {
-                problems = currentProblems;
-            } else if (problems != null) {
-                currentProblems = problems;
+        return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
+            @Override
+            public Collection<ProjectProblemsProvider.ProjectProblem> collectProblems() {
+                Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<ProjectProblem>(3);
+                checkSiteRootDir(currentProblems);
+                checkTestDir(currentProblems);
+                checkConfigDir(currentProblems);
+                return currentProblems;
             }
-        }
-        assert currentProblems != null;
-        return currentProblems;
+        });
     }
 
     @NbBundle.Messages({
@@ -238,14 +216,6 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         }
     }
 
-    void fireProblemsChange() {
-        synchronized (problemsLock) {
-            problems = null;
-            eventId++;
-        }
-        propertyChangeSupport.firePropertyChange(PROP_PROBLEMS, null, null);
-    }
-
     void propertiesChanged() {
         // release the current listener
         fileChangesListener = new FileChangesListener();
@@ -259,7 +229,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (WATCHED_PROPERTIES.contains(evt.getPropertyName())) {
-                fireProblemsChange();
+                problemsProviderSupport.fireProblemsChange();
                 propertiesChanged();
             }
         }
@@ -270,7 +240,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
-            fireProblemsChange();
+            problemsProviderSupport.fireProblemsChange();
         }
 
         @Override
@@ -285,12 +255,12 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            fireProblemsChange();
+            problemsProviderSupport.fireProblemsChange();
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            fireProblemsChange();
+            problemsProviderSupport.fireProblemsChange();
         }
 
         @Override

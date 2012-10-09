@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ProjectProblemsProviderSupport">
+            <api name="general"/>
+            <summary>Added a support class for ProjectProblemsProvider.</summary>
+            <version major="1" minor="63"/>
+            <date day="2" month="10" year="2012"/>
+            <author login="tmysik"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added support class for provider of project metadata problems.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project.ui.support" name="ProjectProblemsProviderSupport"/>
+            <issue number="219313"/>
+        </change>
         <change id="ProjectGroup">
             <api name="general"/>
             <summary>API to get current active project group and listen to project groups switching</summary>
