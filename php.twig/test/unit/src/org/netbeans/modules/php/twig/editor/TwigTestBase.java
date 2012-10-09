@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.twig.editor.lexer;
+package org.netbeans.modules.php.twig.editor;
 
-import java.io.File;
+import java.util.logging.Filter;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.php.twig.editor.gsf.TwigLanguage;
 
 /**
- * Base class for tests.
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class TwigTestBase extends CslTestBase {
+public class TwigTestBase extends CslTestBase {
 
     public TwigTestBase(String testName) {
         super(testName);
@@ -57,36 +61,36 @@ public abstract class TwigTestBase extends CslTestBase {
 
     @Override
     protected void setUp() throws Exception {
+        suppressUselessLogging();
         super.setUp();
-        clearWorkDir();
+    }
+
+    private static void suppressUselessLogging() {
+        for (Handler handler : Logger.getLogger("").getHandlers()) {
+            handler.setFilter(new Filter() {
+
+                @Override
+                public boolean isLoggable(LogRecord record) {
+                    boolean result = true;
+                    if (record.getSourceClassName().startsWith("org.netbeans.modules.parsing.impl.indexing.LogContext")
+                            || record.getSourceClassName().startsWith("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater")
+                            || record.getSourceClassName().startsWith("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage")) { //NOI18N
+                        result = false;
+                    }
+                    return result;
+                }
+            });
+        }
     }
 
     @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new TwigLanguage();
     }
 
-    protected abstract String getTestResult(String filename) throws Exception;
-
-    protected void performTest(String filename) throws Exception {
-        // parse the file
-        String result = getTestResult(filename);
-        String fullClassName = this.getClass().getName();
-        String goldenFileDir = fullClassName.replace('.', '/');
-        // try to find golden file
-        String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
-        File goldenFile = new File(goldenFolder + filename + ".pass");
-        if (!goldenFile.exists()) {
-            // if doesn't exist, create it
-            FileObject goldenFO = touch(goldenFolder, filename + ".pass");
-            copyStringToFileObject(goldenFO, result);
-        } else {
-            // if exist, compare it.
-            goldenFile = getGoldenFile(filename + ".pass");
-            FileObject resultFO = touch(getWorkDir(), filename + ".result");
-            copyStringToFileObject(resultFO, result);
-            assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
-        }
+    @Override
+    protected String getPreferredMimeType() {
+        return TwigLanguage.TWIG_MIME_TYPE;
     }
 
 }

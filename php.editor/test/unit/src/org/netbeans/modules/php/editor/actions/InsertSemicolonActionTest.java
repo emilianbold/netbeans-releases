@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.twig.editor.lexer;
-
-import java.io.File;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.php.twig.editor.util.TestUtils;
+package org.netbeans.modules.php.editor.actions;
 
 /**
- * Tests for Twig top lexer.
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TwigTopLexerTest extends TwigLexerTestBase {
+public class InsertSemicolonActionTest extends PHPActionTestBase {
 
-    public TwigTopLexerTest(String testName) {
+    public InsertSemicolonActionTest(String testName) {
         super(testName);
     }
 
-    public void testHtmlBasic() throws Exception {
-        performTest("html-basic.html");
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
+
+    public void testInsert() throws Exception {
+        testInFile("testfiles/actions/insertSemicolon/testInsert.php", InsertSemicolonAction.CompleteLine.ACTION_NAME);
+    }
+
+    public void testInsertNewLine() throws Exception {
+        testInFile("testfiles/actions/insertSemicolon/testInsertNewLine.php", InsertSemicolonAction.CompleteLineNewLine.ACTION_NAME);
     }
 
     @Override
-    protected String getTestResult(String filename) throws Exception {
-        String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".twig"));
-        Language<TwigTopTokenId> language = TwigTopTokenId.language();
-        TokenHierarchy<?> hierarchy = TokenHierarchy.create(content, language);
-        return createResult(hierarchy.tokenSequence(language));
-    }
-
-    private String createResult(TokenSequence<?> ts) throws Exception {
-        StringBuilder result = new StringBuilder();
-        while (ts.moveNext()) {
-            TokenId tokenId = ts.token().id();
-            CharSequence text = ts.token().text();
-            result.append("token #");
-            result.append(ts.index());
-            result.append(" ");
-            result.append(tokenId.name());
-            String token = TestUtils.replaceLinesAndTabs(text.toString());
-            if (!token.isEmpty()) {
-                result.append(" ");
-                result.append("[");
-                result.append(token);
-                result.append("]");
-            }
-            result.append("\n");
-        }
-        return result.toString();
+    protected String goldenFileExtension() {
+        return ".insertSemicolon";
     }
 
 }
