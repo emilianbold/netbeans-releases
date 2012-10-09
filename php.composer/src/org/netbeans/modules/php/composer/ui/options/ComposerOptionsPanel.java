@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
     "ComposerOptionsPanel.keywords.packages=packages"
 })
 @OptionsPanelController.Keywords(keywords={
-    "php composer dependency dependencies package packages",
+    "php", "composer", "dependency", "dependencies", "package", "packages",
     "#ComposerOptionsPanel.keywords.dependency",
     "#ComposerOptionsPanel.keywords.dependencies",
     "#ComposerOptionsPanel.keywords.package",
