@@ -42,52 +42,51 @@
 package org.netbeans.modules.php.twig.editor.lexer;
 
 import java.io.File;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.php.twig.editor.util.TestUtils;
+import org.netbeans.modules.php.twig.editor.TwigTestBase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Tests for Twig top lexer.
+ * Base class for tests.
  */
-public class TwigTopLexerTest extends TwigLexerTestBase {
+public abstract class TwigLexerTestBase extends TwigTestBase {
 
-    public TwigTopLexerTest(String testName) {
+    public TwigLexerTestBase(String testName) {
         super(testName);
     }
 
-    public void testHtmlBasic() throws Exception {
-        performTest("html-basic.html");
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
     }
 
     @Override
-    protected String getTestResult(String filename) throws Exception {
-        String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".twig"));
-        Language<TwigTopTokenId> language = TwigTopTokenId.language();
-        TokenHierarchy<?> hierarchy = TokenHierarchy.create(content, language);
-        return createResult(hierarchy.tokenSequence(language));
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
 
-    private String createResult(TokenSequence<?> ts) throws Exception {
-        StringBuilder result = new StringBuilder();
-        while (ts.moveNext()) {
-            TokenId tokenId = ts.token().id();
-            CharSequence text = ts.token().text();
-            result.append("token #");
-            result.append(ts.index());
-            result.append(" ");
-            result.append(tokenId.name());
-            String token = TestUtils.replaceLinesAndTabs(text.toString());
-            if (!token.isEmpty()) {
-                result.append(" ");
-                result.append("[");
-                result.append(token);
-                result.append("]");
-            }
-            result.append("\n");
+    protected abstract String getTestResult(String filename) throws Exception;
+
+    protected void performTest(String filename) throws Exception {
+        // parse the file
+        String result = getTestResult(filename);
+        String fullClassName = this.getClass().getName();
+        String goldenFileDir = fullClassName.replace('.', '/');
+        // try to find golden file
+        String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
+        File goldenFile = new File(goldenFolder + filename + ".pass");
+        if (!goldenFile.exists()) {
+            // if doesn't exist, create it
+            FileObject goldenFO = touch(goldenFolder, filename + ".pass");
+            copyStringToFileObject(goldenFO, result);
+        } else {
+            // if exist, compare it.
+            goldenFile = getGoldenFile(filename + ".pass");
+            FileObject resultFO = touch(getWorkDir(), filename + ".result");
+            copyStringToFileObject(resultFO, result);
+            assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
         }
-        return result.toString();
     }
 
 }

@@ -208,7 +208,6 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         insertBreak("   // foo^bar", "   // foo\n   // ^bar");
     }
 
-
     public void testContComment9() throws Exception {
         insertBreak("^// foobar", "\n^// foobar");
     }
@@ -288,29 +287,29 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
 
     public void testCommentUnbalancedBraces() throws Exception {
         insertBreak("var MyObj = {\n"
-            + "    version: 10,\n"
-            + "    factory: function () {\n"
-            + "        return this;\n"
-            + "    },\n"
-            + "\n"
-            + "    /*^\n"
-            + "    create: function () {\n"
-            + "        return new MyObj();\n"
-            + "    }"
-            + "}",
-            "var MyObj = {\n"
-            + "    version: 10,\n"
-            + "    factory: function () {\n"
-            + "        return this;\n"
-            + "    },\n"
-            + "\n"
-            + "    /*\n"
-            + "     * ^\n"
-            + "     */\n"
-            + "    create: function () {\n"
-            + "        return new MyObj();\n"
-            + "    }"
-            + "}");
+                + "    version: 10,\n"
+                + "    factory: function () {\n"
+                + "        return this;\n"
+                + "    },\n"
+                + "\n"
+                + "    /*^\n"
+                + "    create: function () {\n"
+                + "        return new MyObj();\n"
+                + "    }"
+                + "}",
+                "var MyObj = {\n"
+                + "    version: 10,\n"
+                + "    factory: function () {\n"
+                + "        return this;\n"
+                + "    },\n"
+                + "\n"
+                + "    /*\n"
+                + "     * ^\n"
+                + "     */\n"
+                + "    create: function () {\n"
+                + "        return new MyObj();\n"
+                + "    }"
+                + "}");
     }
 
     public void testBreakInsideObject() throws Exception {
@@ -332,5 +331,14 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 + "}\n"
                 + "/** */\n"
                 + "window.SYNERGY = new Synergy();");
+    }
+
+    public void testIssue118656() throws Exception {
+        insertBreak("if (true) ^thing()", "if (true) \n    ^thing()");
+    }
+
+    public void testIssue219683() throws Exception {
+        insertBreak("$(table).find(\"tbody tr\").each(function(){^)",
+                "$(table).find(\"tbody tr\").each(function(){\n    ^\n})");
     }
 }

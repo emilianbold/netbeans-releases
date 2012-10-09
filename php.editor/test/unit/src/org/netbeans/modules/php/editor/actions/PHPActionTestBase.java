@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.twig.editor.lexer;
+package org.netbeans.modules.php.editor.actions;
 
-import java.io.File;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.php.twig.editor.util.TestUtils;
+import javax.swing.JEditorPane;
+import javax.swing.text.Caret;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.php.editor.PHPTestBase;
+import org.openide.filesystems.FileObject;
 
 /**
- * Tests for Twig top lexer.
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TwigTopLexerTest extends TwigLexerTestBase {
+public abstract class PHPActionTestBase extends PHPTestBase {
 
-    public TwigTopLexerTest(String testName) {
+    public PHPActionTestBase(String testName) {
         super(testName);
     }
 
-    public void testHtmlBasic() throws Exception {
-        performTest("html-basic.html");
-    }
-
     @Override
-    protected String getTestResult(String filename) throws Exception {
-        String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".twig"));
-        Language<TwigTopTokenId> language = TwigTopTokenId.language();
-        TokenHierarchy<?> hierarchy = TokenHierarchy.create(content, language);
-        return createResult(hierarchy.tokenSequence(language));
+    protected boolean runInEQ() {
+        return true;
     }
 
-    private String createResult(TokenSequence<?> ts) throws Exception {
-        StringBuilder result = new StringBuilder();
-        while (ts.moveNext()) {
-            TokenId tokenId = ts.token().id();
-            CharSequence text = ts.token().text();
-            result.append("token #");
-            result.append(ts.index());
-            result.append(" ");
-            result.append(tokenId.name());
-            String token = TestUtils.replaceLinesAndTabs(text.toString());
-            if (!token.isEmpty()) {
-                result.append(" ");
-                result.append("[");
-                result.append(token);
-                result.append("]");
-            }
-            result.append("\n");
-        }
-        return result.toString();
+    protected void testInFile(String file, String actionName) throws Exception {
+        FileObject fo = getTestFile(file);
+        assertNotNull(fo);
+        String source = readFile(fo);
+
+        int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        String sourceWithoutMarker = source.substring(0, sourcePos) + source.substring(sourcePos+1);
+
+        JEditorPane ta = getPane(sourceWithoutMarker);
+        Caret caret = ta.getCaret();
+        caret.setDot(sourcePos);
+        BaseDocument doc = (BaseDocument) ta.getDocument();
+
+        runKitAction(ta, actionName, null);
+
+        doc.getText(0, doc.getLength());
+        doc.insertString(caret.getDot(), "^", null);
+
+        String target = doc.getText(0, doc.getLength());
+        assertDescriptionMatches(file, target, false, goldenFileExtension());
     }
+
+    protected abstract String goldenFileExtension();
 
 }
