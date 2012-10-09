@@ -192,7 +192,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         int caretOffset = codeCompletionContext.getCaretOffset();
         ParserResult parserResult = codeCompletionContext.getParserResult();
         if (parserResult instanceof TwigParserResult) {
-        TwigParserResult twigParserResult = (TwigParserResult) parserResult;
+            TwigParserResult twigParserResult = (TwigParserResult) parserResult;
             CompletionRequest request = new CompletionRequest();
             request.prefix = codeCompletionContext.getPrefix();
             String properPrefix = getPrefix(twigParserResult, caretOffset, true);
