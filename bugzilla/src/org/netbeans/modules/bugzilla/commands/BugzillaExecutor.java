@@ -52,6 +52,8 @@ import java.util.logging.Level;
 import org.apache.commons.httpclient.RedirectException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaUserMatchResponse;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -441,7 +443,34 @@ public class BugzillaExecutor {
         private static void notifyError(CoreException ce, BugzillaRepository repository) {
             String msg = getMessage(ce);
             IStatus status = ce.getStatus();
-            if (status instanceof RepositoryStatus) {
+            if (status instanceof BugzillaStatus) {
+                BugzillaStatus bs = (BugzillaStatus) status;
+                BugzillaUserMatchResponse res = bs.getUserMatchResponse();
+
+                String assignedMsg = res.getAssignedToMsg();
+                String newCCMsg = res.getNewCCMsg();
+                String qaContactMsg = res.getQaContactMsg();
+                
+                StringBuilder sb = new StringBuilder();
+                if(msg != null) {
+                    sb.append(msg);
+                }
+                if(assignedMsg != null) {
+                    sb.append('\n');
+                    sb.append(assignedMsg);
+                }
+                if (newCCMsg != null) {
+                    sb.append('\n');
+                    sb.append(newCCMsg);
+                }
+                if (qaContactMsg != null) {
+                    sb.append('\n');
+                    sb.append(qaContactMsg);
+                }
+                msg = sb.toString();
+            }
+            
+            if (msg == null && status instanceof RepositoryStatus) {
                 RepositoryStatus rs = (RepositoryStatus) status;
                 String html = rs.getHtmlMessage();
                 if(notifyHtmlMessage(html, repository, msg == null)) return;
