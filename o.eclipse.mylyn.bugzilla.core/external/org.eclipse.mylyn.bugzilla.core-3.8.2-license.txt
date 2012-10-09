@@ -1,9 +1,9 @@
-Name: Eclipse Mylyn Commons Core library
-Version: 3.8.1
+Name: Mylyn Bugzilla Connector
+Version: 3.8.2
 License: EPL-v10
 OSR: 5852
-Origin: http://www.eclipse.org/mylyn/
-Description: Eclipse Mylyn Commons Core library
+Origin: http://www.eclipse.org/mylyn
+Description: Mylyn Bugzilla Connector library
 
 Eclipse Public License - v 1.0
 
