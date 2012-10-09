@@ -171,7 +171,7 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
 
                 System.out.println("Use tempfile: " + tmpFile);
 
-                cmd = "(" + cmd + ") | tee " + tmpFile;
+                cmd = "(" + cmd + ") | tee \"" + tmpFile + "\"";
             }
 
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
