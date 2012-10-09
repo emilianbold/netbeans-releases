@@ -89,6 +89,9 @@ public final class DbxEngineCapabilityProvider implements EngineCapabilityProvid
     }
 
     public boolean isSupported(DebuggerDescriptor descriptor) {
+        if (descriptor == null) {
+            return false;
+        }
         final String id = descriptor.getID();
         if ("SunStudio".equalsIgnoreCase(id) || "OracleSolarisStudio".equalsIgnoreCase(id)) { // NOI18N
             return true;
