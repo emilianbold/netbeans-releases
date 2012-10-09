@@ -118,6 +118,9 @@ public final class HelpCtxProcessor implements Environment.Provider {
      */
     private static final class ShortcutAction extends AbstractAction implements HelpCtx.Provider, NodeListener, ChangeListener {
         
+        private static final RequestProcessor RP =
+                new RequestProcessor(ShortcutAction.class);
+
         /** associated XML file representing it
          */
         private final DataObject obj;
@@ -225,7 +228,7 @@ public final class HelpCtxProcessor implements Environment.Provider {
         }
 
         private void updateEnabled() {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     Help h = findHelp();
