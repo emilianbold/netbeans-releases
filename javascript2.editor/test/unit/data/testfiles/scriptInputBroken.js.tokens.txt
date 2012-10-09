@@ -30,6 +30,7 @@ IDENTIFIER      "env", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFoll
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=false}
 IDENTIFIER      "node", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
+WHITESPACE      "  ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 IDENTIFIER      "console", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
 OPERATOR_DOT    ".", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true}
 IDENTIFIER      "log", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}

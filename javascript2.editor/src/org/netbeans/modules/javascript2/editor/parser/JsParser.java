@@ -62,7 +62,7 @@ public class JsParser extends SanitizingParser {
         String parsableText = text;
         // handle shebang
         if (parsableText.startsWith("#!")) { // NOI18N
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(parsableText);
             int index = parsableText.indexOf("\n"); // NOI18N
             if (index < 0) {
                 index = parsableText.length();
