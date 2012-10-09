@@ -74,6 +74,7 @@ public class FelixPluginGrammarExtension implements GrammarExtensionProvider {
 
     @Override
     public List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, Element parent) {
+        //TODO also plugin/executions/execution/configuration should apply
         if (path.endsWith("plugins/plugin/configuration") && isFelixPlugin(hintCtx.getParentNode())) { //NOI18N
             List<GrammarResult> result = new ArrayList<GrammarResult>();
             result.add(new AbstractSchemaBasedGrammar.MyTextElement(OSGiConstants.PARAM_INSTRUCTIONS, hintCtx.getCurrentPrefix()));
