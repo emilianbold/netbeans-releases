@@ -190,14 +190,17 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     public CodeCompletionResult complete(CodeCompletionContext codeCompletionContext) {
         final List<CompletionProposal> completionProposals = new ArrayList<CompletionProposal>();
         int caretOffset = codeCompletionContext.getCaretOffset();
-        TwigParserResult parserResult = (TwigParserResult) codeCompletionContext.getParserResult();
-        CompletionRequest request = new CompletionRequest();
-        request.prefix = codeCompletionContext.getPrefix();
-        String properPrefix = getPrefix(parserResult, caretOffset, true);
-        request.anchorOffset = caretOffset - (properPrefix == null ? 0 : properPrefix.length());
-        request.parserResult = parserResult;
-        request.context = TwigCompletionContextFinder.find(request.parserResult, caretOffset);
-        doCompletion(completionProposals, request);
+        ParserResult parserResult = codeCompletionContext.getParserResult();
+        if (parserResult instanceof TwigParserResult) {
+        TwigParserResult twigParserResult = (TwigParserResult) parserResult;
+            CompletionRequest request = new CompletionRequest();
+            request.prefix = codeCompletionContext.getPrefix();
+            String properPrefix = getPrefix(twigParserResult, caretOffset, true);
+            request.anchorOffset = caretOffset - (properPrefix == null ? 0 : properPrefix.length());
+            request.parserResult = twigParserResult;
+            request.context = TwigCompletionContextFinder.find(request.parserResult, caretOffset);
+            doCompletion(completionProposals, request);
+        }
         return new DefaultCompletionResult(completionProposals, false);
     }
 
