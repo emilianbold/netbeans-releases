@@ -344,7 +344,32 @@ public abstract class OptionsPanelController {
 
         /**
          * Keywords for use with search inside the Options dialog. You may use
-         * {@code #key} syntax.
+         * {@code #key} syntax. The case in not important.
+         *
+         * <p> Each entry in the provided array is split around comma character.
+         * For example:
+         *
+         * <blockquote><table cellpadding=1 cellspacing=0 summary="Split
+         * examples showing array and keywords"> <tr> <th>Provided array</th>
+         * <th>Keywords</th> </tr> <tr><td align=center>{ "Boo", "fOo" }</td>
+         * <td><tt>{ "BOO", "FOO" }</tt></td></tr>
+         * </tr> <tr><td align=center>{ "boo and", "foo" }</td>
+         * <td><tt>{ "BOO AND", "FOO" }</tt></td></tr>
+         * </tr> <tr><td align=center>{ "boo,and", "foo" }</td>
+         * <td><tt>{ "BOO", "AND", "FOO" }</tt></td></tr> 
+         * </table></blockquote>
+         *
+         * <p> The registered keywords {"Boo,anD", "fOo"}, for example, yield the following results with these search-texts:
+         *
+         * <blockquote><table cellpadding=1 cellspacing=0 summary="Search
+         * examples showing search-text and results"> <tr> <th>User's search-text</th>
+         * <th>Result</th> </tr> <tr><td align=center>"boo"</td>
+         * <td><tt>keyword found</tt></td></tr>
+         * </tr> <tr><td align=center>"nd"</td>
+         * <td><tt>keyword found</tt></td></tr>
+         * </tr> <tr><td align=center>"boo and"</td>
+         * <td><tt>keyword NOT found</tt></td></tr>
+         * </table></blockquote>
          */
         String[] keywords();
 
