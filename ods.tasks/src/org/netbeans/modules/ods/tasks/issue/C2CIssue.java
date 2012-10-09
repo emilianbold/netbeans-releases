@@ -64,6 +64,9 @@ import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
+import org.eclipse.mylyn.tasks.core.IRepositoryElement;
+import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -76,14 +79,24 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.mylyn.util.GetAttachmentCommand;
+import org.netbeans.modules.mylyn.util.PostAttachmentCommand;
 import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
+import org.openide.awt.HtmlBrowser;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -338,6 +351,37 @@ public class C2CIssue {
     
     public void attachPatch(File file, String description) {
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
+    void addAttachment (File file, final String comment, final String desc, String contentType, final boolean patch) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; //NOI18N
+        final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
+        if (contentType == null) {
+            file = FileUtil.normalizeFile(file);
+            String ct = FileUtil.getMIMEType(FileUtil.toFileObject(file));
+            if ((ct != null) && (!"content/unknown".equals(ct))) { // NOI18N
+                contentType = ct;
+            } else {
+                contentType = FileTaskAttachmentSource.getContentTypeFromFilename(file.getName());
+            }
+        }
+        attachmentSource.setContentType(contentType);
+
+        final TaskAttribute attAttribute = new TaskAttribute(data.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
+        TaskAttribute a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION);
+        a.setValue(desc);
+        a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE);
+        a.setValue(contentType);
+        a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_FILENAME);
+        a.setValue(file.getName());
+
+        refresh(); // refresh might fail, but be optimistic and still try to force add attachment
+        PostAttachmentCommand cmd = new PostAttachmentCommand(C2C.getInstance().getRepositoryConnector(),
+                repository.getTaskRepository(), getAsTask(), attAttribute, attachmentSource, comment);
+        repository.getExecutor().execute(cmd);
+        if (!cmd.hasFailed()) {
+            refresh(getID(), true); // XXX to much refresh - is there no other way?
+        }
     }
 
     boolean submitAndRefresh() {
@@ -622,6 +666,174 @@ public class C2CIssue {
         }
     }    
 
+    private ITask getAsTask () {
+        return new ITask() {
+            //<editor-fold defaultstate="collapsed" desc="dummy impl">
+            @Override
+            public String getAttribute(String id) {
+                TaskAttribute rta = data.getRoot();
+                return rta.getMappedAttribute(id).getValue();
+            }
+            
+            @Override
+            public void setAttribute(String id, String value) {
+                TaskAttribute rta = data.getRoot();
+                rta.getMappedAttribute(id).setValue(value);
+            }
+            
+            @Override
+            public String getTaskId() {
+                return data.getTaskId();
+            }
+            
+            @Override
+            public Date getCompletionDate() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public String getConnectorKind() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public Date getCreationDate() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public Date getDueDate() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public String getHandleIdentifier() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public Date getModificationDate() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public String getOwner() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public String getPriority() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public String getRepositoryUrl() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public String getSummary() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public ITask.SynchronizationState getSynchronizationState() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public String getTaskKey() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public String getTaskKind() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public boolean isActive() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public boolean isCompleted() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public void setCompletionDate(Date date) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public void setCreationDate(Date date) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public void setDueDate(Date date) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public void setModificationDate(Date date) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public void setOwner(String string) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public void setPriority(String string) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public void setSummary(String string) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public void setTaskKind(String string) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public void setUrl(String string) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public void setTaskKey(String string) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public String getUrl() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public int compareTo(IRepositoryElement o) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public Object getAdapter(Class type) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+            @Override
+            public Map<String, String> getAttributes() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            //</editor-fold>
+        };
+    }
+
     class Comment {
         private final Date when;
         private final String author;
@@ -727,9 +939,10 @@ public class C2CIssue {
         private String size;
         private String isPatch;
         private String url;
-
+        private final TaskAttribute ta;
 
         public Attachment(TaskAttribute ta) {
+            this.ta = ta;
             id = ta.getValue();
             String s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
             Date d = C2CUtil.parseDate(s);
@@ -804,76 +1017,85 @@ public class C2CIssue {
         }
 
         public void getAttachementData(final OutputStream os) {
-            // XXX
-//            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
-//            repository.getExecutor().execute(new GetAttachmentCommand(repository, id, os));
+            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
+            repository.getExecutor().execute(new GetAttachmentCommand(C2C.getInstance().getRepositoryConnector(), 
+                    repository.getTaskRepository(),
+                    null, ta, os));
         }
 
         void open() {
             // XXX
-//            String progressFormat = NbBundle.getMessage(
-//                                        DefaultAttachmentAction.class,
-//                                        "Attachment.open.progress");    //NOI18N
-//            String progressMessage = MessageFormat.format(progressFormat, getFilename());
-//            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-//            handle.start();
-//            handle.switchToIndeterminate();
-//            parallelRP.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    try {
-//                        File file = saveToTempFile();
-//                        String contentType = getContentType();
-//                        if ("image/png".equals(contentType)             //NOI18N
-//                                || "image/gif".equals(contentType)      //NOI18N
-//                                || "image/jpeg".equals(contentType)) {  //NOI18N
-//                            HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
-//                        } else {
-//                            file = FileUtil.normalizeFile(file);
-//                            FileObject fob = FileUtil.toFileObject(file);
-//                            DataObject dob = DataObject.find(fob);
-//                            OpenCookie open = dob.getCookie(OpenCookie.class);
-//                            if (open != null) {
-//                                open.open();
-//                            } else {
-//                                // PENDING
-//                            }
-//                        }
-//                    } catch (DataObjectNotFoundException dnfex) {
-//                        C2C.LOG.log(Level.INFO, dnfex.getMessage(), dnfex);
-//                    } catch (IOException ioex) {
-//                        C2C.LOG.log(Level.INFO, ioex.getMessage(), ioex);
-//                    } finally {
-//                        handle.finish();
-//                    }
-//                }
-//            });
+            String progressFormat = NbBundle.getMessage(
+                                        DefaultAttachmentAction.class,
+                                        "Attachment.open.progress");    //NOI18N
+            String progressMessage = MessageFormat.format(progressFormat, getFilename());
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+            handle.start();
+            handle.switchToIndeterminate();
+            parallelRP.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        File file = saveToTempFile();
+                        String contentType = getContentType();
+                        if ("image/png".equals(contentType)             //NOI18N
+                                || "image/gif".equals(contentType)      //NOI18N
+                                || "image/jpeg".equals(contentType)) {  //NOI18N
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(Utilities.toURI(file).toURL());
+                        } else {
+                            file = FileUtil.normalizeFile(file);
+                            FileObject fob = FileUtil.toFileObject(file);
+                            DataObject dob = DataObject.find(fob);
+                            OpenCookie open = dob.getCookie(OpenCookie.class);
+                            if (open != null) {
+                                open.open();
+                            } else {
+                                // PENDING
+                            }
+                        }
+                    } catch (DataObjectNotFoundException dnfex) {
+                        C2C.LOG.log(Level.INFO, dnfex.getMessage(), dnfex);
+                    } catch (IOException ioex) {
+                        C2C.LOG.log(Level.INFO, ioex.getMessage(), ioex);
+                    } finally {
+                        handle.finish();
+                    }
+                }
+            });
         }
 
         void saveToFile() {
-//            final File file = new FileChooserBuilder(AttachmentsPanel.class)
-//                    .setFilesOnly(true).showSaveDialog();
-//            if (file != null) {
-//                String progressFormat = NbBundle.getMessage(
-//                                            SaveAttachmentAction.class,
-//                                            "Attachment.saveToFile.progress"); //NOI18N
-//                String progressMessage = MessageFormat.format(progressFormat, getFilename());
-//                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-//                handle.start();
-//                handle.switchToIndeterminate();
-//                parallelRP.post(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        try {
-//                            getAttachementData(new FileOutputStream(file));
-//                        } catch (IOException ioex) {
-//                            C2C.LOG.log(Level.INFO, ioex.getMessage(), ioex);
-//                        } finally {
-//                            handle.finish();
-//                        }
-//                    }
-//                });
-//            }
+            final File file = new FileChooserBuilder(AttachmentsPanel.class)
+                    .setFilesOnly(true).showSaveDialog();
+            if (file != null) {
+                String progressFormat = NbBundle.getMessage(
+                                            SaveAttachmentAction.class,
+                                            "Attachment.saveToFile.progress"); //NOI18N
+                String progressMessage = MessageFormat.format(progressFormat, getFilename());
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                handle.start();
+                handle.switchToIndeterminate();
+                parallelRP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        FileOutputStream fos = null;
+                        try {
+                            fos = new FileOutputStream(file);
+                            getAttachementData(fos);
+                        } catch (IOException ioex) {
+                            C2C.LOG.log(Level.INFO, ioex.getMessage(), ioex);
+                        } finally {
+                            if (fos != null) {
+                                try {
+                                    fos.close();
+                                } catch (IOException ex) {
+                                }
+                            }
+                            handle.finish();
+                        }
+                    }
+                });
+            }
         }
 
         void applyPatch() {

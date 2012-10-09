@@ -163,7 +163,7 @@ public class ODSTaskTestCase extends AbstractC2CTestCase {
         printTaskData(taskData);
 
         List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_ATTACHMENT);
-        InputStream is = ah.getContent(taskRepository, new ITaskImpl(taskData), attrs.get(0), nullProgressMonitor);
+        InputStream is = ah.getContent(taskRepository, null, attrs.get(0), nullProgressMonitor);
 
         byte[] b = new byte[ATTACHMENT_DATA.length()];
         is.read(b);

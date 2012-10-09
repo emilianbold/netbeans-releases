@@ -2298,6 +2298,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         // TODO add your handling code here:
     }//GEN-LAST:event_externalFieldActionPerformed
 
+    @Messages("IssuePanel.attachment.noDescription=<no description>")
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         assert !issue.getTaskData().isPartial();
         final boolean isNew = issue.getTaskData().isNew();
@@ -2363,25 +2364,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 boolean ret = false;
                 try {
                     ret = issue.submitAndRefresh();
-//                    for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
-//                        if (attachment.file.exists() && attachment.file.isFile()) {
-//                            if (attachment.description.trim().length() == 0) {
-//                                attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
-//                            }
-//                            issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
-//                        } else {
-//                            // PENDING notify user
-//                        }
-//                    }
-//                    if(attachLogCheckBox.isVisible() && attachLogCheckBox.isSelected()) {
-//                        File f = new File(Places.getUserDirectory(), NbBugzillaConstants.NB_LOG_FILE_PATH);
-//                        if(f.exists()) {
-//                            issue.addAttachment(f, "", NbBundle.getMessage(IssuePanel.class, "MSG_LOG_FILE_DESC"), NbBugzillaConstants.NB_LOG_FILE_ATT_CONT_TYPE, false); // NOI18N
-//                        }
-//                        BugzillaConfig.getInstance().putAttachLogFile(true);
-//                    } else {
-//                        BugzillaConfig.getInstance().putAttachLogFile(false);
-//                    }
+                    for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
+                        if (attachment.file.exists() && attachment.file.isFile()) {
+                            if (attachment.description.trim().isEmpty()) {
+                                attachment.description = Bundle.IssuePanel_attachment_noDescription();
+                            }
+                            issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
+                        } else {
+                            // PENDING notify user
+                        }
+                    }
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
