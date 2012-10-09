@@ -45,7 +45,7 @@
 package org.netbeans.modules.editor.lib2.document;
 
 import javax.swing.text.Segment;
-import org.netbeans.lib.editor.util.CharSubSequence;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 
 /**
  * Content of the document that can also be treated as CharSequence.
@@ -92,7 +92,8 @@ final class CharContent implements CharSequence {
     // Implements CharSequence
     @Override
     public CharSequence subSequence(int start, int end) {
-        return new CharSubSequence(this, start, end);
+        CharSequenceUtilities.checkIndexesValid(start, end, length());
+        return new SubSequence(start, end);
     }
 
     // Implements CharSequence
@@ -249,6 +250,40 @@ final class CharContent implements CharSequence {
     
     public String toStringDescription() {
         return gapToString(buffer.length, gapStart, gapLength);
+    }
+
+    private final class SubSequence implements CharSequence {
+
+        final int start;
+
+        final int end;
+
+        public SubSequence(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        @Override
+        public int length() {
+            return (end - start);
+        }
+
+        @Override
+        public char charAt(int index) {
+            return CharContent.this.charAt(start + index);
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            CharSequenceUtilities.checkIndexesValid(start, end, length());
+            return new SubSequence(this.start + start, this.start + end);
+        }
+
+        @Override
+        public String toString() {
+            return CharContent.this.getString(start, end - start);
+        }
+
     }
 
 }

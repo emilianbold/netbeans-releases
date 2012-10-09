@@ -48,9 +48,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.filesystems.FileSystem;
+import org.openide.modules.OnStop;
 
 /**
  *
@@ -60,21 +60,31 @@ public class CndTextIndexManager {
     public static final String FIELD_IDS = "ids"; //NOI18N
     public static final String FIELD_PATH = "path"; //NOI18N
     
-    private static final Map<String, DocumentIndex> indexMap = new HashMap<String, DocumentIndex>();
+    private static final Map<String, CndTextIndexImpl> indexMap = new HashMap<String, CndTextIndexImpl>();
     
-    public static synchronized DocumentIndex get(FileSystem fs) {
+    @OnStop
+    public static class Cleanup implements Runnable {
+        @Override
+        public void run() {
+            for (CndTextIndexImpl idx : indexMap.values()) {
+                idx.store();
+            }
+        }
+    }
+    
+    public static synchronized CndTextIndexImpl get(FileSystem fs) {
         String fsKey = "local"; //NOI18N
         if (!CndFileUtils.isLocalFileSystem(fs)) {
             fsKey = fs.getDisplayName();
         }
-        DocumentIndex index = indexMap.get(fsKey);
+        CndTextIndexImpl index = indexMap.get(fsKey);
         if (index == null) {
             //TODO: use LuceneIndexFactory?
             final File indexRoot = new File("/tmp/testIndex", fsKey); //NOI18N
             indexRoot.mkdirs();
 
             try {
-                index = IndexManager.createDocumentIndex(indexRoot);
+                index = new CndTextIndexImpl(IndexManager.createDocumentIndex(indexRoot));
             } catch (IOException ex) {
                 Logger.getLogger(CndIndexingFilterProviderImpl.class.getName()).log(Level.SEVERE, null, ex);
             }

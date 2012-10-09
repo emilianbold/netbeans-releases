@@ -226,6 +226,18 @@ class BracesStack implements Cloneable {
                             }
                             newEntry.setIndent(prevIndent + statementIndent);
                             newEntry.setSelfIndent(prevIndent);
+                            break;
+                        case ARROW: // LAMBDA C++
+                            if (newEntry.getLambdaIndent() >= prevIndent) {
+                                prevIndent = newEntry.getLambdaIndent();
+                            }
+                            statementIndent = codeStyle.indentSize();
+                            if (codeStyle.getFormatNewlineBeforeBraceDeclaration() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                                statementIndent /= 2;
+                            }
+                            newEntry.setIndent(prevIndent + statementIndent);
+                            newEntry.setSelfIndent(prevIndent);
+                            newEntry.setLambdaParen(parenDepth);
                     }
                 } else if (newEntry.isLikeToFunction()){
                     statementIndent = codeStyle.indentSize();
@@ -303,6 +315,9 @@ class BracesStack implements Cloneable {
                 }
             } else {
                 clearLastStatementStart();
+                if (entry.getImportantKind() == ARROW) {
+                    parenDepth = 0;
+                }
             }
         } else if (lastStatementStart != entry.getIndex()) {
             lastStatementStart = entry.getIndex();
@@ -313,6 +328,12 @@ class BracesStack implements Cloneable {
     }
 
     public void pop(ExtendedTokenSequence ts) {
+        StackEntry peek = peek();
+        if (peek != null) {
+            if (peek.getImportantKind() == ARROW) {
+                parenDepth = peek.getLambdaParen();
+            }
+        }
         if (parenDepth <= 0) {
             clearLastStatementStart();
         }

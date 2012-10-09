@@ -60,6 +60,8 @@ class StackEntry {
     private String text;
     private int indent;
     private int selfIndent;
+    private int lambdaIndent = 0;
+    private int lambdaParen = 0;
 
     StackEntry(ExtendedTokenSequence ts) {
         super();
@@ -107,15 +109,27 @@ class StackEntry {
                     {
                         if (paren == 0) {
                             Token<CppTokenId> prev = ts.lookPreviousImportant();
-                            if (prev != null && prev.id() == OPERATOR) {
-                                likeToArrayInitialization = false;
-                                likeToFunction = true;
-                                return;
+                            if (prev != null) {
+                                if (prev.id() == OPERATOR) {
+                                    likeToArrayInitialization = false;
+                                    likeToFunction = true;
+                                    return;
+                                }
                             }
                             likeToArrayInitialization = true;
                             return;
                         }
                         paren--;
+                        break;
+                    }
+                    case RBRACKET:
+                    {
+                        if (paren == 0 && curly == 0 && triangle == 0) {
+                            likeToArrayInitialization = false;
+                            likeToFunction = false;
+                            importantKind = ARROW;
+                            lambdaIndent = lambdaIndent(ts);
+                        }
                         break;
                     }
                     case CASE:
@@ -231,12 +245,62 @@ class StackEntry {
                         }
                         break;
                     }
+                    case ARROW: // ->
+                    { 
+                        if (paren == 0 && curly == 0 && triangle == 0) {
+                            importantKind = current.id();
+                            likeToFunction = false;
+                            lambdaIndent = lambdaIndent(ts);
+                            return;
+                        }
+                        break;
+                    }
                 }
             }
         } finally {
             ts.moveIndex(i);
             ts.moveNext();
         }
+    }
+
+    private int lambdaIndent(ExtendedTokenSequence ts) {
+        int i = ts.index();
+        try {
+            while(true) {
+                if (!ts.movePrevious()){
+                    return 0;
+                }
+                if (ts.token().id() == NEW_LINE){
+                    while(true) {
+                        if (!ts.moveNext()) {
+                            return 0;
+                        }
+                        switch(ts.token().id()) {
+                            case WHITESPACE:
+                                break;
+                            default:
+                                int d = ts.getTokenPosition();
+                                return d;
+                        }
+                    }
+                }
+            }
+        } finally {
+            ts.moveIndex(i);
+            ts.moveNext();
+        }
+    }
+
+    public int getLambdaIndent(){
+        return lambdaIndent;
+    }
+
+    public int getLambdaParen(){
+        return lambdaParen;
+    }
+
+    public void setLambdaParen(int lambdaParen){
+        this.lambdaParen = lambdaParen;
     }
 
     public int getIndent(){

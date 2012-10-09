@@ -1259,6 +1259,19 @@ public class Html5ParserTest extends NbTestCase {
         assertNotNull(a.matchingCloseTag());
     }
     
+    //Bug 218629 - Wrong syntax coloring in HTML for non-english text 
+    public void testIssue218629() throws ParseException {
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        String code = "<div>שלום עולם</div>";
+        //             012345678901234567890
+        //             0         1         
+        Node root = parse(code).root();
+        ElementUtils.dumpTree(root);
+        OpenTag a = ElementUtils.query(root, "html/body/div");
+        assertNotNull(a);
+        assertNotNull(a.matchingCloseTag());
+    }
+    
     private void assertNodeOffsets(final Node root) {
         //assert semantic ends are set
         ElementVisitor check = new ElementVisitor() {

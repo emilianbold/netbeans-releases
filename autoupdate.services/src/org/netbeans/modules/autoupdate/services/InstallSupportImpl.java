@@ -778,7 +778,6 @@ public class InstallSupportImpl {
                             }
                             real.close();
                             if (check.getValue() != crc.get()) {
-                                dest.delete();
                                 LOG.log(Level.INFO, "Deleting file with uncomplete external content(cause: wrong CRC) " + dest);
                                 dest.delete();
                                 synchronized(downloadedFiles) {
