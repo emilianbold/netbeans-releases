@@ -41,24 +41,14 @@
  */
 package org.netbeans.modules.cnd.indexing.impl;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.spi.APTIndexingFilterProvider;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
-import org.netbeans.modules.parsing.lucene.support.IndexDocument;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
-import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -67,7 +57,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = APTIndexingFilterProvider.class, path=APTIndexingFilterProvider.PATH, position=1000)
 public class CndIndexingFilterProviderImpl implements APTIndexingFilterProvider {
-    private static final RequestProcessor RP = new RequestProcessor("Lucene saver", 1); //NOI18N
+    //private static final RequestProcessor RP = new RequestProcessor("Lucene saver", 1); //NOI18N
     
     @Override
     public TokenStream getIndexed(FileSystem fs, CharSequence absPath, TokenStream orig) {
@@ -75,43 +65,8 @@ public class CndIndexingFilterProviderImpl implements APTIndexingFilterProvider 
     }
     
     private static void store(final FileSystem fs, final String name, final Set<String> ids) {
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                DocumentIndex index = CndTextIndexManager.get(fs);
-                IndexDocument doc = null;
-//                Collection<? extends IndexDocument> existing;
-//                try {
-//                    existing = index.findByPrimaryKey(name, Queries.QueryKind.EXACT, null);
-//                    if (!existing.isEmpty()) {
-//                        if (existing.size() > 1) {
-//                            Logger.getLogger(CndIndexingFilterProviderImpl.class.getName()).warning("More than one document in the index: " + name); //NOI18N
-//                        }
-//                        doc = existing.iterator().next();
-//                    }
-//                } catch (Exception ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-                if (doc == null) {
-                    doc = IndexManager.createDocument(name);
-                }
-                
-                doc.addPair(CndTextIndexManager.FIELD_PATH, name, true, true);
-                for (String id : ids) {
-                    doc.addPair(CndTextIndexManager.FIELD_IDS, id, true, true);
-                }
-                index.addDocument(doc);
-                
-                // store
-                if (true) {
-                    try {
-                        index.store(false);
-                    } catch (IOException ex) {
-                        Logger.getLogger(CndIndexingFilterProviderImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        });
+        CndTextIndexImpl index = CndTextIndexManager.get(fs);
+        index.add(name, ids);
     }
     
     private static class IndexingFilter implements TokenStream {
