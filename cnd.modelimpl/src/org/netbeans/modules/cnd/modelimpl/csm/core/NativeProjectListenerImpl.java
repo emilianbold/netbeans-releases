@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
@@ -60,9 +61,12 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
  */
 // package-local
 class NativeProjectListenerImpl implements NativeProjectItemsListener {
-    private static final boolean TRACE = false;
+    private static final boolean TRACE;
     private static final Logger LOG = Logger.getLogger("NativeProjectListenerImpl"); // NOI18N
-
+    static {
+        TRACE = LOG.isLoggable(Level.FINE);
+    }
+    
     private final NativeProject nativeProject;
     private final ProjectBase projectBase;
     private volatile boolean enabledEventsHandling = true;
@@ -167,7 +171,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 @Override
                 public void run() {
                     try {
-                        projectBase.onFileAdded(items);
+                        projectBase.onFileItemsAdded(items);
                     } catch( Exception e ) {
                         e.printStackTrace(System.err);
                     }
@@ -183,7 +187,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 @Override
                 public void run() {
                     try {
-                        projectBase.onFileRemoved(items);
+                        projectBase.onFileItemsRemoved(items);
                     } catch( Exception e ) {
                         e.printStackTrace(System.err);
                     }
@@ -198,8 +202,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             @Override
             public void run() {
                 try {
-                    projectBase.onFileRemoved(oldPath);
-                    projectBase.onFileAdded(newFileIetm);
+                    projectBase.onFileItemRenamed(oldPath, newFileIetm);
                 } catch( Exception e ) {
                     //TODO: FIX (most likely in Makeproject: path == null in this situation,
                     //this cause NPE
@@ -216,14 +219,30 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 @Override
                 public void run() {
                     try {
-                        if (projectBase.isValid()) {
-                            projectBase.onFilePropertyChanged(items, invalidateLibraries);
-                        }
+                        projectBase.onFileItemsPropertyChanged(items, invalidateLibraries);
                     } catch (Exception e) {
                         e.printStackTrace(System.err);
                     }
                 }
             }, "Applying property changes"); // NOI18N            
         }
+    }
+
+    @Override
+    public void fileOperationsStarted(NativeProject nativeProject) {
+        if (TRACE) {
+            String title = "fileOperationsStarted:" + nativeProject.getProjectDisplayName(); // NOI18N
+            LOG.log(Level.INFO, title, new Exception(title));
+        }        
+        ModelSupport.instance().suspendDeleteEvents();
+    }
+
+    @Override
+    public void fileOperationsFinished(NativeProject nativeProject) {
+        if (TRACE) {
+            String title = "fileOperationsFinished:" + nativeProject.getProjectDisplayName(); // NOI18N
+            LOG.log(Level.INFO, title, new Exception(title));
+        }
+        ModelSupport.instance().resumeDeleteEvents();
     }
 }

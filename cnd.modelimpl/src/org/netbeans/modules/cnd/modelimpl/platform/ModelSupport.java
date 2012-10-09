@@ -60,7 +60,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.project.*;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
@@ -69,21 +68,17 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.SuspendableFileChangeListener;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -102,10 +97,10 @@ import org.openide.windows.WindowManager;
 public class ModelSupport implements PropertyChangeListener {
 
     private static final ModelSupport instance = new ModelSupport();
-    private volatile ModelImpl theModel;
+    /*package*/volatile ModelImpl theModel;
     private final Set<Lookup.Provider> openedProjects = new HashSet<Lookup.Provider>();
     private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
-    private FileChangeListener fileChangeListener;
+    private SuspendableFileChangeListener fileChangeListener;
     private static final boolean TRACE_STARTUP = Boolean.getBoolean("cnd.modelsupport.startup.trace");// NOI18N
     private volatile boolean postponeParse = false;
     private final RequestProcessor.Task openProjectsTask = 
@@ -140,7 +135,7 @@ public class ModelSupport implements PropertyChangeListener {
                 fileChangeListener = null;
             }
             if (model != null) {
-                fileChangeListener = new ExternalUpdateListener();
+                fileChangeListener = new SuspendableFileChangeListener(new ExternalUpdateListener(this));
                 CndFileSystemProvider.addFileChangeListener(fileChangeListener);
             }
         }
@@ -669,135 +664,21 @@ public class ModelSupport implements PropertyChangeListener {
         Diagnostic.unindent();
     }
 
-    private class ExternalUpdateListener extends FileChangeAdapter implements Runnable {
-        
-        private boolean isRunning;
-        private final Map<FileObject, Boolean> changedFileObjects = new HashMap<FileObject, Boolean>();
-        private final Map<FileObject, Long> eventTimes = new WeakHashMap<FileObject, Long>();
-
-        /** FileChangeListener implementation. Fired when a file is changed. */
-        @Override
-        public void fileChanged(FileEvent fe) {
-            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                System.err.printf("External updates: fileChanged %s\n", fe);
-            }
-            ModelImpl model = theModel;
-            if (model != null) {
-                FileObject fo = fe.getFile();
-                if (isCOrCpp(fo)) {
-                    scheduleUpdate(fo, fe.getTime(), false);
-                }
-            }
+    public void suspendDeleteEvents() {
+        if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+            ExternalUpdateListener.LOG.info("External updates: suspendDeleteEvents");
+        }        
+        if (fileChangeListener != null) {
+            fileChangeListener.suspendRemoves();
         }
+    }
 
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                System.err.printf("External updates: fileDataCreated %s\n", fe);
-            }
-            ModelImpl model = theModel;
-            if (model != null) {
-                FileObject fo = fe.getFile();
-                if (isCOrCpp(fo)) {
-                    scheduleUpdate(fo, fe.getTime(), true);
-                }
-            }
+    public void resumeDeleteEvents() {
+        if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+            ExternalUpdateListener.LOG.info("External updates: resumeDeleteEvents");
         }
-
-        private void scheduleUpdate(FileObject fo, long eventTime, boolean isCreated) {
-            ModelImpl model = theModel;
-            if (model != null) {
-                synchronized (this) {
-                    Long lastEvent = eventTimes.get(fo);
-                    if (lastEvent == null || (eventTime - lastEvent.longValue()) > 500) {
-                        eventTimes.put(fo, Long.valueOf(eventTime));
-                    } else {
-                        if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                            System.err.printf("External updates: SKIP EVENT By oldT:%s and newT:%d\n", lastEvent, eventTime);
-                        }
-                        return;
-                    }
-                    if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                        System.err.printf("External updates: scheduling update for %s\n", fo);
-                    }
-                    if (!changedFileObjects.containsKey(fo)) {
-                        changedFileObjects.put(fo, isCreated);
-                    }
-                    if (!isRunning) {
-                        isRunning = true;
-                        model.enqueueModelTask(this, "External File Updater"); // NOI18N
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void run() {
-            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                System.err.printf("External updates: running update task\n");
-            }
-            while (true) {
-                final FileObject fo;
-                final boolean created;
-                synchronized (this) {
-                    if (changedFileObjects.isEmpty()) {
-                        isRunning = false;
-                        break;
-                    } else {
-                        Iterator<Map.Entry<FileObject, Boolean>> it = changedFileObjects.entrySet().iterator();
-                        Map.Entry<FileObject, Boolean> entry = it.next();
-                        fo = entry.getKey();
-                        created = entry.getValue();
-                        it.remove();
-                    }
-                }
-                if (fo != null) {
-                    if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                        System.err.printf("External updates: Updating for %s%s\n", created ? "created " : "", fo);
-                    }
-                    if (created) {
-                        ProjectBase project = (ProjectBase)CsmUtilities.getCsmProject(fo);
-                        if (project != null) {
-                            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                                System.err.printf("External updates: project %s found for %s\n", project, fo);
-                            }
-                            project.onFileExternalCreate(fo);
-                        } else {
-                            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                                System.err.printf("External updates: No CsmProject found for %s\n", fo);
-                            }
-                            CndFileUtils.clearFileExistenceCache();
-                        }
-                   } else {
-                        CsmFile[] files;
-                        try {
-                            files = CsmUtilities.getCsmFiles(DataObject.find(fo), false, false);
-                        } catch (DataObjectNotFoundException ex) {
-                            System.err.printf("External updates: No CsmFiles for %s\n", fo);
-                            files = new CsmFile[0];
-                        }                        
-                        for (int i = 0; i < files.length; ++i) {
-                            FileImpl file = (FileImpl) files[i];
-                            ProjectBase project = file.getProjectImpl(true);
-                            project.onFileExternalChange(file);
-                        }
-                    }
-                }
-            }
-            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                System.err.printf("External updates: update task finished\n");
-            }
-        }
-
-        private boolean isCOrCpp(FileObject fo) {
-            String mime = fo.getMIMEType();
-            if (mime == null) {
-                mime = FileUtil.getMIMEType(fo);
-                if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
-                    System.err.printf("External updates: MIME resolved: %s\n", mime);
-                }
-            }
-            return MIMENames.isFortranOrHeaderOrCppOrC(mime);
+        if (fileChangeListener != null) {
+            fileChangeListener.resumeRemoves();
         }
     }
 }
