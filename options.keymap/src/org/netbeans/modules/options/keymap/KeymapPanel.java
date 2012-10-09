@@ -85,7 +85,7 @@ import org.openide.util.NbBundle;
  *
  * @author Max Sauer
  */
-@OptionsPanelController.Keywords(keywords={"keymaps"}, location=OptionsDisplayer.KEYMAPS)
+@OptionsPanelController.Keywords(keywords={"#KW_KeymapOptions"}, location=OptionsDisplayer.KEYMAPS)
 public class KeymapPanel extends javax.swing.JPanel implements ActionListener, Popupable {
 
     // Delay times for incremental search [ms]
