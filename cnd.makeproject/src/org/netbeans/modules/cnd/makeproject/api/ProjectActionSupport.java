@@ -48,8 +48,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +66,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
@@ -134,8 +138,20 @@ public class ProjectActionSupport {
         return instance;
     }
 
-    private static void refreshProjectFiles(final Project project) {
+    private static boolean isFileOperationsIntensive(ProjectActionEvent pae) {
+        Type type = pae.getType();
+        if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS) {
+            return true;
+        }
+        return false;
+    }
+    
+    private static void refreshProjectFilesOnFinish(final ProjectActionEvent curPAE, final FileOperationsNotifier fon) {
         try {
+            if (curPAE.getType() != PredefinedType.RUN && !fon.isLastExpectedEvent(curPAE)) {
+                return;
+            }
+            final Project project = curPAE.getProject();
             final Set<File> files = new HashSet<File>();
             final Set<FileObject> fileObjects = new HashSet<FileObject>();
             FileObject projectFileObject = project.getProjectDirectory();
@@ -163,16 +179,21 @@ public class ProjectActionSupport {
             Runnable refresher = new Runnable() {
                 @Override
                 public void run() {
-                    final File[] array = files.toArray(new File[files.size()]);
-                    if (array.length > 0) {
-                        FileUtil.refreshFor(array);
-                    }
-                    if (!fileObjects.isEmpty()) {
-                        for (FileObject fo : fileObjects) {
-                            FileSystemProvider.scheduleRefresh(fo);
+                    if (RP.isRequestProcessorThread()) {
+                        FileUtil.runAtomicAction(this);
+                        fon.onFinish(curPAE);
+                        MakeLogicalViewProvider.refreshBrokenItems(project);
+                    } else {
+                        final File[] array = files.toArray(new File[files.size()]);
+                        if (array.length > 0) {
+                            FileUtil.refreshFor(array);
+                        }
+                        if (!fileObjects.isEmpty()) {
+                            for (FileObject fo : fileObjects) {
+                                FileSystemProvider.scheduleRefresh(fo);
+                            }
                         }
                     }
-                    MakeLogicalViewProvider.refreshBrokenItems(project);
                 }
             };
             final Preferences nd = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction"); // NOI18N
@@ -180,7 +201,9 @@ public class ProjectActionSupport {
             if (manual) {
                 RP.post(refresher);
             } else {
-                refresher.run();
+                FileUtil.runAtomicAction(refresher);
+                fon.onFinish(curPAE);
+                MakeLogicalViewProvider.refreshBrokenItems(project);
             }
         } catch (Exception e) {
             LOGGER.log(Level.INFO, "Cannot refresh project files", e);
@@ -233,6 +256,60 @@ public class ProjectActionSupport {
     private ArrayList<String> tabNames = new ArrayList<String>();
     private final Object lock = new Object();
 
+    private final class ProjectFileOperationsNotifier {
+        private final NativeProjectChangeSupport npcs;
+        private final ProjectActionEvent startPAE;
+        private ProjectActionEvent finishPAE;
+
+        public ProjectFileOperationsNotifier(NativeProjectChangeSupport npcs, ProjectActionEvent startPAE) {
+            this.npcs = npcs;
+            this.startPAE = startPAE;
+        }
+
+        @Override
+        public String toString() {
+            return "ProjectFileOperationsNotifier{" + "npcs=" + npcs + ", startPAE=" + startPAE + ", finishPAE=" + finishPAE + '}'; // NOI18N
+        }
+    }
+    
+    private final class FileOperationsNotifier {
+        private final Map<Project, ProjectFileOperationsNotifier> prjNotifier;
+
+        public FileOperationsNotifier(Map<Project, ProjectFileOperationsNotifier> prjNotifier) {
+            this.prjNotifier = prjNotifier;
+        }
+
+        private void onStart(ProjectActionEvent curPAE) {
+            ProjectFileOperationsNotifier notifier = prjNotifier.get(curPAE.getProject());
+            if (notifier != null && (notifier.npcs != null) && (curPAE == notifier.startPAE)) {
+                notifier.npcs.fireFileOperationsStarted();
+            }
+        }
+
+        public void onFinish(ProjectActionEvent curPAE) {
+            ProjectFileOperationsNotifier notifier = prjNotifier.get(curPAE.getProject());
+            if (notifier != null && (notifier.npcs != null) && (curPAE == notifier.finishPAE)) {
+                notifier.npcs.fireFileOperationsFinished();
+            }
+        }
+
+        private void finishAll() {
+            for (ProjectFileOperationsNotifier notifier : prjNotifier.values()) {
+                if (notifier.npcs != null) {
+                    notifier.npcs.fireFileOperationsFinished();
+                }
+            }
+        }
+
+        private boolean isLastExpectedEvent(ProjectActionEvent curPAE) {
+            ProjectFileOperationsNotifier notifier = prjNotifier.get(curPAE.getProject());
+            if (notifier != null && (notifier.npcs != null) && (curPAE == notifier.finishPAE)) {
+                return true;
+            }
+            return false;
+        }
+    }
+    
     private final class HandleEvents implements ExecutionListener {
 
         private InputOutput ioTab = null;
@@ -249,12 +326,14 @@ public class ProjectActionSupport {
         private final ProjectActionHandler customHandler;
         private ProjectActionHandler currentHandler = null;
         private final boolean reuseTabs;
+        private final FileOperationsNotifier fon;
 
         public HandleEvents(ProjectActionEvent[] paes, ProjectActionHandler customHandler) {
             this.paes = paes;
             this.customHandler = customHandler;
             currentAction = 0;
             reuseTabs = MakeOptions.getInstance().getReuse();
+            fon = getFileOperationsNotifier(paes);
             if (reuseTabs) {
                 synchronized (lock) {
                     if (mainTabHandler == null) {
@@ -477,6 +556,7 @@ public class ProjectActionSupport {
                     out.close();
                 }
             }
+            fon.finishAll();
         }
         
         private void go() {
@@ -606,8 +686,53 @@ public class ProjectActionSupport {
                     action.executionStarted(pid);
                 }
             }
+            fon.onStart(paes[currentAction]);
         }
 
+        private FileOperationsNotifier getFileOperationsNotifier(ProjectActionEvent[] paes) {
+            Map<Project, ProjectFileOperationsNotifier> prj2Notifier = new HashMap<Project, ProjectFileOperationsNotifier>();
+            for (ProjectActionEvent pae : paes) {
+                if (isFileOperationsIntensive(pae)) {
+                    Project project = pae.getProject();
+                    ProjectFileOperationsNotifier notifer = prj2Notifier.get(project);
+                    if (notifer == null) {
+                        NativeProjectChangeSupport npcs = null;
+                        try {
+                            npcs = project.getLookup().lookup(NativeProjectChangeSupport.class);
+                            if (npcs == null) {
+                                NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
+                                if (nativeProject instanceof NativeProjectChangeSupport) {
+                                    npcs = (NativeProjectChangeSupport)nativeProject;
+                                }
+                            }
+                        } catch (Exception e) {
+                            // This may be ok. The project could have been removed ....
+                            System.err.println("getNativeProject " + e);
+                        }                        
+                        notifer = new ProjectFileOperationsNotifier(npcs, pae);
+                        prj2Notifier.put(project, notifer);
+                    }
+                    notifer.finishPAE = pae;
+                }
+            }
+            return new FileOperationsNotifier(prj2Notifier);
+        }
+        
+        public NativeProjectChangeSupport getNativeProjectChangeSupport(Project project) {
+            NativeProject nativeProject = null;
+            try {
+                nativeProject = project.getLookup().lookup(NativeProject.class);
+            } catch (Exception e) {
+                // This may be ok. The project could have been removed ....
+                System.err.println("getNativeProject " + e);
+            }
+            if (nativeProject instanceof NativeProjectChangeSupport) {
+                return (NativeProjectChangeSupport) nativeProject;
+            } else {
+                return null;
+            }
+        }
+        
         @Override
         public void executionFinished(int rc) {
             if (additional != null) {
@@ -615,11 +740,9 @@ public class ProjectActionSupport {
                     ((ExecutionListener) action).executionFinished(rc);
                 }
             }
-            Type type = paes[currentAction].getType();
-            if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS || type == PredefinedType.RUN) {
-                // Refresh all files
-                refreshProjectFiles(paes[currentAction].getProject());
-            }
+            ProjectActionEvent curPAE = paes[currentAction];
+            // Refresh FS
+            refreshProjectFilesOnFinish(curPAE, fon);
             if (currentAction >= paes.length - 1 || rc != 0) {
                 synchronized (lock) {
                     if (mainTabHandler == this) {
