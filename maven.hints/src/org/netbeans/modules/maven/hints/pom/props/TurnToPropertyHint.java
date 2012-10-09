@@ -212,10 +212,10 @@ public class TurnToPropertyHint implements SelectionPOMFixProvider {
         @Override
         @NbBundle.Messages({
             "# {0} - property name",
-            "TXT_Replace=Replace by expression ${{0}}", 
+            "TXT_Replace=Replace by expression {0}", 
             "TXT_Create=Create new property"})
         public String getText() {
-            return key != null ? TXT_Replace(key) : TXT_Create();
+            return key != null ? TXT_Replace("${" + key + "}") : TXT_Create();
         }
 
         @Override
