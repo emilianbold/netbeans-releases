@@ -194,7 +194,7 @@ public class AttachmentsPanel extends JPanel {
                     .addComponent(dateLabel)
                     .addComponent(authorLabel)));
             for (C2CIssue.Attachment attachment : attachments) {
-                boolean isPatch = "1".equals(attachment.getIsPatch()); // NOI18N
+                boolean isPatch = attachment.isPatch(); // NOI18N
                 String description = attachment.getDesc();
                 String filename = attachment.getFilename();
                 Date date = attachment.getDate();
@@ -323,7 +323,7 @@ public class AttachmentsPanel extends JPanel {
         JPopupMenu menu = new JPopupMenu();
         menu.add(attachment.new DefaultAttachmentAction());
         menu.add(attachment.new SaveAttachmentAction());
-        if ("1".equals(attachment.getIsPatch())) { // NOI18N
+        if (attachment.isPatch()) {
             AbstractAction action = attachment.new ApplyPatchAction();
             menu.add(action);
             patchButton.setAction(action);

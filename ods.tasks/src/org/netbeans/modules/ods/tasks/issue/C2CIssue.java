@@ -69,6 +69,7 @@ import org.eclipse.mylyn.tasks.core.IRepositoryElement;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.progress.ProgressHandle;
@@ -350,7 +351,9 @@ public class C2CIssue {
     }   
     
     public void attachPatch(File file, String description) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // HACK for attaching hg bundles - they are NOT patches
+        boolean isPatch = !file.getName().endsWith(".hg"); //NOI18N
+        addAttachment(file, null, description, null, isPatch);
     }
     
     void addAttachment (File file, final String comment, final String desc, String contentType, final boolean patch) {
@@ -368,10 +371,13 @@ public class C2CIssue {
         attachmentSource.setContentType(contentType);
 
         final TaskAttribute attAttribute = new TaskAttribute(data.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
+        TaskAttributeMapper mapper = attAttribute.getTaskData().getAttributeMapper();
         TaskAttribute a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION);
         a.setValue(desc);
         a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE);
         a.setValue(contentType);
+        a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_IS_PATCH);
+        mapper.setBooleanValue(a, patch);
         a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_FILENAME);
         a.setValue(file.getName());
 
@@ -937,7 +943,7 @@ public class C2CIssue {
         private String contentType;
         private String isDeprected;
         private String size;
-        private String isPatch;
+        private boolean isPatch;
         private String url;
         private final TaskAttribute ta;
 
@@ -967,7 +973,11 @@ public class C2CIssue {
             }
             contentType = getMappedValue(ta, TaskAttribute.ATTACHMENT_CONTENT_TYPE);
             isDeprected = getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_DEPRECATED);
-            isPatch = getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_PATCH);
+            if (ta.getMappedAttribute(TaskAttribute.ATTACHMENT_IS_PATCH) == null) {
+                isPatch = filename.endsWith(".patch") || filename.endsWith(".diff"); //NOI18N
+            } else {
+                isPatch = !getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_PATCH).isEmpty();
+            }
             size = getMappedValue(ta, TaskAttribute.ATTACHMENT_SIZE);
             url = getMappedValue(ta, TaskAttribute.ATTACHMENT_URL);
         }
@@ -1004,7 +1014,7 @@ public class C2CIssue {
             return isDeprected;
         }
 
-        public String getIsPatch() {
+        public boolean isPatch() {
             return isPatch;
         }
 
