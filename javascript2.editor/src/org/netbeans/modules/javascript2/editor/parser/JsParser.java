@@ -59,7 +59,24 @@ public class JsParser extends SanitizingParser {
 
     @Override
     protected FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception {
-        com.oracle.nashorn.runtime.Source source = new com.oracle.nashorn.runtime.Source(name, text);
+        String parsableText = text;
+        // handle shebang
+        if (parsableText.startsWith("#!")) { // NOI18N
+            StringBuilder sb = new StringBuilder();
+            int index = parsableText.indexOf("\n"); // NOI18N
+            if (index < 0) {
+                index = parsableText.length();
+            }
+
+            sb.delete(0, index);
+            for (int i = 0; i < index; i++) {
+                sb.insert(i, ' ');
+            }
+
+            parsableText = sb.toString();
+        }
+
+        com.oracle.nashorn.runtime.Source source = new com.oracle.nashorn.runtime.Source(name, parsableText);
         com.oracle.nashorn.runtime.options.Options options = new com.oracle.nashorn.runtime.options.Options("nashorn");
         options.process(new String[] {
             "--parse-only=true", // NOI18N
