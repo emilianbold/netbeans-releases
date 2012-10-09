@@ -46,6 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -78,6 +80,8 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class JsfSupportImpl implements JsfSupport {
 
+	private static final Logger LOG = Logger.getLogger(JsfSupportImpl.class.getSimpleName());
+    
     public static JsfSupportImpl findFor(Source source) {
         return getOwnImplementation(JsfSupportProvider.get(source));
     }
@@ -99,9 +103,22 @@ public class JsfSupportImpl implements JsfSupport {
     static JsfSupportImpl findForProject(Project project) {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if(webModule != null) {
+            // #217213 - prevent NPE:
+            if (webModule.getDocumentBase() == null) {
+                LOG.log(Level.INFO, "project '"+project+ // NOI18N
+                        "' does not have valid documentBase"); // NOI18N
+                return null;
+            }
             //web project
             ClassPath sourceCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.SOURCE);
             ClassPath compileCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+            // #217213 - prevent NPE; not sure what's causing it:
+            if (compileCP == null) {
+                LOG.log(Level.INFO, "project '"+project+ // NOI18N
+                        "' does not have compilation classpath; documentBase="+ // NOI18N
+                        webModule.getDocumentBase());
+                return null;
+            }
             ClassPath executeCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.EXECUTE);
             ClassPath bootCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.BOOT);
             
