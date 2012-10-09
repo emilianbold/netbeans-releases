@@ -254,7 +254,11 @@ public class ToolbarWithOverflow extends JToolBar {
         overflowButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                displayOverflow();
+                if(popup.isShowing()) {
+                    popup.setVisible(false);
+                } else {
+                    displayOverflow();
+                }
             }
 
             @Override
