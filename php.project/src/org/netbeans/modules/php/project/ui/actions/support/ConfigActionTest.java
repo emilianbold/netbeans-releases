@@ -322,9 +322,6 @@ class ConfigActionTest extends ConfigAction {
                         .addArgument(PhpUnit.PARAM_CONFIGURATION)
                         .addArgument(configFiles.configuration.getAbsolutePath());
             }
-            if (configFiles.suite != null) {
-                startFile = configFiles.suite;
-            }
 
             if (isCoverageEnabled()) {
                 externalProcessBuilder = externalProcessBuilder
@@ -359,11 +356,19 @@ class ConfigActionTest extends ConfigAction {
                 info.resetCustomTests();
             }
 
-            externalProcessBuilder = externalProcessBuilder
-                    // #218607 - hotfix
-                    //.addArgument(PhpUnit.SUITE_NAME)
-                    .addArgument(PhpUnit.getNbSuite().getAbsolutePath())
-                    .addArgument(String.format(PhpUnit.SUITE_RUN, startFile.getAbsolutePath()));
+            if (configFiles.suite != null) {
+                // custom suite
+                externalProcessBuilder = externalProcessBuilder
+                        .addArgument(configFiles.suite.getAbsolutePath());
+            } else {
+                // standard suite
+                externalProcessBuilder = externalProcessBuilder
+                        // #218607 - hotfix
+                        //.addArgument(PhpUnit.SUITE_NAME)
+                        .addArgument(PhpUnit.getNbSuite().getAbsolutePath())
+                        .addArgument(String.format(PhpUnit.SUITE_RUN, startFile.getAbsolutePath()));
+            }
+
             return externalProcessBuilder;
         }
 
