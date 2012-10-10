@@ -45,8 +45,8 @@ package org.netbeans.modules.cnd.editor.api;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
 /**
@@ -252,6 +252,10 @@ public final class CodeStyle {
         return getOption(EditorOptions.ignoreEmptyFunctionBody,
                          EditorOptions.ignoreEmptyFunctionBodyDefault);
     }
+    public BracePlacement getFormatNewlineBeforeBraceLambda() {
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceLambda,
+                                      EditorOptions.newLineBeforeBraceLambdaDefault));
+    }
 
     public BracePlacement getFormatNewLineBeforeBraceSwitch() {
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceSwitch,
@@ -404,6 +408,10 @@ public final class CodeStyle {
     public boolean spaceBeforeMethodDeclLeftBrace(){
         return getOption(EditorOptions.spaceBeforeMethodDeclLeftBrace,
                          EditorOptions.spaceBeforeMethodDeclLeftBraceDefault);
+    }
+    public boolean spaceBeforeLambdaLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeLambdaLeftBrace,
+                         EditorOptions.spaceBeforeLambdaLeftBraceDefault);
     }
     public boolean spaceBeforeIfLeftBrace(){
         return getOption(EditorOptions.spaceBeforeIfLeftBrace,

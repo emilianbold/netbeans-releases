@@ -5230,7 +5230,7 @@ public class FormatterTestCase extends EditorBase {
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
+                put(EditorOptions.newLineBeforeBraceLambda, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
         setLoadDocumentText(
                 "int foo() {\n" +
@@ -5329,6 +5329,125 @@ public class FormatterTestCase extends EditorBase {
                 "        if (i < 10)\n" +
                 "            a(); //recursive call\n" +
                 "    };\n" +
+                "}\n"
+                );
+    }
+    
+    public void test219414_5() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        setLoadDocumentText(
+                "int foo() {\n" +
+                "    for_each(v.begin(), v.end(),\n" +
+                "             [] (int val) {\n" +
+                "             cout << val;\n" +
+                "             });\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect < lambda formatting",
+                "int foo() {\n" +
+                "    for_each(v.begin(), v.end(),\n" +
+                "             [] (int val) {\n" +
+                "                 cout << val;\n" +
+                "             });\n" +
+                "}\n"
+                );
+    }
+
+    public void test219414_6() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        setLoadDocumentText(
+                "int foo() {\n" +
+                "    for_each(v.begin(), v.end(),\n" +
+                "             [] (int val) {\n" +
+                "             cout << val;\n" +
+                "             });\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect < lambda formatting",
+                "int foo() {\n" +
+                "    for_each(v.begin(), v.end(),\n" +
+                "             [] (int val)\n" +
+                "             {\n" +
+                "                 cout << val;\n" +
+                "             });\n" +
+                "}\n"
+                );
+    }
+    
+    public void test219414_7() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.NEW_LINE_FULL_INDENTED.name());
+        setLoadDocumentText(
+                "int foo() {\n" +
+                "    for_each(v.begin(), v.end(),\n" +
+                "             [] (int val) {\n" +
+                "             cout << val;\n" +
+                "             });\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect < lambda formatting",
+                "int foo() {\n" +
+                "    for_each(v.begin(), v.end(),\n" +
+                "             [] (int val)\n" +
+                "                 {\n" +
+                "                 cout << val;\n" +
+                "                 });\n" +
+                "}\n"
+                );
+    }
+
+    public void test219414_8() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        setLoadDocumentText(
+                "int foo() {\n" +
+                "    for_each(v.begin(), v.end(),\n" +
+                "             [] (int val) {\n" +
+                "             cout << val;\n" +
+                "             });\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect < lambda formatting",
+                "int foo() {\n" +
+                "    for_each(v.begin(), v.end(),\n" +
+                "             [] (int val)\n" +
+                "               {\n" +
+                "                 cout << val;\n" +
+                "               });\n" +
                 "}\n"
                 );
     }
