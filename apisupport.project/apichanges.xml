@@ -110,6 +110,19 @@ is the proper place.
     <changes>
         <change>
             <api name="apisupport_spi"/>
+            <summary>Allow adding test dependencies</summary>
+            <version major="1" minor="59"/>
+            <date day="110" month="10" year="2012"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <code>ModuleDependency has a settable property now denoting if the dependency is meant to be test or not</code>
+            </description>
+            <class package="org.netbeans.modules.apisupport.project.spi" name="NbModuleProvider.ModuleDependency"/>
+            
+        </change>
+        <change>
+            <api name="apisupport_spi"/>
             <summary>Execute the project</summary>
             <version major="1" minor="49"/>
             <date day="3" month="8" year="2011"/>
