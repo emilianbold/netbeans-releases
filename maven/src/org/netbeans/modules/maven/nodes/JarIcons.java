@@ -45,24 +45,17 @@ import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.ImageUtilities;
 
-@ProjectServiceProvider(service=SpecialIcon.class, projectType={
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_POM,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR
-})
-public class CommonIcons implements SpecialIcon {
+@ProjectServiceProvider(service=SpecialIcon.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR)
+public class JarIcons implements SpecialIcon {
 
     private final Project project;
 
-    public CommonIcons(Project project) {
+    public JarIcons(Project project) {
         this.project = project;
     }
 
     @Override public Icon getIcon() {
-        if (project.getLookup().lookup(NbMavenProject.class).getPackagingType().equals(NbMavenProject.TYPE_JAR)) {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/jaricon.png", true);
-        } else {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/Maven2Icon.gif", true);
-        }
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/jaricon.png", true);
     }
 
 }
