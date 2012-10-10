@@ -244,6 +244,11 @@ public class JsParserTest extends JsTestBase {
             + "}", 1, SanitizingParser.Sanitize.MISSING_PAREN);
     }
 
+    public void testRegexp() throws Exception {
+        parse("$?c.onreadystatechange=function(){/loaded|complete/.test(c.readyState)&&d()}:c.onload=c.onerror=d;\n",
+                null, 0, null);
+    }
+
     private void parse(String original, String expected, int errorCount,
             JsParser.Sanitize sanitization) throws Exception {
 
