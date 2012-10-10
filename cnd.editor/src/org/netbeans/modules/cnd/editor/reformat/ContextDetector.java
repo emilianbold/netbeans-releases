@@ -551,8 +551,19 @@ public class ContextDetector extends ExtendedTokenSequence {
                             default:
                                 return OperatorKind.SEPARATOR;
                         }
+                    } else {
+                        switch(current.id()){
+                            case GT:
+                            case LT:
+                                if (braces.isDeclarationLevel()) {
+                                    return OperatorKind.SEPARATOR;
+                                } else if (isLikeTemplate(current)) {
+                                    return OperatorKind.SEPARATOR;
+                                }
+                            default:
+                                return OperatorKind.BINARY;
+                        }
                     }
-                    return OperatorKind.BINARY;
                 }
                 if (OPERATOR_CATEGORY.equals(nextCategory) ||
                     SEPARATOR_CATEGORY.equals(nextCategory)){
@@ -738,9 +749,23 @@ public class ContextDetector extends ExtendedTokenSequence {
     
     private boolean isLikeExpession(){
         StackEntry entry = braces.peek();
-        if (entry != null && 
-           (entry.getKind() == FOR || entry.getKind() == WHILE || entry.getKind() == IF)){
-            return true;
+        if (entry != null) {
+            if ((entry.getKind() == FOR || entry.getKind() == WHILE || entry.getKind() == IF)){
+                return true;
+            } else {
+                if (entry.getImportantKind() != null) {
+                    switch (entry.getImportantKind()) {
+                        case NAMESPACE:
+                        case STRUCT:
+                        case CLASS:
+                        case UNION:
+                        case ENUM:
+                            if (braces.parenDepth == 1) {
+                                return false;
+                            }
+                    }
+                }
+            }
         }
         int index = index();
         try {

@@ -5451,4 +5451,46 @@ public class FormatterTestCase extends EditorBase {
                 "}\n"
                 );
     }
+    
+    public void test219417() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "    ::std::plus<Double>();\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect template formatting",
+                "int foo()\n" +
+                "{\n" +
+                "    ::std::plus<Double>();\n" +
+                "}\n"
+                );
+    }
+
+    public void test216976() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "struct Compare\n" +
+                "{\n" +
+                "\n" +
+                "    bool func(const Book* a, const Book* b) const\n" +
+                "    {\n" +
+                "        return a->word < b->word;\n" +
+                "    }\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect type reference formatting",
+                "struct Compare\n" +
+                "{\n" +
+                "\n" +
+                "    bool func(const Book* a, const Book* b) const\n" +
+                "    {\n" +
+                "        return a->word < b->word;\n" +
+                "    }\n" +
+                "}\n"
+                );
+    }
 }

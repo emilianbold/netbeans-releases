@@ -123,7 +123,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ToolsPanel.class.getName(), 1);
     //See Bug #215447
-    private static final boolean ENABLED_EDIT_HOST = false;
+    private static final boolean ENABLED_EDIT_HOST = true;
 
     /** Creates new form ToolsPanel */
     public ToolsPanel(String helpContext) {
