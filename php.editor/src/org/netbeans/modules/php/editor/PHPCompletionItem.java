@@ -560,7 +560,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     } else if (PHPTokenId.WHITESPACE.equals(id)) {
                         wasWhitespace = true;
                         continue;
-                    } else if (PHPTokenId.PHP_TOKEN.equals(id) && token.toString().equals("(")) { //NOI18N
+                    } else if (PHPTokenId.PHP_TOKEN.equals(id) && token.text().toString().equals("(")) { //NOI18N
                         return template.toString();
                     } else {
                         break;

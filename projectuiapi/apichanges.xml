@@ -119,7 +119,7 @@ is the proper place.
                     Added support class for provider of project metadata problems.
                 </p>
             </description>
-            <class package="org.netbeans.api.project.ui.support" name="ProjectProblemsProviderSupport"/>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectProblemsProviderSupport"/>
             <issue number="219313"/>
         </change>
         <change id="ProjectGroup">
