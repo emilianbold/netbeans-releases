@@ -362,12 +362,14 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 this.debugger = null;
                 this.session = null;
             }
-            requestProcessor.post(new Runnable() {
-                @Override
-                public void run() {
-                    threadsListener.changeDebugger(null);
-                }
-            });
+            if (threadsListener != null) {
+                requestProcessor.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        threadsListener.changeDebugger(null);
+                    }
+                });
+            }
         }
         SwingUtilities.invokeLater(new Runnable() {
             @Override

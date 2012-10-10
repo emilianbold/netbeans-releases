@@ -349,8 +349,8 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             Iterator<Breakpoint> it = helperComponentBreakpoints.iterator();
             while (it.hasNext()) {
                 DebuggerManager.getDebuggerManager().removeBreakpoint(it.next());
-                it.remove();
             }
+            helperComponentBreakpoints.clear();
         }
         synchronized (componentsAndStackTraces) {
             componentsAndStackTraces.remove(debugger);
