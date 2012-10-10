@@ -278,7 +278,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     }
                 } else if (id.equals(PHPTokenId.PHPDOC_COMMENT)) {
                     PHPDocCommentParser docParser = new PHPDocCommentParser();
-                    PHPDocBlock docBlock = docParser.parse(ts.offset()-3, ts.offset() + token.length(), token.toString());
+                    PHPDocBlock docBlock = docParser.parse(ts.offset()-3, ts.offset() + token.length(), token.text().toString());
                     ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docBlock, caretOffset);
                     PhpDocTypeTagInfo node = null;
                     if (hierarchy != null && hierarchy.length > 0) {
