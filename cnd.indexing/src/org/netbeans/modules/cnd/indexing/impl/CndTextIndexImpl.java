@@ -43,10 +43,12 @@ package org.netbeans.modules.cnd.indexing.impl;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -60,7 +62,7 @@ import org.openide.util.RequestProcessor;
  */
 public class CndTextIndexImpl {
     private final DocumentIndex index;
-    private final ConcurrentHashMap<String, Set<String>> unsaved = new ConcurrentHashMap<String, Set<String>>();
+    private final HashMap<String, Set<String>> unsaved = new HashMap<String, Set<String>>();
     private static final RequestProcessor RP = new RequestProcessor("Index saver", 1); //NOI18N
     private final RequestProcessor.Task storeTask = RP.create(new Runnable() {
         @Override
@@ -74,40 +76,22 @@ public class CndTextIndexImpl {
         this.index = index;
     }
 
-    public void add(String key, Collection<String> values) {
+    public void put(String key, Collection<String> values) {
         synchronized (unsaved) {
-            Set<String> set = unsaved.get(key);
-            if (set == null) {
-                set = new HashSet<String>();
-                unsaved.put(key, set);
-            }
-            set.addAll(values);
+            unsaved.put(key, new HashSet<String>(values));
         }
         storeTask.schedule(STORE_DELAY);
-    }
-
-    public void add(String key, String value) {
-        synchronized (unsaved) {
-            Set<String> set = unsaved.get(key);
-            if (set == null) {
-                set = new HashSet<String>();
-                unsaved.put(key, set);
-            }
-            set.add(value);
-        }
-        storeTask.schedule(STORE_DELAY);
-    }
-
-    public void invalidate(String key) {
     }
 
     void store() {
         synchronized (unsaved) {
+            if (unsaved.isEmpty()) {
+                return;
+            }
             long start = System.currentTimeMillis();
             for (Map.Entry<String, Set<String>> entry : unsaved.entrySet()) {
                 final String key = entry.getKey();
                 IndexDocument doc = IndexManager.createDocument(key);
-                //doc.addPair(CndTextIndexManager.FIELD_PATH, key, true, true);
                 for (String id : entry.getValue()) {
                     doc.addPair(CndTextIndexManager.FIELD_IDS, id, true, true);
                 }
@@ -119,17 +103,15 @@ public class CndTextIndexImpl {
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-            System.err.println("Index store took " + (System.currentTimeMillis() - start) + "ms");
+            Logger.getLogger(CndTextIndexImpl.class.getName()).log(Level.INFO, 
+                    "Cnd Text Index store took {0}ms", System.currentTimeMillis() - start); //NOI18N
         }
     }
 
     public Collection<String> query(String value) {
-        synchronized (unsaved) {
-            if (!unsaved.isEmpty()) {
-                store();
-            }
-        }
-        // TODO: force store
+        // force store
+        store();
+        
         try {
             Collection<? extends IndexDocument> queryRes = index.query(CndTextIndexManager.FIELD_IDS, value, Queries.QueryKind.EXACT, null);
             HashSet<String> res = new HashSet<String>(queryRes.size());

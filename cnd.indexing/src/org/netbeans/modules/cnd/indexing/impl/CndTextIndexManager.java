@@ -58,8 +58,6 @@ import org.openide.modules.OnStop;
  */
 public class CndTextIndexManager {
     public static final String FIELD_IDS = "ids"; //NOI18N
-    public static final String FIELD_PATH = "path"; //NOI18N
-    
     private static final Map<String, CndTextIndexImpl> indexMap = new HashMap<String, CndTextIndexImpl>();
     
     @OnStop
