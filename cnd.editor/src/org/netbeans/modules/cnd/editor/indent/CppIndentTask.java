@@ -495,6 +495,15 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                         } 
                                         break;
 
+                                    case LBRACKET:
+                                        indent = getTokenIndent(stmt);
+                                        if (isHalfIndentNewlineBeforeBraceLambda()) {
+                                            indent += getShiftWidth() / 2;
+                                        } else if (isFullIndentNewlineBeforeBraceLambda()) {
+                                            indent += getShiftWidth();
+                                        } 
+                                        break;
+
                                     case LBRACE:
                                         indent = getTokenIndent(stmt) + getShiftWidth();
                                         break;
@@ -568,6 +577,13 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                         if (isHalfIndentNewlineBeforeBraceSwitch()) {
                                             indent += getShiftWidth() / 2;
                                         } else if (isFullIndentNewlineBeforeBraceSwitch()) {
+                                            indent += getShiftWidth();
+                                        } 
+                                        break;
+                                    case LBRACKET:
+                                        if (isHalfIndentNewlineBeforeBraceLambda()) {
+                                            indent += getShiftWidth() / 2;
+                                        } else if (isFullIndentNewlineBeforeBraceLambda()) {
                                             indent += getShiftWidth();
                                         } 
                                         break;
@@ -758,6 +774,12 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                             case WHILE:
                                                 // Indent one level
                                                 indent = getTokenIndent(rpmt) + getRightIndent();
+                                                break;
+                                            case RBRACKET:
+                                                rpmt = findMatchingToken(t, null, CppTokenId.LBRACKET, true);
+                                                if (rpmt != null) {
+                                                    indent = getTokenIndent(rpmt) + getRightIndentLambda();
+                                                }
                                                 break;
                                             case IDENTIFIER:
                                                 if (token != null && token.getTokenID() == CppTokenId.IDENTIFIER) {

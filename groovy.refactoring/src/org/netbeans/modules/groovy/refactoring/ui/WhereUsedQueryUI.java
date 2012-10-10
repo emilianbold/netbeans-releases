@@ -47,6 +47,7 @@ import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.VariableRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -78,8 +79,15 @@ public class WhereUsedQueryUI implements RefactoringUI {
         this.query = new WhereUsedQuery(Lookups.singleton(element));
         this.query.getContext().add(GroovyProjectUtil.getClasspathInfoFor(element.getFileObject()));
         this.element = element;
-        this.name = element.getName();
+        this.name = getElementName();
         this.kind = element.getKind();
+    }
+
+    private String getElementName() {
+        if (element instanceof VariableRefactoringElement) {
+            return ((VariableRefactoringElement) element).getVariableName();
+        }
+        return element.getName();
     }
     
     @Override

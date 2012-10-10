@@ -221,14 +221,13 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         if (startFile.equals(scopeFile)) {
             return Collections.singleton(scopeFile);
         } else {
-            Collection<CsmFile> relevantFiles;
+            Collection<CsmFile> relevantFiles = new HashSet<CsmFile>();
             Collection<CsmProject> relevantPrjs = new HashSet<CsmProject>();
             CsmProject[] prjs = refactoring.getContext().lookup(CsmProject[].class);
             CsmFile declFile = CsmRefactoringUtils.getCsmFile(referencedObject);
             if (prjs == null || prjs.length == 0 || declFile == null) {
                 CsmProject prj = startFile.getProject();
                 relevantPrjs.add(prj);
-                relevantFiles = prj.getAllFiles();
             } else {
                 CsmProject declPrj = declFile.getProject();
                 for (CsmProject csmProject : prjs) {
@@ -236,10 +235,6 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
                     if (csmProject.equals(declPrj) || csmProject.getLibraries().contains(declPrj)) {
                         relevantPrjs.add(csmProject);
                     }
-                }
-                relevantFiles = new HashSet<CsmFile>();
-                for (CsmProject csmProject : relevantPrjs) {
-                    relevantFiles.addAll(csmProject.getAllFiles());
                 }
             }
             if (CndTraceFlags.TEXT_INDEX) {
@@ -263,19 +258,21 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
                     }
                     projects.add(csmProject);
                 }
-                Collection<CsmFile> filteredRelevantFiles = new HashSet<CsmFile>();
                 for (Map.Entry<FileSystem, Collection<CsmProject>> entry : relevantFilesystems.entrySet()) {
                     Collection<FSPath> files = CndTextIndex.query(entry.getKey(), name.toString());
                     for (FSPath fSPath : files) {
                         for (CsmProject csmProject : entry.getValue()) {
                             CsmFile file = csmProject.findFile(fSPath, false, false);
                             if (file != null) {
-                                filteredRelevantFiles.add(file);
+                                relevantFiles.add(file);
                             }
                         }
                     }
                 }
-                relevantFiles = filteredRelevantFiles;
+            } else {
+                for (CsmProject csmProject : relevantPrjs) {
+                    relevantFiles.addAll(csmProject.getAllFiles());
+                }
             }
             return relevantFiles;
         }

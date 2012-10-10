@@ -53,11 +53,10 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Egor Ushakov
+ * @author Egor Ushakov <gorrus@netbeans.org>
  */
 @ServiceProvider(service = APTIndexingFilterProvider.class, path=APTIndexingFilterProvider.PATH, position=1000)
 public class CndIndexingFilterProviderImpl implements APTIndexingFilterProvider {
-    //private static final RequestProcessor RP = new RequestProcessor("Lucene saver", 1); //NOI18N
     
     @Override
     public TokenStream getIndexed(FileSystem fs, CharSequence absPath, TokenStream orig) {
@@ -66,7 +65,7 @@ public class CndIndexingFilterProviderImpl implements APTIndexingFilterProvider 
     
     private static void store(final FileSystem fs, final String name, final Set<String> ids) {
         CndTextIndexImpl index = CndTextIndexManager.get(fs);
-        index.add(name, ids);
+        index.put(name, ids);
     }
     
     private static class IndexingFilter implements TokenStream {

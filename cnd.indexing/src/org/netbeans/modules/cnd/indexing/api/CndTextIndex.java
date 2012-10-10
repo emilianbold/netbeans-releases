@@ -53,7 +53,7 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Egor Ushakov
+ * @author Egor Ushakov <gorrus@netbeans.org>
  */
 public final class CndTextIndex {
     private CndTextIndex() {
