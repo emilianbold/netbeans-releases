@@ -100,6 +100,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         rubyBackground = attribs;
     }
 
+    @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         synchronized (this) {
             if (rubyBackground != null) {
@@ -121,6 +122,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
     // ----------------------------------------------------------------------
     //  TokenHierarchyListener implementation
     // ----------------------------------------------------------------------
+    @Override
     public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
         synchronized (this) {
             version++;
@@ -168,12 +170,17 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
             this.endOffset = endOffset;
         }
 
+        @Override
         public boolean moveNext() {
             synchronized (EmbeddedSectionsHighlighting.this) {
                 if (checkVersion()) {
                     if (sequence == null) {
                         sequence = scanner.tokenSequence();
-                        sequence.move(startOffset);
+                        if (sequence == null) {
+                            return false;
+                        } else {
+                            sequence.move(startOffset);
+                        }
                     }
 
                     int delimiterSize = 0;
@@ -232,6 +239,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
             }
         }
 
+        @Override
         public int getStartOffset() {
             synchronized (EmbeddedSectionsHighlighting.this) {
                 if (finished) {
@@ -243,6 +251,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
             }
         }
 
+        @Override
         public int getEndOffset() {
             synchronized (EmbeddedSectionsHighlighting.this) {
                 if (finished) {
@@ -254,6 +263,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
             }
         }
 
+        @Override
         public AttributeSet getAttributes() {
             synchronized (EmbeddedSectionsHighlighting.this) {
                 if (finished) {
@@ -272,6 +282,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
 
     public static final class Factory implements HighlightsLayerFactory {
 
+        @Override
         public HighlightsLayer[] createLayers(Context context) {
             return new HighlightsLayer[]{HighlightsLayer.create(
                         "rhtml-embedded-ruby-scriplets-highlighting-layer", //NOI18N

@@ -177,7 +177,7 @@ public class CGSInfo {
                         ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
                         if (classDecl != null) {
                             className = classDecl.getName().getName();
-                            if (info != null && className != null) {
+                            if (className != null) {
                                 FileObject fileObject = info.getSnapshot().getSource().getFileObject();
                                 Index index = ElementQueryFactory.getIndexQuery(info);
                                 final ElementFilter forFilesFilter = ElementFilter.forFiles(fileObject);
@@ -206,7 +206,7 @@ public class CGSInfo {
                             List<String> existingGetters = new ArrayList<String>();
                             List<String> existingSetters = new ArrayList<String>();
 
-                            PropertiesVisitor visitor = new PropertiesVisitor(getProperties(), existingGetters, existingSetters, Utils.getRoot(info));
+                            PropertiesVisitor visitor = new PropertiesVisitor(existingGetters, existingSetters, Utils.getRoot(info));
                             visitor.scan(classDecl);
                             String propertyName;
                             boolean existGetter, existSetter;
@@ -256,13 +256,11 @@ public class CGSInfo {
 
         private final List<String> existingGetters;
         private final List<String> existingSetters;
-        private final List<Property> properties;
         private final Program program;
 
-        public PropertiesVisitor(List<Property> properties, List<String> existingGetters, List<String> existingSetters, Program program) {
+        public PropertiesVisitor(List<String> existingGetters, List<String> existingSetters, Program program) {
             this.existingGetters = existingGetters;
             this.existingSetters = existingSetters;
-            this.properties = properties;
             this.program = program;
         }
 

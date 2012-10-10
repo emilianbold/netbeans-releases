@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;

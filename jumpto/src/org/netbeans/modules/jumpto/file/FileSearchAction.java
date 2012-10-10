@@ -95,6 +95,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -105,8 +106,10 @@ import org.netbeans.api.search.provider.SearchFilter;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
+import org.netbeans.modules.jumpto.common.Factory;
 import org.netbeans.modules.jumpto.type.GoToTypeAction;
-import org.netbeans.modules.jumpto.type.Models;
+import org.netbeans.modules.jumpto.common.Models;
+import org.netbeans.modules.jumpto.common.Pair;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
@@ -463,15 +466,14 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 });
                 return;
             }
-            final ListModel model = Models.fromList(files);
-//            if (typeFilter != null) {
-//                model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
-//            }
-//            final ListModel fmodel = model;
-//            if ( isCanceled ) {
-//                LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
-//                return;
-//            }
+            final ListModel model = Models.refreshable(
+                    Models.fromList(files),
+                    new Factory<FileDescriptor, Pair<FileDescriptor,Runnable>>() {
+                        @Override
+                        public FileDescriptor create(@NonNull final Pair<FileDescriptor,Runnable> param) {
+                            return new AsyncFileDescriptor(param.first, param.second);
+                        }
+                    });
 
             if ( !isCanceled && model != null ) {
                 LOGGER.log( Level.FINE, "Worker for text {0} finished after {1} ms.",
@@ -737,6 +739,78 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 	    }
 	    return text;
 	}
+    }
+
+    private static final class AsyncFileDescriptor extends FileDescriptor implements Runnable {
+
+        @StaticResource
+        private static final String UNKNOWN_ICON_PATH = "org/netbeans/modules/jumpto/resources/unknown.gif";    //NOI18N
+        private static final Icon UNKNOWN_ICON = ImageUtilities.loadImageIcon(UNKNOWN_ICON_PATH, false);
+        private static final RequestProcessor LOAD_ICON_RP = new RequestProcessor(AsyncFileDescriptor.class.getName(), 1, false, false);
+
+        private final FileDescriptor delegate;
+        private final Runnable refreshCallback;
+        private volatile Icon icon;
+
+        AsyncFileDescriptor(
+            @NonNull final FileDescriptor delegate,
+            @NonNull final Runnable refreshCallback) {
+            Parameters.notNull("delegate", delegate);   //NOI18N
+            Parameters.notNull("refreshCallback", refreshCallback); //NOI18N
+            this.delegate = delegate;
+            this.refreshCallback = refreshCallback;
+        }
+
+        @Override
+        public String getFileName() {
+           return delegate.getFileName();
+        }
+
+        @Override
+        public String getOwnerPath() {
+            return delegate.getOwnerPath();
+        }
+
+        @Override
+        public Icon getIcon() {
+            if (icon != null) {
+                return icon;
+            }
+            LOAD_ICON_RP.execute(this);
+            return UNKNOWN_ICON;
+        }
+
+        @Override
+        public String getProjectName() {
+            return delegate.getProjectName();
+        }
+
+        @Override
+        public Icon getProjectIcon() {
+            return delegate.getProjectIcon();
+        }
+
+        @Override
+        public void open() {
+            delegate.open();
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return delegate.getFileObject();
+        }
+
+        @Override
+        public void run() {
+            icon = delegate.getIcon();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    refreshCallback.run();
+                }
+            });
+        }
+
     }
 
     public static class Renderer extends EntitiesListCellRenderer implements ActionListener, DocumentListener {

@@ -42,12 +42,12 @@
 package org.netbeans.modules.nativeexecution.api.pty;
 
 import java.io.IOException;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.PtyNativeProcess;
+import org.netbeans.modules.nativeexecution.ExProcessInfoProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
@@ -79,11 +79,11 @@ public final class PtySupport {
      * if ptocess was started in non-pty mode.
      */
     public static String getTTY(NativeProcess process) {
-        if (!(process instanceof PtyNativeProcess)) {
-            return null;
+        if (process instanceof ExProcessInfoProvider) {
+            return ((ExProcessInfoProvider) process).getTTY();
         }
 
-        return ((PtyNativeProcess) process).getTTY();
+        return null;
     }
 
     /**
@@ -138,6 +138,19 @@ public final class PtySupport {
         SttySupport.apply(exEnv, tty, "-echo"); //NOI18N
     }
 
+    /**
+     * Sets 'erase' key of a terminal to ^H.
+     *
+     * There are some bugs in Solaris (7009510, 7045666, 7164170) that make this
+     * approach unreliable. So it is better not to use it.
+     *
+     * (it is recommended not to use stty utility for controlling any terminal
+     * other than the one in which it is running in.)
+     *
+     * There is an option in pty utility - --set-erase-key that could be used to
+     * achieve needed effect.
+     */
+    @Deprecated
     public static void setBackspaceAsEraseChar(ExecutionEnvironment exEnv, String tty) {
         SttySupport.apply(exEnv, tty, "erase \\^H"); // NOI18N
     }

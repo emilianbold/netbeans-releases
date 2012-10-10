@@ -31,13 +31,19 @@
 package org.netbeans.modules.html.editor.gsf.embedding;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.html.editor.test.TestBase;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.filesystems.FileObject;
 
@@ -59,6 +65,29 @@ public class CssEmbeddingProviderTest extends TestBase {
         checkVirtualSource("testfiles/embedding/testIssue174241.html");
         checkVirtualSource("testfiles/embedding/testIssue174241_1.html");
     }
+    
+    public void testIssue215267() throws Exception {
+        checkVirtualSource("testfiles/embedding/issue215267.html");
+    }
+    
+    public void testIssue215267_css_embedding_at_offset() throws Exception {
+        FileObject fo = getTestFile("testfiles/embedding/issue215267.html");
+        assertNotNull(fo);
+
+        Source source = Source.create(fo);
+        assertNotNull(source);
+        
+        final int caret = 147;
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                Result parserResult = resultIterator.getParserResult(caret);
+                assert parserResult instanceof CssCslParserResult;
+            }
+        });
+        
+    }
 
     private void checkVirtualSource(String file) throws Exception {
         FileObject fo = getTestFile(file);
@@ -69,7 +98,6 @@ public class CssEmbeddingProviderTest extends TestBase {
 
         Snapshot snapshot = source.createSnapshot();
         assertNotNull(snapshot);
-
 
         CssEmbeddingProvider provider = new CssEmbeddingProvider();
 

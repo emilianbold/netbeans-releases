@@ -99,7 +99,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author  Jan Jancura
  */
-@OptionsPanelController.Keywords(keywords={"syntax coloring"}, location=OptionsDisplayer.FONTSANDCOLORS, index=0)
+@OptionsPanelController.Keywords(keywords={"syntax coloring"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "Syntax")
 public class SyntaxColoringPanel extends JPanel implements ActionListener, 
     PropertyChangeListener, FontsColorsController, ItemListener {
     

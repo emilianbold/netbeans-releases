@@ -267,4 +267,10 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("div { background: |; }", arr("red"), Match.CONTAINS);
     }
     
+    //Bug 217457 - Broken code completion inside identifier for values
+    public void test217457() throws ParseException, BadLocationException {
+        checkCC("div { transform: sca|leZ ; }", arr("scaleZ"), Match.CONTAINS);
+        checkCC("div { transform: sca|leZ(0.3); }", arr("scaleZ"), Match.CONTAINS);
+    }
+    
 }

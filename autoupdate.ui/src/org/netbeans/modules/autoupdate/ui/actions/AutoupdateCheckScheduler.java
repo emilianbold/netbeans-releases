@@ -501,6 +501,10 @@ public class AutoupdateCheckScheduler {
     public static void notifyAvailable (final Collection<LazyUnit> units, final OperationType type) {
 
         if (units == null || units.isEmpty ()) {
+            if (updatesNotification != null) {
+                updatesNotification.clear();
+                updatesNotification = null;
+            }
             return ;
         }
         

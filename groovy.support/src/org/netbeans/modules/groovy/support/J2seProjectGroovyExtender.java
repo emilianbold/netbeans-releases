@@ -70,7 +70,12 @@ import org.openide.util.MutexException;
  *
  * @author Martin Janicek
  */
-@ProjectServiceProvider(service = GroovyExtender.class, projectType="org-netbeans-modules-java-j2seproject")
+@ProjectServiceProvider(
+    service =
+        GroovyExtender.class,
+    projectType =
+        "org-netbeans-modules-java-j2seproject"
+)
 public class J2seProjectGroovyExtender implements GroovyExtender {
 
     private static final String EXTENSIBLE_TARGET_NAME = "-pre-pre-compile"; // NOI18N

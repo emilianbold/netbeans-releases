@@ -240,7 +240,7 @@ final class CreateFilesWorker {
                 ModelSupport.trace(nativeFileItem);
             }
             try {
-                FileImpl fileImpl = project.createIfNeed(nativeFileItem, sources, CreateFilesWorker.this.getLWM(), validator, reparseOnEdit, reparseOnPropertyChanged);
+                FileImpl fileImpl = project.createIfNeed(nativeFileItem, CreateFilesWorker.this.getLWM(), validator, reparseOnEdit, reparseOnPropertyChanged);
                 this.handledFiles.add(UIDCsmConverter.fileToUID(fileImpl));
                 if (project.isValidating() && RepositoryUtils.getRepositoryErrorCount(project) > 0) {
                     failureDetected.set(true);

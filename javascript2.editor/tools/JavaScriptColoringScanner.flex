@@ -184,6 +184,7 @@ WhiteSpace = [ \t\f\u00A0\u000B]+
 
 /* comments */
 TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
+ShebangComment = "#!" {InputCharacter}*
 EndOfLineComment = "//" {InputCharacter}*
 DocumentationComment = "/*" "*"+ [^/*] ~"*/"
 
@@ -221,6 +222,7 @@ RegexpClass = "["([^\x5d\r\n\\] | {RegexpBackslashSequence})*"]"
 RegexpCharacter = [^\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClass}
 RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClass}
 
+%state INITIAL
 %state STRING
 %state STRINGEND
 %state SSTRING
@@ -233,6 +235,17 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 %%
 
 <YYINITIAL> {
+  {ShebangComment}               {
+                                   yybegin(LCOMMENTEND);
+                                   return JsTokenId.LINE_COMMENT;
+                                 }
+  .|\n                           {
+                                   yypushback(1);
+                                   yybegin(INITIAL);
+                                 }
+}
+
+<INITIAL> {
 
   /* keywords 7.6.1.1 */
   "break"                        { return JsTokenId.KEYWORD_BREAK; }
@@ -424,7 +437,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   \\.                            { }
   {LineTerminator}               {
                                      yypushback(1);
-                                     yybegin(YYINITIAL);
+                                     yybegin(INITIAL);
                                      if (tokenLength - 1 > 0) {
                                          return getErrorToken();
                                      }
@@ -433,7 +446,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 
 <STRINGEND> {
   \"                             {
-                                     yybegin(YYINITIAL);
+                                     yybegin(INITIAL);
                                      return JsTokenId.STRING_END;
                                  }
 }
@@ -456,7 +469,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   \\.                            { }
   {LineTerminator}               {
                                      yypushback(1);
-                                     yybegin(YYINITIAL);
+                                     yybegin(INITIAL);
                                      if (tokenLength -1 > 0) {
                                          return getErrorToken();
                                      }
@@ -465,7 +478,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 
 <SSTRINGEND> {
   \'                             {
-                                     yybegin(YYINITIAL);
+                                     yybegin(INITIAL);
                                      return JsTokenId.STRING_END;
                                  }
 }
@@ -487,7 +500,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 
 <REGEXPEND> {
   "/"{IdentifierPart}*           {
-                                     yybegin(YYINITIAL);
+                                     yybegin(INITIAL);
                                      return JsTokenId.REGEXP_END;
                                  }
   .                              {
@@ -498,7 +511,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 <ERROR> {
   .*{LineTerminator}             {
                                      yypushback(1);
-                                     yybegin(YYINITIAL);
+                                     yybegin(INITIAL);
                                      if (tokenLength - 1 > 0) {
                                          return getErrorToken();
                                      }
@@ -507,7 +520,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 
 <LCOMMENTEND> {
   {LineTerminator}?              {
-                                     yybegin(YYINITIAL);
+                                     yybegin(INITIAL);
                                      if (tokenLength > 0) {
                                          return JsTokenId.EOL;
                                      }

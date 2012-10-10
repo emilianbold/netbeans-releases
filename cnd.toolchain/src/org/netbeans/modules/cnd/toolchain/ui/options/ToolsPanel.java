@@ -96,7 +96,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /** Display the "Tools Default" panel */
-@OptionsPanelController.Keywords(keywords={"c/c++ build tools"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, index=0)
+@OptionsPanelController.Keywords(keywords={"#ToolsPanelKeywords"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, tabTitle= "#TAB_ToolsTab")
 public final class ToolsPanel extends JPanel implements ActionListener,
         ListSelectionListener, ItemListener {
 

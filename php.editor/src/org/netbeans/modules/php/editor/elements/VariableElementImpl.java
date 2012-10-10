@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
@@ -150,12 +151,13 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
 
     public static VariableElement fromFrameworks(final PhpVariable variable, final ElementQuery elementQuery) {
         Parameters.notNull("variable", variable);
-        Set<TypeResolver> typeResolvers = variable.getType() == null
+        PhpClass variableType = variable.getType();
+        Set<TypeResolver> typeResolvers = variableType == null
                     ? Collections.<TypeResolver>emptySet()
-                    : Collections.<TypeResolver>singleton(new TypeResolverImpl(variable.getType().getFullyQualifiedName()));
+                    : Collections.<TypeResolver>singleton(new TypeResolverImpl(variableType.getFullyQualifiedName()));
         VariableElementImpl retval = new VariableElementImpl(variable.getName(), variable.getOffset(), null, elementQuery,
                 typeResolvers, typeResolvers);
-        retval.fileObject = variable.getFile();
+        retval.setFileObject(variable.getFile());
         return retval;
     }
 
@@ -180,10 +182,10 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
         final String varName = getName();
-        sb.append(varName.toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(varName).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getOffset()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(varName.toLowerCase()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(varName).append(Separator.SEMICOLON);//NOI18N
+        sb.append(Separator.SEMICOLON);//NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON);//NOI18N
         checkSignature(sb);
         return sb.toString();
     }

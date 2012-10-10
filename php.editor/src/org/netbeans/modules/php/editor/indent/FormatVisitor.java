@@ -1140,7 +1140,7 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(SwitchStatement node) {
         scan(node.getExpression());
-        if (node.getBody() != null && (node.getBody() instanceof Block && !((Block) node.getBody()).isCurly())) {
+        if (node.getBody() != null && !((Block) node.getBody()).isCurly()) {
             addAllUntilOffset(node.getBody().getStartOffset());
             formatTokens.add(new FormatToken.IndentToken(node.getBody().getStartOffset(), options.indentSize));
 
@@ -1363,16 +1363,16 @@ public class FormatVisitor extends DefaultVisitor {
                 String part1 = text.substring(0, text.indexOf('(') + 1);
                 String part2 = text.substring(part1.length(), text.indexOf(')'));
                 String part3 = text.substring(part1.length() + part2.length());
-                String ws1 = "";
-                String ws2 = "";
+                StringBuilder ws1 = new StringBuilder();
+                StringBuilder ws2 = new StringBuilder();
                 int index = 0;
                 while (index < part2.length() && part2.charAt(index) == ' ') {
-                    ws1 = ws1 + ' ';
+                    ws1.append(' ');
                     index++;
                 }
                 index = part2.length() - 1;
                 while (index > 0 && part2.charAt(index) == ' ') {
-                    ws2 = ws2 + ' ';
+                    ws2.append(' ');
                     index--;
                 }
                 part2 = part2.trim();
@@ -1381,13 +1381,13 @@ public class FormatVisitor extends DefaultVisitor {
                 length += part1.length();
                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_TYPE_CAST_PARENS, ts.offset() + part1.length()));
                 if (ws1.length() > 0) {
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + length, ws1));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + length, ws1.toString()));
                     length += ws1.length();
                 }
                 tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset() + length, part2));
                 length += part2.length();
                 if (ws2.length() > 0) {
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + length, ws2));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + length, ws2.toString()));
                     length += ws2.length();
                 }
                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_TYPE_CAST_PARENS, ts.offset() + length));
@@ -1592,13 +1592,9 @@ public class FormatVisitor extends DefaultVisitor {
             int tokenEndOffset = tokenStartOffset + ts.token().length();
             if (GsfUtilities.isCodeTemplateEditing(document) && caretOffset > tokenStartOffset && caretOffset < tokenEndOffset && tokenStartOffset > startOffset && tokenEndOffset < endOffset) {
                 int devideIndex = caretOffset - tokenStartOffset;
-                if (tokenText == null) {
-                    result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, tokenText));
-                } else {
-                    String firstTextPart = tokenText.substring(0, devideIndex);
-                    result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, firstTextPart));
-                    result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset + firstTextPart.length(), tokenText.substring(devideIndex)));
-                }
+                String firstTextPart = tokenText.substring(0, devideIndex);
+                result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, firstTextPart));
+                result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset + firstTextPart.length(), tokenText.substring(devideIndex)));
             } else {
                 result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, tokenText));
             }

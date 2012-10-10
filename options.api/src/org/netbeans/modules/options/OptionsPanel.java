@@ -415,66 +415,19 @@ public class OptionsPanel extends JPanel {
         }
 
         FileObject keywordsFOs = FileUtil.getConfigRoot().getFileObject(CategoryModel.OD_LAYER_KEYWORDS_FOLDER_NAME);
-        
-        for(FileObject keywordsFO : keywordsFOs.getChildren()) {
-            String location = keywordsFO.getAttribute("location").toString(); //NOI18N
-            if (location.equals(OptionsDisplayer.ADVANCED)) {
-                String id = keywordsFO.getAttribute("tabTitle").toString(); //NOI18N
-                if(dublicateKeywordsFOs.containsKey(id)) {
-                    int value = dublicateKeywordsFOs.get(id);
-                    value++;
-                    dublicateKeywordsFOs.put(id, value);
-                } else {
-                    dublicateKeywordsFOs.put(id, 0);
-                }
-                advancedFOs.add(keywordsFO);
-            }
-        }
-        Collections.sort(advancedFOs, new AdvancedComparable());
 
-        for (int i = 0; i < advancedFOs.size(); i++) {
-            FileObject fo = advancedFOs.get(i);
-            fo2index.put(fo, i);
-        }
-        for (int i = 0; i < advancedFOs.size(); i++) {
-            FileObject fo = advancedFOs.get(i);
-            String id = fo.getAttribute("tabTitle").toString(); //NOI18N
-            int val = dublicateKeywordsFOs.get(id);
-            if(val != 0) {
-                fo2index.put(fo, fo2index.get(fo));
-                for (int j = i + 1; j <= i + val; j++) {
-                    FileObject fo2 = advancedFOs.get(j);
-                    fo2index.put(fo2, fo2index.get(fo));
-                }
-                for (int j = i + val + 1; j < advancedFOs.size(); j++) {
-                    FileObject fo2 = advancedFOs.get(j);
-                    fo2index.put(fo2, fo2index.get(fo2) - val);
-                }
-                i = i + val;
-            }
-        }
         for(FileObject keywordsFO : keywordsFOs.getChildren()) {
             handlePanel(keywordsFO);
         }
     }
 
-    private class AdvancedComparable implements Comparator<FileObject> {
-
-        @Override
-        public int compare(FileObject r1, FileObject r2) {
-            return r1.getAttribute("tabTitle").toString().compareTo(r2.getAttribute("tabTitle").toString()); //NOI18N
-        }
-    }
-
     private void handlePanel(FileObject keywordsFO) {
         String location = keywordsFO.getAttribute("location").toString(); //NOI18N
-        int tabIndex = (Integer) keywordsFO.getAttribute("index"); //NOI18N
+        String tabTitle = keywordsFO.getAttribute("tabTitle").toString(); //NOI18N
+        JTabbedPane pane = categoryid2tabbedpane.get(location);
+        int tabIndex = pane == null ? -1 : pane.indexOfTab(tabTitle);
 
-        if (location.equals(OptionsDisplayer.ADVANCED)) {
-            tabIndex = fo2index.get(keywordsFO);
-        }
-
-        ArrayList<String> keywords = new ArrayList<String>();
+        Set<String> keywords = new HashSet<String>();
         keywords.addAll(Arrays.asList(keywordsFO.getAttribute("keywords").toString().split(","))); //NOI18N
 
         ArrayList<String> words = categoryid2words.get(location);
@@ -502,7 +455,7 @@ public class OptionsPanel extends JPanel {
         } else {
             tabInfo = categoryTabs.get(tabIndex);
         }
-        tabInfo.addWords(newWords);
+        tabInfo.addWords(keywords);
         categoryTabs.put(tabIndex, tabInfo);
         categoryid2tabs.put(location, categoryTabs);
      }
@@ -677,7 +630,6 @@ public class OptionsPanel extends JPanel {
                 for (int i = 0; i < pane.getTabCount(); i++) {
                     pane.setEnabledAt(i, false);
                 }
-                pane.setSelectedIndex(-1);
             }
             buttons.get(id).setEnabled(false);
             if (disabledCategories.size() == buttons.size()) {

@@ -265,7 +265,6 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
     }
 
     private static void insertMatchingSection(List<Integer> result, TplParserResult.Section section, int[] delimLengths) {
-        // XXX - keep in mind custom delimiters
         OffsetRange offset = section.getOffset();
         result.add(offset.getStart() - delimLengths[0]);
         result.add(offset.getStart() + section.getFunctionNameLength());
@@ -291,7 +290,6 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
      * such block was found
      */
     private static TplParserResult.Block getBlockForOffset(TplParserResult parserResult, int offset, boolean backwardSearching, int[] delimLengths) {
-        // XXX - should think about the custom delimiters later
         Block lastBlock = null;
         int previousBlockOffset = -1;
         for (TplParserResult.Block block : parserResult.getBlocks()) {

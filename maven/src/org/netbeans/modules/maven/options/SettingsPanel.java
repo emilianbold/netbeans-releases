@@ -87,7 +87,7 @@ import org.openide.util.NbBundle.Messages;
  * are written to the settings file, some into the Netbeans settings..
  * @author  mkleint
  */
-@OptionsPanelController.Keywords(keywords={"maven"}, location=JavaOptions.JAVA, index=5)
+@OptionsPanelController.Keywords(keywords={"maven"}, location=JavaOptions.JAVA, tabTitle= "#TIT_Maven_Category")
 public class SettingsPanel extends javax.swing.JPanel {
     private static final String SEPARATOR = "SEPARATOR";
     private static final String BUNDLED_RUNTIME_VERSION =

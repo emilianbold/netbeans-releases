@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.php.smarty.editor;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.openide.util.Parameters;
 
 /**
@@ -59,7 +59,7 @@ public class TplSyntax {
     /**
      * List of all tags which introduce block of code.
      */
-    public static final List<String> BLOCK_TAGS = new ArrayList<String>(Arrays.asList(
+    public static final Set<String> BLOCK_TAGS = new HashSet<String>(Arrays.asList(
             "block", //NOI18N
             "capture", //NOI18N
             "for", //NOI18N
@@ -76,7 +76,7 @@ public class TplSyntax {
     /**
      * List of all tags which are else-typed.
      */
-    public static final List<String> ELSE_TAGS = new ArrayList<String>(Arrays.asList(
+    public static final Set<String> ELSE_TAGS = new HashSet<String>(Arrays.asList(
             "foreachelse", //NOI18N
             "elseif", //NOI18N
             "else", //NOI18N
@@ -84,11 +84,11 @@ public class TplSyntax {
     /**
      * Mapping of non-else tag to else-like tags. To every else tag must correspond at least one normal tag.
      */
-    public static final HashMap<String, ArrayList<String>> RELATED_TAGS = new HashMap<String, ArrayList<String>>() {
+    public static final Map<String, Set<String>> RELATED_TAGS = new HashMap<String, Set<String>>() {
         {
-            put("if", new ArrayList<String>(Arrays.asList("else", "elseif"))); //NOI18N
-            put("foreach", new ArrayList<String>(Arrays.asList("foreachelse"))); //NOI18N
-            put("section", new ArrayList<String>(Arrays.asList("sectionelse"))); //NOI18N
+            put("if", new HashSet<String>(Arrays.asList("else", "elseif"))); //NOI18N
+            put("foreach", new HashSet<String>(Arrays.asList("foreachelse"))); //NOI18N
+            put("section", new HashSet<String>(Arrays.asList("sectionelse"))); //NOI18N
         }
     };
 
@@ -146,7 +146,7 @@ public class TplSyntax {
                 return startTag;
             }
         } else if (isElseSmartyCommand(tag)) {
-            for (Map.Entry<String, ArrayList<String>> entry : RELATED_TAGS.entrySet()) {
+            for (Map.Entry<String, Set<String>> entry : RELATED_TAGS.entrySet()) {
                 if (entry.getValue().contains(tag)) {
                     return entry.getKey();
                 }

@@ -57,6 +57,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.modules.autoupdate.ui.Utilities;
+import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -143,11 +144,11 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
     public void storeSettings (WizardDescriptor wd) {
         if (WizardDescriptor.NEXT_OPTION.equals (wd.getValue ())) {
             model.addApprovedLicenses (panel.getLicenses ());
-            Utilities.addAcceptedLicenseIDs(panel.getLicenseIds());
             Installer.RP.post(new Runnable() {
 
                 @Override
                 public void run() {
+                    Utilities.addAcceptedLicenseIDs(panel.getLicenseIds());
                     Utilities.storeAcceptedLicenseIDs();
                 }
             });
@@ -159,6 +160,7 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
                 if (lazyLoadingTask != null && ! lazyLoadingTask.isFinished ()) {
                     lazyLoadingTask.cancel ();
                 }
+                AutoupdateCheckScheduler.notifyAvailable(LazyInstallUnitWizardIterator.LazyUnit.loadLazyUnits (model.getOperation()), model.getOperation());
                 model.doCleanup (true);
             } catch (OperationException x) {
                 Logger.getLogger (InstallUnitWizardModel.class.getName ()).log (Level.INFO, x.getMessage (), x);

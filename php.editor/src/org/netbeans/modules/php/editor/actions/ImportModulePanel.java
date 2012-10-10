@@ -63,7 +63,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -83,18 +82,14 @@ import org.openide.util.NbBundle;
  */
 public class ImportModulePanel extends javax.swing.JPanel {
 
-    private final String ident;
     private ParserResult info;
     private DefaultListModel model;
     private final int position;
 
     /** Creates new form ImportClassPanel */
     @SuppressWarnings("deprecation")
-    public ImportModulePanel(String ident, List</*TypeElement*/String> priviledged,
+    public ImportModulePanel(List</*TypeElement*/String> priviledged,
             List</*TypeElement*/String> denied, Font font, ParserResult info, int position) {
-        this.ident = ident;
-        // System.err.println("priviledged=" + priviledged);
-        // System.err.println("denied=" + denied);
         this.info = info;
         this.position = position;
         createModel(priviledged, denied);
@@ -286,11 +281,13 @@ public class ImportModulePanel extends javax.swing.JPanel {
         BaseDocument document = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         if (!importInPreviousLine) {
             TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(document, position);
-            ts.move(position);
-            while (ts.movePrevious()) {
-                Token<PHPTokenId> token = ts.token();
-                if (token.id().equals(PHPTokenId.PHP_OPENTAG)) {
-                    basePosition = ts.offset();
+            if (ts != null) {
+                ts.move(position);
+                while (ts.movePrevious()) {
+                    Token<PHPTokenId> token = ts.token();
+                    if (token.id().equals(PHPTokenId.PHP_OPENTAG)) {
+                        basePosition = ts.offset();
+                    }
                 }
             }
         }
@@ -316,8 +313,7 @@ public class ImportModulePanel extends javax.swing.JPanel {
 
     private static class Renderer extends DefaultListCellRenderer {
 
-        private static int DARKER_COLOR_COMPONENT = 5;
-        private static int LIGHTER_COLOR_COMPONENT = DARKER_COLOR_COMPONENT;
+        private static final int DARKER_COLOR_COMPONENT = 5;
         private Color denidedColor = new Color(0x80, 0x80, 0x80);
         private Color fgColor;
         private Color bgColor;
@@ -373,19 +369,39 @@ public class ImportModulePanel extends javax.swing.JPanel {
     private static class TypeDescription implements Comparable<TypeDescription> {
 
         private boolean isDenied;
-        private final ElementKind kind;
         private final String qualifiedName;
 
         public TypeDescription(String typeElement, boolean isDenied) {
             this.isDenied = isDenied;
-            //this.kind = typeElement.getKind();
-            //this.qualifiedName = typeElement.getQualifiedName().toString();
-            this.kind = ElementKind.MODULE;
             this.qualifiedName = typeElement;
         }
 
-        public int compareTo(TypeDescription o) {
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            return hash;
+        }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final TypeDescription other = (TypeDescription) obj;
+            if (this.isDenied != other.isDenied) {
+                return false;
+            }
+            if ((this.qualifiedName == null) ? (other.qualifiedName != null) : !this.qualifiedName.equals(other.qualifiedName)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int compareTo(TypeDescription o) {
             if (isDenied && !o.isDenied) {
                 return 1;
             } else if (!isDenied && o.isDenied) {

@@ -64,6 +64,7 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
 
     private static final Logger LOGGER = Logger.getLogger(PHP5ErrorHandler.class.getName());
 
+    @org.netbeans.api.annotations.common.SuppressWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
     public static class SyntaxError {
         private final short[] expectedTokens;
         private final Symbol currentToken;

@@ -166,6 +166,8 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             case 4:
                 value = WhereUsedPanel.this.customScope;
                 break;
+            default:
+                return null;
         }
         return value;
     }
@@ -206,11 +208,14 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         final FileObject fo = element.getFileObject();
         final String packageName = element.getDeclaringClassNameWithoutPackage();
         final Project p = FileOwnerQuery.getOwner(fo);
+        final ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
 
-        if(packageName == null) {
-            packageFolder = ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo);
-        } else {
-            packageFolder = ClassPath.getClassPath(fo, ClassPath.SOURCE).findResource(packageName.replaceAll("\\.", "/")); //NOI18N
+        if (classPath != null) {
+            if(packageName == null) {
+                packageFolder = classPath.findOwnerRoot(fo);
+            } else {
+                packageFolder = classPath.findResource(packageName.replaceAll("\\.", "/")); //NOI18N
+            }
         }
 
         final JLabel customScope;

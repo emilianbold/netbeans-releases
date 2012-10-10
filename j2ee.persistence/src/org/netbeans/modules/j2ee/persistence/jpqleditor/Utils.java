@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.j2ee.persistence.jpqleditor;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +51,9 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
@@ -57,6 +61,7 @@ import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -104,46 +109,65 @@ public class Utils {
         final Provider provider = ProviderUtil.getProvider(pu.getProvider(), pe.getProject());
         ArrayList<String> problems = new ArrayList<String>();
         // Construct custom classpath here.
-        localResourcesURLList.addAll(pe.getProjectClassPath(pe.getLocation()));
-        localResourcesURLList.add(pe.getLocation().getParent().toURL());
-        localResourcesURLList.add(pe.getLocation().toURL());
-        localResourcesURLList.add(pe.getLocation().getFileObject("persistence.xml").toURL());
-        ClassPath cp = ClassPath.getClassPath(pe.getLocation(), ClassPath.EXECUTE);
-        if (cp == null) {
-            cp = ClassPath.getClassPath(pe.getLocation(), ClassPath.COMPILE);
-        }
-        if (containerManaged) {
-            String providerClassName = provider.getProviderClass();
-            String resourceName = providerClassName.replace('.', '/') + ".class"; // NOI18N
-            if (cp != null) {
-                FileObject fob = cp.findResource(resourceName); // NOI18N
-                if (fob == null) {
-                    Library library = PersistenceLibrarySupport.getLibrary(provider);
-                    if (library != null) {
-                        localResourcesURLList.addAll(library.getContent("classpath"));//NOI18N
-                    } else {
-                        problems.add(NbBundle.getMessage(Utils.class, "ProviderAbsent"));//NOI18N
-                    }
+        List<URL> projectURLs = pe.getProjectClassPath(pe.getLocation());
+        int sources_count = 0;
+        for(URL url:projectURLs) {
+            if("file".equals(url.getProtocol())) {
+                if((new java.io.File(url.getFile())).exists()) {
+                    sources_count++;
+                    break;
                 }
             }
         }
-        if (dbconn != null) {
-            ////autoadd driver classpath
-            String driverClassName = dbconn.getDriverClass();
-            String resourceName = driverClassName.replace('.', '/') + ".class"; // NOI18N
-            if (cp != null) {
-                FileObject fob = cp.findResource(resourceName); // NOI18N
-                if (fob == null) {
-                    JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(driverClassName);
-                    if (driver != null && driver.length > 0) {
-                        localResourcesURLList.addAll(Arrays.asList(driver[0].getURLs()));
-                    } else {
-                        problems.add(NbBundle.getMessage(Utils.class, "DriverAbsent"));//NOI18N
-                    }
-                }
-            }
+        if(sources_count == 0) {
+            //we have no valid classpath entries from a project, it may be because it wasn't build at least once
+            problems.add(NbBundle.getMessage(Utils.class, "NoValidClasspath"));//NOI18N
+            //no need to continue in this case
         } else {
-            problems.add(NbBundle.getMessage(Utils.class, "DatabaseConnectionAbsent"));//NOI18N
+            localResourcesURLList.addAll(projectURLs);
+            localResourcesURLList.add(pe.getLocation().getParent().toURL());
+            localResourcesURLList.add(pe.getLocation().toURL());
+            localResourcesURLList.add(pe.getLocation().getFileObject("persistence.xml").toURL());
+            SourceGroup[] sgs = ProjectUtils.getSources(pe.getProject()).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            FileObject sourceRoot = sgs[0].getRootFolder();
+            ClassPathProvider cpProv = pe.getProject().getLookup().lookup(ClassPathProvider.class);
+            ClassPath cp = cpProv.findClassPath(sourceRoot, ClassPath.EXECUTE);
+            if(cp == null){
+                cp = cpProv.findClassPath(sourceRoot, ClassPath.COMPILE);
+            }
+            if (containerManaged) {
+                String providerClassName = provider.getProviderClass();
+                String resourceName = providerClassName.replace('.', '/') + ".class"; // NOI18N
+                if (cp != null) {
+                    FileObject fob = cp.findResource(resourceName); // NOI18N
+                    if (fob == null) {
+                        Library library = PersistenceLibrarySupport.getLibrary(provider);
+                        if (library != null) {
+                            localResourcesURLList.addAll(library.getContent("classpath"));//NOI18N
+                        } else {
+                            problems.add(NbBundle.getMessage(Utils.class, "ProviderAbsent"));//NOI18N
+                        }
+                    }
+                }
+            }
+            if (dbconn != null) {
+                ////autoadd driver classpath
+                String driverClassName = dbconn.getDriverClass();
+                String resourceName = driverClassName.replace('.', '/') + ".class"; // NOI18N
+                if (cp != null) {
+                    FileObject fob = cp.findResource(resourceName); // NOI18N
+                    if (fob == null) {
+                        JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(driverClassName);
+                        if (driver != null && driver.length > 0) {
+                            localResourcesURLList.addAll(Arrays.asList(driver[0].getURLs()));
+                        } else {
+                            problems.add(NbBundle.getMessage(Utils.class, "DriverAbsent"));//NOI18N
+                        }
+                    }
+                }
+            } else {
+                problems.add(NbBundle.getMessage(Utils.class, "DatabaseConnectionAbsent"));//NOI18N
+            }
         }
         return problems;
     }

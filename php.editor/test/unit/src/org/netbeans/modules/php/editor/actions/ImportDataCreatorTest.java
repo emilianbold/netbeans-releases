@@ -100,6 +100,7 @@ public class ImportDataCreatorTest extends PHPCodeCompletionTestBase {
     }
 
     public void testImportData_04() throws Exception {
+        // see issue #219548
         performTest("Homepage^Presenter");
     }
 
@@ -116,6 +117,7 @@ public class ImportDataCreatorTest extends PHPCodeCompletionTestBase {
     }
 
     public void testImportData_08() throws Exception {
+        // see issue #219548
         performTest("class ^Blah");
     }
 

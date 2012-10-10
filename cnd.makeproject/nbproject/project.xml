@@ -345,6 +345,7 @@
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
                 <friend>com.microchip.mplab.nbide.emcee</friend>
                 <friend>com.microchip.mplab.nbide.toolchains</friend>
+                <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>

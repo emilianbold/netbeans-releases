@@ -5221,4 +5221,115 @@ public class FormatterTestCase extends EditorBase {
                 "}\n"
                 );
     }
+    
+    public void test219414() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        setLoadDocumentText(
+                "int foo() {\n" +
+                "    result = ::std::accumulate(::std::begin(x), ::std::end(x), 0.0,\n" +
+                "             [&m](Double a, Double x) -> Double\n" +
+                "       {\n" +
+                "             return a+ (x - m) * (x - m);\n" +
+                "       });\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect < lambda formatting",
+                "int foo() {\n" +
+                "    result = ::std::accumulate(::std::begin(x), ::std::end(x), 0.0,\n" +
+                "                               [&m](Double a, Double x) -> Double\n" +
+                "                               {\n" +
+                "                                   return a + (x - m) * (x - m);\n" +
+                "                               });\n" +
+                "}\n"
+                );
+    }
+    
+    public void test219414_2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        setLoadDocumentText(
+                "int foo() {\n" +
+                "  [] () {\n" +
+                "      return 1;\n" +
+                "  }\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect < lambda formatting",
+                "int foo() {\n" +
+                "    [] () {\n" +
+                "        return 1;\n" +
+                "    }\n" +
+                "}\n"
+                );
+    }
+    
+    public void test219414_3() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        setLoadDocumentText(
+                "int foo() {\n" +
+                "  [] {\n" +
+                "      cout << \"Hello, my Greek friends\";\n" +
+                "  } ();\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect < lambda formatting",
+                "int foo() {\n" +
+                "    [] {\n" +
+                "        cout << \"Hello, my Greek friends\";\n" +
+                "    } ();\n" +
+                "}\n"
+                );
+    }
+
+    public void test219414_4() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        setLoadDocumentText(
+                "int foo() {\n" +
+                "auto a = [&] {\n" +
+                "static int i = 0;\n" +
+                "i++;\n" +
+                "td::cout << i << std::endl;\n" +
+                "if (i < 10)\n" +
+                "    a(); //recursive call\n" +
+                "  };\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect < lambda formatting",
+                "int foo() {\n" +
+                "    auto a = [&] {\n" +
+                "        static int i = 0;\n" +
+                "        i++;\n" +
+                "        td::cout << i << std::endl;\n" +
+                "        if (i < 10)\n" +
+                "            a(); //recursive call\n" +
+                "    };\n" +
+                "}\n"
+                );
+    }
 }

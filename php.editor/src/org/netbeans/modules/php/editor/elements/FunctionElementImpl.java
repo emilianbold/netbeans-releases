@@ -130,8 +130,8 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getName()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(getName()).append(Separator.SEMICOLON);//NOI18N
         sb.append(getSignatureLastPart());
 
         checkFunctionSignature(sb);
@@ -140,22 +140,22 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
 
     private String getSignatureLastPart() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getOffset()).append(SEPARATOR.SEMICOLON); //NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON); //NOI18N
         List<ParameterElement> parameterList = getParameters();
         for (int idx = 0; idx < parameterList.size(); idx++) {
             ParameterElementImpl parameter = (ParameterElementImpl) parameterList.get(idx);
             if (idx > 0) {
-                sb.append(SEPARATOR.COMMA); //NOI18N
+                sb.append(Separator.COMMA); //NOI18N
             }
             sb.append(parameter.getSignature());
         }
-        sb.append(SEPARATOR.SEMICOLON); //NOI18N
+        sb.append(Separator.SEMICOLON); //NOI18N
         for (TypeResolver typeResolver : getReturnTypes()) {
             TypeResolverImpl resolverImpl = (TypeResolverImpl) typeResolver;
             sb.append(resolverImpl.getSignature());
         }
-        sb.append(SEPARATOR.SEMICOLON); //NOI18N
-        sb.append(getPhpModifiers().toFlags()).append(SEPARATOR.SEMICOLON);
+        sb.append(Separator.SEMICOLON); //NOI18N
+        sb.append(getPhpModifiers().toFlags()).append(Separator.SEMICOLON);
         return sb.toString();
     }
 

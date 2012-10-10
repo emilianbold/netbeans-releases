@@ -75,7 +75,9 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-@OptionsPanelController.Keywords(keywords={"php apigen"}, location=UiUtils.OPTIONS_PATH, index=5)
+@NbBundle.Messages("ApiGenOptionsPanel.keywords.documentation=documentation")
+@OptionsPanelController.Keywords(keywords={"php", "apigen", "phpdoc", "phpdocumentor", "#ApiGenOptionsPanel.keywords.documentation"},
+        location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_OptionsName")
 public class ApiGenOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 458797646546L;

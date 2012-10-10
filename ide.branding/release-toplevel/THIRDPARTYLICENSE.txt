@@ -118,7 +118,7 @@ ide/modules/ext/saxon9B.jar                                           MPL-1.0
 ide/modules/ext/servlet-2.2.jar                                       Apache-1.1
 ide/modules/ext/smack.jar                                             Apache-2.0
 ide/modules/ext/smackx.jar                                            Apache-2.0
-ide/modules/ext/sqljet-1.1.0.jar                                      TMate
+ide/modules/ext/sqljet-1.1.4.jar                                      TMate
 ide/modules/ext/svnClientAdapter-javahl-1.8.14.jar                    Apache-2.0
 ide/modules/ext/svnClientAdapter-main-1.8.14.jar                      Apache-2.0
 ide/modules/ext/svnClientAdapter-svnkit-1.8.14.jar                    Apache-2.0

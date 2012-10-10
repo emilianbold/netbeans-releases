@@ -75,6 +75,8 @@ import org.openide.util.Parameters;
  * </p>
  * </div>
  *
+ * @see org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport
+ *
  * @author Tomas Zezula
  * @since 1.60
  */

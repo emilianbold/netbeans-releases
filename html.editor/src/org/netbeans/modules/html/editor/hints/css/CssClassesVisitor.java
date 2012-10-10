@@ -52,6 +52,7 @@ import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.html.editor.hints.EmbeddingUtil;
 import org.netbeans.modules.html.editor.hints.HtmlRuleContext;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
+import org.netbeans.modules.web.common.api.Constants;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -124,8 +125,14 @@ public class CssClassesVisitor implements ElementVisitor {
         //there might be more whitespace separated values in the attribute value:
         //<section class="foodlist hide" id="entrees">
         for (String token : CLASSES_PATTERN.split(value)) {
-            if (token.trim().isEmpty()) {
+            String trimmed = token.trim();
+            if (trimmed.isEmpty()) {
                 continue; //possibly skip ws
+            }
+            
+            if(Constants.LANGUAGE_SNIPPET_SEPARATOR.equals(trimmed)) {
+                //skip virtual selectors
+                continue;
             }
 
             //all files containing the id declaration

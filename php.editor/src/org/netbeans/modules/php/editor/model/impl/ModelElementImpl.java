@@ -171,42 +171,53 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     }
 
     private static boolean nameKindMatch(boolean forceCaseInsensitivity, String text, QuerySupport.Kind nameKind, String... queries) {
+        boolean result = false;
         for (String query : queries) {
             switch (nameKind) {
                 case CAMEL_CASE:
                     if (ModelUtils.toCamelCase(text).startsWith(query)) {
-                        return true;
+                        result = true;
                     }
                     break;
                 case CASE_INSENSITIVE_PREFIX:
                     if (text.toLowerCase().startsWith(query.toLowerCase())) {
-                        return true;
+                        result = true;
                     }
                     break;
                 case CASE_INSENSITIVE_REGEXP:
                     text = text.toLowerCase();
+                    result = regexpMatch(text, query);
+                    break;
                 case REGEXP:
                     //TODO: might be perf. problem if called for large collections
                     // and ever and ever again would be compiled still the same query
-                    Pattern p = Pattern.compile(query);
-                    if (nameKindMatch(p, text)) {
-                        return true;
-                    }
+                    result = regexpMatch(text, query);
                     break;
                 case EXACT:
                     boolean retval = (forceCaseInsensitivity) ? text.equalsIgnoreCase(query) : text.equals(query);
                     if (retval) {
-                        return true;
+                        result = true;
                     }
                     break;
                 case PREFIX:
                     if (text.startsWith(query)) {
-                        return true;
+                        result = true;
                     }
                     break;
+                default:
+                    //no-op
             }
         }
-        return false;
+        return result;
+    }
+
+    private static boolean regexpMatch(String text, String query) {
+        boolean result = false;
+        Pattern p = Pattern.compile(query);
+        if (nameKindMatch(p, text)) {
+            result = true;
+        }
+        return result;
     }
 
     @Override

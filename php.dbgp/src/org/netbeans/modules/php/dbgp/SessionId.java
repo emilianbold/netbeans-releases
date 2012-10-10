@@ -105,7 +105,7 @@ public class SessionId {
     }
     public synchronized boolean isInitialized(boolean waitForInitialization) {
         boolean isInitialized =  uriMapper != null;
-        if (!isInitialized && waitForInitialization) {
+        while (!isInitialized && waitForInitialization) {
             try {
                 wait();
             } catch (InterruptedException e) {

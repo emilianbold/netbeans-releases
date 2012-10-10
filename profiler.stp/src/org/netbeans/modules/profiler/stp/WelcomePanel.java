@@ -43,197 +43,94 @@
 
 package org.netbeans.modules.profiler.stp;
 
-//import java.awt.Color;
-//import java.awt.Dimension;
-//import java.awt.FlowLayout;
-//import java.awt.Font;
-//import java.awt.GridBagConstraints;
-//import java.awt.GridBagLayout;
-//import java.awt.Insets;
-//import javax.swing.JLabel;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-//import javax.swing.JSeparator;
+import javax.swing.JSeparator;
+import javax.swing.Timer;
+import org.netbeans.lib.profiler.ui.UIUtils;
+import org.openide.util.NbBundle;
 
 
 /**
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "WelcomePanel_LoadingSettingsMsg=Loading profiling settings..."
+})
 public class WelcomePanel extends JPanel {
+    
+    private Timer timer;
+    private JLabel captionLabel;
+    
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     // --- Public interface ------------------------------------------------------
-//    public WelcomePanel() {
-//        initComponents();
-//    }
+    public WelcomePanel() {
+        initComponents();
+        timer = new Timer(500, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                captionLabel.setText(Bundle.WelcomePanel_LoadingSettingsMsg());
+            }
+        });
+        timer.setRepeats(false);
+    }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
+    
+    void displaying() {
+        timer.restart();
+        captionLabel.setText(" "); // NOI18N
+    }
 
     // --- Private implementation ------------------------------------------------
-//    private void initComponents() {
-//        setLayout(new GridBagLayout());
-//        setOpaque(true);
-//        setBackground(SelectProfilingTask.BACKGROUND_COLOR);
-//
-//        GridBagConstraints constraints;
-//
-//        JLabel label = new JLabel("Attach Profiler");
-//        label.setFont(label.getFont().deriveFont(Font.BOLD, label.getFont().getSize2D() + 3));
-//        label.setForeground(new Color(198, 129, 0));
-//        constraints = new GridBagConstraints();
-//        constraints.gridx = 0;
-//        constraints.gridy = 0;
-//        constraints.gridwidth = GridBagConstraints.REMAINDER;
-//        constraints.fill = GridBagConstraints.HORIZONTAL;
-//        constraints.anchor = GridBagConstraints.WEST;
-//        constraints.insets = new Insets(27, 30, 12, 20);
-//        add(label, constraints);
-//
-//        JSeparator separator1 = Utils.createHorizontalSeparator();
-//        separator1.setBackground(getBackground());
-//        constraints = new GridBagConstraints();
-//        constraints.gridx = 0;
-//        constraints.gridy = 1;
-//        constraints.gridwidth = GridBagConstraints.REMAINDER;
-//        constraints.fill = GridBagConstraints.HORIZONTAL;
-//        constraints.anchor = GridBagConstraints.WEST;
-//        constraints.insets = new Insets(0, 20, 0, 20);
-//        add(separator1, constraints);
-//
-//        JLabel tbdLabel = new JLabel("Select project to attach to...");
-//        tbdLabel.setForeground(Color.GRAY);
-//        tbdLabel.setFont(tbdLabel.getFont().deriveFont(Font.BOLD, tbdLabel.getFont().getSize2D() + 5));
-//        separator1.setBackground(getBackground());
-//        constraints = new GridBagConstraints();
-//        constraints.gridx = 0;
-//        constraints.gridy = 2;
-//        constraints.gridwidth = GridBagConstraints.REMAINDER;
-//        constraints.fill = GridBagConstraints.NONE;
-//        constraints.anchor = GridBagConstraints.CENTER;
-//        constraints.insets = new Insets(100, 0, 0, 0);
-//        add(tbdLabel, constraints);
-//
-//        constraints = new GridBagConstraints();
-//        constraints.gridx = 0;
-//        constraints.gridy = 3;
-//        constraints.weightx = 1;
-//        constraints.weighty = 1;
-//        constraints.gridwidth = GridBagConstraints.REMAINDER;
-//        constraints.fill = GridBagConstraints.BOTH;
-//        constraints.anchor = GridBagConstraints.NORTHWEST;
-//        constraints.insets = new Insets(10, 20, 10, 20);
-//        add(Utils.createFillerPanel(), constraints);
-//
-//        JScrollPane contentsScroll = new JScrollPane(contentsPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//        contentsScroll.setBorder(BorderFactory.createEmptyBorder());
-//        contentsScroll.setOpaque(false);
-//        contentsScroll.getViewport().setOpaque(false);
-//        constraints = new GridBagConstraints();
-//        constraints.gridx = 0;
-//        constraints.gridy = 2;
-//        constraints.weightx = 1;
-//        constraints.weighty = 1;
-//        constraints.gridwidth = GridBagConstraints.REMAINDER;
-//        constraints.fill = GridBagConstraints.BOTH;
-//        constraints.anchor = GridBagConstraints.NORTHWEST;
-//        constraints.insets = new Insets(10, 20, 10, 20);
-//        add(contentsScroll, constraints);
-//
-//        JSeparator separator2 = Utils.createHorizontalSeparator();
-//        separator2.setBackground(getBackground());
-//        constraints = new GridBagConstraints();
-//        constraints.gridx = 0;
-//        constraints.gridy = 3;
-//        constraints.gridwidth = GridBagConstraints.REMAINDER;
-//        constraints.fill = GridBagConstraints.HORIZONTAL;
-//        constraints.anchor = GridBagConstraints.WEST;
-//        constraints.insets = new Insets(0, 20, 0, 20);
-//        add(separator2, constraints);
-//
-//        JLabel duplicate = new JLabel("Edit task");
-//        duplicate.setFont(duplicate.getFont().deriveFont(duplicate.getFont().getSize2D() - 1));
-//        duplicate.setForeground(Color.DARK_GRAY);
-//        constraints = new GridBagConstraints();
-//        constraints.gridx = 0;
-//        constraints.gridy = 4;
-//        constraints.gridwidth = 1;
-//        constraints.fill = GridBagConstraints.NONE;
-//        constraints.anchor = GridBagConstraints.WEST;
-//        constraints.insets = new Insets(3, 22, 4, 0);
-//        add(duplicate, constraints);
-//
-//    //    JLabel delete = new JLabel("Delete");
-//    //    delete.setFont(delete.getFont().deriveFont(delete.getFont().getSize2D() - 1));
-//    //    delete.setForeground(Color.DARK_GRAY);
-//    //    constraints = new GridBagConstraints();
-//    //    constraints.gridx = 1;
-//    //    constraints.gridy = 4;
-//    //    constraints.gridwidth = 1;
-//    //    constraints.fill = GridBagConstraints.NONE;
-//    //    constraints.anchor = GridBagConstraints.WEST;
-//    //    constraints.insets = new Insets(3, 9, 4, 0);
-//    //    add(delete, constraints);
-//
-//        constraints = new GridBagConstraints();
-//        constraints.gridx = 2;
-//        constraints.gridy = 4;
-//        constraints.weightx = 1;
-//        constraints.gridwidth = 1;
-//        constraints.fill = GridBagConstraints.HORIZONTAL;
-//        constraints.anchor = GridBagConstraints.WEST;
-//        constraints.insets = new Insets(3, 0, 4, 0);
-//        add(Utils.createFillerPanel(), constraints);
-//
-//        JLabel advanced = new JLabel("Advanced");
-//        advanced.setFont(advanced.getFont().deriveFont(advanced.getFont().getSize2D() - 1));
-//        advanced.setForeground(Color.DARK_GRAY);
-//        constraints = new GridBagConstraints();
-//        constraints.gridx = 3;
-//        constraints.gridy = 4;
-//        constraints.gridwidth = 1;
-//        constraints.fill = GridBagConstraints.NONE;
-//        constraints.anchor = GridBagConstraints.WEST;
-//        constraints.insets = new Insets(3, 0, 4, 22);
-//        add(advanced, constraints);
-//
-//        duplicate.addMouseListener(new MouseAdapter() {
-//          public void mouseEntered(MouseEvent e) {
-//            e.getComponent().setForeground(Color.BLACK);
-//            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//          }
-//          public void mouseExited(MouseEvent e)  {
-//            e.getComponent().setForeground(Color.DARK_GRAY);
-//            setCursor(Cursor.getDefaultCursor());
-//          }
-//        });
-//
-//    //    delete.addMouseListener(new MouseAdapter() {
-//    //      public void mouseEntered(MouseEvent e) {
-//    //        e.getComponent().setForeground(Color.BLACK);
-//    //        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//    //      }
-//    //      public void mouseExited(MouseEvent e)  {
-//    //        e.getComponent().setForeground(Color.DARK_GRAY);
-//    //        setCursor(Cursor.getDefaultCursor());
-//    //      }
-//    //    });
-//
-//        advanced.addMouseListener(new MouseAdapter() {
-//          public void mouseEntered(MouseEvent e) {
-//            e.getComponent().setForeground(Color.BLACK);
-//            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//          }
-//          public void mouseExited(MouseEvent e)  {
-//            e.getComponent().setForeground(Color.DARK_GRAY);
-//            setCursor(Cursor.getDefaultCursor());
-//          }
-//        });
-//
-//    //    JScrollPane contentsScroll = new JScrollPane(contentsPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//    //    contentsScroll.setBorder(BorderFactory.createEmptyBorder());
-//    //    contentsScroll.setOpaque(false);
-//    //
-//    //    setLayout(new BorderLayout());
-//    //    add(contentsScroll, BorderLayout.CENTER);
-//    }
+    private void initComponents() {
+        setLayout(new GridBagLayout());
+        setOpaque(true);
+        setBackground(SelectProfilingTask.BACKGROUND_COLOR);
+
+        GridBagConstraints constraints;
+
+        captionLabel = new JLabel(Bundle.WelcomePanel_LoadingSettingsMsg());
+        captionLabel.setFont(captionLabel.getFont().deriveFont(Font.BOLD, captionLabel.getFont().getSize2D() + 3));
+        captionLabel.setForeground(new Color(198, 129, 0));
+        constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(27, 30, 12, 20);
+        add(captionLabel, constraints);
+
+        JSeparator separator1 = UIUtils.createHorizontalSeparator();
+        separator1.setBackground(getBackground());
+        constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 1;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(0, 20, 0, 20);
+        add(separator1, constraints);
+        
+        constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 2;
+        constraints.weightx = 1;
+        constraints.weighty = 1;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.anchor = GridBagConstraints.NORTHWEST;
+        constraints.insets = new Insets(10, 20, 10, 20);
+        add(UIUtils.createFillerPanel(), constraints);
+    }
 }
