@@ -189,6 +189,9 @@ public class FindMethodUsagesVisitor extends AbstractFindUsagesVisitor {
      * @param methodCall
      */
     private void findAndAdd(ClassNode type, MethodCallExpression methodCall) {
+        if (method == null || methodCall == null) {
+            return;
+        }
         if (methodName.equals(methodCall.getMethodAsString()) && Methods.hasSameParameters(method, methodCall)) {
             usages.add(methodCall.getMethod());
         }
