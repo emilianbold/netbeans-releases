@@ -228,6 +228,14 @@ import org.openide.util.Utilities;
     long getScheduledTime() {
         return timestamp;
     }
+    
+    long getExecutedTime() {
+        return executed;
+    }
+    
+    long getFinishedTime() {
+        return finished;
+    }
 
     private int mySerial;
     private long storeTime;
@@ -336,10 +344,14 @@ import org.openide.util.Utilities;
     }
     
     public synchronized void addCrawlerTime(long time, int resCount, int allResCount) {
+        if (frozen) {
+            return;
+        }
         this.crawlerTime += time;
         RootInfo ri = allCurrentRoots.get(Thread.currentThread());
         if (ri == null) {
-            throw new IllegalStateException();
+            LOG.log(Level.FINE, "No root specified for crawler run", new Throwable());
+            return;
         }
         ri.crawlerTime += time;
         if (resCount != -1) {
@@ -351,6 +363,9 @@ import org.openide.util.Utilities;
     }
     
     public synchronized void addStoreTime(long time) {
+        if (frozen) {
+            return;
+        }
         this.storeTime += time;
     }
     
@@ -388,7 +403,7 @@ import org.openide.util.Utilities;
         totalIndexerTime.put(fName, t + addTime);
         RootInfo ri = allCurrentRoots.get(Thread.currentThread());
         if (ri == null) {
-            throw new IllegalStateException("Unreported root for running indexer: " + fName);
+            LOG.log(Level.FINE, "Unreported root for running indexer: " + fName, new Throwable());
         } else {
              t = ri.rootIndexerTime.get(fName);
             if (t == null) {
@@ -586,11 +601,13 @@ import org.openide.util.Utilities;
                     append(secondDump).append("\n");
         }
         
+        /*
         if (predecessor != null) {
             sb.append("Predecessor: {");
             predecessor.createLogMessage(sb, reported);
             sb.append("}\n");
         }
+        */
 
         if (absorbed != null) {
             sb.append("Absorbed {");    //NOI18N
@@ -786,13 +803,14 @@ import org.openide.util.Utilities;
                 return;
             }
             
-            LOG.log(Level.WARNING, "Excessive indexing rate detected. Dumping suspicious contexts");
+            LOG.log(Level.WARNING, "Excessive indexing rate detected: " + dataSize(found.first, found.second) + " in " + minutes + "mins, treshold is " + treshold + 
+                    ". Dumping suspicious contexts");
             int index;
             
             for (index = found.first; index != found.second; index = (index + 1) % times.length) {
                 contexts[index].log(false);
             }
-            LOG.log(Level.WARNING, "=== End excessive contexts");
+            LOG.log(Level.WARNING, "=== End excessive indexing");
             this.reportedEnd = index;
         }
     }

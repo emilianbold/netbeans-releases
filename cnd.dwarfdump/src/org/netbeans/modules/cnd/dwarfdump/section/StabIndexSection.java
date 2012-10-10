@@ -58,7 +58,7 @@ public class StabIndexSection extends ElfSection {
     private final StabIndexStrSection strings;
     private final List<CompilationUnitInterface> list = new ArrayList<CompilationUnitInterface>();
     private static final int N_UNDF    = 0x0;   /* undefined */
-    private static final int N_ILDPAD  = 0x4c;  /* now used as ild pad stab value=strtab delta was designed for "function start.end" */
+    private static final int N_ILDPAD  = 0x4c;  /* now used as ild pad stab value=strtab delta was designed for 'function start.end' */
     private static final int N_FUN     = 0x24;  /* procedure: name,,0,linenumber,0 */
     private static final int N_SO      = 0x64;  /* source file name: name,,0,0,0 */
     private static final int N_OBJ     = 0x38;  /* object file path or name */
