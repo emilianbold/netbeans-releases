@@ -266,7 +266,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding item {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    addItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, setModified);
+                    addItemImpl(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, setModified, true, true);
                 }
             }
         }
@@ -562,11 +562,11 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Item addItemAction(Item item) {
-        return addItemAction(item, true);
+        return addItemActionImpl(item, true, false);
     }
 
-    public Item addItemAction(Item item, boolean setModified) {
-        if (addItem(item, true, setModified) == null) {
+    private Item addItemActionImpl(Item item, boolean setModified, boolean excludedByDefault) {
+        if (addItemImpl(item, true, setModified, true, excludedByDefault) == null) {
             return null; // Nothing added
         }
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
@@ -576,18 +576,18 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Item addItem(Item item) {
-        return addItem(item, true, true);
+        return addItemImpl(item, true, true, true, false);
     }
 
     public Item addItem(Item item, boolean notify, boolean setModified) {
-        return addItem(item, notify, setModified, true);
+        return addItemImpl(item, notify, setModified, true, false);
     }
 
     public Item addItemWithoutConfiguration(Item item) {
-        return addItem(item, true, true, false);
+        return addItemImpl(item, true, true, false, false);
     }
     
-    private Item addItem(Item item, boolean notify, boolean setModified, boolean createConfiguration) {
+    private Item addItemImpl(Item item, boolean notify, boolean setModified, boolean createConfiguration, boolean excludedByDefault) {
         if (item == null) {
             return null;
         }
@@ -642,7 +642,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (map != null) {
                         old = map.get(configurations[i]);
                     }
-                    ItemConfiguration ic = new ItemConfiguration(configurations[i], item);
+                    ItemConfiguration ic = new ItemConfiguration(configurations[i], item, excludedByDefault);
                     if (old != null && old.ic != null && old.aux != null) {
                         ic.setTool(old.ic.getTool());
                         ic.assignValues(old.aux);
@@ -1263,7 +1263,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
             itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
             Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), itemPath);
-            addItemAction(item, true);
+            addItemActionImpl(item, true, false);
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
                 if (aParent.equals(thisFolder)) {
