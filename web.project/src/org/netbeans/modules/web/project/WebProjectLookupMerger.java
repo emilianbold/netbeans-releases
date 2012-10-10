@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,9 +34,13 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.support;
+package org.netbeans.modules.web.project;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -56,15 +54,14 @@ import org.openide.util.Lookup;
  * implementations it finds in the provided lookup and iterates them until a
  * result is found.
  *
- * Maybe, this should rather be in the web.project and j2ee.ejbjarproject modules?
+ * @author Martin Janicek
  */
 @LookupMerger.Registration(
     projectType = {
-        "org-netbeans-modules-web-project",
-        "org-netbeans-modules-j2ee-ejbjarproject"
+        "org-netbeans-modules-web-project"
     }
 )
-public class GroovyLookupMerger implements LookupMerger<ActionProvider> {
+public class WebProjectLookupMerger implements LookupMerger<ActionProvider> {
 
     @Override
     public Class<ActionProvider> getMergeableClass() {
@@ -73,14 +70,14 @@ public class GroovyLookupMerger implements LookupMerger<ActionProvider> {
 
     @Override
     public ActionProvider merge(Lookup lookup) {
-        return new MergedActionProvider(lookup);
+        return new ActionProviderMerger(lookup);
     }
 
-    private static class MergedActionProvider implements ActionProvider {
+    private static class ActionProviderMerger implements ActionProvider {
 
         private final Lookup lookup;
 
-        public MergedActionProvider(Lookup lookup) {
+        public ActionProviderMerger(Lookup lookup) {
             this.lookup = lookup;
         }
 
@@ -91,7 +88,6 @@ public class GroovyLookupMerger implements LookupMerger<ActionProvider> {
         @Override
         public String[] getSupportedActions() {
             Set<String> resultSet = new HashSet<String>();
-            // merge all supported actions from all providers
             for (ActionProvider impl : lookup.lookupAll(ActionProvider.class)) {
                 resultSet.addAll(Arrays.asList(impl.getSupportedActions()));
             }
@@ -99,8 +95,8 @@ public class GroovyLookupMerger implements LookupMerger<ActionProvider> {
         }
 
         /*
-         * Iterates over providers and calls invokeAction on first found provider
-         * that has this action enabled.
+         * Iterates over all providers and calls invokeAction on the first found
+         * provider that has this action enabled.
          */
         @Override
         public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
