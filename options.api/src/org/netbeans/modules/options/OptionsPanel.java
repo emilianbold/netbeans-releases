@@ -77,12 +77,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -102,7 +102,6 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.options.CategoryModel.Category;
 import org.netbeans.modules.options.advanced.AdvancedPanel;
 import org.netbeans.modules.options.ui.VariableBorder;
@@ -554,21 +553,38 @@ public class OptionsPanel extends JPanel {
             }
             return -1;
         }
+
+        private boolean containsAllSearchWords(ArrayList<String> keywords, Collection<String> stWords) {
+            Iterator<String> e = stWords.iterator();
+            while (e.hasNext()) {
+                if (!containsSearchWord(keywords, e.next())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private boolean containsSearchWord(ArrayList<String> keywords, String stWord) {
+            Iterator<String> e = keywords.iterator();
+            while (e.hasNext()) {
+                if (e.next().contains(stWord)) {
+                    return true;
+                }
+            }
+            return false;
+        }
         
         private void handleSearch(String searchText) {
+            List<String> stWords = Arrays.asList(searchText.toUpperCase().split(" "));
             String exactCategory = null;
             int exactTabIndex = -1;
             for (String id : CategoryModel.getInstance().getCategoryIDs()) {
                 ArrayList<String> entry = categoryid2words.get(id);
                 if (entry != null) {
-                    boolean found = false;
-                    for (String text : entry) {
-                        if (text.contains(searchText.toUpperCase())) {
-                            found = true;
-                            if (id.toUpperCase().contains(searchText.toUpperCase())) {
-                                exactCategory = id;
-                            }
-                            break;
+                    boolean found = containsAllSearchWords(entry, stWords);
+                    for (String stWord : stWords) {
+                        if (id.toUpperCase().contains(stWord)) {
+                            exactCategory = id;
                         }
                     }
 
@@ -578,18 +594,16 @@ public class OptionsPanel extends JPanel {
                         JTabbedPane pane = categoryid2tabbedpane.get(id);
                         if (categoryid2tabs.get(id) != null) {
                             HashMap<Integer, TabInfo> tabsInfo = categoryid2tabs.get(id);
+                            boolean foundInNoTab = true;
                             for (Integer tabIndex : tabsInfo.keySet()) {
                                 if (tabIndex != -1) {
                                     ArrayList<String> tabWords = tabsInfo.get(tabIndex).getWords();
                                     boolean foundInTab = false;
-                                    for (int i = 0; i < tabWords.size(); i++) {
-                                        String txt = tabWords.get(i).toString().toUpperCase();
-                                        if (txt.contains(searchText.toUpperCase())) {
-                                            foundInTab = true;
-                                            exactTabIndex = tabIndex;
-                                            setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
-                                            break;
-                                        }
+                                    if (containsAllSearchWords(tabWords, stWords)) {
+                                        foundInTab = true;
+                                        foundInNoTab = false;
+                                        exactTabIndex = tabIndex;
+                                        setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
                                     }
                                     if (foundInTab) {
                                         pane.setEnabledAt(tabIndex, true);
@@ -604,7 +618,13 @@ public class OptionsPanel extends JPanel {
                                     }
                                 } else {
                                     setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+                                    if(tabsInfo.size() == 1) {
+                                        foundInNoTab = false;
+                                    }
                                 }
+                            }
+                            if(foundInNoTab) {
+                                handleNotFound(id, exactCategory);
                             }
                         } else {
                             setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
