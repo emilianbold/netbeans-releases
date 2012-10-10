@@ -84,7 +84,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@OptionsPanelController.Keywords(keywords = {"macros"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_Macros_DisplayName")
+@OptionsPanelController.Keywords(keywords = {"#KW_Macros"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_Macros_DisplayName")
 public class MacrosPanel extends JPanel {
 
     private final MacrosModel model = MacrosModel.get();

@@ -427,7 +427,7 @@ public class OptionsPanel extends JPanel {
         JTabbedPane pane = categoryid2tabbedpane.get(location);
         int tabIndex = pane == null ? -1 : pane.indexOfTab(tabTitle);
 
-        ArrayList<String> keywords = new ArrayList<String>();
+        Set<String> keywords = new HashSet<String>();
         keywords.addAll(Arrays.asList(keywordsFO.getAttribute("keywords").toString().split(","))); //NOI18N
 
         ArrayList<String> words = categoryid2words.get(location);
@@ -455,7 +455,7 @@ public class OptionsPanel extends JPanel {
         } else {
             tabInfo = categoryTabs.get(tabIndex);
         }
-        tabInfo.addWords(newWords);
+        tabInfo.addWords(keywords);
         categoryTabs.put(tabIndex, tabInfo);
         categoryid2tabs.put(location, categoryTabs);
      }

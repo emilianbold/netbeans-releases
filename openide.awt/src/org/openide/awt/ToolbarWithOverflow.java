@@ -144,6 +144,10 @@ public class ToolbarWithOverflow extends JToolBar {
             @Override
             public void eventDispatched(AWTEvent event) {
                 MouseEvent e = (MouseEvent) event;
+                if(isVisible() && !isShowing() && popup.isShowing()) {
+                    popup.setVisible(false);
+                    return;
+                }
                 if (event.getSource() == popup) {
                     if (popup.isShowing() && e.getID() == MouseEvent.MOUSE_EXITED) {
                         int minX = popup.getLocationOnScreen().x;
@@ -155,7 +159,7 @@ public class ToolbarWithOverflow extends JToolBar {
                         }
                     }
                 } else {
-                    if (popup.isShowing() && (e.getID() == MouseEvent.MOUSE_MOVED || e.getID() == MouseEvent.MOUSE_EXITED)) {
+                    if (overflowButton.isShowing() && (e.getID() == MouseEvent.MOUSE_MOVED || e.getID() == MouseEvent.MOUSE_EXITED)) {
                         int minX = overflowButton.getLocationOnScreen().x;
                         int maxX = getOrientation() == HORIZONTAL ? minX + popup.getWidth()
                                 : minX + overflowButton.getWidth() + popup.getWidth();
@@ -169,7 +173,11 @@ public class ToolbarWithOverflow extends JToolBar {
                 }
             }
         };
+    }
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
         Toolkit.getDefaultToolkit().addAWTEventListener(awtEventListener, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK);
     }
 
@@ -246,7 +254,11 @@ public class ToolbarWithOverflow extends JToolBar {
         overflowButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                displayOverflow();
+                if(popup.isShowing()) {
+                    popup.setVisible(false);
+                } else {
+                    displayOverflow();
+                }
             }
 
             @Override
