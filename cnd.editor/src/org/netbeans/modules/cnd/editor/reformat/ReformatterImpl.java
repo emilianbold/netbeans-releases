@@ -905,10 +905,8 @@ public class ReformatterImpl {
                 }
                 case ARROW: //("catch", "keyword-directive"), //C++
                 {
-//    private void newLine(Token<CppTokenId> previous, Token<CppTokenId> current,
-//            CodeStyle.BracePlacement where, boolean spaceBefore, int newLineAfter){
-                    newLine(previous, current, codeStyle.getFormatNewlineBeforeBrace(),
-                        codeStyle.spaceBeforeMethodDeclLeftBrace(), 1);
+                    newLine(previous, current, codeStyle.getFormatNewlineBeforeBraceLambda(),
+                        codeStyle.spaceBeforeLambdaLeftBrace(), 1);
                     return;
                 }
             }
@@ -1241,6 +1239,11 @@ public class ReformatterImpl {
                         break;
                     case SWITCH:
                         if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_FULL_INDENTED) {
+                            indent += codeStyle.indentSize();
+                        }
+                        break;
+                    case ARROW:
+                        if (codeStyle.getFormatNewlineBeforeBraceLambda() == BracePlacement.NEW_LINE_FULL_INDENTED) {
                             indent += codeStyle.indentSize();
                         }
                         break;
