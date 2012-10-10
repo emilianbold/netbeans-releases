@@ -61,6 +61,7 @@ import org.openide.util.Exceptions;
 public class InstallationCompletenessTest extends NbTestCase {
 
     public static final String DISTRO_PROPERTY = "netbeans.distribution";
+    public static final String JAVACARD_PREFIX = "org.netbeans.modules.javacard";
 
     public enum Type {
 
@@ -131,7 +132,7 @@ public class InstallationCompletenessTest extends NbTestCase {
         assertTrue("Some modules are redundant", redundantKits.isEmpty());
     }
 
-    private static Set<String> getModulesForDistro(String distro, File f) {
+    private  Set<String> getModulesForDistro(String distro, File f) {
         Set<String> result = new HashSet<String>();
         Type distroT = Type.valueOf(distro.toUpperCase());
         Properties p = readProps(f);
@@ -141,10 +142,25 @@ public class InstallationCompletenessTest extends NbTestCase {
                 result.add(kit);
             }
         }
-        return result;
+        return filterPlatformSpecific(result);
     }
 
-    private static Properties readProps(File f) {
+    private Set<String> filterPlatformSpecific(Set<String> set){
+        if (!org.openide.util.Utilities.isWindows()){
+            //filter javacard modules on non-win platforms
+            Set<String> toRemove = new HashSet<String>();
+            for (String kit : set) {
+                if(kit.startsWith(JAVACARD_PREFIX)) {
+                    toRemove.add(kit);
+                }
+            }
+            assertFalse("Javacard modules found on non-win", toRemove.isEmpty());
+            set.removeAll(toRemove);
+        }
+        return set;
+    }
+    
+    private Properties readProps(File f) {
         Properties props = new Properties();
         FileInputStream fis = null;
         try {

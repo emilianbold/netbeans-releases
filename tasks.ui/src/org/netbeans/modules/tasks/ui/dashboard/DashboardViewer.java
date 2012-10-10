@@ -82,9 +82,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Singleton providing access to Kenai Dashboard window.
+ * Singleton providing access to Task Dashboard window.
  *
  * @author S. Aubrecht
+ * @author J. Peska
  */
 public final class DashboardViewer implements PropertyChangeListener {
 
