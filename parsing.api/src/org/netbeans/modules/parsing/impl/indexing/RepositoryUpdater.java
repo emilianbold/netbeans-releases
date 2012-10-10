@@ -3411,6 +3411,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         public @Override boolean getDone() {
 //            updateProgress(root);
+            LogContext lctx = getLogContext();
+            if (lctx != null) {
+                lctx.noteRootScanning(root);
+            }
             try {
                 final List<IndexableImpl> indexables = new LinkedList<IndexableImpl>();
                 for(String path : relativePaths) {
@@ -3429,6 +3433,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 TEST_LOGGER.log(Level.FINEST, "delete"); //NOI18N
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
+            } finally {
+                if (lctx != null) {
+                    lctx.finishScannedRoot(root);
+                }
             }
             return true;
         }
@@ -5270,10 +5278,12 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 LogContext prevWorkLctx = null;
                 for(Work work = getWork(); work != null; work = getWork()) {
                     LogContext curWorkLctx = work.logCtx;
-                    if (curWorkLctx != null && prevWorkLctx != null) {
+                    if (curWorkLctx != null && prevWorkLctx != null && prevWorkLctx.getExecutedTime() > 0) {
                         long t = System.currentTimeMillis();
-                        // if waiting for > 1 minute, chain the previous work
-                        if (t - curWorkLctx.getScheduledTime() > PROFILE_EXECUTION_DELAY_TRESHOLD) {
+                        // if waiting for > 1 minute because of the just preceding work, chain the previous work
+                        // the new work was scheduled during the previous one's execution
+                        if (t - prevWorkLctx.getExecutedTime() > PROFILE_EXECUTION_DELAY_TRESHOLD &&
+                            t - curWorkLctx.getScheduledTime() > PROFILE_EXECUTION_DELAY_TRESHOLD) {
                             curWorkLctx.setPredecessor(prevWorkLctx);
                         }
                     }

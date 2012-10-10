@@ -44,15 +44,13 @@
 
 package org.netbeans.lib.lexer.token;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.lib.lexer.LexerUtilsConstants;
+import org.netbeans.lib.lexer.StackElementArray;
 import org.netbeans.lib.lexer.TokenList;
 
 /**
@@ -72,11 +70,16 @@ import org.netbeans.lib.lexer.TokenList;
  */
 
 public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
+
+    // -J-Dorg.netbeans.lib.lexer.token.DefaultToken.level=FINE
+    private static final Logger LOG = Logger.getLogger(DefaultToken.class.getName());
     
+    private static final boolean LOG_TOKEN_TEXT_TO_STRING;
+
     private static final int TOKEN_TEXT_TO_STRING_STACK_LENGTH;
 
-    private static final boolean TOKEN_TEXT_TO_STRING_DUMP;
-    
+    private static final Set<StackElementArray> toStringStacks;
+
     static {
         int val;
         try {
@@ -85,8 +88,9 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
         } catch (NumberFormatException ex) {
             val = 0;
         }
+        LOG_TOKEN_TEXT_TO_STRING = (val > 0);
         TOKEN_TEXT_TO_STRING_STACK_LENGTH = val;
-        TOKEN_TEXT_TO_STRING_DUMP = (val > 0);
+        toStringStacks = LOG_TOKEN_TEXT_TO_STRING ? StackElementArray.createSet() : null;
     }
     
     final int tokenLength; // 24 bytes (20-super + 4)
@@ -131,8 +135,12 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
             int tokenOffset = tList.tokenOffset(this);
             int start = tokenOffset;
             int end = tokenOffset + tokenLength;
-            CharSequenceUtilities.checkIndexesValid(inputSourceText, start, end);
-            text = new InputSourceSubsequence(this, inputSourceText, start, end);
+            if (LOG_TOKEN_TEXT_TO_STRING) {
+                CharSequenceUtilities.checkIndexesValid(inputSourceText, start, end);
+                text = new InputSourceSubsequence(this, inputSourceText, start, end);
+            } else {
+                return inputSourceText.subSequence(start, end);
+            }
 
         } else { // Token is removed
             text = null;
@@ -205,78 +213,14 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
 
         @Override
         public String toString() {
-            // Increase usage
-            if (TOKEN_TEXT_TO_STRING_DUMP) {
-                StackElementArray.logStackIfNew();
+            if (LOG_TOKEN_TEXT_TO_STRING) {
+                if (StackElementArray.addStackIfNew(toStringStacks, TOKEN_TEXT_TO_STRING_STACK_LENGTH)) {
+                    LOG.log(Level.INFO, "Token.text().toString() called", new Exception());
+                }
             }
             return inputSourceText.subSequence(start, end).toString();
         }
 
     }
     
-    private static final class StackElementArray {
-        
-        private static final Set<StackElementArray> stacks = TOKEN_TEXT_TO_STRING_DUMP
-                ? Collections.synchronizedSet(new HashSet<StackElementArray>())
-                : null;
-    
-        private final StackTraceElement[] stackTrace;
-        
-        private final int hashCode;
-        
-        static void logStackIfNew() {
-            Exception ex = new Exception();
-            StackTraceElement[] elems = ex.getStackTrace();
-            int startIndex = 2; // Cut of first two
-            int endIndex = Math.min(elems.length, startIndex + TOKEN_TEXT_TO_STRING_STACK_LENGTH);
-            StackTraceElement[] reducedElems = new StackTraceElement[endIndex - startIndex];
-            System.arraycopy(elems, startIndex, reducedElems, 0, endIndex - startIndex);
-            StackElementArray stackElementArray = new StackElementArray(reducedElems);
-            if (!stacks.contains(stackElementArray)) {
-                stacks.add(stackElementArray);
-                Logger.getLogger(StackElementArray.class.getName()).log(
-                        Level.INFO, "Token.text().toString() called", ex);
-            }
-        }
-
-        public StackElementArray(StackTraceElement[] stackTrace) {
-            this.stackTrace = stackTrace;
-            int hc = 0;
-            for (int i = 0; i < stackTrace.length; i++) {
-                hc ^= stackTrace[i].hashCode();
-            }
-            hashCode = hc;
-        }
-        
-        int length() {
-            return stackTrace.length;
-        }
-        
-        StackTraceElement element(int i) {
-            return stackTrace[i];
-        }
-
-        @Override
-        public int hashCode() {
-            return hashCode;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this)
-                return true;
-            if (!(obj instanceof StackElementArray))
-                return false;
-            StackElementArray sea = (StackElementArray) obj;
-            if (sea.length() != length())
-                return false;
-            for (int i = 0; i < stackTrace.length; i++) {
-                if (!element(i).equals(sea.element(i)))
-                    return false;
-            }
-            return true;
-        }
-        
-    }
-
 }
