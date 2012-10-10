@@ -149,6 +149,8 @@ public class EditorOptions {
     public static final String newLineBeforeBraceDeclarationDefault = BracePlacement.SAME_LINE.name();
     public static final String ignoreEmptyFunctionBody = "ignoreEmptyFunctionBody"; //NOI18N
     public static final boolean ignoreEmptyFunctionBodyDefault = false;
+    public static final String newLineBeforeBraceLambda = "newLineBeforeBraceLambda"; //NOI18N
+    public static final String newLineBeforeBraceLambdaDefault = BracePlacement.SAME_LINE.name();
     
     /**
      * Whether insert extra new-line before the compound bracket or not.
@@ -235,6 +237,8 @@ public class EditorOptions {
     public static final boolean spaceBeforeClassDeclLeftBraceDefault = true;
     public static final String spaceBeforeMethodDeclLeftBrace = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
     public static final boolean spaceBeforeMethodDeclLeftBraceDefault = true;
+    public static final String spaceBeforeLambdaLeftBrace = "spaceBeforeLambdaLeftBrace"; //NOI18N
+    public static final boolean spaceBeforeLambdaLeftBraceDefault = true;
     public static final String spaceBeforeIfLeftBrace = "spaceBeforeIfLeftBrace"; //NOI18N
     public static final boolean spaceBeforeIfLeftBraceDefault = true;
     public static final String spaceBeforeElseLeftBrace = "spaceBeforeElseLeftBrace"; //NOI18N
@@ -365,6 +369,7 @@ public class EditorOptions {
         defaults.put(newLineBeforeBraceClass,newLineBeforeBraceClassDefault);
         defaults.put(newLineBeforeBraceDeclaration,newLineBeforeBraceDeclarationDefault);
         defaults.put(ignoreEmptyFunctionBody,ignoreEmptyFunctionBodyDefault);
+        defaults.put(newLineBeforeBraceLambda,newLineBeforeBraceLambdaDefault);
         defaults.put(newLineBeforeBraceSwitch,newLineBeforeBraceSwitchDefault);
         defaults.put(newLineBeforeBrace,newLineBeforeBraceDefault);
         //MultilineAlignment
@@ -400,6 +405,7 @@ public class EditorOptions {
         //SpacesBeforeLeftBraces
         defaults.put(spaceBeforeClassDeclLeftBrace,spaceBeforeClassDeclLeftBraceDefault);
         defaults.put(spaceBeforeMethodDeclLeftBrace,spaceBeforeMethodDeclLeftBraceDefault);
+        defaults.put(spaceBeforeLambdaLeftBrace,spaceBeforeLambdaLeftBraceDefault);
         defaults.put(spaceBeforeIfLeftBrace,spaceBeforeIfLeftBraceDefault);
         defaults.put(spaceBeforeElseLeftBrace,spaceBeforeElseLeftBraceDefault);
         defaults.put(spaceBeforeWhileLeftBrace,spaceBeforeWhileLeftBraceDefault);
@@ -476,6 +482,7 @@ public class EditorOptions {
         apache.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
         apache.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
         apache.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        apache.put(newLineBeforeBraceLambda, BracePlacement.NEW_LINE.name());
 // I see that GNU style differ from apache only in half indent
 // Is it true?
         Map<String,Object> gnu = new HashMap<String,Object>();
@@ -495,6 +502,7 @@ public class EditorOptions {
         gnu.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBraceLambda, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBraceSwitch, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBrace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(ignoreEmptyFunctionBody,true);
@@ -506,6 +514,7 @@ public class EditorOptions {
         lunix.put(indentSize, 8);
         lunix.put(expandTabToSpaces, false);
         lunix.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        lunix.put(newLineBeforeBraceLambda, BracePlacement.NEW_LINE.name());
         lunix.put(spaceBeforeKeywordParen, false);
         
         //ANSI_PROFILE
@@ -514,6 +523,7 @@ public class EditorOptions {
         ansi.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
         ansi.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
         ansi.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        ansi.put(newLineBeforeBraceLambda, BracePlacement.NEW_LINE.name());
         ansi.put(newLineBeforeBraceSwitch, BracePlacement.NEW_LINE.name());
         ansi.put(newLineBeforeBrace, BracePlacement.NEW_LINE.name());
         ansi.put(alignMultilineMethodParams, true);
@@ -529,7 +539,7 @@ public class EditorOptions {
         namedDefaults.put(OPEN_SOLARIS_PROFILE, solaris);
         solaris.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
         solaris.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
-        solaris.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        solaris.put(newLineBeforeBraceLambda, BracePlacement.NEW_LINE.name());
         solaris.put(newLineFunctionDefinitionName, true);
         solaris.put(indentSize, 8);
         solaris.put(expandTabToSpaces, false);
@@ -546,7 +556,7 @@ public class EditorOptions {
         KandR.put(absoluteLabelIndent, false);
         KandR.put(indentCasesFromSwitch, false);
         KandR.put(indentNamespace, false);
-        KandR.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        KandR.put(newLineBeforeBraceLambda, BracePlacement.NEW_LINE.name());
 
         //MYSQL_PROFILE
         Map<String,Object> mysql = new HashMap<String,Object>();
@@ -556,6 +566,7 @@ public class EditorOptions {
         mysql.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
         mysql.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
         mysql.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        mysql.put(newLineBeforeBraceLambda, BracePlacement.NEW_LINE.name());
         mysql.put(newLineBeforeBrace, BracePlacement.NEW_LINE.name());
         mysql.put(alignMultilineCallArgs, true);
         mysql.put(alignMultilineWhileCondition, true);
@@ -580,6 +591,7 @@ public class EditorOptions {
         whitesmiths.put(newLineBeforeBrace, BracePlacement.NEW_LINE_FULL_INDENTED.name());
         whitesmiths.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE_FULL_INDENTED.name());
         whitesmiths.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE_FULL_INDENTED.name());
+        whitesmiths.put(newLineBeforeBraceLambda, BracePlacement.NEW_LINE_FULL_INDENTED.name());
         whitesmiths.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE_FULL_INDENTED.name());
         whitesmiths.put(newLineBeforeBraceSwitch, BracePlacement.NEW_LINE_FULL_INDENTED.name());
         whitesmiths.put(newLineCatch, true);

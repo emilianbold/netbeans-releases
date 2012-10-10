@@ -129,6 +129,7 @@ class StackEntry {
                             likeToFunction = false;
                             importantKind = ARROW;
                             lambdaIndent = lambdaIndent(ts);
+                            return;
                         }
                         break;
                     }
