@@ -73,9 +73,9 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @autor Miloslav Metelka
  */
-public class JavaBraceCompletionUnitTest extends NbTestCase {
+public class TypingCompletionUnitTest extends NbTestCase {
 
-    public JavaBraceCompletionUnitTest(String testMethodName) {
+    public TypingCompletionUnitTest(String testMethodName) {
         super(testMethodName);
     }
 
@@ -818,7 +818,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
     }
 
     public void testDisable147641() throws Exception {
-        boolean orig = BraceCompletion.completionSettingEnabled();
+        boolean orig = TypingCompletion.isCompletionSettingEnabled();
         Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
 
         try {
@@ -1249,7 +1249,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         doc.putProperty(Language.class, JavaTokenId.language());
         doc.insertString(0, code, null);
 
-        return BraceCompletion.posWithinString(doc, pos);
+        return TypingCompletion.posWithinString(doc, pos);
     }
 
     private static final class Context {
