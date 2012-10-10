@@ -111,6 +111,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         }
 
         switch (token) {
+            case BRACKET_LEFT_CURLY:
             case BRACKET_LEFT_PAREN:
             case BRACKET_LEFT_BRACKET:
             case KEYWORD_RETURN:
