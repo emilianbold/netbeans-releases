@@ -103,7 +103,7 @@ public final class ELIndexer extends EmbeddingIndexer {
                 if (each.isValid()) {
                     IndexDocument doc = support.createDocument(parserResult.getFileObject());
                     documents.add(doc);
-                    doc.addPair(Fields.EXPRESSION, each.getExpression().getPreprocessedExpression(), true, true);
+                    addPair(Fields.EXPRESSION, each.getExpression().getPreprocessedExpression());
                     each.getNode().accept(this);
                     support.addDocument(doc);
                 }
@@ -118,18 +118,24 @@ public final class ELIndexer extends EmbeddingIndexer {
         public List<IndexDocument> getDocuments() {
             return documents;
         }
+        
+        private void addPair(String key, String value) {
+            if(value != null) {
+                getCurrent().addPair(key, value, true, true);
+            }
+        }
 
         @Override
         public void visit(Node node) throws ELException {
             if (node instanceof AstIdentifier) {
                 String identifier = ((AstIdentifier) node).getImage();
-                getCurrent().addPair(Fields.IDENTIFIER, identifier, true, true);
+                addPair(Fields.IDENTIFIER, identifier);
             } else if (NodeUtil.isMethodCall(node)) {
                 String method = node.getImage();
-                getCurrent().addPair(Fields.METHOD, method, true, true);
+                addPair(Fields.METHOD, method);
             } else if (node instanceof AstDotSuffix) {
                 String property = ((AstDotSuffix) node).getImage();
-                getCurrent().addPair(Fields.PROPERTY, property, true, true);
+                addPair(Fields.PROPERTY, property);
             }
         }
     }
