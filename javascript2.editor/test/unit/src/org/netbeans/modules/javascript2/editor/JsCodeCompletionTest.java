@@ -59,6 +59,10 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
         checkPrefix("testfiles/completion/cc-prefix2.js");
     }
 
+    public void testPrefix3() throws Exception {
+        checkPrefix("testfiles/completion/cc-prefix3.js");
+    }
+
     public void testProperty01() throws Exception {
         checkCompletion("testfiles/model/jQueryFragment01.js", "^jQuery.event.customEvent.test();", false);
     }
