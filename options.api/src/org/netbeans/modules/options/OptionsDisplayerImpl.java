@@ -209,7 +209,7 @@ public class OptionsDisplayerImpl {
         log.fine("Options Dialog created; descriptor.title = " + descriptor.getTitle() +
                 "; descriptor.message = " + descriptor.getMessage());
         optionsPanel.initCurrentCategory(categoryID, subpath);        
-        tmpDialog.addWindowListener (new MyWindowListener (optionsPanel));
+        tmpDialog.addWindowListener (new MyWindowListener (optionsPanel, tmpDialog));
         Point userLocation = getUserLocation();
         if (userLocation != null) {
             tmpDialog.setLocation(userLocation);
@@ -420,9 +420,9 @@ public class OptionsDisplayerImpl {
         private Dialog originalDialog;
 
                 
-        MyWindowListener (OptionsPanel optionsPanel) {
+        MyWindowListener (OptionsPanel optionsPanel, Dialog tmpDialog) {
             this.optionsPanel = optionsPanel;
-            this.originalDialog = dialog;
+            this.originalDialog = tmpDialog;
         }
         
         public void windowClosing (WindowEvent e) {
