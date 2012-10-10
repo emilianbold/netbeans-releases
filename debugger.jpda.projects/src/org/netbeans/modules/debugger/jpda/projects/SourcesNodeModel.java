@@ -49,6 +49,7 @@ import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 
@@ -79,9 +80,10 @@ public class SourcesNodeModel implements NodeModel {
         "org/netbeans/modules/debugger/jpda/resources/Filter";
     
     
+    @Override
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return NbBundle.getBundle(SourcesNodeModel.class).getString("CTL_SourcesModel_Column_Name_Name");
+            return NbBundle.getMessage(SourcesNodeModel.class, "CTL_SourcesModel_Column_Name_Name");
         } else
         if (o instanceof String) {
             File f = new File ((String) o);
@@ -89,33 +91,39 @@ public class SourcesNodeModel implements NodeModel {
                 FileObject fo = FileUtil.toFileObject (f);
                 Project p = FileOwnerQuery.getOwner (fo);
                 if (p != null) {
-                    ProjectInformation pi = (ProjectInformation) p.getLookup ().
-                        lookup (ProjectInformation.class);
+                    ProjectInformation pi = (ProjectInformation) ProjectUtils.getInformation(p);
                     if (pi != null) {
-                        return java.text.MessageFormat.format(NbBundle.getBundle(SourcesNodeModel.class).getString(
-                                "CTL_SourcesModel_Column_Name_ProjectSources"), new Object [] { f.getPath(), pi.getDisplayName() });
+                        return NbBundle.getMessage(SourcesNodeModel.class, "CTL_SourcesModel_Column_Name_ProjectSources",
+                                                   f.getPath(), pi.getDisplayName());
                     }
                 }
-                return java.text.MessageFormat.format(NbBundle.getBundle(SourcesNodeModel.class).getString(
-                        "CTL_SourcesModel_Column_Name_LibrarySources"), new Object [] { f.getPath() });
-            } else
-            return (String) o;
-        } else
-        throw new UnknownTypeException (o);
+                return NbBundle.getMessage(SourcesNodeModel.class, "CTL_SourcesModel_Column_Name_LibrarySources",
+                                           f.getPath());
+            } else {
+                return (String) o;
+            }
+        } else {
+            throw new UnknownTypeException (o);
+        }
     }
     
+    @Override
     public String getShortDescription (Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT)
-            return NbBundle.getBundle(SourcesNodeModel.class).getString("CTL_SourcesModel_Column_Name_Desc");
+        if (o == TreeModel.ROOT) {
+            return NbBundle.getMessage(SourcesNodeModel.class, "CTL_SourcesModel_Column_Name_Desc");
+        }
         if (o instanceof String) {
-            if (((String) o).startsWith ("D"))
-                return NbBundle.getBundle(SourcesNodeModel.class).getString("CTL_SourcesModel_Column_Name_DescExclusion");
-            else
-                return (String) o;//NbBundle.getBundle(SourcesNodeModel.class).getString("CTL_SourcesModel_Column_Name_DescRoot");
-        } else
-        throw new UnknownTypeException (o);
+            if (((String) o).startsWith ("D")) {
+                return NbBundle.getMessage(SourcesNodeModel.class, "CTL_SourcesModel_Column_Name_DescExclusion");
+            } else {
+                return (String) o;
+            }//NbBundle.getBundle(SourcesNodeModel.class).getString("CTL_SourcesModel_Column_Name_DescRoot");
+        } else {
+            throw new UnknownTypeException (o);
+        }
     }
     
+    @Override
     public String getIconBase (Object o) throws UnknownTypeException {
         return null;
         /*if (o instanceof String) {
@@ -127,9 +135,11 @@ public class SourcesNodeModel implements NodeModel {
         throw new UnknownTypeException (o);*/
     }
 
+    @Override
     public void addModelListener (ModelListener l) {
     }
 
+    @Override
     public void removeModelListener (ModelListener l) {
     }
 }
