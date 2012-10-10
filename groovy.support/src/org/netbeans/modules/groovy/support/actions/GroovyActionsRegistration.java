@@ -42,9 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.support;
+package org.netbeans.modules.groovy.support.actions;
 import javax.swing.Action;
-import static org.netbeans.modules.groovy.support.Bundle.*;
+import static org.netbeans.modules.groovy.support.actions.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -60,7 +60,7 @@ import org.openide.util.NbBundle.Messages;
  * @author Petr Hejl
  * @author Martin Janicek
  */
-public class GroovyProjectModule {
+public class GroovyActionsRegistration {
 
     @Messages("LBL_TestProject_Action=Test")
     @ActionID(id = "org.netbeans.modules.groovy.support.GroovyProjectModule.test.project", category = "Groovy")
