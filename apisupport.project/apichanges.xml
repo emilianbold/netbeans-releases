@@ -116,10 +116,9 @@ is the proper place.
             <author login="mkleint"/>
             <compatibility addition="yes"/>
             <description>
-                <code>ModuleDependency has a settable property now denoting if the dependency is meant to be test or not</code>
+                <code>ModuleDependency</code> has a settable property now denoting if the dependency is meant to be test or not
             </description>
-            <class package="org.netbeans.modules.apisupport.project.spi" name="NbModuleProvider.ModuleDependency"/>
-            
+            <class package="org.netbeans.modules.apisupport.project.spi" name="NbModuleProvider"/>
         </change>
         <change>
             <api name="apisupport_spi"/>
