@@ -1263,7 +1263,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
             itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
             Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), itemPath);
-            addItemActionImpl(item, true, false);
+            addItemActionImpl(item, true, true);
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
                 if (aParent.equals(thisFolder)) {
