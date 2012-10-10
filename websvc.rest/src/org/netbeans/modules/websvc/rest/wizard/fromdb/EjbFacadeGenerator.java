@@ -90,8 +90,12 @@ import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
 import org.netbeans.modules.websvc.rest.codegen.RestGenerationOptions;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo.FieldInfo;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
+import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -107,6 +111,15 @@ public class EjbFacadeGenerator implements FacadeGenerator {
     private static final String EJB_LOCAL = "javax.ejb.Local"; //NOI18N
     private static final String EJB_REMOTE = "javax.ejb.Remote"; //NOI18N
     private static final String EJB_STATELESS = "javax.ejb.Stateless"; //NOI18N
+    
+    private EntityResourceBeanModel model;
+    
+    public EjbFacadeGenerator(){
+    }
+    
+    public EjbFacadeGenerator(EntityResourceBeanModel model){
+        this.model = model;
+    }
 
     /**
      * Generates the facade and the loca/remote interface(s) for thhe given
@@ -268,6 +281,10 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                     EJB_REMOTE, targetFolder);
             addMethodToInterface(intfOptions, remote);
             createdFiles.add(remote);
+        }
+        
+        if ( model != null ){
+            Util.generatePrimaryKeyMethod(facade, entityFQN, model);
         }
         
         // add the @stateless annotation
@@ -731,6 +748,16 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         String paramArg = "java.lang.Character".equals(idClass) ? 
                 "id.charAt(0)" : "id"; //NOI18N
         String idType = "id".equals(paramArg) ? idClass : "java.lang.String"; //NOI18N
+        
+        boolean needPathSegment = false;
+        if ( model!= null ){
+            EntityClassInfo entityInfo = model.getEntityInfo(entityFQN);
+            if ( entityInfo!= null ){
+                FieldInfo idFieldInfo = entityInfo.getIdFieldInfo();
+                needPathSegment = idFieldInfo!=null && idFieldInfo.isEmbeddedId() 
+                        && idFieldInfo.getType()!= null;
+            }
+        }
 
         RestGenerationOptions createOptions = new RestGenerationOptions();
         createOptions.setRestMethod(Operation.CREATE);
@@ -754,18 +781,40 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         destroyOptions.setRestMethod(Operation.REMOVE);
         destroyOptions.setReturnType("void");//NOI18N
         destroyOptions.setParameterNames(new String[]{"id"}); //NOI18N
-        destroyOptions.setParameterTypes(new String[]{idType}); //NOI18N
         destroyOptions.setPathParams(new String[]{"id"}); //NOI18N
-        destroyOptions.setBody("super.remove(super.find("+paramArg+"));"); //NOI18N
+        StringBuilder builder = new StringBuilder();
+        if ( needPathSegment ){
+            destroyOptions.setParameterTypes(new String[]{"javax.ws.rs.core.PathSegment"}); // NOI18N
+            builder.append(idType);
+            builder.append(" key=getPrimaryKey(id);\n");
+            paramArg = "key";
+        }
+        else {
+            destroyOptions.setParameterTypes(new String[]{idType}); 
+        }
+        StringBuilder removeBody = new StringBuilder(builder);
+        removeBody.append("super.remove(super.find(");             //NOI18N
+        removeBody.append(paramArg);
+        removeBody.append("));");                                  //NOI18N
+        destroyOptions.setBody(removeBody.toString()); 
 
         RestGenerationOptions findOptions = new RestGenerationOptions();
         findOptions.setRestMethod(Operation.FIND);
         findOptions.setReturnType(entityFQN);//NOI18N
         findOptions.setProduces(new String[]{"application/xml", "application/json"}); //NOI18N
-        findOptions.setParameterNames(new String[]{"id"}); //NOI18N
-        findOptions.setParameterTypes(new String[]{idType}); //NOI18N
         findOptions.setPathParams(new String[]{"id"}); //NOI18N
-        findOptions.setBody("return super.find("+paramArg+");"); //NOI18N
+        findOptions.setParameterNames(new String[]{"id"}); //NOI18N
+        if ( needPathSegment ){
+            findOptions.setParameterTypes(new String[]{"javax.ws.rs.core.PathSegment"}); // NOI18N
+        }
+        else {
+            findOptions.setParameterTypes(new String[]{idType});     
+        }
+        StringBuilder findBody = new StringBuilder(builder);
+        findBody.append("return super.find(");                  //NOI18N
+        findBody.append(paramArg);
+        findBody.append(");");                                  //NOI18N
+        findOptions.setBody( findBody.toString()); 
 
         RestGenerationOptions findAllOptions = new RestGenerationOptions();
         findAllOptions.setRestMethod(Operation.FIND_ALL);
