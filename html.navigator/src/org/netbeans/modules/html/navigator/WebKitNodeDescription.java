@@ -320,19 +320,24 @@ public class WebKitNodeDescription extends DOMNodeDescription {
             return sb.toString();
         }
 
-        private static int getIndexInSimilarNodes(Node parent, Node node) {
-            int index = -1;
-            for (Node child : parent.getChildren()) {
-                String nodeId = getNodeId(node);
-                String childId = getNodeId(child);
-                if (nodeId.equals(childId) && node.getNodeType() == child.getNodeType()) {
-                    index++;
+        private static int getIndexInSimilarNodes(final Node parent, final Node node) {
+            final int index[] = new int[]{-1};
+            Children.MUTEX.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    for (Node child : parent.getChildren()) {
+                        String nodeId = getNodeId(node);
+                        String childId = getNodeId(child);
+                        if (nodeId.equals(childId) && node.getNodeType() == child.getNodeType()) {
+                            index[0]++;
+                        }
+                        if (child == node) {
+                            break;
+                        }
+                    }
                 }
-                if (child == node) {
-                    break;
-                }
-            }
-            return index;
+            });
+            return index[0];
         }
 
         @Override
