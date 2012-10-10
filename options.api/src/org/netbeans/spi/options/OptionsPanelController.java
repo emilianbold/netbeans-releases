@@ -359,15 +359,19 @@ public abstract class OptionsPanelController {
          * <td><tt>{ "BOO", "AND", "FOO" }</tt></td></tr> 
          * </table></blockquote>
          *
-         * <p> The registered keywords {"Boo,anD", "fOo"}, for example, yield the following results with these search-texts:
+         * <p> The user's search-text is split around the space character to form words.
+         * All words need to be present in a panel to yield a successful search.
+         * The registered keywords {"Boo,anD", "fOo"}, for example, yield the following results with these search-texts:
          *
          * <blockquote><table cellpadding=1 cellspacing=0 summary="Search
          * examples showing search-text and results"> <tr> <th>User's search-text</th>
          * <th>Result</th> </tr> <tr><td align=center>"boo"</td>
          * <td><tt>keyword found</tt></td></tr>
-         * </tr> <tr><td align=center>"nd"</td>
+         * <tr><td align=center>"nd"</td>
          * <td><tt>keyword found</tt></td></tr>
-         * </tr> <tr><td align=center>"boo and"</td>
+         * <tr><td align=center>"boo and"</td>
+         * <td><tt>keyword found</tt></td></tr>
+         * <tr><td align=center>"boo moo"</td>
          * <td><tt>keyword NOT found</tt></td></tr>
          * </table></blockquote>
          */
