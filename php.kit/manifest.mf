@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.php.kit
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/php/kit/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.44
-OpenIDE-Module-Recommends: cnb.org.netbeans.modules.hudson.php, cnb.org.netbeans.modules.web.clientproject, cnb.org.netbeans.modules.websvc.saas.kit, cnb.org.netbeans.modules.websvc.saas.codegen.php
+OpenIDE-Module-Specification-Version: 1.45
+OpenIDE-Module-Recommends: cnb.org.netbeans.modules.hudson.php, cnb.org.netbeans.modules.languages.apacheconf, cnb.org.netbeans.modules.languages.ini, cnb.org.netbeans.modules.languages.neon, cnb.org.netbeans.modules.php.apigen, cnb.org.netbeans.modules.web.clientproject, cnb.org.netbeans.modules.websvc.saas.codegen.php, cnb.org.netbeans.modules.websvc.saas.kit
