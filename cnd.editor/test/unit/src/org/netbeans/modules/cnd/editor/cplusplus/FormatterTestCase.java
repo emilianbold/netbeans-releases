@@ -5512,4 +5512,55 @@ public class FormatterTestCase extends EditorBase {
                 "}\n"
                 );
     }
+    
+    public void test216290() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void someMethod(const string& s1, const string& s2)\n" +
+                "{\n" +
+                "    std::get<0>(some_tuple);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect type reference formatting",
+                "void someMethod(const string& s1, const string& s2)\n" +
+                "{\n" +
+                "    std::get<0>(some_tuple);\n" +
+                "}\n"
+                );
+    }
+
+    public void test216290_1() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void someMethod(const string& s1, const string& s2)\n" +
+                "{\n" +
+                "    std::get<int>(some_tuple);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect type reference formatting",
+                "void someMethod(const string& s1, const string& s2)\n" +
+                "{\n" +
+                "    std::get<int>(some_tuple);\n" +
+                "}\n"
+                );
+    }
+
+    public void test216290_2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void someMethod(const string& s1, const string& s2)\n" +
+                "{\n" +
+                "    std::get<class string>(some_tuple);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect type reference formatting",
+                "void someMethod(const string& s1, const string& s2)\n" +
+                "{\n" +
+                "    std::get<class string>(some_tuple);\n" +
+                "}\n"
+                );
+    }
 }
