@@ -144,18 +144,20 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         // any other means of long term execution will not keep the CoS stamp around while running..
         // -->> ONLY DELETE FOR BUILD ACTION
         if (ActionProvider.COMMAND_BUILD.equals(config.getActionName())) {
-            deleteCoSTimeStamp(config, true);
-            deleteCoSTimeStamp(config, false);
-            //do clean the generated class files everytime, that won't hurt anything
-            // unless the classes are missing then ?!? if the action doesn't perform the compilation step?
-            try {
-                cleanGeneratedClassfiles(config.getProject());
-            } catch (IOException ex) {
-                if (!"clean".equals(config.getGoals().get(0))) { //NOI18N
-                    config.getGoals().add(0, "clean"); //NOI18N
-                    }
-                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Compile on Save Clean failed", ex);
-            }
+            
+//commented out because deleting the timestamp makes the createGeneratedClassfiles action a noop.
+//            deleteCoSTimeStamp(config, true);
+//            deleteCoSTimeStamp(config, false);
+//            //do clean the generated class files everytime, that won't hurt anything
+//            // unless the classes are missing then ?!? if the action doesn't perform the compilation step?
+//            try {
+//                cleanGeneratedClassfiles(config.getProject());
+//            } catch (IOException ex) {
+//                if (!"clean".equals(config.getGoals().get(0))) { //NOI18N
+//                    config.getGoals().add(0, "clean"); //NOI18N
+//                    }
+//                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Compile on Save Clean failed", ex);
+//            }
         } else if (!ActionProvider.COMMAND_REBUILD.equals(config.getActionName())) {
             //now for all custom and non-build only related actions,
             //make sure we place the stamp files into all opened projects.
@@ -982,9 +984,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
             if (prj != null) {
                 prj.removePropertyChangeListener(listener);
-                MavenProject mvn = prj.getMavenProject();
-                deleteCoSTimeStamp(mvn, true);
-                deleteCoSTimeStamp(mvn, false);
+                final MavenProject mvn = prj.getMavenProject();
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
@@ -993,6 +993,9 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                             cleanGeneratedClassfiles(project);
                         } catch (IOException ex) {
                             LOG.log(Level.FINE, "Error cleaning up", ex);
+                        } finally {
+                            deleteCoSTimeStamp(mvn, true);
+                            deleteCoSTimeStamp(mvn, false);
                         }
                     }
                 });
