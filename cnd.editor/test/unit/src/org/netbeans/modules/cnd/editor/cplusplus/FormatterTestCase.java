@@ -5451,4 +5451,21 @@ public class FormatterTestCase extends EditorBase {
                 "}\n"
                 );
     }
+    
+    public void test219417() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "    ::std::plus<Double>();\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect template formatting",
+                "int foo()\n" +
+                "{\n" +
+                "    ::std::plus<Double>();\n" +
+                "}\n"
+                );
+    }
 }

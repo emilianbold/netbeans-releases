@@ -551,8 +551,18 @@ public class ContextDetector extends ExtendedTokenSequence {
                             default:
                                 return OperatorKind.SEPARATOR;
                         }
+                    } else {
+                        switch(current.id()){
+                            case GT:
+                                if (isLikeTemplate()) {
+                                    return OperatorKind.SEPARATOR;
+                                } else {
+                                    return OperatorKind.BINARY;
+                                }
+                            default:
+                                return OperatorKind.BINARY;
+                        }
                     }
-                    return OperatorKind.BINARY;
                 }
                 if (OPERATOR_CATEGORY.equals(nextCategory) ||
                     SEPARATOR_CATEGORY.equals(nextCategory)){
@@ -734,6 +744,55 @@ public class ContextDetector extends ExtendedTokenSequence {
             }
         }
         return false;
+    }
+    
+    private boolean isLikeTemplate() {
+        int index = index();
+        int paren = 0;
+        int triangle = 1;
+        try {
+            while(movePrevious()){
+                switch (token().id()) {
+                    case LPAREN:
+                        if (paren == 0) {
+                            return false;
+                        }
+                        paren--;
+                        break;
+                    case RPAREN:
+                        paren++;
+                        break;
+                    case LT:
+                        triangle--;
+                        if (triangle == 0 && paren == 0) {
+                            return true;
+                        }
+                        break;
+                    case GT:
+                        triangle++;
+                        break;
+                    case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    case LBRACE:
+                    case RBRACE:
+                    case SEMICOLON:
+                        return false;
+                    default:
+                        break;
+                }
+            }
+            return true;
+        } finally {
+            moveIndex(index);
+            moveNext();
+        }
     }
     
     private boolean isLikeExpession(){
