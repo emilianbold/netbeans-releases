@@ -146,8 +146,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             String propName = evt.getPropertyName();
             if (PageModel.PROP_DOCUMENT.equals(propName)) {
                 pageModelDocumentChanged();
-                List nodes = translate(manager.getSelectedNodes());
-                pageModel.setSelectedNodes(nodes);
+                if (pageModel !=null) {
+                    List nodes = translate(manager.getSelectedNodes());
+                    pageModel.setSelectedNodes(nodes);
+                }
             } else if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
                 updateSelection();
             } else if (PageModel.PROP_HIGHLIGHTED_NODES.equals(propName)) {
