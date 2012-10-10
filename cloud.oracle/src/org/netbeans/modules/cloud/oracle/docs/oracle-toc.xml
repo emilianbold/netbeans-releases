@@ -42,7 +42,12 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
 -->
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 <toc version="2.0">
+    <tocitem text="Web Applications" expand="false">
+        <tocitem text="Web Applications on the Cloud">
+            <tocitem text="Whitelisting in Oracle Cloud" target="oracle-whitelist"/>
+            
+        </tocitem>
 <!--    <tocitem text="Oracle Cloud">
-        <tocitem text="About Oracle Cloud" target="org.netbeans.modules.cloud.oracle.about"/>
     </tocitem>-->
+    </tocitem>
 </toc>
