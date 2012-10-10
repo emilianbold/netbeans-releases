@@ -177,7 +177,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
                         //this itself means that the node is undeclared since
                         //otherwise it wouldn't appear in the pure html parse tree
-                        Hint hint = new Hint(DEFAULT_ERROR_RULE,
+                        Hint hint = new Hint(ERROR_RULE_BADGING,
                                 NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT", openTag.name().toString()), //NOI18N
                                 context.parserResult.getSnapshot().getSource().getFileObject(),
                                 JsfUtils.createOffsetRange(snapshot, docText, node.from(), node.from() + openTag.name().length() + 1 /* "<".length */),
@@ -197,7 +197,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                 Attribute attr = namespace2Attribute.get(namespace);
                 if (attr != null) {
                     //found the declaration, mark as error
-                    Hint hint = new Hint(DEFAULT_ERROR_RULE,
+                    Hint hint = new Hint(ERROR_RULE_BADGING,
                             NbBundle.getMessage(HintsProvider.class, "MSG_MISSING_LIBRARY", namespace), //NOI18N
                             context.parserResult.getSnapshot().getSource().getFileObject(),
                             JsfUtils.createOffsetRange(snapshot, docText, attr.nameOffset(), attr.valueOffset() + attr.value().length()),
