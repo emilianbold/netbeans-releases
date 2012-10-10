@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.ods.tasks.issue;
 
+import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Priority;
@@ -116,7 +117,7 @@ import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
 import org.netbeans.modules.ods.tasks.C2C;
-import org.netbeans.modules.ods.tasks.issue.C2CIssue.Attachment;
+import org.netbeans.modules.ods.tasks.issue.C2CIssue.C2CAttachment;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
@@ -532,7 +533,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         oldCommentCount = newCommentCount;
-        List<Attachment> attachments = issue.getAttachments();
+        List<C2CAttachment> attachments = issue.getAttachments();
         if (!isNew) {
             commentsPanel.setIssue(issue, attachments);
         }
@@ -2298,7 +2299,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         // TODO add your handling code here:
     }//GEN-LAST:event_externalFieldActionPerformed
 
-    @Messages("IssuePanel.attachment.noDescription=<no description>")
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         assert !issue.getTaskData().isPartial();
         final boolean isNew = issue.getTaskData().isNew();
@@ -2365,11 +2365,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 try {
                     ret = issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
-                        if (attachment.file.exists() && attachment.file.isFile()) {
-                            if (attachment.description.trim().isEmpty()) {
-                                attachment.description = Bundle.IssuePanel_attachment_noDescription();
-                            }
-                            issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
+                        if (attachment.getFile().exists() && attachment.getFile().isFile()) {
+                            issue.addAttachment(attachment.getFile(), null, attachment.getDescription(),
+                                    attachment.getContentType(), attachment.isPatch());
                         } else {
                             // PENDING notify user
                         }

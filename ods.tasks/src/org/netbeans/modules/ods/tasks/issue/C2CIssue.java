@@ -41,15 +41,13 @@
  */
 package org.netbeans.modules.ods.tasks.issue;
 
+import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,7 +59,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.swing.AbstractAction;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
@@ -71,14 +68,10 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.api.diff.PatchUtils;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.mylyn.util.GetAttachmentCommand;
 import org.netbeans.modules.mylyn.util.PostAttachmentCommand;
@@ -88,16 +81,9 @@ import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
-import org.openide.awt.HtmlBrowser;
-import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileChooserBuilder;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -211,14 +197,14 @@ public class C2CIssue {
     }    
     
     // XXX merge with bugzilla
-    List<Attachment> getAttachments() {
+    List<C2CAttachment> getAttachments() {
         List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
         if (attrs == null) {
             return Collections.emptyList();
         }
-        List<Attachment> attachments = new ArrayList<Attachment>(attrs.size());
+        List<C2CAttachment> attachments = new ArrayList<C2CAttachment>(attrs.size());
         for (TaskAttribute taskAttribute : attrs) {
-            attachments.add(new Attachment(taskAttribute));
+            attachments.add(new C2CAttachment(taskAttribute));
         }
         return attachments;
     }
@@ -933,7 +919,7 @@ public class C2CIssue {
         }
     }
 
-    class Attachment {
+    class C2CAttachment extends AttachmentsPanel.AbstractAttachment {
         private final String desc;
         private final String filename;
         private final String author;
@@ -947,7 +933,7 @@ public class C2CIssue {
         private String url;
         private final TaskAttribute ta;
 
-        public Attachment(TaskAttribute ta) {
+        public C2CAttachment(TaskAttribute ta) {
             this.ta = ta;
             id = ta.getValue();
             String s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
@@ -982,26 +968,32 @@ public class C2CIssue {
             url = getMappedValue(ta, TaskAttribute.ATTACHMENT_URL);
         }
 
+        @Override
         public String getAuthorName() {
             return authorName;
         }
 
+        @Override
         public String getAuthor() {
             return author;
         }
 
+        @Override
         public Date getDate() {
             return date;
         }
 
+        @Override
         public String getDesc() {
             return desc;
         }
 
+        @Override
         public String getFilename() {
             return filename;
         }
 
+        @Override
         public String getContentType() {
             return contentType;
         }
@@ -1014,6 +1006,7 @@ public class C2CIssue {
             return isDeprected;
         }
 
+        @Override
         public boolean isPatch() {
             return isPatch;
         }
@@ -1026,166 +1019,12 @@ public class C2CIssue {
             return url;
         }
 
+        @Override
         public void getAttachementData(final OutputStream os) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
             repository.getExecutor().execute(new GetAttachmentCommand(C2C.getInstance().getRepositoryConnector(), 
                     repository.getTaskRepository(),
                     null, ta, os));
-        }
-
-        void open() {
-            // XXX
-            String progressFormat = NbBundle.getMessage(
-                                        DefaultAttachmentAction.class,
-                                        "Attachment.open.progress");    //NOI18N
-            String progressMessage = MessageFormat.format(progressFormat, getFilename());
-            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-            handle.start();
-            handle.switchToIndeterminate();
-            parallelRP.post(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        File file = saveToTempFile();
-                        String contentType = getContentType();
-                        if ("image/png".equals(contentType)             //NOI18N
-                                || "image/gif".equals(contentType)      //NOI18N
-                                || "image/jpeg".equals(contentType)) {  //NOI18N
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(Utilities.toURI(file).toURL());
-                        } else {
-                            file = FileUtil.normalizeFile(file);
-                            FileObject fob = FileUtil.toFileObject(file);
-                            DataObject dob = DataObject.find(fob);
-                            OpenCookie open = dob.getCookie(OpenCookie.class);
-                            if (open != null) {
-                                open.open();
-                            } else {
-                                // PENDING
-                            }
-                        }
-                    } catch (DataObjectNotFoundException dnfex) {
-                        C2C.LOG.log(Level.INFO, dnfex.getMessage(), dnfex);
-                    } catch (IOException ioex) {
-                        C2C.LOG.log(Level.INFO, ioex.getMessage(), ioex);
-                    } finally {
-                        handle.finish();
-                    }
-                }
-            });
-        }
-
-        void saveToFile() {
-            final File file = new FileChooserBuilder(AttachmentsPanel.class)
-                    .setFilesOnly(true).showSaveDialog();
-            if (file != null) {
-                String progressFormat = NbBundle.getMessage(
-                                            SaveAttachmentAction.class,
-                                            "Attachment.saveToFile.progress"); //NOI18N
-                String progressMessage = MessageFormat.format(progressFormat, getFilename());
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-                handle.start();
-                handle.switchToIndeterminate();
-                parallelRP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        FileOutputStream fos = null;
-                        try {
-                            fos = new FileOutputStream(file);
-                            getAttachementData(fos);
-                        } catch (IOException ioex) {
-                            C2C.LOG.log(Level.INFO, ioex.getMessage(), ioex);
-                        } finally {
-                            if (fos != null) {
-                                try {
-                                    fos.close();
-                                } catch (IOException ex) {
-                                }
-                            }
-                            handle.finish();
-                        }
-                    }
-                });
-            }
-        }
-
-        void applyPatch() {
-            final File context = BugtrackingUtil.selectPatchContext();
-            if (context != null) {
-                String progressFormat = NbBundle.getMessage(
-                                            ApplyPatchAction.class,
-                                            "Attachment.applyPatch.progress"); //NOI18N
-                String progressMessage = MessageFormat.format(progressFormat, getFilename());
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-                handle.start();
-                handle.switchToIndeterminate();
-                parallelRP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            File file = saveToTempFile();
-                            PatchUtils.applyPatch(file, context);
-                        } catch (IOException ioex) {
-                            C2C.LOG.log(Level.INFO, ioex.getMessage(), ioex);
-                        } finally {
-                            handle.finish();
-                        }
-                    }
-                });
-            }
-        }
-
-        private File saveToTempFile() throws IOException {
-            int index = filename.lastIndexOf('.'); // NOI18N
-            String prefix = (index == -1) ? filename : filename.substring(0, index);
-            String suffix = (index == -1) ? null : filename.substring(index);
-            if (prefix.length()<3) {
-                prefix = prefix + "tmp";                                //NOI18N
-            }
-            File file = File.createTempFile(prefix, suffix);
-            getAttachementData(new FileOutputStream(file));
-            return file;
-        }
-
-        class DefaultAttachmentAction extends AbstractAction {
-
-            public DefaultAttachmentAction() {
-                putValue(NAME, NbBundle.getMessage(
-                                   DefaultAttachmentAction.class,
-                                   "Attachment.DefaultAction.name"));   //NOI18N
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Attachment.this.open();
-            }
-        }
-
-        class SaveAttachmentAction extends AbstractAction {
-
-            public SaveAttachmentAction() {
-                putValue(NAME, NbBundle.getMessage(
-                                   SaveAttachmentAction.class,
-                                   "Attachment.SaveAction.name"));      //NOI18N
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Attachment.this.saveToFile();
-            }
-        }
-
-        class ApplyPatchAction extends AbstractAction {
-
-            public ApplyPatchAction() {
-                putValue(NAME, NbBundle.getMessage(
-                                   ApplyPatchAction.class,
-                                   "Attachment.ApplyPatchAction.name"));//NOI18N
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Attachment.this.applyPatch();
-            }
         }
 
     }    

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ods.tasks.issue;
+package org.netbeans.modules.bugtracking.util;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -50,15 +50,21 @@ import java.awt.event.MouseAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
@@ -68,14 +74,18 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
-import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.UIUtils;
-import org.netbeans.modules.ods.tasks.C2C;
-import org.netbeans.modules.ods.tasks.issue.C2CIssue.Attachment;
-import org.netbeans.modules.ods.tasks.issue.C2CIssue.Attachment.ApplyPatchAction;
-import org.netbeans.modules.ods.tasks.issue.C2CIssue.Attachment.DefaultAttachmentAction;
-import org.netbeans.modules.ods.tasks.issue.C2CIssue.Attachment.SaveAttachmentAction;
+import org.netbeans.api.diff.PatchUtils;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.awt.HtmlBrowser;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -84,6 +94,7 @@ import org.openide.util.NbBundle;
  */
 public class AttachmentsPanel extends JPanel {
     private static final Color BG_COLOR = new Color(220, 220, 220);
+    private static final Logger LOG = Logger.getLogger(AttachmentsPanel.class.getName());
     private boolean hadNoAttachments = true;
     private List<AttachmentPanel> newAttachments;
     private JLabel noneLabel;
@@ -92,10 +103,10 @@ public class AttachmentsPanel extends JPanel {
     private JLabel dummyCreateLabel = new JLabel();
     private JLabel dummyAttachLabel = new JLabel();
     private Method maxMethod;
-    private IssuePanel issuePanel;
+    private JComponent parentPanel;
     
-    public AttachmentsPanel(IssuePanel issuePanel) {
-        this.issuePanel = issuePanel;
+    public AttachmentsPanel(JComponent parentPanel) {
+        this.parentPanel = parentPanel;
         setBackground(UIManager.getColor("TextArea.background")); // NOI18N
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
         noneLabel = new JLabel(bundle.getString("AttachmentsPanel.noneLabel.text")); // NOI18N
@@ -105,11 +116,11 @@ public class AttachmentsPanel extends JPanel {
             maxMethod = GroupLayout.Group.class.getDeclaredMethod("calculateMaximumSize", int.class); // NOI18N
             maxMethod.setAccessible(true);
         } catch (NoSuchMethodException nsmex) {
-            C2C.LOG.log(Level.INFO, nsmex.getMessage(), nsmex);
+            LOG.log(Level.INFO, nsmex.getMessage(), nsmex);
         }
     }
 
-    void setAttachments(List<Attachment> attachments) {
+    public void setAttachments(List<? extends Attachment> attachments) {
         
         hadNoAttachments = attachments.isEmpty();
         newAttachments = new LinkedList<AttachmentPanel>();
@@ -193,7 +204,7 @@ public class AttachmentsPanel extends JPanel {
                     .addComponent(filenameLabel)
                     .addComponent(dateLabel)
                     .addComponent(authorLabel)));
-            for (C2CIssue.Attachment attachment : attachments) {
+            for (Attachment attachment : attachments) {
                 boolean isPatch = attachment.isPatch(); // NOI18N
                 String description = attachment.getDesc();
                 String filename = attachment.getFilename();
@@ -219,14 +230,14 @@ public class AttachmentsPanel extends JPanel {
                             .addComponent(rBrace);
                 }
                 JPopupMenu menu = menuFor(attachment, patchButton);
-                filenameButton.setAction(attachment.new DefaultAttachmentAction());
+                filenameButton.setAction(attachment.getOpenAction());
                 filenameButton.setText(filename);
                 filenameButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanels.filenameButton.AccessibleContext.accessibleDescription")); // NOI18N
                 dateLabel = new JLabel(date != null ? DateFormat.getDateInstance().format(date) : ""); // NOI18N
                 
                 JComponent authorComponent;
                 if(author.indexOf("@") > -1) { // NOI18N
-                    authorComponent = new LinkButton.MailtoButton(authorName, NbBundle.getMessage(IssuePanel.class, "AttachmentPanel.authorButton.AccessibleContext.accessibleDescription"), author); // NOI18N
+                    authorComponent = new LinkButton.MailtoButton(authorName, NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanel.authorButton.AccessibleContext.accessibleDescription"), author); // NOI18N
                 } else {
                     authorComponent = new JLabel(authorName);
                 }
@@ -271,7 +282,7 @@ public class AttachmentsPanel extends JPanel {
                 try {
                     groupWidth = (Integer)maxMethod.invoke(horizontalGroup, 0);
                 } catch (Exception ex) {
-                    C2C.LOG.log(Level.INFO, ex.getMessage(), ex);
+                    LOG.log(Level.INFO, ex.getMessage(), ex);
                 }
             }
             for (JPanel p : panels) {
@@ -321,10 +332,10 @@ public class AttachmentsPanel extends JPanel {
 
     private JPopupMenu menuFor(Attachment attachment, LinkButton patchButton) {
         JPopupMenu menu = new JPopupMenu();
-        menu.add(attachment.new DefaultAttachmentAction());
-        menu.add(attachment.new SaveAttachmentAction());
+        menu.add(attachment.getOpenAction());
+        menu.add(attachment.getSaveAction());
         if (attachment.isPatch()) {
-            AbstractAction action = attachment.new ApplyPatchAction();
+            Action action = attachment.getApplyPatchAction();
             menu.add(action);
             patchButton.setAction(action);
             // Lower the first letter
@@ -395,8 +406,9 @@ public class AttachmentsPanel extends JPanel {
         }
     }
 
-    List<AttachmentInfo> getNewAttachments() {
-        List<AttachmentInfo> infos = new LinkedList<AttachmentInfo>();
+    @NbBundle.Messages("IssuePanel.attachment.noDescription=<no description>")
+    public List<AttachmentInfo> getNewAttachments() {
+        List<AttachmentInfo> infos = new ArrayList<AttachmentInfo>(newAttachments.size());
         for (AttachmentPanel attachment : newAttachments) {
             if (!attachment.isDeleted()) {
                 AttachmentInfo info = new AttachmentInfo();
@@ -404,17 +416,36 @@ public class AttachmentsPanel extends JPanel {
                 info.description = attachment.getDescription();
                 info.contentType = attachment.getContentType();
                 info.isPatch = attachment.isPatch();
+                if (info.description.trim().isEmpty()) {
+                    info.description = Bundle.IssuePanel_attachment_noDescription();
+                }
                 infos.add(info);
             }
         }
         return infos;
     }
 
-    class AttachmentInfo {
-        File file;
-        String description;
-        String contentType;
-        boolean isPatch;
+    public final class AttachmentInfo {
+        private File file;
+        private String description;
+        private String contentType;
+        private boolean isPatch;
+
+        public String getContentType () {
+            return contentType;
+        }
+
+        public String getDescription () {
+            return description;
+        }
+
+        public File getFile () {
+            return file;
+        }
+
+        public boolean isPatch () {
+            return isPatch;
+        }
     }
 
     class CreateNewAction extends AbstractAction {
@@ -447,10 +478,213 @@ public class AttachmentsPanel extends JPanel {
             }
             
             newAttachments.add(attachment);
-            UIUtils.keepFocusedComponentVisible(attachment, issuePanel);
+            UIUtils.keepFocusedComponentVisible(attachment, parentPanel);
             revalidate();
         }
 
     }
 
+    public static interface Attachment {
+
+        public boolean isPatch ();
+
+        public Action getOpenAction ();
+
+        public Action getApplyPatchAction ();
+
+        public Action getSaveAction ();
+
+        public String getDesc ();
+
+        public String getFilename ();
+
+        public Date getDate ();
+
+        public String getAuthor ();
+
+        public String getAuthorName ();
+
+    }
+
+    public static abstract class AbstractAttachment implements Attachment {
+        @Override
+        public Action getOpenAction () {
+            return new DefaultAttachmentAction();
+        }
+
+        @Override
+        public Action getApplyPatchAction () {
+            return new ApplyPatchAction();
+        }
+
+        @Override
+        public Action getSaveAction () {
+            return new SaveAttachmentAction();
+        }
+
+        protected abstract void getAttachementData (OutputStream os);
+        
+        protected abstract String getContentType ();
+
+        private void open() {
+            // XXX
+            String progressFormat = NbBundle.getMessage(
+                                        DefaultAttachmentAction.class,
+                                        "Attachment.open.progress");    //NOI18N
+            String progressMessage = MessageFormat.format(progressFormat, getFilename());
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+            handle.start();
+            handle.switchToIndeterminate();
+            BugtrackingUtil.getParallelRP().post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        File file = saveToTempFile();
+                        String contentType = getContentType();
+                        if ("image/png".equals(contentType)             //NOI18N
+                                || "image/gif".equals(contentType)      //NOI18N
+                                || "image/jpeg".equals(contentType)) {  //NOI18N
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(Utilities.toURI(file).toURL());
+                        } else {
+                            file = FileUtil.normalizeFile(file);
+                            FileObject fob = FileUtil.toFileObject(file);
+                            DataObject dob = DataObject.find(fob);
+                            OpenCookie open = dob.getCookie(OpenCookie.class);
+                            if (open != null) {
+                                open.open();
+                            } else {
+                                // PENDING
+                            }
+                        }
+                    } catch (DataObjectNotFoundException dnfex) {
+                        LOG.log(Level.INFO, dnfex.getMessage(), dnfex);
+                    } catch (IOException ioex) {
+                        LOG.log(Level.INFO, ioex.getMessage(), ioex);
+                    } finally {
+                        handle.finish();
+                    }
+                }
+            });
+        }
+
+        private void saveToFile() {
+            final File file = new FileChooserBuilder(AttachmentsPanel.class)
+                    .setFilesOnly(true).showSaveDialog();
+            if (file != null) {
+                String progressFormat = NbBundle.getMessage(
+                                            SaveAttachmentAction.class,
+                                            "Attachment.saveToFile.progress"); //NOI18N
+                String progressMessage = MessageFormat.format(progressFormat, getFilename());
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                handle.start();
+                handle.switchToIndeterminate();
+                BugtrackingUtil.getParallelRP().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            getAttachmentData(file);
+                        } catch (IOException ioex) {
+                            LOG.log(Level.INFO, ioex.getMessage(), ioex);
+                        }
+                    }
+                });
+            }
+        }
+
+        private void applyPatch() {
+            final File context = BugtrackingUtil.selectPatchContext();
+            if (context != null) {
+                String progressFormat = NbBundle.getMessage(
+                                            ApplyPatchAction.class,
+                                            "Attachment.applyPatch.progress"); //NOI18N
+                String progressMessage = MessageFormat.format(progressFormat, getFilename());
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                handle.start();
+                handle.switchToIndeterminate();
+                BugtrackingUtil.getParallelRP().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            File file = saveToTempFile();
+                            PatchUtils.applyPatch(file, context);
+                        } catch (IOException ioex) {
+                            LOG.log(Level.INFO, ioex.getMessage(), ioex);
+                        } finally {
+                            handle.finish();
+                        }
+                    }
+                });
+            }
+        }
+
+        private File saveToTempFile () throws IOException {
+            String filename = getFilename();
+            int index = filename.lastIndexOf('.'); // NOI18N
+            String prefix = (index == -1) ? filename : filename.substring(0, index);
+            String suffix = (index == -1) ? null : filename.substring(index);
+            if (prefix.length()<3) {
+                prefix = prefix + "tmp";                                //NOI18N
+            }
+            File file = File.createTempFile(prefix, suffix);
+            getAttachmentData(file);
+            return file;
+        }
+
+        private void getAttachmentData (File file) throws IOException {
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(file);
+                getAttachementData(fos);
+            } finally {
+                if (fos != null) {
+                    try {
+                        fos.close();
+                    } catch (IOException ex) {
+                    }
+                }
+            }
+        }
+
+        private class DefaultAttachmentAction extends AbstractAction {
+
+            public DefaultAttachmentAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   DefaultAttachmentAction.class,
+                                   "Attachment.DefaultAction.name"));   //NOI18N
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                open();
+            }
+        }
+
+        private class SaveAttachmentAction extends AbstractAction {
+
+            public SaveAttachmentAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   SaveAttachmentAction.class,
+                                   "Attachment.SaveAction.name"));      //NOI18N
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveToFile();
+            }
+        }
+
+        private class ApplyPatchAction extends AbstractAction {
+
+            public ApplyPatchAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   ApplyPatchAction.class,
+                                   "Attachment.ApplyPatchAction.name"));//NOI18N
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                applyPatch();
+            }
+        }
+    }
 }

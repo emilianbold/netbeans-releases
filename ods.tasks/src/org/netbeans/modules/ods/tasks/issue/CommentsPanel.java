@@ -108,7 +108,7 @@ public class CommentsPanel extends JPanel {
     
     private final JPopupMenu commentsPopup = new PopupMenu();
     private C2CIssue issue;
-    private List<C2CIssue.Attachment> attachments;
+    private List<C2CIssue.C2CAttachment> attachments;
     private List<String> attachmentIds;
     private NewCommentHandler newCommentHandler;
 
@@ -141,7 +141,7 @@ public class CommentsPanel extends JPanel {
     }
 
     void setIssue(C2CIssue issue,
-                  List<C2CIssue.Attachment> attachments) {
+                  List<C2CIssue.C2CAttachment> attachments) {
         removeAll();
         this.issue = issue;
         initCollapsedComments();
@@ -171,13 +171,13 @@ public class CommentsPanel extends JPanel {
     }
 
     private static List<String> getAttachmentIds(
-                                   List<C2CIssue.Attachment> attachments) {
+                                   List<C2CIssue.C2CAttachment> attachments) {
         if (attachments.isEmpty()) {
             return Collections.emptyList();
         }
 
         List<String> result = new ArrayList<String>(attachments.size());
-        for (C2CIssue.Attachment attachment : attachments) {
+        for (C2CIssue.C2CAttachment attachment : attachments) {
             result.add(attachment.getId());
         }
         return result;
@@ -414,12 +414,12 @@ public class CommentsPanel extends JPanel {
                 Element elem = doc.getCharacterElement(pane.viewToModel(clickPoint));
                 Object l = elem.getAttributes().getAttribute(HyperlinkSupport.LINK_ATTRIBUTE);
                 if (l != null && l instanceof AttachmentLink) {
-                    C2CIssue.Attachment attachment = ((AttachmentLink) l).attachment;
+                    C2CIssue.C2CAttachment attachment = ((AttachmentLink) l).attachment;
                     if (attachment != null) {
-                        add(new JMenuItem(attachment.new DefaultAttachmentAction()));
-                        add(new JMenuItem(attachment.new SaveAttachmentAction()));
+                        add(new JMenuItem(attachment.getOpenAction()));
+                        add(new JMenuItem(attachment.getSaveAction()));
                         if (attachment.isPatch()) {
-                            add(attachment.new ApplyPatchAction());
+                            add(attachment.getApplyPatchAction());
                         }
                         super.setVisible(true);
                     }
@@ -567,13 +567,13 @@ public class CommentsPanel extends JPanel {
     }
     
     private class AttachmentLink implements HyperlinkSupport.Link {
-        private C2CIssue.Attachment attachment;
-        public AttachmentLink(C2CIssue.Attachment attachment) {
+        private C2CIssue.C2CAttachment attachment;
+        public AttachmentLink(C2CIssue.C2CAttachment attachment) {
             this.attachment = attachment;
         }
         @Override
         public void onClick(String linkText) {
-            attachment.open();
+            attachment.getOpenAction().actionPerformed(new ActionEvent(attachment, ActionEvent.ACTION_PERFORMED, null));
         }
     }
 }
