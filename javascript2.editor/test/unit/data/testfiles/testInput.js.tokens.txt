@@ -83,7 +83,7 @@ BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLi
 IDENTIFIER      "text", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
 BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=false}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=true}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "    ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 IDENTIFIER      "document", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
@@ -112,7 +112,7 @@ BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLi
 IDENTIFIER      "count", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
 BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=false}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=true}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "    ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 KEYWORD_VAR     "var", la=1, st=LexerState{zzState=201, zzLexicalState=2, canFollowLiteral=false}
@@ -146,7 +146,7 @@ IDENTIFIER      "i", la=1, st=LexerState{zzState=35, zzLexicalState=2, canFollow
 OPERATOR_INCREMENT  "++", st=LexerState{zzState=139, zzLexicalState=2, canFollowLiteral=true}
 BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=false}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=true}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "        ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 IDENTIFIER      "space", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
@@ -179,7 +179,7 @@ OPERATOR_COMMA  ",", st=LexerState{zzState=49, zzLexicalState=2, canFollowLitera
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 IDENTIFIER      "surname", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
 BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=false}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=true}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "    ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 KEYWORD_THIS    "this", la=1, st=LexerState{zzState=228, zzLexicalState=2, canFollowLiteral=false}
@@ -213,7 +213,7 @@ KEYWORD_FUNCTION  "function", la=1, st=LexerState{zzState=326, zzLexicalState=2,
 BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLiteral=true}
 BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=false}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=true}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "        ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 KEYWORD_RETURN  "return", la=1, st=LexerState{zzState=285, zzLexicalState=2, canFollowLiteral=true}
@@ -237,7 +237,7 @@ WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollow
 BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLiteral=true}
 BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=false}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=true}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "    ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 KEYWORD_VAR     "var", la=1, st=LexerState{zzState=201, zzLexicalState=2, canFollowLiteral=false}
@@ -276,7 +276,7 @@ WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollow
 BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLiteral=true}
 BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=false}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=true}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "        ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 IDENTIFIER      "println", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
@@ -319,7 +319,7 @@ WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollow
 BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLiteral=true}
 BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=false}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=true}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "    ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 IDENTIFIER      "println", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
@@ -384,7 +384,7 @@ WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollow
 BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLiteral=true}
 BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=false}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=true}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "    ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 KEYWORD_RETURN  "return", la=1, st=LexerState{zzState=285, zzLexicalState=2, canFollowLiteral=true}
@@ -411,7 +411,7 @@ WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollow
 BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLiteral=true}
 BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=false}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=true}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "    ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 KEYWORD_RETURN  "return", la=1, st=LexerState{zzState=285, zzLexicalState=2, canFollowLiteral=true}
@@ -430,7 +430,7 @@ IDENTIFIER      "motor", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFo
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=false}
 OPERATOR_ASSIGNMENT  "=", la=1, st=LexerState{zzState=43, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "  ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=false}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=true}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "    ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 IDENTIFIER      "pocetValcu", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
@@ -458,7 +458,7 @@ WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollow
 BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=44, zzLexicalState=2, canFollowLiteral=true}
 BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=45, zzLexicalState=2, canFollowLiteral=false}
 WHITESPACE      " ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=false}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=false}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=46, zzLexicalState=2, canFollowLiteral=true}
 EOL             "\n", st=LexerState{zzState=14, zzLexicalState=2, canFollowLiteral=true}
 WHITESPACE      "        ", la=1, st=LexerState{zzState=15, zzLexicalState=2, canFollowLiteral=true}
 IDENTIFIER      "println", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false}
