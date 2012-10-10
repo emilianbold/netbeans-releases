@@ -51,8 +51,10 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Egor Ushakov
  */
-public abstract class APTIndexingSupport {
-    public static String PATH = "APT/Indexer"; // NOI18N
+public final class APTIndexingSupport {
+    private APTIndexingSupport() {
+    }
+    
     private static final Collection<? extends APTIndexingFilterProvider> providers = Lookups.forPath(APTIndexingFilterProvider.PATH).lookupAll(APTIndexingFilterProvider.class);
     
     public static TokenStream index(FileSystem fs, CharSequence path, TokenStream ts) {

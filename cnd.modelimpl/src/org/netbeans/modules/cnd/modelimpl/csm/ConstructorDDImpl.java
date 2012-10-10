@@ -189,7 +189,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);
             
-            addMember(method);
+//            addMember(method);
             
             return method;
         }        
