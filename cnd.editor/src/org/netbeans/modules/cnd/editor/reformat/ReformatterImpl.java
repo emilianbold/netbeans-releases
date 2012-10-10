@@ -2204,6 +2204,8 @@ public class ReformatterImpl {
                     }
                 }
                 spaceBefore(previous, codeStyle.spaceWithinMethodCallParens(), codeStyle.spaceKeepExtra());
+            } else if (p != null && (p.id() == TYPEID || p.id() == SIZEOF || p.id() == TYPEOF)) {
+                spaceBefore(previous, codeStyle.spaceWithinParens(), codeStyle.spaceKeepExtra());
             } else if (ts.isTypeCast()){
                 spaceBefore(previous, codeStyle.spaceWithinTypeCastParens(), codeStyle.spaceKeepExtra());
                 spaceAfter(current, codeStyle.spaceAfterTypeCast(), codeStyle.spaceKeepExtra());

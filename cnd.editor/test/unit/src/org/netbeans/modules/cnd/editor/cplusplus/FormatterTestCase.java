@@ -5493,4 +5493,23 @@ public class FormatterTestCase extends EditorBase {
                 "}\n"
                 );
     }
+    
+    public void test219739() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "    if (typeid (node1).name() == typeid (struct Node).name())\n" +
+                "        return 0;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect type reference formatting",
+                "int foo()\n" +
+                "{\n" +
+                "    if (typeid (node1).name() == typeid (struct Node).name())\n" +
+                "        return 0;\n" +
+                "}\n"
+                );
+    }
 }
