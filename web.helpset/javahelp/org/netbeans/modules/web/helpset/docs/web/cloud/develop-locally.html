@@ -21,51 +21,40 @@
             <li>Incremental deployment is only available locally.</li>
             <li>Debugging is only available locally.</li>
         </ul>
-<!--        <ul class="note">
-            <li>The advantages of developing applications locally are stronger for Oracle Cloud 
-                than for Amazon Elastic Beanstalk.</li>
-        </ul>-->
-        <p>However, to locally develop applications that you will later deploy to the cloud, your local
-            environment must mirror the environment on the cloud. For the Amazon Elastic Beanstalk, this means
-            you must use a Tomcat 6 or Tomcat 7 server to match your Elastic Beanstalk application environment.
-            <!--For the Oracle Cloud, you need the following:-->
-        </p>
-<!--        <ul>
-            <li>An Oracle WebLogic server. The version must match the specifications in Chapter 4
-                of the Oracle Java Cloud Service Users Guide. 
-                This document is available from the Resources &gt; Documentation tab within your activated Java Cloud service
-                on the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                    <param name="content" value="https://cloud.oracle.com">
-                    <param name="text" value="<html><u>Oracle Cloud site</u></html>">
-                    <param name="textFontSize" value="medium">
-                    <param name="textColor" value="blue">
-                </object>. Note that JPA 2.0 must NOT be enabled on this server, as the Oracle Cloud Remote
-            WebLogic server does not support JPA 2.0.</li>
-                <li>OracleXE 11g database server. This server is necessary if you wish to work with CRUD
-                applications.</li>
-        </ul>-->
+
+        <ul class="note">
+            <li>To locally develop applications that you will later deploy to the cloud, your local
+            environment must mirror the environment on the cloud. </li>
+        </ul>
+
         <p>When your local environment is set up, develop web applications as usual. When the application is
         complete, deploy it to the cloud environment.</p>
         
-        <dl>
-            <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/about/about_webapps.html">About Web Applications</a></dd>
-            <dd><a href="deploy-cloud.html">Deploying Web Applications to the Cloud</a></dd>
-<!--            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <p>For more details about working with cloud providers supported in the IDE, see the following documents.</p>
+        <ul>
+            <li><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://www.netbeans.org/kb/docs/web/oracle-cloud.html">
                     <param name="text" value="<html><u>Running Web Applications on Oracle Cloud</u></html>">
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue">
-                </object></dd>-->
-                <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                        <param name="content" value="http://wiki.netbeans.org/AmazonBeanstalkSupport">
-                        <param name="text" value="<html><u>NetBeans Wiki: Amazon Beanstalk Support</u></html>">
-                        <param name="textFontSize" value="medium">
-                        <param name="textColor" value="blue">
-                    </object></dd></dl>
+                </object></li>
+            <li><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://wiki.netbeans.org/AmazonBeanstalkSupport">
+                    <param name="text" value="<html><u>NetBeans Wiki: Amazon Beanstalk Support</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></li>
+            </ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="about-cloud.html">About Web Applications on the Cloud</a></dd>
+            <dd><a href="register-cloud.html">Registering a Cloud Account</a></dd>
+            <dd><a href="../about/about_webapps.html">About Web Applications</a></dd>
+        </dl>
         <hr>
         <p>
-            <small><a href="../credits.html">Legal Notices</a></small>
+            <small><a href="../../credits.html">Legal Notices</a></small>
         </p>
     </body> 
 </html>
