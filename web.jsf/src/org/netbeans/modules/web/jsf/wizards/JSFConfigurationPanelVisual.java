@@ -149,7 +149,6 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private String serverInstanceID;
     private final List<PreferredLanguage> preferredLanguages = new ArrayList<PreferredLanguage>();
     private String currentServerInstanceID;
-    private final List<String> excludeLibs = Arrays.asList("javaee-web-api-6.0", "javaee-api-6.0", "jsp-compilation", "javaee-api-5.0"); //NOI18N
     private boolean isWebLogicServer = false;
 
     // Jsf component libraries related
@@ -161,6 +160,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             lookupResult(JsfComponentProvider.class).allInstances());
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    /** Libraries excluded from panel's {@link #jsfLibraries}. Libraries offered as registered in the IDE. */
+    private static final Set<String> EXCLUDE_FROM_REGISTERED_LIBS = new HashSet<String>(Arrays.asList(
+            "javaee-web-api-6.0", //NOI18N
+            "javaee-api-6.0", //NOI18N
+            "jsp-compilation", //NOI18N
+            "jsp-compilation-syscp", //NOI18N
+            "javaee-api-5.0")); //NOI18N
 
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
@@ -337,7 +344,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
                         content = library.getContent("classpath"); //NOI18N
                         try {
-                            if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION) && !excludeLibs.contains(library.getName())) {
+                            if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION)
+                                    && !EXCLUDE_FROM_REGISTERED_LIBS.contains(library.getName())) {
                                 registeredItems.add(library.getDisplayName());
                                 boolean isJSF12 = Util.containsClass(content, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
                                 boolean isJSF20 = Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
