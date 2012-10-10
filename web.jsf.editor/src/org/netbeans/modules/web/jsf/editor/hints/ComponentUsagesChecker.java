@@ -122,7 +122,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                         LibraryComponent component = lib.getComponent(tagName);
                         if (component == null) {
                             //error, the component doesn't exist in the library
-                            Hint hint = new Hint(DEFAULT_ERROR_RULE,
+                            Hint hint = new Hint(ERROR_RULE_BADGING,
                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_CC_COMPONENT", lib.getDisplayName(), tagName),
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                     JsfUtils.createOffsetRange(snapshot, docText, node.from(), node.to()),
@@ -147,7 +147,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                                     if (attr.isRequired()) {
                                         if (openTag.getAttribute(attr.getName()) == null) {
                                             //missing required attribute
-                                            Hint hint = new Hint(DEFAULT_ERROR_RULE,
+                                            Hint hint = new Hint(ERROR_RULE_BADGING,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_MISSING_REQUIRED_ATTRIBUTE", attr.getName()),
                                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                                     JsfUtils.createOffsetRange(snapshot, docText, node.from(), node.to()),
@@ -165,7 +165,7 @@ public class ComponentUsagesChecker extends HintsProvider {
 					    tag.getAttribute(nodeAttrName) == null &&
 					    !"xmlns".equals(nodeAttrName.toLowerCase(Locale.ENGLISH))) {
                                         //unknown attribute
-                                        Hint hint = new Hint(DEFAULT_WARNING_RULE,
+                                        Hint hint = new Hint(ERROR_RULE_BADGING,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name(), tag.getName()),
                                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                                     JsfUtils.createOffsetRange(snapshot, docText, nodeAttr.from(), nodeAttr.to()),

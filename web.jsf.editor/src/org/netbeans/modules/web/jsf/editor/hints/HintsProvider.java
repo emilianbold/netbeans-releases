@@ -86,39 +86,53 @@ public abstract class HintsProvider {
 
     protected static ErrorRule DEFAULT_ERROR_RULE = new Rule(HintSeverity.ERROR, true);
     protected static ErrorRule DEFAULT_WARNING_RULE = new Rule(HintSeverity.WARNING, true);
+    
+    protected static ErrorRule ERROR_RULE_BADGING = new BadgingRule(HintSeverity.ERROR, true);
 
     protected static final int DEFAULT_ERROR_HINT_PRIORITY = 50;
 
-    protected static final class Rule implements ErrorRule {
+    private static class Rule implements ErrorRule {
 
         private HintSeverity severity;
         private boolean showInTasklist;
 
-        private Rule(HintSeverity severity, boolean showInTaskList) {
+        protected Rule(HintSeverity severity, boolean showInTaskList) {
             this.severity = severity;
             this.showInTasklist = showInTaskList;
         }
 
+        @Override
         public Set<?> getCodes() {
             return Collections.emptySet();
         }
 
+        @Override
         public boolean appliesTo(RuleContext context) {
             return true;
         }
 
+        @Override
         public String getDisplayName() {
             return "jsf"; //NOI18N //does this show up anywhere????
         }
 
+        @Override
         public boolean showInTasklist() {
             return showInTasklist;
         }
 
+        @Override
         public HintSeverity getDefaultSeverity() {
             return severity;
         }
         
     }
 
+    private static final class BadgingRule extends Rule {
+
+        public BadgingRule(HintSeverity severity, boolean showInTaskList) {
+            super(severity, showInTaskList);
+        }
+        
+    }
 }

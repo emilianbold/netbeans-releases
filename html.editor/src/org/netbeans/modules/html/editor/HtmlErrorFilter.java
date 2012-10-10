@@ -58,6 +58,7 @@ import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ErrorFilter;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.api.gsf.ErrorBadgingRule;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.hints.HtmlHintsProvider;
 import org.netbeans.modules.web.common.api.WebPageMetadata;
@@ -128,14 +129,14 @@ public class HtmlErrorFilter implements ErrorFilter {
                     //ignore
                     continue;
             }
-            
-            DefaultError e = new DefaultError("error", //NOI18N
+            DefaultError e = new BadgingDefaultError("error", //NOI18N
                     h.getDescription(), 
                     h.getDescription(), 
                     h.getFile(),
                     h.getRange().getStart(), 
                     h.getRange().getEnd(), 
-                    severity);
+                    severity,
+                    rule instanceof ErrorBadgingRule);
             
             filtered.add(e);
         }
@@ -194,6 +195,23 @@ public class HtmlErrorFilter implements ErrorFilter {
         public ErrorFilter createErrorFilter(String featureName) {
             return ErrorFilter.FEATURE_TASKLIST.equals(featureName) ? INSTANCE : null;
         }
+        
+    }
+    
+    private class BadgingDefaultError extends DefaultError implements Error.Badging {
+
+        private boolean badging;
+        
+        public BadgingDefaultError(String key, String displayName, String description, FileObject file, int start, int end, Severity severity, boolean badging) {
+            super(key, displayName, description, file, start, end, severity);
+            this.badging = true;
+        }
+
+        @Override
+        public boolean showExplorerBadge() {
+            return badging;
+        }
+        
         
     }
     
