@@ -2480,27 +2480,29 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                boolean ret = false;
+                boolean submitOK = false;
                 try {
-                    ret = issue.submitAndRefresh();
-                    for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
-                        if (attachment.file.exists() && attachment.file.isFile()) {
-                            if (attachment.description.trim().length() == 0) {
-                                attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
+                    submitOK = issue.submitAndRefresh();
+                    if(submitOK) {
+                        for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
+                            if (attachment.file.exists() && attachment.file.isFile()) {
+                                if (attachment.description.trim().length() == 0) {
+                                    attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
+                                }
+                                issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
+                            } else {
+                                // PENDING notify user
                             }
-                            issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
+                        }
+                        if(attachLogCheckBox.isVisible() && attachLogCheckBox.isSelected()) {
+                            File f = new File(Places.getUserDirectory(), NbBugzillaConstants.NB_LOG_FILE_PATH); 
+                            if(f.exists()) {
+                                issue.addAttachment(f, "", NbBundle.getMessage(IssuePanel.class, "MSG_LOG_FILE_DESC"), NbBugzillaConstants.NB_LOG_FILE_ATT_CONT_TYPE, false); // NOI18N
+                            }
+                            BugzillaConfig.getInstance().putAttachLogFile(true);
                         } else {
-                            // PENDING notify user
+                            BugzillaConfig.getInstance().putAttachLogFile(false);
                         }
-                    }
-                    if(attachLogCheckBox.isVisible() && attachLogCheckBox.isSelected()) {
-                        File f = new File(Places.getUserDirectory(), NbBugzillaConstants.NB_LOG_FILE_PATH); 
-                        if(f.exists()) {
-                            issue.addAttachment(f, "", NbBundle.getMessage(IssuePanel.class, "MSG_LOG_FILE_DESC"), NbBugzillaConstants.NB_LOG_FILE_ATT_CONT_TYPE, false); // NOI18N
-                        }
-                        BugzillaConfig.getInstance().putAttachLogFile(true);
-                    } else {
-                        BugzillaConfig.getInstance().putAttachLogFile(false);
                     }
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
@@ -2511,7 +2513,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         }
                     });
                     handle.finish();
-                    if(ret) {
+                    if(submitOK) {
                         if (isNew) {
                             // Show all custom fields, not only the ones shown on bug creation
                             EventQueue.invokeLater(new Runnable() {

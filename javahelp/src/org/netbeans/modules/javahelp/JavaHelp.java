@@ -1043,8 +1043,7 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
     // XXX(ttran) see JDK bug 5092094 for details
     
     private static boolean isModalExcludedSupported() {
-        return Toolkit.getDefaultToolkit().isModalExclusionTypeSupported(Dialog.ModalExclusionType.APPLICATION_EXCLUDE)
-                && !Utilities.isMac(); //#198339 - modal exclusion doesn't seem to work on mac
+        return Toolkit.getDefaultToolkit().isModalExclusionTypeSupported(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
     }
     
     private static void setModalExcluded(Window window) {

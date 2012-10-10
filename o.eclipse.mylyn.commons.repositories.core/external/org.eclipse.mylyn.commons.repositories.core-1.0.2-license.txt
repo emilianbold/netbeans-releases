@@ -1,5 +1,5 @@
 Name: Mylyn Commons Repositories library
-Version: 1.0.1
+Version: 1.0.2
 License: EPL-v10
 OSR: 5852
 Origin: http://www.eclipse.org/mylyn/

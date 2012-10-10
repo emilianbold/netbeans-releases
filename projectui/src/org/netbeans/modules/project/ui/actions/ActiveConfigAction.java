@@ -82,6 +82,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.plaf.ComboBoxUI;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -167,6 +168,17 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 }
                 return sz;
             }
+
+            @Override
+            public void setUI(ComboBoxUI ui) {
+                super.setUI(ui);
+                //#208060 you will not believe this. When a Windows Desktop Connection connects to a computer running netbeans,
+                // the look and feel will call setUI on everything, in effect clearing the set renderer we have.
+                // so this call is here to have the last word.
+                setRenderer(new ConfigCellRenderer());
+            }
+            
+            
         };
         configListCombo.addPopupMenuListener(new PopupMenuListener() {
             private Component prevFocusOwner = null;
