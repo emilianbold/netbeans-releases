@@ -71,11 +71,10 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
-@TopComponent.Description(preferredID = "LogsTopComponent",
-persistenceType = TopComponent.PERSISTENCE_NEVER)
-@TopComponent.Registration(mode = "editor", openAtStartup = false)
 public class LogsComponent extends TopComponent {
 
     private static final Logger LOG = Logger.getLogger(LogsComponent.class.getName());
@@ -103,6 +102,27 @@ public class LogsComponent extends TopComponent {
         });
         fetchServiceInstanceLogs();
         loadJobs();
+    }
+
+    @Override
+    protected String preferredID() {
+        return "LogsTopComponent"; //NOI18N
+    }
+
+    @Override
+    public int getPersistenceType() {
+        return PERSISTENCE_NEVER;
+    }
+
+    @Override
+    public void open() {
+        if( !isOpened() ) {
+            Mode editorMode = WindowManager.getDefault().findMode("editor"); //NOI18N
+            if( null != editorMode ) {
+                editorMode.dockInto( this );
+            }
+        }
+        super.open();
     }
     
     private Job createInitJob(String s) {
