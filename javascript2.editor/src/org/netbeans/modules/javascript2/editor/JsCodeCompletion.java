@@ -334,10 +334,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
         if (token != null && token.id() != JsTokenId.EOL) {
             JsTokenId id = token.id();
             if (id == JsTokenId.STRING_END && ts.movePrevious()) {
-                token = ts.token();
-                id = token.id();
-                if (id == JsTokenId.STRING_BEGIN) {
+                if (ts.token().id() == JsTokenId.STRING_BEGIN) {
                     return "";
+                } else {
+                    ts.moveNext();
                 }
             }
             if (id == JsTokenId.IDENTIFIER || id.isKeyword() || id == JsTokenId.STRING) {

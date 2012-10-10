@@ -177,7 +177,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
                         //this itself means that the node is undeclared since
                         //otherwise it wouldn't appear in the pure html parse tree
-                        Hint hint = new Hint(DEFAULT_ERROR_RULE,
+                        Hint hint = new Hint(ERROR_RULE_BADGING,
                                 NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT", openTag.name().toString()), //NOI18N
                                 context.parserResult.getSnapshot().getSource().getFileObject(),
                                 JsfUtils.createOffsetRange(snapshot, docText, node.from(), node.from() + openTag.name().length() + 1 /* "<".length */),
@@ -197,7 +197,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                 Attribute attr = namespace2Attribute.get(namespace);
                 if (attr != null) {
                     //found the declaration, mark as error
-                    Hint hint = new Hint(DEFAULT_ERROR_RULE,
+                    Hint hint = new Hint(ERROR_RULE_BADGING,
                             NbBundle.getMessage(HintsProvider.class, "MSG_MISSING_LIBRARY", namespace), //NOI18N
                             context.parserResult.getSnapshot().getSource().getFileObject(),
                             JsfUtils.createOffsetRange(snapshot, docText, attr.nameOffset(), attr.valueOffset() + attr.value().length()),
@@ -230,7 +230,9 @@ public class LibraryDeclarationChecker extends HintsProvider {
                 if (declAttr != null) {
                     int from = declAttr.nameOffset();
                     int to = declAttr.valueOffset() + declAttr.value().length();
-                    ranges.add(new OffsetRange(from, to));
+                    
+                    OffsetRange documentRange = JsfUtils.createOffsetRange(snapshot, docText, from, to);
+                    ranges.add(documentRange);
                 }
 
             }
@@ -238,9 +240,6 @@ public class LibraryDeclarationChecker extends HintsProvider {
         
         //generate remove all unused declarations
         for (OffsetRange range : ranges) {
-            int from = snapshot.getOriginalOffset(range.getStart());
-            int to = snapshot.getOriginalOffset(range.getEnd());
-
             List<HintFix> fixes;
             try {
                 //do not create any fixes if there's no document
@@ -256,9 +255,9 @@ public class LibraryDeclarationChecker extends HintsProvider {
             }
             
             Hint hint = new Hint(DEFAULT_WARNING_RULE,
-                    NbBundle.getMessage(HintsProvider.class, "MSG_UNUSED_LIBRARY_DECLARATION", docText.subSequence(from, to)), //NOI18N
+                    NbBundle.getMessage(HintsProvider.class, "MSG_UNUSED_LIBRARY_DECLARATION", docText.subSequence(range.getStart(), range.getEnd())), //NOI18N
                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                    JsfUtils.createOffsetRange(snapshot, docText, from, to),
+                    range,
                     fixes, DEFAULT_ERROR_HINT_PRIORITY);
 
             hints.add(hint);
@@ -391,7 +390,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         public PositionRange(RuleContext context, int from, int to) throws BadLocationException {
             //the constructor will simply throw BLE when the embedded to source offset conversion fails (returns -1)
             this.from = context.doc.createPosition(from);
-            this.to = context.doc.createPosition(from);
+            this.to = context.doc.createPosition(to);
         }
 
         public int getFrom() {

@@ -140,7 +140,7 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
      */
     @Override
     protected List<SourceGroup> moveTestFolderAsFirst(List<SourceGroup> groups) {
-        return moveAsFirst(groups, "/test");
+        return moveAsFirst(groups, "/test").subList(0, 1); // #219766
     }
 
     @Override
