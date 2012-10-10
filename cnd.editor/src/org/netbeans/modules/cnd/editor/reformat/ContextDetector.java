@@ -554,10 +554,11 @@ public class ContextDetector extends ExtendedTokenSequence {
                     } else {
                         switch(current.id()){
                             case GT:
-                                if (isLikeTemplate()) {
+                            case LT:
+                                if (braces.isDeclarationLevel()) {
                                     return OperatorKind.SEPARATOR;
-                                } else {
-                                    return OperatorKind.BINARY;
+                                } else if (isLikeTemplate(current)) {
+                                    return OperatorKind.SEPARATOR;
                                 }
                             default:
                                 return OperatorKind.BINARY;
@@ -746,60 +747,25 @@ public class ContextDetector extends ExtendedTokenSequence {
         return false;
     }
     
-    private boolean isLikeTemplate() {
-        int index = index();
-        int paren = 0;
-        int triangle = 1;
-        try {
-            while(movePrevious()){
-                switch (token().id()) {
-                    case LPAREN:
-                        if (paren == 0) {
-                            return false;
-                        }
-                        paren--;
-                        break;
-                    case RPAREN:
-                        paren++;
-                        break;
-                    case LT:
-                        triangle--;
-                        if (triangle == 0 && paren == 0) {
-                            return true;
-                        }
-                        break;
-                    case GT:
-                        triangle++;
-                        break;
-                    case WHITESPACE:
-                    case ESCAPED_WHITESPACE:
-                    case NEW_LINE:
-                    case LINE_COMMENT:
-                    case DOXYGEN_LINE_COMMENT:
-                    case BLOCK_COMMENT:
-                    case DOXYGEN_COMMENT:
-                    case PREPROCESSOR_DIRECTIVE:
-                        break;
-                    case LBRACE:
-                    case RBRACE:
-                    case SEMICOLON:
-                        return false;
-                    default:
-                        break;
-                }
-            }
-            return true;
-        } finally {
-            moveIndex(index);
-            moveNext();
-        }
-    }
-    
     private boolean isLikeExpession(){
         StackEntry entry = braces.peek();
-        if (entry != null && 
-           (entry.getKind() == FOR || entry.getKind() == WHILE || entry.getKind() == IF)){
-            return true;
+        if (entry != null) {
+            if ((entry.getKind() == FOR || entry.getKind() == WHILE || entry.getKind() == IF)){
+                return true;
+            } else {
+                if (entry.getImportantKind() != null) {
+                    switch (entry.getImportantKind()) {
+                        case NAMESPACE:
+                        case STRUCT:
+                        case CLASS:
+                        case UNION:
+                        case ENUM:
+                            if (braces.parenDepth == 1) {
+                                return false;
+                            }
+                    }
+                }
+            }
         }
         int index = index();
         try {
