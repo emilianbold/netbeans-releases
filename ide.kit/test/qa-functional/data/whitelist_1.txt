@@ -32,15 +32,10 @@ org.netbeans.modules.java.source.usages.ClassIndexManager$InternalLock
 org.netbeans.modules.java.source.usages.ClassIndexManagerEvent
 org.netbeans.modules.java.source.usages.ClassIndexManagerListener
 
-#217786
-org.netbeans.modules.web.clientproject.ClientSideProject
+# added in 7.3: impl of URLMapper and PathRecognizer:
 org.netbeans.modules.web.clientproject.PathRecognizerImpl
-org.netbeans.modules.web.clientproject.api.WebClientLibraryManager
-org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider
-org.netbeans.modules.web.clientproject.libraries.GoogleLibrariesProvider
-org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider
-org.netbeans.modules.web.clientproject.remote.RemoteFilesCache
-org.netbeans.modules.web.clientproject.remote.RemoteURLMapper
+org.netbeans.modules.web.common.remote.RemoteFilesCache
+org.netbeans.modules.web.common.remote.RemoteURLMapper
 
 #217785
 org.json.simple.JSONArray
