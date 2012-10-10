@@ -203,67 +203,6 @@ public class NodeTreeModel extends DefaultTreeModel {
         }
     }
 
-    @Override
-    protected void fireTreeNodesChanged( final Object source, final Object[] path, final int[] childIndices, final Object[] children ) {
-        if( !SwingUtilities.isEventDispatchThread() ) {
-            SwingUtilities.invokeLater( new Runnable() {
-
-                @Override
-                public void run() {
-                    fireTreeNodesChanged( source, path, childIndices, children );
-                }
-            });
-            return;
-        }
-        super.fireTreeNodesChanged( source, path, childIndices, children );
-    }
-
-    @Override
-    protected void fireTreeNodesInserted( final Object source, final Object[] path, final int[] childIndices, final Object[] children ) {
-        if( !SwingUtilities.isEventDispatchThread() ) {
-            SwingUtilities.invokeLater( new Runnable() {
-
-                @Override
-                public void run() {
-                    fireTreeNodesInserted( source, path, childIndices, children );
-                }
-            });
-            return;
-        }
-        super.fireTreeNodesInserted( source, path, childIndices, children );
-    }
-
-    @Override
-    protected void fireTreeNodesRemoved( final Object source, final Object[] path, final int[] childIndices, final Object[] children ) {
-        if( !SwingUtilities.isEventDispatchThread() ) {
-            SwingUtilities.invokeLater( new Runnable() {
-
-                @Override
-                public void run() {
-                    fireTreeNodesRemoved( source, path, childIndices, children );
-                }
-            });
-            return;
-        }
-        super.fireTreeNodesRemoved( source, path, childIndices, children );
-    }
-
-    @Override
-    protected void fireTreeStructureChanged( final Object source, final Object[] path, final int[] childIndices, final Object[] children ) {
-        if( !SwingUtilities.isEventDispatchThread() ) {
-            SwingUtilities.invokeLater( new Runnable() {
-
-                @Override
-                public void run() {
-                    fireTreeStructureChanged( source, path, childIndices, children );
-                }
-            });
-            return;
-        }
-        super.fireTreeStructureChanged( source, path, childIndices, children );
-    }
-
-
     /** The listener */
     private static final class Listener implements NodeModel {
         /** weak reference to the model */
