@@ -191,6 +191,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                         break;
                     case SCOPE:
                     case STRUCT:
+                    case CLASS:
                     case CONST:
                     case VOID:
                     case UNSIGNED:
@@ -471,7 +472,13 @@ public class ContextDetector extends ExtendedTokenSequence {
                 LITERAL_CATEGORY.equals(prevCategory) ||
                 CHAR_CATEGORY.equals(prevCategory) ||
                 STRING_CATEGORY.equals(prevCategory)){
-                return OperatorKind.BINARY;
+                if (current.id() == GT && isLikeTemplate(current)) {
+                    // get<0>()
+                    //      ^
+                    return OperatorKind.SEPARATOR;
+                } else {
+                    return OperatorKind.BINARY;
+                }
             }
             String nextCategory = next.id().primaryCategory();
             if (KEYWORD_CATEGORY.equals(nextCategory)){
@@ -512,7 +519,13 @@ public class ContextDetector extends ExtendedTokenSequence {
                             return OperatorKind.UNARY;
                     }
                 } else {
-                    return OperatorKind.BINARY;
+                    if (previous.id() == IDENTIFIER && current.id() == LT && isLikeTemplate(current)) {
+                        // get<0>()
+                        //    ^
+                        return OperatorKind.SEPARATOR;
+                    } else {
+                        return OperatorKind.BINARY;
+                    }
                 }
             }
             if (previous.id() == RPAREN || previous.id() == RBRACKET){

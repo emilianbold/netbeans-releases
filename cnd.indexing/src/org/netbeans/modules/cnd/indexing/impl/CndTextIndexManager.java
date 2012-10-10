@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.filesystems.FileSystem;
@@ -58,9 +59,8 @@ import org.openide.modules.OnStop;
  */
 public class CndTextIndexManager {
     public static final String FIELD_IDS = "ids"; //NOI18N
-    public static final String FIELD_PATH = "path"; //NOI18N
-    
     private static final Map<String, CndTextIndexImpl> indexMap = new HashMap<String, CndTextIndexImpl>();
+    private static final File indexLocation = new File(CacheLocation.DEFAULT.getLocation(), "index"); //NOI18N
     
     @OnStop
     public static class Cleanup implements Runnable {
@@ -79,8 +79,7 @@ public class CndTextIndexManager {
         }
         CndTextIndexImpl index = indexMap.get(fsKey);
         if (index == null) {
-            //TODO: use LuceneIndexFactory?
-            final File indexRoot = new File("/tmp/testIndex", fsKey); //NOI18N
+            final File indexRoot = new File(indexLocation, fsKey); //NOI18N
             indexRoot.mkdirs();
 
             try {
