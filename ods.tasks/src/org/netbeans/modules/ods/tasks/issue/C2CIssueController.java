@@ -81,20 +81,20 @@ public class C2CIssueController extends BugtrackingController {
 
     @Override
     public void opened() {
-//        C2CIssue issue = issuePanel.getIssue();
-//        if (issue != null) {
-//            issuePanel.opened();
-//            issue.opened();
-//        }
+        C2CIssue issue = panel.getIssue();
+        if (issue != null) {
+            panel.opened();
+            issue.opened();
+        }
     }
 
     @Override
     public void closed() {
-//        C2CIssue issue = issuePanel.getIssue();
-//        if (issue != null) {
-//            issue.closed();
-//            issuePanel.closed();
-//        }
+        C2CIssue issue = panel.getIssue();
+        if (issue != null) {
+            issue.closed();
+            panel.closed();
+        }
     }
 
     @Override

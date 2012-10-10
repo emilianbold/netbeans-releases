@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -304,11 +305,12 @@ public abstract class C2CQuery {
                     firstRun = false;
 
                     // run query to know what matches the criteria
+                    IssuesCollector ic = new IssuesCollector();
                     PerformQueryCommand queryCmd = 
                         new PerformQueryCommand(
                             C2C.getInstance().getRepositoryConnector(),
                             repository.getTaskRepository(), 
-                            new IssuesCollector(),
+                            ic,
                             getRepositoryQuery());
                     repository.getExecutor().execute(queryCmd, true, !autoRefresh);
                     if(queryCmd.hasFailed()) {
@@ -327,7 +329,16 @@ public abstract class C2CQuery {
                     // - all issue returned by the query
                     // - and issues which were returned by some previous run and are archived now
                     queryIssues.addAll(issues);
-                    
+
+                    //XXX opened issues must have complete task data
+                    //is there another way?
+                    if (!ic.openedIssues.isEmpty()) {
+                        getController().switchToDeterminateProgress(ic.openedIssues.size());
+                        for (C2CIssue issue : ic.openedIssues) {
+                            getController().addProgressUnit(issue.getDisplayName());
+                            repository.getIssue(issue.getID());
+                        }
+                    }                    
                 } finally {
                     logQueryEvent(issues.size(), autoRefresh);
                     if(C2C.LOG.isLoggable(Level.FINE)) {
@@ -367,6 +378,8 @@ public abstract class C2CQuery {
         }
     };
     private class IssuesCollector extends TaskDataCollector {
+        List<C2CIssue> openedIssues = new LinkedList<C2CIssue>();
+        
         public IssuesCollector() {}
         @Override
         public void accept(TaskData taskData) {
@@ -376,6 +389,9 @@ public abstract class C2CQuery {
             try {
                 IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();
                 issue = (C2CIssue) cache.setIssueData(id, taskData);
+                if (!issue.isNew() && issue.isOpened()) {
+                    openedIssues.add(issue);
+                }
             } catch (IOException ex) {
                 C2C.LOG.log(Level.SEVERE, null, ex);
                 return;

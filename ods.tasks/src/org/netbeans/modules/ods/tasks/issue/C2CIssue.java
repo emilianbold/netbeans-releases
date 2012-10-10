@@ -116,6 +116,8 @@ public class C2CIssue {
     private static final Set<IssueField> UNAVAILABLE_FIELDS_IF_PARTIAL_DATA = new HashSet<IssueField>(Arrays.asList(
             IssueField.SUBTASK
     ));
+    private Map<String, String> seenAtributes;
+    private boolean open;
     
     public C2CIssue(TaskData data, C2CRepository repo) {
         this.data = data;
@@ -278,6 +280,25 @@ public class C2CIssue {
 
     public boolean isNew() {
         return data == null || data.isNew();
+    }
+
+    void opened() {
+        open = true;
+        if(!data.isNew()) {
+            // 1.) to get seen attributes makes no sense for new issues
+            // 2.) set seenAtributes on issue open, before its actuall
+            //     state is written via setSeen().
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+        }
+    }
+
+    void closed() {
+        open = false;
+        seenAtributes = null;
+    }
+    
+    public boolean isOpened () {
+        return open;
     }
 
     public boolean isFinished() {

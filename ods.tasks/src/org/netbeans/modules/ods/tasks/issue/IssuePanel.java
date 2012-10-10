@@ -215,6 +215,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         initDefaultButton();
     }
 
+    void opened() {
+        // Hack - reset any previous modifications when the issue window is reopened
+        reloadForm(true);
+    }
+    
+    void closed() {
+        if(issue != null) {
+            commentsPanel.storeSettings();
+        }
+    }
+
     private void initSpellChecker () {
         Spellchecker.register(summaryField);
     }
