@@ -126,6 +126,9 @@ public class InstantRenameAction extends BaseAction {
                         Map<String, Parser.Result> embeddedResults = new HashMap<String, Parser.Result>();
                         outer:for(;;) {
                             final Result parserResult = resultIterator.getParserResult();
+                            if (parserResult == null) {
+                                return;
+                            }
                             embeddedResults.put(parserResult.getSnapshot().getMimeType(),
                                     resultIterator.getParserResult());
                             
