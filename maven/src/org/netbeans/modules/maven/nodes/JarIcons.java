@@ -36,34 +36,26 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.osgi;
+package org.netbeans.modules.maven.nodes;
 
+import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.spi.PackagingProvider;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.ImageUtilities;
 
-/**
- * Interprets a project as OSGi if the bundle plugin is configured to support its packaging.
- */
-@ServiceProvider(service=PackagingProvider.class, position=100)
-public class SupportedProjectTypes implements PackagingProvider {
+@ProjectServiceProvider(service=SpecialIcon.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR)
+public class JarIcons implements SpecialIcon {
 
-    @Override public String packaging(Project project) {
-        String[] types = PluginPropertyUtils.getPluginPropertyList(project, OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN, "supportedProjectTypes", "supportedProjectType", /*"bundle" would not work for GlassFish parent POM*/null);
-        if (types == null) {
-            return null;
-        }
-        for (String type : types) {
-            if (type.equals("jar") || type.equals("bundle")) {
-                continue;
-            }
-            if (project.getLookup().lookup(NbMavenProject.class).getMavenProject().getPackaging().equals(type)) {
-                return "bundle";
-            }
-        }
-        return null;
+    private final Project project;
+
+    public JarIcons(Project project) {
+        this.project = project;
+    }
+
+    @Override public Icon getIcon() {
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/jaricon.png", true);
     }
 
 }
