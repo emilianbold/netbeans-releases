@@ -60,7 +60,7 @@ import org.openide.modules.OnStop;
 public class CndTextIndexManager {
     public static final String FIELD_IDS = "ids"; //NOI18N
     private static final Map<String, CndTextIndexImpl> indexMap = new HashMap<String, CndTextIndexImpl>();
-    private static final File indexLocation = new File(CacheLocation.DEFAULT.getLocation(), "index"); //NOI18N
+    private static final File indexLocation = new File(CacheLocation.DEFAULT.getLocation(), "text_index"); //NOI18N
     
     @OnStop
     public static class Cleanup implements Runnable {

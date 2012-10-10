@@ -82,7 +82,19 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             String title = "Native event filesAdded:" + fileItems.size(); // NOI18N
             LOG.log(Level.INFO, title + "\n" +DeepReparsingUtils.toString(fileItems), new Exception(title));
         }
-        itemsAddedImpl(fileItems);
+        if (enabledEventsHandling) {
+            ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
+            for (NativeFileItem item : fileItems) {
+                if (!item.isExcluded()) {
+                    list.add(item);
+                }
+            }            
+            itemsAddedImpl(list);
+        } else {
+            if (TraceFlags.TIMING) {
+                LOG.log(Level.INFO, "skipped filesAdded(list) {0}...", nativeProject.getProjectDisplayName());
+            }
+        }
     }
 
     @Override
@@ -91,13 +103,22 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             String title = "Native event filesRemoved:" + fileItems.size(); // NOI18N
             LOG.log(Level.INFO, title + "\n" +DeepReparsingUtils.toString(fileItems), new Exception(title));
         }
-        itemsRemovedImpl(fileItems);
+        if (enabledEventsHandling) {
+            itemsRemovedImpl(fileItems);
+        } else {
+            if (TraceFlags.TIMING) {
+                LOG.log(Level.INFO, "skipped filesRemoved(list) {0}...", nativeProject.getProjectDisplayName());
+            }
+        }
     }
 
     @Override
     public void fileRenamed(String oldPath, NativeFileItem newFileIetm){
         if (TRACE) {
             LOG.log(Level.INFO, "Native event fileRenamed:\tOld Name:"+oldPath+ "\tNew Name:"+newFileIetm.getAbsolutePath(), new Exception("fileRenamed"));
+        }
+        if (!enabledEventsHandling) {
+            LOG.log(Level.INFO, "UNEXPECTED fileRenamed {0}...", nativeProject.getProjectDisplayName());
         }
 	itemRenamedImpl(oldPath, newFileIetm);
     }
