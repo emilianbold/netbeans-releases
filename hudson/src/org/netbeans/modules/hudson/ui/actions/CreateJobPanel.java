@@ -123,9 +123,16 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
         check();
     }
 
+    @NbBundle.Messages({
+        "CreateJobPanel.emptyName=Please enter a Build Name"
+    })
     private void check() {
         descriptor.setValid(false);
         notifications.clearMessages();
+        if (name.getText() == null || name.getText().trim().isEmpty()) {
+            notifications.setInformationMessage(Bundle.CreateJobPanel_emptyName());
+            return;
+        }
         if (instance == null) {
             notifications.setInformationMessage(NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.pick_server"));
             return;
