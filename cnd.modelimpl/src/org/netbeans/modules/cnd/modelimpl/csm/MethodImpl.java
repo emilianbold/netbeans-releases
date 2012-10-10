@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -178,7 +179,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     }
 
     
-    public static class MethodBuilder extends FunctionBuilder {
+    public static class MethodBuilder extends FunctionBuilder implements MemberBuilder {
         
         private CsmVisibility visibility = CsmVisibility.PUBLIC;
 
@@ -217,15 +218,15 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);
 
-            addMember(method);
+//            addMember(method);
             return method;
         }
         
-        protected void addMember(CsmMember member) {
-            if (getParent() instanceof ClassImpl.ClassBuilder) {
-                ((ClassImpl.ClassBuilder) getParent()).addMember(member);
-            }
-        }
+//        protected void addMember(CsmMember member) {
+//            if (getParent() instanceof ClassImpl.ClassBuilder) {
+//                ((ClassImpl.ClassBuilder) getParent()).addMember(member);
+//            }
+//        }
         
     }          
     

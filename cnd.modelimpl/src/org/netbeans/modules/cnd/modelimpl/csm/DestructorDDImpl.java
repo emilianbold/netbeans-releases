@@ -175,7 +175,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);
             
-            addMember(method);
+//            addMember(method);
             
             return method;
         }        

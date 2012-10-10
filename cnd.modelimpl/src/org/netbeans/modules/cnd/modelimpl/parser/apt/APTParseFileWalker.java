@@ -132,9 +132,10 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     public TokenStream getFilteredTokenStream(APTLanguageFilter lang) {
         TokenStream ts = lang.getFilteredStream(getTokenStream());
         // apply preprocessed text indexing
-        if (CndTraceFlags.TEXT_INDEX) {
-            ts = APTIndexingSupport.index(getStartProject().getFileSystem(), getFile().getAbsolutePath().toString(), ts);
-        }
+        // disabled for now
+//        if (CndTraceFlags.TEXT_INDEX) {
+//            ts = APTIndexingSupport.index(getStartProject().getFileSystem(), getFile().getAbsolutePath().toString(), ts);
+//        }
         return ts;
     }
 

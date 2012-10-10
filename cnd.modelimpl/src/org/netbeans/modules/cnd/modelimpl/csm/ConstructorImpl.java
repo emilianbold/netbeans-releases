@@ -164,7 +164,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);
 
-            addMember(method);
+//            addMember(method);
             return method;
         }
         
