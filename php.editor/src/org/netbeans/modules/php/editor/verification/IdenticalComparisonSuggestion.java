@@ -60,7 +60,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -68,18 +67,17 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class IdenticalComparisonHint extends AbstractRule {
+public class IdenticalComparisonSuggestion extends AbstractSuggestion {
 
     private static final String HINT_ID = "Identical.Comparison.Hint"; //NOI18N
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         final BaseDocument doc = context.doc;
-        final int caretOffset = context.caretOffset;
         int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
         int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && caretOffset >= lineBegin) {
@@ -108,7 +106,7 @@ public class IdenticalComparisonHint extends AbstractRule {
         @Messages("IdenticalComparisonDesc=Comparison with \"equal (==)\" operator should be avoided, use \"identical (===)\" operator instead")
         public List<Hint> getHints() {
             for (FixInfo fixInfo : fixInfos) {
-                hints.add(new Hint(IdenticalComparisonHint.this, Bundle.IdenticalComparisonDesc(), fileObject, fixInfo.getScopeRange(), createFixes(fixInfo), 500));
+                hints.add(new Hint(IdenticalComparisonSuggestion.this, Bundle.IdenticalComparisonDesc(), fileObject, fixInfo.getScopeRange(), createFixes(fixInfo), 500));
             }
             return hints;
         }

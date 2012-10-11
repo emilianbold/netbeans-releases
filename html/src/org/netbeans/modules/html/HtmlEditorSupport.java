@@ -72,6 +72,7 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
@@ -112,6 +113,13 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
                 //just ignore
             }
         }
+
+        @Override
+        public String toString() {
+            return getDataObject().getPrimaryFile().getNameExt();
+        }
+        
+        
     };
 
     HtmlEditorSupport(HtmlDataObject obj) {

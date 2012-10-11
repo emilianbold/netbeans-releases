@@ -53,8 +53,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Set;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -121,7 +123,18 @@ public class InitialServerFileDistributor extends ServerProgress {
             setStatusDistributeRunning(NbBundle.getMessage(
                 InitialServerFileDistributor.class, "MSG_RunningInitialDeploy", dtarget.getDeploymentName(), dir));
 
-            _distribute(source.getArchiveContents(), dir, null);
+            Set<String> childModuleNames = null;
+            if (source instanceof J2eeApplication) {
+                J2eeModule[] childModules = ((J2eeApplication)source).getModules();
+                childModuleNames = new HashSet<String>(childModules.length);
+                for (J2eeModule module : childModules) {
+                    if (module.getArchive() != null) {
+                       childModuleNames.add(module.getArchive().getNameExt()); 
+                    }
+                }
+            }
+
+            _distribute(source.getArchiveContents(), dir, null, childModuleNames);
 
             if (source instanceof J2eeApplication) {
                 J2eeModule[] childModules = ((J2eeApplication)source).getModules();
@@ -129,7 +142,7 @@ public class InitialServerFileDistributor extends ServerProgress {
                     String uri = childModules[i].getUrl();
                     J2eeModule childModule = deployment.getJ2eeModule(uri);
                     File subdir = incDeployment.getDirectoryForNewModule(dir, uri, childModule, deployment.getModuleConfiguration());
-                    _distribute(childModules[i].getArchiveContents(), subdir, uri);
+                    _distribute(childModules[i].getArchiveContents(), subdir, uri, null);
                 }
             }
 
@@ -175,10 +188,18 @@ public class InitialServerFileDistributor extends ServerProgress {
         return deleted;
     }
     
-    private void _distribute(Iterator<J2eeModule.RootedEntry> rootedEntries, File dir, String childModuleUri) {
+    private void _distribute(Iterator<J2eeModule.RootedEntry> rootedEntries,
+            File dir, String childModuleUri, Set<String> childArchives) {
         FileLock lock = null;
 
         try {
+            // this is just safeguard - should not happen anymore
+            // used to happen in EAR when folder had a same name as jar
+            // and jar was copied to exploded dir
+            if (dir.exists() && dir.isFile()) {
+                dir.delete();
+            }
+
             // mkdirs()/toFileObject is not not tolerated any more.
             FileObject destRoot = FileUtil.createFolder(dir);
             
@@ -201,10 +222,14 @@ public class InitialServerFileDistributor extends ServerProgress {
                 }
             }
             
-            while(rootedEntries.hasNext()) {
+            while (rootedEntries.hasNext()) {
                 J2eeModule.RootedEntry entry = rootedEntries.next();
                 String relativePath = entry.getRelativePath();
                 FileObject sourceFO = entry.getFileObject();
+                if (childArchives != null && childArchives.contains(relativePath)
+                        && sourceFO.isData()) {
+                    continue;
+                }
                 FileObject destFolder = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
                 if (sourceFO.isData ()) {
                     copyFile(sourceFO, dir, relativePath);

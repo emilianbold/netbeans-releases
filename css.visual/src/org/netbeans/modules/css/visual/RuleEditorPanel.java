@@ -153,7 +153,7 @@ import org.openide.util.actions.Presenter;
 public class RuleEditorPanel extends JPanel {
 
     private static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
-    static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
+    public static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
     
     static RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
     
