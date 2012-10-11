@@ -48,6 +48,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -61,6 +62,10 @@ public final class ParameterEllipsisImpl extends ParameterImpl {
         super(ast, file, type, NameHolder.createName("..."), scope); //NOI18N
     }
 
+    private ParameterEllipsisImpl(CsmScope scope, CsmFile file, int startOffset, int endOffset) {
+        super(null, NameCache.getManager().getString("..."), scope, null, file, startOffset, endOffset); // NOI18N
+    }
+    
     public static ParameterEllipsisImpl create(AST ast, CsmFile file, CsmType type, CsmScope scope) {
         ParameterEllipsisImpl parameterEllipsisImpl = new ParameterEllipsisImpl(ast, file, type, scope);
         return parameterEllipsisImpl;
@@ -85,6 +90,16 @@ public final class ParameterEllipsisImpl extends ParameterImpl {
     public CharSequence getDisplayText() {
         return "..."; //NOI18N
     }
+    
+    
+    public static class ParameterEllipsisBuilder extends ParameterBuilder {
+
+        @Override
+        public ParameterImpl create() {
+            ParameterEllipsisImpl param = new ParameterEllipsisImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
+            return param;
+        }
+    }          
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent

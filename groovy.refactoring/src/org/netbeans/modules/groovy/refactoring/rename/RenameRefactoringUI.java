@@ -55,6 +55,7 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
@@ -75,7 +76,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         Collection<Object> lookupContent = new ArrayList<Object>();
         lookupContent.add(element);
         refactoring = new RenameRefactoring(Lookups.fixed(lookupContent.toArray()));
-        //refactoring.getContext().add(UI.Constants.REQUEST_PREVIEW);
+        refactoring.getContext().add(UI.Constants.REQUEST_PREVIEW);
     }
 
     @Override

@@ -791,31 +791,57 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return null;
         }
 
-        // initialize the metacomponent
-        try {
-            if(compClass==InvalidComponent.class){
-                newComponent.setValid(false);                            
-                newComponent.setMissingClassName(className);
+        String exMsg = null;
+        boolean repeatForFakeInvalid;
+        do {
+            repeatForFakeInvalid = false;
+            // initialize the metacomponent
+            try {
+                if (compClass == InvalidComponent.class) {
+                    newComponent.setValid(false);                            
+                    newComponent.setMissingClassName(className);
+                }
+                newComponent.initialize(formModel);
+                newComponent.setStoredName(compName);
+                newComponent.initInstance(compClass);
+                newComponent.setInModel(true);
+            } catch (Exception ex) {
+                if (compClass != InvalidComponent.class) {
+                    compEx = ex;
+                }
+            } catch (NoClassDefFoundError ex) {
+                if (compClass != InvalidComponent.class) {
+                    compEx = ex;
+                    String classNameFromException = ex.getMessage();
+                    if (classNameFromException != null) {
+                        classNameFromException = classNameFromException.replace('/', '.').replace('$', '.');
+                        exMsg = createLoadingErrorMessage(
+                            FormUtils.getFormattedBundleString("FMT_ERR_CannotLoadClass", // NOI18N
+                                                               new Object[] { classNameFromException }),
+                            node);
+                    }
+                    compClass = InvalidComponent.class;
+                    repeatForFakeInvalid = true;
+                }
+            } catch (LinkageError ex) { // loading a class the component needs failed
+                if (compClass != InvalidComponent.class) {
+                    compEx = ex;
+                }
             }
-            newComponent.initialize(formModel);
-            newComponent.setStoredName(compName);
-            newComponent.initInstance(compClass);
-            newComponent.setInModel(true);            
-        }
-        catch (Exception ex) {
-            compEx = ex;
-        }
-        catch (LinkageError ex) {
-            compEx = ex;
-        }
+        } while (repeatForFakeInvalid);
+
         if (compEx != null) { // creating component instance failed
-            String msg = createLoadingErrorMessage(
-                FormUtils.getFormattedBundleString("FMT_ERR_CannotCreateInstance", // NOI18N
-                                                   new Object[] { className }),
-                node);
-            annotateException(compEx, msg);
+            if (exMsg == null) {
+                exMsg = createLoadingErrorMessage(
+                    FormUtils.getFormattedBundleString("FMT_ERR_CannotCreateInstance", // NOI18N
+                                                       new Object[] { className }),
+                    node);
+            }
+            annotateException(compEx, exMsg);
             nonfatalErrors.add(compEx);
-            return null;
+            if (compClass != InvalidComponent.class) {
+                return null;
+            }
         }
 
         getComponentsMap().put(compName, newComponent);

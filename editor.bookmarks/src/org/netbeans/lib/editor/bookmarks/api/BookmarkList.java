@@ -60,13 +60,17 @@ import javax.swing.text.Element;
 import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.bookmarks.BookmarkChange;
 import org.netbeans.modules.editor.bookmarks.BookmarkHistory;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkManager;
+import org.netbeans.modules.editor.bookmarks.BookmarkManagerEvent;
+import org.netbeans.modules.editor.bookmarks.BookmarkManagerListener;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.netbeans.modules.editor.bookmarks.FileBookmarks;
 import org.openide.cookies.EditorCookie.Observable;
 import org.openide.loaders.DataObject;
+import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 
 
@@ -107,6 +111,20 @@ public final class BookmarkList {
     private Map<BookmarkInfo, Bookmark> info2bookmark;
     
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport (this);
+
+    private BookmarkManagerListener bmListener = new BookmarkManagerListener() {
+
+        @Override
+        public void bookmarksChanged(BookmarkManagerEvent evt) {
+            for (BookmarkChange change : evt.getBookmarkChanges()) {
+                BookmarkInfo bInfo = change.getBookmark();
+                if (change.isRemoved()) {
+                    removeBookmarkImpl(bInfo);
+                }
+            }
+        }
+
+    };
     
     private BookmarkList (Document document) {
         if (document == null) {
@@ -127,6 +145,9 @@ public final class BookmarkList {
                     }
                 }
             }
+            // Passing lockedBookmarkManager as "source" parameter is unclean
+            lockedBookmarkManager.addBookmarkManagerListener(WeakListeners.create(
+                    BookmarkManagerListener.class, bmListener, lockedBookmarkManager));
         } finally {
             lockedBookmarkManager.unlock();
         }
@@ -317,14 +338,19 @@ public final class BookmarkList {
      * @return removed (and invalidated) bookmark
      */
     public synchronized boolean removeBookmark (Bookmark bookmark) {
-        boolean removed = bookmarks.remove (bookmark);
-        if (removed) {
-            info2bookmark.remove(bookmark.info());
+        boolean removed = bookmarks.contains(bookmark);
+        BookmarkUtils.removeBookmarkUnderLock(bookmark.info());
+        // Rest will be done by BookmarkManagerListener
+        return removed;
+    }
+
+    private synchronized void removeBookmarkImpl(BookmarkInfo bInfo) {
+        Bookmark bookmark = info2bookmark.remove(bInfo);
+        if (bookmark != null) {
+            bookmarks.remove(bookmark);
             bookmark.release();
-            BookmarkUtils.removeBookmarkUnderLock(bookmark.info());
             fireChange();
         }
-        return removed;
     }
     
     /** Removes all bookmarks */

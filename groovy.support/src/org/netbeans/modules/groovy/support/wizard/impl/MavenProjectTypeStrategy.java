@@ -153,7 +153,7 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
      */
     @Override
     protected List<SourceGroup> moveTestFolderAsFirst(List<SourceGroup> groups) {
-        return moveAsFirst(groups, "/test/groovy"); //NOI18N
+        return moveAsFirst(groups, "/test/groovy").subList(0, 1); //NOI18N, #219766
     }
 
     /**

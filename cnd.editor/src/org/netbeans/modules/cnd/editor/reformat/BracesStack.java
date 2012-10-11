@@ -232,11 +232,14 @@ class BracesStack implements Cloneable {
                                 prevIndent = newEntry.getLambdaIndent();
                             }
                             statementIndent = codeStyle.indentSize();
-                            if (codeStyle.getFormatNewlineBeforeBraceDeclaration() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                            if (codeStyle.getFormatNewlineBeforeBraceLambda() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                                newEntry.setIndent(prevIndent + statementIndent);
                                 statementIndent /= 2;
+                                newEntry.setSelfIndent(prevIndent + statementIndent);
+                            } else {
+                                newEntry.setIndent(prevIndent + statementIndent);
+                                newEntry.setSelfIndent(prevIndent);
                             }
-                            newEntry.setIndent(prevIndent + statementIndent);
-                            newEntry.setSelfIndent(prevIndent);
                             newEntry.setLambdaParen(parenDepth);
                     }
                 } else if (newEntry.isLikeToFunction()){

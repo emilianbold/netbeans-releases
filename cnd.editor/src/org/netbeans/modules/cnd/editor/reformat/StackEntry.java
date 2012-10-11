@@ -88,6 +88,7 @@ class StackEntry {
     private void initImportant(ExtendedTokenSequence ts) {
         int i = ts.index();
         try {
+            int bracket = 0;
             int paren = 0;
             int curly = 0;
             int triangle = 0;
@@ -122,16 +123,30 @@ class StackEntry {
                         paren--;
                         break;
                     }
-                    case RBRACKET:
+                        
+                    case LBRACKET: //[
                     {
-                        if (paren == 0 && curly == 0 && triangle == 0) {
+                        bracket--;
+                        if (paren == 0 && curly == 0 && triangle == 0 && bracket == 0) {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                            if (prev != null) {
+                                if (prev.id() == IDENTIFIER || prev.id() == RBRACKET || prev.id() == LBRACKET) {
+                                    break;
+                                }
+                            }
                             likeToArrayInitialization = false;
                             likeToFunction = false;
                             importantKind = ARROW;
                             lambdaIndent = lambdaIndent(ts);
+                            return;
                         }
+                    }
+                    case RBRACKET: //]
+                    {
+                        bracket++;
                         break;
                     }
+                        
                     case CASE:
                     case DEFAULT:
                     {

@@ -51,6 +51,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -237,51 +238,17 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         return false;
     }
     
-    public static class EnumBuilder implements CsmObjectBuilder {
+    public static class EnumBuilder extends SimpleDeclarationBuilder implements MemberBuilder {
         
-        private CharSequence name;
-        private String qName;
-        private CsmFile file;
-        private int startOffset;
-        private int endOffset;
         private boolean stronglyTyped = false;
-        private final FileContent fileContent;
-        private CsmObjectBuilder parent;
+        private List<EnumeratorBuilder> enumeratorBuilders = new ArrayList<EnumeratorBuilder>();
         
         private EnumImpl instance;
-        private CsmScope scope;
         
-        public EnumBuilder(FileContent fileContent) {
-            this.fileContent = fileContent;
-        }
-
-        List<EnumeratorBuilder> enumeratorBuilders = new ArrayList<EnumeratorBuilder>();
         
-        public void setName(CharSequence name) {
-            this.name = name;
-            // for now without scope
-            qName = name.toString();
-        }
-
-        public void setFile(CsmFile file) {
-            this.file = file;
-        }
-
         public void setStronglyTyped() {
             this.stronglyTyped = true;
         }
-
-        public void setEndOffset(int endOffset) {
-            this.endOffset = endOffset;
-        }
-
-        public void setStartOffset(int startOffset) {
-            this.startOffset = startOffset;
-        }
-        
-        public void setParent(CsmObjectBuilder parent) {
-            this.parent = parent;
-        }        
 
         public void addEnumerator(EnumeratorBuilder eb) {
             enumeratorBuilders.add(eb);
@@ -292,71 +259,44 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
                 return instance;
             }
             MutableDeclarationsContainer container = null;
-            if (parent == null) {
-                container = fileContent;
+            if (getParent() == null) {
+                container = getFileContent();
             } else {
-                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
-                    container = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespaceDefinitionInstance();
+                if(getParent() instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    container = ((NamespaceDefinitionImpl.NamespaceBuilder)getParent()).getNamespaceDefinitionInstance();
                 }
             }
-            if(container != null && name != null) {
-                CsmOffsetableDeclaration decl = container.findExistingDeclaration(startOffset, name, Kind.ENUM);
+            if(container != null && getName() != null) {
+                CsmOffsetableDeclaration decl = container.findExistingDeclaration(getStartOffset(), getName(), Kind.ENUM);
                 if (decl != null && EnumImpl.class.equals(decl.getClass())) {
                     instance = (EnumImpl) decl;
                 }
             }
             return instance;
         }
-        
-        public void setScope(CsmScope scope) {
-            assert scope != null;
-            this.scope = scope;
+
+        @Override
+        public CharSequence getName() {
+            return super.getName() == null ? getNameHolder().getName() : super.getName();
         }
         
-        public CsmScope getScope() {
-            if(scope != null) {
-                return scope;
-            }
-            if (parent == null) {
-                scope = (NamespaceImpl) file.getProject().getGlobalNamespace();
-            } else {
-                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
-                    scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
-                }
-            }
-            return scope;
-        }
-        
-        public EnumImpl create(boolean register) {
+        @Override
+        public EnumImpl create() {
             EnumImpl impl = getEnumDefinitionInstance();
             if(impl == null) {
-                NameHolder nameHolder = NameHolder.createName(name);
-                
-                if(name == null) {
-                    name = nameHolder.getName();
-                    qName = name.toString();
-                }
-                impl = new EnumImpl(name, qName, stronglyTyped, file, startOffset, endOffset);
+                impl = new EnumImpl(getName(), getName().toString(), stronglyTyped, getFile(), getStartOffset(), getEndOffset());
                 impl.initScope(getScope());
                 impl.register(getScope(), true);
-                nameHolder.addReference(fileContent, impl);
-                OffsetableDeclarationBase.temporaryRepositoryRegistration(register, impl);
+                getNameHolder().addReference(getFileContent(), impl);
+                OffsetableDeclarationBase.temporaryRepositoryRegistration(true, impl);
                 
                 for (EnumeratorBuilder enumeratorBuilder : enumeratorBuilders) {
                     enumeratorBuilder.setEnum(impl);
-                    EnumeratorImpl ei = enumeratorBuilder.create(register);
+                    EnumeratorImpl ei = enumeratorBuilder.create(true);
                     impl.addEnumerator(ei);
                 }
                 
-                if(parent != null) {
-                    if(parent instanceof ClassBuilder) {
-                        ((ClassBuilder)parent).getClassDefinitionInstance().addMember(impl, true);
-                    } else if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
-                        ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(impl);
-                    }
-                } else {
-                    fileContent.addDeclaration(impl);
-                }
+                addDeclaration(impl);
             }
             return impl;
         }

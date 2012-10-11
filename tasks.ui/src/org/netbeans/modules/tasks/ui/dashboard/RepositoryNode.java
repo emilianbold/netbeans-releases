@@ -117,9 +117,10 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
             });
         }
         loaded = true;
+        DashboardViewer dashboard = DashboardViewer.getInstance();
         if (!filteredQueryNodes.isEmpty()) {
             List<QueryNode> children = filteredQueryNodes;
-            boolean expand = DashboardViewer.getInstance().expandNodes();
+            boolean expand = dashboard.expandNodes();
             for (QueryNode queryNode : children) {
                 queryNode.setExpanded(expand);
             }
@@ -127,7 +128,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
             return new ArrayList<TreeListNode>(children);
         } else {
             List<TreeListNode> children = new ArrayList<TreeListNode>();
-            children.add(new EmptyContentNode(this, getEmptyContentLink()));
+            children.add(new EmptyContentNode(this, NbBundle.getMessage(RepositoryNode.class, "LBL_NoQuery")));
             return children;
         }
     }
@@ -328,15 +329,5 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
             setExpanded(true);
         }
         updateContent();
-    }
-
-    private LinkButton getEmptyContentLink() {
-        if (btnEmtpyContent == null) {
-            btnEmtpyContent = new LinkButton(NbBundle.getMessage(RepositoryNode.class, "LBL_EmptyRepositoryContent"), //NOI18N
-                    ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/search_repo.png", true), //NOI18N
-                    new SearchRepositoryAction(this)); //NOI18N
-            btnEmtpyContent.setToolTipText(NbBundle.getMessage(RepositoryNode.class, "LBL_SearchInRepo")); //NOI18N
-        }
-        return btnEmtpyContent;
     }
 }

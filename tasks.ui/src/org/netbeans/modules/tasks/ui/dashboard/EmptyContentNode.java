@@ -46,8 +46,8 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.tasks.ui.LinkButton;
@@ -89,20 +89,19 @@ public class EmptyContentNode extends LeafNode {
                 panel = new JPanel(new GridBagLayout());
                 panel.setBorder(new EmptyBorder(0, 0, 0, 0));
                 panel.setOpaque(false);
-                if (!message.isEmpty()) {
+                if (message != null && !message.isEmpty()) {
                     lblMessage = new TreeLabel(message);
                     lblMessage.setBorder(new EmptyBorder(0, 0, 0, 5));
-                    lblMessage.setFont(lblMessage.getFont().deriveFont(Font.ITALIC));
-                    lblMessage.setForeground(ColorManager.getDefault().getDefaultForeground());
-                    panel.add(lblMessage, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 55), 0, 0));
+                    panel.add(lblMessage, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
                 }
                 if (linkButton != null) {
                     panel.add(linkButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
                 }
+                panel.add(new JLabel(), new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 30), 0, 0));
             }
         }
         if (lblMessage != null) {
-            lblMessage.setForeground(foreground);
+            lblMessage.setForeground(isSelected ? foreground : ColorManager.getDefault().getDisabledColor());
         }
         if (linkButton != null) {
             linkButton.setForeground(foreground, isSelected);
