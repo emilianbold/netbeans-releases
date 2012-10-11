@@ -87,25 +87,25 @@ public class SDocCompletionDocumentationTest extends JsDocumentationTestBase {
     }
 
     public void testCompletionDocumentation01() throws Exception {
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Shape(){^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Shape()^{");
     }
 
     public void testCompletionDocumentation02() throws Exception {
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function addReference(){^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function addReference()^{");
     }
 
     public void testCompletionDocumentation03() throws Exception {
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Hexagon(sideLength) {^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Hexagon(sideLength) ^{");
     }
 
     public void testCompletionDocumentation04() throws Exception {
         // check throws
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "Shape.prototype.setColor = function(color){^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "Shape.prototype.setColor = function(color)^{");
     }
 
     public void testCompletionDocumentation05() throws Exception {
         // check throws
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "Shape.prototype.clone3 = function(){^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "Shape.prototype.clone3 = function()^{");
     }
 
     public void testCompletionDocumentation06() throws Exception {
@@ -115,7 +115,7 @@ public class SDocCompletionDocumentationTest extends JsDocumentationTestBase {
 
     public void testCompletionDocumentation07() throws Exception {
         // check extends
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Circle(radius){^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Circle(radius)^{");
     }
 
     public void testCompletionDocumentation09() throws Exception {
@@ -125,21 +125,21 @@ public class SDocCompletionDocumentationTest extends JsDocumentationTestBase {
 
     public void testCompletionDocumentation10() throws Exception {
         // check see
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "Circle.prototype.getRadius = function(){^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "Circle.prototype.getRadius = function()^{");
     }
 
     public void testCompletionDocumentation11() throws Exception {
         // check since
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function addReference(){^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function addReference()^{");
     }
 
     public void testCompletionDocumentation12() throws Exception {
         // check example
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Hexagon(sideLength) {^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Hexagon(sideLength) ^{");
     }
 
     public void testCompletionDocumentation13() throws Exception {
         // check example
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "Circle.createCircle = function(radius){^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "Circle.createCircle = function(radius)^{");
     }
 }

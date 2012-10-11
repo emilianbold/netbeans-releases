@@ -73,7 +73,19 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-@OptionsPanelController.Keywords(keywords={"php composer"}, location=UiUtils.OPTIONS_PATH, index=7)
+@NbBundle.Messages({
+    "ComposerOptionsPanel.keywords.dependency=dependency",
+    "ComposerOptionsPanel.keywords.dependencies=dependencies",
+    "ComposerOptionsPanel.keywords.package=package",
+    "ComposerOptionsPanel.keywords.packages=packages"
+})
+@OptionsPanelController.Keywords(keywords={
+    "php", "composer", "dependency", "dependencies", "package", "packages",
+    "#ComposerOptionsPanel.keywords.dependency",
+    "#ComposerOptionsPanel.keywords.dependencies",
+    "#ComposerOptionsPanel.keywords.package",
+    "#ComposerOptionsPanel.keywords.packages"
+}, location=UiUtils.OPTIONS_PATH, tabTitle= "#Options.name")
 public class ComposerOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 871513576876878676L;

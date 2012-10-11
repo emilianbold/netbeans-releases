@@ -120,6 +120,14 @@ public class AddCastTest extends ErrorHintsTestBase {
                        "[AddCastFix:...o:List]",
                        "package test; public class Test { private void t(Object o) { java.util.List l = (java.util.List) o; } }");
     }
+    
+    public void test219142() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { private void t(int i) { short s = (i & 0x07); } }",
+                       -1,
+                       "[AddCastFix:...i&0x07:short]",
+                       "package test; public class Test { private void t(int i) { short s = (short) (i & 0x07); } }");
+    }
 
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {

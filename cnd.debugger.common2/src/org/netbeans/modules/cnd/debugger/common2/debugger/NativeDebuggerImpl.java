@@ -901,6 +901,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                 } else {
                     if (getVisitedLocation() != null && getVisitedLocation().pc() != 0) {
                         Disassembly.open();
+                        annotateDis(andShow);   // In order to update current line when source is unavailable
                     }
                 }
             }
@@ -1639,34 +1640,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
             cs = CompilerSetManager.get(exEnv).getCompilerSet(model.getSelectedCompilerSetName());
             return cs.getTool(PredefinedToolKind.DebuggerTool).getPath();
-        }
-        return null;
-    }
-    
-    public static String getDebuggerString(NativeDebuggerInfo ndi) {
-        // Figure out dbx command
-        // Copied from GdbProfile
-        MakeConfiguration conf = (MakeConfiguration) ndi.getConfiguration();
-        CompilerSetManager csm = CompilerSetManager.get(conf.getFileSystemHost());
-        CompilerSet2Configuration csconf = conf.getCompilerSet();
-        
-	if (csm == null || ! csconf.isValid()) {
-	    return null;
-        }
-        
-        for (CompilerSet cs : csm.getCompilerSets()) {
-            if (ndi.debuggerType() == getDebuggerType(cs)) {
-                return cs.getTool(PredefinedToolKind.DebuggerTool).getPath();
-            }
-        }
-        return null;
-    }
-    
-    private static EngineType getDebuggerType(CompilerSet cs) {
-        Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
-        if (debuggerTool != null) {
-            ToolchainManager.DebuggerDescriptor descriptor = (ToolchainManager.DebuggerDescriptor) debuggerTool.getDescriptor();
-            return EngineTypeManager.getEngineTypeForDebuggerDescriptor(descriptor);
         }
         return null;
     }

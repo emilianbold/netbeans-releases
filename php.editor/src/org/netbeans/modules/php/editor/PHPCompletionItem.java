@@ -222,6 +222,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         case SMART:
                             generateAs = qn.getKind();
                             break;
+                        default:
+                            assert false : codeCompletionType;
                     }
 
                 } else if (generateAs.isQualified() && (ifq instanceof TypeElement)
@@ -245,8 +247,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         break;
                     }
                 case UNQUALIFIED:
+                    String enclosingScopeName = ifq.getIn();
                     boolean fncOrConstFromDefaultNamespace = (((ifq instanceof FunctionElement) || (ifq instanceof ConstantElement))
-                            && (ifq.getIn() == null || ifq.getIn().isEmpty())
+                            && (enclosingScopeName == null || enclosingScopeName.isEmpty())
                             && NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName().toString()));
                     final boolean isUnqualified = ifq.isAliased()
                             && (ifq instanceof AliasedElement) && ((AliasedElement) ifq).isNameAliased();
@@ -269,6 +272,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     }
                     template.append(getName());
                     break;
+                default:
+                    assert false : generateAs;
             }
 
             return template.toString();
@@ -555,7 +560,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     } else if (PHPTokenId.WHITESPACE.equals(id)) {
                         wasWhitespace = true;
                         continue;
-                    } else if (PHPTokenId.PHP_TOKEN.equals(id) && token.toString().equals("(")) { //NOI18N
+                    } else if (PHPTokenId.PHP_TOKEN.equals(id) && token.text().toString().equals("(")) { //NOI18N
                         return template.toString();
                     } else {
                         break;

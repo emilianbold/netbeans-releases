@@ -104,7 +104,9 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             } else {
                 this.possibleFQSuperClassNames = VariousUtils.getPossibleFQN(superClassName, nodeInfo.getSuperClass().getStartOffset(), namespaceScope);
             }
-            this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName.toString());
+            if (superClassName != null) {
+                this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName.toString());
+            }
         } else {
             this.possibleFQSuperClassNames = Collections.emptyList();
             this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(null);
@@ -179,28 +181,34 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         StringBuilder retval = new StringBuilder();
         switch (as) {
             case NameAndSuperTypes:
-                retval.append(getName()); //NOI18N
+                retval.append(getName());
+                printAsSuperTypes(retval);
+                break;
             case SuperTypes:
-                QualifiedName superClassName = getSuperClassName();
-                if (superClassName != null) {
-                    retval.append(" extends  ");//NOI18N
-                    retval.append(superClassName.getName());
-                }
-                Set<QualifiedName> superIfaces = getSuperInterfaces();
-                if (!superIfaces.isEmpty()) {
-                    retval.append(" implements ");//NOI18N
-                }
-                StringBuilder ifacesBuffer = new StringBuilder();
-                for (QualifiedName qualifiedName : superIfaces) {
-                    if (ifacesBuffer.length() > 0) {
-                        ifacesBuffer.append(", ");//NOI18N
-                    }
-                    ifacesBuffer.append(qualifiedName.getName());
-                }
-                retval.append(ifacesBuffer);
+                printAsSuperTypes(retval);
                 break;
         }
         return retval.toString();
+    }
+
+    private void printAsSuperTypes(StringBuilder sb) {
+        QualifiedName superClassName = getSuperClassName();
+        if (superClassName != null) {
+            sb.append(" extends  ");//NOI18N
+            sb.append(superClassName.getName());
+        }
+        Set<QualifiedName> superIfaces = getSuperInterfaces();
+        if (!superIfaces.isEmpty()) {
+            sb.append(" implements ");//NOI18N
+        }
+        StringBuilder ifacesBuffer = new StringBuilder();
+        for (QualifiedName qualifiedName : superIfaces) {
+            if (ifacesBuffer.length() > 0) {
+                ifacesBuffer.append(", ");//NOI18N
+            }
+            ifacesBuffer.append(qualifiedName.getName());
+        }
+        sb.append(ifacesBuffer);
     }
 
     @Override
@@ -427,6 +435,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         sb.append(Signature.ITEM_DELIMITER);
         sb.append(BodyDeclaration.Modifier.PUBLIC).append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        assert namespaceScope != null;
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
 

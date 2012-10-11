@@ -594,7 +594,8 @@ public class JsFormatter implements Formatter {
         }
 
         // we mark space and WRAP_NEVER tokens as processed
-        for (FormatToken current = start; current != end; current = current.next()) {
+        for (FormatToken current = start; current != null && current != end;
+                current = current.next()) {
             if (current.isVirtual()
                     && !current.getKind().isIndentationMarker()
                     && getLineWrap(current, formatContext) != CodeStyle.WrapStyle.WRAP_IF_LONG) {
@@ -1235,7 +1236,7 @@ public class JsFormatter implements Formatter {
             startOffset = Utilities.getRowStart(doc, startOffset);
             int endLineOffset = Utilities.getRowStart(doc, endOffset);
             final boolean indentOnly = (startOffset == endLineOffset)
-                    && endLineOffset == context.caretOffset()
+                    && (endOffset == context.caretOffset() || startOffset == context.caretOffset())
                     && (Utilities.isRowEmpty(doc, startOffset)
                     || Utilities.isRowWhite(doc, startOffset)
                     || Utilities.getFirstNonWhiteFwd(doc, startOffset) == context.caretOffset());

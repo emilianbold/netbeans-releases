@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.logging.Level;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.Bitness;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
@@ -70,7 +71,7 @@ public final class HostInfoFactory {
     private HostInfoFactory() {
     }
 
-    static HostInfo newHostInfo(Properties initData, Map<String, String> environment) {
+    static HostInfo newHostInfo(ExecutionEnvironment execEnv, Properties initData, Map<String, String> environment) {
         HostInfoImpl info = new HostInfoImpl();
 
         OSImpl _os = new OSImpl();
@@ -106,6 +107,9 @@ public final class HostInfoFactory {
         }
         String id = initData.getProperty("ID");
         parseId(info, id);
+
+        // Inherit environment on a localhost ...
+        info.envfile = execEnv.isLocal() ? null : info.tempDir + "/env"; // NOI18N
         return info;
     }
     
@@ -232,6 +236,7 @@ public final class HostInfoFactory {
         private int[] gids = new int[0];
         private String group = "";
         private String[] groups = new String[0];
+        private String envfile;
 
         @Override
         public OS getOS() {
@@ -343,6 +348,11 @@ public final class HostInfoFactory {
         @Override
         public Map<String, String> getEnvironment() {
             return environment;
+        }
+
+        @Override
+        public String getEnvironmentFile() {
+            return envfile;
         }
     }
 

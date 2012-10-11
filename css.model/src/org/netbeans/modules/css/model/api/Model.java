@@ -93,8 +93,21 @@ import org.openide.util.lookup.Lookups;
  */
 public final class Model {
 
-    //property names:
+    /**
+     * Property fired when one calls {@link #applyChanges()} and there were some 
+     * written to the document.
+     */
     public static final String CHANGES_APPLIED_TO_DOCUMENT = "changes.applied"; //NOI18N
+    
+    /**
+     * Property fired when one calls {@link #applyChanges()} but there were no 
+     * actual changes written (no difference between original and model source).
+     */
+    public static final String NO_CHANGES_APPLIED_TO_DOCUMENT = "no.changes.to.apply"; //NOI18N
+    
+    /**
+     * Property fired when {@link #runWriteTask(org.netbeans.modules.css.model.api.Model.ModelTask) } finished.
+     */
     public static final String MODEL_WRITE_TASK_FINISHED = "model.write.task.finished"; //NOI18N
     
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -105,6 +118,9 @@ public final class Model {
     private static final Map<CssParserResult, Reference<Model>> PR_MODEL_CACHE = new WeakHashMap<CssParserResult, Reference<Model>>();
 
     private boolean changesApplied;
+    
+    private int modelSerialNumber;
+    private static int globalModelSerialNumber;
     
     /**
      * Gets the Model instance for given CssParserResult.
@@ -138,13 +154,19 @@ public final class Model {
 
         return model;
     }
+    
+    private Model(int modelSerialNumber) {
+        this.modelSerialNumber = modelSerialNumber;
+    }
 
     /* package visibility for unit tests */ Model() {
+        this(++globalModelSerialNumber);
         MODEL_LOOKUP = Lookups.fixed(
                 getElementFactory().createStyleSheet());
     }
 
     /* package visibility for unit tests */ Model(CssParserResult parserResult) {
+        this(++globalModelSerialNumber);
         Node styleSheetNode = NodeUtil.query(parserResult.getParseTree(), NodeType.styleSheet.name());
 
         Collection<Object> lookupContent = new ArrayList<Object>();
@@ -172,6 +194,21 @@ public final class Model {
         }
 
         MODEL_LOOKUP = Lookups.fixed(lookupContent.toArray());
+    }
+    
+    /**
+     * Returns a serial number of the model. 
+     * 
+     * The number represents the number of created models before this one +1 inside
+     * one JVM session.
+     * 
+     * First model has serial number 1.
+     * 
+     * @since 1.6
+     * @return serial number of the model instance.
+     */
+    public int getSerialNumber() {
+        return modelSerialNumber;
     }
 
     public Lookup getLookup() {
@@ -252,16 +289,20 @@ public final class Model {
      *
      * This method will throw an exception if the model instance is not created
      * from a CssParserResult based on a document.
+     * 
+     * This method will throw {@link IllegalStateException} if the model has been
+     * saved already and hence the original source document snapshot become invalid.
      *
      * Basically it applies all the changes obtained from
      * {@link #getModelSourceDiff()} to to given document.
      *
-     * <b> It is up to the client to ensure: 1) it is the document upon which
-     * source the model was build 2) the document has not changed since the
-     * model creation. 3) the method is called under document atomic lock </b>
-     *
+     * <b> It is up to the client to ensure that the document has not changed 
+     * since the model creation.</b>
+     * 
+     * @return true if there was something written to the source document, 
+     * false otherwise.
      */
-    public void applyChanges() throws IOException, BadLocationException {
+    public boolean applyChanges() throws IOException, BadLocationException {
         if(changesApplied) {
             throw new IllegalStateException("Trying to save already saved model!");
         }
@@ -269,22 +310,24 @@ public final class Model {
         if (doc == null) {
             throw new IOException("Not document based model instance!"); //NOI18N
         }
-
-        Snapshot snapshot = getLookup().lookup(Snapshot.class);
-        applyChanges_AtomicLock(doc, new SnapshotOffsetConvertor(snapshot));
-
-        changesApplied = true;
-        LOGGER.log(Level.INFO, "{0}: changes applied to document", this);
-        support.firePropertyChange(CHANGES_APPLIED_TO_DOCUMENT, null, null);
         
+        Difference[] diff = getModelSourceDiff();
+        if(diff.length > 0) {
+            Snapshot snapshot = getLookup().lookup(Snapshot.class);
+            applyChanges_AtomicLock(doc, diff, new SnapshotOffsetConvertor(snapshot));
+            LOGGER.log(Level.INFO, "{0}: changes applied to document", this);
+            changesApplied = true;
+            support.firePropertyChange(CHANGES_APPLIED_TO_DOCUMENT, null, null);
+            return true;
+        } else {
+            LOGGER.log(Level.INFO, "{0}: requested applyChanges, but there were none", this);
+            support.firePropertyChange(NO_CHANGES_APPLIED_TO_DOCUMENT, null, null);
+            return false;
+        }
     }
 
-    private void applyChanges_AtomicLock(final Document document, final OffsetConvertor convertor) throws IOException, BadLocationException {
+    private void applyChanges_AtomicLock(final Document document, final Difference[] diff, final OffsetConvertor convertor) throws IOException, BadLocationException {
         BaseDocument bdoc = (BaseDocument) document;
-        if (!bdoc.isAtomicLock()) {
-            LOGGER.log(Level.FINE, "Called w/o document atomic lock!", new IllegalStateException());
-        }
-
         final AtomicReference<IOException> io_exc_ref = new AtomicReference<IOException>();
         final AtomicReference<BadLocationException> ble_exc_ref = new AtomicReference<BadLocationException>();
 
@@ -292,7 +335,7 @@ public final class Model {
             @Override
             public void run() {
                 try {
-                    applyChanges(document, convertor);
+                    applyChanges(document, diff, convertor);
                 } catch (IOException ex) {
                     io_exc_ref.set(ex);
                 } catch (BadLocationException ex) {
@@ -306,7 +349,6 @@ public final class Model {
         if (ble_exc_ref.get() != null) {
             throw ble_exc_ref.get();
         }
-
     }
 
     /**
@@ -368,9 +410,9 @@ public final class Model {
         }
     }
 
-    private void applyChanges(Document document, OffsetConvertor convertor) throws IOException, BadLocationException {
+    private void applyChanges(Document document, Difference[] diff, OffsetConvertor convertor) throws IOException, BadLocationException {
         int sourceDelta = 0;
-        for (Difference d : getModelSourceDiff()) {
+        for (Difference d : diff) {
             int firstStart = d.getFirstStart();
             int from = convertor.getOriginalOffset(LexerUtils.getLineBeginningOffset(getOriginalSource(), (firstStart == 0 ? 0 : firstStart - 1)));
             switch (d.getType()) {
@@ -474,7 +516,7 @@ public final class Model {
         return new StringBuilder()
                 .append(getClass().getSimpleName())
                 .append(':')
-                .append(System.identityHashCode(this))
+                .append(getSerialNumber())
                 .append(", file=")
                 .append(file != null ? file.getNameExt() : null)
                 .append(", saved=")

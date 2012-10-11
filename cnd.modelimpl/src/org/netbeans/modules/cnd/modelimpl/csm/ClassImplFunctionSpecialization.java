@@ -50,10 +50,12 @@ import java.util.Iterator;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
@@ -61,13 +63,16 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
+import org.openide.util.Exceptions;
 
 /**
  * Template function specialization container.
@@ -83,6 +88,10 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         super(ast, name, file, getStartOffset(ast), getEndOffset(ast));
     }
 
+    private ClassImplFunctionSpecialization(NameHolder name, CsmDeclaration.Kind kind, CsmFile file, int start, int end) {
+        super(name, kind, file, start, end);
+    }
+    
     public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
         NameHolder nameHolder = NameHolder.createName(getClassName(ast));
         ClassImplFunctionSpecialization impl = new ClassImplFunctionSpecialization(ast, nameHolder, file);
@@ -249,6 +258,53 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         return 0;
     }
 
+    
+    public static class ClassFunctionSpecializationBuilder extends ClassSpecializationBuilder {
+
+        private ClassImplFunctionSpecialization instance;
+        
+        private ClassImplFunctionSpecialization getInstance() {
+            if(instance != null) {
+                return instance;
+            }
+            
+            CsmClassifier cls = getFile().getProject().findClassifier(getName());
+            if (cls instanceof ClassImplFunctionSpecialization) {
+                instance = (ClassImplFunctionSpecialization) cls;
+            }
+            return instance;
+        }
+        
+        @Override
+        public ClassImpl create() {
+            ClassImplFunctionSpecialization impl = getInstance();
+            if (impl == null) {
+                instance = impl = new ClassImplFunctionSpecialization(getNameHolder(), getKind(), getFile(), getStartOffset(), getEndOffset());
+                try {
+                    impl.init2(getSpecializationDescriptor(), NameCache.getManager().getString(CharSequences.create("")), getScope(), getFile(), getFileContent(), isGlobal()); // NOI18N
+                } catch (AstRendererException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                
+                if(getTemplateDescriptorBuilder() != null) {
+                    impl.setTemplateDescriptor(getTemplateDescriptor());
+                }
+                for (InheritanceBuilder inheritanceBuilder : getInheritanceBuilders()) {
+                    inheritanceBuilder.setScope(impl);
+                    impl.addInheritance(inheritanceBuilder.create(), isGlobal());
+                }
+                for (MemberBuilder builder : getMemberBuilders()) {
+                    builder.setScope(impl);
+                    impl.addMember(builder.create(), isGlobal());
+                }                
+                addDeclaration(impl);
+            }
+            getNameHolder().addReference(getFileContent(), impl);
+            return impl;
+        }
+        
+    }    
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override

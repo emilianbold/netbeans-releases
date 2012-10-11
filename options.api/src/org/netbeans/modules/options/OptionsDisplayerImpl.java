@@ -86,6 +86,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -202,18 +203,21 @@ public class OptionsDisplayerImpl {
             log.fine("Reopen Options Dialog"); //NOI18N
         }
         
-        dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
+        // #213022 - Trying to diagnose why the NPE occurs. For some reason
+        // after the dialog is created, with DD.getDefault.createDialog(), it is nulled.
+        Dialog tmpDialog = DialogDisplayer.getDefault ().createDialog (descriptor);
         log.fine("Options Dialog created; descriptor.title = " + descriptor.getTitle() +
                 "; descriptor.message = " + descriptor.getMessage());
         optionsPanel.initCurrentCategory(categoryID, subpath);        
-        dialog.addWindowListener (new MyWindowListener (optionsPanel));
+        tmpDialog.addWindowListener (new MyWindowListener (optionsPanel, tmpDialog));
         Point userLocation = getUserLocation();
         if (userLocation != null) {
-            dialog.setLocation(userLocation);
+            tmpDialog.setLocation(userLocation);
             log.fine("userLocation is set to " + userLocation);
         }
         log.fine("setting Options Dialog visible");
-        dialog.setVisible (true);     
+        tmpDialog.setVisible (true);
+        dialog = tmpDialog;
     }
     
     private void setUpButtonListeners(OptionsPanel optionsPanel) {
@@ -416,9 +420,9 @@ public class OptionsDisplayerImpl {
         private Dialog originalDialog;
 
                 
-        MyWindowListener (OptionsPanel optionsPanel) {
+        MyWindowListener (OptionsPanel optionsPanel, Dialog tmpDialog) {
             this.optionsPanel = optionsPanel;
-            this.originalDialog = dialog;
+            this.originalDialog = tmpDialog;
         }
         
         public void windowClosing (WindowEvent e) {
@@ -477,8 +481,14 @@ public class OptionsDisplayerImpl {
                 descriptorRef = new WeakReference<DialogDescriptor>(null);
                 // #156947 - close dialog when categories change
                 if (dialog != null) {
-                    dialog.setVisible(false);
-                    dialog = null;
+                    Mutex.EVENT.readAccess(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            dialog.setVisible(false);
+                            dialog = null;
+                        }
+                    });
                 }
             }
         }

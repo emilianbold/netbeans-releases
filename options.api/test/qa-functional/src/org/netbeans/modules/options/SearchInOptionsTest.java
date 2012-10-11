@@ -151,12 +151,8 @@ public class SearchInOptionsTest extends JellyTestCase {
         searchFor("ant", tabIndexes, selectedCategories, enabledCategories);
 
         enabledCategories.add("Miscellaneous");
-        tabIndexes = new int[2];
-        selectedCategories = new String[2];
         tabIndexes[0] = 4;
-        tabIndexes[1] = 2;
         selectedCategories[0] = "Java";
-        selectedCategories[1] = "Miscellaneous";
         searchFor("me", tabIndexes, selectedCategories, enabledCategories);
 
         enabledCategories.clear();

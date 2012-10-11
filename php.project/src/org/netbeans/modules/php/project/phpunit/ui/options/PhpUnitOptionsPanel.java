@@ -83,7 +83,9 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-@OptionsPanelController.Keywords(keywords={"php unit testing"}, location=UiUtils.OPTIONS_PATH, index=2)
+@NbBundle.Messages("PhpUnitOptionsPanel.keywords.coverage=coverage")
+@OptionsPanelController.Keywords(keywords={"php", "phpunit", "unit testing", "framework", "coverage", "#PhpUnitOptionsPanel.keywords.coverage"},
+        location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_OptionsName")
 public class PhpUnitOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = -6453232134654321L;

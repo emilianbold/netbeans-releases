@@ -45,7 +45,6 @@ package org.netbeans.modules.groovy.refactoring.findusages.impl;
 import java.util.List;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 
@@ -64,13 +63,8 @@ public class FindAllSubtypes extends AbstractFindUsages {
         return singleVisitor(new FindAllSubtypesVisitor(moduleNode, defClass));
     }
 
-    @Override
-    protected ElementKind getElementKind() {
-        return ElementKind.CLASS;
-    }
-
     
-    private class FindAllSubtypesVisitor extends AbstractFindUsagesVisitor {
+    private static class FindAllSubtypesVisitor extends AbstractFindUsagesVisitor {
 
         private final String findingFqn;
 

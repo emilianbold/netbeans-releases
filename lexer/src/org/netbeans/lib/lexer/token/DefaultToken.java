@@ -44,15 +44,13 @@
 
 package org.netbeans.lib.lexer.token;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.lib.lexer.LexerUtilsConstants;
+import org.netbeans.lib.lexer.StackElementArray;
 import org.netbeans.lib.lexer.TokenList;
 
 /**
@@ -71,12 +69,17 @@ import org.netbeans.lib.lexer.TokenList;
  * @version 1.00
  */
 
-public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements CharSequence {
+public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
+
+    // -J-Dorg.netbeans.lib.lexer.token.DefaultToken.level=FINE
+    private static final Logger LOG = Logger.getLogger(DefaultToken.class.getName());
     
+    private static final boolean LOG_TOKEN_TEXT_TO_STRING;
+
     private static final int TOKEN_TEXT_TO_STRING_STACK_LENGTH;
 
-    private static final boolean TOKEN_TEXT_TO_STRING_DUMP;
-    
+    private static final Set<StackElementArray> toStringStacks;
+
     static {
         int val;
         try {
@@ -85,22 +88,12 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
         } catch (NumberFormatException ex) {
             val = 0;
         }
+        LOG_TOKEN_TEXT_TO_STRING = (val > 0);
         TOKEN_TEXT_TO_STRING_STACK_LENGTH = val;
-        TOKEN_TEXT_TO_STRING_DUMP = (val > 0);
+        toStringStacks = LOG_TOKEN_TEXT_TO_STRING ? StackElementArray.createSet() : null;
     }
     
-    /**
-     * Used in Token.text() to decide whether "this" should be returned and
-     * a text.charAt() will be slower or, for larger tokens,
-     * a subsequence of input source text should be created and returned instead..
-     */
-    private static final int INPUT_SOURCE_SUBSEQUENCE_THRESHOLD = 30;
-    
-    /**
-     * Field that is of type CharSequence and is either length of the token
-     * or cached text of the token as String.
-     */
-    CharSequence tokenLengthOrCachedText; // 24 bytes (20-super + 4)
+    final int tokenLength; // 24 bytes (20-super + 4)
     
     /**
      * Construct new default token.
@@ -108,7 +101,7 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
     public DefaultToken(T id, int length) {
         super(id);
         assert (length > 0) : "Token length=" + length + " <= 0"; // NOI18N
-        this.tokenLengthOrCachedText = TokenLength.get(length);
+        this.tokenLength = length;
     }
     
     /**
@@ -116,12 +109,12 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
      */
     public DefaultToken(T id) {
         super(id);
-        this.tokenLengthOrCachedText = TokenLength.get(0);
+        this.tokenLength = 0;
     }
 
     @Override
     public int length() {
-        return tokenLengthOrCachedText.length();
+        return tokenLength;
     }
 
     @Override
@@ -133,140 +126,28 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
      * Get text represented by this token.
      */
     @Override
-    public synchronized CharSequence text() { // synchronized due to tokenLengthOrCachedText mutability
+    public CharSequence text() {
         CharSequence text;
-        if (tokenLengthOrCachedText.getClass() == TokenLength.class) {
-            TokenList<T> tList = tokenList;
-            if (!isRemoved()) { // Updates status for EmbeddedTokenList; tokenList != null
-                int len = tokenLengthOrCachedText.length();
-                if (len >= INPUT_SOURCE_SUBSEQUENCE_THRESHOLD) {
-                    // Create subsequence of input source text
-                    CharSequence inputSourceText = tList.inputSourceText();
-                    int tokenOffset = tList.tokenOffset(this);
-                    text = new InputSourceSubsequence(this, inputSourceText,
-                            tokenOffset, tokenOffset + len);
-                } else { // Small token
-                    text = this;
-                }
-            } else { // Token is removed
-                text = null;
-            }
-        } else { // tokenLength contains cached text
-            text = tokenLengthOrCachedText;
-        }
-        return text;
-    }
-    
-    /**
-     * Implementation of <code>CharSequence.charAt()</code>
-     * for case when this token is used as token's text char sequence.
-     */
-    public final char charAt(int index) {
-        if (index < 0 || index >= length()) {
-            throw new IndexOutOfBoundsException(
-                "index=" + index + ", length=" + length() // NOI18N
-            );
-        }
         TokenList<T> tList = tokenList;
-        if (tList == null) { // Should normally not happen
-            // A bit strange to throw IOOBE but it's more practical since
-            // TokenHierarchy's dump can overcome IOOBE and deliver a useful debug but not NPEs etc.
-            throw new IndexOutOfBoundsException("index=" + index + ", length=" + length() +
-                    " but tokenList==null for token " + dumpInfo(null, null, false, true, 0));
-        }
-        int tokenOffset = tList.tokenOffset(this);
-        return tList.inputSourceText().charAt(tokenOffset + index);
-    }
-
-    /**
-     * Implementation of <code>CharSequence.subSequence()</code>
-     * for case when this token is used as token's text char sequence.
-     */
-    public final synchronized CharSequence subSequence(int start, int end) { // synchronized due to tokenLengthOrCachedText mutability
-        // Create subsequence of token's text
-        CharSequence text;
-        int textLength = tokenLengthOrCachedText.length();
-        CharSequenceUtilities.checkIndexesValid(start, end, textLength);
-
-        if (tokenLengthOrCachedText.getClass() == TokenLength.class) {
-            // If calling this.subSequence() then this.text() was already called
-            // so the status should be updated already and also the token is not removed.
-            // For simplicity always make a subsequence of the input source text.
-            TokenList tList = tokenList;
-            if (tList != null) {
-                CharSequence inputSourceText = tList.inputSourceText();
-                int tokenOffset = tList.tokenOffset(this);
-                text = new InputSourceSubsequence(this, inputSourceText,
-                        tokenOffset + start, tokenOffset + end);
-            } else {
-                text = "<null>";
-            }
-
-        } else { // tokenLength contains cached text
-            text = tokenLengthOrCachedText.subSequence(start, end);
-        }
-        return text;
-    }
-    
-    /**
-     * Implementation of <code>CharSequence.toString()</code>
-     * for case when this token is used as token's text char sequence.
-     */
-    @Override
-    public synchronized String toString() { // synchronized due to tokenLengthOrCachedText mutability
-        // In reality this method can either be called as result of calling Token.text().toString()
-        // or just calling Token.toString() for debugging purposes
-        String textStr;
-        if (TOKEN_TEXT_TO_STRING_DUMP) {
-            StackElementArray.logStackIfNew();
-        }
-        if (tokenLengthOrCachedText.getClass() == TokenLength.class) {
-            TokenList<T> tList = tokenList;
-            if (tList != null && !isRemoved()) { // Updates status for EmbeddedTokenList; tokenList != null
-                TokenLength tokenLength = (TokenLength) tokenLengthOrCachedText;
-                CharSequence inputSourceText = tList.inputSourceText();
-                int nextCacheFactor = tokenLength.nextCacheFactor();
-                int threshold = (inputSourceText.getClass() == String.class)
-                            ? LexerUtilsConstants.INPUT_TEXT_STRING_THRESHOLD
-                            : LexerUtilsConstants.CACHE_TOKEN_TO_STRING_THRESHOLD;
-                int tokenOffset = tList.tokenOffset(this);
-                textStr = inputSourceText.subSequence(tokenOffset,
-                        tokenOffset + tokenLength.length()).toString();
-                if (nextCacheFactor < threshold) {
-                    tokenLengthOrCachedText = tokenLength.next(nextCacheFactor);
-                } else { // Should become cached
-                    tokenLengthOrCachedText = textStr;
-                }
-            } else { // Token already removed
-                textStr = "<null>";
-            }
-
-        } else { // tokenLength contains cached text
-            textStr = tokenLengthOrCachedText.toString();
-        }
-        return textStr;
-    }
-    
-    synchronized void tokenLengthNext() {
-        TokenList<T> tList = tokenList;
-        if (tList != null && tokenLengthOrCachedText.getClass() == TokenLength.class && !isRemoved()) {
-            TokenLength tokenLength = (TokenLength) tokenLengthOrCachedText;
+        if (!isRemoved()) { // Updates status for EmbeddedTokenList; tokenList != null
+            // Create subsequence of input source text
             CharSequence inputSourceText = tList.inputSourceText();
-            int nextCacheFactor = tokenLength.nextCacheFactor();
-            int threshold = (inputSourceText.getClass() == String.class)
-                    ? LexerUtilsConstants.INPUT_TEXT_STRING_THRESHOLD
-                    : LexerUtilsConstants.CACHE_TOKEN_TO_STRING_THRESHOLD;
             int tokenOffset = tList.tokenOffset(this);
-            if (nextCacheFactor < threshold) {
-                tokenLengthOrCachedText = tokenLength.next(nextCacheFactor);
-            } else { // Should become cached
-                String textStr = inputSourceText.subSequence(tokenOffset,
-                        tokenOffset + tokenLength.length()).toString();
-                tokenLengthOrCachedText = textStr;
+            int start = tokenOffset;
+            int end = tokenOffset + tokenLength;
+            if (LOG_TOKEN_TEXT_TO_STRING) {
+                CharSequenceUtilities.checkIndexesValid(inputSourceText, start, end);
+                text = new InputSourceSubsequence(this, inputSourceText, start, end);
+            } else {
+                return inputSourceText.subSequence(start, end);
             }
-        }
-    }
 
+        } else { // Token is removed
+            text = null;
+        }
+        return text;
+    }
+    
     private static final class InputSourceSubsequence implements CharSequence {
         
         private final DefaultToken<?> token; // (8-super + 4) = 12 bytes
@@ -284,10 +165,12 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
             this.end = end;
         }
         
+        @Override
         public int length() {
             return end - start;
         }
         
+        @Override
         public char charAt(int index) {
             CharSequenceUtilities.checkIndexValid(index, length());
             try {
@@ -317,10 +200,11 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
                     }
                     sb.append('\n');
                 }
-                throw new IllegalStateException(sb.toString(), ex);
+                throw new IndexOutOfBoundsException(sb.toString());
             }
         }
 
+        @Override
         public CharSequence subSequence(int start, int end) {
             CharSequenceUtilities.checkIndexesValid(this, start, end);
             return new InputSourceSubsequence(token, inputSourceText,
@@ -329,84 +213,14 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
 
         @Override
         public String toString() {
-            // Increase usage
-            if (TOKEN_TEXT_TO_STRING_DUMP) {
-                StackElementArray.logStackIfNew();
+            if (LOG_TOKEN_TEXT_TO_STRING) {
+                if (StackElementArray.addStackIfNew(toStringStacks, TOKEN_TEXT_TO_STRING_STACK_LENGTH)) {
+                    LOG.log(Level.INFO, "Token.text().toString() called", new Exception());
+                }
             }
-            // Do not reuse token.text() if it became a String since it's not known
-            // where "start" and "end" point. Although TokenList.tokenOffset()
-            // could be subtracted this is safer from consistency point of view
-            // (see use of Token.text() across doc.insertString() in SimpleLexerIncTest).
-            token.tokenLengthNext();
-            String textStr = inputSourceText.subSequence(start, end).toString();
-            return textStr;
+            return inputSourceText.subSequence(start, end).toString();
         }
 
     }
     
-    private static final class StackElementArray {
-        
-        private static final Set<StackElementArray> stacks = TOKEN_TEXT_TO_STRING_DUMP
-                ? Collections.synchronizedSet(new HashSet<StackElementArray>())
-                : null;
-    
-        private final StackTraceElement[] stackTrace;
-        
-        private final int hashCode;
-        
-        static void logStackIfNew() {
-            Exception ex = new Exception();
-            StackTraceElement[] elems = ex.getStackTrace();
-            int startIndex = 2; // Cut of first two
-            int endIndex = Math.min(elems.length, startIndex + TOKEN_TEXT_TO_STRING_STACK_LENGTH);
-            StackTraceElement[] reducedElems = new StackTraceElement[endIndex - startIndex];
-            System.arraycopy(elems, startIndex, reducedElems, 0, endIndex - startIndex);
-            StackElementArray stackElementArray = new StackElementArray(reducedElems);
-            if (!stacks.contains(stackElementArray)) {
-                stacks.add(stackElementArray);
-                Logger.getLogger(StackElementArray.class.getName()).log(
-                        Level.INFO, "Token.text().toString() called", ex);
-            }
-        }
-
-        public StackElementArray(StackTraceElement[] stackTrace) {
-            this.stackTrace = stackTrace;
-            int hc = 0;
-            for (int i = 0; i < stackTrace.length; i++) {
-                hc ^= stackTrace[i].hashCode();
-            }
-            hashCode = hc;
-        }
-        
-        int length() {
-            return stackTrace.length;
-        }
-        
-        StackTraceElement element(int i) {
-            return stackTrace[i];
-        }
-
-        @Override
-        public int hashCode() {
-            return hashCode;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this)
-                return true;
-            if (!(obj instanceof StackElementArray))
-                return false;
-            StackElementArray sea = (StackElementArray) obj;
-            if (sea.length() != length())
-                return false;
-            for (int i = 0; i < stackTrace.length; i++) {
-                if (!element(i).equals(sea.element(i)))
-                    return false;
-            }
-            return true;
-        }
-        
-    }
-
 }

@@ -88,7 +88,7 @@ import org.openide.util.RequestProcessor;
  */
 public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
     /** Request processor used by this class. */
-    private static final RequestProcessor RP = new RequestProcessor(CSSStylesDocumentPanel.class);
+    static final RequestProcessor RP = new RequestProcessor(CSSStylesDocumentPanel.class);
     /** Tree view showing the style sheet information. */
     private BeanTreeView treeView;
     /** Explorer manager provided by this panel. */

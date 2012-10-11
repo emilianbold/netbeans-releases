@@ -80,7 +80,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-@OptionsPanelController.Keywords(keywords={"c/c++ code assistance"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, index=2)
+@OptionsPanelController.Keywords(keywords={"#ParserSettingsKeywords"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, tabTitle= "#TAB_CodeAssistanceTab")
 public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener, IsChangedListener {
 
     private Map<Tool, PredefinedPanel> predefinedPanels = new WeakHashMap<Tool, PredefinedPanel>();

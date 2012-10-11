@@ -1055,6 +1055,7 @@ public class CssCompletion implements CodeCompletionHandler {
             //fall through
 
             case function:
+            case functionName:
             case term:
             case expression:
             case operator: {

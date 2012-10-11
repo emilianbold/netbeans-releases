@@ -134,22 +134,13 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
             if (annotation != null) {
                 originatingElement = e;
                 String location = annotation.location();
-                if(location.equals(OptionsDisplayer.ADVANCED)) {
+                if(!location.equals(OptionsDisplayer.GENERAL) && !location.equals(OptionsDisplayer.KEYMAPS)) {
                     if(getBundleValue(annotation.tabTitle(), annotation, "tabTitle").trim().isEmpty()) {
-                        throw new LayerGenerationException("Must specify both location and tabTitle", e, processingEnv, annotation, "tabTitle");
-                    }
-                    if(annotation.index() != -1) {
-                        throw new LayerGenerationException("No need to specify index, panels in Miscellaneous category are sorted alphabetically", e, processingEnv, annotation, "index");
-                    }
-                    advanced.add(annotation);
-                } else if(!location.equals(OptionsDisplayer.GENERAL) && !location.equals(OptionsDisplayer.KEYMAPS)) {
-                    if(annotation.index() < 0) {
-                        throw new LayerGenerationException("You need to specify a non-negative value for index", e, processingEnv, annotation, "index");
+                        throw new LayerGenerationException("Must specify tabTitle", e, processingEnv, annotation, "tabTitle");
                     }
                 }
             }
         }
-        Collections.sort(advanced, new AdvancedComparable());
 
         for (Element e : roundEnv.getElementsAnnotatedWith(Keywords.class)) {
             handleElement(e, e.getAnnotation(Keywords.class), advanced, "");
@@ -179,16 +170,11 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
 
     private void handleElement(Element e, Keywords annotation, ArrayList<Keywords> advanced, String name) throws LayerGenerationException {
         originatingElement = e;
-        int index = annotation.index();
-        if (annotation.location().equals(OptionsDisplayer.ADVANCED)) {
-            index = advanced.indexOf(annotation);
-        }
         File file = layer(e).
                 file("OptionsDialog/Keywords/".concat(e.asType().toString()).concat(name)).
                 stringvalue("instanceOf", JPanel.class.getName()).
                 stringvalue("location", annotation.location()).
-                stringvalue("tabTitle", getBundleValue(annotation.tabTitle(), annotation, "tabTitle")).
-                intvalue("index", index);
+                stringvalue("tabTitle", getBundleValue(annotation.tabTitle(), annotation, "tabTitle"));
         StringBuilder keywordsSB = new StringBuilder();
         String[] keywords = annotation.keywords();
         keywordsSB.append(getBundleValue(keywords[0], annotation, "keywords").toUpperCase());
@@ -197,14 +183,6 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
         }
         file.stringvalue("keywords", keywordsSB.toString());
         file.write();
-    }
-    
-    private class AdvancedComparable implements Comparator<Keywords> {
-
-        @Override
-        public int compare(Keywords r1, Keywords r2) {
-            return r1.tabTitle().compareTo(r2.tabTitle());
-        }
     }
 
     private String getBundleValue(String label, Annotation annotation, String annotationMethod) throws LayerGenerationException {

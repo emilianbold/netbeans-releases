@@ -253,7 +253,9 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
             }
         }
         if (offset == -1 && classScope.getBlockRange() != null) {
-            offset = Utilities.getRowStart(doc, classScope.getBlockRange().getEnd()) - 1;
+            int rowStartOfClassEnd = Utilities.getRowStart(doc, classScope.getBlockRange().getEnd());
+            int rowEndOfPreviousRow = rowStartOfClassEnd - 1;
+            offset = Utilities.getRowStart(doc, rowEndOfPreviousRow);
         }
         return offset;
     }

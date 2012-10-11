@@ -52,6 +52,7 @@ import java.util.Arrays;
 import org.netbeans.beaninfo.editors.ExPropertyEditorSupport.EnvException;
 import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.*;
+import org.openide.nodes.PropertyEditorRegistration;
 import org.openide.util.NbBundle;
 /** An editor for primitive integer types which allows hinting of tag
  *  values and handles whitespace in setAsText better than the default
@@ -68,6 +69,7 @@ import org.openide.util.NbBundle;
  * @author  Tim Boudreau
  * @version 1.0
  */
+@PropertyEditorRegistration(targetType=Integer.class)
 public class IntEditor extends ExPropertyEditorSupport {
     
     public static final String KEYS = "stringKeys"; //NOI18N
@@ -158,7 +160,7 @@ public class IntEditor extends ExPropertyEditorSupport {
                     }
                 }
                 if (idx != -1) {
-                    result = keys [((Integer) super.getValue()).intValue()];
+                    result = keys [idx];
                 } else {
                     throw new IllegalArgumentException(
                     "This property editor uses a set of keyed values, " +  //NOI18N
@@ -210,17 +212,9 @@ public class IntEditor extends ExPropertyEditorSupport {
                                          new java.util.Date());
                 throw iae;
             } else {
-                setValue(Integer.valueOf(idx));
+                setValue(Integer.valueOf(values[idx]));
             }
         }
-    }
-    
-    public Object getValue () {
-        Integer v = (Integer) super.getValue();
-        if (values != null) {
-            v = Integer.valueOf (values[v.intValue()]);
-        }
-        return v;
     }
     
     //issue 34037 - make setValue calls with illegal values fail-fast

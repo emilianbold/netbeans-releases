@@ -96,7 +96,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /** Display the "Tools Default" panel */
-@OptionsPanelController.Keywords(keywords={"c/c++ build tools"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, index=0)
+@OptionsPanelController.Keywords(keywords={"#ToolsPanelKeywords"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, tabTitle= "#TAB_ToolsTab")
 public final class ToolsPanel extends JPanel implements ActionListener,
         ListSelectionListener, ItemListener {
 
@@ -123,7 +123,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ToolsPanel.class.getName(), 1);
     //See Bug #215447
-    private static final boolean ENABLED_EDIT_HOST = false;
+    private static final boolean ENABLED_EDIT_HOST = true;
 
     /** Creates new form ToolsPanel */
     public ToolsPanel(String helpContext) {

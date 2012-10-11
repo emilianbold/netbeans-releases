@@ -143,7 +143,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     @Override
     public Collection<? extends TypeScope> getReturnTypes(boolean resolve) {
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
-        String types = null;
+        String types;
         synchronized(this) {
             types = returnType;
         }
@@ -278,6 +278,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         }
         sb.append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        assert namespaceScope != null;
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         return sb.toString();

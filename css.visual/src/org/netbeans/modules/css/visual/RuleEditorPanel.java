@@ -152,9 +152,11 @@ import org.openide.util.actions.Presenter;
 })
 public class RuleEditorPanel extends JPanel {
 
+    private static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
+    static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
+    
     static RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
-    public static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
-    private static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
+    
     private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
     private static final Icon APPLIED_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/database.gif")); //NOI18N
     private static final JLabel ERROR_LABEL = new JLabel(ERROR_ICON);
@@ -187,7 +189,12 @@ public class RuleEditorPanel extends JPanel {
             Mutex.EVENT.readAccess(new Runnable() {
                 @Override
                 public void run() {
-                    if (Model.CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
+                    if (Model.NO_CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
+                        //Model.applyChanges() requested, but no changes were done,
+                        //which means no new model will be created and hence no property sets refreshed
+                        node.fireContextChanged(false);
+                        
+                    } else if (Model.CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
                         northWestPanel.add(APPLIED_LABEL);
                         northWestPanel.revalidate();
                         northWestPanel.repaint();
@@ -207,7 +214,7 @@ public class RuleEditorPanel extends JPanel {
                                             if (resultIterator != null) {
                                                 CssCslParserResult result = (CssCslParserResult) resultIterator.getParserResult();
                                                 final Model model = result.getModel();
-                                                LOG.info("Setting new model upon Model.applyChanges()");
+                                                LOG.log(Level.INFO, "Model.CHANGES_APPLIED_TO_DOCUMENT event handler - setting new model {0}", model);
                                                 setModel(model);
                                             }
                                         }
@@ -218,10 +225,9 @@ public class RuleEditorPanel extends JPanel {
                             }
                         }
                     } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
-                        //refresh the PS content
-                        node.fireContextChanged(false);
                         if (createdDeclaration != null) {
                             //select & edit the property corresponding to the created declaration
+                            node.fireContextChanged(false);
                             editCreatedDeclaration();
                         }
                     }
@@ -533,19 +539,16 @@ public class RuleEditorPanel extends JPanel {
 
     //runs in EDT
     public void setModel(final Model model) {
-        LOG.log(Level.FINE, "setModel({0})", model);
-
+        assert SwingUtilities.isEventDispatchThread();
         if (model == null) {
             throw new NullPointerException();
         }
 
-        assert SwingUtilities.isEventDispatchThread();
-        if (this.model == model) {
-            LOG.log(Level.FINE, "no update - attempt to set the same model");
-            return; //no change
-        }
-
         if (this.model != null) {
+            if(model.getSerialNumber() <= this.model.getSerialNumber()) {
+                LOG.log(Level.FINE, "attempt to set the same or older model");
+                return; //no change
+            }
             this.model.removePropertyChangeListener(MODEL_LISTENER);
         }
 
@@ -553,6 +556,7 @@ public class RuleEditorPanel extends JPanel {
         final Rule oldRule = this.rule;
 
         this.model = model;
+        LOG.log(Level.FINE, "set new model ({0})", model);
 
         this.model.addPropertyChangeListener(MODEL_LISTENER);
 
@@ -564,50 +568,24 @@ public class RuleEditorPanel extends JPanel {
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.MODEL_SET.name(), oldModel, this.model);
 
         if (this.rule != null) {
-            //try to resolve the old rule from the previous model to corresponding
-            //rule in the new model
-            final AtomicReference<CharSequence> oldRuleId_ref = new AtomicReference<CharSequence>();
-            oldModel.runReadTask(new Model.ModelTask() {
+            //resolve the old rule from the previous model to corresponding rule in the new model
+            final AtomicReference<Rule> rule_ref = new AtomicReference<Rule>();
+            this.model.runReadTask(new Model.ModelTask() {
                 @Override
                 public void run(StyleSheet styleSheet) {
-                    oldRuleId_ref.set(oldModel.getElementSource(oldRule.getSelectorsGroup()));
+                    ModelUtils utils = new ModelUtils(model);
+                    rule_ref.set(utils.findMatchingRule(oldModel, oldRule));
                 }
             });
-            final CharSequence oldRuleId = oldRuleId_ref.get();
-
-            final AtomicReference<Rule> match_ref = new AtomicReference<Rule>();
-            model.runReadTask(new Model.ModelTask() {
-                @Override
-                public void run(StyleSheet styleSheet) {
-                    styleSheet.accept(new ModelVisitor.Adapter() {
-                        @Override
-                        public void visitRule(Rule rule) {
-                            CharSequence ruleId = model.getElementSource(rule.getSelectorsGroup());
-                            if (LexerUtils.equals(oldRuleId, ruleId, false, false)) {
-                                //should be the same rule
-
-                                //TODO - having some API for resolving old to new model elements between
-                                //two model instances would be great. Something like ElementHandle.resolve
-                                //TODO - the handles would be usefull as well as the elements shouldn't 
-                                //be kept outside of the ModelTask-s.
-
-                                LOG.log(Level.FINE, "found matching rule {0}", rule);
-                                match_ref.set(rule);
-
-                            }
-                        }
-                    });
-                }
-            });
-
-            Rule match = match_ref.get();
+            
+            Rule match = rule_ref.get();
             if (match == null) {
                 setNoRuleState();
             } else {
-                setRule(match_ref.get());
+                setRule(match);
             }
+            
             CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, match);
-
 
         } else {
             LOG.log(Level.FINE, "no rule was set before");
@@ -625,17 +603,27 @@ public class RuleEditorPanel extends JPanel {
     }
     
     public void setRule(final Rule rule) {
-        LOG.log(Level.FINE, "setRule({0})", rule);
-
         assert SwingUtilities.isEventDispatchThread();
+        if (rule == null) {
+            throw new NullPointerException();
+        }
         if (model == null) {
             throw new IllegalStateException("you must call setModel(Model model) beforehand!"); //NOI18N
         }
+
+        Model ruleModel = rule.getModel();
+        if(ruleModel != this.model) {
+            LOG.log(Level.FINE, "attempt to set rule from different model {0}, while the current is {1}!", new Object[]{ruleModel, this.model});
+            return; //no change
+        }
+        
         if (this.rule == rule) {
+            LOG.log(Level.FINE, "attempt to set the same rule");
             return; //no change
         }
         Rule old = this.rule;
         this.rule = rule;
+        LOG.log(Level.FINE, "set new rule ({0})", rule);
         
         //refresh new AddPropertyComboBoxModel so the add property combobox doesn't contain 
         //already existing properties

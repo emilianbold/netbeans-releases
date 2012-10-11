@@ -190,6 +190,41 @@ public class LexerUtils {
 
     }
 
+    /**
+     * Trims the given {@link CharSequence} as {@link String#trim()} does.
+     * @since 1.26
+     */
+    public static CharSequence trim(CharSequence chs) {
+        if(chs == null) {
+            throw new NullPointerException();
+        }
+        if(chs.length() == 0) {
+            return chs;
+        }
+        
+        int wsPrefixLen = 0;
+        for(int i = 0; i < chs.length(); i++) {
+            char c = chs.charAt(i);
+            if(Character.isWhitespace(c)) {
+                wsPrefixLen++;
+            } else {
+                break;
+            }
+        }
+        int wsPostfixLen = 0;
+        for(int i = chs.length() - 1; i >= wsPrefixLen; i--) {
+            char c = chs.charAt(i);
+            if(Character.isWhitespace(c)) {
+                wsPostfixLen++;
+            } else {
+                break;
+            }
+        }
+        
+        return chs.subSequence(wsPrefixLen, chs.length() - wsPostfixLen);
+        
+    }
+    
     /** @param optimized - first sequence is lowercase, one call to Character.toLowerCase() only*/
     public static boolean equals(CharSequence text1, CharSequence text2, boolean ignoreCase, boolean optimized) {
         Parameters.notNull("text1", text1);

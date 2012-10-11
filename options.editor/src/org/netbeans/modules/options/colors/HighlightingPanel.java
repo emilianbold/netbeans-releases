@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Jan Jancura
  */
-@OptionsPanelController.Keywords(keywords={"highlighting"}, location=OptionsDisplayer.FONTSANDCOLORS, index=1)
+@OptionsPanelController.Keywords(keywords={"highlighting"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "Highlighting")
 public class HighlightingPanel extends JPanel implements ActionListener, ItemListener, FontsColorsController {
     
     private ColorModel          colorModel = null;

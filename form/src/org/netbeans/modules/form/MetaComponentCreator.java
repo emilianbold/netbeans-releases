@@ -51,7 +51,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 import org.openide.*;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
@@ -236,46 +235,44 @@ public class MetaComponentCreator {
     // addPrecreatedComponent methods gets called. If adding is canceled for
     // whatever reason, releasePrecreatedComponent is called.
 
-    public RADVisualComponent precreateVisualComponent(final ClassSource classSource) {
+    public RADVisualComponent precreateVisualComponent(final ClassSource classSource) throws Exception {
         final Class compClass = prepareClass(classSource);
+        if (compClass == null) {
+            throw new Exception("Class not available"); // classloading failed, already reported to user // NOI18N
+        }
 
         // no preview component if this is a window, applet, or not visual
-        if (compClass == null
-              || java.awt.Window.class.isAssignableFrom(compClass)
+        if (java.awt.Window.class.isAssignableFrom(compClass)
               || java.applet.Applet.class.isAssignableFrom(compClass)
               // JPopupMenu can't be used as a visual component (added to a container)
               || javax.swing.JPopupMenu.class.isAssignableFrom(compClass)
               || !FormUtils.isVisualizableClass(compClass)) {
-            return null;
+            return null; // no component but not a failure
         }
 
-        if (preMetaComp != null)
+        if (preMetaComp != null) {
             releasePrecreatedComponent();
+        }
 
-        try { // Look&Feel UI defaults remapping needed
-            FormLAF.executeWithLookAndFeel(formModel,
-                new Mutex.ExceptionAction() {
-                    @Override
-                    public Object run() throws Exception {
-                        preMetaComp = createVisualComponent(compClass);
-                        String typeParams = classSource.getTypeParameters();
-                        if (typeParams != null) {
-                            preMetaComp.setAuxValue(JavaCodeGenerator.AUX_TYPE_PARAMETERS, typeParams);
-                            JavaCodeGenerator.setupComponentFromAuxValues(preMetaComp);
-                        }
-                        return preMetaComp;
+        // Look&Feel UI defaults remapping needed
+        FormLAF.executeWithLookAndFeel(formModel, new Mutex.ExceptionAction() {
+            @Override
+            public Object run() throws Exception {
+                preMetaComp = createVisualComponent(compClass); // this may fail and throw exception
+                if (preMetaComp != null) {
+                    String typeParams = classSource.getTypeParameters();
+                    if (typeParams != null) {
+                        preMetaComp.setAuxValue(JavaCodeGenerator.AUX_TYPE_PARAMETERS, typeParams);
+                        JavaCodeGenerator.setupComponentFromAuxValues(preMetaComp);
                     }
                 }
-            );
-            return preMetaComp;
-        }
-        catch (Exception ex) { // should not happen
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            return null;
-        }
+                return preMetaComp;
+            }
+        });
+        return preMetaComp;
     }
 
-    public RADVisualComponent precreateVisualComponent(PaletteItem paletteItem) {
+    public RADVisualComponent precreateVisualComponent(PaletteItem paletteItem) throws Exception {
         RADVisualComponent metaComp = precreateVisualComponent(paletteItem.getComponentClassSource());
         paletteItem.initializeComponent(metaComp);
         return metaComp;
@@ -858,7 +855,14 @@ public class MetaComponentCreator {
                                             RADComponent targetComp,
                                             Object constraints)
     {
-        RADVisualComponent newMetaComp = createVisualComponent(compClass);
+        RADVisualComponent newMetaComp;
+        try {
+            newMetaComp = createVisualComponent(compClass);
+        } catch (Exception ex) { // failure already reported
+            return null;
+        } catch (LinkageError ex) {
+            return null;
+        }
 
 //        Class beanClass = newMetaComp.getBeanClass();
         if (java.awt.Window.class.isAssignableFrom(compClass)
@@ -868,7 +872,7 @@ public class MetaComponentCreator {
         return addVisualComponent2(newMetaComp, targetComp, constraints, true);
     }
 
-    private RADVisualComponent createVisualComponent(Class compClass) {
+    private RADVisualComponent createVisualComponent(Class compClass) throws Exception, LinkageError {
         RADVisualComponent newMetaComp = null;
         RADVisualContainer newMetaCont =
             FormUtils.isContainer(compClass) ? new RADVisualContainer() : null;
@@ -879,9 +883,7 @@ public class MetaComponentCreator {
                 new RADVisualComponent() : newMetaCont;
 
             newMetaComp.initialize(formModel);
-            if (!initComponentInstance(newMetaComp, compClass))
-                return null; // failure (reported)
-
+            initComponentInstance(newMetaComp, compClass); // possible failure reported inside
 
             if (newMetaCont == null)
                 break; // not a container, the component is done
@@ -988,8 +990,13 @@ public class MetaComponentCreator {
     {
         RADComponent newMetaComp = new RADComponent();
         newMetaComp.initialize(formModel);
-        if (!initComponentInstance(newMetaComp, compClass))
+        try {
+            initComponentInstance(newMetaComp, compClass);
+        } catch (Exception ex) { // failure already reported
             return null;
+        } catch (LinkageError ex) { // failure already reported
+            return null;
+        }
 
         addOtherComponent(newMetaComp, targetComp, true);
         return newMetaComp;
@@ -1128,11 +1135,11 @@ public class MetaComponentCreator {
             prop.setValue(border);
         }
         catch (Exception ex) {
-            showInstErrorMessage(ex);
+            showInstErrorMessage(ex, borderClass.getName());
             return null;
         }
         catch (LinkageError ex) {
-            showInstErrorMessage(ex);
+            showInstErrorMessage(ex, borderClass.getName());
             return null;
         }
 
@@ -1221,8 +1228,13 @@ public class MetaComponentCreator {
         }
 
         newMenuItemComp.initialize(formModel);
-        if (!initComponentInstance(newMenuItemComp, compClass))
+        try {
+            initComponentInstance(newMenuItemComp, compClass);
+        } catch (Exception ex) { // failure already reported
             return null;
+        } catch (LinkageError ex) { // failure already reported
+            return null;
+        }
         if (newMenuComp != null)
             newMenuComp.initSubComponents(new RADComponent[0]);
 
@@ -1373,10 +1385,20 @@ public class MetaComponentCreator {
             "FMT_ERR_CannotLoadClass4", // NOI18N
             new Object[] { classSource.getClassName(),
                            ClassPathUtils.getClassSourceDescription(classSource) });
-        Logger.getLogger(MetaComponentCreator.class.getName()).log(Level.INFO, msg, ex);
-        DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
-        
+
+        if (ex instanceof ClassNotFoundException) {
+            // no need to show the exception, we know what the problem is
+            msg = msg + "\n" + FormUtils.getBundleString("MSG_ERR_CannotLoadClassReason1"); // NOI18N
+            Logger.getLogger(MetaComponentCreator.class.getName()).log(Level.INFO, msg, ex);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                                    msg, NotifyDescriptor.WARNING_MESSAGE));
+        } else {
+            // show exception to the user to be able to find out what is wrong
+            msg = msg  + "\n" + FormUtils.getBundleString("MSG_ERR_CannotLoadClassReason2"); // NOI18N
+            Logger.getLogger(MetaComponentCreator.class.getName()).log(Level.INFO, msg, ex);
+            showErrorDialogWithException(FormUtils.getBundleString("CTL_ClassLoadingErrorTitle"), // NOI18N
+                            msg, ex);
+        }
     }
 
     private static void showCannotAddComponentMessage(String name) {
@@ -1385,29 +1407,55 @@ public class MetaComponentCreator {
         DialogDisplayer.getDefault().notify(desc);
     }
 
-    private boolean initComponentInstance(RADComponent metacomp,
-                                          Class<?> compClass)
-    {
-
+    private void initComponentInstance(RADComponent metacomp, Class<?> compClass) throws Exception, LinkageError {
         try {
             metacomp.initInstance(compClass);
+        } catch (Exception ex) {
+            showInstErrorMessage(ex, compClass.getName());
+            throw ex;
+        } catch (LinkageError ex) {
+            showInstErrorMessage(ex, compClass.getName());
+            throw ex;
         }
-        catch (Exception ex) {
-            showInstErrorMessage(ex);
-            return false;
-        }
-        catch (LinkageError ex) {
-            showInstErrorMessage(ex);
-            return false;
-        }
-        return true;
     }
 
-    private static void showInstErrorMessage(Throwable ex) {
-        ErrorManager em = ErrorManager.getDefault();
-        em.annotate(ex,
-                    FormUtils.getBundleString("MSG_ERR_CannotInstantiate")); // NOI18N
-        em.notify(ex);
+    private static void showInstErrorMessage(final Throwable ex, String className) {
+        final String msg = ex instanceof InstantiationException
+                ? FormUtils.getFormattedBundleString("FMT_ERR_CannotInstantiate1", className) // NOI18N
+                : FormUtils.getFormattedBundleString("FMT_ERR_CannotInstantiate2", className); // NOI18N
+        Logger.getLogger(MetaComponentCreator.class.getName()).log(Level.INFO, msg, ex);
+
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                if (ex instanceof InstantiationException) {
+                    // no need to show the exception, we know what the problem is
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                } else {
+                    // show exception to the user to be able to find out what is wrong
+                    showErrorDialogWithException(FormUtils.getBundleString("CTL_InstantiationErrorTitle"), // NOI18N
+                                msg, ex);
+                }
+            }
+        };
+        if (FormLAF.inLAFBlock()) {
+            EventQueue.invokeLater(r);
+        } else {
+            r.run();
+        }
+    }
+
+    private static void showErrorDialogWithException(String title, final String message, final Throwable ex) {
+        DialogDescriptor dd = FormUtils.createErrorDialogWithExceptions(title, message,
+                                 DialogDescriptor.ERROR_MESSAGE, null, ex);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        // hack: adjust focus so it is not on the Show Exceptions button
+        if (dialog instanceof JDialog) {
+            ((JDialog)dialog).getContentPane().requestFocus();
+        }
+        dialog.setVisible(true);
+        dialog.dispose();
     }
 
     // --------
@@ -1543,8 +1591,14 @@ public class MetaComponentCreator {
         if (shouldEncloseByScrollPane(newMetaComp.getBeanInstance())) {
             // hack: automatically enclose some components into scroll pane
             // [PENDING check for undo/redo!]
-            RADVisualContainer metaScroll = (RADVisualContainer)
-                createVisualComponent(JScrollPane.class);
+            RADVisualContainer metaScroll;
+            try {
+                metaScroll = (RADVisualContainer) createVisualComponent(JScrollPane.class);
+            } catch (Exception ex) { // won't happen, no problem creating a scroll pane
+                return newMetaComp;
+            } catch (LinkageError ex) { // won't happen, no problem creating a scroll pane
+                return newMetaComp;
+            }
             // Mark this scroll pane as automatically created.
             // Some action (e.g. delete) behave differently on
             // components in such scroll panes.
@@ -1559,21 +1613,30 @@ public class MetaComponentCreator {
             // for menubars create initial menu [temporary?]
             RADVisualContainer menuCont = (RADVisualContainer) newMetaComp;
             Container menuBar = (Container) menuCont.getBeanInstance();
-            RADVisualComponent menuComp = createVisualComponent(JMenu.class);
+            RADVisualComponent menuComp;
             try {
+                menuComp = createVisualComponent(JMenu.class);
                 menuComp.getBeanProperty("text") // NOI18N
                         .setValue(FormUtils.getBundleString("CTL_DefaultFileMenu")); // NOI18N
-            } catch (Exception ex) { }
+            } catch (Exception ex) { // won't happen, no reason why creating JMenu and setting its text should fail
+                return newMetaComp;
+            } catch (LinkageError ex) { // won't happen, no reason why creating JMenu should fail
+                return newMetaComp;
+            }
             Component menu = (Component) menuComp.getBeanInstance();
             menuCont.add(menuComp);
             menuCont.getLayoutSupport().addComponentsToContainer(
                     menuBar, menuBar, new Component[] { menu }, 0);
 
-            menuComp = createVisualComponent(JMenu.class);
             try {
+                menuComp = createVisualComponent(JMenu.class);
                 menuComp.getBeanProperty("text") // NOI18N
                         .setValue(FormUtils.getBundleString("CTL_DefaultEditMenu")); // NOI18N
-            } catch (Exception ex) { }
+            } catch (Exception ex) { // won't happen, no reason why creating JMenu and setting its text should fail
+                return newMetaComp;
+            } catch (LinkageError ex) { // won't happen, no reason why creating JMenu should fail
+                return newMetaComp;
+            }
             menu = (Component) menuComp.getBeanInstance();
             menuCont.add(menuComp);
             menuCont.getLayoutSupport().addComponentsToContainer(

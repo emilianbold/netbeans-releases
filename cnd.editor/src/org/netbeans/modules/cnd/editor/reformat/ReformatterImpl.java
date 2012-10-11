@@ -903,6 +903,12 @@ public class ReformatterImpl {
                             codeStyle.spaceBeforeCatchLeftBrace(), 1);
                     return;
                 }
+                case ARROW: //("catch", "keyword-directive"), //C++
+                {
+                    newLine(previous, current, codeStyle.getFormatNewlineBeforeBraceLambda(),
+                        codeStyle.spaceBeforeLambdaLeftBrace(), 1);
+                    return;
+                }
             }
         }
         if (entry != null && entry.isLikeToFunction()) {
@@ -1236,6 +1242,11 @@ public class ReformatterImpl {
                             indent += codeStyle.indentSize();
                         }
                         break;
+                    case ARROW:
+                        if (codeStyle.getFormatNewlineBeforeBraceLambda() == BracePlacement.NEW_LINE_FULL_INDENTED) {
+                            indent += codeStyle.indentSize();
+                        }
+                        break;
                     default:
                         if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_FULL_INDENTED) {
                             indent += codeStyle.indentSize();
@@ -1365,6 +1376,13 @@ public class ReformatterImpl {
         Token<CppTokenId> nextImportant = ts.lookNextImportant();
         if (nextImportant != null) {
             switch (nextImportant.id()) {
+                case LPAREN:
+                {
+                    if (entry != null && entry.getImportantKind() == ARROW) {
+                        return;
+                    }
+                    break;
+                }
                 case WHILE:
                 {
                     StackEntry top = braces.peek();
@@ -2186,6 +2204,8 @@ public class ReformatterImpl {
                     }
                 }
                 spaceBefore(previous, codeStyle.spaceWithinMethodCallParens(), codeStyle.spaceKeepExtra());
+            } else if (p != null && (p.id() == TYPEID || p.id() == SIZEOF || p.id() == TYPEOF)) {
+                spaceBefore(previous, codeStyle.spaceWithinParens(), codeStyle.spaceKeepExtra());
             } else if (ts.isTypeCast()){
                 spaceBefore(previous, codeStyle.spaceWithinTypeCastParens(), codeStyle.spaceKeepExtra());
                 spaceAfter(current, codeStyle.spaceAfterTypeCast(), codeStyle.spaceKeepExtra());

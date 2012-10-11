@@ -392,7 +392,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
                 @Override
                 public void run() {
                     final List<NavigatorPanel> providers = obtainProviders(nodes, panelsPolicy, lkpHints);
-                    SwingUtilities.invokeLater(new Runnable() {
+                    WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
                         @Override
                         public void run() {
                             showProviders(providers, force);

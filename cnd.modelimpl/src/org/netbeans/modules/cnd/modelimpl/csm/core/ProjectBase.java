@@ -89,7 +89,9 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
@@ -118,6 +120,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.ClassEnumBase;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ParserQueue.Position;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
@@ -1046,27 +1049,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         initFields();
     }
 
-    /**
-     * Creates FileImpl instance for the given file item if it hasn't yet been created.
-     * Is called when initializing the project or new file is added to project.
-     * Isn't intended to be used in #included file processing.
-     */
-    final protected void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile) {
-        FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile, isSourceFile);
-        if (fileAndHandler == null) {
-            return;
-        }
-        // put directly into parser queue if needed
-        ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
-    }
-
-    private FileAndHandler preCreateIfNeed(NativeFileItem nativeFile, boolean isSourceFile){
+    private FileAndHandler preCreateIfNeed(NativeFileItem nativeFile){
         // file object can be invalid for not existing file (#194357)
         assert (nativeFile != null && nativeFile.getFileObject() != null);
         if (!Utils.acceptNativeItem(nativeFile)) {
             return null;
         }
-        FileImpl.FileType fileType = isSourceFile ? Utils.getFileType(nativeFile) : FileImpl.FileType.HEADER_FILE;
+        FileImpl.FileType fileType = Utils.getFileType(nativeFile);
 
         FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.createFileBuffer(nativeFile.getFileObject()), nativeFile, fileType);
 
@@ -1076,10 +1065,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return fileAndHandler;
     }
 
-    final FileImpl createIfNeed(NativeFileItem nativeFile, boolean isSourceFile, FileModel lwm,
+    /*package*/final FileImpl createIfNeed(NativeFileItem nativeFile, FileModel lwm,
             ProjectSettingsValidator validator, Collection<FileImpl> reparseOnEdit, Collection<NativeFileItem> reparseOnPropertyChanged) {
 
-        FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile, isSourceFile);
+        FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile);
         if (fileAndHandler == null) {
             return null;
         }
@@ -1229,68 +1218,120 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * is called when 1-st time parsed.
      * Checks whether there are files in code model, that are removed from the project system
      */
-    private void checkForRemoved() {
+    public final void checkForRemoved() {
 
         NativeProject nativeProject = (platformProject instanceof NativeProject) ? (NativeProject) platformProject : null;
 
         // we might just ask NativeProject to find file,
         // but it's too ineffective; so we have to create a set of project files paths
-        Set<String> projectFiles = null;
+        Set<String> prjNotExcludedSourceFileItems = Collections.emptySet();
+        Set<String> prjNotExcludedHeaderFileItems = Collections.emptySet();
         if (nativeProject != null) {
-            projectFiles = new HashSet<String>();
+            prjNotExcludedSourceFileItems = new HashSet<String>();
+            prjNotExcludedHeaderFileItems = new HashSet<String>();
             for (NativeFileItem item : nativeProject.getAllFiles()) {
                 if (!item.isExcluded()) {
                     switch (item.getLanguage()) {
                         case C:
                         case CPP:
                         case FORTRAN:
-                        case C_HEADER:
-                            projectFiles.add(item.getAbsolutePath());
+                            prjNotExcludedSourceFileItems.add(item.getAbsolutePath());
                             //this would be a workaround for #116706 Code assistance do not recognize changes in file
                             //projectFiles.add(item.getFile().getCanonicalPath());
                             break;
-                        default:
+                        case C_HEADER:
+                            prjNotExcludedHeaderFileItems.add(item.getAbsolutePath());
                             break;
+                        case OTHER:
+                            break;
+                        default: throw new AssertionError(item.getLanguage());
                     }
                 }
             }
         }
 
-        Set<FileImpl> candidates = new HashSet<FileImpl>();
-        Set<FileImpl> removedPhysically = new HashSet<FileImpl>();
-        for (FileImpl file : getAllFileImpls()) {
+        LinkedList<FileImpl> liveStartFiles = new LinkedList<FileImpl>();
+        Collection<FileImpl> prjFileImpls = getAllFileImpls();
+        Map<FileImpl, Boolean> allFileImpls = new HashMap<FileImpl, Boolean>(prjFileImpls.size());
+        boolean hasChanges = false;
+        for (FileImpl file : prjFileImpls) {
+            allFileImpls.put(file, null); // register file without any information
             FileObject fo = file.getFileObject();
             if (fo == null || !fo.isValid()) {
-                removedPhysically.add(file);
-            } else if (projectFiles != null) { // they might be null for library
-                if (!projectFiles.contains(file.getAbsolutePath().toString())) {
-                    candidates.add(file);
+                // special marker for physically removed
+                allFileImpls.put(file, Boolean.FALSE);
+                hasChanges = true;
+            } else if (nativeProject != null) {
+                // all non-excluded project files are live
+                if (prjNotExcludedSourceFileItems.contains(file.getAbsolutePath().toString())) {
+                    liveStartFiles.addLast(file);
+                    allFileImpls.put(file, Boolean.TRUE);
+                } else if (prjNotExcludedHeaderFileItems.contains(file.getAbsolutePath().toString())) {
+                    // TODO: for now we consider project to be clever 
+                    // so if header file is marked as not excluded it is really live
+                    liveStartFiles.addLast(file);
+                    allFileImpls.put(file, Boolean.TRUE);
+                } else {
+                    hasChanges = true;
+                }
+            } else {
+                liveStartFiles.addLast(file);
+                allFileImpls.put(file, Boolean.TRUE);
+            }
+        }
+        
+        if (!hasChanges) {
+            if (CndUtils.isDebugMode() || CndUtils.isUnitTestMode()) {
+                for (Map.Entry<FileImpl, Boolean> entry : allFileImpls.entrySet()) {
+                    CndUtils.assertTrue(entry.getValue() == Boolean.TRUE);
+                }
+            }
+            return;
+        }
+        // find live and dead files
+        while (!liveStartFiles.isEmpty()) {
+            // remove head
+            FileImpl curLiveFile = liveStartFiles.removeFirst();
+            // get directly included files
+            for (CsmFile csmFile : getGraph().getOutLinks(curLiveFile)) {
+                FileImpl includedFileImpl = (FileImpl) csmFile;
+                if (includedFileImpl.getProjectUID().equals(this.getUID())) {
+                    CndUtils.assertTrueInConsole(allFileImpls.containsKey(includedFileImpl), "no record for: ", includedFileImpl); // NOI18N
+                    // check if file was already handled
+                    Boolean result = allFileImpls.get(includedFileImpl);
+                    if (result == null) {
+                        // mark as live
+                        allFileImpls.put(includedFileImpl, Boolean.TRUE);
+                        // add new live file to the tail
+                        liveStartFiles.addLast(includedFileImpl);
+                    }
                 }
             }
         }
-        final ArrayList<FileImpl> removedFiles = new ArrayList<FileImpl>(removedPhysically);
-        if (TraceFlags.TRACE_VALIDATION) {
-            for (FileImpl file : removedPhysically) {
-                System.err.printf("Validation: removing (physically deleted) %s\n", file.getAbsolutePath()); //NOI18N
-            }
-        }
-        for (FileImpl file : candidates) {
-            boolean remove = true;
-            Set<CsmFile> parents = getParentFiles(file);
-            for (CsmFile parent : parents) {
-                if (!candidates.contains((FileImpl)parent)) {
-                    remove = false;
-                    break;
+            
+        Set<FileImpl> removedPhysically = new HashSet<FileImpl>();
+        Set<FileImpl> removedOrAbsentInProject = new HashSet<FileImpl>();
+        for (Map.Entry<FileImpl, Boolean> entry : allFileImpls.entrySet()) {
+            Boolean value = entry.getValue();
+            FileImpl fileImpl = entry.getKey();
+            if (value == null) {
+                // check for absence of includes from dependent projects
+                if (getGraph().getInLinksUids(fileImpl).isEmpty()) {
+                    removedOrAbsentInProject.add(fileImpl);
+                    if (TraceFlags.TRACE_VALIDATION) {
+                        System.err.printf("Validation: removing (removed from project) %s\n", fileImpl.getAbsolutePath());//NOI18N
+                    }
                 }
-            }
-            if (remove) {
+            } else if (value == Boolean.FALSE) {
+                removedPhysically.add(fileImpl);
                 if (TraceFlags.TRACE_VALIDATION) {
-                    System.err.printf("Validation: removing (removed from project) %s\n", file.getAbsolutePath());//NOI18N
+                    System.err.printf("Validation: removing (physically deleted) %s\n", fileImpl.getAbsolutePath()); //NOI18N
                 }
-                removedFiles.add(file);
             }
         }
-        onFileImplRemoved(removedFiles);
+        if (!removedPhysically.isEmpty() || !removedOrAbsentInProject.isEmpty()) {
+            onFileImplRemoved(removedPhysically, removedOrAbsentInProject);
+        }
     }
 
     protected final APTPreprocHandler createEmptyPreprocHandler(CharSequence absPath) {
@@ -2327,17 +2368,65 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getProjectRoots().isMySource(includePath);
     }
 
-    public abstract void onFileAdded(NativeFileItem nativeFile);
+    ////////////////////////////////////////////////////////////////////////////
+    // handling events from NativeProject about NativeFileItem manipulations
+    ////////////////////////////////////////////////////////////////////////////
+    public void onFileItemsRemoved(List<NativeFileItem> items) {
+        CndUtils.assertTrueInConsole(!isArtificial(), "library is not expected here ", this);
+        try {
+            ParserQueue.instance().onStartAddingProjectFiles(this);           
+            checkForRemoved();
+        } finally {
+            ParserQueue.instance().onEndAddingProjectFiles(this);
+        }
+    }
 
-    public abstract void onFileAdded(List<NativeFileItem> items);
-    //public abstract void onFileRemoved(NativeFileItem nativeFile);
+    public void onFileItemRenamed(String oldPath, NativeFileItem newFileIetm) {
+        CndUtils.assertTrueInConsole(!isArtificial(), "library is not expected here ", this);
+        try {
+            ParserQueue.instance().onStartAddingProjectFiles(this);
+            // TODO: for now we consider this as pair "remove"/"add" file item
+            checkForRemoved();
+            onFileItemsAdded(Collections.singletonList(newFileIetm));
+        } finally {
+            ParserQueue.instance().onEndAddingProjectFiles(this);
+        }
+    }
 
-    public abstract void onFileImplRemoved(Collection<FileImpl> files);
+    public void onFileItemsAdded(List<NativeFileItem> items) {
+        CndUtils.assertTrueInConsole(!isArtificial(), "library is not expected here ", this);
+        try {
+            ParserQueue.instance().onStartAddingProjectFiles(this);
+            for (NativeFileItem item : items) {
+                // file object can be invalid for not existing file (#194357)
+                assert (item != null && item.getFileObject() != null);
+                if (!Utils.acceptNativeItem(item)) {
+                    continue;
+                }
+                APTPreprocHandler ppHandler = createPreprocHandler(item);
+                if (ppHandler != null) {
+                    // findFile is good here: for source files it will create it, for header it will not overwrite what we already have
+                    // in both cases only really new file is enqueued for parse
+                    findFile(item.getAbsolutePath(), true, Utils.getFileType(item), ppHandler, true, ppHandler.getState(), item);
+                }
+            }
+        } finally {
+            Notificator.instance().flush();
+            ParserQueue.instance().onEndAddingProjectFiles(this);
+        }
+    }
 
-    public abstract void onFileRemoved(List<NativeFileItem> items);
+    public void onFileItemsPropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {
+        CndUtils.assertTrueInConsole(!isArtificial(), "library is not expected here ", this);
+        if (!this.isValid()) {
+            return;
+        }
+        if (items.size() > 0) {
+            DeepReparsingUtils.reparseOnPropertyChanged(items, this, invalidateLibs);
+        }
+    }
 
-    public abstract void onFilePropertyChanged(List<NativeFileItem> items, boolean invalidateLibs);
-
+    ////
     protected abstract ParserQueue.Position getIncludedFileParserQueuePosition();
 
     public abstract NativeFileItem getNativeFileItem(CsmUID<CsmFile> file);
@@ -2348,34 +2437,61 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected abstract void clearNativeFileContainer();
 
-    public final void onFileRemoved(CharSequence absPath) {
-        onFileImplRemoved(Collections.singletonList(getFile(absPath, false)));
+    public void onFileImplRemoved(Collection<FileImpl> physicallyRemoved, Collection<FileImpl> excluded) {
+        try {
+            DeepReparsingUtils.reparseOnRemoved(removeFileImplsFromProjectInternal(physicallyRemoved), removeFileImplsFromProjectInternal(excluded), this);
+        } finally {
+            Notificator.instance().flush();
+        }
     }
-
-    public final void onFileExternalCreate(FileObject file) {
-        CndFileUtils.clearFileExistenceCache();
-        // #196664 - Code Model ignores the generated files"
-        // when external file was created and assigned to this project => 
-        // create csm file for it if possible
-        NativeFileItem nativeFileItem = null;
-        // Try to find native file
-        if (getPlatformProject() instanceof NativeProject) {
-            NativeProject prj = (NativeProject) getPlatformProject();
-            if (prj != null) {
-                nativeFileItem = prj.findFileItem(file);
+    
+    private LinkedList<FileImpl> removeFileImplsFromProjectInternal(Collection<FileImpl> files) {
+        LinkedList<FileImpl> removedFromProject = new LinkedList<FileImpl>();
+        for (FileImpl impl : files) {
+            if (impl != null) {
+                removeNativeFileItem(impl.getUID());
+                if (removeFile(impl.getAbsolutePath())) {
+                    // this is analogue of synchronization if method was called from different threads,
+                    // because removeFile is thread safe and removes only once                    
+                    removedFromProject.addLast(impl);
+                    impl.dispose();
+                    final FileBuffer buf = impl.getBuffer();
+                    APTDriver.invalidateAPT(buf);
+                    APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
+                    ParserQueue.instance().remove(impl);
+                }
             }
         }
-        // schedule reparse either based on NFI 
-        // or use FO as fallback, it can be helpful for header files not included into
-        // project, but used in include directives which were broken so far
-        if (nativeFileItem != null) {
-            onFileAdded(nativeFileItem);
-        } else {
+        return removedFromProject;
+    }
+    
+    public final void onFileObjectExternalCreate(FileObject file) {
+        try {
+            ParserQueue.instance().onStartAddingProjectFiles(this);
+            CndFileUtils.clearFileExistenceCache();
+            // #196664 - Code Model ignores the generated files"
+            // when external file was created and assigned to this project => 
+            // create csm file for it if possible
+            NativeFileItem nativeFileItem = null;
+            // Try to find native file
+            if (getPlatformProject() instanceof NativeProject) {
+                NativeProject prj = (NativeProject) getPlatformProject();
+                if (prj != null) {
+                    nativeFileItem = prj.findFileItem(file);
+                }
+            }
+            // schedule reparse like added NFI
+            if (nativeFileItem != null) {
+                onFileItemsAdded(Collections.singletonList(nativeFileItem));
+            }
+            // allow to fix broken includes
             DeepReparsingUtils.reparseOnAdded(file, this);
+        } finally {
+            ParserQueue.instance().onEndAddingProjectFiles(this);   
         }
     }
 
-    public final void onFileExternalChange(FileImpl file) {
+    public final void onFileImplExternalChange(FileImpl file) {
         DeepReparsingUtils.tryPartialReparseOnChangedFile(this, file);
     }
 
@@ -2524,10 +2640,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
 
-        if (fileType == FileImpl.FileType.SOURCE_FILE && !impl.isSourceFile()) {
-            impl.setSourceFile();
-        } else if (fileType == FileImpl.FileType.HEADER_FILE && !impl.isHeaderFile()) {
-            impl.setHeaderFile();
+        if (initial == null) {
+            if (fileType == FileImpl.FileType.SOURCE_FILE && !impl.isSourceFile()) {
+                impl.setSourceFile();
+            } else if (fileType == FileImpl.FileType.HEADER_FILE && !impl.isHeaderFile()) {
+                impl.setHeaderFile();
+            }
         }
         return impl;
     }
@@ -2585,24 +2703,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getFileContainer().getFileUID(absPath, treatSymlinkAsSeparateFile);
     }
 
-    protected final void removeFile(CharSequence file) {
+    protected final boolean removeFile(CharSequence file) {
         FileContainer fileContainer = getFileContainer();
-        FileEntry entry = fileContainer.getEntry(file);
-        if (entry != null) {
-            assert file.toString().contentEquals(UIDUtilities.getFileName(entry.getTestFileUID()));
-            Object lock = entry.getLock();
-            Collection<ProjectBase> dependentProjects = getDependentProjects();
-            synchronized (lock) {
-                includedFileContainer.remove(lock, this, file);
-                for (ProjectBase prj : dependentProjects) {
-                    prj.includedFileContainer.remove(lock, this, file);
-                }
-                synchronized (fileContainerLock) {
-                    fileContainer.removeFile(file);
-                }
-            }
-            putContainers(dependentProjects, fileContainer);
+        FileEntry entry = fileContainer.getEntry(file);        
+        if (entry == null) {
+            return false;
         }
+        assert file.toString().contentEquals(UIDUtilities.getFileName(entry.getTestFileUID()));
+        Object lock = entry.getLock();
+        Collection<ProjectBase> dependentProjects = getDependentProjects();
+        synchronized (lock) {
+            includedFileContainer.remove(lock, this, file);
+            for (ProjectBase prj : dependentProjects) {
+                prj.includedFileContainer.remove(lock, this, file);
+            }
+            synchronized (fileContainerLock) {
+                fileContainer.removeFile(file);
+            }
+        }
+        putContainers(dependentProjects, fileContainer);
+        return true;
     }
 
     private void putFile(FileImpl impl, APTPreprocHandler.State state) {
@@ -3548,12 +3668,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         dumpProjectDeclarationContainer(project, printStream);
         if (dumpFiles) {
             ProjectBase.dumpFileContainer(project, new PrintWriter(printStream));
-            ProjectBase.dumpProjectGrapthContainer(project, printStream);
+            ProjectBase.dumpProjectGrapthContainer(project, new PrintWriter(printStream));
         }
     }
 
-    /*package*/static void dumpProjectGrapthContainer(ProjectBase project, PrintStream printStream) {
+    public static void dumpProjectGrapthContainer(ProjectBase project, PrintWriter printStream) {
         GraphContainer container = project.getGraphStorage();
+        printStream.println("\n++++++++++ Dumping Graph container " + project.getDisplayName()); // NOI18N
         Map<CharSequence, CsmFile> map = new TreeMap<CharSequence, CsmFile>();
         for (CsmFile f : project.getAllFiles()) {
             map.put(f.getAbsolutePath(), f);
@@ -3664,7 +3785,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public static void dumpFileContainer(CsmProject project, PrintWriter printStream) {
         FileContainer fileContainer = ((ProjectBase) project).getFileContainer();
-        printStream.println("\n========== Dumping File container"); // NOI18N
+        printStream.println("\n++++++++++ Dumping File container " + project.getDisplayName()); // NOI18N
         Map<CharSequence, Object/*CharSequence or CharSequence[]*/> names = fileContainer.getCanonicalNames();
         //for unit test only
         Map<CharSequence, FileEntry> files = fileContainer.getFileStorage();

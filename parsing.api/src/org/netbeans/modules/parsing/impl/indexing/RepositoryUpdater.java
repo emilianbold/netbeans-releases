@@ -138,7 +138,13 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @SuppressWarnings("ClassWithMultipleLoggers")
 public final class RepositoryUpdater implements PathRegistryListener, ChangeListener, PropertyChangeListener, DocumentListener, AtomicLockListener {
-
+    /**
+     * If the task is delayed longer than this constant from its schedule to execution, the previous task's info
+     * will be chained to it. If the user cancels the task, the log will also contain the long-blocking predecessor.
+     * In milliseconds.
+     */
+    private static final int PROFILE_EXECUTION_DELAY_TRESHOLD = 2 * 60 * 1000; 
+    
     // -----------------------------------------------------------------------
     // Public implementation
     // -----------------------------------------------------------------------
@@ -2269,10 +2275,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                     votes.put(factory, false);
                     Exceptions.printStackTrace(t);
-                }
-                if (getLogContext() != null) {
-                    long timeSpan = System.currentTimeMillis() - time;
-                    getLogContext().addIndexerTime(factory.getIndexerName(), timeSpan);
+                } finally {
+                    if (getLogContext() != null) {
+                        long timeSpan = System.currentTimeMillis() - time;
+                        getLogContext().addIndexerTime(factory.getIndexerName(), timeSpan);
+                    }
                 }
             }
         }
@@ -2317,10 +2324,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         }
                         votes.put(eif, false);
                         Exceptions.printStackTrace(t);
-                    }
-                    if (getLogContext() != null) {
-                        long timeSpan = System.currentTimeMillis() - time;
-                        getLogContext().addIndexerTime(eif.getIndexerName(), timeSpan);
+                    } finally {
+                        if (getLogContext() != null) {
+                            long timeSpan = System.currentTimeMillis() - time;
+                            getLogContext().addIndexerTime(eif.getIndexerName(), timeSpan);
+                        }
                     }
                 }
             }
@@ -2627,7 +2635,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 final BinaryIndexerFactory bif = e.getKey();
                 SPIAccessor.getInstance().setAllFilesJob(ctx, !upToDate);
                 parkWhileSuspended();
+                long st = System.currentTimeMillis();
                 boolean vote = bif.scanStarted(ctx);
+                long et = System.currentTimeMillis();
+                logIndexerTime(bif.getIndexerName(), (int)(et-st));
                 if (!vote) {
                     SPIAccessor.getInstance().setAllFilesJob(ctx, true);
                 }
@@ -2887,8 +2898,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     if (lctx != null) {
                         lctx.noteRootScanning(root);
                     }
+                    long t = System.currentTimeMillis();
                     final Collection<IndexableImpl> resources = crawler.getResources();
                     if (crawler.isFinished()) {
+                        
+                        logCrawlerTime(crawler, t);
                         final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
                         final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
                         final UsedIndexables usedIterables = new UsedIndexables();
@@ -2960,6 +2974,19 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 Exceptions.printStackTrace(ex);
             }
         }
+        
+        protected final void logCrawlerTime(Crawler crawler, long start) throws IOException {
+            LogContext lctx = getLogContext();
+            if (lctx == null) {
+                return;
+            }
+            Collection c = crawler.getResources();
+            Collection ac = crawler.getAllResources();
+            
+            lctx.addCrawlerTime(System.currentTimeMillis() - start, 
+                    c == null ? -1 : c.size(), 
+                    ac == null ? -1 : ac.size());
+        }
 
         protected final void logIndexerTime(
                 final @NonNull String indexerName,
@@ -3001,6 +3028,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                 indexerStatistics);
                         reportIndexerStatistics(UI_LOGGER, Level.INFO, stats);
                         reportIndexerStatistics(PERF_LOGGER, Level.FINE, stats);
+                    }
+                    if (logCtx != null) {
+                        logCtx.recordFinished();
                     }
                 }
             } catch (Throwable t) {
@@ -3154,6 +3184,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             final boolean optimize,
             @NullAllowed final Iterable<? extends Indexable> indexables) throws IOException {
             parkWhileSuspended();
+            long t = System.currentTimeMillis();
             if (indexables != null) {
                 final List<String> keysToRemove = new ArrayList<String>();
                 for (Indexable indexable : indexables) {
@@ -3162,6 +3193,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 docIndex.removeDirtyKeys(keysToRemove);
             }
             docIndex.store(optimize);
+            long span = System.currentTimeMillis() - t;
+            LogContext ctx = getLogContext();
+            if (ctx != null) {
+                ctx.addStoreTime(span);
+            }
         }
         
         final class UsedIndexables {
@@ -3375,6 +3411,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         public @Override boolean getDone() {
 //            updateProgress(root);
+            LogContext lctx = getLogContext();
+            if (lctx != null) {
+                lctx.noteRootScanning(root);
+            }
             try {
                 final List<IndexableImpl> indexables = new LinkedList<IndexableImpl>();
                 for(String path : relativePaths) {
@@ -3393,6 +3433,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 TEST_LOGGER.log(Level.FINEST, "delete"); //NOI18N
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
+            } finally {
+                if (lctx != null) {
+                    lctx.finishScannedRoot(root);
+                }
             }
             return true;
         }
@@ -3472,16 +3516,24 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 if (isCancelled()) {
                     return false;
                 }
+                LogContext lctx = getLogContext();
+                
+                if (lctx != null) {
+                    lctx.noteRootScanning(root);
+                }
                 this.updateProgress(root, true);
                 try {
                     final FileObject rootFo = URLMapper.findFileObject(root);
                     if (rootFo != null) {
+                        long time = System.currentTimeMillis();
+                        
                         boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                         final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                         Crawler crawler = new FileObjectCrawler(rootFo, EnumSet.of(Crawler.TimeStampAction.UPDATE), entry, getShuttdownRequest(), getSuspendStatus());
                         final Collection<IndexableImpl> resources = crawler.getResources();
                         final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
 
+                        logCrawlerTime(crawler, time);
                         if (crawler.isFinished()) {
                             final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                             final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
@@ -3553,6 +3605,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
+                } finally {
+                    if (lctx != null) {
+                        lctx.finishScannedRoot(root);
+                    }
                 }
             }
             
@@ -3630,17 +3686,23 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 if (isCancelled()) {
                     return false;
                 }
-
+                LogContext lctx = getLogContext();
+                if (lctx != null) {
+                    lctx.noteRootScanning(root);
+                }
                 this.updateProgress(root, true);
                 try {
                     final FileObject rootFo = URLMapper.findFileObject(root);
                     if (rootFo != null) {
+                        long t = System.currentTimeMillis();
+                        
                         boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                         final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                         Crawler crawler = new FileObjectCrawler(rootFo, EnumSet.of(Crawler.TimeStampAction.UPDATE), entry, getShuttdownRequest(), getSuspendStatus());
                         final Collection<IndexableImpl> resources = crawler.getResources();
                         final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
 
+                        logCrawlerTime(crawler, t);
                         if (crawler.isFinished()) {
                             final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                             final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
@@ -3700,6 +3762,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
+                } finally {
+                    if (lctx != null) {
+                        lctx.finishScannedRoot(root);
+                    }
                 }
             }
 
@@ -4408,20 +4474,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     new IndexBinaryWorkPool.Function<URL, Boolean>() {
                         @Override
                         public Boolean apply(URL root) {
-                            LogContext lctx = getLogContext();
-                            if (lctx != null) {
-                                lctx.noteRootScanning(root);
-                            }
-                            try {
-                                return scanBinary(
-                                        root,
-                                        binaryIndexers,
-                                        scannedRootsCnt);
-                            } finally {
-                                if (lctx != null) {
-                                    lctx.finishScannedRoot(root);
-                                }
-                            }
+                            return scanBinary(
+                                    root,
+                                    binaryIndexers,
+                                    scannedRootsCnt);
                         }
                     },
                     new Callable<Boolean>() {
@@ -4451,6 +4507,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final boolean scanBinary(URL root, BinaryIndexers binaryIndexers, AtomicInteger scannedRootsCnt) {
             final long tmStart = System.currentTimeMillis();
             final Map<BinaryIndexerFactory, Context> contexts = new HashMap<BinaryIndexerFactory, Context>();
+            LogContext lctx = getLogContext();
+            if (lctx != null) {
+                lctx.noteRootScanning(root);
+            }
             try {
                 createBinaryContexts(root, binaryIndexers, contexts);
                 final FileObject rootFo = URLMapper.findFileObject(root);
@@ -4484,6 +4544,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
             } finally {
+                if (lctx != null) {
+                    lctx.finishScannedRoot(root);
+                }
                 final long time = System.currentTimeMillis() - tmStart;
                 if (scannedRootsCnt != null) {
                     scannedRootsCnt.incrementAndGet();
@@ -4712,6 +4775,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Fake indexing: indexer=" + indexer); //NOI18N
                     }
+                    long start = System.currentTimeMillis();
                     try {
                         final Pair<String,Integer> indexerKey = Pair.<String,Integer>of(factory.getIndexerName(),factory.getIndexVersion());
                         final Pair<SourceIndexerFactory,Context> ctx = transactionContexts.get(indexerKey);
@@ -4726,6 +4790,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         throw td;
                     } catch (Throwable t) {
                         LOGGER.log(Level.WARNING, null, t);
+                    } finally {
+                        logIndexerTime(info.getIndexerName(), (int)(System.currentTimeMillis() - start));
                     }
                 }
             } finally {
@@ -4745,6 +4811,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             } else {
                 final FileObject rootFo = URLCache.getInstance().findFileObject(root);
                 if (rootFo != null) {
+                    LogContext lctx = getLogContext();
+                    long t = System.currentTimeMillis();
                     URL indexURL;
                     if (!rootSeen && (indexURL=getRemoteIndexURL(root))!=null) {
                         LOGGER.log(
@@ -4799,6 +4867,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final Collection<IndexableImpl> resources = crawler.getResources();
                     final Collection<IndexableImpl> allResources = crawler.getAllResources();
                     final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
+
+                    logCrawlerTime(crawler, t);
                     if (crawler.isFinished()) {
                         final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
                         final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
@@ -5205,7 +5275,19 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             ProgressHandle progressHandle = null;
             try {
                 final WorkCancel workCancel = new WorkCancel();
+                LogContext prevWorkLctx = null;
                 for(Work work = getWork(); work != null; work = getWork()) {
+                    LogContext curWorkLctx = work.logCtx;
+                    if (curWorkLctx != null && prevWorkLctx != null && prevWorkLctx.getExecutedTime() > 0) {
+                        long t = System.currentTimeMillis();
+                        // if waiting for > 1 minute because of the just preceding work, chain the previous work
+                        // the new work was scheduled during the previous one's execution
+                        if (t - prevWorkLctx.getExecutedTime() > PROFILE_EXECUTION_DELAY_TRESHOLD &&
+                            t - curWorkLctx.getScheduledTime() > PROFILE_EXECUTION_DELAY_TRESHOLD) {
+                            curWorkLctx.setPredecessor(prevWorkLctx);
+                        }
+                    }
+                    prevWorkLctx = curWorkLctx;
                     workCancel.setWork(work);
                     try {
                         if (progressHandle == null) {

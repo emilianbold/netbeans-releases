@@ -44,14 +44,13 @@ package org.netbeans.modules.php.editor.elements;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
-import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.openide.util.Parameters;
@@ -119,9 +118,9 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
         final QualifiedName qualifiedName = getFullyQualifiedName();
         final String name = qualifiedName.toName().toString();
         final String namespaceName = qualifiedName.toNamespaceName().toString();
-        sb.append(name.toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(name).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(namespaceName).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(name.toLowerCase()).append(Separator.SEMICOLON);
+        sb.append(name).append(Separator.SEMICOLON);
+        sb.append(namespaceName).append(Separator.SEMICOLON);
         checkSignature(sb);
         return sb.toString();
     }
@@ -164,12 +163,12 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
             return false;
         }
         final NamespaceElementImpl other = (NamespaceElementImpl) obj;
-        if ((this.getName() == null) ? (other.getName() != null) : !this.getName().equals(other.getName())) {
+        if (!this.getName().equals(other.getName())) {
             return false;
         }
         String thisNamespaceName = this.getNamespaceName().toString();
         String otherNamespaceName = other.getNamespaceName().toString();
-        if ((thisNamespaceName == null) ? (otherNamespaceName != null) : !thisNamespaceName.equals(otherNamespaceName)) {
+        if (!thisNamespaceName.equals(otherNamespaceName)) {
             return false;
         }
         return true;
@@ -179,8 +178,8 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
     public int hashCode() {
         int hash = 3;
         String thisNamespaceName = this.getNamespaceName().toString();
-        hash = 71 * hash + (this.getName() != null ? this.getName().hashCode() : 0);
-        hash = 71 * hash + (thisNamespaceName != null ? thisNamespaceName.hashCode() : 0);
+        hash = 71 * hash + this.getName().hashCode();
+        hash = 71 * hash + thisNamespaceName.hashCode();
         return hash;
     }
 

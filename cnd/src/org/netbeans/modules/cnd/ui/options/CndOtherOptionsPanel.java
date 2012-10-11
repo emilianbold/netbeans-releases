@@ -74,7 +74,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author sg155630
  */
-@OptionsPanelController.Keywords(keywords={"c/c++ other options"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, index=4)
+@OptionsPanelController.Keywords(keywords={"#OtherOptionsKeywords"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, tabTitle= "#TAB_CndOtherOptionsTab")
 /*package-local*/ final class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionListener {
 
     public CndOtherOptionsPanel() {

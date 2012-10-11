@@ -113,7 +113,11 @@ class NbModuleProviderImpl implements NbModuleProvider {
 
     @Override public void addDependencies(NbModuleProvider.ModuleDependency[] dependencies) throws IOException {
         for (NbModuleProvider.ModuleDependency dep : dependencies) {
-            ApisupportAntUtils.addDependency(prj, dep.getCodeNameBase(), dep.getReleaseVersion(), dep.getVersion(), dep.isUseInCompiler());
+            if (dep.isTestDependency()) {
+                ApisupportAntUtils.addTestDependency(prj, dep.getCodeNameBase());
+            } else {
+                ApisupportAntUtils.addDependency(prj, dep.getCodeNameBase(), dep.getReleaseVersion(), dep.getVersion(), dep.isUseInCompiler());
+            }
         }
     }
 

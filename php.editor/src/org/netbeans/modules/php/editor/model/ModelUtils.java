@@ -181,16 +181,13 @@ public class ModelUtils {
 
     public static Collection<? extends TypeScope> resolveType(Model model, StaticDispatch dispatch) {
         QualifiedName qName = ASTNodeInfo.toQualifiedName(dispatch, true);
-        if (qName != null) {
-            VariableScope variableScope = model.getVariableScope(dispatch.getStartOffset());
-            NamespaceIndexFilter filter = new NamespaceIndexFilter(qName.toString());
-            Collection<? extends TypeScope> staticTypeName = VariousUtils.getStaticTypeName(
-                    variableScope != null ? variableScope : model.getFileScope(), filter.getName());
-            return filter.filterModelElements(staticTypeName, true);
-        }
-        return Collections.emptyList();
-
+        VariableScope variableScope = model.getVariableScope(dispatch.getStartOffset());
+        NamespaceIndexFilter filter = new NamespaceIndexFilter(qName.toString());
+        Collection<? extends TypeScope> staticTypeName = VariousUtils.getStaticTypeName(
+                variableScope != null ? variableScope : model.getFileScope(), filter.getName());
+        return filter.filterModelElements(staticTypeName, true);
     }
+
     @NonNull
     public static Collection<? extends TypeScope> resolveType(Model model, VariableBase varBase) {
         Collection<? extends TypeScope> retval = Collections.emptyList();
@@ -322,13 +319,13 @@ public class ModelUtils {
         }
         return retval;
     }
-    @NonNull
+    @CheckForNull
     public static <T extends ModelElement> T getFirst(Collection<T> allElements,
             final String... elementName) {
         return getFirst(filter(allElements, QuerySupport.Kind.EXACT, elementName));
     }
 
-    @NonNull
+    @CheckForNull
     public static <T extends ModelElement> T getFirst(Collection<T> allElements,
             final QuerySupport.Kind nameKind, final String... elementName) {
         return getFirst(filter(allElements, new ElementFilter<T>() {
@@ -339,7 +336,7 @@ public class ModelUtils {
         }));
     }
 
-    @NonNull
+    @CheckForNull
     public static <T extends ModelElement> T getFirst(Collection<? extends T> allElements,
             FileObject fileObject) {
         List<T> retval = new ArrayList<T>();
@@ -452,42 +449,53 @@ public class ModelUtils {
     }
 
     private static boolean nameKindMatch(boolean forceCaseInsensitivity, String text, QuerySupport.Kind nameKind, String... queries) {
+        boolean result = false;
         for (String query : queries) {
             switch (nameKind) {
                 case CAMEL_CASE:
                     if (toCamelCase(text).startsWith(query)) {
-                        return true;
+                        result =  true;
                     }
                     break;
                 case CASE_INSENSITIVE_PREFIX:
                     if (text.toLowerCase().startsWith(query.toLowerCase())) {
-                        return true;
+                        result =  true;
                     }
                     break;
                 case CASE_INSENSITIVE_REGEXP:
                     text = text.toLowerCase();
+                    result = regexpMatch(text, query);
+                    break;
                 case REGEXP:
                     //TODO: might be perf. problem if called for large collections
                     // and ever and ever again would be compiled still the same query
-                    Pattern p = Pattern.compile(query);
-                    if (nameKindMatch(p, text)) {
-                        return true;
-                    }
+                    result = regexpMatch(text, query);
                     break;
                 case EXACT:
                     boolean retval = (forceCaseInsensitivity) ? text.equalsIgnoreCase(query) : text.equals(query);
                     if (retval) {
-                        return true;
+                        result =  true;
                     }
                     break;
                 case PREFIX:
                     if (text.startsWith(query)) {
-                        return true;
+                        result =  true;
                     }
                     break;
+                default:
+                    //no-op
             }
         }
-        return false;
+        return result;
+    }
+
+    private static boolean regexpMatch(String text, String query) {
+        boolean result = false;
+        Pattern p = Pattern.compile(query);
+        if (nameKindMatch(p, text)) {
+            result = true;
+        }
+        return result;
     }
 
     public static String getCamelCaseName(ModelElement element) {

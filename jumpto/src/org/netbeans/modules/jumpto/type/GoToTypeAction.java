@@ -46,6 +46,7 @@
 
 package org.netbeans.modules.jumpto.type;
 
+import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;

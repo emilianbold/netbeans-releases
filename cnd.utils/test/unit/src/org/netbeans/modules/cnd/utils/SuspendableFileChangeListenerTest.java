@@ -42,10 +42,14 @@
 package org.netbeans.modules.cnd.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
@@ -64,6 +68,10 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
     
     public SuspendableFileChangeListenerTest(String name) {
         super(name, ExecutionEnvironmentFactory.getLocal());
+    }
+
+    private boolean isDisabled() throws IOException, CancellationException {
+        return HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getOSFamily() == HostInfo.OSFamily.WINDOWS;
     }
 
     private static final class FCL extends DumpingFileChangeListener {
@@ -96,6 +104,9 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
     
     @Test
     public void testRemoveThenCreateAsChange() throws Throwable {
+        if (isDisabled()) {
+            return;
+        }
         String[] dirStruct = new String[]{
             "d real_dir_1",
             "- real_dir_1/file_1",
@@ -223,6 +234,9 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
 
     @Test
     public void testCreateThenRemoveAsTwoEvents() throws Throwable {
+        if (isDisabled()) {
+            return;
+        }
         String[] dirStruct = new String[]{"d real_dir_1"};
         String[] removeFile = new String[]{
             "R real_dir_1/file_1",};
@@ -233,6 +247,9 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
     }
 
     private void doTestParity(boolean suspend) throws Throwable {
+        if (isDisabled()) {
+            return;
+        }
         String[] init = new String[]{
             "d real_dir_1",
             "d real_dir_1/subdir_1",

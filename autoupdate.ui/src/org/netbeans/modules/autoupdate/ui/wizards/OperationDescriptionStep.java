@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -70,7 +70,9 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.autoupdate.ui.Containers;
 import org.netbeans.modules.autoupdate.ui.Utilities;
+import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.netbeans.modules.autoupdate.ui.actions.Installer;
+import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.WizardDescriptor;
 import org.openide.modules.Dependency;
@@ -113,6 +115,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         this.model = model;
     }
     
+    @Override
     public Component getComponent() {
         if (component == null) {
             readyToGo = false;
@@ -221,6 +224,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                 }
                 readyToGo = model != null && ! hasBrokenDependencies;
                 SwingUtilities.invokeLater (new Runnable () {
+                    @Override
                     public void run () {
                         JPanel p = new OperationDescriptionPanel(
                             args[0], args[1], args[2], args[3], barg[0]
@@ -460,6 +464,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                         }
                         
                         Set<UpdateElement> sorted = new TreeSet<UpdateElement>(new Comparator<UpdateElement>() {
+                            @Override
                             public int compare(UpdateElement o1, UpdateElement o2) {
                                 return o1.getDisplayName().compareTo(o2.getDisplayName());
                             }
@@ -507,6 +512,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             }
             Collections.sort(names, new Comparator<String>() {
 
+                @Override
                 public int compare(String o1, String o2) {
                     return Collator.getInstance().compare(o1, o2);
                 }
@@ -531,10 +537,12 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         return s.trim ();
     }
 
+    @Override
     public HelpCtx getHelp() {
         return null;
     }
 
+    @Override
     public void readSettings(WizardDescriptor wd) {
         boolean doOperation = ! (model instanceof InstallUnitWizardModel);
         if (doOperation) {
@@ -544,12 +552,14 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         }
     }
 
+    @Override
     public void storeSettings(WizardDescriptor wd) {
         if (WizardDescriptor.CANCEL_OPTION.equals (wd.getValue ()) || WizardDescriptor.CLOSED_OPTION.equals (wd.getValue ())) {
             try {
                 if (lazyDependingTask != null && ! lazyDependingTask.isFinished ()) {
                     lazyDependingTask.cancel ();
                 }
+                AutoupdateCheckScheduler.notifyAvailable(LazyUnit.loadLazyUnits (model.getOperation()), model.getOperation());
                 model.doCleanup (true);
             } catch (OperationException x) {
                 Logger.getLogger (InstallUnitWizardModel.class.getName ()).log (Level.INFO, x.getMessage (), x);
@@ -557,14 +567,17 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         }
     }
 
+    @Override
     public boolean isValid () {
         return readyToGo;
     }
 
+    @Override
     public synchronized void addChangeListener (ChangeListener l) {
         listeners.add (l);
     }
 
+    @Override
     public synchronized void removeChangeListener (ChangeListener l) {
         listeners.remove (l);
     }

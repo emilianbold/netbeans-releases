@@ -95,6 +95,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
@@ -770,16 +771,18 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             dump = new Dwarf(objFileName.getPath());
             CompilationUnitIterator units = dump.iteratorCompilationUnits();
             if (units.hasNext()){
-                CompilationUnit cu = units.next();
+                CompilationUnitInterface cu = units.next();
                 String fullName = getRightName(cu.getSourceFileAbsolutePath());
                 if (unit.equals(fullName)){
-                    List<String> includes = cu.getStatementList().getPathsForFile(found);
-                    if (includes.size()>0){
-                        String path = getRightName(cu.getCompilationDir());
-                        String message = i18n("HeaderFromBinary");  // NOI18N
-                        return MessageFormat.format(message, new Object[]{
-                            path,fullName,includes.get(0)
-                        });
+                    if (cu instanceof CompilationUnit) {
+                        List<String> includes = ((CompilationUnit)cu).getStatementList().getPathsForFile(found);
+                        if (includes.size()>0){
+                            String path = getRightName(cu.getCompilationDir());
+                            String message = i18n("HeaderFromBinary");  // NOI18N
+                            return MessageFormat.format(message, new Object[]{
+                                path,fullName,includes.get(0)
+                            });
+                        }
                     }
                 }
             }

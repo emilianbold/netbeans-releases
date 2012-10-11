@@ -59,7 +59,9 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
+import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor.SpecializationParameterBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilder;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -99,6 +101,28 @@ public final class ExpressionBasedSpecializationParameterImpl extends Offsetable
         return expression.toString();
     }
 
+    public static class TypeBasedSpecializationParameterBuilder extends SpecializationParameterBuilder {
+
+        ExpressionBuilder expression;
+
+        public void setExpressionBuilder(ExpressionBuilder expression) {
+            this.expression = expression;
+        }
+        
+        @Override
+        public ExpressionBasedSpecializationParameterImpl create() {
+            CharSequence expr;
+            if(expression != null) {
+                expr = expression.create().getText();
+            } else {
+                expr = NameCache.getManager().getString("1"); // NOI18N
+            }
+            
+            ExpressionBasedSpecializationParameterImpl param = new ExpressionBasedSpecializationParameterImpl(expr, getFile(), getStartOffset(), getEndOffset());
+            return param;
+        }
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 

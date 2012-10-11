@@ -43,6 +43,8 @@ package org.netbeans.modules.maven.j2ee.osgi;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.*;
@@ -63,9 +65,13 @@ import org.openide.util.lookup.InstanceContent;
 @LookupProvider.Registration(projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI})
 public class OsgiLookupProvider implements LookupProvider, PropertyChangeListener {
 
+    // More logging for issue: #216942
+    private static final Logger LOGGER = Logger.getLogger(OsgiLookupProvider.class.getName());
+    private StackTraceElement[] stackTrace;
+
     private Project project;
     private InstanceContent ic;
-    
+
     private MavenPersistenceProviderSupplier mavenPersistenceProviderSupplier;
     private MavenWebProjectWebRootProvider mavenWebProjectWebRootProvider;
     private WebReplaceTokenProvider webReplaceTokenProvider;
@@ -91,9 +97,18 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
         jPAStuffImpl = new JPAStuffImpl(project);
         copyOnSave = new WebCopyOnSave(project);
         provider = new WebModuleProviderImpl(project);
-        
+
         addLookupInstances();
         NbMavenProject.addPropertyChangeListener(project, this);
+
+        if (stackTrace == null) {
+            // Save the stackTrace for the first access
+            stackTrace = Thread.currentThread().getStackTrace();
+        } else {
+            // If the second access occurs, log it (it most probably will lead to the ISA - see #216942)
+            LOGGER.log(Level.WARNING, "When the first InstanceContent was created, the StackTrace was: \n{0}", stackTrace);
+            LOGGER.log(Level.WARNING, "When the second InstanceContent was created, the StackTrace was: \n{0}", Thread.currentThread().getStackTrace());
+        }
         
         return new AbstractLookup(ic);
     }

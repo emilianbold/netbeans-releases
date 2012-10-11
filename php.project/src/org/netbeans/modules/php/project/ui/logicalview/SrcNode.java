@@ -48,12 +48,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
@@ -61,14 +61,15 @@ import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestsCommand;
 import org.netbeans.modules.php.project.ui.actions.SyncCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
-import org.openide.actions.ToolsAction;
 import org.openide.actions.PasteAction;
+import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
@@ -100,8 +101,13 @@ public class SrcNode extends FilterNode {
         this(project, folder, new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(filter)), name, isTest);
     }
 
-    private SrcNode(PhpProject project, DataFolder folder, FilterNode node, String name, boolean isTest) {
-        super(node, new FolderChildren(project, node, isTest), new ProxyLookup(folder.getNodeDelegate().getLookup()));
+    private SrcNode(final PhpProject project, DataFolder folder, final FilterNode node, String name, final boolean isTest) {
+        super(node, org.openide.nodes.Children.createLazy(new Callable<org.openide.nodes.Children>() {
+            @Override
+            public org.openide.nodes.Children call() throws Exception {
+                return new FolderChildren(project, node, isTest);
+            }
+        }), new ProxyLookup(folder.getNodeDelegate().getLookup()));
 
         this.project = project;
         this.isTest = isTest;
@@ -190,7 +196,7 @@ public class SrcNode extends FilterNode {
     /**
      * Children for node that represents folder (SrcNode or PackageNode)
      */
-    private static class FolderChildren extends FilterNode.Children {
+    static class FolderChildren extends FilterNode.Children {
         // common actions for both PackageNode and ObjectNode (equals has to be the same)
         private final PhpProject project;
         private final boolean isTest;

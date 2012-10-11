@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -234,7 +235,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         //if (TraceFlags.TRACE_XREF_REPOSITORY) {
         //    time = System.currentTimeMillis();
         //}
-        if (!fastDetect(targetDecl, targetDef, file, name)){
+        if (!CndTraceFlags.TEXT_INDEX && !fastDetect(targetDecl, targetDef, file, name)) {
             return Collections.<CsmReference>emptyList();
         }
         Collection<APTToken> tokens = getTokensToResolve(file, name, startOffset, endOffset);

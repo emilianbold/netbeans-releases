@@ -128,15 +128,13 @@ public class MultiLineStreamMatcher extends AbstractMatcher {
         } catch (BufferedCharSequence.SourceIOException e) {
             LOG.log(Level.SEVERE,
                     "IOException during process for the {0}", fo);     // NOI18N
-            LOG.throwing(DefaultMatcher.class.getName(),
-                    "checkFileContent", e);                            // NOI18N
+            LOG.log(Level.INFO, "checkFileContent", e);                // NOI18N
             listener.generalError(e);
         } catch (Exception e) {
             LOG.log(Level.SEVERE,
                     "Unexpected Exception during process for the {0}", // NOI18N
                     fo);
-            LOG.throwing(DefaultMatcher.class.getName(),
-                    "checkFileContent", e);                            // NOI18N
+            LOG.log(Level.INFO, "checkFileContent", e);                // NOI18N
             listener.generalError(e);
         } finally {
             if (bcs != null) {

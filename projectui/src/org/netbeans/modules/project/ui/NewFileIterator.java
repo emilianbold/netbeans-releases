@@ -90,14 +90,15 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
         return new NewFileIterator (false);
     }
     
-    @TemplateRegistration(
+    /** see issue #214254
+     * @TemplateRegistration(
         folder="Other",
         position=2100,
         displayName="#folderIterator",
         iconBase="org/openide/loaders/defaultFolder.gif",
         description="templatesFolder.html",
         category="simple-files"
-    )
+    )*/
     @Messages("folderIterator=Folder")
     public static NewFileIterator folderIterator () {
         return new NewFileIterator (true);

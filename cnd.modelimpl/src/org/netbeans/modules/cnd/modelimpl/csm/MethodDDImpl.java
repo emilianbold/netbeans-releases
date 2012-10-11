@@ -221,7 +221,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);
             
-            addMember(method);
+//            addMember(method);
             
             return method;
         }        

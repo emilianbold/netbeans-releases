@@ -55,6 +55,7 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
@@ -65,7 +66,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
-    private final AbstractRefactoring refactoring;
+    private final RenameRefactoring refactoring;
     private final String name;
     private RenamePanel panel;
 
@@ -75,7 +76,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         Collection<Object> lookupContent = new ArrayList<Object>();
         lookupContent.add(element);
         refactoring = new RenameRefactoring(Lookups.fixed(lookupContent.toArray()));
-        //refactoring.getContext().add(UI.Constants.REQUEST_PREVIEW);
+        refactoring.getContext().add(UI.Constants.REQUEST_PREVIEW);
     }
 
     @Override
@@ -106,10 +107,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
     @Override
     public Problem setParameters() {
-        String newName = panel.getNameValue();
-        if (refactoring instanceof RenameRefactoring) {
-            ((RenameRefactoring) refactoring).setNewName(newName);
-        }
+        refactoring.setNewName(panel.getNameValue());
         return refactoring.checkParameters();
     }
 
@@ -118,9 +116,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         if (!panel.isUpdateReferences()) {
             return null;
         }
-        if (refactoring instanceof RenameRefactoring) {
-            ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
-        }
+        refactoring.setNewName(panel.getNameValue());
         return refactoring.checkParameters();
     }
 

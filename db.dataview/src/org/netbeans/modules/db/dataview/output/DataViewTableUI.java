@@ -326,7 +326,8 @@ final class DataViewTableUI extends ResultSetJXTable {
             public void actionPerformed(ActionEvent e) {
                 try {
                     Object o = getValueAt(selectedRow, selectedColumn);
-                    String output = (o != null) ? o.toString() : ""; //NOI18N
+                    // Limit 1 MB/1 Million Characters.
+                    String output = convertToClipboardString(o, 1024 * 1024);
 
                     ExClipboard clipboard = Lookup.getDefault().lookup(ExClipboard.class);
                     StringSelection strSel = new StringSelection(output);
@@ -390,7 +391,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                         int modelIndex = convertRowIndexToModel(rows[j]);
                         Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(modelIndex);
                         String sql = dataView.getSQLStatementGenerator().generateRawInsertStatement(insertRow);
-                        insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + ";\n"; // NOI18N
+                        insertSQL += sql + ";\n"; // NOI18N
                     }
                     ShowSQLDialog dialog = new ShowSQLDialog();
                     dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
@@ -532,55 +533,4 @@ final class DataViewTableUI extends ResultSetJXTable {
             }
         });
     }
-
-    private void copyRowValues(boolean withHeader) {
-        try {
-            int[] rows = getSelectedRows();
-            int[] columns;
-            if (getRowSelectionAllowed()) {
-                columns = new int[getColumnCount()];
-                for (int a = 0; a < columns.length; a++) {
-                    columns[a] = a;
                 }
-            } else {
-                columns = getSelectedColumns();
-            }
-            if (rows != null && columns != null) {
-                StringBuilder output = new StringBuilder();
-
-                if (withHeader) {
-                    for (int column = 0; column < columns.length; column++) {
-                        if (column > 0) {
-                            output.append('\t'); //NOI18N
-
-                        }
-                        Object o = getColumnModel().getColumn(column).getIdentifier();
-                        output.append(o != null ? o.toString() : ""); //NOI18N
-
-                    }
-                    output.append('\n'); //NOI18N
-
-                }
-
-                for (int row = 0; row < rows.length; row++) {
-                    for (int column = 0; column < columns.length; column++) {
-                        if (column > 0) {
-                            output.append('\t'); //NOI18N
-
-                        }
-                        Object o = getValueAt(rows[row], columns[column]);
-                        output.append(o != null ? o.toString() : ""); //NOI18N
-
-                    }
-                    output.append('\n'); //NOI18N
-
-                }
-                ExClipboard clipboard = Lookup.getDefault().lookup(ExClipboard.class);
-                StringSelection strSel = new StringSelection(output.toString());
-                clipboard.setContents(strSel, strSel);
-            }
-        } catch (ArrayIndexOutOfBoundsException exc) {
-            Exceptions.printStackTrace(exc);
-        }
-    }
-}

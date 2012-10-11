@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2012-08-25 11:13:33
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2012-10-05 12:39:25
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -177,22 +177,21 @@ public class Css3Parser extends DebugParser {
     // delegators
 
     public static final String[] ruleNames = new String[] {
-        "invalidRule", "generic_at_rule", "styleSheet", "webkitKeyframeSelectors", 
-        "pseudoPage", "expression", "slAttributeValue", "mediaExpression", 
-        "webkitKeyframes", "counterStyle", "cssClass", "atRuleId", "mediaQueryOperator", 
-        "elementName", "slAttribute", "namespace", "namespacePrefixName", 
-        "operator", "margin", "namespaces", "cssId", "combinator", "fnAttributeValue", 
-        "prio", "esPred", "moz_document", "function", "fontFace", "bodyItem", 
-        "rule", "media", "declarations", "synpred3_Css3", "namespacePrefix", 
-        "functionName", "importItem", "declaration", "charSetValue", "resourceIdentifier", 
-        "selectorsGroup", "syncTo_RBRACE", "elementSubsequent", "pseudo", 
-        "imports", "mediaQueryList", "typeSelector", "vendorAtRule", "unaryOperator", 
-        "selector", "fnAttribute", "syncToDeclarationsRule", "mediaQuery", 
-        "slAttributeName", "simpleSelectorSequence", "syncToFollow", "body", 
-        "propertyValue", "margin_sym", "synpred2_Css3", "hexColor", "mediaFeature", 
-        "synpred1_Css3", "webkitKeyframesBlock", "moz_document_function", 
-        "property", "ws", "nsPred", "mediaType", "page", "term", "charSet", 
-        "fnAttributeName"
+        "invalidRule", "webkitKeyframeSelectors", "property", "moz_document_function", 
+        "namespaces", "webkitKeyframes", "body", "resourceIdentifier", "mediaQuery", 
+        "namespace", "pseudo", "margin_sym", "selectorsGroup", "fnAttributeValue", 
+        "functionName", "margin", "imports", "declaration", "charSet", "fnAttributeName", 
+        "mediaFeature", "term", "mediaQueryList", "rule", "page", "mediaType", 
+        "atRuleId", "fontFace", "slAttributeValue", "cssId", "synpred1_Css3", 
+        "media", "typeSelector", "propertyValue", "function", "importItem", 
+        "operator", "slAttributeName", "cssClass", "syncTo_RBRACE", "vendorAtRule", 
+        "mediaQueryOperator", "combinator", "counterStyle", "styleSheet", 
+        "synpred3_Css3", "charSetValue", "generic_at_rule", "mediaExpression", 
+        "nsPred", "namespacePrefixName", "syncToFollow", "simpleSelectorSequence", 
+        "esPred", "bodyItem", "webkitKeyframesBlock", "expression", "slAttribute", 
+        "pseudoPage", "elementSubsequent", "syncToDeclarationsRule", "elementName", 
+        "fnAttribute", "ws", "declarations", "moz_document", "synpred2_Css3", 
+        "hexColor", "prio", "unaryOperator", "namespacePrefix", "selector"
     };
     public static final boolean[] decisionCanBacktrack = new boolean[] {
         false, // invalid decision

@@ -586,6 +586,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, eindexerFactory.indexer.expectedDirty.size());
     }
 
+    @RandomlyFails
     public void testBinaryIndexers() throws Exception {
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");

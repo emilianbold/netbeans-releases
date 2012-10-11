@@ -786,7 +786,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                 new Object[] { new Integer (annos.getNumberOfAnnotations(line)) });
         }
         else if (isMouseOverGlyph(e)) {
-            return annos.getActiveAnnotation(line).getShortDescription();
+            AnnotationDesc activeAnnotation = annos.getActiveAnnotation(line);
+            return activeAnnotation != null ? activeAnnotation.getShortDescription() : null;
         }
         else
             return null;

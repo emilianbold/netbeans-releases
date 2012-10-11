@@ -222,13 +222,17 @@ public class TreeListModel extends AbstractListModel implements TreeListListener
     private void addChildrenOf(TreeListNode parent) {
         int firstIndex = -1;
         int lastIndex = -1;
+        List<TreeListNode> children = parent.getChildren();
+        if (children == null || children.isEmpty()) {
+            return;
+        }
         synchronized (nodes) {
             firstIndex = nodes.indexOf(parent);
             if (firstIndex < 0) {
                 return; //the parent isn't visible in the model, so don't bother
             }
             firstIndex++;
-            lastIndex = addNodes(firstIndex, parent.getChildren()) - 1;
+            lastIndex = addNodes(firstIndex, children) - 1;
         }
         if (firstIndex >= 0) {
             if (lastIndex < firstIndex) {

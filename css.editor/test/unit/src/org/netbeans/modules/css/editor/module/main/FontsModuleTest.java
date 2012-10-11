@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
+import org.netbeans.modules.css.lib.api.properties.TokenAcceptor.Length;
+
 /**
  *
  * @author mfukala@netbeans.org
@@ -109,4 +112,10 @@ public class FontsModuleTest extends CssModuleTestBase {
         
     }
     
+    //Bug 217424 - Editor does not know CSS3 rem and vmin units - Unexpected value token
+    public void testIssue217424() {
+        assertPropertyDeclaration("font-size: 1rem");
+        assertPropertyDeclaration("font-size: 8vmin");
+        
+    }
 }

@@ -270,7 +270,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         }
         for (Resource resource : res) {
             FileObject fo = FileUtilities.convertStringToFileObject(resource.getDirectory());
-            if (FileUtil.isParentOf(project.getProjectDirectory(), fo)) {
+            if (fo != null && FileUtil.isParentOf(project.getProjectDirectory(), fo)) {
                 return FileUtil.getRelativePath(project.getProjectDirectory(), fo);
             }
         }
@@ -331,6 +331,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         }
         if (dep.getVersion() == null) {
             dep.setVersion("99.99"); // NOI18N
+        }
+        if (mdep.isTestDependency()) {
+            dep.setScope("test");
         }
         dependencyAdder.addDependency(dep);
         
@@ -432,6 +435,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                             org.netbeans.modules.maven.model.pom.Dependency mdlDep =
                                     ModelUtils.checkModelDependency(model, dep.getGroupId(), dep.getArtifactId(), true);
                             mdlDep.setVersion(dep.getVersion());
+                            if (dep.getScope() != null) {
+                                mdlDep.setScope(dep.getScope());
+                            }
                         }
                         toAdd.clear();
                     }

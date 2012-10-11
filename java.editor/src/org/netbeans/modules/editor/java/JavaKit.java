@@ -528,32 +528,35 @@ public class JavaKit extends NbEditorKit {
         @Override
         public void insert(MutableContext context) throws BadLocationException {
             int dotPos = context.getCaretOffset();
-            BaseDocument doc = (BaseDocument) context.getDocument();
-            final Caret caret = context.getComponent().getCaret();
-            if (BraceCompletion.posWithinString(doc, dotPos)) {
+            Document doc = context.getDocument();
+            
+            if (TypingCompletion.posWithinString(doc, dotPos)) {
                 if (CodeStyle.getDefault(doc).wrapAfterBinaryOps()) {
                     context.setText("\" +\n \"", 3, 6); // NOI18N
                 } else {
                     context.setText("\"\n + \"", 1, 6); // NOI18N
                 }
                 return;
+            } 
+            
+            BaseDocument baseDoc = (BaseDocument) context.getDocument();
+            if (TypingCompletion.isCompletionSettingEnabled() && TypingCompletion.isAddRightBrace(baseDoc, dotPos)) {
+                boolean insert[] = {true};
+                int end = TypingCompletion.getRowOrBlockEnd(baseDoc, dotPos, insert);
+                if (insert[0]) {
+                    doc.insertString(end, "}", null); // NOI18N
+                    Indent.get(doc).indentNewLine(end);
+                }
+                context.getComponent().getCaret().setDot(dotPos);
             } else {
-                try {
-                    if (BraceCompletion.isAddRightBrace(doc, dotPos)) {
-                        boolean insert[] = {true};
-                        int end = BraceCompletion.getRowOrBlockEnd(doc, dotPos, insert);
-                        if (insert[0]) {
-                            doc.insertString(end, "}", null); // NOI18N
-                            Indent.get(doc).indentNewLine(end);
-                        }
-                        caret.setDot(dotPos);
-                        return;
-                    }
-                } catch (BadLocationException ex) {
+                if (TypingCompletion.blockCommentCompletion(context)) {
+                    blockCommentComplete(doc, dotPos, context);
+                }
+                isJavadocTouched = TypingCompletion.javadocBlockCompletion(context);
+                if (isJavadocTouched) {
+                    blockCommentComplete(doc, dotPos, context);
                 }
             }
-            BraceCompletion.blockCommentCompletion(context.getComponent(), (BaseDocument) context.getDocument(), context.getCaretOffset());
-            isJavadocTouched = BraceCompletion.javadocBlockCompletion(context.getComponent(), (BaseDocument) context.getDocument(), context.getCaretOffset());
         }
 
         @Override
@@ -570,6 +573,13 @@ public class JavaKit extends NbEditorKit {
 
         @Override
         public void cancelled(Context context) {
+        }
+
+        private void blockCommentComplete(Document doc, int dotPos, MutableContext context) throws BadLocationException {
+            // note that the formater will add one line of javadoc
+            doc.insertString(dotPos, "*/", null); // NOI18N
+            Indent.get(doc).indentNewLine(dotPos);
+            context.getComponent().getCaret().setDot(dotPos);
         }
 
         @MimeRegistrations({
@@ -695,7 +705,7 @@ public class JavaKit extends NbEditorKit {
             }
         }
     }
-    
+
     /**
      * @Deprecated This action is no longer used. It is reimplemented as JavaTypedBreakInterceptor.
      */
@@ -773,7 +783,7 @@ public class JavaKit extends NbEditorKit {
             }
         }
     }
-    
+
     /**
      * @Deprecated This action is no longer used. It is reimplemented as JavaDeleteCharInterceptor.
      */

@@ -6,21 +6,26 @@
 <html>
     <head>
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>Registering a Cloud Account in NetBeans IDE</title>
+        <title>Registering a Cloud Account</title>
         <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
         <meta name="keywords" content="cloud, register">
     </head>
     <body>
-        <h2>Registering a Cloud Account in NetBeans IDE</h2>
+        <h2>Registering a Cloud Account</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-        <p>Register cloud accounts in the Services window (Ctrl-5).</p>
-        <ol><li>Right-click the Cloud node in
-        the Services window and select Add Cloud. A dialog opens listing supported cloud providers. </li>
-            <li>Select the Cloud provider and click Next. A panel opens with options specific to the 
-            selected cloud provider.</li>
-            <li>Complete the dialog with the details of your cloud account. Click Next.</li>
-            <li>The IDE attempts to communicate with your cloud account. If this communication is 
-            successful, a list appears of the resources associated with your cloud account. Click Finish.</li>
+        <p>To develop and deploy applications to cloud-based servers you need 
+        to register your cloud account with the IDE.
+        To register your cloud account open the Services window 
+        (Ctrl-5) and perform the following steps.</p>
+        <ol>
+            <li>Right-click the Cloud node in
+            the Services window and select Add Cloud to open the Add Cloud Provider wizard. </li>
+            <li>Select a cloud provider and click Next.</li>
+            <li>Specify the details of your cloud account. Click Next.
+            <p>When you click Next the IDE attempts to communicate with your cloud account. 
+                If communication is successful a list of the resources associated with your cloud account
+                is displayed in the wizard.</p></li>
+            <li>Click Finish.</li>
         </ol>
         <p>After registering a cloud account, the web/application servers associated with the account 
         appear in the Services window under the Servers node.</p>
@@ -45,29 +50,35 @@
     <li>Locate the Oracle Java Cloud Service SDK.</li>
         </ol>-->
 
-        <h3>Amazon Beanstalk Service</h3>
+<!--        <h3>Amazon Beanstalk Service</h3>
         <p>Sign up for Amazon Elastic Beanstalk Service from your Amazon AWS Management Console.
         NetBeans IDE only requires your key and secret key. Note that NetBeans only supports the
-        Amazon Beanstalk Tomcat servlet containers, not Apache PHP web servers.</p>
+        Amazon Beanstalk Tomcat servlet containers, not Apache PHP web servers.</p>-->
 
-        <dl>
-            <dt><a name="seealso">See Also</a></dt>
-<!--            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        
+        <p>For more details about working with cloud providers supported in the IDE, see the following documents.</p>
+        <ul>
+            <li><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://www.netbeans.org/kb/docs/web/oracle-cloud.html">
                     <param name="text" value="<html><u>Running Web Applications on Oracle Cloud</u></html>">
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue">
-                </object></dd>-->
-                <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                        <param name="content" value="http://wiki.netbeans.org/AmazonBeanstalkSupport">
-                        <param name="text" value="<html><u>NetBeans Wiki: Amazon Beanstalk Support</u></html>">
-                        <param name="textFontSize" value="medium">
-                        <param name="textColor" value="blue">
-                    </object></dd>
-            </dl>
+                </object></li>
+            <li><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://wiki.netbeans.org/AmazonBeanstalkSupport">
+                    <param name="text" value="<html><u>NetBeans Wiki: Amazon Beanstalk Support</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></li>
+            </ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="about-cloud.html">About Web Applications on the Cloud</a></dd>
+        </dl>
         <hr>
         <p>
-            <small><a href="../credits.html">Legal Notices</a></small>
+            <small><a href="../../credits.html">Legal Notices</a></small>
         </p>
     </body> 
 </html>

@@ -181,7 +181,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         return location;
     }
 
-    private class ReferenceSpanCrate {
+    private static class ReferenceSpanCrate {
         private Model model;
         private TokenHierarchy<?> tokenHierarchy;
 
@@ -213,7 +213,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     }
 
-    private class ReferenceSpanCrateFetcher implements Callable<ReferenceSpanCrate> {
+    private static class ReferenceSpanCrateFetcher implements Callable<ReferenceSpanCrate> {
         private final Source source;
 
         public ReferenceSpanCrateFetcher(final Source source) {
@@ -278,7 +278,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     }
                 } else if (id.equals(PHPTokenId.PHPDOC_COMMENT)) {
                     PHPDocCommentParser docParser = new PHPDocCommentParser();
-                    PHPDocBlock docBlock = docParser.parse(ts.offset()-3, ts.offset() + token.length(), token.toString());
+                    PHPDocBlock docBlock = docParser.parse(ts.offset()-3, ts.offset() + token.length(), token.text().toString());
                     ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docBlock, caretOffset);
                     PhpDocTypeTagInfo node = null;
                     if (hierarchy != null && hierarchy.length > 0) {
@@ -393,9 +393,6 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             this.modelElement = modelElement;
             this.declaration = declaration;
         }
-        public AlternativeLocationImpl(PhpElement modelElement) {
-            this(modelElement, new DeclarationLocation(modelElement.getFileObject(), modelElement.getOffset(), modelElement));
-        }
 
         @Override
         public ElementHandle getElement() {
@@ -407,18 +404,14 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             formatter.reset();
             ElementKind ek = modelElement.getKind();
 
-            if (ek != null) {
-                formatter.name(ek, true);
-                if ((modelElement instanceof FullyQualifiedElement) && !((FullyQualifiedElement)modelElement).getNamespaceName().isDefaultNamespace()) {
-                    QualifiedName namespaceName = ((FullyQualifiedElement) modelElement).getNamespaceName();
-                    formatter.appendText(namespaceName.append(modelElement.getName()).toString());
-                } else {
-                    formatter.appendText(modelElement.getName());
-                }
-                formatter.name(ek, false);
+            formatter.name(ek, true);
+            if ((modelElement instanceof FullyQualifiedElement) && !((FullyQualifiedElement)modelElement).getNamespaceName().isDefaultNamespace()) {
+                QualifiedName namespaceName = ((FullyQualifiedElement) modelElement).getNamespaceName();
+                formatter.appendText(namespaceName.append(modelElement.getName()).toString());
             } else {
                 formatter.appendText(modelElement.getName());
             }
+            formatter.name(ek, false);
 
             if (declaration.getFileObject() != null) {
                 formatter.appendText(" in ");
@@ -438,5 +431,32 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             AlternativeLocationImpl i = (AlternativeLocationImpl) o;
             return this.modelElement.getName().compareTo(i.modelElement.getName());
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 89 * hash + (this.modelElement != null ? this.modelElement.hashCode() : 0);
+            hash = 89 * hash + (this.declaration != null ? this.declaration.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final AlternativeLocationImpl other = (AlternativeLocationImpl) obj;
+            if (this.modelElement != other.modelElement && (this.modelElement == null || !this.modelElement.equals(other.modelElement))) {
+                return false;
+            }
+            if (this.declaration != other.declaration && (this.declaration == null || !this.declaration.equals(other.declaration))) {
+                return false;
+            }
+            return true;
+        }
+
     }
 }
