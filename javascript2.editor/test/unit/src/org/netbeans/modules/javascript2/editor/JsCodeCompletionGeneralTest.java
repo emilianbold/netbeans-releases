@@ -145,6 +145,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/general/issue215863.js", "a^lert(\"Text\");", false);
     }
 
+    public void testIssue218689() throws Exception {
+        checkCompletion("testfiles/completion/general/issue218689.html", "            b.v^", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
