@@ -315,17 +315,21 @@ public class C2CQueryController extends QueryController implements ItemListener,
                         @Override
                         public void run() {
                             try {
-                                parameters.get(QueryParameters.Column.PRODUCT).populate(toParameterValues(clientData.getProducts()));
-                                populateProductDetails(clientData, clientData.getProducts());
+                                // XXX preselect default values
+                                Parameter productParameter = parameters.get(QueryParameters.Column.PRODUCT);
+                                productParameter.populate(clientData.getProducts());
+                                populateProductDetails(clientData, productParameter.getValues());
+                                
+                                // XXX add description to tooltip
+                                parameters.get(QueryParameters.Column.TASK_TYPE).populate(clientData.getTaskTypes());
+                                parameters.get(QueryParameters.Column.PRIORITY).populate(clientData.getPriorities());
+                                parameters.get(QueryParameters.Column.SEVERITY).populate(clientData.getSeverities());
 
-                                parameters.get(QueryParameters.Column.TASK_TYPE).populate(toParameterValues(clientData.getTaskTypes()));
-                                parameters.get(QueryParameters.Column.PRIORITY).populate(toParameterValues(clientData.getPriorities()));
-                                parameters.get(QueryParameters.Column.SEVERITY).populate(toParameterValues(clientData.getSeverities()));
+                                parameters.get(QueryParameters.Column.STATUS).populate(clientData.getStatuses());
+                                parameters.get(QueryParameters.Column.RESOLUTION).populate(clientData.getResolutions());
 
-                                parameters.get(QueryParameters.Column.STATUS).populate(toParameterValues(clientData.getStatuses()));
-                                parameters.get(QueryParameters.Column.RESOLUTION).populate(toParameterValues(clientData.getResolutions()));
-
-                                parameters.get(QueryParameters.Column.TAGS).populate(toParameterValues(clientData.getKeywords()));
+                                // XXX tags have also a description, coud, be added next to the combo
+                                parameters.get(QueryParameters.Column.TAGS).populate(clientData.getKeywords());
                                 panel.tagsComboBox.setSelectedIndex(-1); // ensure none is selected
                             } finally {
                                 logPopulate("Finnished populate query controller {0}"); // NOI18N
@@ -663,15 +667,9 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onProductChanged(ListSelectionEvent e) {
-//        Object[] values =  panel.productList.getSelectedValues();
-//        String[] products = null;
-//        if(values != null) {
-//            products = new String[values.length];
-//            for (int i = 0; i < values.length; i++) {
-//                products[i] = ((ParameterValue) values[i]).getValue();
-//            }
-//        }
-//        populateProductDetails(products);
+        Parameter productParameter = parameters.get(QueryParameters.Column.PRODUCT);
+        C2CData clientData = C2C.getInstance().getClientData(repository);
+        populateProductDetails(clientData, productParameter.getValues());
     }
 
     public void autoRefresh() {
@@ -795,14 +793,19 @@ public class C2CQueryController extends QueryController implements ItemListener,
         // XXX why not product specific?
         newIterations.addAll(clientData.getActiveIterations());
         
-        for (Product p : products) {    
-            newComponents.addAll(clientData.getComponents(p));
-            newMilestones.addAll(clientData.getMilestones(p));
+        if(products != null) {
+            for (Product p : products) {    
+                newComponents.addAll(clientData.getComponents(p));
+                newMilestones.addAll(clientData.getMilestones(p));
+            }
+        } else {
+            newComponents.addAll(clientData.getComponents());
+            newMilestones.addAll(clientData.getMilestones());
         }
-
-        parameters.get(QueryParameters.Column.COMPONENT).populate(toParameterValues(newComponents));
-        parameters.get(QueryParameters.Column.ITERATION).populate(toParameterValues(newIterations));
-        parameters.get(QueryParameters.Column.RELEASE).populate(toParameterValues(newMilestones));
+        
+        parameters.get(QueryParameters.Column.COMPONENT).populate(newComponents);
+        parameters.get(QueryParameters.Column.ITERATION).populate(newIterations);
+        parameters.get(QueryParameters.Column.RELEASE).populate(newMilestones);
     }
 
     private String toParameterValues(Collection values) {
