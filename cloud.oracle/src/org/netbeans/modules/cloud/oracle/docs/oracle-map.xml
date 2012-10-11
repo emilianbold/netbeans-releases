@@ -42,5 +42,8 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
 -->
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
 <map version="2.0">
+    <!-- CSH topic for register Oracle Cloud Provider in wizard -->
     <mapID target="org.netbeans.modules.cloud.oracle.ui.OracleWizardPanel" url="csh/csh-add-oracle-cloud.html"/>
+    
+    <mapID target="oracle-whitelist" url="oraclecloud-whitelist.html"/>
 </map>
