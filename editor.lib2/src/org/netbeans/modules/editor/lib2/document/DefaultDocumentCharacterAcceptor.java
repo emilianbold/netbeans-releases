@@ -41,30 +41,26 @@
  */
 package org.netbeans.modules.editor.lib2.document;
 
-import javax.swing.text.Document;
-import org.netbeans.api.annotations.common.NonNull;
-
 /**
- * Various services for a document implementation
- * (currently only org.netbeans.editor.BaseDocument).
- * <br/>
- * This class together with EditorDocumentHandler allows an efficient
- * performing of methods from {@link org.netbeans.api.editor.document.EditorDocumentUtils}.
+ * Default implementation of character acceptor.
  *
  * @author Miloslav Metelka
  */
-public interface EditorDocumentServices {
+public class DefaultDocumentCharacterAcceptor extends DocumentCharacterAcceptor {
     
-    /**
-     * @see {@link org.netbeans.api.editor.document.EditorDocumentUtils#runExclusive(java.lang.Runnable)}.
-     */
-    void runExclusive(@NonNull Document doc, @NonNull Runnable r);
+    public static final DocumentCharacterAcceptor INSTANCE = new DefaultDocumentCharacterAcceptor();
     
-    /**
-     * Reset undo merging.
-     *
-     * @param doc document.
-     */
-    void resetUndoMerge(@NonNull Document doc);
+    private DefaultDocumentCharacterAcceptor() {
+    }
+    
+    @Override
+    public boolean isIdentifier(char ch) {
+        return Character.isJavaIdentifierPart(ch);
+    }
+
+    @Override
+    public boolean isWhitespace(char ch) {
+        return Character.isWhitespace(ch);
+    }
     
 }

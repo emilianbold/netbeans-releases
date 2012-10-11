@@ -39,32 +39,45 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.lib2.document;
+package org.netbeans.modules.editor.lib2.actions;
 
-import javax.swing.text.Document;
-import org.netbeans.api.annotations.common.NonNull;
+import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.editor.lib2.WeakReferenceStableList;
+import org.netbeans.spi.editor.AbstractEditorAction;
 
 /**
- * Various services for a document implementation
- * (currently only org.netbeans.editor.BaseDocument).
- * <br/>
- * This class together with EditorDocumentHandler allows an efficient
- * performing of methods from {@link org.netbeans.api.editor.document.EditorDocumentUtils}.
  *
  * @author Miloslav Metelka
  */
-public interface EditorDocumentServices {
+public class EditorRegistryWatcher implements PropertyChangeListener {
     
-    /**
-     * @see {@link org.netbeans.api.editor.document.EditorDocumentUtils#runExclusive(java.lang.Runnable)}.
-     */
-    void runExclusive(@NonNull Document doc, @NonNull Runnable r);
+    private static final EditorRegistryWatcher INSTANCE = new EditorRegistryWatcher();
     
-    /**
-     * Reset undo merging.
-     *
-     * @param doc document.
-     */
-    void resetUndoMerge(@NonNull Document doc);
+    public static EditorRegistryWatcher get() {
+        return INSTANCE;
+    }
+    
+    private static final WeakReferenceStableList<AbstractEditorAction> actions =
+            new WeakReferenceStableList<AbstractEditorAction>();
+
+    private EditorRegistryWatcher() {
+        EditorRegistry.addPropertyChangeListener(this);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String propName = evt.getPropertyName();
+        if (EditorRegistry.FOCUS_LOST_PROPERTY.equals(propName)) {
+            Component origFocused = (Component) evt.getOldValue();
+            Component newFocused = (Component) evt.getNewValue();
+            // Is newFocused reliable?
+            // For subsequent focus-gained it would be ideal to schedule a timer
+            // that would possibly directly change to a new component.
+        } else if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(propName)) {
+        }
+    }
     
 }

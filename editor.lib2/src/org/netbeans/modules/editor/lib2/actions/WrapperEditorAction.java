@@ -39,32 +39,32 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.lib2.document;
+package org.netbeans.modules.editor.lib2.actions;
 
-import javax.swing.text.Document;
-import org.netbeans.api.annotations.common.NonNull;
+import java.awt.event.ActionEvent;
+import java.util.Map;
+import javax.swing.text.JTextComponent;
+import org.netbeans.spi.editor.AbstractEditorAction;
 
 /**
- * Various services for a document implementation
- * (currently only org.netbeans.editor.BaseDocument).
- * <br/>
- * This class together with EditorDocumentHandler allows an efficient
- * performing of methods from {@link org.netbeans.api.editor.document.EditorDocumentUtils}.
+ * Wrapper for editor action that allows deferred construction of the real action 
+ * until the action is about to be performed.
  *
  * @author Miloslav Metelka
  */
-public interface EditorDocumentServices {
+public class WrapperEditorAction extends AbstractEditorAction {
     
-    /**
-     * @see {@link org.netbeans.api.editor.document.EditorDocumentUtils#runExclusive(java.lang.Runnable)}.
-     */
-    void runExclusive(@NonNull Document doc, @NonNull Runnable r);
+    public static WrapperEditorAction create(Map<String,?> attrs) {
+        return new WrapperEditorAction(attrs);
+    }
     
-    /**
-     * Reset undo merging.
-     *
-     * @param doc document.
-     */
-    void resetUndoMerge(@NonNull Document doc);
+    WrapperEditorAction(Map<String,?> attrs) {
+        super(attrs);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent evt, JTextComponent component) {
+        // Do nothing - real work is done in delegate
+    }
     
 }

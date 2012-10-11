@@ -106,6 +106,7 @@ import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
+import org.netbeans.modules.editor.lib2.actions.KeyBindingsUpdater;
 import org.netbeans.modules.editor.lib2.typinghooks.DeletedTextInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedTextInterceptorsManager;
@@ -378,6 +379,8 @@ public class BaseKit extends DefaultEditorKit {
     public static final int MAGIC_POSITION_MAX = Integer.MAX_VALUE - 1;
 
     private final SearchableKit searchableKit;
+    
+    private boolean keyBindingsUpdaterInited;
 
 //    static SettingsChangeListener settingsListener = new SettingsChangeListener() {
 //        public void settingsChange(SettingsChangeEvent evt) {
@@ -974,7 +977,14 @@ public class BaseKit extends DefaultEditorKit {
     * to get basic list and then customActions are added.
     */
     public @Override final Action[] getActions() {
-        return (Action []) addActionsToMap()[0];
+        Action[] actions = (Action []) addActionsToMap()[0];
+
+        if (!keyBindingsUpdaterInited) {
+            keyBindingsUpdaterInited = true;
+            KeyBindingsUpdater.get(getContentType()).addKit(this); // Update key bindings in actions
+        }
+        
+        return actions;
     }
 
     /* package */ Map<String, Action> getActionMap() {

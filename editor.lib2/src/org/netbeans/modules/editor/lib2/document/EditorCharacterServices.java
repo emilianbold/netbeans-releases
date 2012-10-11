@@ -45,26 +45,20 @@ import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * Various services for a document implementation
- * (currently only org.netbeans.editor.BaseDocument).
- * <br/>
- * This class together with EditorDocumentHandler allows an efficient
- * performing of methods from {@link org.netbeans.api.editor.document.EditorDocumentUtils}.
+ * 
  *
- * @author Miloslav Metelka
+ * @author mmetelka
  */
-public interface EditorDocumentServices {
-    
+public abstract class EditorCharacterServices {
+
     /**
-     * @see {@link org.netbeans.api.editor.document.EditorDocumentUtils#runExclusive(java.lang.Runnable)}.
-     */
-    void runExclusive(@NonNull Document doc, @NonNull Runnable r);
-    
-    /**
-     * Reset undo merging.
+     * Get identifier's end offset for forward direction (or identifier's start offset for backward direction).
      *
-     * @param doc document.
+     * @param doc non-null document to check.
+     * @param offset offset where search should start (for backward direction char at offset-1 is the first to check).
+     * @param backward false for forward direction or true for backward direction.
+     * @return identifier's end offset (or start offset for backward direction).
      */
-    void resetUndoMerge(@NonNull Document doc);
+    public abstract int getIdentifierEnd(@NonNull Document doc, int offset, boolean backward);
     
 }

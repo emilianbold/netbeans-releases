@@ -2417,6 +2417,12 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             bDoc.runExclusive(r);
         }
 
+        @Override
+        public void resetUndoMerge(Document doc) {
+            BaseDocument bDoc = (BaseDocument) doc;
+            bDoc.resetUndoMerge();
+        }
+
 
     }
 
