@@ -48,7 +48,7 @@ import java.net.URI;
  *
  * @author Miloslav Metelka
  */
-public class BookmarkChange {
+public final class BookmarkChange {
     
     private static final int ADDED = 1;
     

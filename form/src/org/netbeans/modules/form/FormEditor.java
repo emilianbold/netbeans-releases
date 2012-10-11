@@ -505,14 +505,37 @@ public class FormEditor {
     }
 
     public void reportSavingErrors() { // TODO can get rid of this? (throw exc on failed saving)
-        reportErrors(false);
+        reportErrors(false, null);
     }
 
+    // TODO should not be needed, kept temporarily for compatibility
     public String reportLoadingErrors() {
-        return reportErrors(formLoaded);
+        DialogDescriptor dd = reportLoadingErrors(null);
+        Object message = dd != null ? dd.getMessage() : null;
+        return message instanceof String ? (String)message : null;
     }
 
-    private String reportErrors(boolean checkNonFatalLoadingErrors) {
+    /**
+     * Helper methods for reporting errors that happend during form loading.
+     * (1) If some fatal error happened (i.e. the form could not be loaded) then
+     * it is reported right away by this method in a modal dialog.
+     * (2) If only some non-fatal errors happened causing some components or
+     * properties not loaded, then a DialogDescriptor is created and returned to
+     * be used to report the errors at a suitable moment (i.e. after the loading
+     * sequence is completed so the GUI form becomes fully visible incl. broken
+     * components). In this case the parameter 'options' is used, representing
+     * how the user can proceed (e.g. view only, edit anyway, cancel opening).
+     * @return DialogDescriptor to use to report errors to the user, or null if
+     *         nothing needs to be reported
+     */
+    public DialogDescriptor reportLoadingErrors(Object[] options) {
+        // The options for DialogDescriptor must be provided upfront so the first
+        // option can be set as initial (default). This cannot be set later, only
+        // in constructor of DialogDescriptor.
+        return reportErrors(formLoaded, options);
+    }
+
+    private DialogDescriptor reportErrors(boolean checkNonFatalLoadingErrors, Object[] options) {
         if (!anyPersistenceError()) {
             return null; // no errors or warnings logged
         }
@@ -581,15 +604,20 @@ public class FormEditor {
             }
         }
 
-        resetPersistenceErrorLog();
-
+        DialogDescriptor dd = null;
         if (checkNonFatalLoadingErrors && dataLossError) {
             // the form was loaded with some non-fatal errors - some data
             // was not loaded - show a warning about possible data loss
-            return userErrorMsgs.append(FormUtils.getBundleString("MSG_FormLoadedWithErrors")).toString();  // NOI18N
-        } else {
-            return null;
+            userErrorMsgs.append(FormUtils.getBundleString("MSG_FormLoadedWithErrors"));
+            dd = FormUtils.createErrorDialogWithExceptions(
+                     FormUtils.getBundleString("CTL_FormLoadedWithErrors"), // NOI18N
+                     userErrorMsgs.toString(),
+                     DialogDescriptor.WARNING_MESSAGE,
+                     options,
+                     persistenceErrors.toArray(new Throwable[persistenceErrors.size()]));
         }
+        resetPersistenceErrorLog();
+        return dd;
     }    
     
     /**

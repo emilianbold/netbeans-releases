@@ -45,6 +45,8 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.*;
 import java.io.*;
 import java.util.*;
@@ -63,6 +65,8 @@ import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.DialogDescriptor;
+import org.openide.awt.Mnemonics;
 
 /**
  * A class that contains utility methods for the formeditor.
@@ -1872,4 +1876,129 @@ public class FormUtils
         }
     }
 
+    /**
+     * Creates a DialogDescriptor for showing a dialog with an error message and
+     * additional exceptions that should be reported to the user. This is different
+     * from the standard exception dialog which informs about IDE failure; here the
+     * failure is from custom components provided by the user, or due to wrong
+     * classpath setup. I.e. the user needs to see these exceptions to be able to
+     * diagnose and fix the problem on her side.
+     * @param title
+     * @param message
+     * @param messageType
+     * @param options The additional buttons that the dialog should show. If null
+     *        is provided than only OK button will be shown.
+     * @param exceptions
+     * @return configured DialogDescriptor that can be used to construct the dialog
+     */
+    static DialogDescriptor createErrorDialogWithExceptions(String title, final String message, int messageType, Object[] options, final Throwable...exceptions) {
+        final JButton detailsBtn = new JButton();
+        Mnemonics.setLocalizedText(detailsBtn, FormUtils.getBundleString("CTL_ShowExceptions")); // NOI18N
+        detailsBtn.setToolTipText(FormUtils.getBundleString("CTL_ShowHideExceptionsHint")); // NOI18N
+        detailsBtn.setDefaultCapable(false);
+        if (options == null) {
+            options = new Object[] { DialogDescriptor.OK_OPTION };
+        }
+        final DialogDescriptor dd = new DialogDescriptor(message, title, true, DialogDescriptor.OK_CANCEL_OPTION,
+                    options.length > 0 ? options[0]:null, null) {
+            // Initially when the message is set via constructor, it is handled as a String
+            // by JOptionPane (ends up as a stack of labels). But when set later via setMessage
+            // method, the message is always converted into a JTextArea component that looks
+            // different and also has a screwed preferred size. Here we try to make it look as
+            // close as possible to the original state. But no way to restore the message as a String.
+            @Override
+            public void setMessage(Object message) {
+                super.setMessage(message);
+                Object m = getMessage();
+                if (message instanceof String && m instanceof Component) {
+                    Component c = (Component) m;
+                    c.setPreferredSize(null);
+                    Font f = UIManager.getFont("OptionPane.messageFont"); // NOI18N
+                    if (f != null) {
+                        c.setFont(f);
+                    }
+                }
+            }
+        };
+        dd.setMessageType(messageType);
+        dd.setOptions(options);
+        dd.setClosingOptions(options);
+        dd.setAdditionalOptions(new Object[] { detailsBtn});
+
+        // listener to handle showing/hiding the exceptions
+        dd.setButtonListener(new ActionListener() {
+            Component excDetail;
+            JTextPane output;
+            Rectangle baseBounds;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() != detailsBtn) {
+                    return;
+                }
+                if (excDetail == null) {
+                    output = new JTextPane();
+                    output.setEditable(false);
+                    Font f = output.getFont();
+                    output.setFont(new Font("Monospaced", Font.PLAIN, null == f ? 12 : f.getSize() + 1)); // NOI18N
+                    output.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
+                    output.setBackground(UIManager.getColor("Label.background")); // NOI18N
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw, true);
+                    for (Throwable ex : exceptions) {
+                        ex.printStackTrace(pw);
+                    }
+                    output.setText(sw.toString());
+                    output.getCaret().setDot(0);
+                    final Rectangle screenBounds = Utilities.getUsableScreenBounds();
+                    // hack to avoid NbPresenter to add a scrollpane over everything
+                    excDetail = new javax.swing.JScrollPane(output) {
+                        @Override
+                        public Dimension getPreferredSize() {
+                            Dimension sz = new Dimension(super.getPreferredSize());
+                            if (sz.height > screenBounds.height - 125) {
+                                sz.height = Math.min(screenBounds.height * 3 / 4, screenBounds.height - 125);
+                                Component vs = getVerticalScrollBar();
+                                if (vs != null) {
+                                    sz.width += vs.getPreferredSize().width;
+                                }
+                            }
+                            if (sz.width > screenBounds.width - 167) {
+                                sz.width = Math.min(screenBounds.width * 3 / 4, screenBounds.width - 167);
+                            }
+                            return sz;
+                        }
+                    };
+                    output.requestFocus();
+                }
+                Window w = SwingUtilities.getWindowAncestor(detailsBtn);
+                if (!excDetail.isShowing()) { // show exceptions
+                    baseBounds = w.getBounds();
+                    dd.setMessage(excDetail);
+                    Mnemonics.setLocalizedText(detailsBtn, FormUtils.getBundleString("CTL_HideExceptions")); // NOI18N
+                    w.pack();
+                    Rectangle newBounds = w.getBounds();
+                    if (newBounds.width < baseBounds.width) {
+                        newBounds.width = baseBounds.width;
+                    } else {
+                        newBounds.x = baseBounds.x - (newBounds.width - baseBounds.width)/2;
+                    }
+                    newBounds.y = baseBounds.y - (newBounds.height - baseBounds.height)/2;
+                    w.setBounds(newBounds);
+                } else { // show original message
+                    dd.setMessage(message);
+                    Mnemonics.setLocalizedText(detailsBtn, FormUtils.getBundleString("CTL_ShowExceptions")); // NOI18N
+                    // The message text set later via setMessage method is handled differently than
+                    // it was set initially via the constructor. It may need a different height now.
+                    Dimension newPrefSize = w.getPreferredSize();
+                    int heightDiff = baseBounds.height - newPrefSize.height;
+                    if (Math.abs(heightDiff) > 10) {
+                        baseBounds.y += heightDiff/2;
+                        baseBounds.height = newPrefSize.height;
+                    }
+                    w.setBounds(baseBounds);
+                }
+            }
+        });
+        return dd;
+    }
 }

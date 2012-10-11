@@ -52,6 +52,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import java.awt.Cursor;
+import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
@@ -79,6 +80,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -121,6 +123,7 @@ import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -528,42 +531,45 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
 
     /**
      * Reports errors occurred during loading or saving the form.
-     * @param operation operation being performed.
      */
     private void reportErrors() {
-        final String errorMsg = formEditor.reportLoadingErrors();
-        if (errorMsg != null && formEditor.isFormLoaded()) {
+        if (!formEditor.isFormLoaded()) {
+            formEditor.reportLoadingErrors(null); // fatal error, no options
+        } else {
             // The form was loaded with some non-fatal errors - some data
             // was not loaded - show a warning about possible data loss.
             // The dialog is shown later to let the designer opening complete.
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    if (formEditor != null && !formEditor.isFormLoaded()) {
-                        return; // quite unlikely, but the form could be closed meanwhile (#164444)
+            final Object[] options = new Object[] { new JButton(FormUtils.getBundleString("CTL_ViewOnly")), // NOI18N
+                                                    new JButton(FormUtils.getBundleString("CTL_AllowEditing")), // NOI18N
+                                                    NotifyDescriptor.CANCEL_OPTION };
+            final DialogDescriptor dd = formEditor.reportLoadingErrors(options);
+            if (dd != null) {
+                java.awt.EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (formEditor != null && !formEditor.isFormLoaded()) {
+                            return; // quite unlikely, but the form could be closed meanwhile (#164444)
+                        }
+                        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+                        // hack: adjust focus so it is not on the Show Exceptions button
+                        if (dialog instanceof JDialog) {
+                            ((JDialog)dialog).getContentPane().requestFocus();
+                        }
+                        dialog.setVisible(true);
+                        dialog.dispose();
+
+                        Object ret = dd.getValue();
+                        if (ret == options[0]) { // View Only
+                            formEditor.setFormReadOnly();
+                            updateMVTCDisplayName();
+                        } else if (ret == options[1]) { // Allow Editing
+                            formEditor.destroyInvalidComponents();
+                        } else { // close form, switch to source editor
+                            closeFormEditor();
+                        }
                     }
-
-                    JButton viewOnly = new JButton(FormUtils.getBundleString("CTL_ViewOnly"));		// NOI18N
-                    JButton allowEditing = new JButton(FormUtils.getBundleString("CTL_AllowEditing"));	// NOI18N
-
-                    Object ret = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
-                        errorMsg,
-                        FormUtils.getBundleString("CTL_FormLoadedWithErrors"), // NOI18N
-                        NotifyDescriptor.DEFAULT_OPTION,
-                        NotifyDescriptor.WARNING_MESSAGE,
-                        new Object[] { viewOnly, allowEditing, NotifyDescriptor.CANCEL_OPTION },
-                        viewOnly ));
-
-                    if (ret == viewOnly) {
-                        formEditor.setFormReadOnly();
-                        updateMVTCDisplayName();
-                    } else if(ret == allowEditing) {
-                        formEditor.destroyInvalidComponents();
-                    } else { // close form, switch to source editor
-                        closeFormEditor();
-                    }
-                }
-            });
+                });
+            }
         }
     }
 

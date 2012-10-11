@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.Document;
+import javax.tools.Diagnostic;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -245,6 +246,18 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
 
     protected void performFixTest(String fileName, String code, int pos, String fixCode, String goldenFileName, String golden) throws Exception {
         prepareTest(fileName, code);
+        
+        if (pos == (-1)) {
+            for (Diagnostic<?> d : info.getDiagnostics()) {
+                if (d.getKind() == Diagnostic.Kind.ERROR) {
+                    if (pos == (-1)) {
+                        pos = (int) d.getPosition();
+                    } else {
+                        throw new IllegalStateException("More than one error: " + info.getDiagnostics().toString());
+                    }
+                }
+            }
+        }
         
         TreePath path = info.getTreeUtilities().pathFor(pos);
 

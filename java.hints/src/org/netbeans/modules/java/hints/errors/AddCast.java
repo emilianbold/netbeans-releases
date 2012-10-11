@@ -179,7 +179,7 @@ public final class AddCast implements ErrorRule<Void> {
                 }
             }
             
-            if (info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), scope) < start) {
+            if (info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), scope) < start && scope.getKind() != Kind.PARENTHESIZED) {
                 break;
             }
 
