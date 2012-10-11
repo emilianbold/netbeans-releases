@@ -42,6 +42,13 @@
 package org.netbeans.modules.cnd.refactoring.query;
 
 import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.plugins.CsmWhereUsedQueryPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 
@@ -53,8 +60,17 @@ public final class CsmRefactoringQuerySupport {
 
     private CsmRefactoringQuerySupport() {
     }
-    
+
     public static Collection<RefactoringElementImplementation> getWhereUsed(FileObject fo, int line, int col) {
-        return null;
+        CsmFile csmFile = CsmUtilities.getCsmFile(fo, true, false);
+        Collection<RefactoringElementImplementation> out = Collections.emptyList();
+        if (csmFile != null) {
+            long offset = CsmFileInfoQuery.getDefault().getOffset(csmFile, line, col);
+            if (offset >= 0) {
+                CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, (int)offset);
+                out = CsmWhereUsedQueryPlugin.getWhereUsed(ref, Collections.<Object, Boolean>emptyMap());
+            }
+        }
+        return out;
     }
 }
