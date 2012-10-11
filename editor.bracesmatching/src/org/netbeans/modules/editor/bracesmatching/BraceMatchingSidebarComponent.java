@@ -180,6 +180,8 @@ public class BraceMatchingSidebarComponent extends JComponent implements
      */
     private Coloring coloring;
     
+    private static final RequestProcessor RP = new RequestProcessor(BraceMatchingSidebarComponent.class);
+    
     public BraceMatchingSidebarComponent(JTextComponent editor) {
         this.editor = editor;
         this.mimeType = DocumentUtilities.getMimeType(editor);
@@ -230,7 +232,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
      * update is yet another runnable replanned to AWT, the Updater only 
      * provides coalescing of the scroll events.
      */
-    private Task scrollUpdater = RequestProcessor.getDefault().create(new Runnable() {
+    private Task scrollUpdater = RP.create(new Runnable() {
         @Override
         // delayed runnable
         public void run() {
