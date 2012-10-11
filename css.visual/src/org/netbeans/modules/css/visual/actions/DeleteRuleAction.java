@@ -101,20 +101,16 @@ public class DeleteRuleAction extends AbstractAction {
         Object option = DialogDisplayer.getDefault().notify(nd);
         if(option == NotifyDescriptor.YES_OPTION) {
             model.runWriteTask(new Model.ModelTask() {
-
                 @Override
                 public void run(StyleSheet styleSheet) {
-                    Element parent = rule.getParent();
-                    if(parent.removeElement(rule)) {
-                        try {
-                            model.applyChanges();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                    styleSheet.getBody().removeRule(rule);
+                    try {
+                        model.applyChanges();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                    
                 }
             });
         }
