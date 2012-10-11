@@ -128,6 +128,12 @@ public class ModelUtils {
      * the given rule from the other model.
      */
     public Rule findMatchingRule(Model model, Rule rule) {
+       assert rule.getModel() == model;
+        
+       if(rule.getParent() == null) {
+           //detached or not attached yet rule
+           return null;
+       }
        
        //find id of the given rule in the given model 
        final RuleRefModelVisitor ruleRef = new RuleRefModelVisitor(model, rule);
