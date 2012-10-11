@@ -93,9 +93,9 @@ import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.TaskConfigurator.Configuration;
 import org.netbeans.modules.profiler.spi.TaskConfiguratorProvider;
 import org.netbeans.modules.profiler.stp.icons.STPIcons;
-import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -982,8 +982,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         final ProfilingSettings selectedProfilingSettings = (selectedTask == null) ? null
                                                                                    : ((TaskPresenter) selectedTask)
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             .getSelectedProfilingSettings();
-
-        ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     ProfilingSettingsManager.storeProfilingSettings(profilingSettings.toArray(new ProfilingSettings[profilingSettings
                                                                                                                     .size()]),
@@ -1056,7 +1055,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         contentsPanel.doLayout();
         contentsPanel.repaint();
         
-        ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
                 final ProfilingSettingsManager.ProfilingSettingsDescriptor profilingSettingsDescriptor =
