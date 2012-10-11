@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -118,6 +119,27 @@ public class C2CIssue {
     ));
     private Map<String, String> seenAtributes;
     private boolean open;
+    
+    /**
+     * IssueProvider wasn't seen yet
+     */
+    static final int FIELD_STATUS_IRELEVANT = -1;
+
+    /**
+     * Field wasn't changed since the issue was seen the last time
+     */
+    static final int FIELD_STATUS_UPTODATE = 1;
+
+    /**
+     * Field has a value in oposite to the last time when it was seen
+     */
+    static final int FIELD_STATUS_NEW = 2;
+
+    /**
+     * Field was changed since the issue was seen the last time
+     */
+    static final int FIELD_STATUS_MODIFIED = 4;
+    private HashMap<String, String> attributes;
     
     public C2CIssue(TaskData data, C2CRepository repo) {
         this.data = data;
@@ -220,7 +242,7 @@ public class C2CIssue {
         data = taskData;
         
         // XXX
-//        attributes = null; // reset
+        attributes = null; // reset
 //        availableOperations = null;
         C2C.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
@@ -271,7 +293,18 @@ public class C2CIssue {
     }
 
     public Map<String, String> getAttributes() {
-        return Collections.emptyMap();
+        if(attributes == null) {
+            attributes = new HashMap<String, String>();
+            String value;
+            for (IssueField field : C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(),
+                    repository.getTaskRepository()).getFields()) {
+                value = getFieldValue(field);
+                if(value != null && !value.trim().equals("")) {                 // NOI18N
+                    attributes.put(field.getKey(), value);
+                }
+            }
+        }
+        return attributes;
     }
 
     public String getSummary() {
@@ -297,6 +330,46 @@ public class C2CIssue {
         seenAtributes = null;
     }
     
+    /**
+     * Returns a status value for the given field<br>
+     * <ul>
+     *  <li>{@link #FIELD_STATUS_IRELEVANT} - issue wasn't seen yet
+     *  <li>{@link #FIELD_STATUS_UPTODATE} - field value wasn't changed
+     *  <li>{@link #FIELD_STATUS_MODIFIED} - field value was changed
+     *  <li>{@link #FIELD_STATUS_NEW} - field has a value for the first time since it was seen
+     * </ul>
+     * @param f IssueField
+     * @return a status value
+     */
+    int getFieldStatus(IssueField f) {
+        String seenValue = getSeenValue(f);
+        if(seenValue.equals("") && !seenValue.equals(getFieldValue(f))) {       // NOI18N
+            return FIELD_STATUS_NEW;
+        } else if (!seenValue.equals(getFieldValue(f))) {
+            return FIELD_STATUS_MODIFIED;
+        }
+        return FIELD_STATUS_UPTODATE;
+    }
+    
+    private Map<String, String> getSeenAttributes() {
+        if(seenAtributes == null) {
+            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
+            if(seenAtributes == null) {
+                seenAtributes = new HashMap<String, String>();
+            }
+        }
+        return seenAtributes;
+    }
+
+    String getSeenValue(IssueField f) {
+        Map<String, String> attr = getSeenAttributes();
+        String seenValue = attr != null ? attr.get(f.getKey()) : null;
+        if(seenValue == null) {
+            seenValue = "";                                                     // NOI18N
+        }
+        return seenValue;
+    }
+
     public boolean isOpened () {
         return open;
     }
@@ -449,7 +522,7 @@ public class C2CIssue {
         }
 
         try {
-            // XXX seenAtributes = null;
+            seenAtributes = null;
             setSeen(true);
         } catch (IOException ex) {
             C2C.LOG.log(Level.SEVERE, null, ex);

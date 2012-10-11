@@ -50,6 +50,7 @@ import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -135,6 +136,7 @@ import org.openide.util.NbBundle.Messages;
 public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     static final DateFormat DEFAULT_DATE_FORMAT = DateFormat.getDateInstance(DateFormat.MEDIUM);
     
+    private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
     private static final String RESOLUTION_RESOLVED = "RESOLVED";               // NOI18N    
     private static final String STATUS_FIXED = "FIXED";                         // NOI18N
     private static final String STATUS_UNCONFIRMED = "UNCONFIRMED";             // NOI18N
@@ -865,45 +867,37 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private void updateFieldStatuses() {
-        // XXX
-//        updateFieldStatus(IssueField.SUMMARY, summaryLabel);
-//        updateFieldStatus(IssueField.PRODUCT, productLabel);
-//        updateFieldStatus(IssueField.COMPONENT, componentLabel);
-//        updateFieldStatus(IssueField.VERSION, versionLabel);
-//        updateFieldStatus(IssueField.PLATFORM, platformLabel);
-//        updateFieldStatus(IssueField.OS, platformLabel);
-//        updateFieldStatus(IssueField.STATUS, statusLabel);
-//        updateFieldStatus(IssueField.RESOLUTION, resolutionLabel);
-//        updateFieldStatus(IssueField.PRIORITY, priorityLabel);
-//        updateFieldStatus(IssueField.SEVERITY, priorityLabel);
-//        updateFieldStatus(IssueField.MILESTONE, targetMilestoneLabel);
-//        updateFieldStatus(IssueField.URL, urlLabel);
-//        updateFieldStatus(IssueField.WHITEBOARD, statusWhiteboardLabel);
-//        updateFieldStatus(IssueField.KEYWORDS, keywordsLabel);
-//        updateFieldStatus(IssueField.ASSIGNED_TO, assignedLabel);
-//        updateFieldStatus(IssueField.QA_CONTACT, qaContactLabel);
-//        updateFieldStatus(IssueField.CC, ccLabel);
-//        updateFieldStatus(IssueField.DEPENDS_ON, dependsLabel);
-//        updateFieldStatus(IssueField.BLOCKS, blocksLabel);
-//        updateFieldStatus(IssueField.ESTIMATED_TIME, estimatedLabel);
-//        updateFieldStatus(IssueField.REMAINING_TIME, remainingLabel);
-//        updateFieldStatus(IssueField.WORK_TIME, timetrackingLabel);
-//        updateFieldStatus(IssueField.DEADLINE, deadlineLabel);
-//        if (BugzillaUtil.isNbRepository(issue.getRepository())) {
-//            updateFieldStatus(IssueField.ISSUE_TYPE, issueTypeLabel);
-//        }
+        updateFieldStatus(IssueField.SUMMARY, summaryLabel);
+        updateFieldStatus(IssueField.PRODUCT, productLabel);
+        updateFieldStatus(IssueField.COMPONENT, componentLabel);
+        updateFieldStatus(IssueField.FOUNDIN, foundInLabel);
+        updateFieldStatus(IssueField.STATUS, statusLabel);
+        updateFieldStatus(IssueField.RESOLUTION, resolutionLabel);
+        updateFieldStatus(IssueField.PRIORITY, priorityLabel);
+        updateFieldStatus(IssueField.SEVERITY, severityLabel);
+        updateFieldStatus(IssueField.MILESTONE, releaseLabel);
+        updateFieldStatus(IssueField.DUEDATE, dueDateLabel);
+        updateFieldStatus(IssueField.ITERATION, iterationLabel);
+        updateFieldStatus(IssueField.OWNER, ownerLabel);
+        updateFieldStatus(IssueField.ESTIMATE, estimateLabel);
+        updateFieldStatus(IssueField.PARENT, parentLabel);
+        updateFieldStatus(IssueField.SUBTASK, subtaskLabel);
+        updateFieldStatus(IssueField.CC, ccLabel);
+        updateFieldStatus(IssueField.TAGS, tagsLabel);
+        updateFieldStatus(IssueField.TASK_TYPE, issueTypeLabel);
+        updateFieldStatus(IssueField.MODIFIED, modifiedLabel);
 //        for (CustomFieldInfo field : customFields) {
 //            updateFieldStatus(field.field, field.label);
 //        }
     }
 
     private void updateFieldStatus(IssueField field, JComponent label) {
-//        assert label instanceof JButton || label instanceof JLabel;
-//        boolean highlight = !issue.getTaskData().isNew() && (issue.getFieldStatus(field) != BugzillaIssue.FIELD_STATUS_UPTODATE);
-//        label.setOpaque(highlight);
-//        if (highlight) {
-//            label.setBackground(HIGHLIGHT_COLOR);
-//        }
+        assert label instanceof JButton || label instanceof JLabel;
+        boolean highlight = !issue.getTaskData().isNew() && (issue.getFieldStatus(field) != C2CIssue.FIELD_STATUS_UPTODATE);
+        label.setOpaque(highlight);
+        if (highlight) {
+            label.setBackground(HIGHLIGHT_COLOR);
+        }
     }
 
     PropertyChangeListener cacheListener = new PropertyChangeListener() {

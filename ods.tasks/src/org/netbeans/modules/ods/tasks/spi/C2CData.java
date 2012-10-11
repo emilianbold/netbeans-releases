@@ -53,9 +53,11 @@ import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.netbeans.modules.ods.tasks.issue.IssueField;
 
 /**
  *
@@ -195,6 +197,48 @@ public final class C2CData {
 
     public List<ExternalTaskRelation> getValues(String value) {
         return delegate.getValues(value);
+    }
+    
+    private List<IssueField> issueFields;
+    public List<IssueField> getFields() {
+        if (issueFields == null) {
+            List<IssueField> fields = new ArrayList<IssueField>(40);
+            fields.add(IssueField.CC);
+            fields.add(IssueField.COMPONENT);
+            fields.add(IssueField.CREATED);
+            fields.add(IssueField.DESCRIPTION);
+            fields.add(IssueField.DUEDATE);
+            fields.add(IssueField.DUPLICATE);
+            fields.add(IssueField.ESTIMATE);
+            fields.add(IssueField.FOUNDIN);
+            fields.add(IssueField.ITERATION);
+            fields.add(IssueField.MILESTONE);
+            fields.add(IssueField.MODIFIED);
+            fields.add(IssueField.NEWCC);
+            fields.add(IssueField.NEWCC);
+            fields.add(IssueField.OWNER);
+            fields.add(IssueField.PARENT);
+            fields.add(IssueField.PRIORITY);
+            fields.add(IssueField.PRODUCT);
+            fields.add(IssueField.REPORTER);
+            fields.add(IssueField.RESOLUTION);
+            fields.add(IssueField.SEVERITY);
+            fields.add(IssueField.STATUS);
+            fields.add(IssueField.SUBTASK);
+            fields.add(IssueField.SUMMARY);
+            fields.add(IssueField.TAGS);
+            fields.add(IssueField.TASK_TYPE);
+            fields.add(IssueField.VERSION);
+            
+//            if(rc != null) {
+//                // Custom fields
+//                for (BugzillaCustomField field : delegate.getCustomFields()) {
+//                    fields.add(new CustomIssueField(field));
+//                }
+//            }
+            issueFields = fields;
+        }
+        return issueFields;
     }
 
     @Override
