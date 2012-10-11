@@ -3,3 +3,4 @@ OpenIDE-Module: org.netbeans.modules.php.symfony2/1
 OpenIDE-Module-Layer: org/netbeans/modules/php/symfony2/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/php/symfony2/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.11
+OpenIDE-Module-Recommends: cnb.org.netbeans.modules.php.twig

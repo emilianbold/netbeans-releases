@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -94,7 +95,7 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
     
     // You should define what panels you want to use here:
     protected List<WizardDescriptor.Panel<WizardDescriptor>> createPanels (Project project, TemplateWizard wiz) {
-        Sources sources = project.getLookup().lookup(Sources.class);
+        Sources sources = ProjectUtils.getSources(project);
         DataFolder targetFolder=null;
         try {
             targetFolder = wiz.getTargetFolder();
@@ -170,7 +171,7 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
             if (ver == null) {
                 //not defined in resolved project, set version.
 //                plugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_FELIX));
-                plugin.setVersion("2.0.1"); //TODO get from some preferences file.
+                plugin.setVersion("2.3.7"); //TODO get from some preferences file.
             }
             mdl.getProject().getBuild().addPlugin(plugin);
         }
@@ -277,12 +278,16 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
     }
     @Override
     public void nextPanel () {
-        if (! hasNext ()) throw new NoSuchElementException ();
+        if (! hasNext ()) {
+            throw new NoSuchElementException ();
+        }
         index++;
     }
     @Override
     public void previousPanel () {
-        if (! hasPrevious ()) throw new NoSuchElementException ();
+        if (! hasPrevious ()) {
+            throw new NoSuchElementException ();
+        }
         index--;
     }
     @Override

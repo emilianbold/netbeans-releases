@@ -2398,11 +2398,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         try {
             ParserQueue.instance().onStartAddingProjectFiles(this);
             for (NativeFileItem item : items) {
-                FileAndHandler fileAndHandler = preCreateIfNeed(item);
-                if (fileAndHandler != null) {
-                    // put into parser queue
-                    Position queuePosition = isSourceFile(item) ? ParserQueue.Position.HEAD : ParserQueue.Position.TAIL;
-                    ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), queuePosition);
+                // file object can be invalid for not existing file (#194357)
+                assert (item != null && item.getFileObject() != null);
+                if (!Utils.acceptNativeItem(item)) {
+                    continue;
+                }
+                APTPreprocHandler ppHandler = createPreprocHandler(item);
+                if (ppHandler != null) {
+                    // findFile is good here: for source files it will create it, for header it will not overwrite what we already have
+                    // in both cases only really new file is enqueued for parse
+                    findFile(item.getAbsolutePath(), true, Utils.getFileType(item), ppHandler, true, ppHandler.getState(), item);
                 }
             }
         } finally {
@@ -2635,10 +2640,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
 
-        if (fileType == FileImpl.FileType.SOURCE_FILE && !impl.isSourceFile()) {
-            impl.setSourceFile();
-        } else if (fileType == FileImpl.FileType.HEADER_FILE && !impl.isHeaderFile()) {
-            impl.setHeaderFile();
+        if (initial == null) {
+            if (fileType == FileImpl.FileType.SOURCE_FILE && !impl.isSourceFile()) {
+                impl.setSourceFile();
+            } else if (fileType == FileImpl.FileType.HEADER_FILE && !impl.isHeaderFile()) {
+                impl.setHeaderFile();
+            }
         }
         return impl;
     }
