@@ -247,7 +247,7 @@ public class ImplementAbstractMethodsHintError extends AbstractHintError {
         return offset;
     }
 
-    private class ImplementAllFix implements HintFix {
+    private static class ImplementAllFix implements HintFix {
 
         private BaseDocument doc;
         private final FixInfo fixInfo;
