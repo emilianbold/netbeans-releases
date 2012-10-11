@@ -59,6 +59,10 @@ public class PHPHintsTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new AbstractClassInstantiationHintError(), "testAbstractClassInstantiationHint.php");
     }
 
+    public void testAbstractClassInstantiationHint_02() throws Exception {
+        checkHintsInStartEndFile(new AbstractClassInstantiationHintError(), "testAbstractClassInstantiationHint_02.php");
+    }
+
     public void testImplementAbstractMethodsHint() throws Exception {
         checkHintsInStartEndFile(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHint.php");
     }

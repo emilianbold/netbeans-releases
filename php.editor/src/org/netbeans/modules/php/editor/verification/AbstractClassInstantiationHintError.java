@@ -48,8 +48,12 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -70,7 +74,7 @@ public class AbstractClassInstantiationHintError extends AbstractHintError {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
-        CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.getIndex());
+        CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.getIndex(), phpParseResult.getModel());
         phpParseResult.getProgram().accept(checkVisitor);
         hints.addAll(checkVisitor.getHints());
     }
@@ -79,10 +83,12 @@ public class AbstractClassInstantiationHintError extends AbstractHintError {
         private final FileObject fileObject;
         private final Index index;
         private final List<Hint> hints = new LinkedList<Hint>();
+        private final Model model;
 
-        private CheckVisitor(FileObject fileObject, Index index) {
+        private CheckVisitor(FileObject fileObject, Index index, Model model) {
             this.fileObject = fileObject;
             this.index = index;
+            this.model = model;
         }
 
         public List<Hint> getHints() {
@@ -96,11 +102,14 @@ public class AbstractClassInstantiationHintError extends AbstractHintError {
         })
         public void visit(ClassInstanceCreation node) {
             ASTNodeInfo<ClassInstanceCreation> info = ASTNodeInfo.create(node);
-            Set<ClassElement> classes = index.getClasses(NameKind.exact(info.getQualifiedName()));
+            int startOffset = node.getStartOffset();
+            VariableScope variableScope = model.getVariableScope(startOffset);
+            QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(info.getQualifiedName(), startOffset, variableScope);
+            Set<ClassElement> classes = index.getClasses(NameKind.exact(fullyQualifiedName));
             if (!classes.isEmpty()) {
                 ClassElement classElement = ModelUtils.getFirst(classes);
                 if (classElement != null && classElement.isAbstract()) {
-                    OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                    OffsetRange offsetRange = new OffsetRange(startOffset, node.getEndOffset());
                     hints.add(new Hint(AbstractClassInstantiationHintError.this, Bundle.AbstractClassInstantiationDesc(classElement.getFullyQualifiedName().toString()), fileObject, offsetRange, null, 500));
                 }
             }
