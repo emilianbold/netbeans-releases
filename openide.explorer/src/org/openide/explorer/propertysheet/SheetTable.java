@@ -251,6 +251,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
     }
 
     //************Shared infrastructure*****************************    
+    @Override
     protected void finalize() {
         instanceCount--;
 
@@ -290,18 +291,21 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
     }
 
     /** Fetch the name of the currently displayed JavaBean */
+    @Override
     public String getBeanName() {
         return beanName;
     }
 
     /** Returns a reference to the static editor shared among all instances
      * of SheetTable */
+    @Override
     public TableCellEditor getCellEditor(int row, int column) {
         return getEditor();
     }
 
     /** Returns a reference to the static renderer shared among all instances
      * of SheetTable */
+    @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
         return getRenderer();
     }
@@ -311,6 +315,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
     /** Throws an UnsupportedOperationException when called by user code.  Replacing
      *  the data model of property sheets is unsupported.  You can change the model
      *  that determines what properties are shown - see <code>setPropertySetModel()</code>. */
+    @Override
     public void setModel(TableModel model) {
         if (initialized) {
             throw new UnsupportedOperationException(
@@ -323,6 +328,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** Throws an UnsupportedOperationException when called by user code.  Replacing
      *  the column model of property sheets is unsupported.*/
+    @Override
     public void setColumnModel(TableColumnModel model) {
         if (initialized) {
             throw new UnsupportedOperationException(
@@ -335,6 +341,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** Throws an UnsupportedOperationException when called by user code.  Replacing
      *  the selection model of property sheets not supported.*/
+    @Override
     public void setSelectionModel(ListSelectionModel model) {
         if (initialized) {
             throw new UnsupportedOperationException(
@@ -374,11 +381,13 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** Overridden to return null - some look and feels will want to create
      * an empty header, and we don't want them to do that */
+    @Override
     public JTableHeader getTableHeader() {
         return null;
     }
 
     //******************Keyboard/mouse mgmt***********************************
+    @Override
     protected void initKeysAndActions() {
         super.initKeysAndActions();
         unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0));
@@ -442,6 +451,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
     /** Overridden to cast value to FeatureDescriptor and return true if the
      * text matches its display name.  The popup search field uses this method
      * to check matches. */
+    @Override
     protected boolean matchText(Object value, String text) {
         if (value instanceof FeatureDescriptor) {
             return ((FeatureDescriptor) value).getDisplayName().toUpperCase().startsWith(text.toUpperCase());
@@ -456,6 +466,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
      *  in the left edge with the appropriate color, and then calls paintExpandableSets()
      *  to paint the property sets, which are not painted by the default painting
      *  methods because they need to be painted across two rows.    */
+    @Override
     public void paintComponent(Graphics g) {
         boolean includeMargin = PropUtils.shouldDrawMargin(getPropertySetModel());
 
@@ -519,23 +530,8 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             FeatureDescriptor fd = psm.getFeatureDescriptor(i);
 
             if (null != fd && fd.getName().equals(name)) {
-                //repaint property value
-                Rectangle r = getCellRect(i, 1, true);
-
-                if (PropUtils.isLoggable(SheetTable.class)) {
-                    PropUtils.log(SheetTable.class, "Repainting " + r + " for property " + name);
-                }
-
-                repaint(r.x, r.y, r.width, r.height);
-                
-                //repaint property name as it may changed as well
-                r = getCellRect(i, 0, true);
-
-                if (PropUtils.isLoggable(SheetTable.class)) {
-                    PropUtils.log(SheetTable.class, "Repainting " + r + " for property " + name);
-                }
-
-                repaint(r.x, r.y, r.width, r.height);
+                //repaint property value & name
+                paintRow( i );
 
                 return;
             }
@@ -563,6 +559,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         }
     }
 
+    @Override
     public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
         Component result = super.prepareRenderer(renderer, row, col);
 
@@ -656,6 +653,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** Overridden to check if the edit failed, and if so, set a focus event
      * countdown for re-initiating editing */
+    @Override
     public void editingStopped(ChangeEvent e) {
         super.editingStopped(e);
 
@@ -681,6 +679,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
     }
 
     /** Overridden to clear the focus event countdown */
+    @Override
     public void changeSelection(int row, int col, boolean a, boolean b) {
         countDown = -1;
         super.changeSelection(row, col, a, b);
@@ -688,6 +687,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** Overridden to check the focus event countdown and initiate editing on
      * the second focus event following a failed edit (dialog was shown) */
+    @Override
     public void processFocusEvent(FocusEvent fe) {
         super.processFocusEvent(fe);
 
@@ -710,6 +710,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         }
     }
 
+    @Override
     protected void focusLostCancel() {
         if (PropUtils.psCommitOnFocusLoss && isEditing()) {
             getEditor().stopCellEditing();
@@ -725,6 +726,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
      * otherwise, for example, in the options dialog, clicking from the
      * tree to the table over the custom editor button will just set focus
      * to the table, but will not initiate the custom editor dialog */
+    @Override
     public void processMouseEvent(MouseEvent me) {
         if (me.getID() == me.MOUSE_PRESSED && SwingUtilities.isLeftMouseButton(me) &&
                 onCustomEditorButton(me) && !hasFocus()) {
@@ -759,6 +761,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** Overridden to do nothing, the editor will take care of updating
      * the value */
+    @Override
     public void setValueAt(Object o, int row, int column) {
         //do nothing
     }
@@ -767,6 +770,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
      * knows about.  This affects whether we paint as if focused or not, and
      * is used to determine what kind of focus changes mean we should stop
      * editing, and what kind are ok */
+    @Override
     protected boolean isKnownComponent(Component c) {
         boolean result = super.isKnownComponent(c);
 
@@ -897,6 +901,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** Overridden to supply different tooltips depending on mouse position (name,
      *  value, custom editor button).  Will HTML-ize long tooltips*/
+    @Override
     public String getToolTipText(MouseEvent e) {
         if (customEditorIsOpen) {
             return null;
@@ -932,6 +937,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
      *  <code>getSheetModel().getPropertySetModel().getFeatureDescriptor(getSelectedRow())
      *  </code>.  This method will return null if the table does not have focus or editing
      *  is not in progress.  */
+    @Override
     public final FeatureDescriptor getSelection() {
         return _getSelection();
     }
@@ -995,6 +1001,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
      * toggle boolean values rather than rapidly instantiate and hide a
      * checkbox editor
      */
+    @Override
     public boolean editCellAt(int row, int column, EventObject e) {
         assert SwingUtilities.isEventDispatchThread();
         enterEditRequest();
@@ -1108,6 +1115,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         return result;
     }
 
+    @Override
     public void removeEditor() {
         enterEditorRemoveRequest();
 
@@ -1130,6 +1138,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /**Overridden to do the assorted black magic by which one determines if
      * a property is editable */
+    @Override
     public boolean isCellEditable(int row, int column) {
         if (column == 0) {
             return false;
@@ -1263,6 +1272,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** Overridden to set the colors apropriately - we always want the editor
     * to appear selected */
+    @Override
     public Component prepareEditor(TableCellEditor editor, int row, int col) {
         if (editor == null) {
             return null;
@@ -1294,6 +1304,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** Overridden to store some data in the event of a recoverable change,
      * such as the row currently being edited */
+    @Override
     public void tableChanged(TableModelEvent e) {
         boolean ed = isEditing();
         lastSelectedRow = ed ? getEditingRow() : getSelectionModel().getAnchorSelectionIndex();
@@ -1384,6 +1395,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
      * trigger this.  Since the PropertySetModel has a cache of current
      * properties, it can call this while its internal state is still
      * intact */
+    @Override
     public void pendingChange(PropertySetModelEvent e) {
         if (e.isReordering()) {
             wasEditing = isEditing();
@@ -1395,10 +1407,12 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         }
     }
 
+    @Override
     public void boundedChange(PropertySetModelEvent e) {
         //Do nothing, we'll get notification from the TableModel
     }
 
+    @Override
     public void wholesaleChange(PropertySetModelEvent e) {
         //Do nothing, we'll get notification from the TableModel
     }
@@ -1409,6 +1423,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** Returns the content pane of our owner, so as to display the wait
      * cursor while the dialog is being invoked */
+    @Override
     public Component getCursorChangeComponent() {
         Container cont = SheetTable.this.getTopLevelAncestor();
 
@@ -1418,6 +1433,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** If we have been editing and the user has typed something, fetch this
      * value to use in the custom editor */
+    @Override
     public Object getPartialValue() {
         Object partialValue = null;
 
@@ -1444,6 +1460,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
     }
 
     /** Restarts inline edit mode if the the preceding custom edit failed */
+    @Override
     public void editorClosed() {
         if (lastFailed) {
             editCellAt(getSelectedRow(), 1, null);
@@ -1453,33 +1470,40 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         customEditorIsOpen = false;
     }
 
+    @Override
     public void editorOpened() {
         //Make sure it's painted as non-focused
         paintSelectionRow();
         customEditorIsOpen = true;
     }
 
+    @Override
     public void editorOpening() {
         lastFailed = false;
         customEditorIsOpen = true;
     }
 
+    @Override
     public void valueChanged(java.beans.PropertyEditor editor) {
         lastFailed = false;
     }
 
+    @Override
     public boolean allowInvoke() {
         return true;
     }
 
+    @Override
     public void failed() {
         lastFailed = true;
     }
 
+    @Override
     public boolean wantAllChanges() {
         return false;
     }
 
+    @Override
     public ReusablePropertyEnv getReusablePropertyEnv() {
         return reusableEnv;
     }
@@ -1508,6 +1532,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             super(ACTION_EXPAND);
         }
 
+        @Override
         public void actionPerformed(ActionEvent ae) {
             FeatureDescriptor fd = _getSelection();
 
@@ -1521,6 +1546,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             }
         }
 
+        @Override
         public boolean isEnabled() {
             return _getSelection() instanceof PropertySet;
         }
@@ -1531,6 +1557,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             super(ACTION_COLLAPSE);
         }
 
+        @Override
         public void actionPerformed(ActionEvent ae) {
             FeatureDescriptor fd = _getSelection();
 
@@ -1544,6 +1571,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             }
         }
 
+        @Override
         public boolean isEnabled() {
             boolean result = _getSelection() instanceof PropertySet;
 
@@ -1556,6 +1584,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             super(ACTION_EDCLASS);
         }
 
+        @Override
         public void actionPerformed(ActionEvent ae) {
             int i = getSelectedRow();
 
@@ -1573,12 +1602,14 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             }
         }
 
+        @Override
         public boolean isEnabled() {
             return getSelectedRow() != -1;
         }
     }
 
     private class STPolicy extends ContainerOrderFocusTraversalPolicy {
+        @Override
         public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
             if (inEditorRemoveRequest()) {
                 return SheetTable.this;
@@ -1589,6 +1620,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             }
         }
 
+        @Override
         public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
             if (inEditorRemoveRequest()) {
                 return SheetTable.this;
@@ -1597,6 +1629,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             }
         }
 
+        @Override
         public Component getFirstComponent(Container focusCycleRoot) {
             if (!inEditorRemoveRequest() && isEditing()) {
                 return editorComp;
@@ -1605,6 +1638,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             }
         }
 
+        @Override
         public Component getDefaultComponent(Container focusCycleRoot) {
             if (!inEditorRemoveRequest() && isEditing() && editorComp.isShowing()) {
                 return editorComp;
@@ -1613,6 +1647,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             }
         }
 
+        @Override
         protected boolean accept(Component aComponent) {
             //Do not allow focus to go to a child of the editor we're using if
             //we are in the process of removing the editor
@@ -1631,6 +1666,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
     }
 
     private static class SheetTableTransferHandler extends TransferHandler {
+        @Override
         protected Transferable createTransferable(JComponent c) {
             if (c instanceof SheetTable) {
                 SheetTable table = (SheetTable) c;
@@ -1653,6 +1689,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             return null;
         }
 
+        @Override
         public int getSourceActions(JComponent c) {
             return COPY;
         }
@@ -1687,6 +1724,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             this.plainData = plainData;
         }
 
+        @Override
         public DataFlavor[] getTransferDataFlavors() {
             int nPlain = (isPlainSupported()) ? plainFlavors.length : 0;
             int nString = (isPlainSupported()) ? stringFlavors.length : 0;
@@ -1709,6 +1747,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             return flavors;
         }
 
+        @Override
         public boolean isDataFlavorSupported(DataFlavor flavor) {
             DataFlavor[] flavors = getTransferDataFlavors();
 
@@ -1721,6 +1760,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             return false;
         }
 
+        @Override
         public Object getTransferData(DataFlavor flavor)
         throws UnsupportedFlavorException, IOException {
             if (isPlainFlavor(flavor)) {
