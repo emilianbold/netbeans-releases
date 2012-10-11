@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
@@ -826,6 +827,8 @@ public class RuleNode extends AbstractNode {
 
         @Override
         public void setValue(final Object o) {
+            assert SwingUtilities.isEventDispatchThread();
+            
             final String asString = (String) o;
             if (asString == null || asString.isEmpty()) {
                 return;
@@ -838,7 +841,7 @@ public class RuleNode extends AbstractNode {
 
             this.valueSet = asString;
             SAVE_CHANGE_TASK.schedule(200);
-
+            
         }
         
         private Task SAVE_CHANGE_TASK = RuleEditorPanel.RP.create(new Runnable() {
@@ -848,20 +851,31 @@ public class RuleNode extends AbstractNode {
 
                     @Override
                     public void run() {
-                        final String val = valueSet;
+                        //all the access to valueSet field is safe as 
+                        //the field is only set in setValue() which always
+                        //runs id EDT
                         
+                        //The tasks may schedule in such way that more than one tasks
+                        //runs after the setValue(...) method called.
+                        //In such case the first task sets the valueSet field to null
+                        //and the other tasks cannot rule (they do not have anything
+                        //to do anyway) so just quit in such case.
+                        if(valueSet == null) {
+                            return ;
+                        }
+
                         Model model = getModel();
                         model.runWriteTask(new Model.ModelTask() {
                             @Override
                             public void run(StyleSheet styleSheet) {
-                                if (NONE_PROPERTY_NAME.equals(val)) {
+                                if (NONE_PROPERTY_NAME.equals(valueSet)) {
                                     //remove the whole declaration
                                     Declarations declarations = (Declarations) declaration.getParent();
                                     declarations.removeDeclaration(declaration);
                                 } else {
                                     //update the value
-                                    RuleEditorPanel.LOG.log(Level.FINE, "updating property to {0}", val);
-                                    declaration.getPropertyValue().getExpression().setContent(val);
+                                    RuleEditorPanel.LOG.log(Level.FINE, "updating property to {0}", valueSet);
+                                    declaration.getPropertyValue().getExpression().setContent(valueSet);
                                 }
                             }
                         });
@@ -879,6 +893,7 @@ public class RuleNode extends AbstractNode {
                             //the changes made by the writetask above
                         }
 
+                        valueSet = null; 
                     }
                     
                 });
