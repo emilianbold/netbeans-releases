@@ -41,18 +41,19 @@ int readopts(int argc, char** argv, options_t* opts) {
                 setsig(opts, argv[idx], argv[idx + 1]);
                 idx++;
                 nopt += 2;
+            } else if (strcmp(argv[idx], "-e") == 0) {
+                opts->scope = P_ENV;
+                setsig(opts, argv[idx], argv[idx + 1]);
+                idx++;
+                nopt += 2;
             } else if (strcmp(argv[idx], "-q") == 0) {
                 opts->scope = P_QUEUE;
                 setsig(opts, argv[idx], argv[idx + 1]);
                 idx++;
                 nopt += 2;
-            } else if (strcmp(argv[idx], "-m") == 0) {
-                idx++;
-                if (argv[idx] == NULL || argv[idx][0] == '\0') {
-                    err_quit("missing value after %s\n", argv[idx - 1]);
-                }
-                opts->magicenv = argv[idx];
-                nopt += 2;
+            } else if (strcmp(argv[idx], "-n") == 0) {
+                opts->nosignal = 1;
+                nopt += 1;
             } else {
                 printf("ERROR unrecognized option '%s'\n", argv[idx]);
                 exit(-1);

@@ -51,6 +51,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -91,6 +92,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Actual implementation of Find Usages query search for C/C++
@@ -205,6 +207,22 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
 //    protected Problem checkParameters(CompilationController info) {
 //        return null;
 //    }
+    
+    public static Collection<RefactoringElementImplementation> getWhereUsed(CsmReference ref, Map<Object, Boolean> params) {
+        CsmObject targetObject = ref.getReferencedObject();
+        Lookup lkp = Lookups.singleton(ref);
+        WhereUsedQuery query = new WhereUsedQuery(lkp);
+        Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(targetObject, ref.getContainingFile().getProject());
+        CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
+        query.getContext().add(ar);
+        // set parameters
+        for (Map.Entry<Object, Boolean> entry : params.entrySet()) {
+            query.putValue(entry.getKey(), entry.getValue());
+        }
+        CsmWhereUsedQueryPlugin whereUsedPlugin = new CsmWhereUsedQueryPlugin(query);
+        Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject, null);
+        return elements;
+    }
     
     private Problem checkParametersForMethod(boolean overriders, boolean usages) {
         if (!(usages || overriders)) {

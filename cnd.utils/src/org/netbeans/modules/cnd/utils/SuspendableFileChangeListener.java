@@ -95,10 +95,12 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
                     for (Iterator<Map.Entry<FSPath, EventWrapper>> it = curEvents.entrySet().iterator(); it.hasNext();) {
                         Map.Entry<FSPath, EventWrapper> entry = it.next();
                         EventWrapper value = entry.getValue();
-                        if (value.kind == EventKind.FILE_DELETED) {
+                        // hold on with delete events and delete/create pair from rename event
+                        if ((value.kind == EventKind.FILE_DELETED) ||
+                            (value.kind == EventKind.FILE_CREATED && value.event instanceof FileRenameEvent)) {
                             suspendedRemoves.put(entry.getKey(), value);
                             it.remove();
-                        }
+                        } 
                     }
                     events = suspendedRemoves;
                 }
@@ -212,6 +214,7 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
     }
     
     /*package*/void flush() {
+        task.schedule(0);
         task.waitFinished();
     }
     
