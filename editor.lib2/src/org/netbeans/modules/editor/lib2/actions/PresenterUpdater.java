@@ -171,7 +171,7 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
     }
     
     private void initListening() {
-        action.addPropertyChangeListener(this);
+        action.addPropertyChangeListener(WeakListeners.propertyChange(this, action));
         presenter.addActionListener(this);
     }
     
@@ -197,7 +197,7 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
         // Enabled status
-        if ((propName == null) || "enabled".equals(propName)) {
+        if ((propName == null) || "enabled".equals(propName)) { // NOI18N
             boolean enabled = action.isEnabled();
             presenter.setEnabled(enabled);
         }
