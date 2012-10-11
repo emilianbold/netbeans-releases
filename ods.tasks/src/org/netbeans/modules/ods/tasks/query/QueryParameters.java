@@ -106,7 +106,7 @@ public class QueryParameters {
         return map.values();
     }
     
-    void addListParameter(Column c, JList list ) {
+    void addParameter(Column c, JList list ) {
         map.put(c, new ListParameter(list, c));
     }
             

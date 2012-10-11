@@ -171,17 +171,17 @@ public class C2CQueryController extends QueryController implements ItemListener,
         // setup parameters
         parameters = new QueryParameters();
         
-        parameters.addListParameter(QueryParameters.Column.PRODUCT, panel.productList);  
-        parameters.addListParameter(QueryParameters.Column.COMPONENT, panel.componentList);
-        parameters.addListParameter(QueryParameters.Column.RELEASE, panel.releaseList);    
-        parameters.addListParameter(QueryParameters.Column.ITERATION, panel.iterationList);
+        parameters.addParameter(QueryParameters.Column.PRODUCT, panel.productList);  
+        parameters.addParameter(QueryParameters.Column.COMPONENT, panel.componentList);
+        parameters.addParameter(QueryParameters.Column.RELEASE, panel.releaseList);    
+        parameters.addParameter(QueryParameters.Column.ITERATION, panel.iterationList);
            
-        parameters.addListParameter(QueryParameters.Column.TASK_TYPE, panel.issueTypeList);
-        parameters.addListParameter(QueryParameters.Column.PRIORITY, panel.priorityList);  
-        parameters.addListParameter(QueryParameters.Column.SEVERITY, panel.severityList);  
+        parameters.addParameter(QueryParameters.Column.TASK_TYPE, panel.issueTypeList);
+        parameters.addParameter(QueryParameters.Column.PRIORITY, panel.priorityList);  
+        parameters.addParameter(QueryParameters.Column.SEVERITY, panel.severityList);  
         
-        parameters.addListParameter(QueryParameters.Column.STATUS, panel.statusList);      
-        parameters.addListParameter(QueryParameters.Column.RESOLUTION, panel.resolutionList);
+        parameters.addParameter(QueryParameters.Column.STATUS, panel.statusList);      
+        parameters.addParameter(QueryParameters.Column.RESOLUTION, panel.resolutionList);
         
         //parameters.addListParameter(QueryParameters.Column.TAGS, panel.tagsComboBox);                   // NOI18N
         
