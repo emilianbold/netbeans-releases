@@ -116,7 +116,7 @@ public class RestNodeTest extends RestTestBase {
         n.performPopupAction(open);
         EditorOperator eo = new EditorOperator(services[0]);
         assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        assertEquals("wrong line", 40, eo.getLineNumber()); //NOI18N
+        assertEquals("wrong line", 73, eo.getLineNumber()); //NOI18N
     }
 
     /**
@@ -128,7 +128,7 @@ public class RestNodeTest extends RestTestBase {
         n.performPopupAction(open);
         EditorOperator eo = new EditorOperator(services[1].substring(0, 13));
         assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        assertEquals("wrong line", 47, eo.getLineNumber()); //NOI18N
+        assertEquals("wrong line", 80, eo.getLineNumber()); //NOI18N
     }
 
     /**
@@ -137,7 +137,7 @@ public class RestNodeTest extends RestTestBase {
     public void testAddMethod() {
         EditorOperator eo = new EditorOperator(services[0]);
         assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        eo.select(59);
+        eo.select(92);
         eo.insert(addMethod);
         eo.save();
         // let's wait for a while here...
@@ -152,10 +152,10 @@ public class RestNodeTest extends RestTestBase {
     public void testRemoveMethod() {
         EditorOperator eo = new EditorOperator(services[0]);
         assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        eo.deleteLine(60);
-        eo.deleteLine(60);
-        eo.deleteLine(60);
-        eo.deleteLine(60);
+        eo.deleteLine(93);
+        eo.deleteLine(93);
+        eo.deleteLine(93);
+        eo.deleteLine(93);
         eo.save();
         // let's wait for a while here...
         new EventTool().waitNoEvent(2000);
