@@ -107,6 +107,7 @@ public abstract class C2CQuery {
     protected abstract void refresh(Criteria criteria, boolean autoRefresh);
     protected abstract Criteria getCriteria();
     protected abstract IRepositoryQuery getRepositoryQuery();
+    protected abstract boolean isModifiable();
     
     protected C2CQuery(C2CRepository repository, String name) {
         this.name = name;
@@ -242,7 +243,7 @@ public abstract class C2CQuery {
 
     public final C2CQueryController getController () {
         if(controller == null) {
-            controller = new C2CQueryController(repository, this, getCriteria());
+            controller = new C2CQueryController(repository, this, getCriteria(), isModifiable());
         }
         return controller;
     }
@@ -430,7 +431,11 @@ public abstract class C2CQuery {
             savedQuery.setQueryString(criteria.toQueryString());
             refreshIntern(autoRefresh);
         }
-        
+
+        @Override
+        protected boolean isModifiable() {
+            return true;
+        }
     }
 
     private static class PredefinedQuery extends C2CQuery {
@@ -455,6 +460,10 @@ public abstract class C2CQuery {
         protected void refresh(Criteria criteria, boolean autoRefresh) {
             refreshIntern(autoRefresh);
         }
-        
+
+        @Override
+        protected boolean isModifiable() {
+            return false;
+        }
     }
 }

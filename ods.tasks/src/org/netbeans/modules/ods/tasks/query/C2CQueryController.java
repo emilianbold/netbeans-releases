@@ -130,10 +130,10 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private Criteria originalCriteria;
     private final QueryParameters parameters;
         
-    C2CQueryController(C2CRepository repository, C2CQuery query, Criteria criteria) {
+    C2CQueryController(C2CRepository repository, C2CQuery query, Criteria criteria, boolean modifiable) {
         this.repository = repository;
         this.query = query;
-        this.modifiable = criteria != null;
+        this.modifiable = modifiable;
         this.criteria = criteria;
         
         issueTable = new IssueTable(C2CUtil.getRepository(repository), query, query.getColumnDescriptors());
@@ -308,7 +308,36 @@ public class C2CQueryController extends QueryController implements ItemListener,
                     if(forceRefresh) {
                         repository.refreshConfiguration();
                     }
-                    populate();
+                    if(C2C.LOG.isLoggable(Level.FINE)) {
+                        C2C.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+                    }
+                    repository.ensureCredentials();
+                    final C2CData clientData = C2C.getInstance().getClientData(repository);
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                parameters.get(QueryParameters.Column.PRODUCT).populate(toParameterValues(clientData.getProducts()));
+                                populateProductDetails(clientData, clientData.getProducts());
+
+
+                                parameters.get(QueryParameters.Column.TASK_TYPE).populate(toParameterValues(clientData.getTaskTypes()));
+                                parameters.get(QueryParameters.Column.PRIORITY).populate(toParameterValues(clientData.getPriorities()));
+                                parameters.get(QueryParameters.Column.SEVERITY).populate(toParameterValues(clientData.getSeverities()));
+
+                                parameters.get(QueryParameters.Column.STATUS).populate(toParameterValues(clientData.getStatuses()));
+                                parameters.get(QueryParameters.Column.RESOLUTION).populate(toParameterValues(clientData.getResolutions()));
+
+                                parameters.get(QueryParameters.Column.TAGS).populate(toParameterValues(clientData.getKeywords()));
+                                panel.tagsComboBox.setSelectedIndex(-1); // ensure none is selected
+
+                            } finally {
+                                if(C2C.LOG.isLoggable(Level.FINE)) {
+                                    C2C.LOG.log(Level.FINE, "Finnished populate query controller {0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+                                }
+                            }
+                        }
+                    });
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
@@ -318,39 +347,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
                             panel.showRetrievingProgress(false, null, !query.isSaved());
                         }
                     });
-                }
-            }
-        });
-    }
-
-    protected void populate() {
-        if(C2C.LOG.isLoggable(Level.FINE)) {
-            C2C.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
-        }
-        repository.ensureCredentials();
-        final C2CData clientData = C2C.getInstance().getClientData(repository);
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    parameters.get(QueryParameters.Column.PRODUCT).populate(toParameterValues(clientData.getProducts()));
-                    populateProductDetails(clientData, clientData.getProducts());
-                    
-                    
-                    parameters.get(QueryParameters.Column.TASK_TYPE).populate(toParameterValues(clientData.getTaskTypes()));
-                    parameters.get(QueryParameters.Column.PRIORITY).populate(toParameterValues(clientData.getPriorities()));
-                    parameters.get(QueryParameters.Column.SEVERITY).populate(toParameterValues(clientData.getSeverities()));
-                    
-                    parameters.get(QueryParameters.Column.STATUS).populate(toParameterValues(clientData.getStatuses()));
-                    parameters.get(QueryParameters.Column.RESOLUTION).populate(toParameterValues(clientData.getResolutions()));
-                    
-                    parameters.get(QueryParameters.Column.TAGS).populate(toParameterValues(clientData.getKeywords()));
-                    panel.tagsComboBox.setSelectedIndex(-1); // ensure none is selected
-
-                } finally {
-                    if(C2C.LOG.isLoggable(Level.FINE)) {
-                        C2C.LOG.log(Level.FINE, "Finnished populate query controller {0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
-                    }
                 }
             }
         });
