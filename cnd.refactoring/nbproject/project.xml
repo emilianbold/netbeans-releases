@@ -334,6 +334,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.discovery</friend>
                 <friend>com.sun.tools.tuxedo.source</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
