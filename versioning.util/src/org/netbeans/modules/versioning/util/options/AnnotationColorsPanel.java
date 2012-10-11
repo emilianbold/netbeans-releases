@@ -75,7 +75,7 @@ import org.openide.util.WeakListeners;
  * 
  * @author Maros Sandor, Ondra Vrabec
  */
-@OptionsPanelController.Keywords(keywords={"versioning", "colors"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "Versioning")
+@OptionsPanelController.Keywords(keywords={"versioning", "colors", "#KW_AnnotationColorsPanel"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "Versioning")
 public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionListener, FontsColorsController, PropertyChangeListener {
 
     private boolean listen;

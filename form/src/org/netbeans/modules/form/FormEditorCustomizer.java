@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Stola, Jan Jancura
  */
-@OptionsPanelController.Keywords(keywords={"gui builder"}, location="Java", tabTitle= "#Form_Editor")
+@OptionsPanelController.Keywords(keywords={"gui builder", "#KW_FormOptions"}, location="Java", tabTitle= "#Form_Editor")
 public final class FormEditorCustomizer extends JPanel implements  ActionListener, ChangeListener {
     private JCheckBox cbFold = new JCheckBox ();
     private JCheckBox cbAssistant = new JCheckBox();

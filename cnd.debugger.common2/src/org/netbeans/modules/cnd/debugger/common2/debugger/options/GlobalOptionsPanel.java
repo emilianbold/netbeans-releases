@@ -69,7 +69,7 @@ import org.openide.nodes.NodeOp;
 // roughly modelled on
 // org.netbeans.modules.cnd.execution.profiles.ui.ProfileCustomizer
 
-@OptionsPanelController.Keywords(keywords={"c/c++ debugging"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, tabTitle= "#TAB_DebuggerOptionsPanelTitle")
+@OptionsPanelController.Keywords(keywords={"c/c++ debugging", "#KW_DebuggerOptionsPanel"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, tabTitle= "#TAB_DebuggerOptionsPanelTitle")
 public class GlobalOptionsPanel extends JPanel {
 
     private OptionSet options;
