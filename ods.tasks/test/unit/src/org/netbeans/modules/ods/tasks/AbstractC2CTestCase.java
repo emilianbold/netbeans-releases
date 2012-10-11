@@ -42,20 +42,29 @@
 
 package org.netbeans.modules.ods.tasks;
 
+import com.tasktop.c2c.server.tasks.domain.Product;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.logging.Level;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
+import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -139,9 +148,48 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
             taskRepository.setProperty(TaskRepository.PROXY_PORT, proxyPort);
         } 
 
-        trm.addRepository(taskRepository);
         trm.addRepositoryConnector(rc);
+        trm.addRepository(taskRepository);
 
+    }
+
+    public TaskData createTaskData(String summary, String desc, String typeName) throws CoreException, MalformedURLException {
+        AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
+        TaskData data = C2CUtil.createTaskData(taskRepository);
+        C2CData clientData = C2CExtender.getData(rc, taskRepository);
+        TaskAttribute rta = data.getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
+        ta.setValue(summary);
+        ta = rta.getMappedAttribute(TaskAttribute.DESCRIPTION);
+        ta.setValue(desc);
+        ta = rta.getMappedAttribute(C2CData.ATTR_TASK_TYPE);
+        ta.setValue(clientData.getTaskTypes().iterator().next());
+        Product product = clientData.getProducts().get(0);
+        ta = rta.getMappedAttribute(TaskAttribute.PRODUCT);
+        ta.setValue(product.getName());
+        ta = rta.getMappedAttribute(TaskAttribute.COMPONENT);
+        ta.setValue(product.getComponents().get(0).getName());
+        ta = rta.getMappedAttribute(C2CData.ATTR_MILESTONE);
+        ta.setValue(product.getMilestones().get(0).getValue());
+        ta = rta.getMappedAttribute(C2CData.ATTR_ITERATION);
+        Collection<String> c = clientData.getActiveIterations();
+        if (!c.isEmpty()) {
+            ta.setValue(c.iterator().next());
+        }
+        ta = rta.getMappedAttribute(TaskAttribute.PRIORITY);
+        ta.setValue(clientData.getPriorities().get(0).getValue());
+        ta = rta.getMappedAttribute(TaskAttribute.SEVERITY);
+        ta.setValue(clientData.getSeverities().get(0).getValue());
+        ta = rta.getMappedAttribute(TaskAttribute.STATUS);
+        ta.setValue(clientData.getStatusByValue("UNCONFIRMED").getValue());
+        RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, data);
+        assertEquals(RepositoryResponse.ResponseKind.TASK_CREATED, rr.getReposonseKind());
+        String taskId = rr.getTaskId();
+        assertNotNull(taskId);
+        data = rc.getTaskData(taskRepository, taskId, nullProgressMonitor);
+        assertFalse(data.isNew());
+        C2C.LOG.log(Level.FINE, " dataRoot after get {0}", data.getRoot().toString());
+        return data;
     }
 
 

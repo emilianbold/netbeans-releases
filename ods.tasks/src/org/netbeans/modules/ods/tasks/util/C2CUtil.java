@@ -152,11 +152,14 @@ public class C2CUtil {
     public static RepositoryResponse postTaskData(AbstractRepositoryConnector cfcrc, TaskRepository repository, TaskData data) throws CoreException {
         C2C.LOG.log(Level.FINE, " dataRoot before post {0}", data.getRoot().toString());
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
-        RepositoryResponse rr = cfcrc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
-        
-        return rr;
-    }     
+        return postTaskData(cfcrc, repository, data, attrs);
+    }
 
+    public static RepositoryResponse postTaskData(AbstractRepositoryConnector cfcrc, TaskRepository repository, TaskData data, Set<TaskAttribute> attrs) throws CoreException {
+        RepositoryResponse rr = cfcrc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
+        return rr;
+    }
+    
     /**
      * Returns TaskData for the given issue id or null if an error occured
      * @param repository
