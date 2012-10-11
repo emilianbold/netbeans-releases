@@ -157,7 +157,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** Static sheetCellEditor which will be shared by all instances of
      * SheetTable */
-    private SheetCellEditor cellEditor = null;
+    private SheetCellEditor sheetCellEditor = null;
 
     /** Custom editor action used to invoke the custom editor from keyboard
      * or button */
@@ -257,7 +257,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
         if (instanceCount == 0) {
             renderer = null;
-            cellEditor = null;
+            sheetCellEditor = null;
             cleanup();
         }
     }
@@ -273,11 +273,11 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
     /** Fetch the static editor instance shared among tables */
     SheetCellEditor getEditor() {
-        if (cellEditor == null) {
-            cellEditor = new SheetCellEditor(getReusablePropertyEnv());
+        if (sheetCellEditor == null) {
+            sheetCellEditor = new SheetCellEditor(getReusablePropertyEnv());
         }
 
-        return cellEditor;
+        return sheetCellEditor;
     }
 
     /****************Bean getters/setters*****************************************
@@ -1523,7 +1523,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
     public void setUI(TableUI ui) {
         super.setUI(ui);
         renderer = null;
-        cellEditor = null;
+        sheetCellEditor = null;
     }
 
     //*************Actions bound to the keyboard ******************
