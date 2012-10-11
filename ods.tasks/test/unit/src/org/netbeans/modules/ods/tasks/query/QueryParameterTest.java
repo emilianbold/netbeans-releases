@@ -43,6 +43,9 @@
 package org.netbeans.modules.ods.tasks.query;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JCheckBox;
@@ -65,7 +68,7 @@ public class QueryParameterTest extends NbTestCase {
     private final static String VALUE2 = "value2";
     private final static String VALUE3 = "value3";
     private final static String VALUE4 = "value4";
-    private final static String[] VALUES = new String[] {VALUE1, VALUE2, VALUE3, VALUE4};
+    private final static Collection<String> VALUES = Arrays.asList(VALUE1, VALUE2, VALUE3, VALUE4);
 
     public QueryParameterTest(String arg0) {
         super(arg0);
@@ -93,19 +96,18 @@ public class QueryParameterTest extends NbTestCase {
         ComboParameter cp = new QueryParameters.ComboParameter(combo, QueryParameters.Column.COMMENT);
         assertEquals(QueryParameters.Column.COMMENT, cp.getColumn());
         assertNull(combo.getSelectedItem());
-        assertEquals((String)null, cp.getValues());
-        cp.populate(toString(VALUES));
+        assertEquals((String)null, cp.getValues().iterator().next());
+        cp.populate(VALUES);
         cp.setValues(VALUE3);
 
         Object item = combo.getSelectedItem();
         assertNotNull(item);
         assertEquals(VALUE3, item);
-
-        String v = cp.getValues();
-        assertEquals(VALUE3, v);
+        
+        assertEquals(VALUE3, cp.getValues().iterator().next());
 
         combo.setSelectedItem(VALUE4);
-        assertEquals(VALUE4, cp.getValues());
+        assertEquals(VALUE4, cp.getValues().iterator().next());
     }
 
     public void testListParameterEnabled() {
@@ -125,8 +127,8 @@ public class QueryParameterTest extends NbTestCase {
         ListParameter lp = new ListParameter(list, QueryParameters.Column.COMMENT);
         assertEquals(QueryParameters.Column.COMMENT, lp.getColumn());
         assertEquals(-1, list.getSelectedIndex());
-        lp.populate(toString(VALUES));
-        lp.setValues(VALUE1 + "," + VALUE3);
+        lp.populate(VALUES);
+        lp.setValues(VALUE1, VALUE3);
 
         Object[] items = list.getSelectedValues();
         assertNotNull(items);
@@ -135,17 +137,18 @@ public class QueryParameterTest extends NbTestCase {
         for (Object i : items) s.add((String) i);
         if(!s.contains(VALUE1)) fail("mising parameter [" + VALUE1 + "]");
         if(!s.contains(VALUE3)) fail("mising parameter [" + VALUE3 + "]");
-
-        String v = lp.getValues();
-        String[] values = v.split(",");
-        assertEquals(2, values.length);
+        
+        Collection v = lp.getValues();
+        assertEquals(2, v.size());
         s.clear();
-        for (String value : values) s.add(value);
+        for (Object value : v) {
+            s.add((String)value);
+        }
         if(!s.contains(VALUE1)) fail("mising parameter [" + VALUE1 + "]");
         if(!s.contains(VALUE3)) fail("mising parameter [" + VALUE3 + "]");
 
         list.setSelectedValue(VALUE4, false);
-        assertEquals(lp.getValues(), VALUE4);
+        assertEquals(VALUE4, lp.getValues().iterator().next());
     }
     
     public void testTextFieldParameterEnabled() {
@@ -171,7 +174,7 @@ public class QueryParameterTest extends NbTestCase {
 
         String parameterValue = "NewValue";
         text.setText(parameterValue);
-        assertEquals(parameterValue, tp.getValues());
+        assertEquals(parameterValue, tp.getValues().iterator().next());
         assertEquals(parameterValue, text.getText());
 
     }
@@ -194,23 +197,13 @@ public class QueryParameterTest extends NbTestCase {
         assertEquals(QueryParameters.Column.COMMENT, cp.getColumn());
         assertFalse(checkbox.isSelected());
 
-        cp.setValues(Boolean.TRUE.toString());
+        cp.setValues(true);
         assertTrue(checkbox.isSelected());
-        assertEquals(Boolean.TRUE.toString(), cp.getValues());
+        assertEquals(true, cp.getValues().iterator().next());
 
-        cp.setValues(Boolean.FALSE.toString());
+        cp.setValues(false);
         assertFalse(checkbox.isSelected());
-        assertEquals(Boolean.FALSE.toString(), cp.getValues());
+        assertEquals(false, cp.getValues().iterator().next());
     }
 
-    private String toString(String[] array) {
-        StringBuilder sb = new StringBuilder();
-        for (String s : array) {
-            if(sb.length() > 0) {
-                sb.append(",");
-            }
-            sb.append(s);
-        }
-        return sb.toString();
-    }
 }
