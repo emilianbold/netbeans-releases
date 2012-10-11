@@ -347,15 +347,19 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return true;
                     if (newOffset >= caretOffset) {
                         try {
-                            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(component.getDocument()), offset);
-                            if (ts != null && ts.move(offset) == 0 && ts.moveNext()) {
-                                int len = newOffset - offset;
-                                if (len >= 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
-                                        ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
-                                        ts.token().id().primaryCategory().startsWith("string") || //NOI18N
-                                        ts.token().id().primaryCategory().equals("literal")) //NOI18N
-                                        && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
-                                    filterPrefix = ts.token().text().toString().substring(0, len);
+                            int len = newOffset - offset;
+                            if (len == 0) {
+                                filterPrefix = EMPTY;
+                            } else if (len > 0) {
+                                TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(component.getDocument()), offset);
+                                if (ts != null && ts.move(offset) == 0 && ts.moveNext()) {
+                                    if ((ts.token().id() == JavaTokenId.IDENTIFIER ||
+                                            ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
+                                            ts.token().id().primaryCategory().startsWith("string") || //NOI18N
+                                            ts.token().id().primaryCategory().equals("literal")) //NOI18N
+                                            && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
+                                        filterPrefix = ts.token().text().toString().substring(0, len);
+                                    }
                                 }
                             }
                             if (filterPrefix == null) {
@@ -4832,13 +4836,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                             ts.token().id().primaryCategory().startsWith("string") || //NOI18N
                             ts.token().id().primaryCategory().equals("literal")) //NOI18N
                         { //TODO: Use isKeyword(...) when available
-                            prefix = ts.token().toString().substring(0, len);
+                            prefix = ts.token().text().toString().substring(0, len);
                             offset = ts.offset();
                         } else if ((ts.token().id() == JavaTokenId.DOUBLE_LITERAL
                                 || ts.token().id() == JavaTokenId.FLOAT_LITERAL
                                 || ts.token().id() == JavaTokenId.FLOAT_LITERAL_INVALID)
                                 && ts.token().text().charAt(0) == '.') {
-                            prefix = ts.token().toString().substring(1, len);
+                            prefix = ts.token().text().toString().substring(1, len);
                             offset = ts.offset() + 1;
                         }
                     }
