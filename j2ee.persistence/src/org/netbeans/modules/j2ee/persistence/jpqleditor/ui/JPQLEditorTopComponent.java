@@ -349,7 +349,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
                     final boolean containerManaged = Util.isSupportedJavaEEVersion(pe.getProject());
                     final Provider provider = ProviderUtil.getProvider(selectedConfigObject.getProvider(), pe.getProject());
                     final List<String> initialProblems = new ArrayList<String>();
-                    if (containerManaged) {
+                    if (containerManaged && provider!=null) {
                         Utils.substitutePersistenceProperties(pe, selectedConfigObject, dbconn, props);
                     }
                     try {
@@ -568,7 +568,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
 
 
         } else {
-            logger.log(Level.INFO, "JPQL query execution resulted in following {0} errors.", result.getExceptions().size());//NOI18N
+            logger.log(Level.INFO, "JPQL query execution resulted in {0} errors.", result.getExceptions().size());//NOI18N
 
             switchToErrorView();
             setStatus(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionError"));
@@ -1064,7 +1064,7 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                     });
                 }
             } else {
-                showSQLError(null, NbBundle.getMessage(Utils.class, "DatabaseConnectionAbsent"));
+                //showSQLError(null, NbBundle.getMessage(Utils.class, "DatabaseConnectionAbsent"));
             }
         }
     }
