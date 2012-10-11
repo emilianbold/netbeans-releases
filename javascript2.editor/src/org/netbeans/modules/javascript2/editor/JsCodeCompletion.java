@@ -544,7 +544,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
             JsIndex jsIndex = JsIndex.get(fo);
             Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
-            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, exp, offset));
+            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, exp, request.anchor));
             
             int cycle = 0;
             boolean resolvedAll = false;
