@@ -115,7 +115,7 @@ public class GeneratingBracketCompleter {
 
         toAdd.append(" * ");
         toAdd.append(text);
-        if (type != null) {
+        if (type != null && !type.isEmpty()) {
             toAdd.append(" ");
             toAdd.append(type);
         } else {
@@ -233,14 +233,14 @@ public class GeneratingBracketCompleter {
         public void visit(ReturnStatement node) {
             hasReturn = true;
             Collection<? extends String> typeNames = fnc.getReturnTypeNames();
-            StringBuilder type = null;
+            StringBuilder type = new StringBuilder();
             String item;
             for (Iterator<String> i = (Iterator<String>) typeNames.iterator(); i.hasNext(); ) {
                 item = i.next();
                 if (item != null && item.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { // NOI18N
                     break;
                 }
-                type = type == null ? new StringBuilder(item) : type.append("|").append(item); //NOI18N
+                type = type.toString().isEmpty() ? type.append(item) : type.append("|").append(item); //NOI18N
             }
             returnType = type.toString();
         }
