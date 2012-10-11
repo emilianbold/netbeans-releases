@@ -238,10 +238,10 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
     //       states |   DELETED |   CREATED |   RENAMED_CREATED |   RENAMED_DELETED | FOLDER_CREATED|   CHANGED     |   ATTRIBS     |   
     // -----------------------------------------------------------------------------------------------------------------------------|
     //  DELETED     |   DELETED |   null    |   null            |   assert          |   null        |   DELETED     |   DELETED     |   
-    //  CREATED     |   CHANGED |   CREATED |   assert          |   CHANGED         |   assert      |   assert      |   assert      |   
+    //  CREATED     |   CHANGED |   CREATED |   assert          |   CHANGED         |   assert      |   CHANGED     |   assert      |   
     //RENAME_CREATED|   CHANGED |   assert  |   assert          |   CHANGED         |   assert      |   assert      |   assert      |
     //RENAME_DELETED|   assert  |   null (?)|   null (?)        |   assert          |   null (?)    | RENAME_DELETED| RENAME_DELETED|
-    //FOLDER_CREATED|   CHANGED |   assert  |   assert          |   CHANGED         |   assert      |   assert      |   assert      |
+    //FOLDER_CREATED|   CHANGED |   assert  |   assert          |   CHANGED         | FOLDER_CREATED|   CHNAGED     |   assert      |
     //  CHANGED     |   assert  |   CREATED |   RENAMED_CREATED |   assert          | FOLDER_CREATED|   CHANGED     |   CHANGED     |
     //  ATTRIBS     |   assert  |   CREATED |   RENAMED_CREATED |   assert          | FOLDER_CREATED|   CHANGED     |   ATTRIBS     |
     //         
@@ -269,7 +269,7 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
                     case FILE_RENAMED_CREATED:  return doAssert(prev, cur);
                     case FILE_RENAMED_DELETED:  return doChanged(prev, cur);
                     case FOLDER_CREATED:        return doAssert(prev, cur);
-                    case FILE_CHANGED:          return doAssert(prev, cur);
+                    case FILE_CHANGED:          return prev;
                     case FILE_ATTRIBUTE_CHANGED:return doAssert(prev, cur);
                     default:    throw new AssertionError(prev.kind);
                 }//</editor-fold>
@@ -301,8 +301,8 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
                     case FILE_CREATED:          return doAssert(prev, cur);
                     case FILE_RENAMED_CREATED:  return doAssert(prev, cur);
                     case FILE_RENAMED_DELETED:  return doChanged(prev, cur);
-                    case FOLDER_CREATED:        return doAssert(prev, cur);
-                    case FILE_CHANGED:          return doAssert(prev, cur);
+                    case FOLDER_CREATED:        return cur;
+                    case FILE_CHANGED:          return prev;
                     case FILE_ATTRIBUTE_CHANGED:return doAssert(prev, cur);
                     default:    throw new IllegalArgumentException("unexpected " + prev.kind); // NOI18N
                 }//</editor-fold>
