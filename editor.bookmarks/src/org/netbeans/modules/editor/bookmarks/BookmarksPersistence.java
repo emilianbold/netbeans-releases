@@ -81,8 +81,6 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
     
     private static final String EDITOR_BOOKMARKS_2_NAMESPACE_URI = "http://www.netbeans.org/ns/editor-bookmarks/2"; // NOI18N
 
-    private static RequestProcessor RP = new RequestProcessor("Bookmarks saver"); // NOI18N
-    
     private static final BookmarksPersistence INSTANCE = new BookmarksPersistence();
     
     public static BookmarksPersistence get() {
@@ -126,7 +124,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                             getProjectBookmarks(project, projectURI, false, false)) != null)
                 {
                     saveProjectBookmarks(project, projectBookmarks);
-                    lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
+                    lockedBookmarkManager.releaseProjectBookmarks(projectBookmarks);
                 }
             }
             for (ProjectBookmarks projectBookmarks : lockedBookmarkManager.allLoadedProjectBookmarks()) {
@@ -134,7 +132,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                 Project prj = BookmarkUtils.findProject(prjURI);
                 if (prj != null) {
                     saveProjectBookmarks(prj, projectBookmarks);
-                    lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
+                    lockedBookmarkManager.releaseProjectBookmarks(projectBookmarks);
                 }
             }
         } finally {
@@ -395,9 +393,9 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
 
                         for (Project p : projectsToSave) {
                             ProjectBookmarks projectBookmarks = lockedBookmarkManager.getProjectBookmarks(p, false, false);
-                            if (projectBookmarks != null) {
+                            if (projectBookmarks != null && !projectBookmarks.hasActiveClients()) {
                                 saveProjectBookmarks(p, projectBookmarks); // Write into private.xml under project's mutex acquired
-                                lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
+                                lockedBookmarkManager.releaseProjectBookmarks(projectBookmarks);
                             }
                         }
                         // If ensureAllOpenedProjectsBookmarksLoaded requested previously do it now
@@ -415,7 +413,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
 
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
-        RP.post(this);
+        BookmarkUtils.postTask(this);
     }
 
     @Override
