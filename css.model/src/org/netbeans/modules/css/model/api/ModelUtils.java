@@ -184,7 +184,7 @@ public class ModelUtils {
                 return ;
             }
             
-            CharSequence foundRuleId = model.getElementSource(rule.getSelectorsGroup());
+            CharSequence foundRuleId = LexerUtils.trim(model.getElementSource(rule.getSelectorsGroup()));
             if (LexerUtils.equals(getRuleId(), foundRuleId, false, false)) {
                 ruleIndex++;
             }
@@ -201,7 +201,7 @@ public class ModelUtils {
         
         public synchronized CharSequence getRuleId() {
             if(ruleId == null) {
-                ruleId = model.getElementSource(rule.getSelectorsGroup());
+                ruleId = LexerUtils.trim(model.getElementSource(rule.getSelectorsGroup()));
             }
             return ruleId;
         }
