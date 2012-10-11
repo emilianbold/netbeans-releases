@@ -308,9 +308,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
                     if(forceRefresh) {
                         repository.refreshConfiguration();
                     }
-                    if(C2C.LOG.isLoggable(Level.FINE)) {
-                        C2C.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
-                    }
+                    logPopulate("Starting populate query controller{0}"); // NOI18N
                     repository.ensureCredentials();
                     final C2CData clientData = C2C.getInstance().getClientData(repository);
                     EventQueue.invokeLater(new Runnable() {
@@ -319,7 +317,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
                             try {
                                 parameters.get(QueryParameters.Column.PRODUCT).populate(toParameterValues(clientData.getProducts()));
                                 populateProductDetails(clientData, clientData.getProducts());
-
 
                                 parameters.get(QueryParameters.Column.TASK_TYPE).populate(toParameterValues(clientData.getTaskTypes()));
                                 parameters.get(QueryParameters.Column.PRIORITY).populate(toParameterValues(clientData.getPriorities()));
@@ -330,11 +327,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
                                 parameters.get(QueryParameters.Column.TAGS).populate(toParameterValues(clientData.getKeywords()));
                                 panel.tagsComboBox.setSelectedIndex(-1); // ensure none is selected
-
                             } finally {
-                                if(C2C.LOG.isLoggable(Level.FINE)) {
-                                    C2C.LOG.log(Level.FINE, "Finnished populate query controller {0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
-                                }
+                                logPopulate("Finnished populate query controller {0}"); // NOI18N
                             }
                         }
                     });
@@ -350,6 +344,12 @@ public class C2CQueryController extends QueryController implements ItemListener,
                 }
             }
         });
+    }
+    
+    private void logPopulate(String msg) {
+        if(C2C.LOG.isLoggable(Level.FINE)) {
+            C2C.LOG.log(Level.FINE, msg, (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+        }
     }
 
     protected void enableFields(boolean bl) {
