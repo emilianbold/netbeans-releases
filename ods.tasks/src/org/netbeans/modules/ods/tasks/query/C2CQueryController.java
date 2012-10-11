@@ -183,7 +183,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         parameters.addParameter(QueryParameters.Column.STATUS, panel.statusList);      
         parameters.addParameter(QueryParameters.Column.RESOLUTION, panel.resolutionList);
         
-        //parameters.addListParameter(QueryParameters.Column.TAGS, panel.tagsComboBox);                   // NOI18N
+        parameters.addParameter(QueryParameters.Column.TAGS, panel.tagsComboBox);                   
         
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 

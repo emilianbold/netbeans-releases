@@ -109,6 +109,10 @@ public class QueryParameters {
     void addParameter(Column c, JList list ) {
         map.put(c, new ListParameter(list, c));
     }
+    
+    void addParameter(Column c, JComboBox combo ) {
+        map.put(c, new ComboParameter(combo, c));
+    }
             
 //    <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String attribute) {
 //        try {
