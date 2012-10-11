@@ -354,8 +354,10 @@ public class MavenProjectSupport {
                 FileObject webInf = webModuleImpl.getWebInf();
                 if (webInf == null) {
                     webInf = webModuleImpl.createWebInf();
+                    if (webInf == null) {
+                        return;
+                    }
                 }
-                assert webInf != null;
                 
                 FileObject webXml = webModuleImpl.getDeploymentDescriptor();
                 if (webXml == null) {
