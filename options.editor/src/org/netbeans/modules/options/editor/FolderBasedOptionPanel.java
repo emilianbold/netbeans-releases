@@ -65,8 +65,8 @@ import org.netbeans.spi.options.OptionsPanelController;
  * @author Dusan Balek
  */
 @OptionsPanelController.KeywordsRegistration({
-    @OptionsPanelController.Keywords(keywords = {"hints"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_Hints_DisplayName"),
-    @OptionsPanelController.Keywords(keywords = {"highlighting"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_MarkOccurences_DisplayName")
+    @OptionsPanelController.Keywords(keywords = {"#KW_Hints"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_Hints_DisplayName"),
+    @OptionsPanelController.Keywords(keywords = {"#KW_Mark"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_MarkOccurences_DisplayName")
 })
 public final class FolderBasedOptionPanel extends JPanel implements ActionListener {
     

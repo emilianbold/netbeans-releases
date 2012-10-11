@@ -54,7 +54,7 @@ import org.netbeans.spi.options.OptionsPanelController;
  *
  * @author Dusan Balek
  */
-@OptionsPanelController.Keywords(keywords = {"all languages"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_CodeCompletion_DisplayName")
+@OptionsPanelController.Keywords(keywords = {"#KW_CodeCompletion"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_CodeCompletion_DisplayName")
 public class GeneralCompletionOptionsPanel extends JPanel {
 
     private Preferences preferences;
