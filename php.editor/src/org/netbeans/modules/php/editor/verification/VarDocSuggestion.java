@@ -70,7 +70,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous
  */
-public class VarDocHint extends AbstractRule {
+public class VarDocSuggestion extends AbstractSuggestion {
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
     @Override
@@ -91,13 +91,10 @@ public class VarDocHint extends AbstractRule {
     }
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
         final BaseDocument doc = context.doc;
-        final int caretOffset = context.caretOffset;
-        int lineBegin = -1;
-        int lineEnd = -1;
-        lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-        lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
+        int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
+        int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
             String identifier = Utilities.getIdentifier(doc, caretOffset);
             if (identifier != null && identifier.startsWith("$")) {
@@ -118,7 +115,7 @@ public class VarDocHint extends AbstractRule {
                                     return;
                                 }
                             }
-                            hints.add(new Hint(VarDocHint.this, getDisplayName(),
+                            hints.add(new Hint(VarDocSuggestion.this, getDisplayName(),
                                     context.parserResult.getSnapshot().getSource().getFileObject(), identifierRange,
                                     Collections.<HintFix>singletonList(new Fix(context, variable)), 500));
                         }
@@ -140,7 +137,7 @@ public class VarDocHint extends AbstractRule {
 
         @Override
         public String getDescription() {
-            return VarDocHint.this.getDescription();
+            return VarDocSuggestion.this.getDescription();
         }
 
         @Override

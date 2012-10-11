@@ -44,14 +44,12 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
-import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -59,12 +57,12 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AmbiguousComparisonHint extends AbstractRule {
+public class AmbiguousComparisonHint extends AbstractHint {
 
     private static final String HINT_ID = "Ambiguous.Comparison.Hint"; //NOI18N
 
     @Override
-    void computeHintsImpl(final PHPRuleContext context, final List<Hint> hints, final Kind kind) throws BadLocationException {
+    void compute(final PHPRuleContext context, final List<Hint> hints) {
         final PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;

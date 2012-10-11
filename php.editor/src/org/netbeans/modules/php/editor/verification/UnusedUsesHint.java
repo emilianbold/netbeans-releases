@@ -43,7 +43,6 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
 import java.util.List;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.*;
@@ -53,7 +52,6 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.parser.UnusedOffsetRanges;
-import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -62,12 +60,12 @@ import org.openide.util.NbBundle.Messages;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 @Messages("UnsedUsesHintDisp=Unused Use Statement")
-public class UnusedUsesHint extends AbstractRule {
+public class UnusedUsesHint extends AbstractHint {
 
     private static final String HINT_ID = "Unused.Uses.Hint"; //NOI18N
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;

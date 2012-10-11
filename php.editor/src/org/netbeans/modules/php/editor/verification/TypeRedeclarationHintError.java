@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,94 +37,78 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
 /**
- *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Radek Matous, Ondrej Brejla
  */
-public class MethodRedeclarationHint extends AbstractRule {
-
-    private static final String HINT_ID = "Method.Redeclaration.Hint"; //NOI18N
-    private FileObject fileObject;
-    private List<Hint> hints;
+public class TypeRedeclarationHintError extends AbstractHintError {
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
+    @Messages({
+        "# {0} - Type name",
+        "TypeRedeclarationDesc=Type \"{0}\" has been already declared"
+    })
+    void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         FileScope fileScope = context.fileScope;
         if (fileScope != null) {
-            fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
-            this.hints = hints;
-            checkTypeScopes(ModelUtils.getDeclaredClasses(fileScope));
-            checkTypeScopes(ModelUtils.getDeclaredInterfaces(fileScope));
-            checkDeclaredFunctions(ModelUtils.getDeclaredFunctions(fileScope));
-        }
-    }
+            Collection<? extends TypeScope> declaredTypes = ModelUtils.getDeclaredTypes(fileScope);
+            Set<String> typeNames = new HashSet<String>();
+            for (TypeScope typeScope : declaredTypes) {
+                final QualifiedName qualifiedName = typeScope.getNamespaceName().append(typeScope.getName()).toFullyQualified();
+                final String name = qualifiedName.toString();
+                if (typeNames.contains(name)) {
+                    continue;
+                }
+                typeNames.add(name);
+                List<? extends TypeScope> instances = ModelUtils.filter(declaredTypes, qualifiedName);
+                if (instances.size() > 1) {
+                    TypeScope firstDeclaredInstance = null;
+                    for (TypeScope typeInstance : instances) {
+                        if (firstDeclaredInstance == null) {
+                            firstDeclaredInstance = typeInstance;
+                        } else if (firstDeclaredInstance.getOffset() > typeInstance.getOffset()) {
+                            firstDeclaredInstance = typeInstance;
+                        }
+                    }
+                    for (TypeScope typeInstance : instances) {
+                        if (typeInstance != firstDeclaredInstance) {
+                            hints.add(new Hint(this, Bundle.TypeRedeclarationDesc(firstDeclaredInstance.getName()),
+                                    context.parserResult.getSnapshot().getSource().getFileObject(),
+                                    typeInstance.getNameRange(), Collections.<HintFix>emptyList(), 500));
 
-    private void checkTypeScopes(Collection<? extends TypeScope> typeScopes) {
-        for (TypeScope typeScope : typeScopes) {
-            checkDeclaredFunctions(typeScope.getDeclaredMethods());
-        }
-    }
-
-    @Messages({
-        "# {0} - Method name",
-        "MethodRedeclarationCustom=Method or function \"{0}\" has already been declared"
-    })
-    private void checkDeclaredFunctions(Collection<? extends FunctionScope> declaredFunctions) {
-        Set<String> declaredMethodNames = new HashSet<String>();
-        for (FunctionScope functionScope : declaredFunctions) {
-            String methodName = functionScope.getName();
-            if (declaredMethodNames.contains(methodName)) {
-                hints.add(new Hint(this, Bundle.MethodRedeclarationCustom(methodName), fileObject, functionScope.getNameRange(), null, 500));
-            } else {
-                declaredMethodNames.add(methodName);
+                        }
+                    }
+                }
             }
         }
     }
 
     @Override
-    public String getId() {
-        return HINT_ID;
-    }
-
-    @Override
-    @Messages("MethodRedeclarationHintDesc=Method name can be used just once in a class.")
-    public String getDescription() {
-        return Bundle.MethodRedeclarationHintDesc();
-    }
-
-    @Override
-    @Messages("MethodRedeclarationHintDispName=Method Redeclaration")
+    @Messages("TypeRedeclarationRuleDispName=Type Redeclaration")
     public String getDisplayName() {
-        return Bundle.MethodRedeclarationHintDispName();
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
+        return Bundle.TypeRedeclarationRuleDispName();
     }
 
 }

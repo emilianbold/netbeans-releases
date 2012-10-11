@@ -88,9 +88,9 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Radek Matous
  */
-public class AddUseImportHint extends AbstractRule {
+public class AddUseImportSuggestion extends AbstractSuggestion {
 
-    public AddUseImportHint() {
+    public AddUseImportSuggestion() {
         super();
     }
 
@@ -112,7 +112,7 @@ public class AddUseImportHint extends AbstractRule {
     }
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -122,9 +122,8 @@ public class AddUseImportHint extends AbstractRule {
         }
 
         final BaseDocument doc = context.doc;
-        final int caretOffset = context.caretOffset;
-        int lineBegin = -1;
-        int lineEnd = -1;
+        int lineBegin;
+        int lineEnd;
         lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
         lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
@@ -242,7 +241,7 @@ public class AddUseImportHint extends AbstractRule {
                 final String retvalStr = importName.toString();
                 NamespaceScope currentScope = ModelUtils.getNamespaceScope(currenNamespace, context.fileScope);
 
-                if (currentScope != null && !NameKind.exact(currentScope.getQualifiedName().append(nodeName)).matchesName(idxElement)) {
+                if (currentScope != null) {
                     Collection<? extends UseScope> declaredUses = currentScope.getDeclaredUses();
                     List<? extends UseScope> suitableUses = ModelUtils.filter(declaredUses, new ModelUtils.ElementFilter<UseScope>() {
 
@@ -254,7 +253,7 @@ public class AddUseImportHint extends AbstractRule {
                     if (suitableUses.isEmpty()) {
                         if (idxElement instanceof ClassElement || !nodeName.getKind().isUnqualified()) {
                             AddImportFix importFix = new AddImportFix(doc, currentScope, importName);
-                            hints.add(new Hint(AddUseImportHint.this,
+                            hints.add(new Hint(AddUseImportSuggestion.this,
                                     importFix.getDescription(),
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                     new OffsetRange(node.getStartOffset(), node.getEndOffset()),
@@ -264,7 +263,7 @@ public class AddUseImportHint extends AbstractRule {
                         QualifiedName name = VariousUtils.getPreferredName(indexedName, currentScope);
                         if (name != null) {
                             ChangeNameFix changeNameFix = new ChangeNameFix(doc, node, currentScope, name, nodeName);
-                            hints.add(new Hint(AddUseImportHint.this,
+                            hints.add(new Hint(AddUseImportSuggestion.this,
                                     changeNameFix.getDescription(),
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                     new OffsetRange(node.getStartOffset(), node.getEndOffset()),

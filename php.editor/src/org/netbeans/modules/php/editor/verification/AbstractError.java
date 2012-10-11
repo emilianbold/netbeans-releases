@@ -41,55 +41,29 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.php.editor.PHPTestBase;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.Rule.ErrorRule;
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPHintsTestBase extends PHPTestBase {
-    private static final String TEST_DIRECTORY = "testfiles/verification/"; //NOI18N
+abstract public class AbstractError implements ErrorRule {
 
-    public PHPHintsTestBase(String testName) {
-        super(testName);
-    }
-
-    /**
-     * Checks hints in a whole file which starts with "<code>&lt;?php\n//START</code>" and ends with "<code>//END\n?&gt;</code>".
-     *
-     * @param hint Instantion of hint to test.
-     * @param fileName Name of the file which is in "<tt>testfiles/verification/</tt>" directory.
-     * @throws Exception
-     */
-    protected void checkHintsInStartEndFile(Rule hint, String fileName) throws Exception {
-        checkHints(hint, TEST_DIRECTORY + fileName, "<?php\n//START^", "^//END\n?>");
-    }
-
-    protected void checkHintsInFile(Rule hint, String fileName, String selStartLine, String selEndLine) throws Exception {
-        super.checkHints(hint, TEST_DIRECTORY + fileName, selStartLine, selEndLine);
-    }
-
-    protected void checkSuggestion(AbstractSuggestion suggestion, String fileName, String caretLine) throws Exception {
-        checkHints(this, suggestion, TEST_DIRECTORY + fileName, caretLine);
+    @Override
+    public boolean appliesTo(RuleContext context) {
+        return context instanceof PHPRuleContext;
     }
 
     @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        return Collections.singletonMap(
-            PhpSourcePath.SOURCE_CP,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/" + TEST_DIRECTORY))
-            })
-        );
+    public boolean showInTasklist() {
+        return false;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.ERROR;
     }
 
 }
