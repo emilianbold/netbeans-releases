@@ -42,11 +42,17 @@
 
 package org.netbeans.modules.ods.tasks.query;
 
+import com.tasktop.c2c.server.tasks.domain.Keyword;
+import java.awt.Component;
+import java.lang.String;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -95,10 +101,10 @@ public class QueryParameters {
     QueryParameters() { }
         
     Parameter get(Column c) {
-        return map.get(c);
+        return (Parameter) map.get(c);
     }
     
-    Parameter get(String columnName) {
+     Parameter get(String columnName) {
         return get(Column.valueOf(columnName));
     }
     
@@ -106,13 +112,21 @@ public class QueryParameters {
         return map.values();
     }
     
-    void addListParameter(Column c, JList list ) {
+     void addParameter(Column c, JList list) {
         map.put(c, new ListParameter(list, c));
     }
+    
+     void addParameter(Column c, JComboBox combo) {
+        map.put(c, new ComboParameter(combo, c));
+    }
+    
+    void addTextParameter(Column c, JTextField txt) {
+        map.put(c, new TextFieldParameter(txt, c));
+    }
             
-//    <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String attribute) {
+//    <T extends QueryParameter> T createQueryParameter(Class clazz, Component c, String attribute) {
 //        try {
-//            Constructor<T> constructor = clazz.getConstructor(c.getClass(), String.class);
+//            Constructor constructor = clazz.getConstructor(c.getClass(), String.class);
 //            T t= constructor.newInstance(c, attribute);
 //            parameters.add(t);
 //            return t),
@@ -134,9 +148,9 @@ public class QueryParameters {
             return column;
         }
 
-        abstract void populate(String values);
-        abstract String getValues();
-        abstract void setValues(String values);
+        abstract void setValues(Collection values);
+        abstract void populate(Collection values);
+        abstract Collection getValues();
 
         void setAlwaysDisabled(boolean bl) {
             this.alwaysDisabled = bl;
@@ -179,7 +193,7 @@ public class QueryParameters {
 
         @Override
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("["); // NOI18N
             sb.append(getColumn().columnName);
             sb.append("]"); // NOI18N
@@ -193,24 +207,21 @@ public class QueryParameters {
             super(column);
             this.combo = combo;
             combo.setModel(new DefaultComboBoxModel());
+            combo.setRenderer(new ComboParameterRenderer());
         }
         
         @Override
-        public String getValues() {
-            return (String) combo.getSelectedItem();
+        public Collection getValues() {
+            return Collections.singleton(combo.getSelectedItem());
         }
         
         @Override
-        public void populate(String values) {
-            populate(values.split(",")); // NOI18N
-        }
-        
-        private void populate(String[] values) {
-            combo.setModel(new DefaultComboBoxModel(values));
+        public void populate(Collection values) {
+            combo.setModel(new DefaultComboBoxModel(values.toArray()));
         }
         
         @Override
-        public void setValues(String values) {
+        public void setValues(Collection values) {
             if(values.isEmpty()) {
                 return;
             }
@@ -233,54 +244,49 @@ public class QueryParameters {
     }
 
     static class ListParameter extends Parameter {
+        
         private final JList list;
+        
         public ListParameter(JList list, Column column) {
             super(column);
             this.list = list;
             list.setModel(new DefaultListModel());
         }
+        
         @Override
-        public String getValues() {
+        public Collection getValues() {
             Object[] values = list.getSelectedValues();
             if(values == null || values.length == 0) {
                 return null; //EMPTY_PARAMETER_VALUE;
             }
-            StringBuilder sb = new StringBuilder();
+            List ret = new ArrayList();
             for (int i = 0; i < values.length; i++) {
-                sb.append(values[i]);
-                if(i < values.length - 1) {
-                    sb.append(","); // NOI18N
-                }
+                ret.add(values[i]);
             }
-            return sb.toString();
+            return ret;
         }
         
         @Override
-        public void populate(String values) {
-            populate(values.split(",")); // NOI18N
-        }
-        
-        private void populate(String[] values) {
+        public void populate(Collection values) {
             DefaultListModel m = new DefaultListModel();
-            for (String pv : values) {
-                m.addElement(pv);
+            for (Object o : values) {
+                m.addElement(o);
             }
             list.setModel(m);
         }
-
+        
         @Override
-        public void setValues(String valuesString) {
-            if(valuesString.isEmpty()) return;                                        // should not happen        XXX do we need this?
+        public void setValues(Collection values) {
             list.clearSelection();
-            String[] values = valuesString.split(",");
-            if(values.length == 1 && "".equals(values[0].trim())) return;    // 1 empty ParameterValue stands for no selection XXX rewrite this
+            if(values.isEmpty()) {
+                return;
+            }                                        
             List<Integer> selectionList = new LinkedList<Integer>();
-            for (int i = 0; i < values.length; i++) {
+            for (Object o : values) {
                 ListModel model = list.getModel();
                 // need case sensitive compare
                 for(int j = 0; j < model.getSize(); j++) {
-                    String value = (String) model.getElementAt(j);
-                    if(value.toLowerCase().equals(values[i].toLowerCase())) {
+                    if(o.equals(model.getElementAt(j))) {
                         selectionList.add(j);
                         break;
                     }
@@ -293,8 +299,11 @@ public class QueryParameters {
             }
             list.setSelectedIndices(selection);
             int idx = selection.length > 0 ? selection[0] : -1;
-            if(idx > -1) list.scrollRectToVisible(list.getCellBounds(idx, idx));
+            if(idx > -1) {
+                list.scrollRectToVisible(list.getCellBounds(idx, idx));
+            }
         }
+        
         @Override
         void setEnabled(boolean  b) {
             list.setEnabled(alwaysDisabled ? false : b);
@@ -308,19 +317,20 @@ public class QueryParameters {
             this.txt = txt;
         }
         @Override
-        public String getValues() {
+        public Collection<String> getValues() {
             String value = txt.getText();
             if(value == null || value.equals("")) { // NOI18N
                 return null; //EMPTY_PARAMETER_VALUE;
             }
-            return value;
+            return Collections.singleton(value);
         }
         @Override
-        public void setValues(String value) {
-            if(value == null) {
-                value = "";
+        public void setValues(Collection value) {
+            String s = (String) value.iterator().next();
+            if(s == null) {
+                s = "";
             }
-            txt.setText(value); // NOI18N
+            txt.setText(s); // NOI18N
         }
         @Override
         void setEnabled(boolean  b) {
@@ -328,7 +338,7 @@ public class QueryParameters {
         }
 
         @Override
-        void populate(String value) {
+        void populate(Collection value) {
             setValues(value);
         }
     }
@@ -341,12 +351,12 @@ public class QueryParameters {
             this.chk = chk;
         }
         @Override
-        public String getValues() {
-            return Boolean.toString(chk.isSelected());
+        public Collection getValues() {
+            return Collections.singleton(chk.isSelected());
         }
         @Override
-        public void setValues(String value) {
-            chk.setSelected(Boolean.parseBoolean(value)); // NOI18N
+        public void setValues(Collection b) {
+            chk.setSelected((Boolean) b.iterator().next()); // NOI18N
         }
         @Override
         void setEnabled(boolean  b) {
@@ -354,11 +364,21 @@ public class QueryParameters {
         }
 
         @Override
-        void populate(String values) {
-            setValues(values);
+        void populate(Collection b) {
+            setValues(b);
         }
     }
 
+    private static class ComboParameterRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if(value instanceof Keyword) {
+                return super.getListCellRendererComponent(list, ((Keyword)value).getName(), index, isSelected, cellHasFocus); 
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); 
+        }
+        
+    }
 
 //    public static class SimpleQueryParameter extends QueryParameter {
 //        private final String[] values),
