@@ -46,6 +46,7 @@ import com.tasktop.c2c.server.tasks.domain.Keyword;
 import java.awt.Component;
 import java.lang.String;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -120,7 +121,7 @@ public class QueryParameters {
         map.put(c, new ComboParameter(combo, c));
     }
     
-    void addTextParameter(Column c, JTextField txt) {
+    void addParameter(Column c, JTextField txt) {
         map.put(c, new TextFieldParameter(txt, c));
     }
             
@@ -148,6 +149,10 @@ public class QueryParameters {
             return column;
         }
 
+        void setValues(Object... values) {
+            setValues(Arrays.asList(values));
+        }
+        
         abstract void setValues(Collection values);
         abstract void populate(Collection values);
         abstract Collection getValues();
@@ -222,17 +227,18 @@ public class QueryParameters {
         
         @Override
         public void setValues(Collection values) {
-            if(values.isEmpty()) {
-                return;
-            }
-            
             if(values == null) {
                 combo.setSelectedIndex(-1);
                 return;
             }
 
+            assert values.size() == 1;
+            if(values.isEmpty()) {
+                return;
+            }
+
             // need the index as the given ParameterValue might have a different displayName
-            int idx = ((DefaultComboBoxModel)combo.getModel()).getIndexOf(values);
+            int idx = ((DefaultComboBoxModel)combo.getModel()).getIndexOf(values.iterator().next());
             if(idx != -1) {
                 combo.setSelectedIndex(idx);
             } 
@@ -324,14 +330,21 @@ public class QueryParameters {
             }
             return Collections.singleton(value);
         }
+        
         @Override
-        public void setValues(Collection value) {
-            String s = (String) value.iterator().next();
+        void setValues(Object... values) {
+            String s = (String) values[0];
             if(s == null) {
                 s = "";
             }
             txt.setText(s); // NOI18N
         }
+                
+        @Override
+        public void setValues(Collection b) {
+            throw new UnsupportedOperationException();
+        }
+        
         @Override
         void setEnabled(boolean  b) {
             txt.setEnabled(alwaysDisabled ? false : b);
@@ -354,10 +367,21 @@ public class QueryParameters {
         public Collection getValues() {
             return Collections.singleton(chk.isSelected());
         }
+        
+        @Override
+        void setValues(Object... values) {
+            assert values.length == 1;
+            if(values.length == 0) {
+                return;
+            }
+            chk.setSelected((Boolean) values[0]); // NOI18N
+        }
+                
         @Override
         public void setValues(Collection b) {
-            chk.setSelected((Boolean) b.iterator().next()); // NOI18N
+            throw new UnsupportedOperationException();
         }
+        
         @Override
         void setEnabled(boolean  b) {
             chk.setEnabled(alwaysDisabled ? false : b);
