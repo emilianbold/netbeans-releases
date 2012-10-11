@@ -71,7 +71,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Radek Matous
  */
-public class AssignVariableHint extends AbstractRule {
+public class AssignVariableSuggestion extends AbstractSuggestion {
 
     @Override
     public String getId() {
@@ -91,21 +91,19 @@ public class AssignVariableHint extends AbstractRule {
     }
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
-        int lineBegin = -1;
-        int lineEnd = -1;
-        lineBegin = context.caretOffset > 0 ? Utilities.getRowStart(context.doc, context.caretOffset) : -1;
-        lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(context.doc, context.caretOffset) : -1;
-        if (lineBegin != -1 && lineEnd != -1 && context.caretOffset > lineBegin) {
+        int lineBegin = caretOffset > 0 ? Utilities.getRowStart(context.doc, caretOffset) : -1;
+        int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(context.doc, caretOffset) : -1;
+        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
             IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(context.doc, lineBegin, lineEnd);
             phpParseResult.getProgram().accept(introduceFixVisitor);
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
             if (variableFix != null) {
-                hints.add(new Hint(AssignVariableHint.this, getDisplayName(),
+                hints.add(new Hint(AssignVariableSuggestion.this, getDisplayName(),
                         context.parserResult.getSnapshot().getSource().getFileObject(), variableFix.getOffsetRange(),
                         Collections.<HintFix>singletonList(variableFix), 500));
             }
@@ -211,7 +209,7 @@ public class AssignVariableHint extends AbstractRule {
 
         @Override
         public String getDescription() {
-            return AssignVariableHint.this.getDescription();
+            return AssignVariableSuggestion.this.getDescription();
         }
 
         @Override

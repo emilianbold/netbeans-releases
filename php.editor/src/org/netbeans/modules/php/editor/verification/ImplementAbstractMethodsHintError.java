@@ -71,34 +71,17 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
 /**
- * @author Radek Matous
+ * @author Radek Matous, Ondrej Brejla
  */
-public class ImplementAbstractMethodsHint extends AbstractRule {
+public class ImplementAbstractMethodsHintError extends AbstractHintError {
 
-    private static final String HINT_ID = "Implement.Abstract.Methods"; //NOI18N
     private static final String ABSTRACT_PREFIX = "abstract "; //NOI18N
-    private static final Logger LOGGER = Logger.getLogger(ImplementAbstractMethodsHint.class.getName());
-
-    @Override
-    public String getId() {
-        return HINT_ID;
-    }
-
-    @Override
-    @Messages("ImplementAbstractMethodsDesc=Implement All Abstract Methods")
-    public String getDescription() {
-        return Bundle.ImplementAbstractMethodsDesc();
-    }
+    private static final Logger LOGGER = Logger.getLogger(ImplementAbstractMethodsHintError.class.getName());
 
     @Override
     @Messages("ImplementAbstractMethodsDispName=Implement All Abstract Methods")
     public String getDisplayName() {
         return Bundle.ImplementAbstractMethodsDispName();
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
     }
 
     @Override
@@ -108,13 +91,13 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
         "# {2} - Owner (class) of abstract method",
         "ImplementAbstractMethodsHintDesc={0} is not abstract and does not override abstract method {1} in {2}"
     })
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints) {
         FileScope fileScope = context.fileScope;
         if (fileScope != null) {
             Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(fileScope);
             FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
             for (FixInfo fixInfo : checkHints(allClasses, context)) {
-                hints.add(new Hint(ImplementAbstractMethodsHint.this, Bundle.ImplementAbstractMethodsHintDesc(fixInfo.className, fixInfo.lastMethodDeclaration, fixInfo.lastMethodOwnerName), fileObject, fixInfo.classNameRange, createHintFixes(context.doc, fixInfo), 500));
+                hints.add(new Hint(ImplementAbstractMethodsHintError.this, Bundle.ImplementAbstractMethodsHintDesc(fixInfo.className, fixInfo.lastMethodDeclaration, fixInfo.lastMethodOwnerName), fileObject, fixInfo.classNameRange, createHintFixes(context.doc, fixInfo), 500));
             }
         }
     }
@@ -126,7 +109,7 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
         return Collections.unmodifiableList(hintFixes);
     }
 
-    private Collection<FixInfo> checkHints(Collection<? extends ClassScope> allClasses, PHPRuleContext context) throws BadLocationException{
+    private Collection<FixInfo> checkHints(Collection<? extends ClassScope> allClasses, PHPRuleContext context) {
         List<FixInfo> retval = new ArrayList<FixInfo>();
         for (ClassScope classScope : allClasses) {
             if (!classScope.isAbstract()) {
@@ -243,7 +226,7 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
         return previousToken.offset(th);
     }
 
-    private static int getNewMethodsOffset(ClassScope classScope, BaseDocument doc) throws BadLocationException {
+    private static int getNewMethodsOffset(ClassScope classScope, BaseDocument doc) {
         int offset = -1;
         Collection<? extends MethodScope> declaredMethods = classScope.getDeclaredMethods();
         for (MethodScope methodScope : declaredMethods) {
@@ -253,9 +236,13 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
             }
         }
         if (offset == -1 && classScope.getBlockRange() != null) {
-            int rowStartOfClassEnd = Utilities.getRowStart(doc, classScope.getBlockRange().getEnd());
-            int rowEndOfPreviousRow = rowStartOfClassEnd - 1;
-            offset = Utilities.getRowStart(doc, rowEndOfPreviousRow);
+            try {
+                int rowStartOfClassEnd = Utilities.getRowStart(doc, classScope.getBlockRange().getEnd());
+                int rowEndOfPreviousRow = rowStartOfClassEnd - 1;
+                offset = Utilities.getRowStart(doc, rowEndOfPreviousRow);
+            } catch (BadLocationException ex) {
+                offset = -1;
+            }
         }
         return offset;
     }
@@ -271,8 +258,9 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
         }
 
         @Override
+        @Messages("ImplementAbstractMethodsDesc=Implement All Abstract Methods")
         public String getDescription() {
-            return ImplementAbstractMethodsHint.this.getDescription();
+            return Bundle.ImplementAbstractMethodsDesc();
         }
 
         @Override

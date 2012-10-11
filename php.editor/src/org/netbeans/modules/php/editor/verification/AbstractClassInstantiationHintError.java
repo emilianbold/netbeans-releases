@@ -44,9 +44,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -56,7 +54,6 @@ import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -64,12 +61,10 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AbstractClassInstantiationHint extends AbstractRule {
-
-    private static final String HINT_ID = "Abstract.Class.Instantiation.Hint"; //NOI18N
+public class AbstractClassInstantiationHintError extends AbstractHintError {
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -106,7 +101,7 @@ public class AbstractClassInstantiationHint extends AbstractRule {
                 ClassElement classElement = ModelUtils.getFirst(classes);
                 if (classElement != null && classElement.isAbstract()) {
                     OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-                    hints.add(new Hint(AbstractClassInstantiationHint.this, Bundle.AbstractClassInstantiationDesc(classElement.getFullyQualifiedName().toString()), fileObject, offsetRange, null, 500));
+                    hints.add(new Hint(AbstractClassInstantiationHintError.this, Bundle.AbstractClassInstantiationDesc(classElement.getFullyQualifiedName().toString()), fileObject, offsetRange, null, 500));
                 }
             }
         }
@@ -114,25 +109,9 @@ public class AbstractClassInstantiationHint extends AbstractRule {
     }
 
     @Override
-    public String getId() {
-        return HINT_ID;
-    }
-
-    @Override
-    @Messages("AbstractClassInstantiationHintDesc=Abstract classes can not be instantiated.")
-    public String getDescription() {
-        return Bundle.AbstractClassInstantiationHintDesc();
-    }
-
-    @Override
     @Messages("AbstractClassInstantiationHintDispName=Abstract Class Instantiation")
     public String getDisplayName() {
         return Bundle.AbstractClassInstantiationHintDispName();
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
     }
 
 }

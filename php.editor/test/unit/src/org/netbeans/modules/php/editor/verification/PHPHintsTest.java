@@ -52,23 +52,23 @@ public class PHPHintsTest extends PHPHintsTestBase {
     }
 
     public void testModifiersCheckHint() throws Exception {
-        checkHintsInStartEndFile(new ModifiersCheckHint(), "testModifiersCheckHint.php");
+        checkHintsInStartEndFile(new ModifiersCheckHintError(), "testModifiersCheckHint.php");
     }
 
     public void testAbstractClassInstantiationHint() throws Exception {
-        checkHintsInStartEndFile(new AbstractClassInstantiationHint(), "testAbstractClassInstantiationHint.php");
+        checkHintsInStartEndFile(new AbstractClassInstantiationHintError(), "testAbstractClassInstantiationHint.php");
     }
 
     public void testImplementAbstractMethodsHint() throws Exception {
-        checkHintsInStartEndFile(new ImplementAbstractMethodsHint(), "testImplementAbstractMethodsHint.php");
+        checkHintsInStartEndFile(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHint.php");
     }
 
     public void testMethodRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new MethodRedeclarationHint(), "testMethodRedeclarationHint.php");
+        checkHintsInStartEndFile(new MethodRedeclarationHintError(), "testMethodRedeclarationHint.php");
     }
 
     public void testTypeRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new TypeRedeclarationHint(), "testTypeRedeclarationHint.php");
+        checkHintsInStartEndFile(new TypeRedeclarationHintError(), "testTypeRedeclarationHint.php");
     }
 
     public void testWrongOrderOfArgsHint() throws Exception {
@@ -81,6 +81,50 @@ public class PHPHintsTest extends PHPHintsTestBase {
 
     public void testAmbiguousComparisonHint() throws Exception {
         checkHintsInStartEndFile(new AmbiguousComparisonHint(), "testAmbiguousComparisonHint.php");
+    }
+
+    public void testVarDocSuggestion() throws Exception {
+        checkSuggestion(new VarDocSuggestion(), "testVarDocSuggestion.php", "$foo^Bar;");
+    }
+
+    public void testAssignVariableSuggestion() throws Exception {
+        checkSuggestion(new AssignVariableSuggestion(), "testAssignVariableSuggestion.php", "myFnc();^");
+    }
+
+    public void testIdenticalComparisonSuggestion() throws Exception {
+        checkSuggestion(new IdenticalComparisonSuggestion(), "testIdenticalComparisonSuggestion.php", "if ($a == true)^ {}");
+    }
+
+    public void testIntroduceSuggestion_01() throws Exception {
+        checkSuggestion(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "new MyClass();^");
+    }
+
+    public void testIntroduceSuggestion_02() throws Exception {
+        checkSuggestion(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "$foo->bar;^");
+    }
+
+    public void testIntroduceSuggestion_03() throws Exception {
+        checkSuggestion(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "$foo->method();^");
+    }
+
+    public void testIntroduceSuggestion_04() throws Exception {
+        checkSuggestion(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::CON;^");
+    }
+
+    public void testIntroduceSuggestion_05() throws Exception {
+        checkSuggestion(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::stMeth();^");
+    }
+
+    public void testIntroduceSuggestion_06() throws Exception {
+        checkSuggestion(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::$stFld;^");
+    }
+
+    public void testAddUseImportSuggestion_01() throws Exception {
+        checkSuggestion(new AddUseImportSuggestion(), "testAddUseImportSuggestion_01.php", "new Foo\\Bar();^");
+    }
+
+    public void testAddUseImportSuggestion_02() throws Exception {
+        checkSuggestion(new AddUseImportSuggestion(), "testAddUseImportSuggestion_02.php", "new Foox\\Barx();^");
     }
 
 }

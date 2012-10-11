@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.php.editor.verification;
 
-import java.io.File;
 import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.php.editor.PHPTestBase;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.util.List;
+import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Radek Matous
  */
-public class PHPHintsTestBase extends PHPTestBase {
-    private static final String TEST_DIRECTORY = "testfiles/verification/"; //NOI18N
+public abstract class AbstractHint implements AstRule {
 
-    public PHPHintsTestBase(String testName) {
-        super(testName);
-    }
+    abstract void compute(PHPRuleContext context, List<Hint> hints);
 
-    /**
-     * Checks hints in a whole file which starts with "<code>&lt;?php\n//START</code>" and ends with "<code>//END\n?&gt;</code>".
-     *
-     * @param hint Instantion of hint to test.
-     * @param fileName Name of the file which is in "<tt>testfiles/verification/</tt>" directory.
-     * @throws Exception
-     */
-    protected void checkHintsInStartEndFile(Rule hint, String fileName) throws Exception {
-        checkHints(hint, TEST_DIRECTORY + fileName, "<?php\n//START^", "^//END\n?>");
-    }
-
-    protected void checkHintsInFile(Rule hint, String fileName, String selStartLine, String selEndLine) throws Exception {
-        super.checkHints(hint, TEST_DIRECTORY + fileName, selStartLine, selEndLine);
-    }
-
-    protected void checkSuggestion(AbstractSuggestion suggestion, String fileName, String caretLine) throws Exception {
-        checkHints(this, suggestion, TEST_DIRECTORY + fileName, caretLine);
+    @Override
+    public Set<? extends Object> getKinds() {
+        return Collections.singleton(PHPHintsProvider.DEFAULT_HINTS);
     }
 
     @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        return Collections.singletonMap(
-            PhpSourcePath.SOURCE_CP,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/" + TEST_DIRECTORY))
-            })
-        );
+    public boolean getDefaultEnabled() {
+        return true;
     }
 
+    @Override
+    public JComponent getCustomizer(Preferences node) {
+        return null;
+    }
+
+    @Override
+    public boolean appliesTo(RuleContext context) {
+        return context instanceof PHPRuleContext;
+    }
+
+    @Override
+    public boolean showInTasklist() {
+        return false;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
 }
