@@ -379,37 +379,38 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
     
     @Override
     public void run() {
-        ProjectManager.mutex().writeAccess(new Runnable() {
-            @Override
-            public void run() {
-                List<Project> openProjects = Arrays.asList (OpenProjects.getDefault ().getOpenProjects ());
-                // lastOpenProjects will contain the just closed projects
-                List<Project> projectsToSave;
-                synchronized (lastOpenProjects) {
-                    lastOpenProjects.removeAll(openProjects);
-                    projectsToSave = new ArrayList<Project>(lastOpenProjects);
-                    lastOpenProjects.clear();
-                    lastOpenProjects.addAll(openProjects);
-                }
-                BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
-                try {
-                    for (Project p : projectsToSave) {
-                        ProjectBookmarks projectBookmarks = lockedBookmarkManager.getProjectBookmarks(p, false, false);
-                        if (projectBookmarks != null) {
-                            saveProjectBookmarks(p, projectBookmarks); // Write into private.xml under project's mutex acquired
-                            lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
+        final BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                @Override
+                public void run() {
+                    List<Project> openProjects = Arrays.asList(OpenProjects.getDefault().getOpenProjects());
+                    // lastOpenProjects will contain the just closed projects
+                    List<Project> projectsToSave;
+                    synchronized (lastOpenProjects) {
+                        lastOpenProjects.removeAll(openProjects);
+                        projectsToSave = new ArrayList<Project>(lastOpenProjects);
+                        lastOpenProjects.clear();
+                        lastOpenProjects.addAll(openProjects);
+
+                        for (Project p : projectsToSave) {
+                            ProjectBookmarks projectBookmarks = lockedBookmarkManager.getProjectBookmarks(p, false, false);
+                            if (projectBookmarks != null) {
+                                saveProjectBookmarks(p, projectBookmarks); // Write into private.xml under project's mutex acquired
+                                lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
+                            }
+                        }
+                        // If ensureAllOpenedProjectsBookmarksLoaded requested previously do it now
+                        if (ensureProjectsBookmarksLoadedUponProjectsLoad) {
+                            ensureProjectsBookmarksLoadedUponProjectsLoad = false;
+                            ensureAllOpenedProjectsBookmarksLoaded();
                         }
                     }
-                    // If ensureAllOpenedProjectsBookmarksLoaded requested previously do it now
-                    if (ensureProjectsBookmarksLoadedUponProjectsLoad) {
-                        ensureProjectsBookmarksLoadedUponProjectsLoad = false;
-                        ensureAllOpenedProjectsBookmarksLoaded();
-                    }
-                } finally {
-                    lockedBookmarkManager.unlock();
                 }
-            }
-        });
+            });
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
     }
 
     @Override
