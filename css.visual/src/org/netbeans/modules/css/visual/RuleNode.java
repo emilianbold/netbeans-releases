@@ -820,7 +820,7 @@ public class RuleNode extends AbstractNode {
                 return valueSet;
             }
             PropertyValue val = declaration.getPropertyValue();
-            return val == null ? null : val.getExpression().getContent().toString();
+            return val == null ? null : val.getExpression().getContent().toString().trim();
         }
         
 
