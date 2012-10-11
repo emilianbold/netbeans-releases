@@ -88,7 +88,7 @@ public class ODSTaskTestCase extends AbstractC2CTestCase {
 
         // create
 
-        TaskData taskData = createIssue("this is my bug", "a bug", "bug");
+        TaskData taskData = createTaskData("this is my bug", "a bug", "bug");
         assertNotNull(taskData);
 
         printTaskData(taskData); 
@@ -186,7 +186,7 @@ public class ODSTaskTestCase extends AbstractC2CTestCase {
         printTaskData(taskData);
 
         // subtask 
-        TaskData taskData2 = createIssue("this is a subbug", "a subbug", "subbug");
+        TaskData taskData2 = createTaskData("this is a subbug", "a subbug", "subbug");
         assertNotNull(taskData);
         
         printTaskData(taskData2); 
@@ -224,59 +224,6 @@ public class ODSTaskTestCase extends AbstractC2CTestCase {
 //                    
 //                }
 //            }
-    }
-
-    public TaskData createIssue(String summary, String desc, String typeName) throws CoreException, MalformedURLException {
-        AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
-        TaskData data = C2CUtil.createTaskData(taskRepository);
-        
-        C2CData clientData = C2CExtender.getData(rc, taskRepository);
-        
-        TaskAttribute rta = data.getRoot();
-        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
-        ta.setValue(summary);
-        ta = rta.getMappedAttribute(TaskAttribute.DESCRIPTION);
-        ta.setValue(desc);
-        
-        ta = rta.getMappedAttribute(C2CData.ATTR_TASK_TYPE);
-        ta.setValue(clientData.getTaskTypes().iterator().next());
-        
-        Product product = clientData.getProducts().get(0);
-        ta = rta.getMappedAttribute(TaskAttribute.PRODUCT);
-        ta.setValue(product.getName());
-        
-        ta = rta.getMappedAttribute(TaskAttribute.COMPONENT);
-        ta.setValue(product.getComponents().get(0).getName());
-        
-        ta = rta.getMappedAttribute(C2CData.ATTR_MILESTONE);
-        ta.setValue(product.getMilestones().get(0).getValue());
-        
-        ta = rta.getMappedAttribute(C2CData.ATTR_ITERATION);
-        Collection<String> c = clientData.getActiveIterations();
-        if(!c.isEmpty()) {
-            ta.setValue(c.iterator().next());
-        }
-        
-        ta = rta.getMappedAttribute(TaskAttribute.PRIORITY);
-        ta.setValue(clientData.getPriorities().get(0).getValue());
-        
-        ta = rta.getMappedAttribute(TaskAttribute.SEVERITY);
-        ta.setValue(clientData.getSeverities().get(0).getValue());
-        
-        ta = rta.getMappedAttribute(TaskAttribute.STATUS);
-        ta.setValue(clientData.getStatusByValue("UNCONFIRMED").getValue());
-        
-        RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, data);
-        assertEquals(RepositoryResponse.ResponseKind.TASK_CREATED, rr.getReposonseKind());
-        
-        String taskId = rr.getTaskId();
-        assertNotNull(taskId);
-        
-        data = rc.getTaskData(taskRepository, taskId, nullProgressMonitor);
-        assertFalse(data.isNew());
-        
-        C2C.LOG.log(Level.FINE, " dataRoot after get {0}", data.getRoot().toString());
-        return data;
     }
 
     private void assertChanged(ITaskImpl task, TaskData data, boolean changed) {
