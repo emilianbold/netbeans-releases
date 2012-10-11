@@ -43,40 +43,33 @@
  */
 package org.openide.explorer.propertysheet;
 
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.beans.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-import org.openide.nodes.*;
-import org.openide.nodes.Node.*;
-import org.openide.util.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
-
-import java.beans.*;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import java.lang.reflect.InvocationTargetException;
-
-
-import java.util.*;
 import javax.accessibility.AccessibleRole;
-
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.plaf.SplitPaneUI;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.plaf.metal.*;
-
 import org.netbeans.modules.openide.explorer.UIException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.*;
+import org.openide.nodes.Node.*;
+import org.openide.nodes.Node.Property;
+import org.openide.util.*;
 
 
 /** A few utility methods useful to implementors of Inplace Editors.
@@ -269,18 +262,19 @@ final class PropUtils {
 
     /** Comparator which compares PropertyDetils names */
     private final static Comparator<Node.Property> SORTER_NAME = new Comparator<Node.Property>() {
-            public int compare(Node.Property l, Node.Property r) {
-                String s1 = l.getDisplayName();
-                String s2 = r.getDisplayName();
+        @Override
+        public int compare(Node.Property l, Node.Property r) {
+            String s1 = l.getDisplayName();
+            String s2 = r.getDisplayName();
 
-                return String.CASE_INSENSITIVE_ORDER.compare(s1, s2);
-            }
+            return String.CASE_INSENSITIVE_ORDER.compare(s1, s2);
+        }
 
         @Override
-            public String toString() {
-                return "Name comparator"; //NOI18N
-            }
-        };
+        public String toString() {
+            return "Name comparator"; //NOI18N
+        }
+    };
 
     private static java.util.List<String> missing = null;
 
@@ -1495,7 +1489,7 @@ final class PropUtils {
      * white foreground color for the cell, the ... in the icon seems to
      * disappear when a row with a custom editor button is selected.
      * @see org.netbeans.core.NbTheme.installCustomDefaultsWinXP */
-    private static final Color getIconForeground() {
+    private static Color getIconForeground() {
         return UIManager.getColor("PropSheet.customButtonForeground"); //NOI18N
     }
 
@@ -1537,7 +1531,7 @@ final class PropUtils {
     /**
      * Just a helper method which delegates to shallBeRDVEnabled(Node.Property).
      */
-    static final boolean shallBeRDVEnabled(FeatureDescriptor fd) {
+    static boolean shallBeRDVEnabled(FeatureDescriptor fd) {
         if ((fd != null) && fd instanceof Node.Property) {
             return shallBeRDVEnabled((Node.Property) fd);
         }
@@ -1559,7 +1553,7 @@ final class PropUtils {
      * <a href="http://www.netbeans.org/issues/show_bug.cgi?id=51907">
      * Issue 51907</a>.
      */
-    static final boolean shallBeRDVEnabled(Node.Property property) {
+    static boolean shallBeRDVEnabled(Node.Property property) {
         if ((property == null) || !property.supportsDefaultValue()) {
             return false;
         }
@@ -1602,16 +1596,19 @@ final class PropUtils {
         public DifferentValuesEditor(PropertyEditor ed) {
             this.ed = ed;
             addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt){
                    notSet=false;
                 }
             });
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             ed.addPropertyChangeListener(listener);
         }
 
+        @Override
         public String getAsText() {
             String result;
 
@@ -1624,18 +1621,22 @@ final class PropUtils {
             return result;
         }
 
+        @Override
         public java.awt.Component getCustomEditor() {
             return ed.getCustomEditor();
         }
 
+        @Override
         public String getJavaInitializationString() {
             return ed.getJavaInitializationString();
         }
 
+        @Override
         public String[] getTags() {
             return ed.getTags();
         }
 
+        @Override
         public Object getValue() {
             Object result;
 
@@ -1648,10 +1649,12 @@ final class PropUtils {
             return result;
         }
 
+        @Override
         public boolean isPaintable() {
             return notSet ? false : ed.isPaintable();
         }
 
+        @Override
         public void paintValue(java.awt.Graphics gfx, java.awt.Rectangle box) {
             //issue 33341 - don't allow editors to paint if value not set
             if (isPaintable()) {
@@ -1659,20 +1662,24 @@ final class PropUtils {
             }
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             ed.removePropertyChangeListener(listener);
         }
 
+        @Override
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
             ed.setAsText(text);
             notSet = false;
         }
 
+        @Override
         public void setValue(Object value) {
             ed.setValue(value);
             notSet = false;
         }
 
+        @Override
         public boolean supportsCustomEditor() {
             return ed.supportsCustomEditor();
         }
@@ -1688,6 +1695,7 @@ final class PropUtils {
             super(ed);
         }
 
+        @Override
         public void attachEnv(PropertyEnv env){
             ((ExPropertyEditor)ed).attachEnv(env);
         }
@@ -1698,50 +1706,62 @@ final class PropUtils {
      *  The property sheet does not handle null property editors;  this editor
      * stands in, and returns &quot;No property editor&quot; from getAsText() */
     static final class NoPropertyEditorEditor implements PropertyEditor {
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             //no-op
         }
 
+        @Override
         public String getAsText() {
             return NbBundle.getMessage(PropertySheet.class, "CTL_NoPropertyEditor"); //NOI18N
         }
 
+        @Override
         public java.awt.Component getCustomEditor() {
             return null;
         }
 
+        @Override
         public String getJavaInitializationString() {
             return "";
         }
 
+        @Override
         public String[] getTags() {
             return null;
         }
 
+        @Override
         public Object getValue() {
             return getAsText();
         }
 
+        @Override
         public boolean isPaintable() {
             return false;
         }
 
+        @Override
         public void paintValue(java.awt.Graphics gfx, java.awt.Rectangle box) {
             //no-op
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             //no-op
         }
 
+        @Override
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
             //no-op
         }
 
+        @Override
         public void setValue(Object value) {
             //no-op
         }
 
+        @Override
         public boolean supportsCustomEditor() {
             return false;
         }
@@ -1750,6 +1770,7 @@ final class PropUtils {
     /** Comparator for sorting the list of tabs such that basic properties
      *  is always the first tab. */
     private static class TabListComparator implements Comparator {
+        @Override
         public int compare(Object o1, Object o2) {
             String s1 = (String) o1;
             String s2 = (String) o2;
@@ -1810,6 +1831,7 @@ final class PropUtils {
 
     /** A split border subclass that does not draw the metal drag texture */
     private static class SplitBorder implements Border {
+        @Override
         public Insets getBorderInsets(Component c) {
             if (UIManager.getLookAndFeel() instanceof MetalLookAndFeel) {
                 return new Insets(2, 0, 1, 0);
@@ -1818,10 +1840,12 @@ final class PropUtils {
             }
         }
 
+        @Override
         public boolean isBorderOpaque() {
             return true;
         }
 
+        @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             if (UIManager.getLookAndFeel() instanceof MetalLookAndFeel) {
                 g.setColor(UIManager.getColor("controlShadow"));
@@ -1851,14 +1875,17 @@ final class PropUtils {
             larger = (f != null) ? (f.getSize() > 13) : false;
         }
 
+        @Override
         public int getIconHeight() {
             return 12;
         }
 
+        @Override
         public int getIconWidth() {
             return larger ? 16 : 12;
         }
 
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             int w = c.getWidth();
             int h = c.getHeight();
