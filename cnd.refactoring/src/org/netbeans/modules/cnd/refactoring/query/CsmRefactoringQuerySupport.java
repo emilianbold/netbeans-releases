@@ -39,45 +39,38 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.refactoring.plugins;
+package org.netbeans.modules.cnd.refactoring.query;
+
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.plugins.CsmWhereUsedQueryPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class WhereUsedTestCase extends CsmWhereUsedQueryPluginTestCaseBase {
+public final class CsmRefactoringQuerySupport {
 
-    public WhereUsedTestCase(String testName) {
-        super(testName);
-    }
-
-    public void testIZ211703_1() throws Exception {
-        // IZ#211703 : Find Usages can not find references to functions
-        performWhereUsed("iz211703_1.c", 3, 20);
-        performWhereUsed("iz211703_1.c", 5, 20);
-        performWhereUsed("iz211703_1.c", 11, 20);
-        performWhereUsed("iz211703_2.c", 4, 20);
-        performWhereUsed("iz211703_2.c", 7, 20);
+    private CsmRefactoringQuerySupport() {
     }
 
-    public void testIZ211703_2() throws Exception {
-        // IZ#211703 : Find Usages can not find references to functions
-        performWhereUsed("iz211703_1.c", 2, 30);
-        performWhereUsed("iz211703_1.c", 12, 30);
-        performWhereUsed("iz211703_1.c", 15, 30);
-        performWhereUsed("iz211703_2.c", 3, 30);
-        performWhereUsed("iz211703_2.c", 8, 30);
+    public static Collection<RefactoringElementImplementation> getWhereUsed(FileObject fo, int line, int col) {
+        CsmFile csmFile = CsmUtilities.getCsmFile(fo, true, false);
+        Collection<RefactoringElementImplementation> out = Collections.emptyList();
+        if (csmFile != null) {
+            long offset = CsmFileInfoQuery.getDefault().getOffset(csmFile, line, col);
+            if (offset >= 0) {
+                CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, (int)offset);
+                out = CsmWhereUsedQueryPlugin.getWhereUsed(ref, Collections.<Object, Boolean>emptyMap());
+            }
+        }
+        return out;
     }
-    
-    public void test219526_1() throws Exception {
-        // IZ#219526 - incorrect Find Usages for the same qualified classifiers
-        performWhereUsed("iz219526_1.cpp", 1, 20);
-        performWhereUsed("iz219526_1.cpp", 3, 10);
-    }
-    
-    public void test219526_2() throws Exception {
-        // IZ#219526 - incorrect Find Usages for the same qualified classifiers
-        performWhereUsed("iz219526_2.cpp", 1, 20);
-        performWhereUsed("iz219526_2.cpp", 3, 10);
-    }    
 }
