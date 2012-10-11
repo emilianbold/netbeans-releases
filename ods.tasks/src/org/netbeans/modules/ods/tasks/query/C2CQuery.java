@@ -421,7 +421,7 @@ public abstract class C2CQuery {
 
         @Override
         protected Criteria getCriteria() { 
-            return savedQuery.getQueryCriteria();
+            return savedQuery != null ? savedQuery.getQueryCriteria() : null;
         }
 
         @Override
