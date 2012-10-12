@@ -101,7 +101,7 @@ public class RuleNode extends AbstractNode {
     private static String COLOR_CODE_GRAY = "777777";
     private static String COLOR_CODE_RED = "ff7777";
     public static String NONE_PROPERTY_NAME = "<none>";
-    private String filterPrefix;
+    private String filterText;
     private PropertyCategoryPropertySet[] propertySets;
     private RuleEditorPanel panel;
     private Map<PropertyDefinition, Declaration> addedDeclarations = new HashMap<PropertyDefinition, Declaration>();
@@ -138,8 +138,8 @@ public class RuleNode extends AbstractNode {
     }
 
     //called by the RuleEditorPanel when user types into the filter text field
-    void setFilterPrefix(String prefix) {
-        this.filterPrefix = prefix;
+    void setFilterText(String prefix) {
+        this.filterText = prefix;
         fireContextChanged(true); //recreate the property sets
     }
 
@@ -262,18 +262,18 @@ public class RuleNode extends AbstractNode {
         return propertySets;
     }
 
-    private boolean matchesFilterPrefix(PropertyDefinition pd) {
-        if (filterPrefix == null) {
+    private boolean matchesFilterText(PropertyDefinition pd) {
+        if (filterText == null) {
             return true;
         } else {
-            return pd.getName().startsWith(filterPrefix);
+            return pd.getName().contains(filterText);
         }
     }
 
     private Collection<PropertyDefinition> filterByPrefix(Collection<PropertyDefinition> defs) {
         Collection<PropertyDefinition> filtered = new ArrayList<PropertyDefinition>();
         for (PropertyDefinition pd : defs) {
-            if (matchesFilterPrefix(pd)) {
+            if (matchesFilterText(pd)) {
                 filtered.add(pd);
             }
         }
@@ -308,7 +308,7 @@ public class RuleNode extends AbstractNode {
                 PropertyValue propertyValue = d.getPropertyValue();
                 if (property != null && propertyValue != null) {
                     PropertyDefinition def = Properties.getProperty(property.getContent().toString());
-                    if (def != null && matchesFilterPrefix(def)) {
+                    if (def != null && matchesFilterText(def)) {
                         PropertyCategory category = def.getPropertyCategory();
 
                         List<Declaration> values = categoryToDeclarationsMap.get(category);
@@ -389,7 +389,7 @@ public class RuleNode extends AbstractNode {
                 PropertyValue propertyValue = d.getPropertyValue();
                 if (property != null && propertyValue != null) {
                     PropertyDefinition def = Properties.getProperty(property.getContent().toString());
-                    if (def != null && matchesFilterPrefix(def)) {
+                    if (def != null && matchesFilterText(def)) {
                         filtered.add(d);
                     }
                 }
