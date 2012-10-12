@@ -45,16 +45,14 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -62,7 +60,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithPreferences {
+public class ImmutableVariablesHint extends AbstractHint implements PHPRuleWithPreferences {
 
     private static final String HINT_ID = "Immutable.Variables.Hint"; //NOI18N
     private static final String NUMBER_OF_ALLOWED_ASSIGNMENTS = "php.verification.number.of.allowed.assignments"; //NOI18N
@@ -84,7 +82,7 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
     }
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;

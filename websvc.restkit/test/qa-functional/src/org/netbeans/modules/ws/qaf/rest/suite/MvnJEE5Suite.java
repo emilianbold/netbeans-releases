@@ -73,12 +73,10 @@ public class MvnJEE5Suite extends J2eeTestCase {
                 "testSingletonDef", //NOI18N
                 "testContainerIDef", //NOI18N
                 "testCcContainerIDef", //NOI18N
-                // jersey library not in Maven dependencies
-                //"testSingleton1", //NOI18N
-                //"testCcContainerI1", //NOI18N
+                "testSingleton1", //NOI18N
+                "testCcContainerI1", //NOI18N
                 "testSingleton2", //NOI18N
-                // jersey library not in Maven dependencies
-                //"testContainerI1", //NOI18N
+                "testContainerI1", //NOI18N
                 "testContainerI2", //NOI18N
                 "testSingleton3", //NOI18N
                 "testContainerI3", //NOI18N

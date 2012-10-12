@@ -299,7 +299,10 @@ public class CommonAnnotationHelper {
      */
     public static String getServiceEndpoint(final AnnotationModelHelper helper, final TypeElement typeElement) {
         assert helper != null;
-        assert typeElement != null;
+        // type element mustn't exist for removed object yet - see issue #219882, PersistentObject#getElementType()
+        if (typeElement == null) {
+            return null;
+        }
 
         Map<String, ? extends AnnotationMirror> ans = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
         AnnotationMirror wsMirror = ans.get("javax.jws.WebService"); //NOI18N
