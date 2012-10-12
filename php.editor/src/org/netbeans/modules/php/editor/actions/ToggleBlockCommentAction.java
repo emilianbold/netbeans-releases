@@ -55,28 +55,28 @@ import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.util.Exceptions;
+
 /**
  *
  * @author Petr Pisl
  */
-
-@EditorActionRegistration(name = ExtKit.toggleCommentAction, mimeType=PHP_MIME_TYPE)
-public class ToggleBlockCommentAction extends BaseAction{
+@EditorActionRegistration(name = ExtKit.toggleCommentAction, mimeType = PHP_MIME_TYPE)
+public class ToggleBlockCommentAction extends BaseAction {
 
     static final long serialVersionUID = -1L;
-    static final private String FORCE_COMMENT = "force-comment";    //NOI18N
-    static final private String FORCE_UNCOMMENT = "force-uncomment";    //NOI18N
+    private static final String FORCE_COMMENT = "force-comment"; //NOI18N
+    private static final String FORCE_UNCOMMENT = "force-uncomment"; //NOI18N
 
     public ToggleBlockCommentAction() {
         super(ExtKit.toggleCommentAction);
     }
 
-    public ToggleBlockCommentAction (Map<String,?> attrs) {
+    public ToggleBlockCommentAction(Map<String, ?> attrs) {
         super(null);
         if (attrs != null) {
-            String actionName = (String)attrs.get(Action.NAME);
+            String actionName = (String) attrs.get(Action.NAME);
             if (actionName == null) {
-                throw new IllegalArgumentException("Null Action.NAME attribute for action " + this.getClass()); // NOI18N
+                throw new IllegalArgumentException("Null Action.NAME attribute for action " + this.getClass()); //NOI18N
             }
             putValue(Action.NAME, actionName);
         }
@@ -94,8 +94,8 @@ public class ToggleBlockCommentAction extends BaseAction{
             final BaseDocument doc = (BaseDocument) target.getDocument();
             doc.runAtomic(new Runnable() {
 
-                public @Override
-                void run() {
+                @Override
+                public void run() {
                     TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
                     if (ts != null) {
                         ts.move(caretOffset);
@@ -108,7 +108,7 @@ public class ToggleBlockCommentAction extends BaseAction{
                                 newLine = true;
                             }
                             while (!newLine && ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_OPENTAG) {
-                                if(isNewLineBeforeCaretOffset(ts, caretOffset)) {
+                                if (isNewLineBeforeCaretOffset(ts, caretOffset)) {
                                     newLine = true;
                                 }
                             }
@@ -146,7 +146,7 @@ public class ToggleBlockCommentAction extends BaseAction{
                     }
                 }
             });
-            if(!processedHere.get()) {
+            if (!processedHere.get()) {
                 BaseAction action = (BaseAction) CslActions.createToggleBlockCommentAction();
                 if (getValue(FORCE_COMMENT) != null) {
                     action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT));
@@ -205,9 +205,8 @@ public class ToggleBlockCommentAction extends BaseAction{
 
         Object force = comment ? fComment : fUncomment;
         if (force instanceof Boolean) {
-            return ((Boolean)force).booleanValue();
+            return ((Boolean) force).booleanValue();
         }
         return fComment == null && fUncomment == null;
     }
 }
-
