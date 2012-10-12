@@ -741,10 +741,16 @@ public class CommonServerSupport
                 ResultMap<String, String> resultLocation
                         = futureLocation.get(timeout, units);
                 Logger.getLogger("glassfish").log(Level.FINEST,
-                        "{0} responded in {1} ms with result {2}",
+                        "{0} responded in {1} ms with result {2} and response {3}",
                         new Object[]{commandLocation.getCommand(),
                             (System.nanoTime() - start) / 1000000,
-                            resultLocation.getState().toString()});
+                            resultLocation.getState().toString(),
+                            resultLocation != null && resultLocation.getValue() != null
+                            ? (resultLocation.getValue().get("message") != null
+                                ? resultLocation.getValue().get("message")
+                                : resultLocation.getValue().get("Base-Root_value") + " "
+                                + resultLocation.getValue().get("Domain-Root_value"))
+                            : "null"});
                 if (resultLocation.getState() == TaskState.COMPLETED) {
                     String domainRoot = getDomainsRoot() + File.separator
                             + getDomainName();
