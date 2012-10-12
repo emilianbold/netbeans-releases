@@ -137,6 +137,10 @@ public class AddPropertyAction extends AbstractAction {
             }));
 
             dialog.setVisible(true);
+            
+            //clear out the panel's model reference so it can be GCed
+            addPropertyPanel.releaseModel();
+            
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
