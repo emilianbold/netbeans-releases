@@ -53,6 +53,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
@@ -122,12 +123,22 @@ public class ComponentUsagesChecker extends HintsProvider {
                         LibraryComponent component = lib.getComponent(tagName);
                         if (component == null) {
                             //error, the component doesn't exist in the library
-                            Hint hint = new Hint(ERROR_RULE_BADGING,
+                            hints.add(new Hint(ERROR_RULE_BADGING,
                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_CC_COMPONENT", lib.getDisplayName(), tagName),
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                     JsfUtils.createOffsetRange(snapshot, docText, node.from(), node.to()),
-                                    Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
-                            hints.add(hint);
+                                    Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY));
+                            
+                             //put the hint to the close tag as well
+                            CloseTag matchingCloseTag = openTag.matchingCloseTag();
+                            if(matchingCloseTag != null) {
+                                hints.add(new Hint(ERROR_RULE_BADGING,
+                                        NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_CC_COMPONENT", lib.getDisplayName(), tagName),
+                                        context.parserResult.getSnapshot().getSource().getFileObject(),
+                                        JsfUtils.createOffsetRange(snapshot, docText, matchingCloseTag.from(), matchingCloseTag.to()),
+                                        Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY));
+                            }
+                            
                         } else {
                             //check the component attributes
                             Tag tag = component.getTag();
