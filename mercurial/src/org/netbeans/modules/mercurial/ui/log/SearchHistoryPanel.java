@@ -686,6 +686,16 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
         boolean filterCritVisible = cmbFilterKind.getSelectedItem() != FilterKind.ALL;
         lblFilterContains.setVisible(filterCritVisible);
         txtFilter.setVisible(filterCritVisible);
+        if (filterCritVisible) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    if (!cmbFilterKind.isPopupVisible()) {
+                        txtFilter.requestFocusInWindow();
+                    }
+                }
+            });
+        }
         if (filterTimer != null && !txtFilter.getText().trim().isEmpty()) {
             filterTimer.restart();
         }

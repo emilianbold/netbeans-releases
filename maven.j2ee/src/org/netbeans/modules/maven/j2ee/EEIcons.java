@@ -39,37 +39,47 @@
 package org.netbeans.modules.maven.j2ee;
 
 import javax.swing.Icon;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.ImageUtilities;
 
-@ProjectServiceProvider(service=SpecialIcon.class, projectType={
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR
-})
-public class EEIcons implements SpecialIcon {
+public abstract class EEIcons implements SpecialIcon {
 
-    private final Project project;
+    @ProjectServiceProvider(service = SpecialIcon.class, projectType = "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR)
+    public static class WarIcon extends EEIcons {
 
-    public EEIcons(Project project) {
-        this.project = project;
+        @Override
+        public Icon getIcon() {
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/resources/maven_web_application_16.png", true);
+        }
     }
 
-    @Override public Icon getIcon() {
-        String type = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
-        if (type.equals(NbMavenProject.TYPE_WAR)) {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/resources/maven_web_application_16.png", true);
-        } else if (type.equals(NbMavenProject.TYPE_EJB)) {
+    @ProjectServiceProvider(service = SpecialIcon.class, projectType = "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB)
+    public static class EjbIcon extends EEIcons {
+
+        @Override
+        public Icon getIcon() {
             return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/resources/maven_ejb_module_16.png", true);
-        } else if (type.equals(NbMavenProject.TYPE_APPCLIENT)) {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/resources/appclient.png", true);
-        } else {
+        }
+    }
+
+    @ProjectServiceProvider(service = SpecialIcon.class, projectType = "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR)
+    public static class EarIcons extends EEIcons {
+
+        @Override
+        public Icon getIcon() {
             return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/resources/maven_enterprise_application_16.png", true);
         }
     }
 
+    @ProjectServiceProvider(service = SpecialIcon.class, projectType = "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT)
+    public static class AppClientIcons extends EEIcons {
+
+        @Override
+        public Icon getIcon() {
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/resources/appclient.png", true);
+
+        }
+    }
 }
