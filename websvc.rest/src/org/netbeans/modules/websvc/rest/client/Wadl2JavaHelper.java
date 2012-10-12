@@ -87,7 +87,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.FieldDescriptor;
 import org.netbeans.modules.websvc.saas.model.jaxb.MethodDescriptor;
 import org.netbeans.modules.websvc.saas.model.jaxb.ServletDescriptor;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
-import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
+import org.netbeans.modules.websvc.saas.model.wadl.Representation;
 import org.netbeans.modules.websvc.saas.model.wadl.Request;
 import org.netbeans.modules.websvc.saas.model.wadl.Response;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
@@ -220,19 +220,16 @@ class Wadl2JavaHelper {
         String methodType = wadlMethod.getName();
         //HeaderParamsInfo headerParamsInfo = new HeaderParamsInfo(saasMethod);
         if (RestConstants.GET_ANNOTATION.equals(methodType)) { //GET
-            List<RepresentationType> produces = new ArrayList<RepresentationType>();
-            Response wadlResponse = wadlMethod.getResponse();
+            List<Representation> produces = new ArrayList<Representation>();
+            for( Response wadlResponse : wadlMethod.getResponse() )
             if (wadlResponse != null) {
-                List<JAXBElement<RepresentationType>> reprOrFaults = wadlResponse.getRepresentationOrFault();
-                for (JAXBElement<RepresentationType> reprOrFault : reprOrFaults) {
-                    if ("representation".equals(reprOrFault.getName().getLocalPart())) { //NOI18N
-                        produces.add(reprOrFault.getValue());
-                    }
-                }
+                List<Representation> representations = wadlResponse.getRepresentation();
+                produces.addAll(representations);
             }
+            
             boolean found = false;
             boolean multipleMimeTypes = produces.size() > 1;
-            for (RepresentationType prod : produces) {
+            for (Representation prod : produces) {
                 String mediaType = prod.getMediaType();
                 if (mediaType != null) {
                     for (HttpMimeType mimeType : HttpMimeType.values()) {
@@ -255,18 +252,18 @@ class Wadl2JavaHelper {
                     RestConstants.POST_ANNOTATION.equals(methodType) ||
                     RestConstants.DELETE_ANNOTATION.equals(methodType)
                   ) {
-            List<RepresentationType> consumes = new ArrayList<RepresentationType>();
+            List<Representation> consumes = new ArrayList<Representation>();
             Request wadlRequest = wadlMethod.getRequest();
             if (wadlRequest != null) {
-                List<RepresentationType> representationTypes = wadlRequest.getRepresentation();
-                for (RepresentationType reprType : representationTypes) {
+                List<Representation> representationTypes = wadlRequest.getRepresentation();
+                for (Representation reprType : representationTypes) {
                     consumes.add(reprType);
                 }
             }
 
             boolean found = false;
             boolean multipleMimeTypes = consumes.size() > 1;
-            for (RepresentationType cons : consumes) {
+            for (Representation cons : consumes) {
                 String mediaType = cons.getMediaType();
                 if (mediaType != null) {
                     for (HttpMimeType mimeType : HttpMimeType.values()) {
@@ -354,7 +351,7 @@ class Wadl2JavaHelper {
         ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
         ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
 
-        Response resp = saasMethod.getWadlMethod().getResponse();
+        List<Response> response = saasMethod.getWadlMethod().getResponse();
 
         List<VariableTree> paramList = new ArrayList<VariableTree>();
         ExpressionTree responseTree = null;
@@ -363,11 +360,13 @@ class Wadl2JavaHelper {
         String bodyParam2 = "";
         String ret = ""; //NOI18N
 
-        if (resp != null) {
-            VariableTree classParam = maker.Variable(paramModifier, "responseType", maker.Identifier("Class<T>"), null); //NOI18N
+        if (response != null && !response.isEmpty()) {
+            VariableTree classParam = maker.Variable(paramModifier, 
+                    "responseType", maker.Identifier("Class<T>"), null); //NOI18N
             responseTree = maker.Identifier("T");
             bodyParam1 = "responseType"; //NOI18N
-            typeParams =   Collections.<TypeParameterTree>singletonList(maker.TypeParameter("T", Collections.<ExpressionTree>emptyList()));
+            typeParams =   Collections.<TypeParameterTree>singletonList(
+                    maker.TypeParameter("T", Collections.<ExpressionTree>emptyList()));
             if (classParam != null) {
                 paramList.add(classParam);
             }

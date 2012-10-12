@@ -50,7 +50,7 @@
 
     <property name="saas.service.xsd" value="src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd"/>
     <property name="saas.model.jaxb" value="src/org/netbeans/modules/websvc/saas/model/jaxb"/>
-    <property name="wadl.xsd" value="src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"/>
+    <property name="wadl.xsd" value="src/org/netbeans/modules/websvc/saas/model/wadl200902.xsd"/>
     <property name="saas.model.wadl" value="src/org/netbeans/modules/websvc/saas/model/wadl"/>
     <property name="oauth.xsd" value="src/org/netbeans/modules/websvc/saas/model/oauth-metadata.xsd"/>
     <property name="oauth.model" value="src/org/netbeans/modules/websvc/saas/model/oauth"/>
@@ -74,7 +74,7 @@
             <depends file="${saas-service.xsd}"/>
             <produces dir="${saas.model.jaxb}"/>
         </xjc>
-        <xjc schema="src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+        <xjc schema="src/org/netbeans/modules/websvc/saas/model/wadl200902.xsd"
             package="org.netbeans.modules.websvc.saas.model.wadl"
             target="2.1"
             destdir="src"
