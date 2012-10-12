@@ -53,11 +53,17 @@ public final class SymTab {
     private final Map<CharSequence, SymTabEntry> entries = new TreeMap<CharSequence, SymTabEntry>();
     private final Map<CharSequence, SymTabEntry> imported = new TreeMap<CharSequence, SymTabEntry>();
     private final int nestingLevel;
+    private CharSequence name;
 
-    SymTab(int nestingLevel) {
+    SymTab(int nestingLevel, CharSequence name) {
         this.nestingLevel = nestingLevel;
+        this.name = name;
     }
 
+    public CharSequence getName() {
+        return name;
+    }
+    
     SymTabEntry lookup(CharSequence entry) {
         SymTabEntry out = entries.get(entry);
         if (out == null) {
