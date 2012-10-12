@@ -164,8 +164,8 @@ public final class ClientSideProjectProperties {
             progressHandle.start();
             try {
                 List<SelectedLibrary> failedLibs = ClientSideProjectUtilities.applyJsLibraries(newJsLibraries, jsLibFolder, project.getSiteRootFolder(), progressHandle);
-                LOGGER.log(Level.INFO, "Failed download of JS libraries: {0}", failedLibs);
                 if (!failedLibs.isEmpty()) {
+                    LOGGER.log(Level.INFO, "Failed download of JS libraries: {0}", failedLibs);
                     errorOccured(Bundle.ClientSideProjectProperties_error_jsLibs(joinStrings(getLibraryNames(failedLibs), "<br>"))); // NOI18N
                 }
             } finally {
