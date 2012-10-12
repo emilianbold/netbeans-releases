@@ -85,10 +85,10 @@ public class BufferedRWAccess implements FileRWAccess {
 	}
     }
     
-    private RandomAccessFile randomAccessFile;
-    protected FileChannel channel;
-    private ByteBuffer writeBuffer;
-    private int bufSize;
+    private final RandomAccessFile randomAccessFile;
+    private final FileChannel channel;
+    private final ByteBuffer writeBuffer;
+    private final int bufSize;
     private final UnitCodec unitCodec;
     
     public BufferedRWAccess(File file, UnitCodec unitCodec) throws IOException {
@@ -102,7 +102,7 @@ public class BufferedRWAccess implements FileRWAccess {
         
 	randomAccessFile = new RandomAccessFile(file, "rw"); // NOI18N
 	channel = randomAccessFile.getChannel();
-	ByteBuffer.allocateDirect(bufSize);
+	writeBuffer = ByteBuffer.allocateDirect(bufSize);
     }
         
     @Override
@@ -137,10 +137,10 @@ public class BufferedRWAccess implements FileRWAccess {
     
     // TODO: handle possible buffer overflow 
     // (for now we just allocate large buffer and hope that it will never ovrflow
-    protected ByteBuffer getWriteBuffer() {
-	if( writeBuffer == null ) {
-	    writeBuffer = ByteBuffer.allocateDirect(bufSize);
-	}
+    private ByteBuffer getWriteBuffer() {
+//	if( writeBuffer == null ) {
+//	    writeBuffer = ByteBuffer.allocateDirect(bufSize);
+//	}
 	return writeBuffer;
     }
     
