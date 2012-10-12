@@ -23,6 +23,13 @@ if [ ! -z $SIGNING_PASSWORD ] ; then
     security unlock-keychain -p $SIGNING_PASSWORD
 fi
 
+   if [ 1 -eq $ML_BUILD ] ; then
+       cd $NB_ALL/l10n
+       tar c src/*/other/installer/mac/* | ( cd $NB_ALL; tar x )
+       cd $NB_ALL
+   fi
+
+
 # Run new builds
 sh $NB_ALL/installer/mac/newbuild/init.sh
 sh $NB_ALL/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD $BUILD_NBJDK7 "$SIGNING_IDENTITY" $LOCALES
