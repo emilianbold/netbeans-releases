@@ -62,6 +62,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -224,7 +225,7 @@ public final class SourceRoots {
                             if (prop != null) {
                                 File f = helper.getAntProjectHelper().resolveFile(prop);
                                 try {
-                                    URL url = f.toURI().toURL();
+                                    URL url = Utilities.toURI(f).toURL();
                                     if (!f.exists()) {
                                         url = new URL(url.toExternalForm() + "/"); // NOI18N
                                     } else if (f.isFile()) {

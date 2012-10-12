@@ -79,7 +79,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous
  */
-public class IntroduceHint extends AbstractRule {
+public class IntroduceSuggestion extends AbstractSuggestion {
 
     private static final String UNKNOWN_FILE_NAME = "?"; //NOI18N
 
@@ -101,15 +101,14 @@ public class IntroduceHint extends AbstractRule {
     }
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         final BaseDocument doc = context.doc;
-        final int caretOffset = context.caretOffset;
-        int lineBegin = -1;
-        int lineEnd = -1;
+        int lineBegin;
+        int lineEnd;
         lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
         lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
@@ -118,7 +117,7 @@ public class IntroduceHint extends AbstractRule {
             phpParseResult.getProgram().accept(introduceFixVisitor);
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
             if (variableFix != null) {
-                hints.add(new Hint(IntroduceHint.this, getDisplayName(),
+                hints.add(new Hint(IntroduceSuggestion.this, getDisplayName(),
                         context.parserResult.getSnapshot().getSource().getFileObject(), variableFix.getOffsetRange(),
                         Collections.<HintFix>singletonList(variableFix), 500));
             }
@@ -456,7 +455,7 @@ public class IntroduceHint extends AbstractRule {
         }
 
         int getOffset() throws BadLocationException {
-            return IntroduceHint.getOffset(doc, type, PhpElementKind.METHOD);
+            return IntroduceSuggestion.getOffset(doc, type, PhpElementKind.METHOD);
         }
     }
 
@@ -496,7 +495,7 @@ public class IntroduceHint extends AbstractRule {
         }
 
         int getOffset() throws BadLocationException {
-            return IntroduceHint.getOffset(doc, type, PhpElementKind.METHOD);
+            return IntroduceSuggestion.getOffset(doc, type, PhpElementKind.METHOD);
         }
     }
 
@@ -539,7 +538,7 @@ public class IntroduceHint extends AbstractRule {
         }
 
         int getOffset() throws BadLocationException {
-            return IntroduceHint.getOffset(doc, clz, PhpElementKind.FIELD);
+            return IntroduceSuggestion.getOffset(doc, clz, PhpElementKind.FIELD);
         }
 
         private String createTemplate() {
@@ -600,7 +599,7 @@ public class IntroduceHint extends AbstractRule {
         }
 
         int getOffset() throws BadLocationException {
-            return IntroduceHint.getOffset(doc, clz, PhpElementKind.FIELD);
+            return IntroduceSuggestion.getOffset(doc, clz, PhpElementKind.FIELD);
         }
 
         private String createTemplate() {
@@ -651,7 +650,7 @@ public class IntroduceHint extends AbstractRule {
         }
 
         int getOffset() throws BadLocationException {
-            return IntroduceHint.getOffset(doc, type, PhpElementKind.TYPE_CONSTANT);
+            return IntroduceSuggestion.getOffset(doc, type, PhpElementKind.TYPE_CONSTANT);
         }
     }
 
@@ -728,7 +727,7 @@ public class IntroduceHint extends AbstractRule {
             default:
                 assert false;
         }
-        int newOffset = 0;
+        int newOffset;
         for (ModelElement elem : elements) {
             newOffset = elem.getOffset();
             if (elem instanceof MethodScope) {

@@ -46,7 +46,7 @@ import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
+import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -56,7 +56,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPHintsTestBase extends PHPCodeCompletionTestBase {
+public class PHPHintsTestBase extends PHPTestBase {
     private static final String TEST_DIRECTORY = "testfiles/verification/"; //NOI18N
 
     public PHPHintsTestBase(String testName) {
@@ -76,6 +76,10 @@ public class PHPHintsTestBase extends PHPCodeCompletionTestBase {
 
     protected void checkHintsInFile(Rule hint, String fileName, String selStartLine, String selEndLine) throws Exception {
         super.checkHints(hint, TEST_DIRECTORY + fileName, selStartLine, selEndLine);
+    }
+
+    protected void checkSuggestion(AbstractSuggestion suggestion, String fileName, String caretLine) throws Exception {
+        checkHints(this, suggestion, TEST_DIRECTORY + fileName, caretLine);
     }
 
     @Override

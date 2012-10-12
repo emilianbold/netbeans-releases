@@ -119,7 +119,10 @@ public class Utils {
                 }
             }
         }
-        if(sources_count == 0) {
+        if(provider == null) {
+            //we have no valid provider, either no provider tag or no server to get default provider
+            problems.add(NbBundle.getMessage(Utils.class, "NoValidProvider"));//NOI18N
+        } else if(sources_count == 0) {
             //we have no valid classpath entries from a project, it may be because it wasn't build at least once
             problems.add(NbBundle.getMessage(Utils.class, "NoValidClasspath"));//NOI18N
             //no need to continue in this case

@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -53,7 +52,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -65,7 +63,6 @@ import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -73,15 +70,14 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ModifiersCheckHint extends AbstractRule {
-    private static final String HINT_ID = "Modifiers.Check.Hint"; //NOI18N
+public class ModifiersCheckHintError extends AbstractHintError {
     private List<Hint> hints;
     private FileObject fileObject;
     private BaseDocument doc;
     private boolean currectClassHasAbstractMethod = false;
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -103,25 +99,9 @@ public class ModifiersCheckHint extends AbstractRule {
     }
 
     @Override
-    public String getId() {
-        return HINT_ID;
-    }
-
-    @Override
-    @Messages("ModifiersCheckHintDesc=Checks for usage of right modifiers at right places (e.g. field can not be final, etc.)")
-    public String getDescription() {
-        return Bundle.ModifiersCheckHintDesc();
-    }
-
-    @Override
     @Messages("ModifiersCheckHintDispName=Modifiers Checker")
     public String getDisplayName() {
         return Bundle.ModifiersCheckHintDispName();
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
     }
 
     private void processClassScope(ClassScope classScope) {
@@ -146,8 +126,8 @@ public class ModifiersCheckHint extends AbstractRule {
     })
     private void processFieldElement(FieldElement fieldElement) {
         PhpModifiers phpModifiers = fieldElement.getPhpModifiers();
-        List<HintFix> fixes = null;
-        String invalidModifier = null;
+        List<HintFix> fixes;
+        String invalidModifier;
         if (phpModifiers.isAbstract()) {
             invalidModifier = "abstract"; //NOI18N
             fixes = Collections.<HintFix>singletonList(new RemoveModifierFix(doc, invalidModifier, fieldElement.getOffset()));
@@ -169,7 +149,7 @@ public class ModifiersCheckHint extends AbstractRule {
     })
     private void processMethodScope(MethodScope methodScope) {
         PhpModifiers phpModifiers = methodScope.getPhpModifiers();
-        List<HintFix> fixes = null;
+        List<HintFix> fixes;
         if (phpModifiers.isAbstract() && phpModifiers.isFinal()) {
             fixes = new LinkedList<HintFix>();
             fixes.add(new RemoveModifierFix(doc, "abstract", methodScope.getOffset())); //NOI18N
@@ -203,8 +183,8 @@ public class ModifiersCheckHint extends AbstractRule {
     })
     private void processInterfaceMethodScope(MethodScope methodScope) {
         PhpModifiers phpModifiers = methodScope.getPhpModifiers();
-        List<HintFix> fixes = null;
-        String invalidModifier = null;
+        List<HintFix> fixes;
+        String invalidModifier;
         if (phpModifiers.isPrivate()) {
             invalidModifier = "private"; //NOI18N
             fixes = Collections.<HintFix>singletonList(new RemoveModifierFix(doc, invalidModifier, methodScope.getOffset()));
@@ -230,7 +210,7 @@ public class ModifiersCheckHint extends AbstractRule {
         "FinalPossibleAbstractClass=Class \"{0}\" contains abstract methods and can not be declared final"
     })
     private void processPossibleAbstractClass(ClassScope classScope) {
-        List<HintFix> fixes = null;
+        List<HintFix> fixes;
         if (!classScope.isAbstract()) {
             fixes = Collections.<HintFix>singletonList(new AddModifierFix(doc, "abstract", classScope.getOffset())); //NOI18N
             hints.add(new SimpleHint(Bundle.PossibleAbstractClass(classScope.getName()), classScope.getNameRange(), fixes));
@@ -244,7 +224,7 @@ public class ModifiersCheckHint extends AbstractRule {
     private class SimpleHint extends Hint {
 
         public SimpleHint(String description, OffsetRange range, List<HintFix> fixes) {
-            super(ModifiersCheckHint.this, description, fileObject, range, fixes, 500);
+            super(ModifiersCheckHintError.this, description, fileObject, range, fixes, 500);
         }
 
         public SimpleHint(String description, OffsetRange range) {

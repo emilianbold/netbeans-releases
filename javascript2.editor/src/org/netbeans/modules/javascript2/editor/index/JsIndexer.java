@@ -49,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -70,7 +71,7 @@ public class JsIndexer extends EmbeddingIndexer {
 
     private static final Logger LOG = Logger.getLogger(JsIndexer.class.getName());
 
-    private static final Collection<String> INDEXABLE_EXTENSIONS = Arrays.asList("js", "sdoc");
+    private static final Collection<String> INDEXABLE_EXTENSIONS = Arrays.asList("js", "sdoc", "html");
 
     @Override
     protected void index(Indexable indexable, Result result, Context context) {
@@ -131,24 +132,7 @@ public class JsIndexer extends EmbeddingIndexer {
         }
 
         private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
-            // Cannot call file.getFileObject().getMIMEType() here for several reasons:
-            // (1) when cleaning up the index for deleted files, file.getFileObject().getMIMEType()
-            //   may return "content/unknown", and in some cases, file.getFileObject() returns null
-            // (2) file.getFileObject() can be expensive during startup indexing when we're
-            //   rapidly scanning through lots of directories to determine which files are
-            //   indexable. This is done using the java.io.File API rather than the more heavyweight
-            //   FileObject, and each file.getFileObject() will perform a FileUtil.toFileObject() call.
-            // Since the mime resolver for PHP is simple -- it's just based on the file extension,
-            // we perform the same check here:
-            //if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
-
-            FileObject fileObject = snapshot.getSource().getFileObject();
-
-            if (INDEXABLE_EXTENSIONS.contains(fileObject.getExt().toLowerCase())) {
-                return true;
-            }
-
-            return false;
+            return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(snapshot.getMimeType());
         }
 
         @Override

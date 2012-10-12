@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,65 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.refactoring.query;
 
-package org.netbeans.modules.php.editor.verification;
-
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.plugins.CsmWhereUsedQueryPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Radek Matous
+ * @author Vladimir Voskresensky
  */
-public abstract class AbstractRule implements AstRule {
-    final void computeHints(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
-        if (isKindSupported(kind)) {
-            computeHintsImpl(context, hints, kind);
+public final class CsmRefactoringQuerySupport {
+
+    private CsmRefactoringQuerySupport() {
+    }
+
+    public static Collection<RefactoringElementImplementation> getWhereUsed(FileObject fo, int line, int col) {
+        CsmFile csmFile = CsmUtilities.getCsmFile(fo, true, false);
+        Collection<RefactoringElementImplementation> out = Collections.emptyList();
+        if (csmFile != null) {
+            long offset = CsmFileInfoQuery.getDefault().getOffset(csmFile, line, col);
+            if (offset >= 0) {
+                CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, (int)offset);
+                out = CsmWhereUsedQueryPlugin.getWhereUsed(ref, Collections.<Object, Boolean>emptyMap());
+            }
         }
-    }
-    abstract void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException;
-
-    boolean isKindSupported(PHPHintsProvider.Kind kind) {
-        return kind.equals(PHPHintsProvider.Kind.SUGGESTION);
-    }
-    @Override
-    public Set<? extends Object> getKinds() {
-        return Collections.singleton(PHPHintsProvider.DEFAULT_LINE_HINTS);
-    }
-
-    @Override
-    public boolean getDefaultEnabled() {
-        return true;
-    }
-
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
-    @Override
-    public boolean appliesTo(RuleContext context) {
-        return true;
-    }
-
-
-    @Override
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.CURRENT_LINE_WARNING;
+        return out;
     }
 }
