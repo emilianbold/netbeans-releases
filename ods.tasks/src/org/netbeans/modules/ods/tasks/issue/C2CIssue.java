@@ -73,6 +73,7 @@ import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.mylyn.util.GetAttachmentCommand;
 import org.netbeans.modules.mylyn.util.PostAttachmentCommand;
@@ -85,6 +86,7 @@ import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -104,7 +106,7 @@ public class C2CIssue {
     static final String LABEL_NAME_RESOLUTION   = "c2c.issue.resolution";       // NOI18N
     static final String LABEL_NAME_PRODUCT      = "c2c.issue.product";          // NOI18N
     static final String LABEL_NAME_COMPONENT    = "c2c.issue.component";        // NOI18N
-    static final String LABEL_NAME_VERSION      = "c2c.issue.version";          // NOI18N
+    static final String LABEL_NAME_ITERATION    = "c2c.issue.iteration";        // NOI18N
     static final String LABEL_NAME_MILESTONE    = "c2c.issue.milestone";        // NOI18N
     static final String LABEL_NAME_MODIFIED     = "c2c.issue.modified";         // NOI18N 
             
@@ -236,6 +238,10 @@ public class C2CIssue {
     public void setSeen(boolean seen) throws IOException {
         repository.getIssueCache().setSeen(getID(), seen);
     }
+    
+    private boolean wasSeen() {
+        return repository.getIssueCache().wasSeen(getID());
+    }
 
     public void setTaskData(TaskData taskData) {
 //        assert !taskData.isPartial();
@@ -254,8 +260,115 @@ public class C2CIssue {
         });
     }
 
+    @Messages({"LBL_NEW_STATUS=New", "LBL_SUMMARY_CHANGED_STATUS=Summary changed",
+        "# CC is a bugzilla attributes name, do not translate",
+        "LBL_CC_FIELD_CHANGED_STATUS=CC field changed",
+        "LBL_TAGS_CHANGED_STATUS=Tags changed",
+        "LBL_DEPENDENCE_CHANGED_STATUS=Associations changed",
+        "LBL_ATTACHMENTS_CHANGED=Attachment(s) added",
+        "# {0} - number of added comments", "LBL_COMMENTS_CHANGED={0} new comment(s)",
+        "# {0} - task field name", "# {1} - task field value", "LBL_CHANGED_TO={0} changed to {1}",
+        "# {0} - number of changes", "LBL_CHANGES_INCL_SUMMARY={0} changes, incl. summary",
+        "# {0} - number of changes", "LBL_CHANGES={0} changes",
+        "# {0} - number of changes", "LBL_CHANGES_INCL_PRIORITY={0} changes, incl. priority",
+        "# {0} - number of changes", "LBL_CHANGES_INCL_SEVERITY={0} changes, incl. severity",
+        "# {0} - number of changes", "LBL_CHANGES_INCL_ISSUE_TYPE={0} changes, incl. task type",
+        "# {0} - number of changes", "LBL_CHANGES_INCL_PRODUCT={0} changes, incl. product",
+        "# {0} - number of changes", "LBL_CHANGES_INCL_COMPONENT={0} changes, incl. component",
+        "# {0} - number of changes", "LBL_CHANGES_INCL_MILESTONE={0} changes, incl. milestone",
+        "# {0} - number of changes", "LBL_CHANGES_INCL_ITERATION={0} changes, incl. iteration",
+        "# {0} - number of changes", "LBL_CHANGES_INCL_TAGS={0} changes, incl. keywords",
+        "# {0} - number of changes", "LBL_CHANGES_INCL_OWNER={0} changes, incl. owner",
+        "# {0} - number of changes", "LBL_CHANGES_INCL_ASSOCIATIONS={0} changes, incl. associations"})
     public String getRecentChanges() {
-        return ""; // XXX 
+        if(wasSeen()) {
+            return ""; //NOI18N
+        }
+        int status = repository.getIssueCache().getStatus(getID());
+        if(status == IssueCache.ISSUE_STATUS_NEW) {
+            return Bundle.LBL_NEW_STATUS();
+        } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
+            List<IssueField> changedFields = new ArrayList<IssueField>();
+            assert getSeenAttributes() != null;
+            for (IssueField f : getConfiguration().getFields()) {
+                if (f == IssueField.MODIFIED || f == IssueField.CREATED || f == IssueField.REPORTER
+                        || f == IssueField.ATTACHEMENT_COUNT && data.isPartial() // attachments not available with partial data
+                        ) {
+                    continue;
+                }
+                String value = getFieldValue(f);
+                String seenValue = getSeenValue(f);
+                if(!value.trim().equals(seenValue)) {
+                    changedFields.add(f);
+                }
+            }
+            int changedCount = changedFields.size();
+            if (changedCount == 1) {
+                String ret = null;
+                for (IssueField changedField : changedFields) {
+                    if (changedField == IssueField.SUMMARY) {
+                        ret = Bundle.LBL_SUMMARY_CHANGED_STATUS();
+                    } else if (changedField == IssueField.CC) {
+                        ret = Bundle.LBL_CC_FIELD_CHANGED_STATUS();
+                    } else if (changedField == IssueField.TAGS) {
+                        ret = Bundle.LBL_TAGS_CHANGED_STATUS();
+                    } else if (changedField == IssueField.SUBTASK || changedField == IssueField.PARENT) {
+                        ret = Bundle.LBL_DEPENDENCE_CHANGED_STATUS();
+                    } else if (changedField == IssueField.COMMENT_COUNT) {
+                        String value = getFieldValue(changedField);
+                        String seenValue = getSeenValue(changedField);
+                        if(seenValue.equals("")) {
+                            seenValue = "0"; //NOI18N
+                        }
+                        int count = 0;
+                        try {
+                            count = Integer.parseInt(value) - Integer.parseInt(seenValue);
+                        } catch(NumberFormatException ex) {
+                            C2C.LOG.log(Level.WARNING, ret, ex);
+                        }
+                        ret = Bundle.LBL_COMMENTS_CHANGED(count);
+                    } else if (changedField == IssueField.ATTACHEMENT_COUNT) {
+                        ret = Bundle.LBL_ATTACHMENTS_CHANGED();
+                    } else {
+                        ret = Bundle.LBL_CHANGED_TO(changedField.getDisplayName(), getFieldValue(changedField));
+                    }
+                }
+                return ret;
+            } else {
+                String ret = Bundle.LBL_CHANGES(changedCount);
+                for (IssueField changedField : changedFields) {
+                    String msg = null;
+                    if (changedField == IssueField.SUMMARY) {
+                        msg = Bundle.LBL_CHANGES_INCL_SUMMARY(changedCount);
+                    } else if (changedField == IssueField.PRIORITY) {
+                        msg = Bundle.LBL_CHANGES_INCL_PRIORITY(changedCount);
+                    } else if (changedField == IssueField.SEVERITY) {
+                        msg = Bundle.LBL_CHANGES_INCL_SEVERITY(changedCount);
+                    } else if (changedField == IssueField.TASK_TYPE) {
+                        msg = Bundle.LBL_CHANGES_INCL_ISSUE_TYPE(changedCount);
+                    } else if (changedField == IssueField.PRODUCT) {
+                        msg = Bundle.LBL_CHANGES_INCL_PRODUCT(changedCount);
+                    } else if (changedField == IssueField.COMPONENT) {
+                        msg = Bundle.LBL_CHANGES_INCL_COMPONENT(changedCount);
+                    } else if (changedField == IssueField.MILESTONE) {
+                        msg = Bundle.LBL_CHANGES_INCL_MILESTONE(changedCount);
+                    } else if (changedField == IssueField.ITERATION) {
+                        msg = Bundle.LBL_CHANGES_INCL_ITERATION(changedCount);
+                    } else if (changedField == IssueField.TAGS) {
+                        msg = Bundle.LBL_CHANGES_INCL_TAGS(changedCount);
+                    } else if (changedField == IssueField.OWNER) {
+                        msg = Bundle.LBL_CHANGES_INCL_OWNER(changedCount);
+                    } else if (changedField == IssueField.SUBTASK || changedField == IssueField.PARENT) {
+                        msg = Bundle.LBL_CHANGES_INCL_ASSOCIATIONS(changedCount);
+                    }
+                    if (msg != null) {
+                        return msg;
+                    }
+                }
+                return ret;
+            }
+        }
+        return ""; //NOI18N
     }
 
     public Date getLastModifyDate() {
@@ -296,8 +409,7 @@ public class C2CIssue {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
             String value;
-            for (IssueField field : C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(),
-                    repository.getTaskRepository()).getFields()) {
+            for (IssueField field : getConfiguration().getFields()) {
                 value = getFieldValue(field);
                 if(value != null && !value.trim().equals("")) {                 // NOI18N
                     attributes.put(field.getKey(), value);
@@ -590,9 +702,9 @@ public class C2CIssue {
                                           loc.getString("CTL_Issue_Component_Title"),          // NOI18N
                                           loc.getString("CTL_Issue_Component_Desc"),           // NOI18N
                                           0, false));
-        ret.add(new ColumnDescriptor<String>(LABEL_NAME_VERSION, String.class,
-                                          loc.getString("CTL_Issue_Version_Title"),          // NOI18N
-                                          loc.getString("CTL_Issue_Version_Desc"),           // NOI18N
+        ret.add(new ColumnDescriptor<String>(LABEL_NAME_ITERATION, String.class,
+                                          loc.getString("CTL_Issue_Iteration_Title"),          // NOI18N
+                                          loc.getString("CTL_Issue_Iteration_Desc"),           // NOI18N
                                           0, false));
         ret.add(new ColumnDescriptor<String>(LABEL_NAME_MILESTONE, String.class,
                                           loc.getString("CTL_Issue_Milestone_Title"),          // NOI18N
@@ -918,6 +1030,11 @@ public class C2CIssue {
             }
             //</editor-fold>
         };
+    }
+
+    private C2CData getConfiguration () {
+        return C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(),
+repository.getTaskRepository());
     }
 
     class Comment {

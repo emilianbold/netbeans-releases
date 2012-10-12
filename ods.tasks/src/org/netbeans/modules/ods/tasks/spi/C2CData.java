@@ -203,7 +203,9 @@ public final class C2CData {
     public List<IssueField> getFields() {
         if (issueFields == null) {
             List<IssueField> fields = new ArrayList<IssueField>(40);
+            fields.add(IssueField.ATTACHEMENT_COUNT);
             fields.add(IssueField.CC);
+            fields.add(IssueField.COMMENT_COUNT);
             fields.add(IssueField.COMPONENT);
             fields.add(IssueField.CREATED);
             fields.add(IssueField.DESCRIPTION);
@@ -214,7 +216,6 @@ public final class C2CData {
             fields.add(IssueField.ITERATION);
             fields.add(IssueField.MILESTONE);
             fields.add(IssueField.MODIFIED);
-            fields.add(IssueField.NEWCC);
             fields.add(IssueField.NEWCC);
             fields.add(IssueField.OWNER);
             fields.add(IssueField.PARENT);
@@ -228,7 +229,6 @@ public final class C2CData {
             fields.add(IssueField.SUMMARY);
             fields.add(IssueField.TAGS);
             fields.add(IssueField.TASK_TYPE);
-            fields.add(IssueField.VERSION);
             
 //            if(rc != null) {
 //                // Custom fields

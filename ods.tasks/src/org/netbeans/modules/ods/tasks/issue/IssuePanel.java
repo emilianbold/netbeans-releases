@@ -161,7 +161,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private boolean noSummary = false;
     private boolean invalidTag = false;
     private boolean noComponent = false;
-    private boolean noVersion = false;
+    private boolean noIteration = false;
     private boolean noTargetMilestione = false;
     private boolean noDuplicateId = false;
     private List<String> fieldErrors = new LinkedList<String>();
@@ -838,15 +838,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
 
-    private void updateNoRelease() {
+    private void updateNoIteration () {
         boolean newNoVersion = (releaseCombo.getSelectedItem() == null);
-        if (noVersion != newNoVersion) {
-            noVersion = newNoVersion;
+        if (noIteration != newNoVersion) {
+            noIteration = newNoVersion;
             updateMessagePanel();
         }
     }
 
-    private void updateNoIteration() {
+    private void updateNoMilestone() {
         boolean newNoTargetMilestone = (iterationCombo.getSelectedItem() == null);
         if (noTargetMilestione != newNoTargetMilestone) {
             noTargetMilestione = newNoTargetMilestone;
@@ -1295,8 +1295,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (noComponent) {
             addMessage("IssuePanel.noComponent"); // NOI18N
         }
-        if (noVersion) {
-            addMessage("IssuePanel.noVersion"); // NOI18N
+        if (noIteration) {
+            addMessage("IssuePanel.noIteration"); // NOI18N
         }
         if (noTargetMilestione) {
             addMessage("IssuePanel.noTargetMilestone"); // NOI18N
@@ -1338,7 +1338,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             invalidDateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
             messagePanel.add(invalidDateLabel);
         }
-        if (noSummary || sameParent || cyclicDependency || invalidTag || noComponent || noVersion || noTargetMilestione || noDuplicateId || !invalidDateFields.isEmpty()) {
+        if (noSummary || sameParent || cyclicDependency || invalidTag || noComponent || noIteration || noTargetMilestione || noDuplicateId || !invalidDateFields.isEmpty()) {
             submitButton.setEnabled(false);
         } else {
             submitButton.setEnabled(true);
@@ -1353,7 +1353,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
             messagePanel.add(warningLabel);
         }
-        if (noSummary || sameParent || cyclicDependency || invalidTag || noComponent || noVersion || noTargetMilestione || noDuplicateId || (fieldErrors.size() + fieldWarnings.size() > 0)
+        if (noSummary || sameParent || cyclicDependency || invalidTag || noComponent || noIteration || noTargetMilestione || noDuplicateId || (fieldErrors.size() + fieldWarnings.size() > 0)
                 || !invalidDateFields.isEmpty()) {
             messagePanel.setVisible(true);
             messagePanel.revalidate();
@@ -2248,7 +2248,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 // throws NPE
 //                connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
                 initialValues.remove(IssueField.COMPONENT.getKey());
-                initialValues.remove(IssueField.VERSION.getKey());
                 initialValues.remove(IssueField.MILESTONE.getKey());
                 reloadForm(false);
 //            } catch (CoreException cex) {
@@ -2280,7 +2279,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void releaseComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_releaseComboActionPerformed
         cancelHighlight(releaseLabel);
-        updateNoRelease();
+        updateNoMilestone();
     }//GEN-LAST:event_releaseComboActionPerformed
 
     private void iterationComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iterationComboActionPerformed

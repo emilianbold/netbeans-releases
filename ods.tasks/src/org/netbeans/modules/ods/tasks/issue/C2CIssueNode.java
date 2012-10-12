@@ -77,7 +77,7 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
             new ModificationProperty(),
             new C2CFieldProperty(C2CIssue.LABEL_NAME_PRODUCT, IssueField.PRODUCT, "CTL_Issue_Product_Title", "CTL_Issue_Product_Desc"), // NOI18N
             new C2CFieldProperty(C2CIssue.LABEL_NAME_COMPONENT, IssueField.COMPONENT, "CTL_Issue_Component_Title", "CTL_Issue_Component_Desc"), // NOI18N
-            new C2CFieldProperty(C2CIssue.LABEL_NAME_VERSION, IssueField.VERSION, "CTL_Issue_Version_Title", "CTL_Issue_Version_Desc"), // NOI18N
+            new C2CFieldProperty(C2CIssue.LABEL_NAME_ITERATION, IssueField.ITERATION, "CTL_Issue_Iteration_Title", "CTL_Issue_Iteration_Desc"), // NOI18N
             new C2CFieldProperty(C2CIssue.LABEL_NAME_MILESTONE, IssueField.MILESTONE, "CTL_Issue_Milestone_Title", "CTL_Issue_Milestone_Desc"), // NOI18N
         };
     };

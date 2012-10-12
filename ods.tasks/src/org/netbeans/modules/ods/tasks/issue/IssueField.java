@@ -68,7 +68,6 @@ public class IssueField {
     public static final IssueField RESOLUTION = new IssueField(TaskAttribute.RESOLUTION, "LBL_RESOLUTION"); // NOI18N
     public static final IssueField DUPLICATE = new IssueField(C2CData.ATTR_DUPLICATE_OF, "LBL_DUPLICATE"); // NOI18N
     public static final IssueField SEVERITY = new IssueField(TaskAttribute.SEVERITY, "LBL_SEVERITY"); // NOI18N
-    public static final IssueField VERSION = new IssueField(C2CData.ATTR_VERSION, "LBL_VERSION"); // NOI18N
     public static final IssueField TASK_TYPE = new IssueField(C2CData.ATTR_TASK_TYPE, "LBL_TASK_TYPE"); // NOI18N
     public static final IssueField REPORTER = new IssueField(C2CData.ATTR_REPORTER, "LBL_REPORTER"); // NOI18N
     public static final IssueField OWNER = new IssueField(C2CData.ATTR_OWNER, "LBL_OWNER"); // NOI18N
@@ -80,15 +79,21 @@ public class IssueField {
     
     public static final IssueField NEWCC = new IssueField(C2CData.ATTR_NEWCC, null); // NOI18N
     public static final IssueField MODIFIED = new IssueField(C2CData.ATTR_MODIFIED, null); // NOI18N
+    public static final IssueField COMMENT_COUNT = new IssueField(TaskAttribute.TYPE_COMMENT, null, false);
+    public static final IssueField ATTACHEMENT_COUNT = new IssueField(TaskAttribute.TYPE_ATTACHMENT, null, false);
 
     private final String attribute;
     private final String displayNameKey;
     private boolean singleFieldAttribute;
 
-    IssueField(String attribute, String displayNameKey) {
-        this.attribute = attribute;
+    IssueField(String key, String displayNameKey) {
+        this(key, displayNameKey, true);
+    }
+
+    IssueField(String key, String displayNameKey, boolean singleAttribute) {
+        this.attribute = key;
         this.displayNameKey = displayNameKey;
-        this.singleFieldAttribute = true;
+        this.singleFieldAttribute = singleAttribute;
     }
 
     public String getKey() {
