@@ -64,6 +64,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -197,6 +198,9 @@ class ColumnSelectionPanel extends JPanel {
         int index = 0;
         int rows = columns.size() / width;
         Object hint = table.transformValue (COLUMNS_SELECTOR_HINT);
+        if (hint == COLUMNS_SELECTOR_HINT) {
+            hint = ResourceBundle.getBundle("org/netbeans/swing/etable/Bundle").getString(COLUMNS_SELECTOR_HINT);
+        }
         if (hint != null) {
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
