@@ -148,7 +148,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                 for (CsmObject csmObject : referencedObjects) {
                     files.addAll(getRelevantFiles(startFile, csmObject, refactoring));
                 }
-                LOG.log(Level.INFO, "preparing files took {0}ms", System.currentTimeMillis() - time);
+                LOG.log(Level.FINE, "preparing files took {0}ms", System.currentTimeMillis() - time);
                 fireProgressListenerStart(ProgressEvent.START, files.size() + 2);
                 res = processObjectUsagesQuery(referencedObjects, files, bagToAdd);
             }
@@ -161,7 +161,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             fireProgressListenerStart(ProgressEvent.START, 2);
             res = processOverridenMethodsQuery((CsmMethod)referencedObject);
         }   
-        LOG.log(Level.INFO, "preparing FindUsages elements took {0}ms", System.currentTimeMillis() - time);
+        LOG.log(Level.FINE, "preparing FindUsages elements took {0}ms", System.currentTimeMillis() - time);
         fireProgressListenerStep();
         return res;
     }
@@ -365,7 +365,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                 }
             }
         });
-        LOG.log(Level.INFO, "creation of sorted {0} files took {1}ms", new Object[] {sortedFiles.size(), System.currentTimeMillis()-time});
+        LOG.log(Level.FINE, "creation of sorted {0} files took {1}ms", new Object[] {sortedFiles.size(), System.currentTimeMillis()-time});
         final List<OneFileWorker> work = new ArrayList<OneFileWorker>(sortedFiles.size());
         for (final CsmFile file : sortedFiles) {
             OneFileWorker task = new OneFileWorker(interrupter, file, onlyUsages, xRef, kinds, objs);
@@ -408,7 +408,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                     }
                 }
                 total += exposedElements.size();
-                LOG.log(Level.FINE, "[{0}/{1}] {2}", new Object[] {++indexNonEmpty, total, workUnit.file.getAbsolutePath()});
+                LOG.log(Level.FINEST, "[{0}/{1}] {2}", new Object[] {++indexNonEmpty, total, workUnit.file.getAbsolutePath()});
             }
         }
         return elements;
