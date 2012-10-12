@@ -64,11 +64,14 @@ import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor.SpecializationDescriptorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -117,6 +120,14 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), parent, register);
     }
 
+    private FriendClassImpl(CharSequence name, CsmClassForwardDeclaration cfd, CsmClass parent, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        this.parentUID = UIDs.get(parent);
+        this.name = name;
+        nameParts = Utils.splitQualifiedName(name.toString());;
+        classForwardUID = UIDCsmConverter.declarationToUID(cfd);
+    }
+    
     public static FriendClassImpl create(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
@@ -302,6 +313,39 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
     }
 
+    
+    public static class FriendClassBuilder extends SimpleDeclarationBuilder {
+        
+        private SpecializationDescriptorBuilder specializationDescriptorBuilder;
+        
+        public void setSpecializationDescriptorBuilder(SpecializationDescriptorBuilder specializationDescriptorBuilder) {
+            this.specializationDescriptorBuilder = specializationDescriptorBuilder;
+        }
+
+        public SpecializationDescriptor getSpecializationDescriptor() {
+            if(specializationDescriptorBuilder != null) {
+                specializationDescriptorBuilder.setScope(getScope());
+                return specializationDescriptorBuilder.create();
+            }
+            return null;
+        }
+        
+        @Override
+        public FriendClassImpl create() {
+            FriendClassImpl impl = new FriendClassImpl(getName(), null, (CsmClass)getScope(), getFile(), getStartOffset(), getEndOffset());
+            if(getTemplateDescriptorBuilder() != null) {
+                impl.templateDescriptor = getTemplateDescriptor();
+            }
+            if(specializationDescriptorBuilder != null) {
+                impl.specializationDesctiptor = getSpecializationDescriptor();
+            }
+            postObjectCreateRegistration(isGlobal(), impl);
+            return impl;
+        }
+        
+    }
+    
+    
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
 
