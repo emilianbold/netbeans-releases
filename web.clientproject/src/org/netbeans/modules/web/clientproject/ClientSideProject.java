@@ -312,6 +312,8 @@ public class ClientSideProject implements Project {
                new ClientSideProjectSources(this, projectHelper, eval),
                ProjectPropertiesProblemProvider.createForProject(this),
                //UILookupMergerSupport.createProjectProblemsProviderMerger(),
+               SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
+                    ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
        });
     }
 
