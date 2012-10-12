@@ -171,18 +171,17 @@ public class C2CQueryController extends QueryController implements ItemListener,
         // setup parameters
         parameters = new QueryParameters();
         
+        parameters.addParameter(QueryParameters.Column.SUMMARY, panel.searchBySummaryCheckBox, panel.byTextTextField);  
+        parameters.addParameter(QueryParameters.Column.DESCRIPTION, panel.searchBySummaryCheckBox, panel.byTextTextField);  
         parameters.addParameter(QueryParameters.Column.PRODUCT, panel.productList);  
         parameters.addParameter(QueryParameters.Column.COMPONENT, panel.componentList);
         parameters.addParameter(QueryParameters.Column.RELEASE, panel.releaseList);    
         parameters.addParameter(QueryParameters.Column.ITERATION, panel.iterationList);
-           
         parameters.addParameter(QueryParameters.Column.TASK_TYPE, panel.issueTypeList);
         parameters.addParameter(QueryParameters.Column.PRIORITY, panel.priorityList);  
         parameters.addParameter(QueryParameters.Column.SEVERITY, panel.severityList);  
-        
         parameters.addParameter(QueryParameters.Column.STATUS, panel.statusList);      
         parameters.addParameter(QueryParameters.Column.RESOLUTION, panel.resolutionList);
-        
         parameters.addParameter(QueryParameters.Column.TAGS, panel.tagsComboBox);                   
         
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));

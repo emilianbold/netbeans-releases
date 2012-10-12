@@ -124,6 +124,10 @@ public class QueryParameters {
     void addParameter(Column c, JTextField txt) {
         map.put(c, new TextFieldParameter(txt, c));
     }
+    
+    void addParameter(Column c, JCheckBox chk, JTextField txt) {
+        map.put(c, new TextFieldParameter(txt, c));
+    }
             
 //    <T extends QueryParameter> T createQueryParameter(Class clazz, Component c, String attribute) {
 //        try {
@@ -151,6 +155,10 @@ public class QueryParameters {
 
         void setValues(Object... values) {
             setValues(Arrays.asList(values));
+        }
+        
+        void populate(Object... values) {
+            populate(Arrays.asList(values));
         }
         
         abstract void setValues(Collection values);
@@ -326,7 +334,7 @@ public class QueryParameters {
         public Collection<String> getValues() {
             String value = txt.getText();
             if(value == null || value.equals("")) { // NOI18N
-                return null; //EMPTY_PARAMETER_VALUE;
+                return null; 
             }
             return Collections.singleton(value);
         }
@@ -356,6 +364,61 @@ public class QueryParameters {
         }
     }
 
+    static class CheckedTextFieldParameter extends Parameter {
+        
+        private final JTextField txt;
+        private final JCheckBox chk;
+        
+        public CheckedTextFieldParameter(JCheckBox chk, JTextField txt, Column column) {
+            super(column);
+            this.txt = txt;
+            this.chk = chk;
+        }
+        
+        @Override
+        public Collection<String> getValues() {
+            if(chk.isSelected()) {
+                String value = txt.getText();
+                if(value == null || value.equals("")) { // NOI18N
+                    return Collections.emptyList(); 
+                }
+                return Collections.singleton(value);
+            }
+            return null;
+        }
+        
+        @Override
+        void setValues(Object... values) {
+            if(values == null) {
+                chk.setSelected(false);
+            } else {
+                String s = (String) values[0];
+                txt.setText(s); 
+                chk.setSelected(true);
+            }
+        }
+                
+        @Override
+        public void setValues(Collection b) {
+            throw new UnsupportedOperationException();
+        }
+        
+        @Override
+        void setEnabled(boolean  b) {
+//            txt.setEnabled(alwaysDisabled ? false : b); // might be shared with other parameters
+            chk.setEnabled(alwaysDisabled ? false : b);
+        }
+
+        void populate(Object... value) {
+            // do nothing
+        }
+        
+        @Override
+        void populate(Collection value) {
+            // do nothing
+        }
+    }
+    
     static class CheckBoxParameter extends Parameter {
         private boolean selected = true; 
         private final JCheckBox chk;
@@ -389,7 +452,7 @@ public class QueryParameters {
 
         @Override
         void populate(Collection b) {
-            setValues(b);
+            // do nothing
         }
     }
 
