@@ -814,8 +814,11 @@ public abstract class PatternSandbox extends JPanel
         jd.add(sandbox);
         jd.setTitle(sandbox.getTitle());
         jd.setModal(true);
-        jd.setLocationRelativeTo(baseComponent);
+        // try to reuse location of basecomponent
+        // else 3 cascades of subdialogs does not fit to the screen
+        jd.setLocation(baseComponent.getLocationOnScreen());
         jd.pack();
+        sandbox.cboxPattern.requestFocusInWindow();
         jd.setVisible(true);
     }
 
