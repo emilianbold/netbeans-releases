@@ -491,7 +491,10 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         int start = Integer.MAX_VALUE;
         int end = -1;
         
-        for (int i = 0; i < matches.length; i += 2) {
+        // See issue #219683: in if-then-elif-else constructs, only the 2 initial pairs
+        // (start and end of the initial tag/construct) are interesting. For finer control,
+        // a language SPI has to be created.
+        for (int i = 0; i < Math.min(matches.length, 4); i += 2) {
             int s = matches[i];
             int e = matches[i+1];
             
