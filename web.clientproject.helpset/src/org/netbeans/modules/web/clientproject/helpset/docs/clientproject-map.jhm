@@ -7,6 +7,8 @@
     <mapID target="html5-about" url="html5/html5-about.html"/>
     <mapID target="html5-create" url="html5/html5-createproj.html"/>
     <mapID target="html5-templates" url="html5/html5-sitetemplate.html"/>
+    <mapID target="html5-process" url="html5/html5-process.html"/>
+    <mapID target="html5-debug" url="html5/html5-debug.html"/>
     
     
     
