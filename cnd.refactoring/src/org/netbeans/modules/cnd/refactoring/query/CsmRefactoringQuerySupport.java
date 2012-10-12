@@ -61,6 +61,18 @@ public final class CsmRefactoringQuerySupport {
     private CsmRefactoringQuerySupport() {
     }
 
+    public static Collection<RefactoringElementImplementation> getWhereUsed(FileObject fo, int offset) {
+        Collection<RefactoringElementImplementation> out = Collections.emptyList();
+        if (offset >= 0) {
+            CsmFile csmFile = CsmUtilities.getCsmFile(fo, true, false);
+            if (csmFile != null) {
+                CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, (int) offset);
+                out = CsmWhereUsedQueryPlugin.getWhereUsed(ref, Collections.<Object, Boolean>emptyMap());
+            }        
+        }
+        return out;
+    }
+    
     public static Collection<RefactoringElementImplementation> getWhereUsed(FileObject fo, int line, int col) {
         CsmFile csmFile = CsmUtilities.getCsmFile(fo, true, false);
         Collection<RefactoringElementImplementation> out = Collections.emptyList();

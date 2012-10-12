@@ -147,12 +147,27 @@ public final class Model {
         }
 
         //recreate
-        Model model = new Model(parserResult);
+        Model model = createModel(parserResult);
 
         //cache
         PR_MODEL_CACHE.put(parserResult, new WeakReference<Model>(model));
 
         return model;
+    }
+    
+    /**
+     * Creates a new instanceof Model for given CssParserResult.
+     *
+     * <b>This method should be called under the parsing lock as the parser
+     * result task should not escape the UserTask</b>
+     *
+     * @param parserResult
+     *
+     * @since 1.7
+     * @return new instance of the Css Source Model
+     */
+    public static Model createModel(CssParserResult parserResult) {
+        return new Model(parserResult);
     }
     
     private Model(int modelSerialNumber) {

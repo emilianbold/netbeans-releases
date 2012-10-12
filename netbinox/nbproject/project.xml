@@ -94,8 +94,8 @@
                 <package>org.eclipse.osgi.util</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar</binary-origin>
+                <runtime-relative-path>ext/org.eclipse.osgi_3.8.0.v20120529-1548.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.osgi_3.8.0.v20120529-1548.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

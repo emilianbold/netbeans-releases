@@ -87,6 +87,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -311,7 +312,9 @@ public class ClientSideProject implements Project {
                new ProjectWebRootProviderImpl(),
                new ClientSideProjectSources(this, projectHelper, eval),
                ProjectPropertiesProblemProvider.createForProject(this),
-               //UILookupMergerSupport.createProjectProblemsProviderMerger(),
+               UILookupMergerSupport.createProjectProblemsProviderMerger(),
+               SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
+                    ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
        });
     }
 

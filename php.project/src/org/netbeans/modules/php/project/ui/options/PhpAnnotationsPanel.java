@@ -72,7 +72,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
-@OptionsPanelController.Keywords(keywords={"php", "anotations"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_AnnotationsOptions")
+@OptionsPanelController.Keywords(keywords={"php", "annotations", "#KW_AnnotationsOptions"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_AnnotationsOptions")
 public class PhpAnnotationsPanel extends JPanel {
 
     private static final long serialVersionUID = 89732416546545L;

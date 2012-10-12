@@ -48,7 +48,7 @@ import org.netbeans.spi.options.OptionsPanelController;
  * 
  * @author Milan Kubec
  */
-@OptionsPanelController.Keywords(keywords={"web browser"}, location=OptionsDisplayer.GENERAL)
+@OptionsPanelController.Keywords(keywords={"web browser", "#KW_WebBrowser"}, location=OptionsDisplayer.GENERAL)
 public class WebBrowsersOptionsPanel extends JPanel implements ListSelectionListener {
     
     private WebBrowsersOptionsModel browsersModel;
