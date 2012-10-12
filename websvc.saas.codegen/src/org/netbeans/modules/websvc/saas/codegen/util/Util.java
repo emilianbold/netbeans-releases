@@ -111,7 +111,7 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
 import org.netbeans.modules.websvc.saas.codegen.ui.ProgressDialog;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
-import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
+import org.netbeans.modules.websvc.saas.model.wadl.Representation;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
@@ -1455,8 +1455,8 @@ public class Util {
     public static boolean isPutPostFormParams(RestClientSaasBean bean) {
         HttpMethodType httpMethod = bean.getHttpMethod();
         if(httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
-            List<RepresentationType> reps = bean.findInputRepresentations(bean.getMethod());
-            for(RepresentationType rep: reps) {
+            List<Representation> reps = bean.findInputRepresentations(bean.getMethod());
+            for(Representation rep: reps) {
                 if (rep.getParam() != null && rep.getParam().size() > 0)
                     return true;
             }
@@ -1465,7 +1465,7 @@ public class Util {
     }
     
     public static boolean hasInputRepresentations(RestClientSaasBean bean) {
-       List<RepresentationType> reps = bean.findInputRepresentations(bean.getMethod());
+       List<Representation> reps = bean.findInputRepresentations(bean.getMethod());
        
        if (reps == null || reps.size() == 0) 
            return false;
