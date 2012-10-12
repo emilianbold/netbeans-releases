@@ -67,7 +67,6 @@ import org.netbeans.modules.openide.explorer.UIException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
-import org.openide.nodes.Node.*;
 import org.openide.nodes.Node.Property;
 import org.openide.util.*;
 
@@ -235,6 +234,7 @@ final class PropUtils {
 
     /** Comparator which compares types */
     private final static Comparator<Node.Property> SORTER_TYPE = new Comparator<Node.Property>() {
+            @Override
             public int compare(Node.Property l, Node.Property r) {
 
                 Class t1 = l.getValueType();
@@ -254,7 +254,7 @@ final class PropUtils {
                 return s1.compareToIgnoreCase(s2);
             }
 
-        @Override
+            @Override
             public String toString() {
                 return "Type comparator"; //NOI18N
             }
@@ -1586,6 +1586,78 @@ final class PropUtils {
     static boolean isExternallyEdited(Property p) {
         return externallyEdited.contains(p);
     }
+
+    static boolean supportsValueIncrement( PropertyEnv env ) {
+        if( null == env || null == env.getFeatureDescriptor() )
+            return false;
+        Object o = env.getFeatureDescriptor().getValue( IncrementPropertyValueSupport.KEY_INCREMENT_VALUE_SUPPORT );
+        return o instanceof SpinnerModel;
+    }
+
+    static Object getNextValue( PropertyEnv env, boolean increment ) {
+        Object res = null;
+        if( null != env && null != env.getFeatureDescriptor() ) {
+            Object obj = env.getFeatureDescriptor().getValue( IncrementPropertyValueSupport.KEY_INCREMENT_VALUE_SUPPORT );
+            if( obj instanceof SpinnerModel ) {
+                SpinnerModel spinner = ( SpinnerModel ) obj;
+                res = increment ? spinner.getNextValue() : spinner.getPreviousValue();
+            }
+        }
+        return res;
+    }
+    
+        private static final String DOWN = "selectNext";
+        private static final String DOWN_2 = "selectNext2";
+        private static final String UP = "selectPrevious";
+        private static final String UP_2 = "selectPrevious2";
+    static void wrapUpDownArrowActions(JComponent inplaceEditor, final IncrementPropertyValueSupport incrementSupport) {
+        InputMap im = inplaceEditor.getInputMap( JComponent.WHEN_FOCUSED );
+        wrapAction( im.get(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0)), inplaceEditor.getActionMap(), incrementSupport, true );
+        wrapAction( "selectPrevious", inplaceEditor.getActionMap(), incrementSupport, true ); //NOI18N
+        wrapAction( "selectPrevious2", inplaceEditor.getActionMap(), incrementSupport, true ); //NOI18N
+
+        wrapAction( im.get(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0)), inplaceEditor.getActionMap(), incrementSupport, false );
+        wrapAction( "selectNext", inplaceEditor.getActionMap(), incrementSupport, false ); //NOI18N
+        wrapAction( "selectNext2", inplaceEditor.getActionMap(), incrementSupport, false ); //NOI18N
+    }
+
+    private static void wrapAction( Object key, ActionMap actionMap, IncrementPropertyValueSupport incrementSupport, boolean doIncrement) {
+        if( null == key )
+            return;
+        final Action originalAction = actionMap.get(key);
+        if( null != originalAction && !(originalAction instanceof IncrementValueActionWrapper) ) {
+            actionMap.put( key, new IncrementValueActionWrapper(originalAction, incrementSupport, doIncrement) );
+        }
+    }
+    
+    private static class IncrementValueActionWrapper extends AbstractAction {
+        
+        private final Action originalAction;
+        private final IncrementPropertyValueSupport incrementSupport;
+        private final boolean increment;
+        
+        public IncrementValueActionWrapper( Action originalAction, IncrementPropertyValueSupport incrementSupport, boolean doIncrement ) {
+            this.originalAction = originalAction;
+            this.incrementSupport = incrementSupport;
+            this.increment = doIncrement;
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            boolean consume = increment ? incrementSupport.incrementValue() : incrementSupport.decrementValue();
+            if( consume )
+                return;
+            
+            originalAction.actionPerformed(ae);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return incrementSupport.isIncrementEnabled() || originalAction.isEnabled();
+        }
+    }
+
+    
 
     /** Property editor for properties which belong to more than one property, but have
      *  different values.   */

@@ -88,7 +88,6 @@ import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.SpinnerModel;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
@@ -1860,33 +1859,14 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             if (isEditing()) {
                 SheetCellEditor cellEditor = getEditor();
                 InplaceEditor inplaceEditor = cellEditor.getInplaceEditor();
-                if (inplaceEditor instanceof ComboInplaceEditor) {
-                    SpinnerModel model = ((ComboInplaceEditor) inplaceEditor).getIncrementSupport();
-                    if (model != null) {
-                        Object newValue = isIncrement ? model.getNextValue() : model.getPreviousValue();
-                        if (null != newValue) {
-                            try {
-                                SheetCellEditor.ignoreStopCellEditing = true;
-                                inplaceEditor.setValue(newValue);
-                            } finally {
-                                SheetCellEditor.ignoreStopCellEditing = false;
-                            }
-                            return;
-                        }
-                    }
+                if (inplaceEditor instanceof IncrementPropertyValueSupport) {
+                    IncrementPropertyValueSupport incrementSupport = ( IncrementPropertyValueSupport ) inplaceEditor;
+                    boolean consume = isIncrement ? incrementSupport.incrementValue() : incrementSupport.decrementValue();
+                    if( consume )
+                        return;
                 }
             }
             changeRowAction.actionPerformed(e);
         }
-    }
-    
-    static String VALUE_INCREMENT = "valueIncrement"; //NOI18N
-    
-    static boolean isValueIncrementEnabled(PropertyEnv env) {
-        if(env == null) {
-            return false;
-        }
-        Object o = env.getFeatureDescriptor().getValue( VALUE_INCREMENT );
-        return o != null && ( o instanceof SpinnerModel );
     }
 }
