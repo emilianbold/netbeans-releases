@@ -85,8 +85,22 @@ public final class FindMethodUtils {
                 return variable.getOriginType();
 
             } else {
-                // Situations like: "this.destroyWorldMethod()" or only "destroyWorldMethod()"
-                return ASTUtils.getOwningClass(path);
+                if (methodCall.isImplicitThis()) {
+                    // Situations like: "destroyWorldMethod()"
+                    final ClassNode owner = ASTUtils.getOwningClass(path);
+                    final String methodName = methodCall.getMethodAsString();
+                    final List<MethodNode> methods = owner.getMethods(methodName);
+
+                    if (methods.size() > 0) {
+                        return methods.get(0).getDeclaringClass();
+                    }
+
+                    // We have to iterate over the static imports and classes imported by default
+                    return null;
+                } else {
+                    // Situations like: "this.destroyWorldMethod()"
+                    return ASTUtils.getOwningClass(path);
+                }
             }
         } else if (expression instanceof ClassExpression) {
             // Situations like: "GroovySupportObject.println()"

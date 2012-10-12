@@ -53,6 +53,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -67,12 +70,10 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.datatransfer.ExClipboard;
 
 /**
- * Copies the absolute path of selected {@link DataObject}s to the clipboard.
- * Action is shown in context menu of tab. It support DataShadows, so the path
- * of items in the favorites window can be copied properly. It support items
- * within JAR-files.
- *
- * Note: It does not support selected Projects.
+ * Copies the absolute path of selected {@link DataObject}s or {@link Project}s
+ * to the clipboard. Action is shown in context menu of tab. It support
+ * DataShadows, so the path of items in the favorites window can be copied
+ * properly. It support items within JAR-files.
  *
  * @author markiewb
  */
@@ -93,15 +94,19 @@ import org.openide.util.datatransfer.ExClipboard;
 public final class CopyPathToClipboardAction implements ActionListener,
         ClipboardOwner {
 
-    private final List<DataObject> context;
+    private final List<Lookup.Provider> context;
 
-    public CopyPathToClipboardAction(List<DataObject> context) {
+    public CopyPathToClipboardAction(List<Lookup.Provider> context) {
         this.context = context;
     }
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        Collection<String> paths = getSelectedPaths();
+
+        Collection<String> paths=new TreeSet<String>();
+        paths.addAll(getSelectedPathsForDataObjects());
+        paths.addAll(getSelectedPathsForProjects());
+
         StringBuilder sb = new StringBuilder();
         int items = 0;
         for (String path : paths) {
@@ -124,10 +129,12 @@ public final class CopyPathToClipboardAction implements ActionListener,
      *
      * @return Sorted collection of unique paths.
      */
-    Collection<String> getSelectedPaths() {
+    Collection<String> getSelectedPathsForDataObjects() {
         Set<String> paths = new TreeSet<String>();
-        for (DataObject dataObject : context) {
-            paths.add(getAbsolutePath(dataObject));
+        for (Lookup.Provider lookupProvider : context) {
+            if (lookupProvider instanceof DataObject) {
+                paths.add(getAbsolutePath((DataObject) lookupProvider));
+            }
         }
         return paths;
     }
@@ -195,6 +202,42 @@ public final class CopyPathToClipboardAction implements ActionListener,
     }
 
     /**
+     * Get the project directory of the given project.
+     *
+     * @param project
+     * @return
+     */
+    private String getProjectDirectory(final Project project) {
+        try {
+            FileObject projectDirectory = project.getProjectDirectory();
+            return getNativePath(projectDirectory);
+        } catch (Exception e) {
+            Logger.getLogger(CopyPathToClipboardAction.class.getName()).log(
+                    Level.FINE, null, e);
+            return null;
+        }
+    }
+
+    /**
+     * Get paths of selected projects. Prevent duplicates, see #219014.
+     *
+     * @return Sorted collection of unique paths.
+     */
+    Collection<String> getSelectedPathsForProjects() {
+
+        Set<String> paths = new TreeSet<String>();
+        for (Lookup.Provider object : context) {
+            if (object instanceof Project) {
+                String projectDir = getProjectDirectory((Project) object);
+                if (null != projectDir) {
+                    paths.add(projectDir);
+                }
+            }
+        }
+        return paths;
+    }
+
+    /**
      * Sets the clipboard context in textual-format.
      *
      * @param content
@@ -202,7 +245,7 @@ public final class CopyPathToClipboardAction implements ActionListener,
     @Messages({
         "# {0} - copied file path",
         "CTL_Status_CopyToClipboardSingle=Copy to Clipboard: {0}",
-        "# {0} - numer of copied paths",
+        "# {0} - number of copied paths",
         "CTL_Status_CopyToClipboardMulti={0} paths were copied to clipboard"
     })
     private void setClipboardContents(String content, int items) {

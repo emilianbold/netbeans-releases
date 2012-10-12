@@ -4,8 +4,25 @@
 
 <map version="1.0">
     
+    <mapID target="html5-about" url="html5/html5-about.html"/>
+    <mapID target="html5-create" url="html5/html5-createproj.html"/>
+    <mapID target="html5-templates" url="html5/html5-sitetemplate.html"/>
+    
+    
+    
     <!-- CSH for Configure JS Test Driver dialog -->
     <mapID target="org.netbeans.modules.javascript.jstestdriver.JSTestDriverCustomizerPanel" url="csh/csh-jstestdriver.html"/>
+    <!-- CSH for New HTML5 Project wizard -->
+    <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.NewClientSideProjectPanel" url="csh/csh-html5-newproject.html"/>
+    <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.SiteTemplateWizard" url="csh/csh-html5-newproject-sitetemplate.html"/>
+    <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.JavaScriptLibrarySelectionPanel" url="csh/csh-html5-newproject-jslibraries.html"/>
+    <!-- CSH for Create Site Template dialog -->
+    <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.CreateSiteTemplate" url="csh/csh-html5-createtemplate.html"/>
+    <!-- CSH for HTML5 project Properties dialog -->
+    <mapID target="org.netbeans.modules.web.clientproject.ui.customizer.SourcesPanel" url="csh/csh-html5-prop-sources.html"/>
+    <mapID target="org.netbeans.modules.web.clientproject.ui.customizer.JavaScriptFilesPanel" url="csh/csh-html5-prop-js.html"/>
+    <mapID target="org.netbeans.modules.web.clientproject.ui.customizer.RunPanel" url="csh/csh-html5-prop-run.html"/>
+    
     
 </map>
 

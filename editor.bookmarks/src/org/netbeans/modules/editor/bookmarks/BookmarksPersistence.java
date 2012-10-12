@@ -81,8 +81,6 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
     
     private static final String EDITOR_BOOKMARKS_2_NAMESPACE_URI = "http://www.netbeans.org/ns/editor-bookmarks/2"; // NOI18N
 
-    private static RequestProcessor RP = new RequestProcessor("Bookmarks saver"); // NOI18N
-    
     private static final BookmarksPersistence INSTANCE = new BookmarksPersistence();
     
     public static BookmarksPersistence get() {
@@ -126,7 +124,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                             getProjectBookmarks(project, projectURI, false, false)) != null)
                 {
                     saveProjectBookmarks(project, projectBookmarks);
-                    lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
+                    lockedBookmarkManager.releaseProjectBookmarks(projectBookmarks);
                 }
             }
             for (ProjectBookmarks projectBookmarks : lockedBookmarkManager.allLoadedProjectBookmarks()) {
@@ -134,7 +132,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                 Project prj = BookmarkUtils.findProject(prjURI);
                 if (prj != null) {
                     saveProjectBookmarks(prj, projectBookmarks);
-                    lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
+                    lockedBookmarkManager.releaseProjectBookmarks(projectBookmarks);
                 }
             }
         } finally {
@@ -379,42 +377,43 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
     
     @Override
     public void run() {
-        ProjectManager.mutex().writeAccess(new Runnable() {
-            @Override
-            public void run() {
-                List<Project> openProjects = Arrays.asList (OpenProjects.getDefault ().getOpenProjects ());
-                // lastOpenProjects will contain the just closed projects
-                List<Project> projectsToSave;
-                synchronized (lastOpenProjects) {
-                    lastOpenProjects.removeAll(openProjects);
-                    projectsToSave = new ArrayList<Project>(lastOpenProjects);
-                    lastOpenProjects.clear();
-                    lastOpenProjects.addAll(openProjects);
-                }
-                BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
-                try {
-                    for (Project p : projectsToSave) {
-                        ProjectBookmarks projectBookmarks = lockedBookmarkManager.getProjectBookmarks(p, false, false);
-                        if (projectBookmarks != null) {
-                            saveProjectBookmarks(p, projectBookmarks); // Write into private.xml under project's mutex acquired
-                            lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
+        final BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                @Override
+                public void run() {
+                    List<Project> openProjects = Arrays.asList(OpenProjects.getDefault().getOpenProjects());
+                    // lastOpenProjects will contain the just closed projects
+                    List<Project> projectsToSave;
+                    synchronized (lastOpenProjects) {
+                        lastOpenProjects.removeAll(openProjects);
+                        projectsToSave = new ArrayList<Project>(lastOpenProjects);
+                        lastOpenProjects.clear();
+                        lastOpenProjects.addAll(openProjects);
+
+                        for (Project p : projectsToSave) {
+                            ProjectBookmarks projectBookmarks = lockedBookmarkManager.getProjectBookmarks(p, false, false);
+                            if (projectBookmarks != null && !projectBookmarks.hasActiveClients()) {
+                                saveProjectBookmarks(p, projectBookmarks); // Write into private.xml under project's mutex acquired
+                                lockedBookmarkManager.releaseProjectBookmarks(projectBookmarks);
+                            }
+                        }
+                        // If ensureAllOpenedProjectsBookmarksLoaded requested previously do it now
+                        if (ensureProjectsBookmarksLoadedUponProjectsLoad) {
+                            ensureProjectsBookmarksLoadedUponProjectsLoad = false;
+                            ensureAllOpenedProjectsBookmarksLoaded();
                         }
                     }
-                    // If ensureAllOpenedProjectsBookmarksLoaded requested previously do it now
-                    if (ensureProjectsBookmarksLoadedUponProjectsLoad) {
-                        ensureProjectsBookmarksLoadedUponProjectsLoad = false;
-                        ensureAllOpenedProjectsBookmarksLoaded();
-                    }
-                } finally {
-                    lockedBookmarkManager.unlock();
                 }
-            }
-        });
+            });
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
     }
 
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
-        RP.post(this);
+        BookmarkUtils.postTask(this);
     }
 
     @Override

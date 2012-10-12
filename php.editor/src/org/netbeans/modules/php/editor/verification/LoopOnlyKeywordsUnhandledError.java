@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.openide.filesystems.FileObject;
@@ -54,69 +56,91 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LoopOnlyKeywordsUnhandledError extends DefaultTreePathVisitor {
-    private static final String CONTINUE = "continue"; //NOI18N
-    private static final String BREAK = "break"; //NOI18N
-    private final FileObject fileObject;
-    private final List<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
-
-    public LoopOnlyKeywordsUnhandledError(final FileObject fileObject) {
-        this.fileObject = fileObject;
-    }
-
-    public Collection<PHPVerificationError> getErrors() {
-        return Collections.unmodifiableCollection(errors);
-    }
+public class LoopOnlyKeywordsUnhandledError extends AbstractUnhandledError {
 
     @Override
-    public void visit(final ContinueStatement node) {
-        checkProperPath(node);
-        super.visit(node);
-    }
-
-    @Override
-    public void visit(final BreakStatement node) {
-        checkProperPath(node);
-        super.visit(node);
-    }
-
-    private void checkProperPath(final ASTNode node) {
-        if (!isInProperControlStructure()) {
-            createError(node);
+    void compute(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {
+        PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
+        if (phpParseResult.getProgram() == null) {
+            return;
+        }
+        FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileObject != null && appliesTo(fileObject)) {
+            LoopOnlyKeywordsUnhandledError.CheckVisitor checkVisitor = new LoopOnlyKeywordsUnhandledError.CheckVisitor(fileObject);
+            phpParseResult.getProgram().accept(checkVisitor);
+            errors.addAll(checkVisitor.getErrors());
         }
     }
 
-    private boolean isInProperControlStructure() {
-        boolean result = false;
-        for (ASTNode node : getPath()) {
-            if (isProperStructure(node)) {
-                result = true;
-                break;
+    private boolean appliesTo(FileObject fileObject) {
+        return CodeUtils.isPhp_52(fileObject);
+    }
+
+    private static class CheckVisitor extends DefaultTreePathVisitor {
+        private final FileObject fileObject;
+        private static final String CONTINUE = "continue"; //NOI18N
+        private static final String BREAK = "break"; //NOI18N
+        private final List<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
+
+        public CheckVisitor(FileObject fileObject) {
+            this.fileObject = fileObject;
+        }
+
+        public Collection<PHPVerificationError> getErrors() {
+            return Collections.unmodifiableCollection(errors);
+        }
+
+        @Override
+        public void visit(final ContinueStatement node) {
+            checkProperPath(node);
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(final BreakStatement node) {
+            checkProperPath(node);
+            super.visit(node);
+        }
+
+        private void checkProperPath(final ASTNode node) {
+            if (!isInProperControlStructure()) {
+                createError(node);
             }
         }
-        return result;
-    }
 
-    private static boolean isProperStructure(final ASTNode node) {
-        return node instanceof ForStatement
-                || node instanceof ForEachStatement
-                || node instanceof WhileStatement
-                || node instanceof DoStatement
-                || node instanceof SwitchStatement;
-    }
-
-    private void createError(final ASTNode node) {
-        errors.add(new LoopOnlyKeywordsError(fileObject, node.getStartOffset(), node.getEndOffset(), extractKeyword(node)));
-    }
-
-    private String extractKeyword(final ASTNode node) {
-        String result = ""; //NOI18N
-        if (node instanceof ContinueStatement) {
-            result = CONTINUE;
-        } else if (node instanceof BreakStatement) {
-            result = BREAK;
+        private boolean isInProperControlStructure() {
+            boolean result = false;
+            for (ASTNode node : getPath()) {
+                if (isProperStructure(node)) {
+                    result = true;
+                    break;
+                }
+            }
+            return result;
         }
-        return result;
+
+        private static boolean isProperStructure(final ASTNode node) {
+            return node instanceof ForStatement
+                    || node instanceof ForEachStatement
+                    || node instanceof WhileStatement
+                    || node instanceof DoStatement
+                    || node instanceof SwitchStatement;
+        }
+
+        private void createError(final ASTNode node) {
+            errors.add(new LoopOnlyKeywordsError(fileObject, node.getStartOffset(), node.getEndOffset(), extractKeyword(node)));
+        }
+
+        private String extractKeyword(final ASTNode node) {
+            String result = ""; //NOI18N
+            if (node instanceof ContinueStatement) {
+                result = CONTINUE;
+            } else if (node instanceof BreakStatement) {
+                result = BREAK;
+            }
+            return result;
+        }
+
     }
 
     private static class LoopOnlyKeywordsError extends PHPVerificationError {
@@ -148,6 +172,12 @@ public class LoopOnlyKeywordsUnhandledError extends DefaultTreePathVisitor {
         public String getKey() {
             return KEY;
         }
+    }
+
+    @Override
+    @Messages("LoopOnlyKeywordsDispName=Keyword outside of for, foreach, while, do-while or switch statement.")
+    public String getDisplayName() {
+        return Bundle.LoopOnlyKeywordsDispName();
     }
 
 }

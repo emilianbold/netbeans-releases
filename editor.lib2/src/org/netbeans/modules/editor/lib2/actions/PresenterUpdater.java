@@ -1,0 +1,253 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.editor.lib2.actions;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+import javax.swing.text.JTextComponent;
+import org.netbeans.spi.editor.AbstractEditorAction;
+import org.openide.awt.Mnemonics;
+import org.openide.util.WeakListeners;
+
+/**
+ * Handler servicing menu, popup menu and toolbar presenters of a typical editor action.
+ *
+ * @author Miloslav Metelka
+ */
+public final class PresenterUpdater implements PropertyChangeListener, ActionListener, PreferenceChangeListener {
+    
+    public static JMenuItem createMenuPresenter(Action a) {
+        return createMenuItem(a, false);
+    }
+
+    public static JMenuItem createPopupPresenter(Action a) {
+        return createMenuItem(a, true);
+    }
+
+    public static AbstractButton createToolbarPresenter(Action a) {
+        AbstractButton button = new JButton();
+        // Use no text for toolbar items updateText(button, a);
+        updateButtonIcons(button, a);
+        updateToolTip(button, a);
+        new PresenterUpdater(TOOLBAR, a, button, false).initListening();
+        return button;
+    }
+    
+    private static JMenuItem createMenuItem(Action a, boolean popup) {
+        boolean toggleAction = (a.getValue(AbstractEditorAction.PREFERENCES_KEY_KEY) != null);
+        JMenuItem menuItem = toggleAction ? new JCheckBoxMenuItem() : new JMenuItem();
+        updateText(menuItem, a, popup);
+        updateMenuIcon(menuItem, a);
+        updateToolTip(menuItem, a);
+        new PresenterUpdater(popup ? POPUP : MENU, a, menuItem, toggleAction).initListening();
+        return menuItem;
+    }
+    
+    private static void updateText(AbstractButton presenter, Action a, boolean popup) {
+        String text = null;
+        if (popup) {
+            text = (String) a.getValue(AbstractEditorAction.POPUP_TEXT_KEY);
+        }
+        if (text == null) {
+            text = (String) a.getValue(AbstractEditorAction.MENU_TEXT_KEY);
+        }
+        if (text != null) {
+            Mnemonics.setLocalizedText(presenter, text);
+        } else {
+            text = (String) a.getValue(AbstractEditorAction.DISPLAY_NAME_KEY);
+            presenter.setText(text);
+        }
+        presenter.getAccessibleContext().setAccessibleName(text);
+    }
+
+    private static void updateMenuIcon(AbstractButton menuItem, Action a) {
+        menuItem.setIcon(EditorActionUtilities.getSmallIcon(a));
+    }
+    
+    private static void updateButtonIcons(AbstractButton button, Action a) {
+        boolean useLargeIcon = EditorActionUtilities.isUseLargeIcon(button);
+        Icon icon;
+        if (useLargeIcon && (icon = EditorActionUtilities.getLargeIcon(a)) != null) {
+        } else { // Use small icons
+            useLargeIcon = false;
+            icon = EditorActionUtilities.getSmallIcon(a);
+        }
+        if (icon != null) {
+            EditorActionUtilities.updateButtonIcons(a, button, icon, useLargeIcon);
+        }
+    }
+
+    private static void updateToolTip(AbstractButton presenter, Action a) {
+        String toolTipText = (String) a.getValue(Action.SHORT_DESCRIPTION);
+        if (toolTipText == null) {
+            toolTipText = "";
+        }
+        if (toolTipText.length() > 0) {
+            @SuppressWarnings("unchecked")
+            List<List<KeyStroke>> mkbList = (List<List<KeyStroke>>)
+                    a.getValue(AbstractEditorAction.MULTI_ACCELERATOR_LIST_KEY);
+            if (mkbList != null && mkbList.size() > 0) {
+                List<KeyStroke> firstMkb = mkbList.get(0);
+                toolTipText += " (" + EditorActionUtilities.getKeyMnemonic(firstMkb) + ")"; // NOI18N
+            }
+        }
+        presenter.setToolTipText(toolTipText);
+    }
+
+    private static final int MENU = 0;
+    private static final int POPUP = 1;
+    private static final int TOOLBAR = 2;
+    
+    private final int type;
+    
+    private final Action action;
+    
+    private final AbstractButton presenter;
+    
+    private Preferences preferencesNode;
+    
+    private PresenterUpdater(int type, Action action, AbstractButton presenter, boolean toggleAction) {
+        if (action == null) {
+            throw new IllegalArgumentException("action must not be null"); // NOI18N
+        }
+        this.type = type;
+        this.action = action;
+        this.presenter = presenter;
+        if (toggleAction) {
+            initPreferencesListening();
+        }
+    }
+    
+    private void initListening() {
+        action.addPropertyChangeListener(WeakListeners.propertyChange(this, action));
+        presenter.addActionListener(this);
+    }
+    
+    private void initPreferencesListening() {
+        preferencesNode = (Preferences) action.getValue(AbstractEditorAction.PREFERENCES_NODE_KEY);
+        if (preferencesNode != null) {
+            preferencesNode.addPreferenceChangeListener(
+                    WeakListeners.create(PreferenceChangeListener.class, this, preferencesNode));
+        }
+        presenter.setSelected(preferencesValue());
+    }
+    
+    private boolean preferencesValue() {
+        boolean value = Boolean.TRUE.equals(action.getValue(AbstractEditorAction.PREFERENCES_DEFAULT_KEY));
+        String key = (String) action.getValue(AbstractEditorAction.PREFERENCES_KEY_KEY);
+        if (key != null && preferencesNode != null) {
+            value = preferencesNode.getBoolean(key, value);
+        }
+        return value;
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String propName = evt.getPropertyName();
+        // Enabled status
+        if ((propName == null) || "enabled".equals(propName)) { // NOI18N
+            boolean enabled = action.isEnabled();
+            presenter.setEnabled(enabled);
+        }
+        // Display name
+        if ((propName == null) || AbstractEditorAction.DISPLAY_NAME_KEY.equals(propName)){ 
+            if (type != TOOLBAR) {
+                updateText(presenter, action, (type == POPUP));
+            }
+        }
+        // Icon(s)
+        if ((propName == null) || Action.SMALL_ICON.equals(propName)
+                || Action.LARGE_ICON_KEY.equals(propName) ||
+                AbstractEditorAction.ICON_RESOURCE_KEY.equals(propName))
+        {
+            if (isMenuItem()) {
+                updateMenuIcon(presenter, action);
+            } else { // toolbar
+                updateButtonIcons(presenter, action);
+            }
+        }
+        // ToolTip
+        if ((propName == null) ||
+//                Action.ACCELERATOR_KEY.equals(propName) ||
+                AbstractEditorAction.MULTI_ACCELERATOR_LIST_KEY.equals(propName) ||
+                Action.SHORT_DESCRIPTION.equals(propName)
+        ) {
+            if (type == TOOLBAR) {
+                updateToolTip(presenter, action);
+            }
+        }
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        presenter.setSelected(preferencesValue());
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent evt) {
+        // If text component is set into the presenter, then run the actions
+        // like if they are invoked from the component
+        JTextComponent c = (JTextComponent) presenter.getClientProperty(JTextComponent.class);
+        if (c != null) {
+            evt = new ActionEvent(c, evt.getID(), evt.getActionCommand(), evt.getWhen(), evt.getModifiers());
+        }
+        action.actionPerformed(evt);
+    }
+
+    private boolean isMenuItem() {
+        return (type == MENU || type == POPUP);
+    }
+    
+}

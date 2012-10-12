@@ -245,7 +245,9 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
                 if (sav.getClass().getMethod("toString").getDeclaringClass() != Object.class) {
                     save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_SaveModified(sav));
                 } else {
-                    Logger.getLogger(MultiViewCloneableEditor.class.getName()).log(Level.WARNING, "Need to override toString in {0} with lookup {1}", new Object[] {sav.getClass(), getLookup().lookupAll(Object.class)});
+                    Logger.getLogger(MultiViewCloneableEditor.class.getName()).log(Level.WARNING, 
+                            "Need to override toString() to contain the file name in o.n.api.action.Savable {0} with lookup {1}", 
+                            new Object[] {sav.getClass(), getLookup().lookupAll(Object.class)});
                     Node n = getLookup().lookup(Node.class);
                     if (n != null) {
                         // #201696: compatibility fallback.

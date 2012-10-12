@@ -44,10 +44,24 @@ package org.netbeans.modules.css.visual.actions;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelUtils;
+import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,27 +83,66 @@ public class AddPropertyAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        //use the default rule editor panel with some modifications
-        final RuleEditorPanel addPropertyPanel = new RuleEditorPanel(true);
-        addPropertyPanel.setModel(panel.getModel());
-        addPropertyPanel.setRule(panel.getRule());
-        addPropertyPanel.setShowAllProperties(true);
-        addPropertyPanel.setShowCategories(true);
+        try {
+            //use the default rule editor panel with some modifications
+            final RuleEditorPanel addPropertyPanel = new RuleEditorPanel(true);
 
-        addPropertyPanel.updateFiltersPresenters();
-
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(
-                new DialogDescriptor(addPropertyPanel, Bundle.label_add_property(), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if ("OK".equals(e.getActionCommand())) {
-                    addPropertyPanel.node.applyModelChanges();
+            //create a new model instance and do all the modifications in the dialog
+            //in this model. If the user confirms changes the model will be persisted
+            //in the corresponding file and RuleEditor will be refreshed based on
+            //an event from the parsing task.
+            final AtomicReference<Model> model_ref = new AtomicReference<Model>();
+            Snapshot snapshot = panel.getModel().getLookup().lookup(Snapshot.class);
+            ParserManager.parse(Collections.singleton(snapshot.getSource()), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css");
+                    if (ri != null) {
+                        CssCslParserResult result = (CssCslParserResult) ri.getParserResult();
+                        model_ref.set(Model.createModel(result.getWrappedCssParserResult()));
+                    }
                 }
-            }
-        }));
+            });
+            final Model model = model_ref.get();
+            
+            final AtomicReference<Rule> rule_ref = new AtomicReference<Rule>();
+            //resolve the rule to the new model
+            model.runReadTask(new Model.ModelTask() {
 
-        dialog.setVisible(true);
+                @Override
+                public void run(StyleSheet styleSheet) {
+                    ModelUtils utils = new ModelUtils(model);
+                    rule_ref.set(utils.findMatchingRule(panel.getModel(), panel.getRule()));
+                }
+            });
+            
+            Rule rule = rule_ref.get();
+            
+            addPropertyPanel.setModel(model);
+            addPropertyPanel.setRule(rule);
+            
+            addPropertyPanel.setShowAllProperties(true);
+            addPropertyPanel.setShowCategories(true);
+
+            addPropertyPanel.updateFiltersPresenters();
+
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(
+                    new DialogDescriptor(addPropertyPanel, Bundle.label_add_property(), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if ("OK".equals(e.getActionCommand())) {
+                        addPropertyPanel.node.applyModelChanges();
+                    }
+                }
+            }));
+
+            dialog.setVisible(true);
+            
+            //clear out the panel's model reference so it can be GCed
+            addPropertyPanel.releaseModel();
+            
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
-
-    
 }

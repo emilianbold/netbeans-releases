@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.editor.bookmarks;
 
-import java.net.URI;
-
 /**
  * Change of a particular bookmark.
  *
@@ -62,29 +60,14 @@ public final class BookmarkChange {
     
     private static final int KEY_CHANGED = 32;
     
-    private final URI projectURI;
-    
     private final BookmarkInfo bookmark;
     
     private int statusBits;
     
     BookmarkChange(BookmarkInfo bookmark) {
-        this(bookmark.getFileBookmarks().getProjectBookmarks().getProjectURI(), bookmark);
-    }
-    
-    /**
-     * Constructor for project loading/unloading (should be followed by markAdded()/markRemoved()).
-     * @param projectURI 
-     */
-    BookmarkChange(URI projectURI) {
-        this(projectURI, null);
-    }
-    
-    BookmarkChange(URI projectURI, BookmarkInfo bookmark) {
-        this.projectURI = projectURI;
         this.bookmark = bookmark;
     }
-
+    
     /**
      * Return affected bookmark or null in case the addition/removal from BookmarkManager
      * applies to the whole project.
@@ -95,19 +78,6 @@ public final class BookmarkChange {
         return bookmark;
     }
 
-    /**
-     * Get related project.
-     * <br/>
-     * In case {@link #getBookmark() } returns null this is the project which
-     * was added/removed from BookmarkManager.
-     * <br/>
-     *
-     * @return non-null project.
-     */
-    public URI getProjectURI() {
-        return projectURI;
-    }
-    
     public boolean isAdded() {
         return (statusBits & ADDED) != 0;
     }

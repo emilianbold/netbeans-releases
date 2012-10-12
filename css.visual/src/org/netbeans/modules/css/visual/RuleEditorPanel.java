@@ -108,6 +108,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -153,7 +154,7 @@ import org.openide.util.actions.Presenter;
 public class RuleEditorPanel extends JPanel {
 
     private static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
-    static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
+    public static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
     
     static RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
     
@@ -536,6 +537,15 @@ public class RuleEditorPanel extends JPanel {
     public Model getModel() {
         return model;
     }
+    
+    public void releaseModel() {
+        if(model == null) {
+            return ;
+        }
+        setNoRuleState();
+        model.removePropertyChangeListener(MODEL_LISTENER);
+        this.model = null;
+    }
 
     //runs in EDT
     public void setModel(final Model model) {
@@ -545,10 +555,26 @@ public class RuleEditorPanel extends JPanel {
         }
 
         if (this.model != null) {
-            if(model.getSerialNumber() <= this.model.getSerialNumber()) {
-                LOG.log(Level.FINE, "attempt to set the same or older model");
+            //new model for the same file, check if the model is not the same
+            //as the current one
+            if(model.getSerialNumber() == this.model.getSerialNumber()) {
+                LOG.log(Level.FINE, "attempt to set the same model");
                 return; //no change
             }
+            
+            //check if the set model is not even older than the curren one
+            //if the model is for the same file
+            FileObject old = this.model.getLookup().lookup(FileObject.class);
+            FileObject neww = model.getLookup().lookup(FileObject.class);
+            assert old != null; 
+            assert neww != null;
+            if(neww != null && neww.equals(old)) {
+                if(model.getSerialNumber() < this.model.getSerialNumber()) { //or even older!
+                    LOG.log(Level.WARNING, "attempt to set the older model {0} while the current is {1}!!!", new Object[]{model, this.model});
+                    return; //no change
+                }
+            }
+            
             this.model.removePropertyChangeListener(MODEL_LISTENER);
         }
 
@@ -585,6 +611,7 @@ public class RuleEditorPanel extends JPanel {
                 setRule(match);
             }
             
+            //isn't this unnecessary as we already called setNoRuleState() or setRule(...)?!?!
             CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, match);
 
         } else {

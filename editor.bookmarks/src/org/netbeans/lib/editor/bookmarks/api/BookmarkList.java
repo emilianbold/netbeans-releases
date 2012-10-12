@@ -68,6 +68,7 @@ import org.netbeans.modules.editor.bookmarks.BookmarkManagerEvent;
 import org.netbeans.modules.editor.bookmarks.BookmarkManagerListener;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.netbeans.modules.editor.bookmarks.FileBookmarks;
+import org.netbeans.modules.editor.bookmarks.ProjectBookmarks;
 import org.openide.cookies.EditorCookie.Observable;
 import org.openide.loaders.DataObject;
 import org.openide.util.WeakListeners;
@@ -112,7 +113,7 @@ public final class BookmarkList {
     
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport (this);
 
-    private BookmarkManagerListener bmListener = new BookmarkManagerListener() {
+    private final BookmarkManagerListener bmListener = new BookmarkManagerListener() {
 
         @Override
         public void bookmarksChanged(BookmarkManagerEvent evt) {
@@ -125,33 +126,44 @@ public final class BookmarkList {
         }
 
     };
+
+    private boolean pendingFireChange;
     
-    private BookmarkList (Document document) {
+    private BookmarkList(final Document document) {
         if (document == null) {
             throw new NullPointerException ("Document cannot be null"); // NOI18N
         }
         this.document = document;
         this.bookmarks = new ArrayList<Bookmark> ();
         this.info2bookmark = new HashMap<BookmarkInfo, Bookmark>();
-        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
-        try {
-            FileBookmarks fileBookmarks = lockedBookmarkManager.getFileBookmarks(document);
-            if (fileBookmarks != null) {
-                for (BookmarkInfo bookmarkInfo : fileBookmarks.getBookmarks()) {
-                    try {
-                        addBookmarkForInfo(bookmarkInfo, -1);
-                    } catch (IndexOutOfBoundsException ex) {
-                        // line does not exists now (some external changes)
+
+        BookmarkUtils.postTask(new Runnable() {
+            @Override
+            public void run() {
+                BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+                try {
+                    FileBookmarks fileBookmarks = lockedBookmarkManager.getFileBookmarks(document);
+                    if (fileBookmarks != null) {
+                        ProjectBookmarks projectBookmarks = fileBookmarks.getProjectBookmarks();
+                        projectBookmarks.activeClientNotify(this);
+
+                        for (BookmarkInfo bookmarkInfo : fileBookmarks.getBookmarks()) {
+                            try {
+                                addBookmarkForInfo(bookmarkInfo, -1);
+                            } catch (IndexOutOfBoundsException ex) {
+                                // line does not exists now (some external changes)
+                            }
+                        }
                     }
+                    // Passing lockedBookmarkManager as "source" parameter is unclean
+                    lockedBookmarkManager.addBookmarkManagerListener(WeakListeners.create(
+                            BookmarkManagerListener.class, bmListener, lockedBookmarkManager));
+                } finally {
+                    lockedBookmarkManager.unlock();
                 }
             }
-            // Passing lockedBookmarkManager as "source" parameter is unclean
-            lockedBookmarkManager.addBookmarkManagerListener(WeakListeners.create(
-                    BookmarkManagerListener.class, bmListener, lockedBookmarkManager));
-        } finally {
-            lockedBookmarkManager.unlock();
-        }
-        
+        });
+
         DataObject dataObject = NbEditorUtilities.getDataObject (document);
         if (dataObject != null) {
             Observable observable = dataObject.getCookie (Observable.class);
@@ -355,20 +367,11 @@ public final class BookmarkList {
     
     /** Removes all bookmarks */
     public synchronized void removeAllBookmarks (){
-        if (!bookmarks.isEmpty()) {
-            for (int i = 0; i < bookmarks.size (); i++){
-                Bookmark bookmark = bookmarks.get (i);
-                bookmark.release();
-            }
-            bookmarks.clear();
-            info2bookmark.clear();
-            BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
-            try {
-                lockedBookmarkManager.removeBookmarks(new ArrayList<BookmarkInfo>(info2bookmark.keySet()));
-            } finally {
-                lockedBookmarkManager.unlock();
-            }
-            fireChange();
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            lockedBookmarkManager.removeBookmarks(new ArrayList<BookmarkInfo>(info2bookmark.keySet()));
+        } finally {
+            lockedBookmarkManager.unlock();
         }
     }
     
@@ -416,9 +419,18 @@ public final class BookmarkList {
     }
 
     private void fireChange() {
+        synchronized (bmListener) {
+            if (pendingFireChange) {
+                return;
+            }
+            pendingFireChange = true;
+        }
         SwingUtilities.invokeLater (new Runnable () {
             @Override
             public void run() {
+                synchronized (bmListener) {
+                    pendingFireChange = false;
+                }
                 propertyChangeSupport.firePropertyChange (PROP_BOOKMARKS, null, null);
             }
         });
