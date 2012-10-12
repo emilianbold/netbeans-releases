@@ -45,26 +45,22 @@ import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * Various services for a document implementation
- * (currently only org.netbeans.editor.BaseDocument).
- * <br/>
- * This class together with EditorDocumentHandler allows an efficient
- * performing of methods from {@link org.netbeans.api.editor.document.EditorDocumentUtils}.
  *
- * @author Miloslav Metelka
+ * @author mmetelka
  */
-public interface EditorDocumentServices {
+public abstract class DocumentCharacterAcceptor {
     
-    /**
-     * @see {@link org.netbeans.api.editor.document.EditorDocumentUtils#runExclusive(java.lang.Runnable)}.
-     */
-    void runExclusive(@NonNull Document doc, @NonNull Runnable r);
+    public static @NonNull DocumentCharacterAcceptor get(Document doc) {
+        DocumentCharacterAcceptor acceptor = (DocumentCharacterAcceptor) doc.getProperty(
+                DocumentCharacterAcceptor.class);
+        if (acceptor == null) {
+            acceptor = DefaultDocumentCharacterAcceptor.INSTANCE;
+        }
+        return acceptor;
+    }
     
-    /**
-     * Reset undo merging.
-     *
-     * @param doc document.
-     */
-    void resetUndoMerge(@NonNull Document doc);
+    public abstract boolean isIdentifier(char ch);
+    
+    public abstract boolean isWhitespace(char ch);
     
 }

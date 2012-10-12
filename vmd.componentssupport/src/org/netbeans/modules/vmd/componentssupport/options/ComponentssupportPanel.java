@@ -52,7 +52,7 @@ import org.openide.util.NbPreferences;
  *
  * @author Karol Harezlak
  */
-@OptionsPanelController.Keywords(keywords={"java me"}, location=JavaOptions.JAVA, tabTitle= "#JavaME_Option_DisplayName_Componentssupport_TITLE")
+@OptionsPanelController.Keywords(keywords={"java me", "#KW_JavaMEOptions"}, location=JavaOptions.JAVA, tabTitle= "#JavaME_Option_DisplayName_Componentssupport_TITLE")
 final class ComponentssupportPanel extends javax.swing.JPanel {
 
     private static final String VMD_STRUCTURE_SHOW = "vmd.structure.show"; // NOI18N

@@ -60,7 +60,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Miloslav Metelka
  */
-@OptionsPanelController.Keywords(keywords = {"on save"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_OnSave_DisplayName")
+@OptionsPanelController.Keywords(keywords = {"#KW_OnSave"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_OnSave_DisplayName")
 public class OnSaveTabPanel extends JPanel implements PropertyChangeListener {
     
     private OnSaveCommonPanel commonPanel;

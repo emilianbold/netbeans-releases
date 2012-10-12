@@ -42,29 +42,29 @@
 package org.netbeans.modules.editor.lib2.document;
 
 import javax.swing.text.Document;
-import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
- * Various services for a document implementation
- * (currently only org.netbeans.editor.BaseDocument).
- * <br/>
- * This class together with EditorDocumentHandler allows an efficient
- * performing of methods from {@link org.netbeans.api.editor.document.EditorDocumentUtils}.
+ * Abstract implementation of editor character services.
  *
- * @author Miloslav Metelka
+ * @author mmetelka
  */
-public interface EditorDocumentServices {
-    
-    /**
-     * @see {@link org.netbeans.api.editor.document.EditorDocumentUtils#runExclusive(java.lang.Runnable)}.
-     */
-    void runExclusive(@NonNull Document doc, @NonNull Runnable r);
-    
-    /**
-     * Reset undo merging.
-     *
-     * @param doc document.
-     */
-    void resetUndoMerge(@NonNull Document doc);
-    
+public final class DefaultEditorCharacterServices extends EditorCharacterServices {
+
+    @Override
+    public int getIdentifierEnd(Document doc, int offset, boolean backward) {
+        DocumentCharacterAcceptor characterAcceptor = DocumentCharacterAcceptor.get(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        if (backward) {
+            while (--offset >= 0 && characterAcceptor.isIdentifier(docText.charAt(offset))) { }
+            return offset + 1;
+        } else {
+            int docTextLen = docText.length();
+            while (offset < docTextLen && characterAcceptor.isIdentifier(docText.charAt(offset))) {
+                offset++;
+            }
+            return offset;
+        }
+    }
+
 }

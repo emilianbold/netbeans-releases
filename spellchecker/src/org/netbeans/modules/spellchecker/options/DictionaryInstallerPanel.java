@@ -76,7 +76,7 @@ import org.openide.util.NbBundle;
 /**
  * @author David Kaspar
  */
-@OptionsPanelController.Keywords(keywords = {"install", "dictionary"}, location = OptionsDisplayer.EDITOR, tabTitle="#TITLE_OptionsPanel")
+@OptionsPanelController.Keywords(keywords = {"install", "dictionary", "#KW_DictionaryInstallerOptions"}, location = OptionsDisplayer.EDITOR, tabTitle="#TITLE_OptionsPanel")
 public class DictionaryInstallerPanel extends javax.swing.JPanel {
     private final JButton okButton;
 

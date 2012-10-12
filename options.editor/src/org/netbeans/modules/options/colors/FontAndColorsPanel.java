@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Jan Jancura
  */
-@OptionsPanelController.Keywords(keywords = {"Fonts & Colors"}, location = OptionsDisplayer.FONTSANDCOLORS, tabTitle="#CTL_Font_And_Color_Options_Title")
+@OptionsPanelController.Keywords(keywords = {"#KW_FontsAndColorsOptions"}, location = OptionsDisplayer.FONTSANDCOLORS, tabTitle="#CTL_Font_And_Color_Options_Title")
 public class FontAndColorsPanel extends JPanel implements ActionListener {
     
     private final Collection<? extends FontsColorsController> panels;

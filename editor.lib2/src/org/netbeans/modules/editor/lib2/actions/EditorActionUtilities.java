@@ -42,25 +42,36 @@
 
 package org.netbeans.modules.editor.lib2.actions;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Caret;
 import javax.swing.text.EditorKit;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.TextAction;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.api.editor.settings.MultiKeyBinding;
+import org.netbeans.spi.editor.AbstractEditorAction;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -82,10 +93,160 @@ public final class EditorActionUtilities {
     private static SearchableEditorKit globalActionsKit;
 
     private static final Map<EditorKit,SearchableEditorKit> kit2searchable = new WeakHashMap<EditorKit,SearchableEditorKit>();
+    
+    static final int LARGE_ICON_SIZE = 24;
+    static final String LARGE_ICON_SIZE_STRING = "24"; // NOI18N
 
     private EditorActionUtilities() {
         // No instances
     }
+    
+    public static void resetCaretMagicPosition(JTextComponent component) {
+        Caret caret;
+        if (component != null && (caret = component.getCaret()) != null) {
+            caret.setMagicCaretPosition(null);
+        }
+    }
+
+    public static boolean isUseLargeIcon(JComponent c) {
+        Object prefIconSize = c.getClientProperty("PreferredIconSize"); //NOI18N
+        return (prefIconSize instanceof Integer) && (((Integer) prefIconSize).intValue() >= LARGE_ICON_SIZE);
+    }
+    
+    public static Icon getIcon(Action a, boolean large) {
+        return large ? getLargeIcon(a) : getSmallIcon(a);
+    }
+
+    public static Icon getSmallIcon(Action a) {
+        return (Icon) a.getValue(Action.SMALL_ICON);
+    }
+
+    public static Icon getLargeIcon(Action a) {
+        return (Icon) a.getValue(Action.LARGE_ICON_KEY);
+    }
+
+    public static Icon createSmallIcon(Action a) {
+        String iconBase = (String) a.getValue(AbstractEditorAction.ICON_RESOURCE_KEY);
+        if (iconBase != null) {
+            return ImageUtilities.loadImageIcon(iconBase, true);
+        }
+        return null;
+    }
+
+    public static Icon createLargeIcon(Action a) {
+        String iconBase = (String) a.getValue(AbstractEditorAction.ICON_RESOURCE_KEY);
+        if (iconBase != null) {
+            iconBase += LARGE_ICON_SIZE_STRING;
+            return ImageUtilities.loadImageIcon(iconBase, true);
+        }
+        return null;
+    }
+
+    static void updateButtonIcons(Action a, AbstractButton button, Icon icon, boolean useLargeIcon) {
+        button.setIcon(icon);
+
+        String iconBase = (String) a.getValue(AbstractEditorAction.ICON_RESOURCE_KEY);
+        if (iconBase != null) {
+            String base = iconBase;
+            String suffix = "";
+            int dotIndex;
+            if ((dotIndex = iconBase.lastIndexOf('.')) >= 0) {
+                suffix = iconBase.substring(dotIndex, iconBase.length());
+                base = iconBase.substring(0, dotIndex);
+            }
+            if (useLargeIcon) {
+                base += LARGE_ICON_SIZE_STRING;
+            }
+
+            Icon pressedIcon = ImageUtilities.loadImageIcon(base + "_pressed" + suffix, true); // NOI18N
+            if (pressedIcon != null) {
+                button.setPressedIcon(pressedIcon);
+            }
+            Icon rolloverIcon = ImageUtilities.loadImageIcon(base + "_rollover" + suffix, true); // NOI18N
+            if (rolloverIcon != null) {
+                button.setRolloverIcon(rolloverIcon);
+            }
+            Icon disabledIcon = ImageUtilities.loadImageIcon(base + "_disabled" + suffix, true); // NOI18N
+            if (disabledIcon != null) {
+                button.setDisabledIcon(disabledIcon);
+            } else { // Make disabled icon from regular icon
+                button.setDisabledIcon(ImageUtilities.createDisabledIcon(icon));
+            }
+            Icon selectedIcon = ImageUtilities.loadImageIcon(base + "_selected" + suffix, true); // NOI18N
+            if (selectedIcon != null) {
+                button.setSelectedIcon(selectedIcon);
+            }
+            Icon rolloverSelectedIcon = ImageUtilities.loadImageIcon(base + "_rolloverSelected" + suffix, true); // NOI18N
+            if (rolloverSelectedIcon != null) {
+                button.setRolloverSelectedIcon(rolloverSelectedIcon);
+            }
+            Icon disabledSelectedIcon = ImageUtilities.loadImageIcon(base + "_disabledSelected" + suffix, true); // NOI18N
+            if (disabledSelectedIcon != null) {
+                button.setDisabledSelectedIcon(disabledSelectedIcon);
+            }
+        }
+    }
+
+    static String insertBeforeSuffix(String path, String toInsert) {
+        int dotIndex;
+        if ((dotIndex = path.lastIndexOf('.')) >= 0) {
+            path = path.substring(0, dotIndex) + toInsert + path.substring(dotIndex, path.length());
+        } else {
+            path += toInsert;
+        }
+        return path;
+    }
+
+    public static String getKeyMnemonic(MultiKeyBinding binding) {
+        return getKeyMnemonic(binding.getKeyStrokeList());
+    }
+    
+    /**
+     * Get mnemonic text for a keystroke.
+     *
+     * @param key a keystroke
+     * @return mnemonic of the keystroke.
+     */
+    public static String getKeyMnemonic(KeyStroke key) {
+        return appendKeyMnemonic(new StringBuilder(20), key).toString();
+    }
+
+    public static String getKeyMnemonic(List<KeyStroke> keys) {
+        StringBuilder sb = new StringBuilder(40);
+        for (KeyStroke key : keys) {
+            if (sb.length() > 0) {
+                sb.append(' '); //NOI18N
+            }
+            appendKeyMnemonic(sb, key);
+        }
+        return sb.toString();
+    }
+
+    public static String appendKeyMnemonic(StringBuilder sb, KeyStroke key) {
+        String sk = org.openide.util.Utilities.keyToString(key);
+        int mods = key.getModifiers();
+        if ((mods & KeyEvent.CTRL_MASK) != 0) {
+            sb.append("Ctrl+"); // NOI18N
+        }
+        if ((mods & KeyEvent.ALT_MASK) != 0) {
+            sb.append("Alt+"); // NOI18N
+        }
+        if ((mods & KeyEvent.SHIFT_MASK) != 0) {
+            sb.append("Shift+"); // NOI18N
+        }
+        if ((mods & KeyEvent.META_MASK) != 0) {
+            sb.append("Meta+"); // NOI18N
+        }
+
+        int i = sk.indexOf('-'); //NOI18N
+        if (i != -1) {
+            sk = sk.substring(i + 1);
+        }
+        sb.append(sk);
+
+        return sb.toString();
+    }
+
 
     public static SearchableEditorKit getGlobalActionsKit() {
         synchronized (EditorActionUtilities.class) {
@@ -95,7 +256,7 @@ public final class EditorActionUtilities {
             return globalActionsKit;
         }
     }
-
+    
     public static EditorKit getKit(String mimeType) {
         Lookup.Result<EditorKit> result = MimeLookup.getLookup(mimeType).lookupResult(EditorKit.class);
         Iterator<? extends EditorKit> instancesIterator = result.allInstances().iterator();
@@ -165,6 +326,15 @@ public final class EditorActionUtilities {
             path.append('/').append(subFolder);
         }
         return path.toString();
+    }
+
+    public static Preferences getPreferences(Map<String,?> attrs) {
+        String mimeType = (String) attrs.get(AbstractEditorAction.MIME_TYPE_KEY);
+        if (mimeType != null) {
+            mimeType = "";
+        }
+        Lookup mimeLookup = MimeLookup.getLookup(mimeType);
+        return (mimeLookup != null) ? mimeLookup.lookup(Preferences.class) : null;
     }
 
     public static Preferences getGlobalPreferences() {
@@ -253,6 +423,47 @@ public final class EditorActionUtilities {
         }
         return ks;
     }
+    
+    /**
+     * Create an instance of an empty action which may be used as a marker action
+     * in various situations.
+     */
+    public static Action createEmptyAction() {
+        return new EmptyAction();
+    }
+    
+    public static String getGlobalActionDisplayName(Map<String,?> attrs) {
+        return (String) getGlobalActionProperty(attrs, AbstractEditorAction.DISPLAY_NAME_KEY);
+    }
+
+    public static String getGlobalActionShortDescription(Map<String,?> attrs) {
+        return (String) getGlobalActionProperty(attrs, Action.SHORT_DESCRIPTION);
+    }
+
+    public static String getGlobalActionIconResource(Map<String,?> attrs) {
+        return (String) getGlobalActionProperty(attrs, AbstractEditorAction.ICON_RESOURCE_KEY);
+    }
+
+    public static String getGlobalActionMenuText(Map<String,?> attrs) {
+        return (String) getGlobalActionProperty(attrs, AbstractEditorAction.MENU_TEXT_KEY);
+    }
+
+    public static String getGlobalActionPopupText(Map<String,?> attrs) {
+        return (String) getGlobalActionProperty(attrs, AbstractEditorAction.POPUP_TEXT_KEY);
+    }
+
+    public static Object getGlobalActionProperty(Map<String,?> attrs, String key) {
+        Object value = null;
+        String actionName = (String) attrs.get(Action.NAME);
+        SearchableEditorKit globalKit = getGlobalActionsKit();
+        if (globalKit != null) {
+            Action a = globalKit.getAction(actionName);
+            if (a != null) {
+                value = a.getValue(key);
+            }
+        }
+        return value;
+    }
 
     private static final class KeyBindingSettingsListener implements LookupListener {
         
@@ -282,17 +493,34 @@ public final class EditorActionUtilities {
             }
         }
 
+        @Override
         public Action getAction(String actionName) {
             Reference<Action> actionRef = name2actionRef.get(actionName);
             return (actionRef != null) ? actionRef.get() : null;
         }
 
+        @Override
         public void addActionsChangeListener(ChangeListener listener) {
         }
 
+        @Override
         public void removeActionsChangeListener(ChangeListener listener) {
         }
 
+    }
+
+    /**
+     * @see #createEmptyAction()
+     */
+    private static final class EmptyAction extends TextAction {
+        
+        EmptyAction() {
+            super("empty-action"); // NOI18N
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
 
     }
 
