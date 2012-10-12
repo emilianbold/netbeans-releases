@@ -1283,7 +1283,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
         synchronized void readFrom(OutWriter orig) {
             AbstractLines lines = (AbstractLines) orig.getLines();
-            while (readCount < lines.getLineCount()) {
+            // Last line is not guaranteed to be finished, see #219839.
+            int lineCount = lines.getLineCount() - (orig.isClosed() ? 0 : 1);
+            while (readCount < lineCount) {
                 try {
                     int line = readCount++;
                     String str = lines.getLine(line);

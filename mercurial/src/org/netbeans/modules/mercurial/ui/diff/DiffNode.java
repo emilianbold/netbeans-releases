@@ -57,10 +57,8 @@ import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Visible in the Search History Diff view.
@@ -119,7 +117,7 @@ class DiffNode extends AbstractNode {
     @SuppressWarnings("unchecked") // Adding getCookie(Class<Cookie> klass) results in name clash
     @Override
     public Cookie getCookie(Class klass) {
-        FileObject fo = FileUtil.toFileObject(getSetup().getBaseFile());
+        FileObject fo = getLookup().lookup(FileObject.class);
         if (fo != null) {
             try {
                 DataObject dobj = DataObject.find(fo);
