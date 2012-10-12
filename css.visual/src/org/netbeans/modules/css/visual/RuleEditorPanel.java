@@ -108,6 +108,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -545,10 +546,26 @@ public class RuleEditorPanel extends JPanel {
         }
 
         if (this.model != null) {
-            if(model.getSerialNumber() <= this.model.getSerialNumber()) {
-                LOG.log(Level.FINE, "attempt to set the same or older model");
+            //new model for the same file, check if the model is not the same
+            //as the current one
+            if(model.getSerialNumber() == this.model.getSerialNumber()) {
+                LOG.log(Level.FINE, "attempt to set the same model");
                 return; //no change
             }
+            
+            //check if the set model is not even older than the curren one
+            //if the model is for the same file
+            FileObject old = this.model.getLookup().lookup(FileObject.class);
+            FileObject neww = model.getLookup().lookup(FileObject.class);
+            assert old != null; 
+            assert neww != null;
+            if(neww != null && neww.equals(old)) {
+                if(model.getSerialNumber() < this.model.getSerialNumber()) { //or even older!
+                    LOG.log(Level.WARNING, "attempt to set the older model {0} while the current is {1}!!!", new Object[]{model, this.model});
+                    return; //no change
+                }
+            }
+            
             this.model.removePropertyChangeListener(MODEL_LISTENER);
         }
 
