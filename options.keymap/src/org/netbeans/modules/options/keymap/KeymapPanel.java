@@ -46,6 +46,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -107,6 +109,14 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         sorter = new TableSorter(getModel());
         initComponents();
         specialkeyList = new SpecialkeyPanel(this, searchSCField);
+        
+        // close the popup when user clicks elsewhere
+        moreButton.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                hidePopup();
+            }
+        });
 
         sorter.setTableHeader(actionsTable.getTableHeader());
         sorter.getTableHeader().setReorderingAllowed(false);
