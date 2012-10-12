@@ -22,8 +22,8 @@
     <property name="nb.display.version.short" value="Dev"/>
 
     <!-- Tomcat properties   -->    
-    <property name="tomcat.version" value="7.0.27"/>
-    <property name="tomcat.id" value="7.0.27"/>
+    <property name="tomcat.version" value="7.0.32"/>
+    <property name="tomcat.id" value="7.0.32"/>
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
@@ -65,7 +65,7 @@
     <property name="javame_sdk30_xml_location"  value="${binary_cache_host}/wtk/javame_sdk_30/mac/Java_TM__Platform_Micro_Edition_SDK_3_0.xml"/>
 
     <!-- Java FX Runtime -->
-    <property name="javafx_runtime_location" value="${jdk_builds_host}/java/re/javafx/2.2.0/promoted/fcs/b21/bundles/macosx-x86_64/javafx-runtime-for-cobundle.zip"/>
+    <property name="javafx_runtime_location" value="${jdk_builds_host}/java/re/javafx/2.2.4/promoted/all/b10/bundles/macosx-x86_64/javafx-runtime-for-cobundle.zip"/>
 
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 

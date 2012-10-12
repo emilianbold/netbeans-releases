@@ -46,6 +46,7 @@ package org.netbeans.core.ui;
 
 import java.awt.Cursor;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -63,6 +64,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.core.actions.HTMLViewAction;
@@ -84,6 +86,8 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
     Icon about;
     
     private static final String CHECK_FOR_UPDATES_ACTION = "check-for-updates";
+
+    private static final int FONT_SIZE = getFontSize();
     
     @Messages({
         "# {0} - product version",
@@ -95,7 +99,8 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         "# {6} - user dir",
         "# {7} - cache dir",
         "# {8} - updates",
-        "LBL_description=<div style=\"font-size: 12pt; font-family: Verdana, 'Verdana CE',  Arial, 'Arial CE', 'Lucida Grande CE', lucida, 'Helvetica CE', sans-serif;\">"
+        "# {9} - font size",
+        "LBL_description=<div style=\"font-size: {9}pt; font-family: Verdana, 'Verdana CE',  Arial, 'Arial CE', 'Lucida Grande CE', lucida, 'Helvetica CE', sans-serif;\">"
             + "<p style=\"margin: 0\"><b>Product Version:</b> {0}</p>\n "
             + "{8}"
             + "<p style=\"margin: 0\"><b>Java:</b> {1}; {2}</p>\n "
@@ -112,7 +117,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
     public ProductInformationPanel() {
         initComponents();
         imageLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath(), ""));
+        description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath(), "", FONT_SIZE));
         description.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         RequestProcessor.getDefault().post(new Runnable() {
 
@@ -123,7 +128,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
 
                     @Override
                     public void run() {
-                        description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath(), updates));
+                        description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath(), updates, FONT_SIZE));
                         description.setCursor(null);
                         description.revalidate();
                     }
@@ -329,7 +334,7 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
      
     private static String getCopyrightText () {
         
-        String copyrighttext = org.openide.util.NbBundle.getBundle(ProductInformationPanel.class).getString("LBL_Copyright"); // NOI18N
+        String copyrighttext = NbBundle.getMessage(ProductInformationPanel.class, "LBL_Copyright", FONT_SIZE); // NOI18N
         
         FileObject licenseFolder = FileUtil.getConfigFile("About/Licenses");   // NOI18N
         if (licenseFolder != null) {
@@ -342,7 +347,7 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                     curLicense = loadLicenseText(foArray[i]);
                     if (curLicense != null) {
                         sw.write("<br>" + MessageFormat.format( // NOI18N
-                            NbBundle.getBundle(ProductInformationPanel.class).getString("LBL_AddOnCopyright"), // NOI18N
+                            NbBundle.getMessage(ProductInformationPanel.class, "LBL_AddOnCopyright", FONT_SIZE), // NOI18N
                             new Object[] { curLicense }));
                         isSomeLicense = true;
                     }
@@ -409,5 +414,13 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         if (checkForUpdatesProvider != null) {
             checkForUpdatesProvider.openCheckForUpdatesWizard(true);
         }
+    }
+
+    private static int getFontSize() {
+        Integer customFontSize = (Integer)UIManager.get("customFontSize"); // NOI18N
+        if (customFontSize != null) {
+            return customFontSize.intValue();
+        }
+        return 12;
     }
 }

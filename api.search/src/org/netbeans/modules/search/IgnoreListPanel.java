@@ -5,6 +5,10 @@
 package org.netbeans.modules.search;
 
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -46,6 +50,34 @@ public final class IgnoreListPanel extends javax.swing.JPanel {
                         updateEnabledButtons();
                     }
                 });
+        // double click invokes edit action
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    btnEdit.doClick();
+                }
+            }
+        });
+        //select first item
+        selectAndScrollToRow(table, 0);
+    }
+
+    /**
+     * Selects the row in a table. It will be assured that the row is visible.
+     *
+     * @param aTable
+     * @param row
+     */
+    private void selectAndScrollToRow(JTable aTable, int row) {
+        int rowcount = aTable.getModel().getRowCount();
+        boolean rowsAvailable = rowcount > 0;
+        boolean isValidRow = row < rowcount;
+        if (rowsAvailable && isValidRow) {
+            //select and scroll to item
+            aTable.getSelectionModel().setSelectionInterval(row, row);
+            aTable.scrollRectToVisible(aTable.getCellRect(row, 0, false));
+        }
     }
 
     private void updateEnabledButtons() {
@@ -139,7 +171,7 @@ public final class IgnoreListPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnBrowse, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnBrowse)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnPattern)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -154,10 +186,22 @@ public final class IgnoreListPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        int firstSelectedRow = table.getSelectedRow();
+        List<IgnoreListItem> itemsToDelete = new ArrayList<IgnoreListItem>();
+        //get all selected objects
+        //NOTE: remove the item from model later, so that the selected index
+        //always points to the correct object
         for (int i : table.getSelectedRows()) {
-            IgnoreListItem ili = ignoreListModel.list.get(i);
-            ignoreListModel.remove(ili);
+            itemsToDelete.add(ignoreListModel.list.get(i));
         }
+        //remove the selected objects
+        for (IgnoreListItem item : itemsToDelete) {
+            ignoreListModel.remove(item);
+        }
+        //select the next available row
+        int row = Math.min(Math.max(0, firstSelectedRow),
+                table.getModel().getRowCount() - 1);
+        selectAndScrollToRow(table, row);
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
@@ -195,7 +239,7 @@ public final class IgnoreListPanel extends javax.swing.JPanel {
             protected void onApply(String pattern, boolean regexp) {
                 ignoreListModel.addPattern(pattern, regexp);
             }
-        }, btnPattern);
+        }, this);
     }//GEN-LAST:event_btnPatternActionPerformed
 
     private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
@@ -439,14 +483,56 @@ public final class IgnoreListPanel extends javax.swing.JPanel {
                 (JDialog) SwingUtilities.getAncestorOfClass(
                 JDialog.class, baseComponent));
 
-        IgnoreListPanel ilp = new IgnoreListPanel();
+        final IgnoreListPanel ilp = new IgnoreListPanel();
         jd.add(ilp);
         jd.setModal(true);
         jd.setLocationRelativeTo(baseComponent);
         jd.getRootPane().setDefaultButton(ilp.btnClose);
+        registerCloseKey(jd, ilp);
+        registerDeleteKey(jd, ilp);
         jd.pack();
         jd.setTitle(getText("IgnoreListPanel.title"));                  //NOI18N
         jd.setVisible(true);
+    }
+
+    /**
+     * Register ESC key to close the dialog.
+     */
+    private static void registerCloseKey(JDialog jd,
+            final IgnoreListPanel ilp) {
+
+        Object actionKey = "cancel";                                   // NOI18N
+        jd.getRootPane().getInputMap(
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), actionKey);
+
+        Action cancelAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                ilp.btnClose.doClick();
+            }
+        };
+        jd.getRootPane().getActionMap().put(actionKey, cancelAction);
+    }
+
+    /**
+     * Register DEL key to remove the current selected items.
+     */
+    private static void registerDeleteKey(JDialog jd,
+            final IgnoreListPanel ilp) {
+
+        Object actionKey = "delete";                                   // NOI18N
+        jd.getRootPane().getInputMap(
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), actionKey);
+
+        Action deleteAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent ev) {
+                ilp.btnDelete.doClick();
+            }
+        };
+        jd.getRootPane().getActionMap().put(actionKey, deleteAction);
     }
 
     static class IgnoreListManager {
