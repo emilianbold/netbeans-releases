@@ -34,7 +34,7 @@
           maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="title" type="xs:string"/>
-      <xs:attribute ref="xml:lang"/>
+      <!--xs:attribute ref="xml:lang"/-->
       <xs:anyAttribute namespace="##other" processContents="lax"/>
     </xs:complexType>
   </xs:element>
