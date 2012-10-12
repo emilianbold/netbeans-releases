@@ -55,9 +55,11 @@ public final class EditorDocumentHandler {
         // no instances
     }
 
-    public static Class editorDocClass;
+    private static Class editorDocClass;
     
-    public static EditorDocumentServices editorDocServices;
+    private static EditorDocumentServices editorDocServices;
+    
+    private static EditorCharacterServices charServices = new DefaultEditorCharacterServices(); // Until other impls exist
     
     public static void setEditorDocumentServices(Class docClass, EditorDocumentServices docServices) {
         // Currently expect just a single implementation: BaseDocument
@@ -78,4 +80,14 @@ public final class EditorDocumentHandler {
         }
     }
     
+    public static void resetUndoMerge(Document doc) {
+        if (editorDocClass != null && editorDocClass.isInstance(doc)) {
+            editorDocServices.resetUndoMerge(doc);
+        }
+    }
+
+    public static int getIdentifierEnd(Document doc, int offset, boolean backward) {
+        return charServices.getIdentifierEnd(doc, offset, backward);
+    }
+
 }

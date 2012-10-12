@@ -42,58 +42,227 @@
 
 package org.netbeans.spi.editor;
 
-import org.netbeans.modules.editor.lib2.actions.*;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
-import javax.swing.text.Caret;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
+import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
+import org.netbeans.modules.editor.lib2.actions.MacroRecording;
+import org.netbeans.modules.editor.lib2.actions.PresenterUpdater;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.Presenter;
 
 /**
  * Base class for editor actions.
+ * <br/>
+ * It may be used in two modes
+ * <ul>
+ *   <li> Regular mode - action is created directly and it controls all its behavior.
+ *   </li>
+ *   <li> Delegating mode - action is wrapper around the delegate that only gets
+ *        created when the action needs to be performed. An advantage is less class loading.
+ *   </li>
+ * </ul>
  *
  * @author Miloslav Metelka
  * @since 1.14
  */
-public abstract class AbstractEditorAction extends TextAction {
+public abstract class AbstractEditorAction extends TextAction implements
+        Presenter.Menu, Presenter.Popup, Presenter.Toolbar
+{
+    
+    /**
+     * Key of {@link String} property containing a localized display name of the action.
+     * <br/>
+     * It may be passed to {@link #getValue(java.lang.String) } to obtain the property value.
+     */
+    public static final String DISPLAY_NAME_KEY = "displayName"; // (named in sync with AlwaysEnabledAction) NOI18N
 
+    /**
+     * Key of {@link String} property containing a localized text to be displayed in a main menu for this action.
+     * <br/>
+     * It may be passed to {@link #getValue(java.lang.String) } to obtain the property value.
+     */
+    public static final String MENU_TEXT_KEY = "menuText"; // (named in sync with AlwaysEnabledAction) NOI18N
+
+    /**
+     * Key of {@link String} property containing a localized text to be displayed in a popup menu for this action.
+     * <br/>
+     * If this property is not set then {@link #MENU_TEXT_KEY} is attempted.
+     * <br/>
+     * It may be passed to {@link #getValue(java.lang.String) } to obtain the property value.
+     */
+    public static final String POPUP_TEXT_KEY = "popupText"; // (named in sync with AlwaysEnabledAction) NOI18N
+
+    /**
+     * Key of {@link String} property containing a string path to icon.
+     */
+    public static final String ICON_RESOURCE_KEY = "iconBase"; // (named in sync with AlwaysEnabledAction) NOI18N
+
+    /**
+     * Key of property containing a <code>List &lt; List &lt; {@link KeyStroke} &gt; &gt;</code>
+     * listing all multi-key bindings by which the action may be invoked.
+     * <br/>
+     * There may be multiple multi-key bindings to invoke a single action e.g. a code completion
+     * may be invoked by Ctrl+SPACE and also Ctrl+'\'
+     * (in fact each of these bindings could also consist of multiple keystrokes).
+     * The more straightforward (shorter) bindings should generally precede the longer ones
+     * so e.g. tooltip may just show the first binding of the list.
+     */
+    public static final String MULTI_ACCELERATOR_LIST_KEY = "MultiAcceleratorListKey"; // NOI18N
+
+    /**
+     * Key of {@link Boolean} property containing a boolean whether the action should be performed asynchronously or synchronously.
+     */
+    public static final String ASYNCHRONOUS_KEY = "asynchronous"; // (named in sync with AlwaysEnabledAction) NOI18N
+
+    /**
+     * Key of {@link String} property containing a mime type for which this action
+     * is registered.
+     * <br/>
+     * Value of this property is checked at action's initialization
+     * (it needs to be passed as part of 'attrs' parameter to constructor).
+     * Subsequent modifications of this property should be avoided.
+     */
+    public static final String MIME_TYPE_KEY = "mimeType"; // (named in sync with doc's property) NOI18N
+
+    /**
+     * Key of {@link Preferences} property containing a node in preferences in which this action changes settings.
+     */
+    public static final String PREFERENCES_NODE_KEY = "preferencesNode"; // (named in sync with AlwaysEnabledAction) NOI18N
+    
+    /**
+     * Key of {@link String} property containing a name of a boolean key in preferences in which this action changes settings
+     * (according to {@link #PREFERENCES_NODE_KEY} property).
+     * <br/>
+     * Once this property is set then it's expected that {@link #PREFERENCES_NODE_KEY} is also set
+     * to a valid value and checkbox menu presenter will be used automatically.
+     */
+    public static final String PREFERENCES_KEY_KEY = "preferencesKey"; // (named in sync with AlwaysEnabledAction) NOI18N
+    
+    /**
+     * Key of {@link String} property containing preferences key's default value.
+     */
+    public static final String PREFERENCES_DEFAULT_KEY = "preferencesDefault"; // (named in sync with AlwaysEnabledAction) NOI18N
+
+    /**
+     * Key of {@link Boolean} property determining whether this is just a wrapper action
+     * that is being used until the action needs to be executed. Then the target action
+     * gets created and run.
+     * <br/>
+     * Value of this property is checked at action's initialization
+     * (it needs to be passed as part of 'attrs' parameter to constructor).
+     * Subsequent modifications of this property should be avoided.
+     */
+    public static final String WRAPPER_ACTION_KEY = "WrapperActionKey"; // NOI18N
+    
     /** Logger for reporting invoked actions */
-    private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions.editor"); // NOI18N
+    private static final Logger UILOG = Logger.getLogger("org.netbeans.ui.actions.editor"); // NOI18N
+    
+    // -J-Dorg.netbeans.spi.editor.AbstractEditorAction.level=FINE
+    private static final Logger LOG = Logger.getLogger(AbstractEditorAction.class.getName());
 
     private static final long serialVersionUID = 1L; // Serialization no longer used (prevent warning)
 
-    private final Map<String,?> attrs;
-
     /**
-     * Constructor that should be used when a descendant requests a direct action's instantiation.
-     * When annotated with <code>@EditorActionRegistration</code> the infrastructure
-     * will pass action's properties from a generated layer to the action.
-     *
-     * @param attrs non-null attributes that hold action's properties.
+     * Transfer properties are filled in the wrapper action (if it exists)
+     * and upon delegate construction they are transferred into the delegate.
      */
-    protected AbstractEditorAction(Map<String,?> attrs) {
-        super(null);
-        this.attrs = attrs;
+    private static final Map<String,Boolean> TRANSFER_PROPERTY_KEYS = new HashMap<String, Boolean>(16); // Fast map => give enough space
+    static {
+        TRANSFER_PROPERTY_KEYS.put(ACCELERATOR_KEY, true);
+        TRANSFER_PROPERTY_KEYS.put(MULTI_ACCELERATOR_LIST_KEY, true);
+        TRANSFER_PROPERTY_KEYS.put(SMALL_ICON, true);
+        TRANSFER_PROPERTY_KEYS.put(LARGE_ICON_KEY, true);
+    }
+    
+    private static final Map<String,Boolean> LOGGED_ACTION_NAMES = Collections.synchronizedMap(new HashMap<String, Boolean>());
+    
+    private Map<String,?> attrs;
+    
+    /**
+     * If this action is a wrapper action around the delegate action which will be constructed
+     * upon performing the action then this variable will hold the delegate action instance.
+     */
+    private Action delegateAction;
 
-        if (attrs != null) {
-            String actionName = (String)attrs.get(Action.NAME);
-            if (actionName == null) {
-                throw new IllegalArgumentException("Null Action.NAME attribute for action " + this.getClass()); // NOI18N
-            }
-            putValue(Action.NAME, actionName);
-        }
+    private static final Action UNITIALIZED_ACTION = EditorActionUtilities.createEmptyAction();
+    
+    private static String extractActionName(Map<String,?> attrs) {
+        return (attrs != null) ? (String) attrs.get(Action.NAME) : null;
     }
 
     /**
-     * Constructor for a regular registration with <code>@EditorActionRegistration</code>
-     * or for an explicit instantiation when no extra arguments need to be passed
-     * to the action.
+     * Constructor that takes a map of attributes that are typically obtained
+     * from an xml layer when an action's creation method is annotated with
+     * <code>@EditorActionRegistration</code>.
+     * <br/>
+     * Example:
+     * <br/>
+     * <code>
+     * public static final class MyAction extends AbstractEditorAction {
+     *
+     *     @EditorActionRegistration(name = "my-action")
+     *     public static MyAction create(Map&lt;String,?&gt; attrs) {
+     *         return new MyAction(attrs);
+     *     }
+     * 
+     *     private MyAction(Map&lt;String,?&gt; attrs) {
+     *         super(attrs);
+     *         ...
+     *     }
+     * 
+     * }
+     * </code>
+     *
+     * @param attrs non-null attributes that hold action's properties.
+     *  The map is expected to be constant (no key-value changes).
+     */
+    protected AbstractEditorAction(Map<String,?> attrs) {
+        super(extractActionName(attrs));
+        if (attrs != null) {
+            updateAttrs(attrs);
+            delegateAction = Boolean.TRUE.equals(attrs.get(WRAPPER_ACTION_KEY)) ? UNITIALIZED_ACTION : null;
+        }
+    }
+    
+    /**
+     * Constructor typically used when action is constructed lazily
+     * upon its performing (the action is always enabled and its properties
+     * are declared in xml layer by annotation processor for <code>@EditorActionRegistration</code>).
+     * <br/>
+     * Example:
+     * <br/>
+     * <code>
+     * @EditorActionRegistration(name = "my-action")
+     * public static final class MyAction extends AbstractEditorAction {
+     *
+     *     public MyAction() {
+     *         // Here the properties are not yet set.
+     *     }
+     * 
+     *     @Override
+     *     protected void attributesUpdated() {
+     *         // Here the wrapper action has transferred all its attributes into this action
+     *         // so properties like Action.NAME etc. are now populated.
+     *     }
+     * 
+     * }
+     * </code>
      */
     protected AbstractEditorAction() {
         this(null);
@@ -102,20 +271,18 @@ public abstract class AbstractEditorAction extends TextAction {
     /**
      * Implementation of the action must be defined by descendants.
      *
-     * @param evt non-null event
+     * @param evt action event (may be null).
      * @param component "active" text component obtained by {@link TextAction#getFocusedComponent()}.
+     *  It may be null.
      */
     public abstract void actionPerformed(ActionEvent evt, JTextComponent component);
 
     /**
-     * Called by {@link #putValue(String,String)} when {@link Action#NAME} property
-     * is set to a non-null String value. This allows a "polymorphic" action (with
-     * Action.NAME-specific behavior) to update certain properties (e.g. an icon)
-     * according to the name that was set.
-     *
-     * @param actionName non-null action's name (value of Action.NAME property).
+     * Called when attributes map was set into this action explicitly (by a wrapper action instance)
+     * so properties like Action.NAME will start to return correct values.
+     * @see AbstractEditorAction()
      */
-    protected void actionNameUpdate(String actionName) {
+    protected void attributesUpdated() {
     }
 
     /**
@@ -123,7 +290,33 @@ public abstract class AbstractEditorAction extends TextAction {
      * @return false (by default) or true to allow asynchronous execution.
      */
     protected boolean asynchronous() {
-        return false;
+        return Boolean.TRUE.equals(getValue(ASYNCHRONOUS_KEY));
+    }
+
+    /**
+     * Reset caret's magic position.
+     * @param component target text component.
+     */
+    protected final void resetCaretMagicPosition(JTextComponent component) {
+        EditorActionUtilities.resetCaretMagicPosition(component);
+    }
+
+    @Override
+    public JMenuItem getMenuPresenter() {
+        // No reusal (as component it can only be present in a single place in component hierarchy)
+        return PresenterUpdater.createMenuPresenter(this);
+    }
+
+    @Override
+    public JMenuItem getPopupPresenter() {
+        // No reusal (as component it can only be present in a single place in component hierarchy)
+        return PresenterUpdater.createPopupPresenter(this);
+    }
+
+    @Override
+    public Component getToolbarPresenter() {
+        // No reusal (as component it can only be present in a single place in component hierarchy)
+        return PresenterUpdater.createToolbarPresenter(this);
     }
 
     /**
@@ -133,37 +326,27 @@ public abstract class AbstractEditorAction extends TextAction {
         return (String) getValue(Action.NAME);
     }
 
-
-    /**
-     * Reset caret's magic position.
-     * @param component target text component.
-     */
-    protected final void resetCaretMagicPosition(JTextComponent component) {
-        Caret caret;
-        if (component != null && (caret = component.getCaret()) != null) {
-            caret.setMagicCaretPosition(null);
-        }
-    }
-
     @Override
     public final void actionPerformed(final ActionEvent evt) {
+        // Possibly delegate to getDelegateAction()
+        Action dAction = getDelegateAction();
+        if (dAction != null) {
+            dAction.actionPerformed(evt);
+            return;
+        }
+
         final JTextComponent component = getTextComponent(evt);
         MacroRecording.get().recordAction(this, evt); // Possibly record action in a currently recorded macro
 
         if (UILOG.isLoggable(Level.FINE)) {
             // TODO [Mila] - Set action's property to disable UI logging
-            String actionNameLowerCase = actionName();
-            if (actionNameLowerCase != null &&
-                !"default-typed".equals(actionNameLowerCase) && //NOI18N
-                -1 == actionNameLowerCase.indexOf("caret") && //NOI18N
-                -1 == actionNameLowerCase.indexOf("delete") && //NOI18N
-                -1 == actionNameLowerCase.indexOf("selection") && //NOI18N
-                -1 == actionNameLowerCase.indexOf("build-tool-tip") &&//NOI18N
-                -1 == actionNameLowerCase.indexOf("build-popup-menu") &&//NOI18N
-                -1 == actionNameLowerCase.indexOf("page-up") &&//NOI18N
-                -1 == actionNameLowerCase.indexOf("page-down") &&//NOI18N
-                -1 == actionNameLowerCase.indexOf("-kit-install") //NOI18N
-            ) {
+            String actionName = actionName();
+            Boolean logged = LOGGED_ACTION_NAMES.get(actionName);
+            if (logged == null) {
+                logged = isLogged(actionName);
+                LOGGED_ACTION_NAMES.put(actionName, logged);
+            }
+            if (logged) {
                 LogRecord r = new LogRecord(Level.FINE, "UI_ACTION_EDITOR"); // NOI18N
                 r.setResourceBundle(NbBundle.getBundle(AbstractEditorAction.class));
                 if (evt != null) {
@@ -176,6 +359,16 @@ public abstract class AbstractEditorAction extends TextAction {
             }
         }
 
+        // Possibly toggle preferences node's value if this is a toggle action
+        String preferencesKey = (String) getValue(AbstractEditorAction.PREFERENCES_KEY_KEY);
+        if (preferencesKey != null) {
+            Preferences preferencesNode = (Preferences) getValue(AbstractEditorAction.PREFERENCES_NODE_KEY);
+            if (preferencesNode != null) {
+                togglePreferencesValue(preferencesNode, preferencesKey);
+            }
+        }
+
+
         if (asynchronous()) {
             RequestProcessor.getDefault().post(new Runnable () {
                 public void run() {
@@ -186,25 +379,141 @@ public abstract class AbstractEditorAction extends TextAction {
             actionPerformed(evt, component);
         }
     }
+    
+    private static boolean isLogged(String actionName) {
+        return actionName != null &&
+                !"default-typed".equals(actionName) && //NOI18N
+                -1 == actionName.indexOf("caret") && //NOI18N
+                -1 == actionName.indexOf("delete") && //NOI18N
+                -1 == actionName.indexOf("selection") && //NOI18N
+                -1 == actionName.indexOf("build-tool-tip") &&//NOI18N
+                -1 == actionName.indexOf("build-popup-menu") &&//NOI18N
+                -1 == actionName.indexOf("page-up") &&//NOI18N
+                -1 == actionName.indexOf("page-down") &&//NOI18N
+                -1 == actionName.indexOf("-kit-install"); //NOI18N
+    }
 
     @Override
-    public Object getValue(String key) {
+    public final Object getValue(String key) {
+        Action dAction = delegateAction;
+        // Delegate whole getValue() if delegateAction already exists
+        if (dAction != null && dAction != UNITIALIZED_ACTION) {
+            return dAction.getValue(key);
+        }
+
         Object value = super.getValue(key);
-        if (value == null && attrs != null) {
+        if (value == null) {
             if (!"instanceCreate".equals(key)) { // Return null for this key
                 value = attrs.get(key);
+            }
+            if (value == null) {
+                value = createValue(key);
+                if (value != null) {
+                    putValue(key, value);
+                }
             }
         }
         return value;
     }
-
+    
+    protected Object createValue(String key) {
+        Object value = null;
+        if (Action.SMALL_ICON.equals(key)) {
+            value = EditorActionUtilities.createSmallIcon(this);
+        } else if (Action.LARGE_ICON_KEY.equals(key)) {
+            value = EditorActionUtilities.createLargeIcon(this);
+        }
+        return value;
+    }
+    
     @Override
-    public void putValue(String key, Object value) {
-        super.putValue(key, value);
-        if (Action.NAME.equals(key) && value instanceof String) {
-            actionNameUpdate((String)value);
+    public final void putValue(String key, Object value) {
+        Action dAction = delegateAction;
+        if (dAction != null) {
+            if (dAction == UNITIALIZED_ACTION) {
+                if (TRANSFER_PROPERTY_KEYS.containsKey(key)) {
+                    super.putValue(key, value); // Store value in wrapper action
+                } else { // Construct delegate action and put value into it
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("AbstractEditorAction.putValue(): Constructing delegate action for key=\"" + // NOI18N
+                                key + "\" action: " + toString()); // NOI18N
+                    }
+                    getDelegateAction().putValue(key, value);
+                }
+            } else {
+                dAction.putValue(key, value);
+            }
+        } else {
+            super.putValue(key, value);
         }
     }
 
+    private void updateAttrs(Map<String,?> attrs) {
+        this.attrs = attrs;
+    }
+
+    private void togglePreferencesValue(Preferences preferencesNode, String key) {
+        boolean value = Boolean.TRUE.equals(getValue(AbstractEditorAction.PREFERENCES_DEFAULT_KEY));
+        value = preferencesNode.getBoolean(key, value);
+        preferencesNode.putBoolean(key, !value);
+    }
+    
+    private Action getDelegateAction() {
+        Action dAction = delegateAction;
+        if (dAction == UNITIALIZED_ACTION) { // Delegate should be created
+            dAction = (Action) attrs.get("delegate"); // NOI18N
+            if (dAction == null) {
+                throw new IllegalStateException("delegate is null for wrapper action");
+            }
+            if (dAction instanceof AbstractEditorAction) {
+                AbstractEditorAction aeAction = (AbstractEditorAction) dAction;
+                // Give attributes from wrapper action to its delegate
+                aeAction.updateAttrs(attrs);
+                transferProperties(dAction);
+                attributesUpdated();
+                // Note that delegate action will have its delegateAction left to be null
+                // so it should not re-delegate (though "delegate" property is set in attrs)
+            } else { // Non-AbstractEditorAction
+                // Init Action.NAME (existing BaseAction instances registered by EditorActionRegistration
+                // would not work properly without this)
+                dAction.putValue(Action.NAME, actionName());
+                transferProperties(dAction);
+            }
+            dAction.addPropertyChangeListener(WeakListeners.propertyChange(
+                    new DelegateActionPropertyChangeListener(this), dAction));
+            delegateAction = dAction;
+        }
+        return dAction;
+    }
+    
+    private void transferProperties(Action dAction) {
+        for (String key : TRANSFER_PROPERTY_KEYS.keySet()) {
+            Object value = getValue(key);
+            if (value != null) {
+                dAction.putValue(key, value);
+            }
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return super.toString() + " name=\"" + actionName() + "\""; // NOI18N
+    }
+    
+    private static final class DelegateActionPropertyChangeListener implements PropertyChangeListener {
+        
+        private final AbstractEditorAction wrapper;
+
+        DelegateActionPropertyChangeListener(AbstractEditorAction wrapper) {
+            this.wrapper = wrapper;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            wrapper.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+            
+        }
+        
+    }
 
 }

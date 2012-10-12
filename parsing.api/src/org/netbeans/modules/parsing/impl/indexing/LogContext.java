@@ -58,6 +58,8 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
  public class LogContext {
+     
+    private static final Logger TEST_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests"); //NOI18N
     
     private static final RequestProcessor RP = new RequestProcessor("Thread dump shooter", 1); // NOI18N
     
@@ -140,7 +142,7 @@ import org.openide.util.Utilities;
     @Override
     public String toString() {
         final StringBuilder msg = new StringBuilder();
-        createLogMessage(msg, new HashSet<LogContext>());
+        createLogMessage(msg, new HashSet<LogContext>(), 0);
         return msg.toString();
     }
     
@@ -164,13 +166,16 @@ import org.openide.util.Utilities;
     }
     
     void log() {
-        log(true);
+        log(true, true);
     }
 
-    void log(boolean cancel) {
+    void log(boolean cancel, boolean logAbsorbed) {
         freeze();
         final LogRecord r = new LogRecord(Level.INFO, 
                 cancel ? LOG_MESSAGE : LOG_EXCEEDS_RATE); //NOI18N
+        if (!logAbsorbed) {
+            this.absorbed = null;
+        }
         r.setParameters(new Object[]{this});
         r.setResourceBundle(NbBundle.getBundle(LogContext.class));
         r.setResourceBundleName(LogContext.class.getPackage().getName() + ".Bundle"); //NOI18N
@@ -214,7 +219,10 @@ import org.openide.util.Utilities;
      */
     void recordExecuted() {
         executed = System.currentTimeMillis();
-        STATS.record(this);
+        // Hack for unit tests, which watch the test logger and wait for RepoUpdater. Do not measure stats, so the test output is not obscured.
+        if (!TEST_LOGGER.isLoggable(Level.FINEST)) {
+            STATS.record(this);
+        }
     }
     
     void recordFinished() {
@@ -500,11 +508,15 @@ import org.openide.util.Utilities;
             this.mySerial = serial++;
         }
     }
-
-    private synchronized void createLogMessage(@NonNull final StringBuilder sb, Set<LogContext> reported) {
+    
+    private synchronized void createLogMessage(@NonNull final StringBuilder sb, Set<LogContext> reported, int depth) {
         sb.append("ID: ").append(mySerial).append(", Type:").append(eventType);   //NOI18N
         if (reported.contains(this)) {
             sb.append(" -- see above\n");
+            return;
+        }
+        if (depth > 5) {
+            sb.append("-- too deep nesting");
             return;
         }
         reported.add(this);
@@ -587,7 +599,7 @@ import org.openide.util.Utilities;
         }
         if (parent != null) {
             sb.append("Parent {");  //NOI18N
-            parent.createLogMessage(sb, reported);
+            parent.createLogMessage(sb, reported, depth + 1);
             sb.append("}\n"); //NOI18N
         }
         
@@ -601,18 +613,16 @@ import org.openide.util.Utilities;
                     append(secondDump).append("\n");
         }
         
-        /*
         if (predecessor != null) {
             sb.append("Predecessor: {");
-            predecessor.createLogMessage(sb, reported);
+            predecessor.createLogMessage(sb, reported, depth + 1);
             sb.append("}\n");
         }
-        */
 
         if (absorbed != null) {
             sb.append("Absorbed {");    //NOI18N
             for (LogContext a : absorbed) {
-                a.createLogMessage(sb, reported);
+                a.createLogMessage(sb, reported, depth + 1);
             }
             sb.append("}\n");             //NOI18N
         }
@@ -762,7 +772,7 @@ import org.openide.util.Utilities;
         }
         
         private Pair<Integer, Integer> findHigherRate(long minTime, int minutes, int treshold) {
-            int s = start;
+            int s = reportedEnd == -1 ? start : reportedEnd;
             int l = -1;
             
             // skip events earlier than history limit; should be already cleared.
@@ -807,8 +817,8 @@ import org.openide.util.Utilities;
                     ". Dumping suspicious contexts");
             int index;
             
-            for (index = found.first; index != found.second; index = (index + 1) % times.length) {
-                contexts[index].log(false);
+             for (index = found.first; index != found.second; index = (index + 1) % times.length) {
+                contexts[index].log(false, false);
             }
             LOG.log(Level.WARNING, "=== End excessive indexing");
             this.reportedEnd = index;
@@ -822,41 +832,57 @@ import org.openide.util.Utilities;
         private Map<EventType, RingTimeBuffer>  history = new HashMap<EventType, RingTimeBuffer>(7);
         
         /**
-         * For each root, one ring-buffer. Items are removed using least recently accessed strategy. Once an
+         * For each root, one ring-buffer per event type. Items are removed using least recently accessed strategy. Once an
          * item is touched, it is removed and re-added so it is at the tail of the entry iterator.
          */
-        private LinkedHashMap<URL, RingTimeBuffer> rootHistory = new LinkedHashMap<URL, RingTimeBuffer>(9, 0.7f, true);
+        private LinkedHashMap<URL, Map<EventType, RingTimeBuffer>> rootHistory = new LinkedHashMap<URL, Map<EventType, RingTimeBuffer>>(9, 0.7f, true);
         
         public synchronized void record(LogContext ctx) {
             EventType type = ctx.eventType;
             
-            if (type == EventType.INDEXER && ctx.root != null) {
-                recordIndexer(ctx.root, ctx);
-            } else {
-                recordRegular(type, ctx);
+            if (ctx.root != null) {
+                if (type == EventType.INDEXER || type == EventType.MANAGER) {
+                    recordIndexer(type, ctx.root, ctx);
+                    return;
+                }
             }
+            recordRegular(type, ctx);
         }
         
         private void expireRoots() {
             long l = System.currentTimeMillis();
-            l -= fromMinutes(EventType.INDEXER.getMinutes());
             
-            for (Iterator<RingTimeBuffer> it = rootHistory.values().iterator(); it.hasNext(); ) {
-                RingTimeBuffer rb = it.next();
-                if (rb.lastTime < l) {
-                    it.remove();
+            for (Iterator mapIt = rootHistory.values().iterator(); mapIt.hasNext(); ) {
+                Map<EventType, RingTimeBuffer> map = (Map<EventType, RingTimeBuffer>)mapIt.next();
+                for (Iterator<Map.Entry<EventType, RingTimeBuffer>> it = map.entrySet().iterator(); it.hasNext(); ) {
+                    Map.Entry<EventType, RingTimeBuffer> entry = it.next();
+                    EventType et = entry.getKey();
+                    RingTimeBuffer rb = entry.getValue();
+                    long limit = l - fromMinutes(et.getMinutes());
+                    if (rb.lastTime < limit) {
+                        it.remove();
+                    }
+                }
+                if (map.isEmpty()) {
+                    mapIt.remove();
                 } else {
                     break;
                 }
             }
         }
         
-        private void recordIndexer(URL root, LogContext ctx) {
+        private void recordIndexer(EventType et, URL root, LogContext ctx) {
             expireRoots();
-            RingTimeBuffer existing = rootHistory.get(root);
+            // re-adding maintains LRU order of the LinkedHM
+            Map<EventType, RingTimeBuffer> map = rootHistory.remove(root);
+            if (map == null) {
+                map = new EnumMap<EventType, RingTimeBuffer>(EventType.class);
+            }
+            rootHistory.put(root, map);
+            RingTimeBuffer existing = map.get(et);
             if (existing == null) {
-                existing = new RingTimeBuffer(EventType.INDEXER.getMinutes() * 2);
-                rootHistory.put(root, existing);
+                existing = new RingTimeBuffer(et.getMinutes() * 2);
+                map.put(et, existing);
             }
             existing.mark(ctx);
         }

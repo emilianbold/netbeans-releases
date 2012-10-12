@@ -218,12 +218,17 @@ public class FixUsesPerformer {
 
     private int getOffsetWithoutLeadingWhitespaces(final int startOffset) {
         int result = startOffset;
-        TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(baseDocument, startOffset);
-        if (ts != null) {
-            ts.move(startOffset);
-            while (ts.movePrevious() && ts.token().id().equals(PHPTokenId.WHITESPACE)) {
-                result = ts.offset();
+        baseDocument.readLock();
+        try {
+            TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(baseDocument, startOffset);
+            if (ts != null) {
+                ts.move(startOffset);
+                while (ts.movePrevious() && ts.token().id().equals(PHPTokenId.WHITESPACE)) {
+                    result = ts.offset();
+                }
             }
+        } finally {
+            baseDocument.readUnlock();
         }
         return result;
     }

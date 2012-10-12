@@ -69,21 +69,21 @@ import org.openide.util.NbBundle;
     @EditorActionRegistration(
         name = "goto-declaration", // NOI18N
         menuPath = "GoTo", // NOI18N
-        menuPosition = 900,
+//        menuPosition = 900, Temporary fix
         menuText = "#goto-identifier-declaration", // NOI18N
         mimeType = MIMENames.C_MIME_TYPE
     ),
     @EditorActionRegistration(
         name = "goto-declaration", // NOI18N
         menuPath = "GoTo", // NOI18N
-        menuPosition = 900,
+//        menuPosition = 900, Temporary fix
         menuText = "#goto-identifier-declaration", // NOI18N
         mimeType = MIMENames.CPLUSPLUS_MIME_TYPE
     ),
     @EditorActionRegistration(
         name = "goto-declaration", // NOI18N
         menuPath = "GoTo", // NOI18N
-        menuPosition = 900,
+//        menuPosition = 900, Temporary fix
         menuText = "#goto-identifier-declaration", // NOI18N
         mimeType = MIMENames.HEADER_MIME_TYPE
     )
