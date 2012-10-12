@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.data.IdeContext;
+import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
@@ -81,8 +82,14 @@ public class CommonServerSupport
 
 
     ////////////////////////////////////////////////////////////////////////////
-    // Inner methods                                                         //
+    // Inner classes                                                         //
     ////////////////////////////////////////////////////////////////////////////
+
+    /** Keep trying for up to 10 minutes while server is initializing [ms]. */
+    private static final int STARTUP_TIMEOUT = 600000;
+
+    /** Delay before next try while server is initializing [ms]. */
+    private static final int STARTUP_RETRY_DELAY = 2000;
 
     /**
      * Task state listener watching __locations command execution.
@@ -182,6 +189,11 @@ public class CommonServerSupport
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
@@ -703,16 +715,34 @@ public class CommonServerSupport
         boolean isReady = false;
         int maxtries = retry ? 3 : 1;
         int tries = 0;
+        boolean notYetReadyResponse = false;
+        long begTm = System.currentTimeMillis();
+        long actTm = begTm;
         Logger.getLogger("glassfish").log(Level.FINEST,
                 "GlassFish status check: retries = {0} timeout = {1} [{2}]",
                 new Object[]{maxtries, timeout, units.toString()});
-        while(!isReady && tries++ < maxtries) {
+        while(!isReady && (
+                tries++ < maxtries || (
+                notYetReadyResponse && (actTm - begTm) < STARTUP_TIMEOUT))) {
             if (tries > 1) {
                 try {
-                        Thread.sleep(2000);
-                } catch (InterruptedException ex) {
-                     Logger.getLogger("glassfish").log(Level.INFO, null,ex);
+                     Thread.sleep(STARTUP_RETRY_DELAY);
+                } catch (InterruptedException ie) {
+                    Logger.getLogger("glassfish").log(Level.INFO,
+                            "Thread sleep interrupted: ", ie);
                 }
+            }
+            if (notYetReadyResponse) {
+                try {
+                    Thread.sleep(STARTUP_RETRY_DELAY);
+                } catch (InterruptedException ie) {
+                    Logger.getLogger("glassfish").log(Level.INFO,
+                            "Thread sleep interrupted: ", ie);
+                }
+
+                Logger.getLogger("glassfish").log(Level.FINEST,
+                        "Keep trying while server is not yet ready. Time until giving it up: {0}",
+                        Long.toString(STARTUP_TIMEOUT - actTm + begTm));
             }
             CommandLocation commandLocation = new CommandLocation();
             try {
@@ -735,11 +765,20 @@ public class CommonServerSupport
                             = ServerAdmin.<ResultMap<String, String>>exec(
                             instance, commandLocation, new IdeContext());
                 }
+
                 Logger.getLogger("glassfish").log(Level.FINEST,
                         "Waiting for Location command to finish on {0} with timeout {1} [{2}]",
                         new Object[]{instance.getName(), timeout, units.toString()});
+
                 ResultMap<String, String> resultLocation
                         = futureLocation.get(timeout, units);
+                String message =  resultLocation != null
+                        && resultLocation.getValue() != null
+                        ? resultLocation.getValue().get("message") : null;
+                // Not yet ready response and timer update belongs to each other.
+                notYetReadyResponse = ServerUtils.notYetReadyMsg(message);
+                actTm = System.currentTimeMillis();
+
                 Logger.getLogger("glassfish").log(Level.FINEST,
                         "{0} responded in {1} ms with result {2} and response {3}",
                         new Object[]{commandLocation.getCommand(),
@@ -751,6 +790,7 @@ public class CommonServerSupport
                                 : resultLocation.getValue().get("Base-Root_value") + " "
                                 + resultLocation.getValue().get("Domain-Root_value"))
                             : "null"});
+
                 if (resultLocation.getState() == TaskState.COMPLETED) {
                     String domainRoot = getDomainsRoot() + File.separator
                             + getDomainName();
@@ -789,6 +829,12 @@ public class CommonServerSupport
                             commandVersion, new IdeContext());
                     ResultString resultVersion
                             = future.get(timeout, units);
+                    message = resultVersion.getValue();
+
+                    // Not yet ready response and timer update belongs to each other.
+                    notYetReadyResponse = ServerUtils.notYetReadyMsg(message);
+                    actTm = System.currentTimeMillis();
+
                     Logger.getLogger("glassfish").log(Level.FINEST,
                         "{0} responded in {1} ms with result {2} and response {3}",
                         new Object[]{commandVersion.getCommand(),
@@ -796,7 +842,11 @@ public class CommonServerSupport
                             resultVersion != null && resultVersion.getState() != null
                             ? resultVersion.getState().toString() : "null",
                             resultVersion != null ? resultVersion.getValue() : "null"});
+
                     isReady = resultVersion.getState() == TaskState.COMPLETED;
+                    if (notYetReadyResponse) {
+                        continue;
+                    }
                     break;
                 } else {
                     // keep trying for 10 minutes if the server is stuck between
