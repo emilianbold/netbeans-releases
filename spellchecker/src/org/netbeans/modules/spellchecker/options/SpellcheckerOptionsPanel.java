@@ -104,7 +104,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-@OptionsPanelController.Keywords(keywords = {"spellchecker"}, location = OptionsDisplayer.EDITOR, tabTitle="#TITLE_OptionsPanel")
+@OptionsPanelController.Keywords(keywords = {"spellchecker", "#KW_SpellcheckerOptions"}, location = OptionsDisplayer.EDITOR, tabTitle="#TITLE_OptionsPanel")
 public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
     
     private List<Locale> removedDictionaries = new ArrayList<Locale>();

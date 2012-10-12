@@ -1,9 +1,9 @@
 Name: Equinox
-Version: 3.7.1
+Version: 3.8.0
 Description: Eclipse OSGi container
 License: EPL-v10
 OSR: Oracle-7597
-Files: org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar
+Files: org.eclipse.osgi_3.8.0.v20120529-1548.jar
 Origin: http://www.eclipse.org/equinox/
 
 Eclipse Public License - v 1.0
