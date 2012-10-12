@@ -537,6 +537,15 @@ public class RuleEditorPanel extends JPanel {
     public Model getModel() {
         return model;
     }
+    
+    public void releaseModel() {
+        if(model == null) {
+            return ;
+        }
+        setNoRuleState();
+        model.removePropertyChangeListener(MODEL_LISTENER);
+        this.model = null;
+    }
 
     //runs in EDT
     public void setModel(final Model model) {
@@ -602,6 +611,7 @@ public class RuleEditorPanel extends JPanel {
                 setRule(match);
             }
             
+            //isn't this unnecessary as we already called setNoRuleState() or setRule(...)?!?!
             CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, match);
 
         } else {
