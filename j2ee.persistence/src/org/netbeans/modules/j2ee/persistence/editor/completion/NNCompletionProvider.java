@@ -39,28 +39,3 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.earproject.model;
-
-import org.netbeans.modules.j2ee.dd.api.application.Application;
-import org.netbeans.modules.j2ee.dd.api.application.ApplicationMetadata;
-
-/**
- * Default implementation of {@link ApplicationMetadata}.
- * @author Tomas Mysik
- */
-public class ApplicationMetadataImpl implements ApplicationMetadata {
-    
-    private final Application application;
-    
-    /**
-     * Constructor with all properties.
-     * @param application model of enterprise application.
-     */
-    public ApplicationMetadataImpl(Application application) {
-        this.application = application;
-    }
-
-    public Application getRoot() {
-        return application;
-    }
-}
