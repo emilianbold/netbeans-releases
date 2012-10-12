@@ -5,8 +5,8 @@
   xmlns:xml="http://www.w3.org/XML/1998/namespace"
   elementFormDefault="qualified">
 
-  <xs:import namespace="http://www.w3.org/XML/1998/namespace"
-    schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+  <!--xs:import namespace="http://www.w3.org/XML/1998/namespace"
+    schemaLocation="http://www.w3.org/2001/xml.xsd"/-->
 
   <xs:element name="application">
     <xs:complexType>
@@ -34,7 +34,7 @@
           maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="title" type="xs:string"/>
-      <xs:attribute ref="xml:lang"/>
+      <!--xs:attribute ref="xml:lang"/-->
       <xs:anyAttribute namespace="##other" processContents="lax"/>
     </xs:complexType>
   </xs:element>
