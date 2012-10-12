@@ -39,6 +39,7 @@ package org.netbeans.modules.php.editor.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -83,50 +84,50 @@ public class ToggleBlockCommentAction extends BaseAction{
 
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        boolean processedHere = false;
+        final AtomicBoolean processedHere = new AtomicBoolean(false);
         if (target != null) {
             if (!target.isEditable() || !target.isEnabled() || !(target.getDocument() instanceof BaseDocument)) {
                 target.getToolkit().beep();
                 return;
             }
-            int caretOffset = Utilities.isSelectionShowing(target) ? target.getSelectionStart() : target.getCaretPosition();
+            final int caretOffset = Utilities.isSelectionShowing(target) ? target.getSelectionStart() : target.getCaretPosition();
             final BaseDocument doc = (BaseDocument) target.getDocument();
-            TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
-            if (ts != null) {
-                ts.move(caretOffset);
-                ts.moveNext();
-                if (isAroundPhpComment(ts)) {
-                    processedHere = true;
-                } else if (ts.token().id() != PHPTokenId.T_INLINE_HTML) {
-                    boolean newLine = false;
-                    if (isNewLineBeforeCaretOffset(ts, caretOffset)) {
-                        newLine = true;
-                    }
-                    while (!newLine && ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_OPENTAG) {
-                        if(isNewLineBeforeCaretOffset(ts, caretOffset)) {
-                            newLine = true;
-                        }
-                    }
-                    if (!newLine && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
-                        processedHere = true;
-                        int possibleChangeOffset = ts.offset() + ts.token().length();
-                        int possibleWhitespaceLength = 0;
-                        boolean possibleLineComment = false;
-                        if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
-                            possibleLineComment = true;
-                        } else if (ts.token().id() == PHPTokenId.WHITESPACE) {
-                            possibleWhitespaceLength = ts.token().length();
-                            if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
-                                possibleLineComment = true;
-                            }
-                        }
-                        final boolean lineComment = possibleLineComment;
-                        final int changeOffset = lineComment ? possibleChangeOffset + possibleWhitespaceLength : possibleChangeOffset;
-                        final int length = lineComment ? ts.offset() + ts.token().length() + countForgoingWhitespaces(ts) - changeOffset : 0;
-                        doc.runAtomic(new Runnable() {
+            doc.runAtomic(new Runnable() {
 
-                            public @Override
-                            void run() {
+                public @Override
+                void run() {
+                    TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
+                    if (ts != null) {
+                        ts.move(caretOffset);
+                        ts.moveNext();
+                        if (isAroundPhpComment(ts)) {
+                            processedHere.set(true);
+                        } else if (ts.token().id() != PHPTokenId.T_INLINE_HTML) {
+                            boolean newLine = false;
+                            if (isNewLineBeforeCaretOffset(ts, caretOffset)) {
+                                newLine = true;
+                            }
+                            while (!newLine && ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_OPENTAG) {
+                                if(isNewLineBeforeCaretOffset(ts, caretOffset)) {
+                                    newLine = true;
+                                }
+                            }
+                            if (!newLine && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
+                                processedHere.set(true);
+                                int possibleChangeOffset = ts.offset() + ts.token().length();
+                                int possibleWhitespaceLength = 0;
+                                boolean possibleLineComment = false;
+                                if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                                    possibleLineComment = true;
+                                } else if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                                    possibleWhitespaceLength = ts.token().length();
+                                    if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                                        possibleLineComment = true;
+                                    }
+                                }
+                                final boolean lineComment = possibleLineComment;
+                                final int changeOffset = lineComment ? possibleChangeOffset + possibleWhitespaceLength : possibleChangeOffset;
+                                final int length = lineComment ? ts.offset() + ts.token().length() + countForgoingWhitespaces(ts) - changeOffset : 0;
                                 try {
                                     if (!lineComment) {
                                         if (forceDirection(true)) {
@@ -137,25 +138,24 @@ public class ToggleBlockCommentAction extends BaseAction{
                                             doc.remove(changeOffset, length);
                                         }
                                     }
-
                                 } catch (BadLocationException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
                             }
-                        });
+                        }
                     }
                 }
+            });
+            if(!processedHere.get()) {
+                BaseAction action = (BaseAction) CslActions.createToggleBlockCommentAction();
+                if (getValue(FORCE_COMMENT) != null) {
+                    action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT));
+                }
+                if (getValue(FORCE_UNCOMMENT) != null) {
+                    action.putValue(FORCE_UNCOMMENT, getValue(FORCE_UNCOMMENT));
+                }
+                action.actionPerformed(evt, target);
             }
-        }
-        if(!processedHere) {
-            BaseAction action = (BaseAction) CslActions.createToggleBlockCommentAction();
-            if (getValue(FORCE_COMMENT) != null) {
-                action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT));
-            }
-            if (getValue(FORCE_UNCOMMENT) != null) {
-                action.putValue(FORCE_UNCOMMENT, getValue(FORCE_UNCOMMENT));
-            }
-            action.actionPerformed(evt, target);
         }
     }
 
