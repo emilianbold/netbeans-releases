@@ -136,6 +136,29 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         return className.toString();
     }
 
+    
+    public static class MethodSpecializationBuilder extends MethodBuilder {
+    
+        @Override
+        public MethodImplSpecialization create() {
+            MethodImplSpecialization fun = new MethodImplSpecialization(getName(), getRawName(), (CsmClass)getScope(), getVisibility(), isVirtual(), isExplicit(),  isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), isGlobal());
+            init(fun);
+            return fun;
+        }
+        
+        protected void init(FunctionImplEx fun) {
+            temporaryRepositoryRegistration(isGlobal(), fun);
+
+            setTemplateDescriptor(fun);
+            setReturnType(fun);
+            setParameters(fun);
+
+            postObjectCreateRegistration(isGlobal(), fun);
+            addReference(fun);
+        }
+        
+    }    
+    
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
 

@@ -384,7 +384,7 @@ public class RuleEditorPanel extends JPanel {
         filterTextField.getDocument().addDocumentListener(new DocumentListener() {
  
             private void contentChanged() {
-                node.setFilterPrefix(filterTextField.getText());
+                node.setFilterText(filterTextField.getText());
             }
             
             @Override

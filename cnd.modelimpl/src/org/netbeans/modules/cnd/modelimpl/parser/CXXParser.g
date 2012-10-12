@@ -460,7 +460,7 @@ id_expression
         ((simple_template_id_or_IDENT)? SCOPE) => qualified_id
     |
         unqualified_id
-    )                                                                           {action.id_expression(input.LT(0));}
+    )                                                                           {action.end_id_expression(input.LT(0));}
     ;
 
 unqualified_id:
