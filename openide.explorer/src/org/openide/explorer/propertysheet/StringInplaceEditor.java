@@ -57,6 +57,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyEditor;
+import javax.swing.Action;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -65,7 +67,7 @@ import javax.swing.KeyStroke;
  * A JTextField implementation of the InplaceEditor interface.
  * @author Tim Boudreau
  */
-class StringInplaceEditor extends JTextField implements InplaceEditor {
+class StringInplaceEditor extends JTextField implements InplaceEditor, IncrementPropertyValueSupport {
 
     protected PropertyEditor editor;
     protected PropertyEnv env;
@@ -83,10 +85,7 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
             ), KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false), KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false)
         };
 
-    public void removeNotify() {
-        super.removeNotify();
-    }
-
+    @Override
     public void clear() {
         editor = null;
         setEditable(true);
@@ -98,12 +97,13 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
         valFromTextField = null;
     }
 
+    @Override
     public void connect(PropertyEditor p, PropertyEnv env) {
         setActionCommand(COMMAND_SUCCESS);
         this.env = env;
         
-        if(SheetTable.isValueIncrementEnabled(env)) {
-            ComboInplaceEditor.disable_VK_UP_VK_DOWN_Keystrokes(this);
+        if(PropUtils.supportsValueIncrement( env ) ) {
+            PropUtils.wrapUpDownArrowActions( this, this );
         }
 
         if (editor == p) {
@@ -126,15 +126,18 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
         added = false;
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         added = true;
     }
 
+    @Override
     public JComponent getComponent() {
         return this;
     }
 
+    @Override
     public Object getValue() {
         if ((valFromTextField != null) && valFromTextField.equals(getText())) {
             //#47430 - JTextField will strip \n's from edited text.  If no
@@ -145,6 +148,7 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
         }
     }
 
+    @Override
     public void reset() {
         String txt;
         txt = editor.getAsText();
@@ -177,10 +181,12 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
         setSelectionEnd(txt.length());
     }
 
+    @Override
     public KeyStroke[] getKeyStrokes() {
         return strokes;
     }
 
+    @Override
     public PropertyEditor getPropertyEditor() {
         return editor;
     }
@@ -195,6 +201,7 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
         }
     }
 
+    @Override
     public void setValue(Object o) {
         if ((null != o) && (null != editor) && editor.supportsCustomEditor()) {
             editor.setValue(o);
@@ -207,22 +214,27 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
         }
     }
 
+    @Override
     public boolean supportsTextEntry() {
         return true;
     }
 
+    @Override
     public PropertyModel getPropertyModel() {
         return pm;
     }
 
+    @Override
     public void setPropertyModel(PropertyModel pm) {
         this.pm = pm;
     }
 
+    @Override
     public boolean isKnownComponent(Component c) {
         return false;
     }
 
+    @Override
     public Dimension getPreferredSize() {
         Graphics g = PropUtils.getScratchGraphics(this);
         String s = getText();
@@ -246,6 +258,7 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
         return result;
     }
 
+    @Override
     public void processMouseEvent(MouseEvent me) {
         super.processMouseEvent(me);
 
@@ -256,11 +269,13 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
         added = false;
     }
 
+    @Override
     protected void processFocusEvent(FocusEvent fe) {
         super.processFocusEvent(fe);
         repaint();
     }
 
+    @Override
     public void paintComponent(Graphics g) {
         //For property panel usage, allow the editor to paint
         if ((editor != null) && !hasFocus() && editor.isPaintable()) {
@@ -284,5 +299,33 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
         } else {
             super.paintComponent(g);
         }
+    }
+
+    @Override
+    public boolean incrementValue() {
+        return setNextValue( true );
+    }
+
+    @Override
+    public boolean decrementValue() {
+        return setNextValue( false );
+    }
+
+    private boolean setNextValue( boolean increment ) {
+        if( !PropUtils.supportsValueIncrement( env ) )
+            return false;
+
+        Object nextValue = PropUtils.getNextValue( env, increment );
+        if( null == nextValue )
+            return true;
+
+        setValue( nextValue );
+
+        return PropUtils.updateProp( this );
+    }
+
+    @Override
+    public boolean isIncrementEnabled() {
+        return true;
     }
 }

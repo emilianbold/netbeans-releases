@@ -48,15 +48,12 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.util.Utilities;
-
 import java.awt.*;
 import java.awt.event.*;
-
 import javax.swing.*;
 import javax.swing.plaf.basic.*;
-import javax.swing.plaf.basic.BasicComboBoxUI.ComboBoxLayoutManager;
 import javax.swing.plaf.metal.MetalComboBoxIcon;
+import org.openide.util.Utilities;
 
 
 /** A combobox ui delegate that hides the border for use in the property
@@ -113,6 +110,7 @@ class CleanComboUI extends BasicComboBoxUI {
             comboBox.getActionMap().put(
                 "showPopup",
                 new AbstractAction() {
+                    @Override
                     public void actionPerformed(ActionEvent ae) {
                         if (!comboBox.isPopupVisible()) {
                             comboBox.showPopup();
@@ -124,28 +122,33 @@ class CleanComboUI extends BasicComboBoxUI {
         //129794 - don't let Mac's UI to handle these events to avoid ClassCastException
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) //NOI18N
                 && "10.5".compareTo(System.getProperty("os.version")) <= 0 ) { //NOI18N
+
+            Action selectPrevAction = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    selectPreviousPossibleValue();
+                }
+            };
+            Action selectNextAction = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    selectNextPossibleValue();
+                }
+            };
             comboBox.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "selectPrevious"); //NOI18N
             comboBox.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "selectNext"); //NOI18N
-            comboBox.getActionMap().put(
-                "selectPrevious", //NOI18N
-                new AbstractAction() {
-                    public void actionPerformed(ActionEvent ae) {
-                        selectPreviousPossibleValue();
-                    }
-                }
-            ); //NOI18N
-            comboBox.getActionMap().put(
-                "selectNext", //NOI18N
-                new AbstractAction() {
-                    public void actionPerformed(ActionEvent ae) {
-                        selectNextPossibleValue();
-                    }
-                }
-            );
+            comboBox.getActionMap().put("selectPrevious", selectPrevAction); //NOI18N
+            comboBox.getActionMap().put("selectNext", selectNextAction); //NOI18N
+            //if the combobox is editable then its editor should delegate up/down arrow keys to the popup list
+            JComponent editor = (JComponent) comboBox.getEditor().getEditorComponent();
+            editor.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "selectPrevious"); //NOI18N
+            editor.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "selectNext"); //NOI18N
+            editor.getActionMap().put("selectPrevious", selectPrevAction);//NOI18N
+            editor.getActionMap().put("selectNext", selectNextAction);//NOI18N
         }
         
     }
-
+    
     @Override
     protected JButton createArrowButton() {
         Icon i = UIManager.getIcon("ComboBox.icon"); //NOI18N
@@ -332,7 +335,7 @@ class CleanComboUI extends BasicComboBoxUI {
         return new CleanComboBoxEditor();
     }
 
-    private static final void installComboDefaults(JComponent jc) {
+    private static void installComboDefaults(JComponent jc) {
         Color c = UIManager.getColor("ComboBox.background"); //NOI18N
 
         if (c == null) {
@@ -370,7 +373,7 @@ class CleanComboUI extends BasicComboBoxUI {
         protected Rectangle computePopupBounds(int px, int py, int pw, int ph) {
             if( comboBox instanceof ComboInplaceEditor ) {
                 ComboInplaceEditor inPlaceCombo = ( ComboInplaceEditor ) comboBox;
-                if( inPlaceCombo.isAutoComplete() )
+                if( inPlaceCombo.isAutoComplete() || true)
                     return super.computePopupBounds( px, py, pw, ph );
             }
             Dimension d = list.getPreferredSize();
@@ -412,6 +415,7 @@ class CleanComboUI extends BasicComboBoxUI {
     
     private static class AquaComboIcon implements Icon {
 
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             x = (c.getWidth() - getIconWidth())/2;
             y = (c.getHeight() - getIconHeight())/2;
@@ -428,10 +432,12 @@ class CleanComboUI extends BasicComboBoxUI {
             g.drawLine(x+3, y+10, x+3, y+10);
         }
 
+        @Override
         public int getIconWidth() {
             return 7;
         }
 
+        @Override
         public int getIconHeight() {
             return 11;
         }
