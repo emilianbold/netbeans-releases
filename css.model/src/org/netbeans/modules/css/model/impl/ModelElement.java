@@ -351,7 +351,9 @@ public abstract class ModelElement implements Element {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(getModelClass(this).getSimpleName());
-        sb.append("(sihc=");
+        sb.append("(model=");
+        sb.append(model);
+        sb.append(",sihc=");
         sb.append(System.identityHashCode(this));
         sb.append(",type=");
         if(node != null) {
