@@ -162,9 +162,10 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
                         if (info != null) {
                             Element resElement = treePathHandle.resolveElement(info);
                             TypeElement type = (TypeElement) resElement;
-                            if (type != null) {
+                            URL targetUrl = refactoring.getTarget().lookup(URL.class);
+                            if (type != null && targetUrl != null) {
                                 String oldFQN = type.getQualifiedName().toString();
-                                String newPackageName = JSFRefactoringUtils.getPackageName(refactoring.getTarget().lookup(URL.class));
+                                String newPackageName = JSFRefactoringUtils.getPackageName(targetUrl);
                                 String newFQN = newPackageName.length() == 0 ? type.getSimpleName().toString() : newPackageName + '.' + type.getSimpleName().toString();
                                 if (isTargetOtherProject(treePathHandle.getFileObject(), refactoring)) {
                                     List<Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, oldFQN, newFQN);
