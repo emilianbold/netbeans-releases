@@ -204,7 +204,7 @@ public class HtmlErrorFilter implements ErrorFilter {
         
         public BadgingDefaultError(String key, String displayName, String description, FileObject file, int start, int end, Severity severity, boolean badging) {
             super(key, displayName, description, file, start, end, severity);
-            this.badging = true;
+            this.badging = badging;
         }
 
         @Override
