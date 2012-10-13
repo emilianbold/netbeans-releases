@@ -151,7 +151,7 @@ import org.netbeans.editor.Utilities;
             @Override
             public void run() {
                 try {
-                    out[1] = previousCamelCasePositionImpl(textComponent, offset);
+                    out[0] = previousCamelCasePositionImpl(textComponent, offset);
                 } catch (BadLocationException ex) {
                     out[1] = ex;
                 }
