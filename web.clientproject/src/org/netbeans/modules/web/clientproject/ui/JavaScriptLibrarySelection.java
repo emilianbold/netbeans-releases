@@ -237,12 +237,6 @@ public class JavaScriptLibrarySelection extends JPanel {
             }
         });
         // action listeners
-        selectAllButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectAllLibraries();
-            }
-        });
         selectSelectedButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -253,12 +247,6 @@ public class JavaScriptLibrarySelection extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 deselectSelectedLibraries();
-            }
-        });
-        deselectAllButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                deselectAllLibraries();
             }
         });
         // set correct state
@@ -345,9 +333,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         librariesTable.setEnabled(enabled);
         librariesTable.setRowSelectionAllowed(enabled);
         librariesTable.setColumnSelectionAllowed(enabled);
-        selectAllButton.setEnabled(enabled);
         selectSelectedButton.setEnabled(enabled);
-        deselectAllButton.setEnabled(enabled);
         deselectSelectedButton.setEnabled(enabled);
         selectedLibrariesList.setEnabled(enabled);
         librariesFolderTextField.setEnabled(enabled);
@@ -356,11 +342,9 @@ public class JavaScriptLibrarySelection extends JPanel {
     void enableLibraryButtons() {
         assert EventQueue.isDispatchThread();
         // select
-        selectAllButton.setEnabled(librariesTableModel.getRowCount() > 0);
         selectSelectedButton.setEnabled(librariesTable.getSelectedRows().length > 0);
         // deselect
         deselectSelectedButton.setEnabled(canDeselectSelected());
-        deselectAllButton.setEnabled(canDeselectAll());
     }
 
     void filterLibrariesTable() {
@@ -408,14 +392,6 @@ public class JavaScriptLibrarySelection extends JPanel {
         return false;
     }
 
-    void selectAllLibraries() {
-        assert EventQueue.isDispatchThread();
-        for (int i = 0; i < librariesTable.getRowCount(); ++i) {
-            selectLibrary(librariesTable.convertRowIndexToModel(i));
-        }
-        selectedLibrariesListModel.fireContentsChanged();
-    }
-
     void selectSelectedLibraries() {
         assert EventQueue.isDispatchThread();
         for (int i : librariesTable.getSelectedRows()) {
@@ -429,17 +405,6 @@ public class JavaScriptLibrarySelection extends JPanel {
         ModelItem modelItem = librariesTableModel.getItems().get(libraryIndex);
         LibraryVersion libraryVersion = modelItem.getSelectedVersion();
         selectedLibraries.add(new SelectedLibrary(libraryVersion));
-    }
-
-    void deselectAllLibraries() {
-        assert EventQueue.isDispatchThread();
-        Iterator<SelectedLibrary> iterator = selectedLibraries.iterator();
-        while (iterator.hasNext()) {
-            if (!iterator.next().isDefault()) {
-                iterator.remove();
-            }
-        }
-        selectedLibrariesListModel.fireContentsChanged();
     }
 
     void deselectSelectedLibraries() {
@@ -518,10 +483,8 @@ public class JavaScriptLibrarySelection extends JPanel {
         librariesFilterTextField = new javax.swing.JTextField();
         librariesScrollPane = new javax.swing.JScrollPane();
         librariesTable = new LibrariesTable();
-        selectAllButton = new javax.swing.JButton();
         selectSelectedButton = new javax.swing.JButton();
         deselectSelectedButton = new javax.swing.JButton();
-        deselectAllButton = new javax.swing.JButton();
         selectedLabel = new javax.swing.JLabel();
         selectedLibrariesScrollPane = new javax.swing.JScrollPane();
         selectedLibrariesList = new javax.swing.JList();
@@ -537,13 +500,9 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         librariesScrollPane.setViewportView(librariesTable);
 
-        org.openide.awt.Mnemonics.setLocalizedText(selectAllButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.selectAllButton.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(selectSelectedButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.selectSelectedButton.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(deselectSelectedButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.deselectSelectedButton.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(deselectAllButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.deselectAllButton.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(selectedLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.selectedLabel.text")); // NOI18N
 
@@ -567,18 +526,16 @@ public class JavaScriptLibrarySelection extends JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(librariesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(librariesFilterTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE))
+                        .addComponent(librariesFilterTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE))
                     .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(selectAllButton)
                     .addComponent(selectSelectedButton)
-                    .addComponent(deselectSelectedButton)
-                    .addComponent(deselectAllButton))
+                    .addComponent(deselectSelectedButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectedLabel)
-                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)))
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(additionalInfoLabel)
                 .addGap(0, 0, Short.MAX_VALUE))
@@ -587,7 +544,7 @@ public class JavaScriptLibrarySelection extends JPanel {
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectAllButton, deselectSelectedButton, selectAllButton, selectSelectedButton});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectSelectedButton, selectSelectedButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -602,17 +559,14 @@ public class JavaScriptLibrarySelection extends JPanel {
                     .addComponent(librariesFilterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
                     .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(selectAllButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(0, 0, 0)
                         .addComponent(selectSelectedButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(deselectSelectedButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(deselectAllButton)
-                        .addGap(0, 57, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(librariesFolderLabel)
@@ -622,7 +576,6 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel additionalInfoLabel;
-    private javax.swing.JButton deselectAllButton;
     private javax.swing.JButton deselectSelectedButton;
     private javax.swing.JLabel generalInfoLabel;
     private javax.swing.JTextField librariesFilterTextField;
@@ -631,7 +584,6 @@ public class JavaScriptLibrarySelection extends JPanel {
     private javax.swing.JLabel librariesLabel;
     private javax.swing.JScrollPane librariesScrollPane;
     private javax.swing.JTable librariesTable;
-    private javax.swing.JButton selectAllButton;
     private javax.swing.JButton selectSelectedButton;
     private javax.swing.JLabel selectedLabel;
     private javax.swing.JList selectedLibrariesList;
