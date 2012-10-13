@@ -137,7 +137,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
     @Override
     public boolean stopCellEditing() {
         String s = cell.toString();
-        Window ancestorWindow = SwingUtilities.getWindowAncestor(cell);
+        Window ancestorWindow = (Window)SwingUtilities.getRoot(cell);
         // HACK: if this Editor creates a dialog, it will lose the focus and Swing
         // will remove the editor, calling JTable.cancelEditing. Any re-selections performed
         // by the JTable will occur BEFORE the dialog is finished, so we need to

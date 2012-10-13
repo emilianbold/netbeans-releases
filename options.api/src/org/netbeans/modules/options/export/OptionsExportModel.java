@@ -568,7 +568,8 @@ public final class OptionsExportModel {
         }
 
         public boolean isApplicable() {
-            for (Item item : getItems()) {
+            List<Item> allItems = getItems();
+            for (Item item : allItems) {
                 if (item.isApplicable()) {
                     return true;
                 }
