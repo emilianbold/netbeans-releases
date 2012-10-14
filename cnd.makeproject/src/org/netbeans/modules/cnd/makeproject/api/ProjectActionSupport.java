@@ -176,22 +176,16 @@ public class ProjectActionSupport {
             // refresh can take a lot of time for slow file systems
             // so we use worker and schedule it out of build process if auto refresh
             // is turned off by user in Tools->Options->Misk->Files->Enable auto-scanning of sources
-            Runnable refresher = new Runnable() {
+            final Runnable refresher = new Runnable() {
                 @Override
                 public void run() {
-                    if (RP.isRequestProcessorThread()) {
-                        FileUtil.runAtomicAction(this);
-                        fon.onFinish(curPAE);
-                        MakeLogicalViewProvider.refreshBrokenItems(project);
-                    } else {
-                        final File[] array = files.toArray(new File[files.size()]);
-                        if (array.length > 0) {
-                            FileUtil.refreshFor(array);
-                        }
-                        if (!fileObjects.isEmpty()) {
-                            for (FileObject fo : fileObjects) {
-                                FileSystemProvider.scheduleRefresh(fo);
-                            }
+                    final File[] array = files.toArray(new File[files.size()]);
+                    if (array.length > 0) {
+                        FileUtil.refreshFor(array);
+                    }
+                    if (!fileObjects.isEmpty()) {
+                        for (FileObject fo : fileObjects) {
+                            FileSystemProvider.scheduleRefresh(fo);
                         }
                     }
                 }
@@ -199,7 +193,14 @@ public class ProjectActionSupport {
             final Preferences nd = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction"); // NOI18N
             boolean manual = (nd != null) && nd.getBoolean("manual", false);// NOI18N
             if (manual) {
-                RP.post(refresher);
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        FileUtil.runAtomicAction(refresher);
+                        fon.onFinish(curPAE);
+                        MakeLogicalViewProvider.refreshBrokenItems(project);
+                    }
+                });
             } else {
                 FileUtil.runAtomicAction(refresher);
                 fon.onFinish(curPAE);
