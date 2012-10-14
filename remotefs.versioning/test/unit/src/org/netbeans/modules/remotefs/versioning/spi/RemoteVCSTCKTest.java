@@ -53,6 +53,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.nativeexecution.test.NbClustersInfoProvider;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.versioning.VCSAnnotationProviderTestCase;
@@ -69,6 +70,11 @@ import org.openide.util.test.MockLookup;
  * @author tomas
  */
 public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
+    static {
+        // Setting netbeans.dirs makes installedFileLocator work properly
+        // Needed for native execution...
+        System.setProperty("netbeans.dirs", NbClustersInfoProvider.getClusters()); // NOI18N
+    }
 
     private ExecutionEnvironment execEnv = null;
     private String tmpDir;
