@@ -765,10 +765,10 @@ public class JavaScriptLibrarySelection extends JPanel {
             @Override
             public int compare(SelectedLibrary library1, SelectedLibrary library2) {
                 if (library1.isDefault() && !library2.isDefault()) {
-                    return -1;
+                    return 1;
                 }
                 if (!library1.isDefault() && library2.isDefault()) {
-                    return 1;
+                    return -1;
                 }
                 return library1.getFilename().compareToIgnoreCase(library2.getFilename());
             }
