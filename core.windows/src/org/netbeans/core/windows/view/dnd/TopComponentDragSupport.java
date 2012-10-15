@@ -641,11 +641,11 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         return new Runnable() {
             @Override
             public void run() {
+                removeListening();
                 // XXX #21918. Don't move the check sooner
                 // (before the enclosing blocks), it would be invalid.
                 if(hackESC) {
                     windowDnDManager.dragFinished();
-                    removeListening();
                     return;
                 }
 
