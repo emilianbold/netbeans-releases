@@ -74,7 +74,18 @@ public class JsIndexSearcher implements IndexSearcher{
     @Override
     public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind searchType, Helper helper) {
         Set<JsDescriptor> result = new HashSet<JsDescriptor>();
-        
+        final JsIndex index = getIndex(project);
+
+        if (index != null) {
+            Collection<? extends IndexResult> indexResults = index.query(JsIndex.FIELD_BASE_NAME, textForQuery, searchType, JsIndex.TERMS_BASIC_INFO);
+            for (IndexResult indexResult : indexResults) {
+                IndexedElement element = IndexedElement.create(indexResult);
+                if (element.getJSKind() == JsElement.Kind.CONSTRUCTOR
+                        || element.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
+                    result.add(new JsDescriptor(helper, element));
+                }
+            }
+        }
         return result;
     }
 
