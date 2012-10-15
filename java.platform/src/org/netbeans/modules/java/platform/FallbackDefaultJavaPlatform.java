@@ -144,7 +144,7 @@ public final class FallbackDefaultJavaPlatform extends JavaPlatform {
 
     @Override
     public Collection<FileObject> getInstallFolders() {
-        return Collections.singleton(FileUtil.toFileObject(new File(System.getProperty("java.home")))); // NOI18N
+        return Collections.singleton(FileUtil.toFileObject(FileUtil.normalizeFile(new File(System.getProperty("java.home"))))); // NOI18N
     }
 
     @Override
