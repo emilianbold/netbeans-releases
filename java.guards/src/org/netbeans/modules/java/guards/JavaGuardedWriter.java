@@ -78,6 +78,8 @@ final class JavaGuardedWriter {
     /** This flag is used during writing. It is complicated to explain. */
     boolean wasNewLine;
 
+    private StringBuilder currentLine;
+
     /** number of consecutive spaces */
     int spaces;
     
@@ -97,7 +99,8 @@ final class JavaGuardedWriter {
         this.writer = new CharArrayWriter(writeBuff.length);
         this.offsetCounter = 0;
         this.wasNewLine = false;
-        
+        this.currentLine = new StringBuilder(100);
+
         nextSection();
         
         try {
@@ -127,57 +130,62 @@ final class JavaGuardedWriter {
             if (offsetCounter == current.getBegin()) {
                 wasNewLine = false;
             }
-            if ((b == '\n') && (current.getBegin() <= offsetCounter)) {
-                switch(current.getType()) {
-                    case LINE:
+            if (current.getBegin() <= offsetCounter) {
+                if (b == '\n') {
+                    switch(current.getType()) {
+                        case LINE:
 
-                        if (!wasNewLine) {
-                            if (offsetCounter + 1 >= current.getEnd()) {
-                                writeMagic(GuardTag.LINE, current.getName());
-                                nextSection();
+                            if (!wasNewLine) {
+                                if (offsetCounter + 1 >= current.getEnd()) {
+                                    writeMagic(GuardTag.LINE, current.getName());
+                                    nextSection();
+                                }
+                                else {
+                                    writeMagic(GuardTag.BEGIN, current.getName());
+                                    wasNewLine = true;
+                                }
                             }
                             else {
-                                writeMagic(GuardTag.BEGIN, current.getName());
-                                wasNewLine = true;
+                                if (offsetCounter + 1 >= current.getEnd()) {
+                                    writeMagic(GuardTag.END, current.getName());
+                                    nextSection();
+                                }
                             }
-                        }
-                        else {
-                            if (offsetCounter + 1 >= current.getEnd()) {
-                                writeMagic(GuardTag.END, current.getName());
-                                nextSection();
-                            }
-                        }
 
-                        break;
-                    case FIRST:
-                    case HEADER:
+                            break;
+                        case FIRST:
+                        case HEADER:
 
-                        if (!wasNewLine) {
-                            if (offsetCounter + 1 >= current.getEnd()) {
-                                writeMagic(GuardTag.FIRST, current.getName());
-                                nextSection();
+                            if (!wasNewLine) {
+                                if (offsetCounter + 1 >= current.getEnd()) {
+                                    writeMagic(GuardTag.FIRST, current.getName());
+                                    nextSection();
+                                }
+                                else {
+                                    writeMagic(GuardTag.FIRST, current.getName());
+                                    wasNewLine = true;
+                                }
                             }
                             else {
-                                writeMagic(GuardTag.FIRST, current.getName());
-                                wasNewLine = true;
+                                if (offsetCounter + 1 >= current.getEnd()) {
+                                    writeMagic(GuardTag.HEADEREND, current.getName());
+                                    nextSection();
+                                }
                             }
-                        }
-                        else {
-                            if (offsetCounter + 1 >= current.getEnd()) {
-                                writeMagic(GuardTag.HEADEREND, current.getName());
-                                nextSection();
-                            }
-                        }
 
-                        break;
-                    case LAST:
-                    case END:
+                            break;
+                        case LAST:
+                        case END:
 
-                        writeMagic(GuardTag.LAST, current.getName());
+                            writeMagic(GuardTag.LAST, current.getName());
 
-                        nextSection();
+                            nextSection();
 
-                        break;
+                            break;
+                    }
+                    currentLine.delete(0, currentLine.length());
+                } else {
+                    currentLine.append((char)b);
                 }
             }
         }
@@ -212,9 +220,19 @@ final class JavaGuardedWriter {
 //            shouldReload = spaces != SECTION_MAGICS[type].length()  + name.length();
 //        }
         spaces = 0;
-        String magic = JavaGuardedReader.MAGIC_PREFIX + type.name() + ':';
-        writer.write(magic, 0, magic.length());
-        writer.write(name, 0, name.length());
+        String magic = JavaGuardedReader.MAGIC_PREFIX + type.name() + ':' + name;
+        int i1 = magic.length()-1;
+        int i2 = currentLine.length()-1;
+        while (i1 >= 0 && i2 >= 0) {
+            if (currentLine.charAt(i2) != magic.charAt(i1)) {
+                break;
+            }
+            i1--;
+            i2--;
+        }
+        if (i1 >= 0) {
+            writer.write(magic, 0, magic.length());
+        } // otherwise the magic comment was already present
     }
 
     /** This method prepares the iterator of the SectionDesc classes

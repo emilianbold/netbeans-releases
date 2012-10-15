@@ -486,6 +486,18 @@ public class FormUtils
         return NbBundle.getMessage(FormUtils.class, key, arguments);
     }
 
+    /**
+     * Provides preset value for given key, overrideable by branding.
+     */
+    public static boolean getPresetValue(String key, boolean defaultValue) {
+        try {
+            String s = NbBundle.getMessage(FormUtils.class, key);
+            return "true".equals(s.toLowerCase()); // NOI18N
+        } catch( MissingResourceException ex) { // ignore
+        }
+        return defaultValue;
+    }
+
     /** Utility method that tries to clone an object. Objects of explicitly
      * specified types are constructed directly, other are serialized and
      * deserialized (if not serializable exception is thrown).
