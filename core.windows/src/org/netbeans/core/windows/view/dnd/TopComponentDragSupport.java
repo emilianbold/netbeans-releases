@@ -601,7 +601,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
                     SwingUtilities.invokeLater(createDropIntoFreeAreaTask(
                             evt, evt.getLocation(), floatingFrames));
                 }},
-                250 // XXX #21918, Neccessary to skip after possible ESC key event.
+                350 // XXX #21918, Neccessary to skip after possible ESC key event.
             );
         } finally {
             windowDnDManager.dragFinishedEx();
