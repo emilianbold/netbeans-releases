@@ -72,7 +72,7 @@ public class IssueField {
     public static final IssueField TASK_TYPE = new IssueField(C2CData.ATTR_TASK_TYPE, "LBL_TASK_TYPE"); // NOI18N
     public static final IssueField REPORTER = new IssueField(C2CData.ATTR_REPORTER, "LBL_REPORTER"); // NOI18N
     public static final IssueField OWNER = new IssueField(C2CData.ATTR_OWNER, "LBL_OWNER"); // NOI18N
-    public static final IssueField TAGS = new IssueField(C2CData.ATTR_TAGS, "LBL_TAGS"); // NOI18N
+    public static final IssueField KEYWORDS = new IssueField(C2CData.ATTR_KEYWORDS, "LBL_KEYWORDS"); // NOI18N
     public static final IssueField PARENT = new IssueField(C2CData.ATTR_PARENT, "LBL_PARENT"); // NOI18N
     public static final IssueField SUBTASK = new IssueField(C2CData.ATTR_SUBTASK, "LBL_SUBTASK"); // NOI18N
     

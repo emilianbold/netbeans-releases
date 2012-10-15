@@ -83,7 +83,7 @@ public class QueryParameters {
         SUMMARY("summary"), // NOI18N
         PRIORITY("priority"), // NOI18N
         TASK_TYPE("tasktype"), // NOI18N
-        TAGS("keywords"); // NOI18N
+        KEYWORDS("keywords"); // NOI18N
             
         private String columnName;
         
