@@ -176,6 +176,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         parameters.addParameter(QueryParameters.Column.STATUS, panel.statusList);      
         parameters.addParameter(QueryParameters.Column.RESOLUTION, panel.resolutionList);
         parameters.addParameter(QueryParameters.Column.KEYWORDS, panel.keywordsList);                   
+        parameters.createByPeopleCriteria(panel.userList, panel.creatorCheckBox, panel.ownerCheckBox, panel.commenterCheckBox, panel.ccCheckBox);                   
         
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 
@@ -317,6 +318,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
                                 parameters.get(QueryParameters.Column.RESOLUTION).populate(clientData.getResolutions());
 
                                 parameters.get(QueryParameters.Column.KEYWORDS).populate(clientData.getKeywords());
+                                
+                                parameters.getByPeopleParameter().populateList(clientData.getUsers());
                             } finally {
                                 logPopulate("Finnished populate query controller {0}"); // NOI18N
                             }

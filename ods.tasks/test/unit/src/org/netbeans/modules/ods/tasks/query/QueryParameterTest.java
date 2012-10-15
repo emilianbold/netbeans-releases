@@ -42,17 +42,21 @@
 
 package org.netbeans.modules.ods.tasks.query;
 
+import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ods.tasks.query.QueryParameters.ByPeopleParameter;
 import org.netbeans.modules.ods.tasks.query.QueryParameters.CheckBoxParameter;
 import org.netbeans.modules.ods.tasks.query.QueryParameters.CheckedTextFieldParameter;
 import org.netbeans.modules.ods.tasks.query.QueryParameters.Column;
@@ -179,7 +183,7 @@ public class QueryParameterTest extends NbTestCase {
         assertNull(combo.getSelectedItem());
         assertEquals((String)null, cp.getValues());
         cp.populate(VALUES);
-        cp.setValues(VALUE3);
+        cp.setValues(Collections.singleton(VALUE3));
 
         Object item = combo.getSelectedItem();
         assertNotNull(item);
@@ -205,7 +209,7 @@ public class QueryParameterTest extends NbTestCase {
         assertEquals(QueryParameters.Column.COMMENT, lp.getColumn());
         assertEquals(-1, list.getSelectedIndex());
         lp.populate(VALUES);
-        lp.setValues(VALUE1, VALUE3);
+        lp.setValues(Arrays.asList(new String[] {VALUE1, VALUE3}));
 
         Object[] items = list.getSelectedValues();
         assertNotNull(items);
@@ -272,4 +276,94 @@ public class QueryParameterTest extends NbTestCase {
         assertNull(cp.getCriteria()); // not implemented yet
     }
 
+    public void testByPeopleParameterEnabled() {
+        JCheckBox chk1 = new JCheckBox();
+        JCheckBox chk2 = new JCheckBox();
+        JCheckBox chk3 = new JCheckBox();
+        JCheckBox chk4 = new JCheckBox();
+        JList list = new JList();
+        ByPeopleParameter cp = new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
+        assertTrue(chk1.isEnabled());
+        assertTrue(chk2.isEnabled());
+        assertTrue(chk3.isEnabled());
+        assertTrue(chk4.isEnabled());
+        assertTrue(list.isEnabled());
+        cp.setEnabled(false);
+        assertFalse(chk1.isEnabled());
+        assertFalse(chk2.isEnabled());
+        assertFalse(chk3.isEnabled());
+        assertFalse(chk4.isEnabled());
+        assertFalse(list.isEnabled());
+    }
+    
+    public void testByPeopleValues() {
+        JCheckBox chk1 = new JCheckBox();
+        JCheckBox chk2 = new JCheckBox();
+        JCheckBox chk3 = new JCheckBox();
+        JCheckBox chk4 = new JCheckBox();
+        JList list = new JList();
+        ByPeopleParameter cp = new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
+        
+        assertEquals(-1, list.getSelectedIndex());
+        assertFalse(chk1.isSelected());
+        assertFalse(chk2.isSelected());
+        assertFalse(chk3.isSelected());
+        assertFalse(chk4.isSelected());
+        assertNull(cp.getCriteria());
+        
+        Collection<TaskUserProfile> users = getUsers();
+        cp.populateList(users);
+        assertEquals(-1, list.getSelectedIndex());
+        assertFalse(chk1.isSelected());
+        assertFalse(chk2.isSelected());
+        assertFalse(chk3.isSelected());
+        assertFalse(chk4.isSelected());
+        assertNull(cp.getCriteria());
+        
+        TaskUserProfile u1 = getUsers().iterator().next();
+        getUsers().iterator().next();
+        TaskUserProfile u3 = getUsers().iterator().next();
+        
+        cp.setValues(Arrays.asList(new TaskUserProfile[] {u1, u3}), true, true, false, false);
+        assertTrue(chk1.isSelected());
+        assertTrue(chk2.isSelected());
+        assertFalse(chk3.isSelected());
+        assertFalse(chk4.isSelected());
+        assertEquals("reporter = '" + u1.getLoginName() + "' OR assignee = '" + u3.getLoginName() + "'", cp.getCriteria().toQueryString());
+
+        cp.setValues(null, false, false, false, false);
+        assertFalse(chk1.isSelected());
+        assertFalse(chk2.isSelected());
+        assertFalse(chk3.isSelected());
+        assertFalse(chk4.isSelected());
+        assertEquals(-1, list.getSelectedIndex());
+        assertNull(cp.getCriteria());
+        
+        list.setSelectedIndex(0);
+        chk1.setSelected(true);
+        assertEquals("reporter = '" + u1.getLoginName() + "'", cp.getCriteria().toQueryString());
+        
+        chk1.setSelected(false);
+        assertNull(cp.getCriteria());
+    }
+    
+
+    private Collection<TaskUserProfile> getUsers() {
+        List<TaskUserProfile> ret = new LinkedList<TaskUserProfile>();
+        TaskUserProfile user = new TaskUserProfile();
+        user.setLoginName("user1");
+        user.setRealname("First User");
+        ret.add(user);
+        user = new TaskUserProfile();
+        user.setLoginName("user2");
+        user.setRealname("Second User");
+        ret.add(user);
+        user = new TaskUserProfile();
+        user.setLoginName("user3");
+        user.setRealname("Third User");
+        ret.add(user);
+        
+        return ret;
+    }
+    
 }

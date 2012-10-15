@@ -42,9 +42,12 @@
 
 package org.netbeans.modules.ods.tasks.query;
 
+import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
+import com.tasktop.c2c.server.common.service.domain.criteria.NaryCriteria;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
+import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.awt.Component;
 import java.lang.String;
 import java.util.ArrayList;
@@ -82,8 +85,13 @@ public class QueryParameters {
         SUMMARY("summary"), // NOI18N
         PRIORITY("priority"), // NOI18N
         TASK_TYPE("tasktype"), // NOI18N
+        CREATOR("reporter"), // NOI18N
+        ASSIGNEE("assignee"), // NOI18N
+        COMMENTER("commentAuthor"), // NOI18N
+        WATCHER("watcher"), // NOI18N
         KEYWORDS("keywords"); // NOI18N
             
+        
         private String columnName;
         
         Column(String columnName) {
@@ -103,6 +111,10 @@ public class QueryParameters {
         
     Parameter get(Column c) {
         return (Parameter) map.get(c);
+    }
+    
+    ByPeopleParameter getByPeopleParameter() {
+        return (ByPeopleParameter) map.get(Column.CREATOR);
     }
     
     Collection<Parameter> getAll() {
@@ -126,8 +138,11 @@ public class QueryParameters {
         map.put(columns[0], new CheckedTextFieldParameter(columns, txt, chk));
     }
             
+    void createByPeopleCriteria(JList list, JCheckBox creatorCheckField, JCheckBox ownerCheckField, JCheckBox commenterCheckField, JCheckBox ccCheckField) {
+        map.put(Column.CREATOR, new ByPeopleParameter(list, creatorCheckField, ownerCheckField, commenterCheckField, ccCheckField));
+    }
+    
     static interface Parameter {
-        void setValues(Collection values);
         void populate(Collection values);
         void setEnabled(boolean b);
         Criteria getCriteria();
@@ -144,14 +159,6 @@ public class QueryParameters {
             return column;
         }
 
-        void setValues(Object... values) {
-            setValues(Arrays.asList(values));
-        }
-        
-        void populate(Object... values) {
-            populate(Arrays.asList(values));
-        }
-        
         protected Criteria getCriteria(Collection values) {
             if(values == null) {
                 return null;
@@ -200,7 +207,6 @@ public class QueryParameters {
             combo.setModel(new DefaultComboBoxModel(values.toArray()));
         }
         
-        @Override
         public void setValues(Collection values) {
             if(values == null) {
                 combo.setSelectedIndex(-1);
@@ -260,7 +266,6 @@ public class QueryParameters {
             list.setModel(m);
         }
         
-        @Override
         public void setValues(Collection values) {
             list.clearSelection();
             if(values.isEmpty()) {
@@ -309,26 +314,8 @@ public class QueryParameters {
             this.txt = txt;
         }
         
-        private Collection<String> getValues() {
-            String value = txt.getText();
-            if(value == null || value.equals("")) { // NOI18N
-                return null; 
-            }
-            return Collections.singleton(value);
-        }
-        
-        @Override
-        void setValues(Object... values) {
-            String s = (String) values[0];
-            if(s == null) {
-                s = "";
-            }
-            txt.setText(s); // NOI18N
-        }
-                
-        @Override
-        public void setValues(Collection b) {
-            throw new UnsupportedOperationException();
+        void setValues(String s) {
+            txt.setText(s); 
         }
         
         @Override
@@ -338,7 +325,7 @@ public class QueryParameters {
 
         @Override
         public void populate(Collection value) {
-            setValues(value);
+            setValues((String)value.iterator().next());
         }
 
         @Override
@@ -360,7 +347,6 @@ public class QueryParameters {
             this.chks = chks;
         }
         
-        @Override
         public void setValues(Collection values) {
             if(values == null) {
                 for (int i = 0; i < chks.length; i++) {
@@ -392,6 +378,7 @@ public class QueryParameters {
             for (JCheckBox chk : chks) {
                 chk.setEnabled(b);
             }
+            txt.setEnabled(b);
         }
 
         @Override
@@ -425,6 +412,105 @@ public class QueryParameters {
         }
     }
     
+    static class ByPeopleParameter implements Parameter {
+        
+        private final JList list;
+        private final JCheckBox creatorCheckField;
+        private final JCheckBox ownerCheckField;
+        private final JCheckBox commenterCheckField;
+        private final JCheckBox ccCheckField;
+        
+        public ByPeopleParameter(JList list, JCheckBox creatorCheckField, JCheckBox ownerCheckField, JCheckBox commenterCheckField, JCheckBox ccCheckField) {
+            this.list = list;
+            this.creatorCheckField = creatorCheckField;
+            this.ownerCheckField = ownerCheckField;
+            this.commenterCheckField = commenterCheckField;
+            this.ccCheckField = ccCheckField;
+        }
+        
+        public void setValues(Collection<TaskUserProfile> values, boolean creator, boolean owner, boolean commenter, boolean cc) {
+            creatorCheckField.setSelected(creator);
+            ownerCheckField.setSelected(owner);
+            commenterCheckField.setSelected(commenter);
+            ccCheckField.setSelected(cc);
+            
+            list.clearSelection();
+            if(values == null || values.isEmpty()) {
+                return;
+            }
+            List<Integer> selectionList = new LinkedList<Integer>();
+            for (int i = 0; i < list.getModel().getSize(); i++) {
+                Object object = list.getModel().getElementAt(i);
+                if(object instanceof TaskUserProfile) {
+                    for (TaskUserProfile user : values) {
+                        String loginName = user.getLoginName();
+                        if(loginName != null && loginName.equals(((TaskUserProfile)object).getLoginName())) {
+                            selectionList.add(i);
+                        }
+                    }
+                }
+            }
+            if(!selectionList.isEmpty()) {
+                int[] selection = new int[selectionList.size()];
+                int i = 0;
+                for (int s : selectionList) {
+                    selection[i++] = s;
+                }
+                list.setSelectedIndices(selection);
+            }
+        }
+        
+        @Override
+        public void setEnabled(boolean  b) {
+            creatorCheckField.setEnabled(b);
+            ownerCheckField.setEnabled(b);
+            commenterCheckField.setEnabled(b);
+            ccCheckField.setEnabled(b);
+            list.setEnabled(b);
+        }
+
+        @Override
+        public void populate(Collection values) {
+            // XXX
+        }
+        
+        public void populateList(Collection<TaskUserProfile> values) {
+            DefaultListModel model = new DefaultListModel();
+            for (TaskUserProfile v : values) {
+                model.addElement(v);
+            }
+            list.setModel(model);
+        }
+
+        @Override
+        public Criteria getCriteria() {
+            Object[] values = list.getSelectedValues();
+            if(values == null || values.length == 0) {
+                return null;
+            }
+    
+            List<Criteria> criteria = new LinkedList<Criteria>();
+            addUserCriteria(creatorCheckField, Column.CREATOR, values, criteria);
+            addUserCriteria(ownerCheckField, Column.ASSIGNEE, values, criteria);
+            addUserCriteria(commenterCheckField, Column.COMMENTER, values, criteria);
+            addUserCriteria(ccCheckField, Column.WATCHER, values, criteria);
+
+            return criteria.isEmpty() ? null : new NaryCriteria(Criteria.Operator.OR, criteria.toArray(new Criteria[criteria.size()]));
+        }
+
+        private void addUserCriteria(JCheckBox chk, Column c, Object[] values, List<Criteria> l) {
+            if(chk.isSelected()) {
+                List<Criteria> criteria = new LinkedList<Criteria>();
+                for (Object value : values) {
+                    if(value instanceof TaskUserProfile) {
+                        criteria.add(new ColumnCriteria(c.toString(), Criteria.Operator.EQUALS, ((TaskUserProfile)value).getLoginName()));
+                    }
+                }
+                l.addAll(criteria);
+            }
+        }
+    }
+    
     static class CheckBoxParameter extends AbstractParameter {
         private final JCheckBox chk;
         public CheckBoxParameter(JCheckBox chk, Column column) {
@@ -432,7 +518,6 @@ public class QueryParameters {
             this.chk = chk;
         }
         
-        @Override
         public void setValues(Object... values) {
             assert values.length == 1;
             if(values.length == 0) {
@@ -441,7 +526,6 @@ public class QueryParameters {
             chk.setSelected((Boolean) values[0]); // NOI18N
         }
                 
-        @Override
         public void setValues(Collection b) {
             throw new UnsupportedOperationException();
         }
