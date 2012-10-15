@@ -52,7 +52,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -361,11 +360,7 @@ class Nodes {
         @Override
         protected void createPasteTypes(Transferable t, List<PasteType> s) {
             // Do nothing
-        }
-
-        Description getDescription() {
-            return description;
-        }
+        }        
 
         private synchronized Action getOpenAction() {
             if ( openAction == null) {
@@ -385,6 +380,7 @@ class Nodes {
         @NonNull
         private static Lookup createLookup (@NonNull Description desc) {
             final InstanceContent ic = new InstanceContent();
+            ic.add(desc);
             ic.add(desc, ConvertDescription2TreePathHandle);
             ic.add(desc, ConvertDescription2FileObject);
             ic.add(desc, ConvertDescription2DataObject);
@@ -522,8 +518,8 @@ class Nodes {
     private static final class OrderComparator implements Comparator<Node> {
         @Override
         public int compare(Node n1, Node n2) {
-            final int o1 = ((TypeNode)n1).getDescription().getSourceOrder();
-            final int o2 = ((TypeNode)n2).getDescription().getSourceOrder();
+            final int o1 = n1.getLookup().lookup(Description.class).getSourceOrder();
+            final int o2 = n2.getLookup().lookup(Description.class).getSourceOrder();
             return o1 < o2 ? -1 : o1 == o2 ? 0 : 1;
         }
     }
