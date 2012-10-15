@@ -240,36 +240,40 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     }
 
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
-        Project p = Templates.getProject(wizard);
-        SourceGroup[] groups = PhpProjectUtils.getSourceGroups(p);
-        // #180054
-        if (groups != null && groups.length == 0) {
-            PhpProject project = (PhpProject) p;
-            FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
-            FileObject tests = ProjectPropertiesSupport.getTestDirectory(project, false);
-            FileObject selenium = ProjectPropertiesSupport.getSeleniumDirectory(project, false);
-            SourceRoots sourceRoots = project.getSourceRoots();
-            SourceRoots testRoots = project.getTestRoots();
-            SourceRoots seleniumRoots = project.getSeleniumRoots();
+        Project project = Templates.getProject(wizard);
+        SourceGroup[] groups = PhpProjectUtils.getSourceGroups(project);
+        // #218437
+        PhpProject phpProject = getPhpProject();
+        if (phpProject != null) {
+            // php project found
+            if (groups != null && groups.length == 0 && !PhpProjectValidator.isFatallyBroken(phpProject)) {
+                // sources found but no source roots?!
+                FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
+                FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+                FileObject selenium = ProjectPropertiesSupport.getSeleniumDirectory(phpProject, false);
+                SourceRoots sourceRoots = phpProject.getSourceRoots();
+                SourceRoots testRoots = phpProject.getTestRoots();
+                SourceRoots seleniumRoots = phpProject.getSeleniumRoots();
 
-            StringBuilder sb = new StringBuilder(200);
-            addDiagnosticForDirs(sb, project, sources, tests, selenium);
-            addDiagnosticForRoots(sb, sourceRoots, testRoots, seleniumRoots);
-            LOGGER.log(Level.WARNING, sb.toString(),
-                    new IllegalStateException("No source roots found (attach your IDE log to https://netbeans.org/bugzilla/show_bug.cgi?id=196060)"));
+                StringBuilder sb = new StringBuilder(200);
+                addDiagnosticForDirs(sb, phpProject, sources, tests, selenium);
+                addDiagnosticForRoots(sb, sourceRoots, testRoots, seleniumRoots);
+                LOGGER.log(Level.WARNING, sb.toString(),
+                        new IllegalStateException("No source roots found (attach your IDE log to https://netbeans.org/bugzilla/show_bug.cgi?id=218437)"));
 
-            // try to recover...
-            sourceRoots.fireChange();
-            testRoots.fireChange();
-            seleniumRoots.fireChange();
-            sb = new StringBuilder(200);
-            addDiagnosticForRoots(sb, sourceRoots, testRoots, seleniumRoots);
-            LOGGER.log(Level.WARNING, sb.toString(),
-                    new IllegalStateException("Trying to fire changes for all source roots"));
+                // try to recover...
+                sourceRoots.fireChange();
+                testRoots.fireChange();
+                seleniumRoots.fireChange();
+                sb = new StringBuilder(200);
+                addDiagnosticForRoots(sb, sourceRoots, testRoots, seleniumRoots);
+                LOGGER.log(Level.WARNING, sb.toString(),
+                        new IllegalStateException("Trying to fire changes for all source roots"));
 
-            groups = PhpProjectUtils.getSourceGroups(p);
+                groups = PhpProjectUtils.getSourceGroups(project);
+            }
         }
-        WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.buildSimpleTargetChooser(p, groups).freeFileExtension().create();
+        WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.buildSimpleTargetChooser(project, groups).freeFileExtension().create();
 
         @SuppressWarnings("unchecked") // Generic Array Creation
         WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {

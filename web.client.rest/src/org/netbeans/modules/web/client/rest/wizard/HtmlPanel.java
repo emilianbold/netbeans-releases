@@ -90,7 +90,7 @@ public class HtmlPanel implements Panel<WizardDescriptor> {
      */
     @Override
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx(JSClientIterator.HELP_ID);
     }
 
     /* (non-Javadoc)
