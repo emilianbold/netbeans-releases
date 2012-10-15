@@ -70,7 +70,10 @@ public final class Stat {
      */
     public static Stat get(String filename, ExecutionEnvironment exEnv) {
         try {
-            ExitStatus res = ShellSession.execute(exEnv, statHelperUtility.getPath(exEnv) + " \"" + filename + "\""); // NOI18N
+            StringBuilder sb = new StringBuilder();
+            sb.append('"').append(statHelperUtility.getPath(exEnv)).append('"'); // NOI18N
+            sb.append(' ').append('"').append(filename).append('"'); // NOI18N
+            ExitStatus res = ShellSession.execute(exEnv, sb.toString()); // NOI18N
             if (res.isOK()) {
                 String[] data = res.output.split("\n"); // NOI18N
                 if (data.length > 1) {
