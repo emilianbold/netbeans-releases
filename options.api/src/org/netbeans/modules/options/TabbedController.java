@@ -192,13 +192,19 @@ public class TabbedController extends OptionsPanelController {
             if (pane.getSelectedComponent() instanceof JLabel) {
                 JComponent comp;
                 if (controller == null) {
-                    controller = tabTitle2Option.get(tabTitle).create();
-                    tabTitle2controller.put(tabTitle, controller);
-                    // must be here because many controllers rely on fact that getComponent() is called first than other methods
-                    comp = controller.getComponent(masterLookup);
-                    // add existing listeners
-                    for (PropertyChangeListener pcl : pcs.getPropertyChangeListeners()) {
-                        controller.addPropertyChangeListener(pcl);
+                    AdvancedOption advancedOption = tabTitle2Option.get(tabTitle);
+                    if (advancedOption == null) {
+                        LOGGER.log(Level.INFO, "AdvancedOption for {0} is not present.", tabTitle);
+                        return;
+                    } else {
+                        controller = advancedOption.create();
+                        tabTitle2controller.put(tabTitle, controller);
+                        // must be here because many controllers rely on fact that getComponent() is called first than other methods
+                        comp = controller.getComponent(masterLookup);
+                        // add existing listeners
+                        for (PropertyChangeListener pcl : pcs.getPropertyChangeListeners()) {
+                            controller.addPropertyChangeListener(pcl);
+                        }
                     }
                 } else {
                     comp = controller.getComponent(masterLookup);
