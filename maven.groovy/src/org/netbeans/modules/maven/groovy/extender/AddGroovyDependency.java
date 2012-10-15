@@ -55,7 +55,7 @@ public class AddGroovyDependency implements ModelOperation<POMModel> {
 
     private static final String GROOVY_GROUP_ID = "org.codehaus.groovy"; // NOI18N
     private static final String GROOVY_ARTIFACT_ID = "groovy-all";       // NOI18N
-    private static final String GROOVY_VERSION = "1.8.6";                // NOI18N
+    private static final String GROOVY_VERSION = "2.0.5";                // NOI18N
 
     @Override
     public void performOperation(final POMModel model) {

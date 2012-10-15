@@ -464,6 +464,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
                 LookupProviderSupport.createSourcesMerger(),
+                LookupProviderSupport.createActionProviderMerger(),
                 WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
                 QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
                 ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
