@@ -56,7 +56,6 @@ public class PhpParserErrorTest extends PHPTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
     }
 
     @Override
