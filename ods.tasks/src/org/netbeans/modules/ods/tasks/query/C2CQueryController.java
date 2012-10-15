@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.ods.tasks.query;
 
-import com.sun.org.apache.xml.internal.dtm.ref.DTMDefaultBaseIterators;
 import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
@@ -50,9 +49,7 @@ import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Product;
-import com.tasktop.c2c.server.tasks.service.CriteriaQueryArguments;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -63,14 +60,12 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
@@ -79,7 +74,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Util;
@@ -93,8 +87,6 @@ import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.C2CConfig;
 import org.netbeans.modules.ods.tasks.C2CConnector;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
-import org.netbeans.modules.ods.tasks.query.QueryParameters.ComboParameter;
-import org.netbeans.modules.ods.tasks.query.QueryParameters.ListParameter;
 import org.netbeans.modules.ods.tasks.query.QueryParameters.Parameter;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
@@ -249,7 +241,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(org.netbeans.modules.ods.tasks.query.C2CQueryController.class);
+        return new HelpCtx("org.netbeans.modules.ods.tasks.query.C2CQueryController"); // NOI18N
     }
 
     @Override
@@ -560,7 +552,9 @@ public class C2CQueryController extends QueryController implements ItemListener,
             int c = 0;
             if(issues != null) {
                 for (C2CIssue issue : issues) {
-                    if(filter.accept(issue.getNode())) c++;
+                    if(filter.accept(issue.getNode())) {
+                        c++;
+                    }
                 }
             }
             final int issueCount = c;
