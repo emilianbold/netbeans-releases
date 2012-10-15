@@ -225,7 +225,7 @@ public final class WeakReferenceStableList<E> {
                 while (index < size) {
                     next = get(index++);
                     if (next != null) {
-                        break;
+                        return;
                     }
                 }
                 next = null;
