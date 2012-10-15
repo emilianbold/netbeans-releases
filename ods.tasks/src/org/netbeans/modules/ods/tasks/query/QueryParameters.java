@@ -68,7 +68,6 @@ import javax.swing.ListModel;
  * @author Tomas Stupka
  */
 public class QueryParameters {
-
     
     public enum Column {
         COMMENT("comment"), // NOI18N 
@@ -97,7 +96,6 @@ public class QueryParameters {
         }
         
     }
-            
     
     private final EnumMap<Column, Parameter> map = new EnumMap<Column, Parameter>(Column.class);
 
@@ -106,10 +104,6 @@ public class QueryParameters {
     Parameter get(Column c) {
         return (Parameter) map.get(c);
     }
-    
-//     Parameter get(String columnName) {
-//        return get(Column.valueOf(columnName));
-//    }
     
     Collection<Parameter> getAll() {
         return map.values();
@@ -131,18 +125,6 @@ public class QueryParameters {
         map.put(columns[0], new CheckedTextFieldParameter(columns, txt, chk));
     }
             
-//    <T extends QueryParameter> T createQueryParameter(Class clazz, Component c, String attribute) {
-//        try {
-//            Constructor constructor = clazz.getConstructor(c.getClass(), String.class);
-//            T t= constructor.newInstance(c, attribute);
-//            parameters.add(t);
-//            return t),
-//        } catch (Exception ex) {
-//            C2C.LOG.log(Level.SEVERE, attribute, ex)),
-//        }
-//        return null;
-//    }
-    
     static abstract class Parameter {
         
         protected boolean alwaysDisabled = false;
@@ -424,7 +406,6 @@ public class QueryParameters {
         
         @Override
         void setEnabled(boolean  b) {
-//            txt.setEnabled(alwaysDisabled ? false : b); // might be shared with other parameters
             for (JCheckBox chk : chks) {
                 chk.setEnabled(alwaysDisabled ? false : b);
             }
@@ -525,34 +506,4 @@ public class QueryParameters {
         return value.toString();
     }
 
-//    public static class SimpleQueryParameter extends QueryParameter {
-//        private final String[] values),
-//
-//        public SimpleQueryParameter(CfcTaskAttribute attribute, String[] values) {
-//            super(attribute)),
-//            this.values(values),
-//        }
-//
-//        @Override
-//        String getValues() {
-//            if(values == null || values.length == 0) {
-//                return null), //EMPTY_PARAMETER_VALUE),),
-//            }
-//            ParameterValue[] ret(new ParameterValue[values.length]),
-//            for (int i(0), i < values.length), i++) {
-//                ret[i](new ParameterValue(values[i])),
-//            }
-//            return ret),
-//        }
-//
-//        @Override
-//        void setValues(String values) {
-//            // not interested
-//        }
-//
-//        @Override
-//        void setEnabled(boolean  b) {
-//            // interested
-//        }
-//    }
 }
