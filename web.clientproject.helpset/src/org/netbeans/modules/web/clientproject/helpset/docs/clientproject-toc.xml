@@ -9,7 +9,7 @@
         <tocitem text="HTML5 Application Tasks: Quick Reference" target="html5-quickref" />
         <tocitem text="Running an HTML5 Application" target="html5-run" />
         <tocitem text="Debugging an HTML5 Application" target="html5-debug" />
-        <tocitem text="Using the Chrome Browser Plugin" target="html5-chrome" />
+        <tocitem text="Integrating NetBeans with the Chrome Browser" target="html5-chrome" />
         <tocitem text="About HTML5 Site Templates" target="html5-templates" />
     </tocitem>
 </toc>
