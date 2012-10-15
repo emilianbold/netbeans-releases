@@ -503,6 +503,8 @@ class Nodes {
         public void propertyChange(PropertyChangeEvent evt) {
             if (HierarchyFilters.PROP_NATURAL_SORT.equals(evt.getPropertyName())) {
                 updateComparator();
+            } else if (!hierarchy.isNaturalSort() && HierarchyFilters.PROP_FQN.equals(evt.getPropertyName())) {
+                updateComparator();
             }
         }
 
