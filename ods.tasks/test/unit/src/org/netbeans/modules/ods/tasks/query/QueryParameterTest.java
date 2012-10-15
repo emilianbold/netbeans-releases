@@ -45,6 +45,7 @@ package org.netbeans.modules.ods.tasks.query;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JCheckBox;
@@ -87,10 +88,6 @@ public class QueryParameterTest extends NbTestCase {
         assertTrue(chk.isEnabled());
         cp.setEnabled(false);
         assertFalse(chk.isEnabled());
-        
-        cp.setAlwaysDisabled(true);
-        cp.setEnabled(true);
-        assertFalse(chk.isEnabled());
     }
     
     public void testCheckedTextValues() {
@@ -98,21 +95,20 @@ public class QueryParameterTest extends NbTestCase {
         JTextField txt = new JTextField();
         CheckedTextFieldParameter cp = new QueryParameters.CheckedTextFieldParameter(new Column[] {QueryParameters.Column.COMMENT}, txt, chk);
         
-        assertEquals(QueryParameters.Column.COMMENT, cp.getColumn());
         assertEquals("", txt.getText());
         assertFalse(chk.isSelected());
         assertNull(cp.getCriteria());
         
-        cp.populate(VALUE3);
+        cp.populate(Collections.singleton(VALUE3));
         assertEquals("", txt.getText());
         assertFalse(chk.isSelected());
         assertNull(cp.getCriteria());
         
-        cp.setValues(VALUE3);
+        cp.setValues(Collections.singleton(VALUE3));
         assertTrue(chk.isSelected());
         assertEquals("comment CONTAINS '" + VALUE3 + "'", cp.getCriteria().toQueryString());
 
-        cp.setValues((Object[]) null);
+        cp.setValues(null);
         assertFalse(chk.isSelected());
         assertEquals(VALUE3, txt.getText());
         assertNull(cp.getCriteria());
@@ -133,36 +129,35 @@ public class QueryParameterTest extends NbTestCase {
         JCheckBox chk2 = new JCheckBox();
         CheckedTextFieldParameter cp = new QueryParameters.CheckedTextFieldParameter(new Column[] {QueryParameters.Column.COMMENT, QueryParameters.Column.DESCRIPTION}, txt, chk1, chk2);
         
-        assertEquals(QueryParameters.Column.COMMENT, cp.getColumn());
         assertEquals("", txt.getText());
         assertFalse(chk1.isSelected());
         assertFalse(chk2.isSelected());
         assertNull(cp.getCriteria());
         
-        cp.populate(new Object[] {VALUE3, VALUE3});
+        cp.populate(Arrays.asList(new Object[] {VALUE3, VALUE3}));
         assertEquals("", txt.getText());
         assertFalse(chk1.isSelected());
         assertFalse(chk2.isSelected());
         assertNull(cp.getCriteria());
         assertEquals("", txt.getText());
         
-        cp.setValues(new Object[] {VALUE3, null});
+        cp.setValues(Arrays.asList(new Object[] {VALUE3, null}));
         assertTrue(chk1.isSelected());
         assertEquals("comment CONTAINS '" + VALUE3 + "'", cp.getCriteria().toQueryString());
         assertFalse(chk2.isSelected());
 
-        cp.setValues(new Object[] {VALUE3, VALUE3});
+        cp.setValues(Arrays.asList(new Object[] {VALUE3, VALUE3}));
         assertTrue(chk1.isSelected());
         assertEquals("comment CONTAINS '" + VALUE3 + "' OR description CONTAINS '" + VALUE3 + "'", cp.getCriteria().toQueryString());
         assertTrue(chk2.isSelected());
         
-        cp.setValues((Object[])null);
+        cp.setValues(null);
         assertFalse(chk1.isSelected());
         assertFalse(chk2.isSelected());
         assertNull(cp.getCriteria());
         assertEquals(VALUE3, txt.getText());
         
-        cp.setValues(new Object[] {null, null});
+        cp.setValues(Arrays.asList(new Object[] {null, null}));
         assertFalse(chk1.isSelected());
         assertFalse(chk2.isSelected());
         assertNull(cp.getCriteria());
@@ -174,10 +169,6 @@ public class QueryParameterTest extends NbTestCase {
         ComboParameter cp = new QueryParameters.ComboParameter(QueryParameters.Column.COMMENT, combo);
         assertTrue(combo.isEnabled());
         cp.setEnabled(false);
-        assertFalse(combo.isEnabled());
-        
-        cp.setAlwaysDisabled(true);
-        cp.setEnabled(true);
         assertFalse(combo.isEnabled());
     }
     
@@ -205,10 +196,6 @@ public class QueryParameterTest extends NbTestCase {
         ListParameter lp = new ListParameter(list, QueryParameters.Column.COMMENT);
         assertTrue(list.isEnabled());
         lp.setEnabled(false);
-        assertFalse(list.isEnabled());
-        
-        lp.setAlwaysDisabled(true);
-        lp.setEnabled(true);
         assertFalse(list.isEnabled());
     }
     
@@ -244,10 +231,6 @@ public class QueryParameterTest extends NbTestCase {
         assertTrue(text.isEnabled());
         tp.setEnabled(false);
         assertFalse(text.isEnabled());
-        
-        tp.setAlwaysDisabled(true);
-        tp.setEnabled(true);
-        assertFalse(text.isEnabled());
     }
 
     public void testTextFieldParameter() throws UnsupportedEncodingException {
@@ -271,10 +254,6 @@ public class QueryParameterTest extends NbTestCase {
         CheckBoxParameter cp = new CheckBoxParameter(checkbox, QueryParameters.Column.COMMENT);
         assertTrue(checkbox.isEnabled());
         cp.setEnabled(false);
-        assertFalse(checkbox.isEnabled());
-        
-        cp.setAlwaysDisabled(true);
-        cp.setEnabled(true);
         assertFalse(checkbox.isEnabled());
     }
     

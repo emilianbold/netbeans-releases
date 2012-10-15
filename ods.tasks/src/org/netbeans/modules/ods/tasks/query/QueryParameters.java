@@ -122,15 +122,22 @@ public class QueryParameters {
     }
     
     void addParameter(Column[] columns, JTextField txt, JCheckBox... chk) {
+        // XXX kind of a hack to store under the first column name
         map.put(columns[0], new CheckedTextFieldParameter(columns, txt, chk));
     }
             
-    static abstract class Parameter {
+    static interface Parameter {
+        void setValues(Collection values);
+        void populate(Collection values);
+        void setEnabled(boolean b);
+        Criteria getCriteria();
+    }
+    
+    static abstract class AbstractParameter implements Parameter {
         
-        protected boolean alwaysDisabled = false;
         private final Column column;
         
-        public Parameter(Column column) {
+        public AbstractParameter(Column column) {
             this.column = column;
         }
         public Column getColumn() {
@@ -144,10 +151,6 @@ public class QueryParameters {
         void populate(Object... values) {
             populate(Arrays.asList(values));
         }
-        
-        abstract void setValues(Collection values);
-        abstract void populate(Collection values);
-        abstract Criteria getCriteria();
         
         protected Criteria getCriteria(Collection values) {
             if(values == null) {
@@ -163,13 +166,6 @@ public class QueryParameters {
             }
             return cb.toCriteria();
         }
-        
-        void setAlwaysDisabled(boolean bl) {
-            this.alwaysDisabled = bl;
-            setEnabled(false); // true or false, who cares. this is only to trigger the state change
-        }
-
-        abstract void setEnabled(boolean b);
 
         // XXX perhaps parameters should be encoded
 
@@ -183,8 +179,10 @@ public class QueryParameters {
         }
     }
     
-    static class ComboParameter extends Parameter {
+    static class ComboParameter extends AbstractParameter {
+        
         private final JComboBox combo;
+        
         public ComboParameter(Column column, JComboBox combo) {
             super(column);
             this.combo = combo;
@@ -220,18 +218,19 @@ public class QueryParameters {
                 combo.setSelectedIndex(idx);
             } 
         }
+        
         @Override
-        void setEnabled(boolean b) {
-            combo.setEnabled(alwaysDisabled ? false : b);
+        public void setEnabled(boolean b) {
+            combo.setEnabled(b);
         }
         
         @Override
-        Criteria getCriteria() {
+        public Criteria getCriteria() {
             return getCriteria(getValues());
         }        
     }
 
-    static class ListParameter extends Parameter {
+    static class ListParameter extends AbstractParameter {
         
         private final JList list;
         
@@ -248,9 +247,7 @@ public class QueryParameters {
                 return null; //EMPTY_PARAMETER_VALUE;
             }
             List ret = new ArrayList();
-            for (int i = 0; i < values.length; i++) {
-                ret.add(values[i]);
-            }
+            ret.addAll(Arrays.asList(values));
             return ret;
         }
         
@@ -293,18 +290,20 @@ public class QueryParameters {
         }
         
         @Override
-        void setEnabled(boolean  b) {
-            list.setEnabled(alwaysDisabled ? false : b);
+        public void setEnabled(boolean  b) {
+            list.setEnabled(b);
         }
 
         @Override
-        Criteria getCriteria() {
+        public Criteria getCriteria() {
             return getCriteria(getValues());
         }
     }
 
-    static class TextFieldParameter extends Parameter {
+    static class TextFieldParameter extends AbstractParameter {
+        
         private final JTextField txt;
+        
         public TextFieldParameter(Column column, JTextField txt) {
             super(column);
             this.txt = txt;
@@ -333,65 +332,46 @@ public class QueryParameters {
         }
         
         @Override
-        void setEnabled(boolean  b) {
-            txt.setEnabled(alwaysDisabled ? false : b);
+        public void setEnabled(boolean  b) {
+            txt.setEnabled(b);
         }
 
         @Override
-        void populate(Collection value) {
+        public void populate(Collection value) {
             setValues(value);
         }
 
         @Override
-        Criteria getCriteria() {
+        public Criteria getCriteria() {
             return null;
         }
     }
 
-    static class CheckedTextFieldParameter extends Parameter {
+    static class CheckedTextFieldParameter implements Parameter {
         
         private final JTextField txt;
         private final JCheckBox[] chks;
         private final Column[] columns;
         
         public CheckedTextFieldParameter(Column[] columns, JTextField txt, JCheckBox... chks) {
-            super(columns[0]); // XXX hack
             assert columns.length == chks.length : "lenght of columns must be the same as lenght of checkboxes"; // NOI18N
             this.columns = columns;
             this.txt = txt;
             this.chks = chks;
         }
         
-        private Collection<String> getValues() {
-            boolean noneSelected = true;
-            List<String> ret = new LinkedList<String>();
-            for (JCheckBox chk : chks) {
-                if(chk.isSelected()) {
-                    noneSelected = false;
-                    String value = txt.getText();
-                    if(value != null && !value.trim().isEmpty()) { // NOI18N
-                        ret.add(value);
-                    }
-                }
-            }
-            if(noneSelected) {
-                return null;
-            }
-            return ret;
-        }
-        
         @Override
-        void setValues(Object... values) {
+        public void setValues(Collection values) {
             if(values == null) {
                 for (int i = 0; i < chks.length; i++) {
                     chks[i].setSelected(false);
                 }
             } else {
-                assert values.length == chks.length : "lenght of values must be the same as lenght of checkboxes"; // NOI18N
-                // XXX hack
+                assert values.size() == chks.length : "lenght of values must be the same as lenght of checkboxes"; // NOI18N
                 boolean allNull = true;
-                for (int i = 0; i < values.length; i++) {
-                    String s = (String) values[i];
+                int i = 0;
+                for (Object v : values) {
+                    String s = (String) v;
                     if(s == null) {
                         chks[i].setSelected(false);
                     } else {
@@ -399,38 +379,28 @@ public class QueryParameters {
                         txt.setText(s); 
                         chks[i].setSelected(true);
                     }
+                    i++;
                 }
                 if(allNull) {
                     txt.setText(""); // NOI18N
                 }
             }
-            
-        }
-                
-        @Override
-        public void setValues(Collection b) {
-            throw new UnsupportedOperationException();
         }
         
         @Override
-        void setEnabled(boolean  b) {
+        public void setEnabled(boolean  b) {
             for (JCheckBox chk : chks) {
-                chk.setEnabled(alwaysDisabled ? false : b);
+                chk.setEnabled(b);
             }
         }
 
         @Override
-        void populate(Object... value) {
-            // do nothing
-        }
-        
-        @Override
-        void populate(Collection value) {
+        public void populate(Collection value) {
             // do nothing
         }
 
         @Override
-        Criteria getCriteria() {
+        public Criteria getCriteria() {
             String s = txt.getText();
             if( s == null || s.trim().isEmpty()) {
                 return null;
@@ -455,20 +425,15 @@ public class QueryParameters {
         }
     }
     
-    static class CheckBoxParameter extends Parameter {
-        private boolean selected = true; 
+    static class CheckBoxParameter extends AbstractParameter {
         private final JCheckBox chk;
         public CheckBoxParameter(JCheckBox chk, Column column) {
             super(column);
             this.chk = chk;
         }
         
-        private Collection getValues() {
-            return Collections.singleton(chk.isSelected());
-        }
-        
         @Override
-        void setValues(Object... values) {
+        public void setValues(Object... values) {
             assert values.length == 1;
             if(values.length == 0) {
                 return;
@@ -482,17 +447,17 @@ public class QueryParameters {
         }
         
         @Override
-        void setEnabled(boolean  b) {
-            chk.setEnabled(alwaysDisabled ? false : b);
+        public void setEnabled(boolean  b) {
+            chk.setEnabled(b);
         }
 
         @Override
-        void populate(Collection b) {
+        public void populate(Collection b) {
             // do nothing
         }
 
         @Override
-        Criteria getCriteria() {
+        public Criteria getCriteria() {
             return null;
         }
     }

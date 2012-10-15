@@ -354,10 +354,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
         }
     }
 
-    protected void disableProduct() { // XXX whatever field
-        parameters.get(QueryParameters.Column.PRODUCT).setAlwaysDisabled(true);
-    }
-
     protected void selectFirstProduct() {
         EventQueue.invokeLater(new Runnable() {
             @Override
