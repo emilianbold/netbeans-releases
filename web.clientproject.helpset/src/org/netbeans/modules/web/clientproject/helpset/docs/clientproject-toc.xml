@@ -3,7 +3,7 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-    <tocitem text="HTML5 Applications">
+    <tocitem text="HTML5 Applications" expand="false">
         <tocitem text="About HTML5 Applications" target="html5-about"/>
         <tocitem text="Working with HTML5 Applications" target="html5-process" />
         <tocitem text="HTML5 Application Tasks: Quick Reference" target="html5-quickref" />
