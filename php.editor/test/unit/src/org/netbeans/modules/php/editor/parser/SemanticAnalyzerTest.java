@@ -57,7 +57,6 @@ public class SemanticAnalyzerTest extends PHPCodeCompletionTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
     }
 
     @Override

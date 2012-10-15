@@ -5,9 +5,6 @@ org.netbeans.spi.debugger.ui.MethodChooser
 org.netbeans.spi.debugger.ui.MethodChooser$ReleaseListener
 org.netbeans.spi.debugger.ui.MethodChooser$Segment
 
-#218045
-org.netbeans.modules.php.twig.editor.gsf.TwigLanguage
-
 #218044
 org.netbeans.modules.javascript2.editor.JsLanguage
 org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl
@@ -1823,7 +1820,7 @@ org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation
 org.netbeans.spi.java.queries.SourceLevelQueryImplementation2
 org.netbeans.spi.java.queries.SourceLevelQueryImplementation2$Result
 org.openide.modules.Modules
-    
+
 # OK on Nov 8, 2010:
 org.netbeans.modules.parsing.impl.TaskProcessor$ReschedulePolicy
 org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndex
