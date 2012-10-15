@@ -860,10 +860,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                     FriendFunctionDDImpl impl = FriendFunctionDDImpl.create(token, getContainingFile(), fileContent, ClassImpl.this, scope, !isRenderingLocalContext());
                                     friend = impl;
                                     func = impl;
-                                    if (scope instanceof NamespaceImpl) {
-                                        ((NamespaceImpl) scope).addDeclaration(func);
-                                    } else {
-                                        ((NamespaceImpl) getContainingFile().getProject().getGlobalNamespace()).addDeclaration(func);
+                                    if (!isRenderingLocalContext()) {
+                                        if (scope instanceof NamespaceImpl) {
+                                            ((NamespaceImpl) scope).addDeclaration(func);
+                                        } else {
+                                            ((NamespaceImpl) getContainingFile().getProject().getGlobalNamespace()).addDeclaration(func);
+                                        }
                                     }
                                 }
                                 //((FileImpl)getContainingFile()).addDeclaration(func);
@@ -953,10 +955,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                             scope = getContainingFile().getProject().getGlobalNamespace();
                         }
                         cfd = super.createForwardClassDeclaration(ast, null, (FileImpl) getContainingFile(), scope);
-                        if (true) { // always put in repository, because it's an element of global NS
-                            RepositoryUtils.put(cfd);
+                        if (!isRenderingLocalContext()) {
+                            if (true) { // always put in repository, because it's an element of global NS
+                                RepositoryUtils.put(cfd);
+                            }
+                            ((NamespaceImpl) scope).addDeclaration(cfd);
                         }
-                        ((NamespaceImpl) scope).addDeclaration(cfd);
                     }
                 }
             } else if (child != null && (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {

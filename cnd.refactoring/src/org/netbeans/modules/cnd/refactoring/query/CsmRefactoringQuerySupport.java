@@ -61,18 +61,33 @@ public final class CsmRefactoringQuerySupport {
     private CsmRefactoringQuerySupport() {
     }
 
+    /**
+     * 
+     * @param fo file
+     * @param offset zero-based offset in file
+     * @return 
+     */
     public static Collection<RefactoringElementImplementation> getWhereUsed(FileObject fo, int offset) {
         Collection<RefactoringElementImplementation> out = Collections.emptyList();
         if (offset >= 0) {
             CsmFile csmFile = CsmUtilities.getCsmFile(fo, true, false);
             if (csmFile != null) {
                 CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, (int) offset);
-                out = CsmWhereUsedQueryPlugin.getWhereUsed(ref, Collections.<Object, Boolean>emptyMap());
+                if (ref != null) {
+                    out = CsmWhereUsedQueryPlugin.getWhereUsed(ref, Collections.<Object, Boolean>emptyMap());
+                }
             }        
         }
         return out;
     }
     
+    /**
+     * 
+     * @param fo file
+     * @param line zero-based line number
+     * @param col zero-based column
+     * @return 
+     */
     public static Collection<RefactoringElementImplementation> getWhereUsed(FileObject fo, int line, int col) {
         CsmFile csmFile = CsmUtilities.getCsmFile(fo, true, false);
         Collection<RefactoringElementImplementation> out = Collections.emptyList();
@@ -80,7 +95,9 @@ public final class CsmRefactoringQuerySupport {
             long offset = CsmFileInfoQuery.getDefault().getOffset(csmFile, line, col);
             if (offset >= 0) {
                 CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, (int)offset);
-                out = CsmWhereUsedQueryPlugin.getWhereUsed(ref, Collections.<Object, Boolean>emptyMap());
+                if (ref != null) {
+                    out = CsmWhereUsedQueryPlugin.getWhereUsed(ref, Collections.<Object, Boolean>emptyMap());
+                }
             }
         }
         return out;

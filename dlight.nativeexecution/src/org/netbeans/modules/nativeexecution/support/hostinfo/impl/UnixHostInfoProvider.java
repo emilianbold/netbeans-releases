@@ -53,15 +53,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.JschSupport;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.pty.NbStartUtility;
 import org.netbeans.modules.nativeexecution.support.EnvReader;
@@ -249,34 +246,22 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         // need to do everything here... 
 
         String nbstart = null;
-        String envPath = null;
 
-        if (NbStartUtility.getInstance().isSupported(hostInfo)) {
-            String localPath = NbStartUtility.getInstance().getLocalFileLocationFor(hostInfo);
-            if (localPath != null) {
-                final File localFile = new File(localPath);
-                final String fileName = localFile.getName();
-                final String remotePath = hostInfo.getTempDir() + '/' + fileName;
-                envPath = hostInfo.getEnvironmentFile();
-
-                Future<UploadStatus> uploadResult = CommonTasksSupport.uploadFile(localFile, execEnv, remotePath, 0700);
-
-                try {
-                    UploadStatus result = uploadResult.get();
-                    if (result.isOK()) {
-                        nbstart = remotePath;
-                    }
-                } catch (Exception ex) {
-                }
-            }
+        try {
+            nbstart = NbStartUtility.getInstance().getPath(execEnv, hostInfo);
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Failed to get remote path of NbStartUtility", ex); // NOI18N
+            Exceptions.printStackTrace(ex);
         }
+
+        String envPath = hostInfo.getEnvironmentFile();
 
         ChannelStreams login_shell_channels = null;
 
         try {
             login_shell_channels = JschSupport.startLoginShellSession(execEnv);
             if (nbstart != null && envPath != null) {
-                login_shell_channels.in.write((nbstart + " --dumpenv " + envPath).getBytes()); // NOI18N
+                login_shell_channels.in.write((nbstart + " --dumpenv " + envPath + "\n").getBytes()); // NOI18N
             }
             login_shell_channels.in.write(("/usr/bin/env || /bin/env\n").getBytes()); // NOI18N
             login_shell_channels.in.flush();
@@ -285,6 +270,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             EnvReader reader = new EnvReader(login_shell_channels.out, true);
             environmentToFill.putAll(reader.call());
         } catch (Exception ex) {
+            log.log(Level.WARNING, "Failed to get getRemoteUserEnvironment for " + execEnv.getDisplayName(), ex); // NOI18N
         } finally {
             if (login_shell_channels != null) {
                 if (login_shell_channels.channel != null) {

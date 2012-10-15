@@ -84,6 +84,8 @@ import org.openide.util.NbBundle;
  */
 public class JSClientIterator implements ProgressInstantiatingIterator<WizardDescriptor>{
     
+    public static final String HELP_ID = "js.client.rest";               // NOI18N
+    
     private static final Logger LOGGER = Logger.getLogger(JSClientIterator.class.getName());
 
     /* (non-Javadoc)
