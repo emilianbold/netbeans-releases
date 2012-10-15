@@ -534,6 +534,12 @@ public class ToolTipSupport {
         );
     }
     
+    /**
+     * True, if the tooltip changed because of mouse event + timer; false, if it has been set
+     * externally, e.g. by {@link #setToolTip}.
+     */
+    private boolean tooltipFromView = false;
+    
     /** Update the tooltip by running corresponding action
      * {@link ExtKit#buildToolTipAction}. This method gets
      * called once the enterTimer fires and it can be overriden
@@ -547,6 +553,7 @@ public class ToolTipSupport {
         if (comp == null)
             return;
         
+        JComponent oldTooltip = this.toolTip;
         if (isGlyphGutterMouseEvent(lastMouseEvent)) {
             setToolTipText(extEditorUI.getGlyphGutter().getToolTipText(lastMouseEvent));
         } else { // over the text component
@@ -557,6 +564,10 @@ public class ToolTipSupport {
                     a.actionPerformed(new ActionEvent(comp, 0, "")); // NOI18N
                 }
             }
+        }
+        // tooltip has changed, mark it as 'automatic'
+        if (this.toolTip != oldTooltip) {
+            tooltipFromView = true;
         }
     }
 
@@ -602,8 +613,12 @@ public class ToolTipSupport {
             exitTimer.stop();
         }
 
-        if (visible && status < STATUS_VISIBILITY_ENABLED
-            || !visible && status >= STATUS_VISIBILITY_ENABLED
+        if (visible && 
+                (status < STATUS_VISIBILITY_ENABLED ||
+                    // see defect #219141. The mouse-hoover tooltips should override those set explicitely even if they are visible.
+                    (status >= STATUS_VISIBILITY_ENABLED && updateFromView && !tooltipFromView)
+                )
+            || !visible && status >= STATUS_VISIBILITY_ENABLED 
         ) {
             if (visible) { // try to show the tooltip
                 if (enabled) {
@@ -628,6 +643,7 @@ public class ToolTipSupport {
                 }
 
                 setStatus(STATUS_HIDDEN);
+                tooltipFromView = false;
             }
         }
     }

@@ -648,7 +648,6 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         tts.setToolTip(tooltip, 
                 PopupManager.ScrollBarBounds, 
                 new Point(-x, -y),
-                0, 0,
-                ToolTipSupport.FLAG_PERMANENT);
+                0, 0, 0);
     }
 }
