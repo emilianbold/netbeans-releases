@@ -306,7 +306,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
                                 // XXX preselect default values
                                 Parameter productParameter = parameters.get(QueryParameters.Column.PRODUCT);
                                 productParameter.populate(clientData.getProducts());
-                                populateProductDetails(clientData, productParameter.getValues());
+                                populateProductDetails(clientData);
                                 
                                 // XXX add description to tooltip
                                 parameters.get(QueryParameters.Column.TASK_TYPE).populate(clientData.getTaskTypes());
@@ -657,7 +657,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private void onProductChanged(ListSelectionEvent e) {
         Parameter productParameter = parameters.get(QueryParameters.Column.PRODUCT);
         C2CData clientData = C2C.getInstance().getClientData(repository);
-        populateProductDetails(clientData, productParameter.getValues());
+        populateProductDetails(clientData);
     }
 
     public void autoRefresh() {
@@ -773,7 +773,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         query.remove();
     }
 
-    private void populateProductDetails(C2CData clientData, Collection<Product> products) {
+    private void populateProductDetails(C2CData clientData) {
         Set<com.tasktop.c2c.server.tasks.domain.Component> newComponents = new HashSet<com.tasktop.c2c.server.tasks.domain.Component>();
         Set<String> newIterations = new HashSet<String>();
         Set<Milestone> newMilestones = new HashSet<Milestone>();
@@ -781,10 +781,15 @@ public class C2CQueryController extends QueryController implements ItemListener,
         // XXX why not product specific?
         newIterations.addAll(clientData.getActiveIterations());
         
-        if(products != null) {
-            for (Product p : products) {    
-                newComponents.addAll(clientData.getComponents(p));
-                newMilestones.addAll(clientData.getMilestones(p));
+        Object[] values = panel.productList.getSelectedValues();
+        if(values != null && values.length > 0)  {
+            for (Object v : values) {    
+                assert v instanceof Product;
+                if(!(v instanceof Product)) {
+                    continue;
+                }
+                newComponents.addAll(clientData.getComponents((Product) v));
+                newMilestones.addAll(clientData.getMilestones((Product) v));
             }
         } else {
             newComponents.addAll(clientData.getComponents());

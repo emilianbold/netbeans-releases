@@ -101,28 +101,28 @@ public class QueryParameterTest extends NbTestCase {
         assertEquals(QueryParameters.Column.COMMENT, cp.getColumn());
         assertEquals("", txt.getText());
         assertFalse(chk.isSelected());
-        assertNull(cp.getValues());
+        assertNull(cp.getCriteria());
         
         cp.populate(VALUE3);
         assertEquals("", txt.getText());
         assertFalse(chk.isSelected());
-        assertNull(cp.getValues());
+        assertNull(cp.getCriteria());
         
         cp.setValues(VALUE3);
         assertTrue(chk.isSelected());
-        assertEquals(VALUE3, cp.getValues().iterator().next());
+        assertEquals("comment CONTAINS '" + VALUE3 + "'", cp.getCriteria().toQueryString());
 
         cp.setValues((Object[]) null);
         assertFalse(chk.isSelected());
         assertEquals(VALUE3, txt.getText());
-        assertNull(cp.getValues());
+        assertNull(cp.getCriteria());
         
         txt.setText(VALUE4);
         chk.setSelected(true);
-        assertEquals(VALUE4, cp.getValues().iterator().next());
+        assertEquals("comment CONTAINS '" + VALUE4 + "'", cp.getCriteria().toQueryString());
         
         chk.setSelected(false);
-        assertNull(cp.getValues());
+        assertNull(cp.getCriteria());
     }
     
     public void testMultipleCheckedTextValues() {
@@ -137,35 +137,35 @@ public class QueryParameterTest extends NbTestCase {
         assertEquals("", txt.getText());
         assertFalse(chk1.isSelected());
         assertFalse(chk2.isSelected());
-        assertNull(cp.getValues());
+        assertNull(cp.getCriteria());
         
         cp.populate(new Object[] {VALUE3, VALUE3});
         assertEquals("", txt.getText());
         assertFalse(chk1.isSelected());
         assertFalse(chk2.isSelected());
-        assertNull(cp.getValues());
+        assertNull(cp.getCriteria());
         assertEquals("", txt.getText());
         
         cp.setValues(new Object[] {VALUE3, null});
         assertTrue(chk1.isSelected());
-        assertEquals(VALUE3, cp.getValues().iterator().next());
+        assertEquals("comment CONTAINS '" + VALUE3 + "'", cp.getCriteria().toQueryString());
         assertFalse(chk2.isSelected());
 
         cp.setValues(new Object[] {VALUE3, VALUE3});
         assertTrue(chk1.isSelected());
-        assertEquals(VALUE3, cp.getValues().iterator().next());
+        assertEquals("comment CONTAINS '" + VALUE3 + "' OR description CONTAINS '" + VALUE3 + "'", cp.getCriteria().toQueryString());
         assertTrue(chk2.isSelected());
         
         cp.setValues((Object[])null);
         assertFalse(chk1.isSelected());
         assertFalse(chk2.isSelected());
-        assertNull(cp.getValues());
+        assertNull(cp.getCriteria());
         assertEquals(VALUE3, txt.getText());
         
         cp.setValues(new Object[] {null, null});
         assertFalse(chk1.isSelected());
         assertFalse(chk2.isSelected());
-        assertEquals(null, cp.getValues());
+        assertNull(cp.getCriteria());
         assertEquals("", txt.getText());
     }
     
@@ -232,17 +232,10 @@ public class QueryParameterTest extends NbTestCase {
             fail("mising parameter [" + VALUE3 + "]");
         }
         
-        Collection v = lp.getValues();
-        assertEquals(2, v.size());
-        s.clear();
-        for (Object value : v) {
-            s.add((String)value);
-        }
-        if(!s.contains(VALUE1)) fail("mising parameter [" + VALUE1 + "]");
-        if(!s.contains(VALUE3)) fail("mising parameter [" + VALUE3 + "]");
-
+        assertEquals("comment = '" + VALUE1 + "' OR comment = '" + VALUE3 + "'", lp.getCriteria().toQueryString());
+        
         list.setSelectedValue(VALUE4, false);
-        assertEquals(VALUE4, lp.getValues().iterator().next());
+        assertEquals("comment = '" + VALUE4 + "'", lp.getCriteria().toQueryString());
     }
     
     public void testTextFieldParameterEnabled() {
@@ -268,7 +261,7 @@ public class QueryParameterTest extends NbTestCase {
 
         String parameterValue = "NewValue";
         text.setText(parameterValue);
-        assertEquals(parameterValue, tp.getValues().iterator().next());
+        assertNull(tp.getCriteria()); // not implemented yet
         assertEquals(parameterValue, text.getText());
 
     }
@@ -293,11 +286,11 @@ public class QueryParameterTest extends NbTestCase {
 
         cp.setValues(true);
         assertTrue(checkbox.isSelected());
-        assertEquals(true, cp.getValues().iterator().next());
+        assertNull(cp.getCriteria());  // not implemented yet
 
         cp.setValues(false);
         assertFalse(checkbox.isSelected());
-        assertEquals(false, cp.getValues().iterator().next());
+        assertNull(cp.getCriteria()); // not implemented yet
     }
 
 }

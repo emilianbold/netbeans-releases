@@ -147,10 +147,9 @@ public class QueryParameters {
         
         abstract void setValues(Collection values);
         abstract void populate(Collection values);
-        abstract Collection getValues(); // XXX get rid of this!!!
-         
-        Criteria getCriteria() {
-            Collection values = getValues();
+        abstract Criteria getCriteria();
+        
+        protected Criteria getCriteria(Collection values) {
             if(values == null) {
                 return null;
             }
@@ -193,7 +192,6 @@ public class QueryParameters {
             combo.setRenderer(new ParameterRenderer());
         }
         
-        @Override
         public Collection getValues() {
             Object item = combo.getSelectedItem();
             return item != null ? Collections.singleton(item) : null;
@@ -226,6 +224,11 @@ public class QueryParameters {
         void setEnabled(boolean b) {
             combo.setEnabled(alwaysDisabled ? false : b);
         }
+        
+        @Override
+        Criteria getCriteria() {
+            return getCriteria(getValues());
+        }        
     }
 
     static class ListParameter extends Parameter {
@@ -239,8 +242,7 @@ public class QueryParameters {
             list.setCellRenderer(new ParameterRenderer());
         }
         
-        @Override
-        public Collection getValues() {
+        private Collection getValues() {
             Object[] values = list.getSelectedValues();
             if(values == null || values.length == 0) {
                 return null; //EMPTY_PARAMETER_VALUE;
@@ -294,6 +296,11 @@ public class QueryParameters {
         void setEnabled(boolean  b) {
             list.setEnabled(alwaysDisabled ? false : b);
         }
+
+        @Override
+        Criteria getCriteria() {
+            return getCriteria(getValues());
+        }
     }
 
     static class TextFieldParameter extends Parameter {
@@ -302,8 +309,8 @@ public class QueryParameters {
             super(column);
             this.txt = txt;
         }
-        @Override
-        public Collection<String> getValues() {
+        
+        private Collection<String> getValues() {
             String value = txt.getText();
             if(value == null || value.equals("")) { // NOI18N
                 return null; 
@@ -345,16 +352,17 @@ public class QueryParameters {
         
         private final JTextField txt;
         private final JCheckBox[] chks;
+        private final Column[] columns;
         
         public CheckedTextFieldParameter(Column[] columns, JTextField txt, JCheckBox... chks) {
             super(columns[0]); // XXX hack
             assert columns.length == chks.length : "lenght of columns must be the same as lenght of checkboxes"; // NOI18N
+            this.columns = columns;
             this.txt = txt;
             this.chks = chks;
         }
         
-        @Override
-        public Collection<String> getValues() {
+        private Collection<String> getValues() {
             boolean noneSelected = true;
             List<String> ret = new LinkedList<String>();
             for (JCheckBox chk : chks) {
@@ -429,13 +437,13 @@ public class QueryParameters {
             }
             CriteriaBuilder cb = new CriteriaBuilder();
             boolean noneSelected = true;
-            for (JCheckBox chk : chks) {
-                if(chk.isSelected()) {
+            for (int i = 0; i < chks.length; i++) {
+                if(chks[i].isSelected()) {
                     noneSelected = false;
                     if(cb.result == null) {
-                        cb.column(getColumn().toString(), Criteria.Operator.STRING_CONTAINS, s);
+                        cb.column(columns[i].toString(), Criteria.Operator.STRING_CONTAINS, s);
                     } else {
-                        cb.or(getColumn().toString(), Criteria.Operator.STRING_CONTAINS, s);
+                        cb.or(columns[i].toString(), Criteria.Operator.STRING_CONTAINS, s);
                     }
                 } 
             }
@@ -454,8 +462,8 @@ public class QueryParameters {
             super(column);
             this.chk = chk;
         }
-        @Override
-        public Collection getValues() {
+        
+        private Collection getValues() {
             return Collections.singleton(chk.isSelected());
         }
         
