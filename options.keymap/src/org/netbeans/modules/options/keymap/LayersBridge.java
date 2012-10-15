@@ -629,7 +629,8 @@ public class LayersBridge extends KeymapManager {
         if (!(sa instanceof GlobalAction)) {
             return null;
         }
-        return ((GlobalAction)sa).action.getClass().getName();
+        GlobalAction ga = (GlobalAction)sa;
+        return ga.action == null ? null : ga.action.getClass().getName();
     }
     
     private static class GlobalAction implements ShortcutAction {

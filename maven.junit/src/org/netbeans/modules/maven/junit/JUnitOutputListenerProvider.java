@@ -163,10 +163,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         return name;
     } 
     
-    private void createSession(File file) {
+    private void createSession(File nonNormalizedFile) {
         if (session == null) {
-            File fil = FileUtil.normalizeFile(file);
-            FileObject fo = FileUtil.toFileObject(file);
+            File fil = FileUtil.normalizeFile(nonNormalizedFile);
+            FileObject fo = FileUtil.toFileObject(fil);
             if (fo != null) {
                 Project prj = FileOwnerQuery.getOwner(fo);
                 if (prj != null) {
