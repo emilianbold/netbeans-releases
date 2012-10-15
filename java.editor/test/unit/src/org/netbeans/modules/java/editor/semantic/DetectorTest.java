@@ -392,6 +392,10 @@ public class DetectorTest extends TestBase {
     public void testTwoPackagePrivateConstructors() throws Exception {
         performTest("TwoPackagePrivateConstructors");
     }
+    
+    public void testUnary220003() throws Exception {
+        performTest("Unary220003");
+    }
 
     //Support for exotic identifiers has been removed 6999438
     public void REMOVEDtestExoticIdentifiers() throws Exception {
