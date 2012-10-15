@@ -49,6 +49,7 @@ import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.impl.JsInstantRenamer;
 import org.netbeans.modules.javascript2.editor.navigation.DeclarationFinderImpl;
+import org.netbeans.modules.javascript2.editor.navigation.JsIndexSearcher;
 import org.netbeans.modules.javascript2.editor.navigation.OccurrencesFinderImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParser;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -187,5 +188,11 @@ public class JsLanguage extends DefaultLanguageConfig {
         // due to CC filtering of DOC annotations - see GsfCompletionProvider#getCompletableLanguage()
         return super.isIdentifierChar(c) || c == '@';
     }
+
+    @Override
+    public IndexSearcher getIndexSearcher() {
+        return new JsIndexSearcher();
+    }
+
 
 }
