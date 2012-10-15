@@ -61,6 +61,7 @@ public class AmazonInstanceManager {
     private static final String PREFIX = "org.netbeans.modules.cloud.amazon."; // NOI18N
     private static final String KEY_ID = "access-key-id"; // NOI18N
     private static final String KEY = "secret-access-key"; // NOI18N
+    private static final String REGION = "region"; // NOI18N
     
     private static AmazonInstanceManager instance;
     private List<AmazonInstance> instances = new ArrayList<AmazonInstance>();
@@ -112,6 +113,7 @@ public class AmazonInstanceManager {
         Keyring.save(PREFIX+KEY+"."+ai.getName(), ai.getKey().toCharArray(), "Amazon Secret Access Key"); // NOI18N
         
         props.putString("name", ai.getName()); // NOI18N
+        props.putString("region", ai.getRegionURL()); // NOI18N
     }
     
     
@@ -120,6 +122,7 @@ public class AmazonInstanceManager {
         for(InstanceProperties props : InstancePropertiesManager.getInstance().getProperties(AMAZON_IP_NAMESPACE)) {
             String name = props.getString("name", null); // NOI18N
             assert name != null : "Instance without name";
+            String region = props.getString(REGION, null); // NOI18N
             
             char ch[] = Keyring.read(PREFIX+KEY_ID+"."+name);
             if (ch == null) {
@@ -135,7 +138,7 @@ public class AmazonInstanceManager {
             }
             String key = new String(ch);
             assert key != null : "secret access key is missing for "+name; // NOI18N
-            result.add(new AmazonInstance(name, keyId, key));
+            result.add(new AmazonInstance(name, keyId, key, region));
         }
         return result;
     }
