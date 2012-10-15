@@ -93,6 +93,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
@@ -124,7 +125,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
 
     public void writeUID(CsmUID<?> anUID, RepositoryDataOutput aStream) throws IOException {
         if (!(anUID == null || anUID instanceof SelfPersistent)) {
-            assert false : anUID + ", " + anUID.getObject();
+            CndUtils.assertTrue(false, anUID + ", " + (anUID == null ? "NULL UID" : anUID.getObject()));
+            return;
         }
         super.writeSelfPersistent((SelfPersistent) anUID, aStream);
     }
