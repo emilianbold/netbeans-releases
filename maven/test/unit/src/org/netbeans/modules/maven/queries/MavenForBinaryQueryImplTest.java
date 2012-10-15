@@ -138,7 +138,7 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
         p = ProjectManager.getDefault().findProject(d.getFileObject("b"));
         FileOwnerQuery.markExternalOwner(Utilities.toURI(art), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         MavenFileOwnerQueryImpl.getInstance().registerCoordinates("grp", "art", "0", d.getFileObject("b").toURL(), true);
-        
+        Thread.sleep(2000); //i'm just lazy to fine tune the test for the current case where the Result object listens to changes in MFOQI and recomputes and fires async
         r = SourceForBinaryQuery.findSourceRoots2(root);
         assertEquals(Collections.singletonList(src), Arrays.asList(r.getRoots()));
         assertFalse(r.preferSources());
