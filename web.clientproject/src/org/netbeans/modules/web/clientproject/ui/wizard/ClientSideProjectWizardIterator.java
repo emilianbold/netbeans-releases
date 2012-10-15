@@ -381,12 +381,23 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
+            File projectDir = FileUtil.toFile(project.getProjectDirectory());
             File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
             ReferenceHelper referenceHelper = project.getReferenceHelper();
+            // #218736
+            String testFolder;
+            String configFolder;
+            if (projectDir.equals(siteRoot)) {
+                testFolder = ""; // NOI18N
+                configFolder = ""; // NOI18N
+            } else {
+                testFolder = getExistingDir(wizardDescriptor, TEST_ROOT, ClientSideProjectConstants.DEFAULT_TEST_FOLDER, referenceHelper, project.getProjectDirectory());
+                configFolder = getExistingDir(wizardDescriptor, CONFIG_ROOT, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER, referenceHelper, project.getProjectDirectory());
+            }
             ClientSideProjectUtilities.initializeProject(project.getProjectHelper(),
                     referenceHelper.createForeignFileReference(siteRoot, null),
-                    getDir(wizardDescriptor, TEST_ROOT, ClientSideProjectConstants.DEFAULT_TEST_FOLDER, referenceHelper),
-                    getDir(wizardDescriptor, CONFIG_ROOT, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER, referenceHelper),
+                    testFolder,
+                    configFolder,
                     false);
             return FileUtil.toFileObject(siteRoot);
         }
@@ -398,12 +409,20 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             wizardDescriptor.putProperty(TEST_ROOT, null);
         }
 
-        private String getDir(WizardDescriptor wizardDescriptor, String property, String defaultDir, ReferenceHelper referenceHelper) {
+        private String getExistingDir(WizardDescriptor wizardDescriptor, String property, String defaultDir, ReferenceHelper referenceHelper,
+                FileObject projectDir) throws IOException {
             File dir = (File) wizardDescriptor.getProperty(property);
-            if (dir != null) {
-                return referenceHelper.createForeignFileReference(dir, null);
+            if (dir == null) {
+                // use default dir
+                FileObject folder = projectDir.getFileObject(defaultDir);
+                if (folder == null) {
+                    folder = projectDir.createFolder(defaultDir);
+                }
+                dir = FileUtil.toFile(folder);
             }
-            return defaultDir;
+            // dir must exist already
+            assert dir.isDirectory() : "Existing directory expected: " + dir;
+            return referenceHelper.createForeignFileReference(dir, null);
         }
 
     }

@@ -477,24 +477,15 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
         }
 
+        // #218736
         private List<File> getIgnoredFiles(BasicNodes basicNodes) {
             List<File> ignoredFiles = new ArrayList<File>();
             FileObject buildFolder = project.getProjectDirectory().getFileObject("build"); // NOI18N
             switch (basicNodes) {
                 case Sources:
-                    addIgnoredFile(ignoredFiles, nbprojectFolder);
-                    addIgnoredFile(ignoredFiles, testsFolder);
-                    addIgnoredFile(ignoredFiles, configFolder);
-                    addIgnoredFile(ignoredFiles, buildFolder);
-                    break;
                 case Tests:
-                    addIgnoredFile(ignoredFiles, nbprojectFolder);
-                    addIgnoredFile(ignoredFiles, configFolder);
-                    addIgnoredFile(ignoredFiles, buildFolder);
-                    break;
                 case Configuration:
                     addIgnoredFile(ignoredFiles, nbprojectFolder);
-                    addIgnoredFile(ignoredFiles, testsFolder);
                     addIgnoredFile(ignoredFiles, buildFolder);
                     break;
                 case RemoteFiles:
