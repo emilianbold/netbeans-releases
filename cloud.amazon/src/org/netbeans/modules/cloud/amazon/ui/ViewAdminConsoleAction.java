@@ -41,12 +41,11 @@
  */
 package org.netbeans.modules.cloud.amazon.ui;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
 
@@ -58,12 +57,17 @@ public class ViewAdminConsoleAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         AmazonInstance ai = activatedNodes[0].getLookup().lookup(AmazonInstance.class);
-        try {
-            URL url = new URL("https://console.aws.amazon.com/elasticbeanstalk/home"); // NOI18N
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+        String region = ai.getRegionURL();
+        if (region != null) {
+            if (region.startsWith("elasticbeanstalk.") && region.endsWith(".amazonaws.com")) { // NOI18N
+                region = region.substring(17, region.length()-14);
+            } else {
+                region = null;
+            }
         }
+        URL url = WebUtils.stringToUrl("https://console.aws.amazon.com/elasticbeanstalk/home" + 
+                (region != null ? "?region="+region : "")); // NOI18N
+        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
     }
 
     @Override

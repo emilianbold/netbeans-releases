@@ -196,6 +196,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.core.browser.webview</friend>
+                <friend>org.netbeans.modules.cloud.amazon</friend>
                 <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.css.lib</friend>
                 <friend>org.netbeans.modules.css.model</friend>
