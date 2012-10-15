@@ -202,6 +202,12 @@ public class WebUtilsTest extends CslTestBase {
     public void testUrlToString() throws Exception {
         String s = WebUtils.urlToString(new URL("http://localhost:1234/some%20path%20with%20spaces/zem%C4%9Bd%C4%9Blstv%C3%AD?more%20spaces#m%C4%9B%20d%C4%9B"));
         assertEquals("http://localhost:1234/some path with spaces/zemědělství?more spaces#mě dě", s);
+
+        // #220006
+        s = WebUtils.urlToString(new URL("http://fonts.googleapis.com/css?family=Leckerli+One|Rokkitt:700,400|Luckiest+Guy"));
+        assertEquals("http://fonts.googleapis.com/css?family=Leckerli+One|Rokkitt:700,400|Luckiest+Guy", s);
+        s = WebUtils.urlToString(new URL("http://fonts.googleapis.com/css?family=Leckerli+One%7CRokkitt:700,400%7CLuckiest+Guy"));
+        assertEquals("http://fonts.googleapis.com/css?family=Leckerli+One|Rokkitt:700,400|Luckiest+Guy", s);
     }
     
     private void setEmbeddingProviderIntoMockLookup(String forMimeType, final Set<String> embeddedMimeTypes) {

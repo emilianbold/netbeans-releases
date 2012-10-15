@@ -376,8 +376,8 @@ public class WebUtils {
         try {
             uri = url.toURI();
         } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
             // fallback:
+            LOGGER.log(Level.FINE, "URL '"+url+"' cannot be converted to URI.");
             return url.toExternalForm();
         }
         StringBuilder sb = new StringBuilder();
