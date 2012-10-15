@@ -153,7 +153,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private AttachmentsPanel attachmentsPanel;
     
     private Map<String,String> initialValues = new HashMap<String,String>();
-    private List<String> tags = new LinkedList<String>();
+    private List<String> keywords = new LinkedList<String>();
     
     // message panel 
     private boolean cyclicDependency = false;
@@ -287,7 +287,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     updateNoSummary();
                 }
             });
-            tagsField.getDocument().addDocumentListener(new DocumentListener() {
+            keywordsField.getDocument().addDocumentListener(new DocumentListener() {
                 @Override
                 public void insertUpdate(DocumentEvent e) {
                     changedUpdate(e);
@@ -308,9 +308,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 //        initCustomFields(); XXX
         
         Collection<Keyword> kws = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository()).getKeywords();
-        tags.clear();
+        keywords.clear();
         for (Keyword keyword : kws) {
-            tags.add(keyword.getName());
+            keywords.add(keyword.getName());
         }
                 
         reloadForm(true);
@@ -484,7 +484,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, priorityCombo, IssueField.PRIORITY, priorityWarning, priorityLabel);
             reloadField(force, severityCombo, IssueField.SEVERITY, severityWarning, priorityLabel);
             reloadField(force, iterationCombo, IssueField.ITERATION, iterationWarning, iterationLabel);
-            reloadField(force, tagsField, IssueField.TAGS, tagsWarning, tagsLabel);
+            reloadField(force, keywordsField, IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
 
             if (!isNew) {
                 // reported field
@@ -816,10 +816,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void updateInvalidTag() {
         boolean invalidFound = false;
-        StringTokenizer st = new StringTokenizer(tagsField.getText(), ", \t\n\r\f"); // NOI18N
+        StringTokenizer st = new StringTokenizer(keywordsField.getText(), ", \t\n\r\f"); // NOI18N
         while (st.hasMoreTokens()) {
             String token = st.nextToken();
-            if (!tags.contains(token)) {
+            if (!keywords.contains(token)) {
                 invalidFound = true;
                 break;
             }
@@ -883,7 +883,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldStatus(IssueField.PARENT, parentLabel);
         updateFieldStatus(IssueField.SUBTASK, subtaskLabel);
         updateFieldStatus(IssueField.CC, ccLabel);
-        updateFieldStatus(IssueField.TAGS, tagsLabel);
+        updateFieldStatus(IssueField.KEYWORDS, keywordsLabel);
         updateFieldStatus(IssueField.TASK_TYPE, issueTypeLabel);
         updateFieldStatus(IssueField.MODIFIED, modifiedLabel);
 //        for (CustomFieldInfo field : customFields) {
@@ -1181,12 +1181,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return bugs;
     }
     
-    private List<String> tags (String values) {
+    private List<String> keywords (String values) {
         List<String> items = new LinkedList<String>();
         StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); //NOI18N
         while (st.hasMoreTokens()) {
             String token = st.nextToken();
-            if (tags.contains(token)) {
+            if (keywords.contains(token)) {
                 items.add(token);
             }
         }
@@ -1390,8 +1390,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         priorityWarning = new javax.swing.JLabel();
         severityLabel = new javax.swing.JLabel();
         severityWarning = new javax.swing.JLabel();
-        tagsLabel = new javax.swing.JLabel();
-        tagsWarning = new javax.swing.JLabel();
+        keywordsLabel = new javax.swing.JLabel();
+        keywordsWarning = new javax.swing.JLabel();
         productLabel = new javax.swing.JLabel();
         productWarning = new javax.swing.JLabel();
         componentLabel = new javax.swing.JLabel();
@@ -1515,16 +1515,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(tagsLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tagsLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(keywordsLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsLabel.text")); // NOI18N
 
-        tagsField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tagsField.text")); // NOI18N
+        keywordsField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(tagsButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tagsButton.text")); // NOI18N
-        tagsButton.setFocusPainted(false);
-        tagsButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        tagsButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(keywordsButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsButton.text")); // NOI18N
+        keywordsButton.setFocusPainted(false);
+        keywordsButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        keywordsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tagsButtonActionPerformed(evt);
+                keywordsButtonActionPerformed(evt);
             }
         });
 
@@ -1763,7 +1763,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             .addComponent(ownerLabel, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(foundInLabel, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(productLabel, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(tagsLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(keywordsLabel, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(priorityLabel, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(statusLabel, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(issueTypeLabel, javax.swing.GroupLayout.Alignment.TRAILING)))
@@ -1911,11 +1911,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(severityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))))
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(tagsField, javax.swing.GroupLayout.PREFERRED_SIZE, 297, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(keywordsField, javax.swing.GroupLayout.PREFERRED_SIZE, 297, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(tagsButton)
+                                        .addComponent(keywordsButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(tagsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addComponent(keywordsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(messagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1984,9 +1984,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(tagsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tagsButton)
-                                    .addComponent(tagsLabel))
+                                    .addComponent(keywordsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(keywordsButton)
+                                    .addComponent(keywordsLabel))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
@@ -2076,7 +2076,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(descriptionLabel)
                                     .addComponent(dummyDescriptionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(tagsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(keywordsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(priorityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2323,7 +2323,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         storeFieldValue(IssueField.OWNER, ((TaskUserProfile) ownerCombo.getSelectedItem()).getLoginName());
         storeFieldValues(IssueField.PARENT, bugs(parentField.getText()));
         storeFieldValues(IssueField.SUBTASK, bugs(subtaskField.getText()));
-        storeFieldValues(IssueField.TAGS, tags(tagsField.getText()));
+        storeFieldValues(IssueField.KEYWORDS, keywords(keywordsField.getText()));
         storeFieldValue(IssueField.TASK_TYPE, issueTypeCombo);
         storeFieldValue(IssueField.ESTIMATE, estimateField);
         storeFieldValue(IssueField.FOUNDIN, foundInField);
@@ -2412,11 +2412,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         reloadForm(true);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void tagsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tagsButtonActionPerformed
-        String message = NbBundle.getMessage(IssuePanel.class, "IssuePanel.tagsButton.message"); // NOI18N
-        String tags = C2CUtil.getTags(message, tagsField.getText(), issue.getRepository());
-        tagsField.setText(tags);
-    }//GEN-LAST:event_tagsButtonActionPerformed
+    private void keywordsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keywordsButtonActionPerformed
+        String message = NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsButton.message"); // NOI18N
+        String keywords = C2CUtil.getKeywords(message, keywordsField.getText(), issue.getRepository());
+        keywordsField.setText(keywords);
+    }//GEN-LAST:event_keywordsButtonActionPerformed
 
     private void reportedFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reportedFieldActionPerformed
         // TODO add your handling code here:
@@ -2492,6 +2492,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel iterationLabel;
     private javax.swing.JLabel iterationWarning;
     private javax.swing.JPanel jPanel1;
+    final javax.swing.JButton keywordsButton = new javax.swing.JButton();
+    final javax.swing.JTextField keywordsField = new javax.swing.JTextField();
+    private javax.swing.JLabel keywordsLabel;
+    private javax.swing.JLabel keywordsWarning;
     private javax.swing.JPanel messagePanel;
     final javax.swing.JTextField modifiedField = new javax.swing.JTextField();
     final javax.swing.JLabel modifiedLabel = new javax.swing.JLabel();
@@ -2536,10 +2540,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     final javax.swing.JTextField summaryField = new javax.swing.JTextField();
     private javax.swing.JLabel summaryLabel;
     private javax.swing.JLabel summaryWarning;
-    final javax.swing.JButton tagsButton = new javax.swing.JButton();
-    final javax.swing.JTextField tagsField = new javax.swing.JTextField();
-    private javax.swing.JLabel tagsLabel;
-    private javax.swing.JLabel tagsWarning;
     // End of variables declaration//GEN-END:variables
 
     @Override

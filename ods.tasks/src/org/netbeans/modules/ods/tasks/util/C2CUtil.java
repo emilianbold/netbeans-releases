@@ -116,7 +116,7 @@ public class C2CUtil {
         ta = rta.createMappedAttribute(C2CData.ATTR_DUPLICATE_OF);
         ta = rta.createMappedAttribute(C2CData.ATTR_DUEDATE);
         ta = rta.createMappedAttribute(C2CData.ATTR_FOUND_IN_RELEASE);
-        ta = rta.createMappedAttribute(C2CData.ATTR_TAGS);
+        ta = rta.createMappedAttribute(C2CData.ATTR_KEYWORDS);
         ta = rta.createMappedAttribute(C2CData.ATTR_EXTERNAL_LINKS);
         ta = rta.createMappedAttribute(C2CData.ATTR_OWNER);
         ta = rta.createMappedAttribute(C2CData.ATTR_VERSION);
@@ -228,16 +228,16 @@ public class C2CUtil {
         return null;
     }
 
-    public static String getTags(String message, String tagsString, C2CRepository repository) {
-        String[] tags = tagsString.split(","); // NOI18N
-        if(tags == null || tags.length == 0) {
+    public static String getKeywords(String message, String keywordString, C2CRepository repository) {
+        String[] ks = keywordString.split(","); // NOI18N
+        if(ks == null || ks.length == 0) {
             return null;
         }
 
         try {
             C2CData cd = getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
             if(cd == null /* XXX */) {
-                return tagsString;
+                return keywordString;
             }
             Collection<Keyword> keywords = cd.getKeywords(); 
             List<String> keywordsList = new ArrayList<String>(keywords.size());
@@ -245,14 +245,14 @@ public class C2CUtil {
                 keywordsList.add(keyword.getName());
             }
             return ListValuePicker.getValues(
-                    NbBundle.getMessage(C2CUtil.class, "CTL_TagsTitle"), 
-                    NbBundle.getMessage(C2CUtil.class, "LBL_Tags"), 
+                    NbBundle.getMessage(C2CUtil.class, "CTL_KeywordsTitle"), 
+                    NbBundle.getMessage(C2CUtil.class, "LBL_Keywords"), 
                     message, 
-                    tagsString, 
+                    keywordString, 
                     keywordsList);
         } catch (Exception ex) {
             C2C.LOG.log(Level.SEVERE, null, ex);
-            return tagsString;
+            return keywordString;
         }       
     }
     

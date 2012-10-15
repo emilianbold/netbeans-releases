@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.ods.tasks.query;
 
+import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
+import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import java.awt.Component;
 import java.lang.String;
@@ -81,7 +83,7 @@ public class QueryParameters {
         SUMMARY("summary"), // NOI18N
         PRIORITY("priority"), // NOI18N
         TASK_TYPE("tasktype"), // NOI18N
-        TAGS("tags"); // NOI18N
+        KEYWORDS("keywords"); // NOI18N
             
         private String columnName;
         
@@ -105,9 +107,9 @@ public class QueryParameters {
         return (Parameter) map.get(c);
     }
     
-     Parameter get(String columnName) {
-        return get(Column.valueOf(columnName));
-    }
+//     Parameter get(String columnName) {
+//        return get(Column.valueOf(columnName));
+//    }
     
     Collection<Parameter> getAll() {
         return map.values();
@@ -118,11 +120,15 @@ public class QueryParameters {
     }
     
      void addParameter(Column c, JComboBox combo) {
-        map.put(c, new ComboParameter(combo, c));
+        map.put(c, new ComboParameter(c, combo));
     }
     
     void addParameter(Column c, JTextField txt) {
-        map.put(c, new TextFieldParameter(txt, c));
+        map.put(c, new TextFieldParameter(c, txt));
+    }
+    
+    void addParameter(Column[] columns, JTextField txt, JCheckBox... chk) {
+        map.put(columns[0], new CheckedTextFieldParameter(columns, txt, chk));
     }
             
 //    <T extends QueryParameter> T createQueryParameter(Class clazz, Component c, String attribute) {
@@ -153,10 +159,30 @@ public class QueryParameters {
             setValues(Arrays.asList(values));
         }
         
+        void populate(Object... values) {
+            populate(Arrays.asList(values));
+        }
+        
         abstract void setValues(Collection values);
         abstract void populate(Collection values);
-        abstract Collection getValues();
-
+        abstract Collection getValues(); // XXX get rid of this!!!
+         
+        Criteria getCriteria() {
+            Collection values = getValues();
+            if(values == null) {
+                return null;
+            }
+            CriteriaBuilder cb = new CriteriaBuilder();
+            for (Object v : values) {
+                if(cb.result == null) {
+                    cb.column(getColumn().toString(), Criteria.Operator.EQUALS, valueToString(v));
+                } else {
+                    cb.or(getColumn().toString(), Criteria.Operator.EQUALS, valueToString(v));
+                }
+            }
+            return cb.toCriteria();
+        }
+        
         void setAlwaysDisabled(boolean bl) {
             this.alwaysDisabled = bl;
             setEnabled(false); // true or false, who cares. this is only to trigger the state change
@@ -165,36 +191,6 @@ public class QueryParameters {
         abstract void setEnabled(boolean b);
 
         // XXX perhaps parameters should be encoded
-    //    public StringBuffer get(boolean encode) {
-    //        StringBuffer sb(new StringBuffer()),
-    //        ParameterValue[] values(getValues()),
-    //        for (ParameterValue pv : values) {
-    //            sb.append("&")), // NOI18N
-    //            sb.append(getParameter())),
-    //            sb.append("=")), // NOI18N
-    //            if(encode) {
-    //                try {
-    //                    String value(pv.getValue()),
-    //                    if(value.equals("[Bug+creation]")) {                            // NOI18N
-    //                        // workaround: while encoding '+' in a products name works fine,
-    //                        // encoding it in in [Bug+creation] causes an error
-    //                        sb.append(URLEncoder.encode("[", encoding))),                // NOI18N
-    //                        sb.append("Bug+creation")),                                  // NOI18N
-    //                        sb.append(URLEncoder.encode("]", encoding))),                // NOI18N
-    //                    } else {
-    //                        // use URLEncoder as it is used also by other clients of the bugzilla connector
-    //                        sb.append(URLEncoder.encode(value, encoding))),
-    //                    }
-    //                } catch (UnsupportedEncodingException ex) {
-    //                    sb.append(URLEncoder.encode(pv.getValue()))),
-    //                    C2C.LOG.log(Level.WARNING, null, ex)),
-    //                }
-    //            } else {
-    //                sb.append(pv.getValue())),
-    //            }
-    //        }
-    //        return sb),
-    //    }
 
         @Override
         public String toString() {
@@ -208,16 +204,17 @@ public class QueryParameters {
     
     static class ComboParameter extends Parameter {
         private final JComboBox combo;
-        public ComboParameter(JComboBox combo, Column column) {
+        public ComboParameter(Column column, JComboBox combo) {
             super(column);
             this.combo = combo;
             combo.setModel(new DefaultComboBoxModel());
-            combo.setRenderer(new ComboParameterRenderer());
+            combo.setRenderer(new ParameterRenderer());
         }
         
         @Override
         public Collection getValues() {
-            return Collections.singleton(combo.getSelectedItem());
+            Object item = combo.getSelectedItem();
+            return item != null ? Collections.singleton(item) : null;
         }
         
         @Override
@@ -257,6 +254,7 @@ public class QueryParameters {
             super(column);
             this.list = list;
             list.setModel(new DefaultListModel());
+            list.setCellRenderer(new ParameterRenderer());
         }
         
         @Override
@@ -318,7 +316,7 @@ public class QueryParameters {
 
     static class TextFieldParameter extends Parameter {
         private final JTextField txt;
-        public TextFieldParameter(JTextField txt, Column column) {
+        public TextFieldParameter(Column column, JTextField txt) {
             super(column);
             this.txt = txt;
         }
@@ -326,7 +324,7 @@ public class QueryParameters {
         public Collection<String> getValues() {
             String value = txt.getText();
             if(value == null || value.equals("")) { // NOI18N
-                return null; //EMPTY_PARAMETER_VALUE;
+                return null; 
             }
             return Collections.singleton(value);
         }
@@ -354,8 +352,120 @@ public class QueryParameters {
         void populate(Collection value) {
             setValues(value);
         }
+
+        @Override
+        Criteria getCriteria() {
+            return null;
+        }
     }
 
+    static class CheckedTextFieldParameter extends Parameter {
+        
+        private final JTextField txt;
+        private final JCheckBox[] chks;
+        
+        public CheckedTextFieldParameter(Column[] columns, JTextField txt, JCheckBox... chks) {
+            super(columns[0]); // XXX hack
+            assert columns.length == chks.length : "lenght of columns must be the same as lenght of checkboxes"; // NOI18N
+            this.txt = txt;
+            this.chks = chks;
+        }
+        
+        @Override
+        public Collection<String> getValues() {
+            boolean noneSelected = true;
+            List<String> ret = new LinkedList<String>();
+            for (JCheckBox chk : chks) {
+                if(chk.isSelected()) {
+                    noneSelected = false;
+                    String value = txt.getText();
+                    if(value != null && !value.trim().isEmpty()) { // NOI18N
+                        ret.add(value);
+                    }
+                }
+            }
+            if(noneSelected) {
+                return null;
+            }
+            return ret;
+        }
+        
+        @Override
+        void setValues(Object... values) {
+            if(values == null) {
+                for (int i = 0; i < chks.length; i++) {
+                    chks[i].setSelected(false);
+                }
+            } else {
+                assert values.length == chks.length : "lenght of values must be the same as lenght of checkboxes"; // NOI18N
+                // XXX hack
+                boolean allNull = true;
+                for (int i = 0; i < values.length; i++) {
+                    String s = (String) values[i];
+                    if(s == null) {
+                        chks[i].setSelected(false);
+                    } else {
+                        allNull = false;
+                        txt.setText(s); 
+                        chks[i].setSelected(true);
+                    }
+                }
+                if(allNull) {
+                    txt.setText(""); // NOI18N
+                }
+            }
+            
+        }
+                
+        @Override
+        public void setValues(Collection b) {
+            throw new UnsupportedOperationException();
+        }
+        
+        @Override
+        void setEnabled(boolean  b) {
+//            txt.setEnabled(alwaysDisabled ? false : b); // might be shared with other parameters
+            for (JCheckBox chk : chks) {
+                chk.setEnabled(alwaysDisabled ? false : b);
+            }
+        }
+
+        @Override
+        void populate(Object... value) {
+            // do nothing
+        }
+        
+        @Override
+        void populate(Collection value) {
+            // do nothing
+        }
+
+        @Override
+        Criteria getCriteria() {
+            String s = txt.getText();
+            if( s == null || s.trim().isEmpty()) {
+                return null;
+            }
+            CriteriaBuilder cb = new CriteriaBuilder();
+            boolean noneSelected = true;
+            for (JCheckBox chk : chks) {
+                if(chk.isSelected()) {
+                    noneSelected = false;
+                    if(cb.result == null) {
+                        cb.column(getColumn().toString(), Criteria.Operator.STRING_CONTAINS, s);
+                    } else {
+                        cb.or(getColumn().toString(), Criteria.Operator.STRING_CONTAINS, s);
+                    }
+                } 
+            }
+            if(noneSelected) {
+                return null;
+            } else {
+                return cb.toCriteria();
+            }
+        }
+    }
+    
     static class CheckBoxParameter extends Parameter {
         private boolean selected = true; 
         private final JCheckBox chk;
@@ -389,19 +499,30 @@ public class QueryParameters {
 
         @Override
         void populate(Collection b) {
-            setValues(b);
+            // do nothing
+        }
+
+        @Override
+        Criteria getCriteria() {
+            return null;
         }
     }
 
-    private static class ComboParameterRenderer extends DefaultListCellRenderer {
+    private static class ParameterRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof Keyword) {
-                return super.getListCellRendererComponent(list, ((Keyword)value).getName(), index, isSelected, cellHasFocus); 
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); 
+            return super.getListCellRendererComponent(list, valueToString(value), index, isSelected, cellHasFocus); 
         }
-        
+    }
+    
+    private static String valueToString(Object value) {
+        if(value == null) {
+            return ""; // NOI18N
+        }
+        if(value instanceof Keyword) {
+            return ((Keyword) value).getName(); 
+        }
+        return value.toString();
     }
 
 //    public static class SimpleQueryParameter extends QueryParameter {

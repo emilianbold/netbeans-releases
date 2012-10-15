@@ -33,7 +33,7 @@
                           <Component id="ownerLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="foundInLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="productLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="tagsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="keywordsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="priorityLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="statusLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="issueTypeLabel" alignment="1" min="-2" max="-2" attributes="0"/>
@@ -227,11 +227,11 @@
                                       </Group>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="tagsField" min="-2" pref="297" max="-2" attributes="0"/>
+                                      <Component id="keywordsField" min="-2" pref="297" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="tagsButton" min="-2" max="-2" attributes="0"/>
+                                      <Component id="keywordsButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="tagsWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                      <Component id="keywordsWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -320,9 +320,9 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="tagsField" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="tagsButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="tagsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="keywordsField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="keywordsButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="keywordsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -444,7 +444,7 @@
                                   <Component id="dummyDescriptionPanel" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <Component id="tagsWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="keywordsWarning" min="-2" pref="16" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="priorityWarning" min="-2" pref="16" max="-2" attributes="0"/>
@@ -649,27 +649,27 @@
     </Component>
     <Component class="javax.swing.JLabel" name="severityWarning">
     </Component>
-    <Component class="javax.swing.JLabel" name="tagsLabel">
+    <Component class="javax.swing.JLabel" name="keywordsLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/ods/tasks/issue/Bundle.properties" key="IssuePanel.tagsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/ods/tasks/issue/Bundle.properties" key="IssuePanel.keywordsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="tagsField">
+    <Component class="javax.swing.JTextField" name="keywordsField">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/ods/tasks/issue/Bundle.properties" key="IssuePanel.tagsField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/ods/tasks/issue/Bundle.properties" key="IssuePanel.keywordsField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JButton" name="tagsButton">
+    <Component class="javax.swing.JButton" name="keywordsButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/ods/tasks/issue/Bundle.properties" key="IssuePanel.tagsButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/ods/tasks/issue/Bundle.properties" key="IssuePanel.keywordsButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="focusPainted" type="boolean" value="false"/>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -677,13 +677,13 @@
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tagsButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="keywordsButtonActionPerformed"/>
       </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JLabel" name="tagsWarning">
+    <Component class="javax.swing.JLabel" name="keywordsWarning">
     </Component>
     <Component class="javax.swing.JLabel" name="productLabel">
       <Properties>
