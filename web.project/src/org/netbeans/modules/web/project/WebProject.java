@@ -589,6 +589,7 @@ public final class WebProject implements Project {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
+            LookupProviderSupport.createActionProviderMerger(),
             WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
             new WebPropertyEvaluatorImpl(evaluator()),
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
