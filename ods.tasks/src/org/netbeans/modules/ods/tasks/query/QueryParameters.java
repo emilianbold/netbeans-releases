@@ -175,9 +175,9 @@ public class QueryParameters {
             CriteriaBuilder cb = new CriteriaBuilder();
             for (Object v : values) {
                 if(cb.result == null) {
-                    cb.column(getColumn().toString(), Criteria.Operator.EQUALS, v.toString());
+                    cb.column(getColumn().toString(), Criteria.Operator.EQUALS, valueToString(v));
                 } else {
-                    cb.or(getColumn().toString(), Criteria.Operator.EQUALS, v.toString());
+                    cb.or(getColumn().toString(), Criteria.Operator.EQUALS, valueToString(v));
                 }
             }
             return cb.toCriteria();
@@ -208,7 +208,7 @@ public class QueryParameters {
             super(column);
             this.combo = combo;
             combo.setModel(new DefaultComboBoxModel());
-            combo.setRenderer(new ComboParameterRenderer());
+            combo.setRenderer(new ParameterRenderer());
         }
         
         @Override
@@ -254,6 +254,7 @@ public class QueryParameters {
             super(column);
             this.list = list;
             list.setModel(new DefaultListModel());
+            list.setCellRenderer(new ParameterRenderer());
         }
         
         @Override
@@ -492,15 +493,21 @@ public class QueryParameters {
         }
     }
 
-    private static class ComboParameterRenderer extends DefaultListCellRenderer {
+    private static class ParameterRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof Keyword) {
-                return super.getListCellRendererComponent(list, ((Keyword)value).getName(), index, isSelected, cellHasFocus); 
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); 
+            return super.getListCellRendererComponent(list, valueToString(value), index, isSelected, cellHasFocus); 
         }
-        
+    }
+    
+    private static String valueToString(Object value) {
+        if(value == null) {
+            return ""; // NOI18N
+        }
+        if(value instanceof Keyword) {
+            return ((Keyword) value).getName(); 
+        }
+        return value.toString();
     }
 
 //    public static class SimpleQueryParameter extends QueryParameter {

@@ -183,7 +183,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         parameters.addParameter(QueryParameters.Column.SEVERITY, panel.severityList);  
         parameters.addParameter(QueryParameters.Column.STATUS, panel.statusList);      
         parameters.addParameter(QueryParameters.Column.RESOLUTION, panel.resolutionList);
-        parameters.addParameter(QueryParameters.Column.TAGS, panel.tagsComboBox);                   
+        parameters.addParameter(QueryParameters.Column.TAGS, panel.keywordsList);                   
         
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 
@@ -326,7 +326,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
                                 // XXX tags have also a description, coud, be added next to the combo
                                 parameters.get(QueryParameters.Column.TAGS).populate(clientData.getKeywords());
-                                panel.tagsComboBox.setSelectedIndex(-1); // ensure none is selected
                             } finally {
                                 logPopulate("Finnished populate query controller {0}"); // NOI18N
                             }
