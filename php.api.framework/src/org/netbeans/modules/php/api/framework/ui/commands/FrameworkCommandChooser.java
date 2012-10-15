@@ -88,6 +88,7 @@ import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport.C
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 public final class FrameworkCommandChooser extends JPanel {
@@ -345,7 +346,12 @@ public final class FrameworkCommandChooser extends JPanel {
     }
 
     private Map<FrameworkCommand, ParameterContainer> getTasksToParams() {
-        String prjDir = frameworkCommandSupport.getPhpModule().getSourceDirectory().getPath();
+        FileObject sourceDirectory = frameworkCommandSupport.getPhpModule().getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return Collections.emptyMap();
+        }
+        String prjDir = sourceDirectory.getPath();
         Map<FrameworkCommand, ParameterContainer> result = PROJECT_TO_TASK.get(prjDir);
         if (result == null) {
             result = new HashMap<FrameworkCommand, ParameterContainer>();
@@ -382,7 +388,12 @@ public final class FrameworkCommandChooser extends JPanel {
      * box.
      */
     private void storeParameters() {
-        String prjDir = frameworkCommandSupport.getPhpModule().getSourceDirectory().getPath();
+        FileObject sourceDirectory = frameworkCommandSupport.getPhpModule().getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return;
+        }
+        String prjDir = sourceDirectory.getPath();
         Map<FrameworkCommand, ParameterContainer> taskToParams = PROJECT_TO_TASK.get(prjDir);
         if (taskToParams == null) {
             taskToParams = new HashMap<FrameworkCommand, ParameterContainer>();
