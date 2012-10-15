@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.pty;
+package org.netbeans.modules.nativeexecution.support;
 
-import java.io.IOException;
-import java.util.logging.Level;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.support.ShellSession;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
  *
- * @author ak119685
+ * @author Andrew
  */
-public final class SttySupport {
+public class ShellSessionTest extends NativeExecutionBaseTestCase {
 
-    private static final boolean disableSTTY = Boolean.getBoolean("nativeexecution.nostty"); // NOI18N
-
-    private SttySupport() {
+    public ShellSessionTest(String name) {
+        super(name);
     }
 
-    public static void apply(final ExecutionEnvironment env, final String tty, final String args) {
-        if (!disableSTTY) {
-            try {
-                ShellSession.execute(env, "/bin/stty " + args + " < " + tty + " 2>/dev/null"); // NOI18N
-            } catch (IOException ex) {
-                // bad luck.. still just ignore..
-                Logger.getInstance().log(Level.FINE, "SttySupport.apply() failed", ex); // NOI18N
-            }
-        }
+    @BeforeClass
+    public static void setUpClass() {
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+    }
+
+    @Before
+    @Override
+    public void setUp() {
+    }
+
+    @After
+    @Override
+    public void tearDown() {
+    }
+
+    /**
+     * Test of execute method, of class ShellSession.
+     */
+    @Test
+    public void testExecute() throws Exception {
+        System.out.println("execute");
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+        ExitStatus result1 = ShellSession.execute(env, "unknown-command");
+        String command = "echo out; echo error 1>&2; sh -c \"exit 100\"";
+        ExitStatus result2 = ShellSession.execute(env, command);
+
+        assertNotSame(0, result1.exitCode);
+        assertFalse(result1.error.isEmpty());
+
+        assertEquals("out\n", result2.output);
+        assertEquals("error\n", result2.error);
+        assertEquals(100, result2.exitCode);
     }
 }

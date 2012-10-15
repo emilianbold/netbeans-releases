@@ -472,7 +472,7 @@ public final class ProcessUtils {
         public final String error;
         public final String output;
 
-        private ExitStatus(int exitCode, String output, String error) {
+        public ExitStatus(int exitCode, String output, String error) {
             this.exitCode = exitCode;
             this.error = error;
             this.output = output;
