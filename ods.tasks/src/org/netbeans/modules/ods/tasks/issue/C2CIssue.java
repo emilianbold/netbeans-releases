@@ -310,7 +310,7 @@ public class C2CIssue {
                         ret = Bundle.LBL_SUMMARY_CHANGED_STATUS();
                     } else if (changedField == IssueField.CC) {
                         ret = Bundle.LBL_CC_FIELD_CHANGED_STATUS();
-                    } else if (changedField == IssueField.TAGS) {
+                    } else if (changedField == IssueField.KEYWORDS) {
                         ret = Bundle.LBL_TAGS_CHANGED_STATUS();
                     } else if (changedField == IssueField.SUBTASK || changedField == IssueField.PARENT) {
                         ret = Bundle.LBL_DEPENDENCE_CHANGED_STATUS();
@@ -354,7 +354,7 @@ public class C2CIssue {
                         msg = Bundle.LBL_CHANGES_INCL_MILESTONE(changedCount);
                     } else if (changedField == IssueField.ITERATION) {
                         msg = Bundle.LBL_CHANGES_INCL_ITERATION(changedCount);
-                    } else if (changedField == IssueField.TAGS) {
+                    } else if (changedField == IssueField.KEYWORDS) {
                         msg = Bundle.LBL_CHANGES_INCL_TAGS(changedCount);
                     } else if (changedField == IssueField.OWNER) {
                         msg = Bundle.LBL_CHANGES_INCL_OWNER(changedCount);
