@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="scriptsdir" value="${builddir}/scripts"/>
     
     <target name="clean">
-        <delete dir="${builddir}"/>
+        <delete dir="${builddir}" failonerror="no"/>
     </target>
 
     <target name="init">

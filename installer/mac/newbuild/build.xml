@@ -64,8 +64,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="clean">
-        <delete dir="${basedir}/build"/>
-        <delete dir="${basedir}/dist"/>
+        <delete dir="${basedir}/build" failonerror="no"/>
+        <delete dir="${basedir}/dist" failonerror="no"/>
         <ant dir="${basedir}/glassfish" target="clean"/>
         <ant dir="${basedir}/sjsas" target="clean"/>
         <ant dir="${basedir}/glassfish-v3" target="clean"/>
@@ -74,17 +74,17 @@ Microsystems, Inc. All Rights Reserved.
         <!--<ant dir="${basedir}/openesb" target="clean"/>-->
         <ant dir="${basedir}/netBeans/baseide" target="clean"/>
         <!--<delete dir="${basedir}/netBeans/soa/build"/>-->
-        <delete dir="${basedir}/netBeans/ruby/build"/>
-        <delete dir="${basedir}/netBeans/cpp/build"/>
-        <delete dir="${basedir}/netBeans/javase/build"/>
+        <delete dir="${basedir}/netBeans/ruby/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/cpp/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/javase/build" failonerror="no"/>
         <delete dir="${basedir}/netBeans/javafx/build" failonerror="no"/>
-        <delete dir="${basedir}/netBeans/javaee/build"/>     
-        <delete dir="${basedir}/netBeans/groovy/build"/>
-        <delete dir="${basedir}/netBeans/php/build"/> 
-        <delete dir="${basedir}/netBeans/javame/build"/> 
-        <delete dir="${basedir}/netBeans/webcommon/build"/>
-        <delete dir="${basedir}/netBeans/ergonomics/build"/>
-        <delete dir="${basedir}/tools/classes"/>           
+        <delete dir="${basedir}/netBeans/javaee/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/groovy/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/php/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/javame/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/webcommon/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/ergonomics/build" failonerror="no"/>
+        <delete dir="${basedir}/tools/classes" failonerror="no"/>
     </target>
     
     <target name="init">    
