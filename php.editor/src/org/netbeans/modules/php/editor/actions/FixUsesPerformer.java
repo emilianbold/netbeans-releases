@@ -254,8 +254,7 @@ public class FixUsesPerformer {
     }
 
     private static boolean canBeUsed(String use) {
-        // Filter out "Don't use type." message.
-        return use != null && !use.contains(SPACE);
+        return !Bundle.DoNotUseType().endsWith(use);
     }
 
     private interface AliasStrategy {
