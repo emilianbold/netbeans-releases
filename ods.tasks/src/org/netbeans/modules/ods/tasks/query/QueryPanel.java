@@ -164,7 +164,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         jLabel3 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         byPeoplePanel = new javax.swing.JPanel();
-        jLabel10 = new javax.swing.JLabel();
         byTextPanel = new javax.swing.JPanel();
         tableFieldsPanel = new javax.swing.JPanel();
         tableHeaderPanel = new javax.swing.JPanel();
@@ -246,10 +245,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         byPeoplePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel10, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel10.text")); // NOI18N
-
-        nameComboBox.setEditable(true);
-
         ownerCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(ownerCheckBox, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.ownerCheckBox.text")); // NOI18N
 
@@ -262,18 +257,31 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         ccCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(ccCheckBox, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.ccCheckBox.text")); // NOI18N
 
+        userLabel.setFont(userLabel.getFont().deriveFont(userLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.userLabel.text")); // NOI18N
+
+        userScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        userList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        userList.setMinimumSize(new java.awt.Dimension(100, 2));
+        userList.setVisibleRowCount(6);
+        userScrollPane.setViewportView(userList);
+
         javax.swing.GroupLayout byPeoplePanelLayout = new javax.swing.GroupLayout(byPeoplePanel);
         byPeoplePanel.setLayout(byPeoplePanelLayout);
         byPeoplePanelLayout.setHorizontalGroup(
             byPeoplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(byPeoplePanelLayout.createSequentialGroup()
-                .addGap(20, 20, 20)
+                .addContainerGap()
                 .addGroup(byPeoplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(userLabel)
                     .addGroup(byPeoplePanelLayout.createSequentialGroup()
-                        .addComponent(jLabel10)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(nameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(byPeoplePanelLayout.createSequentialGroup()
+                        .addComponent(userScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
                         .addComponent(creatorCheckBox)
                         .addGap(18, 18, 18)
                         .addComponent(ownerCheckBox)
@@ -285,18 +293,20 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         );
         byPeoplePanelLayout.setVerticalGroup(
             byPeoplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(byPeoplePanelLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, byPeoplePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(byPeoplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel10)
-                    .addComponent(nameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(userLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(byPeoplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ownerCheckBox)
-                    .addComponent(creatorCheckBox)
-                    .addComponent(commenterCheckBox)
-                    .addComponent(ccCheckBox))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(byPeoplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(userScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE)
+                    .addGroup(byPeoplePanelLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(byPeoplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(ownerCheckBox)
+                            .addComponent(creatorCheckBox)
+                            .addComponent(commenterCheckBox)
+                            .addComponent(ccCheckBox))))
+                .addContainerGap())
         );
 
         byDetailsPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
@@ -1127,7 +1137,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JLabel iterationLabel = new javax.swing.JLabel();
     final javax.swing.JList iterationList = new javax.swing.JList();
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1146,7 +1155,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JLabel lastRefreshDateLabel = new javax.swing.JLabel();
     private javax.swing.JLabel lastRefreshLabel;
     public final org.netbeans.modules.bugtracking.util.LinkButton modifyButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    final javax.swing.JComboBox nameComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel nameLabel = new javax.swing.JLabel();
     private javax.swing.JLabel noContentLabel;
     private javax.swing.JPanel noContentPanel;
@@ -1185,6 +1193,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JPanel tablePanel = new javax.swing.JPanel();
     final javax.swing.JLabel tableSummaryLabel = new javax.swing.JLabel();
     final javax.swing.JScrollPane tmScrollPane = new HackedScrollPane();
+    final javax.swing.JLabel userLabel = new javax.swing.JLabel();
+    final javax.swing.JList userList = new javax.swing.JList();
+    final javax.swing.JScrollPane userScrollPane = new HackedScrollPane();
     final org.netbeans.modules.bugtracking.util.LinkButton webButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     // End of variables declaration//GEN-END:variables
 
