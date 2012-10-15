@@ -104,7 +104,7 @@ public abstract class C2CQuery {
         return new PredefinedQuery(repository, name, predefinedQuery);
     }
         
-    protected abstract void refresh(Criteria criteria, boolean autoRefresh);
+    protected abstract void refresh(boolean autoRefresh);
     protected abstract Criteria getCriteria();
     protected abstract IRepositoryQuery getRepositoryQuery();
     protected abstract boolean isModifiable();
@@ -413,9 +413,9 @@ public abstract class C2CQuery {
 
         @Override
         protected IRepositoryQuery getRepositoryQuery() {
+            // XXX synchronize
             if(repositoryQuery == null) {
                 repositoryQuery = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), "ODS query -" + getDisplayName()); // NOI18N
-                repositoryQuery.setAttribute(C2CData.ATTR_QUERY_CRITERIA, savedQuery.getQueryString());
             }
             return repositoryQuery;
         }
@@ -426,9 +426,13 @@ public abstract class C2CQuery {
         }
 
         @Override
-        protected void refresh(Criteria criteria, boolean autoRefresh) {
-            assert criteria != null : "can't invoke query with null criteria";
-            savedQuery.setQueryString(criteria.toQueryString());
+        protected void refresh(boolean autoRefresh) {
+            String queryString = getController().getQueryString();
+            // XXX what if queryString == null
+            if(savedQuery != null) {
+                savedQuery.setQueryString(queryString);
+            } 
+            getRepositoryQuery().setAttribute(C2CData.ATTR_QUERY_CRITERIA, queryString);
             refreshIntern(autoRefresh);
         }
 
@@ -457,7 +461,7 @@ public abstract class C2CQuery {
         }
 
         @Override
-        protected void refresh(Criteria criteria, boolean autoRefresh) {
+        protected void refresh(boolean autoRefresh) {
             refreshIntern(autoRefresh);
         }
 

@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.ods.tasks.query;
 
+import com.sun.org.apache.xml.internal.dtm.ref.DTMDefaultBaseIterators;
 import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
+import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
 import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
@@ -171,8 +173,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         // setup parameters
         parameters = new QueryParameters();
         
-        parameters.addParameter(QueryParameters.Column.SUMMARY, panel.searchBySummaryCheckBox, panel.byTextTextField);  
-        parameters.addParameter(QueryParameters.Column.DESCRIPTION, panel.searchBySummaryCheckBox, panel.byTextTextField);  
+        parameters.addParameter(new QueryParameters.Column[] {QueryParameters.Column.SUMMARY, QueryParameters.Column.DESCRIPTION}, panel.byTextTextField, panel.searchBySummaryCheckBox, panel.searchByDescriptionCheckBox);  
         parameters.addParameter(QueryParameters.Column.PRODUCT, panel.productList);  
         parameters.addParameter(QueryParameters.Column.COMPONENT, panel.componentList);
         parameters.addParameter(QueryParameters.Column.RELEASE, panel.releaseList);    
@@ -267,10 +268,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
         selectFilter(filter);
     }
         
-    public String getUrlParameters(boolean encode) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
     protected C2CRepository getRepository() {
         return repository;
     }
@@ -703,7 +700,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         
         if(criteria instanceof ColumnCriteria) {
             ColumnCriteria cc = (ColumnCriteria) criteria;
-            Parameter p = parameters.get(cc.getColumnName());
+//            Parameter p = parameters.get(cc.getColumnName());
 //            p.setValues(cc.getColumnValue());
         }
         
@@ -938,6 +935,23 @@ public class C2CQueryController extends QueryController implements ItemListener,
         panel.cloneQueryButton.setEnabled(false);
     }
 
+    String getQueryString() {
+        CriteriaBuilder cb = new CriteriaBuilder();
+        for(Parameter p : parameters.getAll()) {
+            Criteria c = p.getCriteria();
+            if(c == null) {
+                continue;
+            }
+            if(cb.result == null) {
+                cb.result = c;
+            } else {
+                cb.and(p.getCriteria());
+            }
+        }
+        Criteria crit = cb.toCriteria();
+        return crit != null ? crit.toQueryString() : null;
+    }
+
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private Task task;
@@ -1012,8 +1026,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
 //                C2CConfig.getInstance().setLastChangeFrom(lastChageFrom);
 //            }
             try {
-                
-                query.refresh(getCriteria(), autoRefresh);
+                query.refresh(autoRefresh);
             } finally {
                 setQueryRunning(false); // XXX do we need this? its called in finishQuery anyway
                 task = null;
