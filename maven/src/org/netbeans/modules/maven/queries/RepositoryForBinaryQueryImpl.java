@@ -269,8 +269,13 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             mfoListener = new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                        //external root in local repository changed..
-                        checkChanges();
+                    //external root in local repository changed..
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            checkChanges(true);
+                        }
+                    });
                 }
             };
             projectListener = new PropertyChangeListener() {
@@ -278,7 +283,12 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                 void propertyChange(PropertyChangeEvent event) {
                     if (NbMavenProject.PROP_PROJECT.equals(event.getPropertyName())) {
                         //project could have changed source roots..
-                        checkChanges();
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                checkChanges(true);
+                            }
+                        });
                     }
                 }
             };
@@ -286,39 +296,50 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                 @Override
                 public void fileDataCreated(FileEvent fe) {
                     //source jar was created..
-                    checkChanges();
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            checkChanges(true);
+                        }
+                    });
                 }
  
             };
+            checkChanges(false);
+            
             MavenFileOwnerQueryImpl.getInstance().addChangeListener(
                     WeakListeners.create(ChangeListener.class, mfoListener, MavenFileOwnerQueryImpl.getInstance()));
          
             FileUtil.addFileChangeListener(FileUtil.weakFileChangeListener(sourceJarChangeListener, sourceJar));
         }
         
-        private void checkChanges() {
+        private void checkChanges(boolean fireChanges) {
             //getRoots will fire change in the result if the old cached value is different from the newly generated one
-            getRoots();
-        }
-        
-        /**
-         * use MFOQI to determine what is the current project owning our coordinates in local repository.
-         */
-        private void checkCurrentProject() {
+            FileObject[] ch;
+            FileObject[] toRet;
+            // use MFOQI to determine what is the current project owning our coordinates in local repository.
             Project owner = MavenFileOwnerQueryImpl.getInstance().getOwner(groupId, artifactId, version);
             if (owner != null && owner.getLookup().lookup(NbMavenProject.class) == null) {
                 owner = null;
             }
-            //XXX TODO should we be attaching a weak listener here?
-            if (currentProject != null && !currentProject.equals(owner)) {
-                currentProject.getLookup().lookup(NbMavenProject.class).removePropertyChangeListener(projectListener);
+            synchronized (this) {
+                ch = cached;
+                if (currentProject != null && !currentProject.equals(owner)) {
+                    currentProject.getLookup().lookup(NbMavenProject.class).removePropertyChangeListener(projectListener);
+                }
+                if (owner != null && !owner.equals(currentProject)) {
+                    owner.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(projectListener);
+                }
+                currentProject = owner;
+                toRet = getRoots();
             }
-            if (owner != null && !owner.equals(currentProject)) {
-                owner.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(projectListener);
+            
+            if (fireChanges && !Arrays.equals(ch, toRet)) {
+                support.fireChange();
             }
-            currentProject = owner;
-        }     
-
+            
+        }
+        
         @Override 
         public void addChangeListener(ChangeListener changeListener) {
             support.addChangeListener(changeListener);
@@ -330,10 +351,12 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         }
         
         @Override 
-        public synchronized FileObject[] getRoots() {
+        public FileObject[] getRoots() {
             FileObject[] toRet;
-            checkCurrentProject();
-            Project prj = currentProject;
+            Project prj;
+            synchronized (this) {
+                prj = currentProject;
+            }
             if (prj != null && classifier == null) {
                 toRet = getProjectSrcRoots(prj);
             } else if (prj != null && CLASSIFIER_TESTS.equals(classifier)) {
@@ -349,17 +372,9 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                     toRet = new FileObject[0];
                 }
             }
-            if (!Arrays.equals(cached, toRet)) {
-                //how to figure otherwise that something changed, possibly multiple people hold the result instance
-                // and one asks the roots, later we get event from outside, but then the cached value already updated..
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        support.fireChange();
-                    }
-                });
+            synchronized (this) {
+                cached = toRet;
             }
-            cached = toRet;
             return toRet;
         }
         
@@ -408,7 +423,10 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         
         @Override
         public boolean preferSources() {
-            Project prj = currentProject;
+            Project prj;
+            synchronized (this) {
+                prj = currentProject;
+            }
             if (prj != null && classifier == null) {
                 if (!NbMavenProject.isErrorPlaceholder(prj.getLookup().lookup(NbMavenProject.class).getMavenProject())) {
                     return prj.getLookup().lookup(ForeignClassBundler.class).preferSources();
