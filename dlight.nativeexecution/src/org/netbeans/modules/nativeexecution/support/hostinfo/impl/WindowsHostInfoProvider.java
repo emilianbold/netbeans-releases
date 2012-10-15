@@ -53,6 +53,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.NbStartUtility;
@@ -80,22 +81,19 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         Shell activeShell = WindowsSupport.getInstance().getActiveShell();
 
         if (activeShell != null && Shell.ShellType.CYGWIN.equals(activeShell.type)) {
-            String nbstart = NbStartUtility.getInstance().getLocalFileLocationFor(info);
-            String envPath = info.getTempDir() + "/env"; // NOI18N
-            ProcessBuilder pb = new ProcessBuilder(nbstart, "--dumpenv", envPath); // NOI18N
-            String pathKey = WindowsSupport.getInstance().getPathKey();
-            pb.environment().put(pathKey, "/usr/local/bin;" + activeShell.bindir.getAbsolutePath() + ";/bin;"+ pb.environment().get(pathKey)); // NOI18N
-            try {
+            String nbstart = NbStartUtility.getInstance().getPath(execEnv, info);
+            String envPath = info.getEnvironmentFile();
+            if (nbstart != null && envPath != null) {
+                ProcessBuilder pb = new ProcessBuilder(nbstart, "--dumpenv", envPath); // NOI18N
+                String pathKey = WindowsSupport.getInstance().getPathKey();
+                pb.environment().put(pathKey, "/usr/local/bin;" + activeShell.bindir.getAbsolutePath() + ";/bin;" + pb.environment().get(pathKey)); // NOI18N
                 Process p = pb.start();
-                int stat = p.waitFor();
-                if (stat != 0) {
-                    Logger.getInstance().log(Level.FINE, "Failed to call nbstart", ProcessUtils.readProcessErrorLine(p)); // NOI18N
+                ExitStatus result = ProcessUtils.execute(pb);
+                if (!result.isOK()) {
+                    Logger.getInstance().log(Level.FINE, "Failed to call nbstart -- {0}.", result.error); // NOI18N
                 }
-            } catch (InterruptedException ex) {
-                Logger.getInstance().log(Level.FINE, "Failed to call nbstart", ex); // NOI18N
             }
         }
-
 
         return info;
     }

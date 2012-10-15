@@ -286,7 +286,7 @@ public final class GsfUtilities {
 
             // If the caller hasn't specified an offset, and the document is
             // already open, don't jump to a particular line!
-            if (offset == -1 && ec.getDocument() != null && search == null) {
+            if (ec != null && offset == -1 && ec.getDocument() != null && search == null) {
                 ec.open();
                 return true;
             }

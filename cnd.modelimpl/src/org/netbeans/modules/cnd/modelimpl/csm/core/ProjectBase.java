@@ -326,13 +326,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                             ComparisonResult resultPP = fillStatesToKeepBasedOnPPState(pair.state, fcPairs, statesToKeep, newStateFound);
                             if (resultPP != ComparisonResult.KEEP_WITH_OTHERS) {
                                 if (restoring || hasParsing) {
-                                    CndUtils.assertTrueInConsole(false, "Should not constribute pair into File Container (state based) " + pair, fcPairs);
+                                    CndUtils.assertTrueInConsole(false, "Should not constribute [" + restoring + "," + hasParsing + "] pair into File Container (state based) " + pair, fcPairs);
                                 }
                             }
                             ComparisonResult resultPC = fillStatesToKeepBasedOnPCState(pair.pcState, fcPairs, statesToKeep);
                             if (resultPC != ComparisonResult.DISCARD) {
                                 if (restoring || hasParsing) {
-                                    CndUtils.assertTrueInConsole(false, "Should not constribute pair into File Container (PCState based) " + pair, fcPairs);
+                                    CndUtils.assertTrueInConsole(false, "Should not constribute [" + restoring + "," + hasParsing + "] pair into File Container (PCState based) " + pair, fcPairs);
                                 }
                             }
                         }

@@ -1521,8 +1521,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
                     ServerInstance.this.removeStateListener(this);
                     statusUpdater.shutdownNow();
                     ServerInstance.this.refresh();
-                    boolean done = profiledServerInstance.compareAndSet(ServerInstance.this, null);
-                    assert done : "Unxpected profiled instance " + profiledServerInstance.get();
+                    ServerInstance old = profiledServerInstance.getAndSet(null);
+                    assert old == null || old == ServerInstance.this : "Unxpected profiled instance " + old;
                 }
             }
         };
@@ -1580,8 +1580,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
         // if the server is started in profile mode, deattach profiler first
         if (profiledServerInstance.get() == this) {
             shutdownProfiler(ui);
-            boolean done = profiledServerInstance.compareAndSet(this, null);
-            assert done : "Unxpected profiled instance " + profiledServerInstance.get();
+            ServerInstance old = profiledServerInstance.getAndSet(null);
+            assert old == null || old == this : "Unxpected profiled instance " + old;
         }
         synchronized (this) {
             // if the server is suspended, the debug session has to be terminated first

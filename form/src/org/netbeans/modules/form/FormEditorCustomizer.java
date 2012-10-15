@@ -301,17 +301,13 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     }
 
     private void brandVisibility(String key, Component... components) {
-        try {
-            String value = NbBundle.getMessage(FormEditorCustomizer.class, "OPTIONS_"+key+"_HIDDEN"); // NOI18N
-            if ("true".equals(value)) { // NOI18N
-                for (Component comp : components) {
-                    if (brandedInvisibleComponents == null) {
-                        brandedInvisibleComponents = new HashSet();
-                    }
-                    brandedInvisibleComponents.add(comp);
+        if (FormUtils.getPresetValue("OPTIONS_"+key+"_HIDDEN", false)) { // NOI18N
+            for (Component comp : components) {
+                if (brandedInvisibleComponents == null) {
+                    brandedInvisibleComponents = new HashSet();
                 }
+                brandedInvisibleComponents.add(comp);
             }
-        } catch (MissingResourceException ex) {
         }
     }
 
