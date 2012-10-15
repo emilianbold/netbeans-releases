@@ -364,10 +364,11 @@ public class QueryParameters {
         private final JTextField txt;
         private final JCheckBox[] chks;
         
-        public CheckedTextFieldParameter(Column[] columns, JTextField txt, JCheckBox... chk) {
+        public CheckedTextFieldParameter(Column[] columns, JTextField txt, JCheckBox... chks) {
             super(columns[0]); // XXX hack
+            assert columns.length == chks.length : "lenght of columns must be the same as lenght of checkboxes"; // NOI18N
             this.txt = txt;
-            this.chks = chk;
+            this.chks = chks;
         }
         
         @Override
@@ -391,16 +392,29 @@ public class QueryParameters {
         
         @Override
         void setValues(Object... values) {
-            // XXX hack
-            for (int i = 0; i < values.length; i++) {
-                if(values == null) {
+            if(values == null) {
+                for (int i = 0; i < chks.length; i++) {
                     chks[i].setSelected(false);
-                } else {
-                    String s = (String) values[0];
-                    txt.setText(s); 
-                    chks[i].setSelected(true);
+                }
+            } else {
+                assert values.length == chks.length : "lenght of values must be the same as lenght of checkboxes"; // NOI18N
+                // XXX hack
+                boolean allNull = true;
+                for (int i = 0; i < values.length; i++) {
+                    String s = (String) values[i];
+                    if(s == null) {
+                        chks[i].setSelected(false);
+                    } else {
+                        allNull = false;
+                        txt.setText(s); 
+                        chks[i].setSelected(true);
+                    }
+                }
+                if(allNull) {
+                    txt.setText(""); // NOI18N
                 }
             }
+            
         }
                 
         @Override
@@ -416,6 +430,7 @@ public class QueryParameters {
             }
         }
 
+        @Override
         void populate(Object... value) {
             // do nothing
         }
