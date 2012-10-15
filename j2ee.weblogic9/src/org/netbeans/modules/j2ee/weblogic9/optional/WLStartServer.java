@@ -80,6 +80,7 @@ import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
@@ -104,7 +105,7 @@ public final class WLStartServer extends StartServer {
 
     private final WLDeploymentManager dm;
 
-    private final ExecutorService service = Executors.newCachedThreadPool();
+    private final ExecutorService service = new RequestProcessor("WebLogic Start/Stop"); // NOI18N
 
     public WLStartServer(WLDeploymentManager dm) {
         this.dm = dm;
@@ -340,7 +341,7 @@ public final class WLStartServer extends StartServer {
                 InputProcessors.printing(io.getErr(), new ErrorLineConvertor(), false)));
     }
 
-    private static void stopService(final ExecutorService service) {
+    private static void stopService(String uri, final ExecutorService service) {
         if (service != null) {
             AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
@@ -349,6 +350,11 @@ public final class WLStartServer extends StartServer {
                     return null;
                 }
             });
+            InputOutput io = UISupport.getServerIO(uri);
+            if (io != null) {
+                io.getOut().close();
+                io.getErr().close();
+            }
         }
     }
 
@@ -620,7 +626,7 @@ public final class WLStartServer extends StartServer {
                         if (interrupted) {
                             Thread.currentThread().interrupt();
                         } else {
-                            stopService(service);
+                            stopService(uri, service);
                         }
                         return;
                     }
@@ -757,10 +763,10 @@ public final class WLStartServer extends StartServer {
             Process stopProcess = null;
             String serverName = dm.getInstanceProperties().getProperty(
                     InstanceProperties.DISPLAY_NAME_ATTR);
+            String uuid = UUID.randomUUID().toString();
 
             try {
-                long start = System.currentTimeMillis();
-                String uuid = UUID.randomUUID().toString();
+                long start = System.currentTimeMillis();    
 
                 if (shutdown.exists()) {
                     ExternalProcessBuilder builder = new ExternalProcessBuilder(shutdown.getAbsolutePath());
@@ -831,16 +837,16 @@ public final class WLStartServer extends StartServer {
                 // we consider the stop process as failed and kill the process
                 serverProgress.notifyStop(StateType.FAILED,
                         NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_TIMEOUT"));
-
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, null, e);
+            } finally {
                 // do the cleanup
                 if (stopProcess != null) {
                     Map<String, String> mark = new HashMap<String, String>();
                     mark.put(KEY_UUID, uuid);
                     ExternalProcessSupport.destroy(stopProcess, mark);
-                    stopService(stopService);
+                    stopService(uri, stopService);
                 }
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, null, e);
             }
         }
     }
