@@ -628,6 +628,9 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             if (getComponentHeight() <= getUsableHeight()) {
                 //1:1 mapping:
                 int positionOffset = pane.viewToModel(new Point(1, (int) (offset - topOffset())));
+                if (positionOffset == -1) {
+                    return null;
+                }
                 int line = Utilities.getLineOffset(doc, positionOffset);
                 
                 if (ERR.isLoggable(VIEW_TO_MODEL_IMPORTANCE)) {
