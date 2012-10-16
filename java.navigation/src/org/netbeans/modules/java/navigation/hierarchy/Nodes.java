@@ -52,6 +52,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -122,6 +123,7 @@ class Nodes {
     private static final String INSPECT_HIERARCHY_ACTION = "Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowHierarchyAction.instance";    //NOI18N
     @StaticResource
     private static final String ICON = "org/netbeans/modules/java/navigation/resources/wait.gif";   //NOI18N
+    private static final String ACTION_FOLDER = "Navigator/Actions/Hierarchy/text/x-java";  //NOI18N
     private static final WaitNode WAIT_NODE = new WaitNode();
 
     
@@ -312,13 +314,19 @@ class Nodes {
             if (context) {
                 return globalActions;
             } else {
-                Action actions[]  = new Action[ 4 + globalActions.length ];
-                actions[0] = getOpenAction();
-                actions[1] = FileUtil.getConfigObject(INSPECT_HIERARCHY_ACTION, Action.class);
-                actions[2] = RefactoringActionsFactory.whereUsedAction();
-                actions[3] = null;
-                System.arraycopy(globalActions, 0, actions, 4, globalActions.length);
-                return actions;
+                final List<? extends Action> additionalActions = Utilities.actionsForPath(ACTION_FOLDER);
+                final int additionalActionSize = additionalActions.isEmpty() ? 0 : additionalActions.size() + 1;
+                final List<Action> actions  = new ArrayList<Action>(4 + globalActions.length + additionalActionSize);
+                actions.add(getOpenAction());
+                actions.add(FileUtil.getConfigObject(INSPECT_HIERARCHY_ACTION, Action.class));
+                actions.add(RefactoringActionsFactory.whereUsedAction());
+                actions.add(null);
+                if (additionalActionSize > 0) {
+                    actions.addAll(additionalActions);
+                    actions.add(null);
+                }
+                actions.addAll(Arrays.asList(globalActions));
+                return actions.toArray(new Action[actions.size()]);
             }
         }
 
