@@ -73,10 +73,16 @@ import javax.swing.ListModel;
 public class QueryParameters {
     
     public enum Column {
+        ASSIGNEE("assignee"), // NOI18N
         COMMENT("comment"), // NOI18N 
+        COMMENTER("commentAuthor"), // NOI18N
         COMPONENT("componentName"), // NOI18N
+        CREATOR("reporter"), // NOI18N
+        CREATION("creationDate"), // NOI18N
         DESCRIPTION("description"), // NOI18N
         ITERATION("iteration"), // NOI18N
+        KEYWORDS("keywords"), // NOI18N
+        MODIFICATION("modificationDate"), // NOI18N
         PRODUCT("productName"), // NOI18N
         RELEASE("release"), // NOI18N
         RESOLUTION("resolution"), // NOI18N
@@ -85,11 +91,7 @@ public class QueryParameters {
         SUMMARY("summary"), // NOI18N
         PRIORITY("priority"), // NOI18N
         TASK_TYPE("tasktype"), // NOI18N
-        CREATOR("reporter"), // NOI18N
-        ASSIGNEE("assignee"), // NOI18N
-        COMMENTER("commentAuthor"), // NOI18N
-        WATCHER("watcher"), // NOI18N
-        KEYWORDS("keywords"); // NOI18N
+        WATCHER("watcher"); // NOI18N
             
         
         private String columnName;
