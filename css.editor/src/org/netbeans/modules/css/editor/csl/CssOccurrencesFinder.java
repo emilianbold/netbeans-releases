@@ -90,7 +90,7 @@ public class CssOccurrencesFinder extends OccurrencesFinder {
         resume();
         
         CssCslParserResult parserResultWrapper = (CssCslParserResult)result;
-        EditorFeatureContext context = new EditorFeatureContext(parserResultWrapper.getWrappedCssParserResult(), caretDocumentPosition);
+        EditorFeatureContext context = new EditorFeatureContext(parserResultWrapper, caretDocumentPosition);
         Set<OffsetRange> occurrences = CssModuleSupport.getMarkOccurrences(context, featureCancel);
         
         if(featureCancel.isCancelled()) {

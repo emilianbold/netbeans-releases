@@ -203,11 +203,11 @@ public class ModelTest extends ModelTestBase {
     
     public void testModelCaching() {
         CssParserResult result = TestUtil.parse("div { color: red; }");
-        Model model = Model.getModel(result);
+        Model model = Model.createModel(result);
         
         System.gc();
         
-        Model model2 = Model.getModel(result);
+        Model model2 = Model.createModel(result);
         
         assertSame(model, model2);
 
