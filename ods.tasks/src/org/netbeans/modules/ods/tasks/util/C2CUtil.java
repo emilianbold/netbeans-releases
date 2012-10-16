@@ -74,6 +74,8 @@ import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.mylyn.util.GetTaskDataCommand;
 import org.netbeans.modules.ods.tasks.kenai.KenaiRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -89,6 +91,19 @@ public class C2CUtil {
         new SimpleDateFormat("yyyy-MM-dd HH:mm"), //NOI18N
         new SimpleDateFormat("yyyy-MM-dd") //NOI18N
     };
+    
+    @NbBundle.Messages({"CTL_Error=Error"})
+    public static void notifyErrorMsg(String msg) {
+        NotifyDescriptor nd =
+            new NotifyDescriptor(
+                msg,
+                Bundle.CTL_Error(),    
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+            DialogDisplayer.getDefault().notify(nd);
+    }
     
     public static TaskData createTaskData(TaskRepository taskRepository) {
         

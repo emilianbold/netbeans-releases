@@ -60,6 +60,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,6 +73,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
+import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -87,6 +89,7 @@ import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.C2CConfig;
 import org.netbeans.modules.ods.tasks.C2CConnector;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
+import org.netbeans.modules.ods.tasks.query.QueryParameters.ByDateParameter;
 import org.netbeans.modules.ods.tasks.query.QueryParameters.Parameter;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
@@ -94,6 +97,7 @@ import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -162,6 +166,9 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
         panel.byTextTextField.addActionListener(this);
 
+        panel.endTextField.addFocusListener(this);
+        panel.startTextField.addFocusListener(this);
+        
         // setup parameters
         parameters = new QueryParameters();
         
@@ -181,6 +188,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
         
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 
+        setEndNow();
+        
         if(query.isSaved()) {
             setAsSaved();
         }
@@ -385,19 +394,43 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
     @Override
     public void focusGained(FocusEvent e) {
-        // XXX
-//        if(panel.changedFromTextField.getText().equals("")) {                   // NOI18N
-//            String lastChangeFrom = C2CConfig.getInstance().getLastChangeFrom();
-//            panel.changedFromTextField.setText(lastChangeFrom);
-//            panel.changedFromTextField.setSelectionStart(0);
-//            panel.changedFromTextField.setSelectionEnd(lastChangeFrom.length());
-//        }
+        if(e.getComponent() == panel.endTextField) {
+            panel.endTextField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.activeForeground")); // NOI18N
+            String txt = panel.endTextField.getText();
+            if(txt.trim().equals(Bundle.LBL_Now())) {
+                panel.endTextField.setText(""); // NOI18N
+            } else {
+                selectText(panel.endTextField);
+            }
+        } else if(e.getComponent() == panel.startTextField) {
+            selectText(panel.startTextField);
+        }
     }
 
     @Override
     public void focusLost(FocusEvent e) {
-        // do nothing
+        if(e.getComponent() == panel.endTextField) {
+            String txt = panel.endTextField.getText();
+            if(txt == null || txt.trim().isEmpty()) {
+                setEndNow(); 
+            } 
+        }
     }
+    
+    @NbBundle.Messages({"LBL_Now=Now"})
+    private void setEndNow() {
+        panel.endTextField.setText(Bundle.LBL_Now());
+        panel.endTextField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveForeground")); // NOI18N
+    }
+
+    private void selectText(JTextField fld) {
+        String txt = fld.getText();
+        if(txt == null || txt.trim().isEmpty()) {
+            return;
+        }
+        fld.setSelectionStart(0);
+        fld.setSelectionEnd(txt.length());
+    }    
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -405,8 +438,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
             onRefresh();
         } else if (e.getSource() == panel.gotoIssueButton) {
             onGotoIssue();
-        } else if (e.getSource() == panel.searchButton) {
-            onRefresh();
         } else if (e.getSource() == panel.saveChangesButton) {
             onSave(true); // refresh
         } else if (e.getSource() == panel.cancelChangesButton) {
@@ -669,7 +700,9 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
     
     public void onRefresh() {
-        refresh(false, false);
+        if(validate()) {
+            refresh(false, false);
+        }
     }
 
     private void refresh(final boolean auto, boolean synchronously) {
@@ -687,6 +720,25 @@ public class C2CQueryController extends QueryController implements ItemListener,
         }
     }
 
+    @NbBundle.Messages({"MSG_WrongFromDate=Wrong date format in Start field.",
+                        "MSG_WrongToDate=Wrong date format in End field."})
+    private boolean validate() {
+        ByDateParameter p = parameters.getByDateParameter();
+        try {
+            p.getDateFrom();
+        } catch (ParseException ex) {
+            C2CUtil.notifyErrorMsg(Bundle.MSG_WrongFromDate());
+            return false;
+        }
+        try {
+            p.getDateTo();
+        } catch (ParseException ex) {
+            C2CUtil.notifyErrorMsg(Bundle.MSG_WrongToDate());
+            return false;
+        }
+        return true;
+    }    
+    
     private void onModify() {
         assert EventQueue.isDispatchThread();
         

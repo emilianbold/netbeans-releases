@@ -59,6 +59,7 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -67,6 +68,7 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
+import org.netbeans.modules.ods.tasks.C2C;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -136,6 +138,10 @@ public class QueryParameters {
     
     ByPeopleParameter getByPeopleParameter() {
         return (ByPeopleParameter) map.get(Column.CREATOR);
+    }
+    
+    ByDateParameter getByDateParameter() {
+        return (ByDateParameter) map.get(Column.CREATION);
     }
     
     Collection<Parameter> getAll() {
@@ -577,34 +583,55 @@ public class QueryParameters {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
         @Override
         public Criteria getCriteria() {
+            
             Column c = (Column) cbo.getSelectedItem();
             if(c == null) {
                 return null;
             }
             
-            Date dateFrom;
+            Date dateFrom = null;
             try {
-                dateFrom = df.parse(fromField.getText());
+                dateFrom = getDateFrom();
             } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-            Date dateTo;
-            try {
-                String to = toField.getText();
-                if(to != null && !to.trim().isEmpty()) {
-                    dateTo = df.parse(to);
-                } else {
-                    dateTo = new Date(System.currentTimeMillis());
-                }
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
+                C2C.LOG.log(Level.WARNING, fromField.getText(), ex);
             }
             
-            ColumnCriteria dateGreaterThan = new ColumnCriteria(c.getColumnName(), Criteria.Operator.GREATER_THAN, dateFrom);
-            ColumnCriteria dateLessThan = new ColumnCriteria(c.getColumnName(), Criteria.Operator.LESS_THAN, dateTo);
-            return new NaryCriteria(Criteria.Operator.AND, dateGreaterThan, dateLessThan);
+            Date dateTo = null;
+            try {
+                dateTo = getDateTo();
+            } catch (ParseException ex) {
+                C2C.LOG.log(Level.WARNING, toField.getText(), ex);
+            }
+            
+            if(dateFrom != null && dateTo != null) {
+                return new NaryCriteria(
+                        Criteria.Operator.AND, 
+                        new ColumnCriteria(c.getColumnName(), Criteria.Operator.GREATER_THAN, dateFrom), 
+                        new ColumnCriteria(c.getColumnName(), Criteria.Operator.LESS_THAN, dateTo));
+                
+            } else if (dateFrom != null) {
+                return new ColumnCriteria(c.getColumnName(), Criteria.Operator.GREATER_THAN, dateFrom);
+            } else if (dateTo != null) { 
+                return new ColumnCriteria(c.getColumnName(), Criteria.Operator.LESS_THAN, dateTo);
+            }
+            return null;
+        }
+        
+        Date getDateFrom() throws ParseException {
+            String txt = fromField.getText();
+            if(txt == null || txt.trim().isEmpty()) {
+                return null;
+            }
+            return df.parse(fromField.getText());
+        }
+        
+        Date getDateTo() throws ParseException {
+            String to = toField.getText();
+            if(to != null && !to.trim().isEmpty() && !Bundle.LBL_Now().equals(to)) {
+                return df.parse(to);
+            } else {
+                return null;
+            }
         }
     }
     
