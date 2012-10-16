@@ -49,9 +49,12 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
@@ -169,7 +172,7 @@ public abstract class AbstractEditorAction extends TextAction implements
      * Subsequent modifications of this property should be avoided.
      */
     public static final String WRAPPER_ACTION_KEY = "WrapperActionKey"; // NOI18N
-    
+
     /** Logger for reporting invoked actions */
     private static final Logger UILOG = Logger.getLogger("org.netbeans.ui.actions.editor"); // NOI18N
     
@@ -178,21 +181,11 @@ public abstract class AbstractEditorAction extends TextAction implements
 
     private static final long serialVersionUID = 1L; // Serialization no longer used (prevent warning)
 
-    /**
-     * Transfer properties are filled in the wrapper action (if it exists)
-     * and upon delegate construction they are transferred into the delegate.
-     */
-    private static final Map<String,Boolean> TRANSFER_PROPERTY_KEYS = new HashMap<String, Boolean>(16); // Fast map => give enough space
-    static {
-        TRANSFER_PROPERTY_KEYS.put(ACCELERATOR_KEY, true);
-        TRANSFER_PROPERTY_KEYS.put(MULTI_ACCELERATOR_LIST_KEY, true);
-        TRANSFER_PROPERTY_KEYS.put(SMALL_ICON, true);
-        TRANSFER_PROPERTY_KEYS.put(LARGE_ICON_KEY, true);
-    }
-    
     private static final Map<String,Boolean> LOGGED_ACTION_NAMES = Collections.synchronizedMap(new HashMap<String, Boolean>());
     
     private Map<String,?> attrs;
+
+    private final Map<String,Object> properties;
     
     /**
      * If this action is a wrapper action around the delegate action which will be constructed
@@ -200,12 +193,12 @@ public abstract class AbstractEditorAction extends TextAction implements
      */
     private Action delegateAction;
 
-    private static final Action UNITIALIZED_ACTION = EditorActionUtilities.createEmptyAction();
-    
-    private static String extractActionName(Map<String,?> attrs) {
-        return (attrs != null) ? (String) attrs.get(Action.NAME) : null;
-    }
+    private PreferencesNodeAndListener preferencesNodeAndListener;
 
+    private static final Action UNITIALIZED_ACTION = EditorActionUtilities.createEmptyAction();
+
+    private static final Object MASK_NULL_VALUE = new Object();
+    
     /**
      * Constructor that takes a map of attributes that are typically obtained
      * from an xml layer when an action's creation method is annotated with
@@ -233,10 +226,12 @@ public abstract class AbstractEditorAction extends TextAction implements
      *  The map is expected to be constant (no key-value changes).
      */
     protected AbstractEditorAction(Map<String,?> attrs) {
-        super(extractActionName(attrs));
+        super(null); // Action.NAME property will come from attrs in createValue()
+        properties = new HashMap<String,Object>();
         if (attrs != null) {
-            updateAttrs(attrs);
+            setAttrs(attrs);
             delegateAction = Boolean.TRUE.equals(attrs.get(WRAPPER_ACTION_KEY)) ? UNITIALIZED_ACTION : null;
+            checkPreferencesKey();
         }
     }
     
@@ -278,11 +273,12 @@ public abstract class AbstractEditorAction extends TextAction implements
     public abstract void actionPerformed(ActionEvent evt, JTextComponent component);
 
     /**
-     * Called when attributes map was set into this action explicitly (by a wrapper action instance)
+     * Called when property values from wrapper action were set into this action
      * so properties like Action.NAME will start to return correct values.
+     *
      * @see AbstractEditorAction()
      */
-    protected void attributesUpdated() {
+    protected void valuesUpdated() {
     }
 
     /**
@@ -360,14 +356,9 @@ public abstract class AbstractEditorAction extends TextAction implements
         }
 
         // Possibly toggle preferences node's value if this is a toggle action
-        String preferencesKey = (String) getValue(AbstractEditorAction.PREFERENCES_KEY_KEY);
-        if (preferencesKey != null) {
-            Preferences preferencesNode = (Preferences) getValue(AbstractEditorAction.PREFERENCES_NODE_KEY);
-            if (preferencesNode != null) {
-                togglePreferencesValue(preferencesNode, preferencesKey);
-            }
+        if (preferencesNodeAndListener != null) {
+            preferencesNodeAndListener.togglePreferencesValue();
         }
-
 
         if (asynchronous()) {
             RequestProcessor.getDefault().post(new Runnable () {
@@ -401,63 +392,72 @@ public abstract class AbstractEditorAction extends TextAction implements
             return dAction.getValue(key);
         }
 
-        Object value = super.getValue(key);
-        if (value == null) {
-            if (!"instanceCreate".equals(key)) { // Return null for this key
-                value = attrs.get(key);
-            }
+        if ("enabled" == key) { // Same == in AbstractAction
+            return enabled;
+        }
+        synchronized (properties) {
+            Object value = properties.get(key);
             if (value == null) {
-                value = createValue(key);
-                if (value != null) {
-                    putValue(key, value);
+                if ("instanceCreate".equals(key)) { // Return null for this key
+                    return null;
+                }
+                if (value == null) {
+                    value = createValue(key);
+                    if (value == null) { // Do not query next time
+                        value = MASK_NULL_VALUE;
+                    }
+                    // Do not fire a change since property was not queried yet
+                    properties.put(key, value);
                 }
             }
+            if (value == MASK_NULL_VALUE) {
+                value = null;
+            }
+            return value;
         }
-        return value;
     }
     
     protected Object createValue(String key) {
-        Object value = null;
+        Object value;
         if (Action.SMALL_ICON.equals(key)) {
             value = EditorActionUtilities.createSmallIcon(this);
         } else if (Action.LARGE_ICON_KEY.equals(key)) {
             value = EditorActionUtilities.createLargeIcon(this);
+        } else {
+            value = attrs.get(key);
         }
         return value;
     }
     
     @Override
     public final void putValue(String key, Object value) {
-        Action dAction = delegateAction;
-        if (dAction != null) {
-            if (dAction == UNITIALIZED_ACTION) {
-                if (TRANSFER_PROPERTY_KEYS.containsKey(key)) {
-                    super.putValue(key, value); // Store value in wrapper action
-                } else { // Construct delegate action and put value into it
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("AbstractEditorAction.putValue(): Constructing delegate action for key=\"" + // NOI18N
-                                key + "\" action: " + toString()); // NOI18N
-                    }
-                    getDelegateAction().putValue(key, value);
-                }
-            } else {
-                dAction.putValue(key, value);
-            }
-        } else {
-            super.putValue(key, value);
+        if (value == null && properties == null) { // Prevent NPE from super(null) in constructor
+            return;
         }
+        Object oldValue;
+        if ("enabled" == key) { // Same == in AbstractAction
+            oldValue = enabled;
+            enabled = Boolean.TRUE.equals(value);
+        } else {
+            synchronized (properties) {
+                oldValue = properties.put(key, (value != null) ? value : MASK_NULL_VALUE);
+            }
+        }
+        firePropertyChange(key, oldValue, value); // Checks whether oldValue.equals(value)
     }
 
-    private void updateAttrs(Map<String,?> attrs) {
+    @Override
+    public Object[] getKeys() {
+        Set<String> keys = properties.keySet();
+        Object[] keysArray = new Object[keys.size()]; // Do not include "enabled" (same in AbstractAction)
+        keys.toArray(keysArray);
+        return keysArray;
+    }
+
+    private void setAttrs(Map<String,?> attrs) {
         this.attrs = attrs;
     }
 
-    private void togglePreferencesValue(Preferences preferencesNode, String key) {
-        boolean value = Boolean.TRUE.equals(getValue(AbstractEditorAction.PREFERENCES_DEFAULT_KEY));
-        value = preferencesNode.getBoolean(key, value);
-        preferencesNode.putBoolean(key, !value);
-    }
-    
     private Action getDelegateAction() {
         Action dAction = delegateAction;
         if (dAction == UNITIALIZED_ACTION) { // Delegate should be created
@@ -468,36 +468,58 @@ public abstract class AbstractEditorAction extends TextAction implements
             if (dAction instanceof AbstractEditorAction) {
                 AbstractEditorAction aeAction = (AbstractEditorAction) dAction;
                 // Give attributes from wrapper action to its delegate
-                aeAction.updateAttrs(attrs);
+                aeAction.setAttrs(attrs);
                 transferProperties(dAction);
-                attributesUpdated();
+                aeAction.checkPreferencesKey();
+                aeAction.valuesUpdated();
                 // Note that delegate action will have its delegateAction left to be null
                 // so it should not re-delegate (though "delegate" property is set in attrs)
             } else { // Non-AbstractEditorAction
                 // Init Action.NAME (existing BaseAction instances registered by EditorActionRegistration
                 // would not work properly without this)
-                dAction.putValue(Action.NAME, actionName());
                 transferProperties(dAction);
             }
             dAction.addPropertyChangeListener(WeakListeners.propertyChange(
                     new DelegateActionPropertyChangeListener(this), dAction));
             delegateAction = dAction;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Delegate action created: " + dAction);
+            }
         }
         return dAction;
     }
     
     private void transferProperties(Action dAction) {
-        for (String key : TRANSFER_PROPERTY_KEYS.keySet()) {
-            Object value = getValue(key);
-            if (value != null) {
-                dAction.putValue(key, value);
+        boolean log = LOG.isLoggable(Level.FINE);
+        if (log) {
+            LOG.fine("Transfer properties into " + dAction); // NOI18N
+        }
+        synchronized (properties) {
+            for (Map.Entry<String,Object> entry : properties.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                if (value != MASK_NULL_VALUE) { // Allow to call createValue() for the property
+                    if (log) {
+                        LOG.fine("    key=" + key + ", value=" + value); // NOI18N
+                    }
+                    dAction.putValue(key, value);
+                }
+                // Do not transfer enabled status (delegate action should decide by itself)
             }
+        }
+    }
+
+    private void checkPreferencesKey() {
+        String preferencesKey = (String) attrs.get(PREFERENCES_KEY_KEY);
+        if (preferencesKey != null) {
+            preferencesNodeAndListener = new PreferencesNodeAndListener(preferencesKey);
         }
     }
     
     @Override
     public String toString() {
-        return super.toString() + " name=\"" + actionName() + "\""; // NOI18N
+        String clsName = getClass().getSimpleName();
+        return clsName + '@' + System.identityHashCode(this) + " name=\"" + actionName() + "\""; // NOI18N
     }
     
     private static final class DelegateActionPropertyChangeListener implements PropertyChangeListener {
@@ -515,5 +537,64 @@ public abstract class AbstractEditorAction extends TextAction implements
         }
         
     }
+
+    private final class PreferencesNodeAndListener
+    implements PreferenceChangeListener, PropertyChangeListener {
+
+        final Preferences node;
+
+        final String key;
+
+        boolean expectedPropertyChange;
+
+        public PreferencesNodeAndListener(String key) {
+            this.key = key;
+            node = (Preferences) getValue(AbstractEditorAction.PREFERENCES_NODE_KEY);
+            if (node == null) {
+                throw new IllegalStateException(
+                        "PREFERENCES_KEY_KEY property set but PREFERENCES_NODE_KEY not for action=" + // NOI18N
+                        AbstractEditorAction.this);
+            }
+            node.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, node));
+            AbstractEditorAction.this.addPropertyChangeListener(this);
+            putValue(Action.SELECTED_KEY, preferencesValue());
+        }
+
+        private boolean preferencesValue() {
+            boolean value = Boolean.TRUE.equals(getValue(AbstractEditorAction.PREFERENCES_DEFAULT_KEY));
+            value = node.getBoolean(key, value);
+            return value;
+        }
+
+        private void togglePreferencesValue() {
+            boolean value = preferencesValue();
+            setPreferencesValue(!value);
+        }
+
+        private void setPreferencesValue(boolean value) {
+//            expectedPropertyChange = true;
+            try {
+                node.putBoolean(key, value);
+            } finally {
+//                expectedPropertyChange = false;
+            }
+        }
+
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            boolean selected = preferencesValue();
+            putValue(Action.SELECTED_KEY, selected);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (!expectedPropertyChange && Action.SELECTED_KEY.equals(evt.getPropertyName())) {
+                boolean selected = (Boolean) evt.getNewValue();
+                setPreferencesValue(selected);
+            }
+        }
+
+    }
+
 
 }

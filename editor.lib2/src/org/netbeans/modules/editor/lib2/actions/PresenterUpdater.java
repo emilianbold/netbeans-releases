@@ -41,14 +41,15 @@
  */
 package org.netbeans.modules.editor.lib2.actions;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -56,183 +57,316 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.editor.AbstractEditorAction;
 import org.openide.awt.Mnemonics;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 
 /**
  * Handler servicing menu, popup menu and toolbar presenters of a typical editor action.
  *
  * @author Miloslav Metelka
  */
-public final class PresenterUpdater implements PropertyChangeListener, ActionListener, PreferenceChangeListener {
+public final class PresenterUpdater implements PropertyChangeListener, ActionListener {
     
     public static JMenuItem createMenuPresenter(Action a) {
-        return createMenuItem(a, false);
+        return (JMenuItem) new PresenterUpdater(MENU, a).presenter;
     }
 
     public static JMenuItem createPopupPresenter(Action a) {
-        return createMenuItem(a, true);
+        return (JMenuItem) new PresenterUpdater(POPUP, a).presenter;
     }
 
     public static AbstractButton createToolbarPresenter(Action a) {
-        AbstractButton button = new JButton();
-        // Use no text for toolbar items updateText(button, a);
-        updateButtonIcons(button, a);
-        updateToolTip(button, a);
-        new PresenterUpdater(TOOLBAR, a, button, false).initListening();
-        return button;
+        return new PresenterUpdater(TOOLBAR, a).presenter;
     }
     
-    private static JMenuItem createMenuItem(Action a, boolean popup) {
-        boolean toggleAction = (a.getValue(AbstractEditorAction.PREFERENCES_KEY_KEY) != null);
-        JMenuItem menuItem = toggleAction ? new JCheckBoxMenuItem() : new JMenuItem();
-        updateText(menuItem, a, popup);
-        updateMenuIcon(menuItem, a);
-        updateToolTip(menuItem, a);
-        new PresenterUpdater(popup ? POPUP : MENU, a, menuItem, toggleAction).initListening();
-        return menuItem;
-    }
-    
-    private static void updateText(AbstractButton presenter, Action a, boolean popup) {
-        String text = null;
-        if (popup) {
-            text = (String) a.getValue(AbstractEditorAction.POPUP_TEXT_KEY);
-        }
-        if (text == null) {
-            text = (String) a.getValue(AbstractEditorAction.MENU_TEXT_KEY);
-        }
-        if (text != null) {
-            Mnemonics.setLocalizedText(presenter, text);
-        } else {
-            text = (String) a.getValue(AbstractEditorAction.DISPLAY_NAME_KEY);
-            presenter.setText(text);
-        }
-        presenter.getAccessibleContext().setAccessibleName(text);
-    }
-
-    private static void updateMenuIcon(AbstractButton menuItem, Action a) {
-        menuItem.setIcon(EditorActionUtilities.getSmallIcon(a));
-    }
-    
-    private static void updateButtonIcons(AbstractButton button, Action a) {
-        boolean useLargeIcon = EditorActionUtilities.isUseLargeIcon(button);
-        Icon icon;
-        if (useLargeIcon && (icon = EditorActionUtilities.getLargeIcon(a)) != null) {
-        } else { // Use small icons
-            useLargeIcon = false;
-            icon = EditorActionUtilities.getSmallIcon(a);
-        }
-        if (icon != null) {
-            EditorActionUtilities.updateButtonIcons(a, button, icon, useLargeIcon);
-        }
-    }
-
-    private static void updateToolTip(AbstractButton presenter, Action a) {
-        String toolTipText = (String) a.getValue(Action.SHORT_DESCRIPTION);
-        if (toolTipText == null) {
-            toolTipText = "";
-        }
-        if (toolTipText.length() > 0) {
-            @SuppressWarnings("unchecked")
-            List<List<KeyStroke>> mkbList = (List<List<KeyStroke>>)
-                    a.getValue(AbstractEditorAction.MULTI_ACCELERATOR_LIST_KEY);
-            if (mkbList != null && mkbList.size() > 0) {
-                List<KeyStroke> firstMkb = mkbList.get(0);
-                toolTipText += " (" + EditorActionUtilities.getKeyMnemonic(firstMkb) + ")"; // NOI18N
-            }
-        }
-        presenter.setToolTipText(toolTipText);
-    }
+    // -J-Dorg.netbeans.modules.editor.lib2.actions.PresenterUpdater.level=FINE
+    private static final Logger LOG = Logger.getLogger(PresenterUpdater.class.getName()); // NOI18N
 
     private static final int MENU = 0;
     private static final int POPUP = 1;
     private static final int TOOLBAR = 2;
-    
+
     private final int type;
-    
+
+    private final String actionName;
+
+    /**
+     * Action for which this presenter is constructed.
+     */
     private final Action action;
+
+    /**
+     * For menu presenters hold action of last focused editor component.
+     * <br/>
+     * Hold reference strongly but may be changed to weak reference in case
+     * even actions of last activated text component are desired to be released.
+     */
+    private Action contextAction;
+
+    final AbstractButton presenter;
     
-    private final AbstractButton presenter;
+    private final boolean useActionSelectedProperty;
+
+    private final Set<Action> listenedContextActions; // Actions to which weak listeners have been attached
+
+    private boolean updatesPending;
+
+    /**
+     * When menu is not active then this property is set to true.
+     */
+    private boolean presenterActive;
     
-    private Preferences preferencesNode;
-    
-    private PresenterUpdater(int type, Action action, AbstractButton presenter, boolean toggleAction) {
+    private PresenterUpdater(int type, Action action) {
         if (action == null) {
             throw new IllegalArgumentException("action must not be null"); // NOI18N
         }
         this.type = type;
+        this.actionName = (String) action.getValue(Action.NAME);
         this.action = action;
-        this.presenter = presenter;
-        if (toggleAction) {
-            initPreferencesListening();
+        if (type == TOOLBAR) {
+            presenter = new JButton();
+            useActionSelectedProperty = false;
+        } else { // MENU or POPUP
+            useActionSelectedProperty = (action.getValue(AbstractEditorAction.PREFERENCES_KEY_KEY) != null);
+            if (useActionSelectedProperty) {
+                presenter = new LazyJCheckBoxMenuItem();
+                presenter.setSelected(isActionSelected());
+            } else {
+                presenter = new LazyJMenuItem();
+            }
         }
-    }
-    
-    private void initListening() {
+
         action.addPropertyChangeListener(WeakListeners.propertyChange(this, action));
+        if (type == MENU) {
+            listenedContextActions = new WeakSet<Action>();
+            EditorRegistryWatcher.get().registerPresenterUpdater(this); // Includes notification of active component
+        } else {
+            listenedContextActions = null;
+        }
+
         presenter.addActionListener(this);
+        updatePresenter(null); // Not active yet => mark updates pending
     }
     
-    private void initPreferencesListening() {
-        preferencesNode = (Preferences) action.getValue(AbstractEditorAction.PREFERENCES_NODE_KEY);
-        if (preferencesNode != null) {
-            preferencesNode.addPreferenceChangeListener(
-                    WeakListeners.create(PreferenceChangeListener.class, this, preferencesNode));
-        }
-        presenter.setSelected(preferencesValue());
-    }
-    
-    private boolean preferencesValue() {
-        boolean value = Boolean.TRUE.equals(action.getValue(AbstractEditorAction.PREFERENCES_DEFAULT_KEY));
-        String key = (String) action.getValue(AbstractEditorAction.PREFERENCES_KEY_KEY);
-        if (key != null && preferencesNode != null) {
-            value = preferencesNode.getBoolean(key, value);
-        }
-        return value;
+    private boolean isActionSelected() {
+        return Boolean.TRUE.equals(activeAction().getValue(Action.SELECTED_KEY));
     }
     
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        String propName = evt.getPropertyName();
-        // Enabled status
-        if ((propName == null) || "enabled".equals(propName)) { // NOI18N
-            boolean enabled = action.isEnabled();
-            presenter.setEnabled(enabled);
+    public void propertyChange(PropertyChangeEvent evt) { // evt may be null
+        Action a = (Action) evt.getSource();
+        // React to property changes from both action and contextAction
+        // since some of presenter's properties may default from contextAction's property
+        // to action's property value.
+        if (a != action && a != contextAction) {
+            return;
         }
-        // Display name
-        if ((propName == null) || AbstractEditorAction.DISPLAY_NAME_KEY.equals(propName)){ 
-            if (type != TOOLBAR) {
-                updateText(presenter, action, (type == POPUP));
+        updatePresenter(evt.getPropertyName());
+    }
+
+    void presenterActivated() {
+        if (!presenterActive) {
+            presenterActive = true;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Presenter for " + action + " activated. updatesPending=" + updatesPending + '\n'); // NOI18N
+            }
+            if (updatesPending) {
+                updatesPending = false;
+                updatePresenter(null);
             }
         }
+    }
+
+    void presenterDeactivated() {
+        presenterActive = false;
+    }
+
+    private void updatePresenter(String propName) {
+        // For menu items do lazy update (only when they become visible (measured)
+        // since they are being updated by an active component's action properties.
+        if (type == MENU && !presenterActive) {
+            updatesPending = true;
+
+            // Invalidate presenter
+            if (SwingUtilities.isEventDispatchThread()) {
+                presenter.invalidate();
+            } else { // Include non-AWT version for completness
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        presenter.invalidate();
+                    }
+                });
+            }
+
+            return;
+        }
+
+        Action cAction = contextAction;
+        // Enabled status
+        if ((propName == null) || "enabled".equals(propName)) { // NOI18N
+            boolean enabled = (cAction != null ? cAction : action).isEnabled();
+            presenter.setEnabled(enabled);
+        }
+
+        // Text
+        if ((propName == null) || AbstractEditorAction.DISPLAY_NAME_KEY.equals(propName) ||
+                AbstractEditorAction.MENU_TEXT_KEY.equals(propName) ||
+                AbstractEditorAction.POPUP_TEXT_KEY.equals(propName))
+        {
+            if (type != TOOLBAR) {
+                String text = null;
+                if (type == POPUP) {
+                    if (cAction != null) {
+                        text = (String) cAction.getValue(AbstractEditorAction.POPUP_TEXT_KEY);
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("POPUP_TEXT_KEY for context " + cAction + ": \"" + text + "\"\n"); // NOI18N
+                        }
+                    }
+                    if (text == null) {
+                        text = (String) cAction.getValue(AbstractEditorAction.POPUP_TEXT_KEY);
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("POPUP_TEXT_KEY for action " + action + ": \"" + text + "\"\n"); // NOI18N
+                        }
+                    }
+
+                }
+                if (text == null && cAction != null) {
+                    text = (String) cAction.getValue(AbstractEditorAction.MENU_TEXT_KEY);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("MENU_TEXT_KEY for context " + cAction + ": \"" + text + "\"\n"); // NOI18N
+                    }
+                }
+                if (text == null) {
+                    text = (String) action.getValue(AbstractEditorAction.MENU_TEXT_KEY);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("MENU_TEXT_KEY for " + action + ": \"" + text + "\"\n"); // NOI18N
+                    }
+                }
+
+                if (text != null) {
+                    Mnemonics.setLocalizedText(presenter, text);
+                    presenter.getAccessibleContext().setAccessibleName(text);
+                } else {
+                    if (cAction != null) {
+                        text = (String) cAction.getValue(AbstractEditorAction.DISPLAY_NAME_KEY);
+                    }
+                    if (text == null) {
+                        text = (String) action.getValue(AbstractEditorAction.DISPLAY_NAME_KEY);
+                    }
+                    if (text != null) {
+                        presenter.setText(text); // Do not handle '&' chars
+                        presenter.getAccessibleContext().setAccessibleName(text);
+                    }
+                }
+            }
+        }
+
         // Icon(s)
         if ((propName == null) || Action.SMALL_ICON.equals(propName)
                 || Action.LARGE_ICON_KEY.equals(propName) ||
                 AbstractEditorAction.ICON_RESOURCE_KEY.equals(propName))
         {
+            Icon icon = null;
             if (isMenuItem()) {
-                updateMenuIcon(presenter, action);
+                if (cAction != null) {
+                    icon = EditorActionUtilities.getSmallIcon(cAction);
+                }
+                if (icon == null) {
+                    icon = EditorActionUtilities.getSmallIcon(action);
+                }
+                if (icon != null) {
+                    presenter.setIcon(icon);
+                }
             } else { // toolbar
-                updateButtonIcons(presenter, action);
+                boolean useLargeIcon = EditorActionUtilities.isUseLargeIcon(presenter);
+                if (useLargeIcon) {
+                    if (cAction != null) {
+                        icon = EditorActionUtilities.getLargeIcon(cAction);
+                    }
+                    if (icon == null) {
+                        icon = EditorActionUtilities.getLargeIcon(action);
+                    }
+                }
+                if (icon == null) { // useLargeIcon is false or no large icon present => use small icon
+                    useLargeIcon = false;
+                    if (cAction != null) {
+                        icon = EditorActionUtilities.getSmallIcon(cAction);
+                    }
+                    if (icon == null) {
+                        icon = EditorActionUtilities.getSmallIcon(action);
+                    }
+                }
+                if (icon != null) {
+                    String iconResource = null;
+                    if (cAction != null) {
+                        iconResource = (String) cAction.getValue(AbstractEditorAction.ICON_RESOURCE_KEY);
+                    }
+                    if (iconResource == null) {
+                        iconResource = (String) action.getValue(AbstractEditorAction.ICON_RESOURCE_KEY);
+                    }
+                    EditorActionUtilities.updateButtonIcons(presenter, icon, useLargeIcon, iconResource);
+                }
             }
         }
+
+        // Accelerator
+        if ((propName == null) ||
+//                Action.ACCELERATOR_KEY.equals(propName) || Use MULTI_ACCELERATOR_LIST_KEY sensitivity
+                AbstractEditorAction.MULTI_ACCELERATOR_LIST_KEY.equals(propName)
+        ) {
+            if (isMenuItem()) {
+                Action a = (cAction != null) ? cAction : action;
+                @SuppressWarnings("unchecked")
+                List<List<KeyStroke>> mkbList = (List<List<KeyStroke>>) a.getValue(AbstractEditorAction.MULTI_ACCELERATOR_LIST_KEY);
+                if (mkbList != null && mkbList.size() > 0) {
+                    List<KeyStroke> firstMkb = mkbList.get(0);
+                    ((JMenuItem)presenter).setAccelerator(firstMkb.get(0));
+                }
+            }
+        }
+
         // ToolTip
         if ((propName == null) ||
-//                Action.ACCELERATOR_KEY.equals(propName) ||
+//                Action.ACCELERATOR_KEY.equals(propName) || Use MULTI_ACCELERATOR_LIST_KEY sensitivity
                 AbstractEditorAction.MULTI_ACCELERATOR_LIST_KEY.equals(propName) ||
                 Action.SHORT_DESCRIPTION.equals(propName)
         ) {
             if (type == TOOLBAR) {
-                updateToolTip(presenter, action);
+                String toolTipText = null;
+                if (cAction != null) {
+                    toolTipText = (String) cAction.getValue(Action.SHORT_DESCRIPTION);
+                }
+                if (toolTipText == null) {
+                    toolTipText = (String) action.getValue(Action.SHORT_DESCRIPTION);
+                }
+                if (toolTipText == null) {
+                    toolTipText = "";
+                }
+                if (toolTipText.length() > 0) {
+                    Action a = (cAction != null) ? cAction : action;
+                    @SuppressWarnings("unchecked")
+                    List<List<KeyStroke>> mkbList = (List<List<KeyStroke>>) a.getValue(AbstractEditorAction.MULTI_ACCELERATOR_LIST_KEY);
+                    if (mkbList != null && mkbList.size() > 0) {
+                        List<KeyStroke> firstMkb = mkbList.get(0);
+                        toolTipText += " (" + EditorActionUtilities.getKeyMnemonic(firstMkb) + ")"; // NOI18N
+                    }
+                }
+                presenter.setToolTipText(toolTipText);
             }
         }
-    }
 
-    @Override
-    public void preferenceChange(PreferenceChangeEvent evt) {
-        presenter.setSelected(preferencesValue());
+        // Selected (for checkbox)
+        if (useActionSelectedProperty && (propName == null || Action.SELECTED_KEY.equals(propName))) {
+            if (isMenuItem()) {
+                presenter.setSelected(isActionSelected());
+            }
+        }
     }
 
     @Override
@@ -243,11 +377,80 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
         if (c != null) {
             evt = new ActionEvent(c, evt.getID(), evt.getActionCommand(), evt.getWhen(), evt.getModifiers());
         }
-        action.actionPerformed(evt);
+        activeAction().actionPerformed(evt);
+    }
+
+    public void setActiveComponent(JTextComponent component) {
+        EditorKit kit;
+        Action a;
+        if (component != null && (kit = component.getUI().getEditorKit(component)) != null) {
+            a = EditorActionUtilities.getAction(kit, actionName);
+        } else {
+            a = null;
+        }
+        setActiveAction(a);
+    }
+
+    private void setActiveAction(Action a) {
+        if (a == action) { // In this case there is in fact no extra context
+            a = null;
+        }
+        synchronized (this) {
+            if (a != contextAction) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("setActiveAction(): from " + contextAction + " to " + a + "\n"); // NOI18N
+                }
+                contextAction = a;
+                if (a != null && !listenedContextActions.contains(a)) {
+                    listenedContextActions.add(a);
+                    a.addPropertyChangeListener(WeakListeners.propertyChange(this, a));
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("setActiveAction(): started listening on " + a + "\n"); // NOI18N
+                    }
+                }
+                updatePresenter(null); // Update presenter completely
+            }
+        }
+    }
+
+    private Action activeAction() {
+        return (contextAction != null) ? contextAction : action;
     }
 
     private boolean isMenuItem() {
         return (type == MENU || type == POPUP);
     }
+
+    private final class LazyJMenuItem extends JMenuItem {
+
+        @Override
+        public void removeNotify() {
+            super.removeNotify();
+            presenterDeactivated();
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            presenterActivated(); // Update properties (addNotify() is too late)
+            return super.getPreferredSize();
+        }
+
+    }
     
+    private final class LazyJCheckBoxMenuItem extends JCheckBoxMenuItem {
+
+        @Override
+        public void removeNotify() {
+            super.removeNotify();
+            presenterDeactivated();
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            presenterActivated(); // Update properties (addNotify() is too late)
+            return super.getPreferredSize();
+        }
+
+    }
+
 }

@@ -76,7 +76,10 @@ public final class WeakReferenceStableList<E> {
      * Get list of weakly-held items.
      *
      * @return list of weakly-held items. When getting items from the list
-     *  some of them may be null.
+     *  some of them may be null. Its <code>size()</code> method includes those null values
+     *  so when iterating by index there should be an explicit check for null value.
+     *  When using an iterator the null values are skipped.
+     *
      */
     public synchronized List<E> getList() {
         return list;

@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.editor.lib2.actions;
 
-import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.lib2.WeakReferenceStableList;
 import org.netbeans.spi.editor.AbstractEditorAction;
@@ -63,20 +63,35 @@ public class EditorRegistryWatcher implements PropertyChangeListener {
     private static final WeakReferenceStableList<AbstractEditorAction> actions =
             new WeakReferenceStableList<AbstractEditorAction>();
 
+    private WeakReferenceStableList<PresenterUpdater> presenterUpdaters =
+            new WeakReferenceStableList<PresenterUpdater>();
+
     private EditorRegistryWatcher() {
         EditorRegistry.addPropertyChangeListener(this);
+    }
+
+    public void registerPresenterUpdater(PresenterUpdater updater) {
+        presenterUpdaters.add(updater);
+        JTextComponent c = EditorRegistry.lastFocusedComponent();
+        if (c != null) {
+            updater.setActiveComponent(c);
+        }
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
         if (EditorRegistry.FOCUS_LOST_PROPERTY.equals(propName)) {
-            Component origFocused = (Component) evt.getOldValue();
-            Component newFocused = (Component) evt.getNewValue();
-            // Is newFocused reliable?
             // For subsequent focus-gained it would be ideal to schedule a timer
             // that would possibly directly change to a new component.
+//            for (PresenterUpdater updater : presenterUpdaters.getList()) {
+//                updater.setActiveComponent(null);
+//            }
         } else if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(propName)) {
+            JTextComponent c = (JTextComponent) evt.getNewValue();
+            for (PresenterUpdater updater : presenterUpdaters.getList()) {
+                updater.setActiveComponent(c);
+            }
         }
     }
     
