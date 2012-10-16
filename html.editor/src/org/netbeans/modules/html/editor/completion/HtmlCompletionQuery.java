@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import org.netbeans.modules.html.editor.HtmlExtensions;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.FeaturedNode;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
@@ -414,7 +415,7 @@ public class HtmlCompletionQuery extends UserTask {
 
             //extensions
             HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, documentItemOffset - 1, preText, itemText, node);
-            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
+            for (HtmlExtension e : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
                 result.addAll(e.completeOpenTags(context));
             }
 
@@ -449,7 +450,7 @@ public class HtmlCompletionQuery extends UserTask {
 
             //extensions
             HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, offset - 1, "", "", node);
-            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
+            for (HtmlExtension e : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
                 Collection<CompletionItem> items = e.completeOpenTags(context);
                 result.addAll(items);
             }
@@ -480,7 +481,7 @@ public class HtmlCompletionQuery extends UserTask {
             //extensions
             Collection<CompletionItem> items = new ArrayList<CompletionItem>();
             HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node);
-            for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
+            for (HtmlExtension e : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
                 items.addAll(e.completeAttributes(context));
             }
             result.addAll(items);
@@ -572,7 +573,7 @@ public class HtmlCompletionQuery extends UserTask {
                     }
 
                     HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, "", itemText, node, argName, false);
-                    for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
+                    for (HtmlExtension e : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
                         result.addAll(e.completeAttributeValue(context));
                     }
 
@@ -600,7 +601,7 @@ public class HtmlCompletionQuery extends UserTask {
                     }
 
                     HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node, argName, quotationChar != null);
-                    for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
+                    for (HtmlExtension e : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
                         result.addAll(e.completeAttributeValue(context));
                     }
 

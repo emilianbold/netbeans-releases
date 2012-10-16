@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.html.editor.HtmlExtensions;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
@@ -127,7 +128,7 @@ public class HtmlGSFParser extends Parser {
         Source snapshotSource = snapshot.getSource();
         String sourceMimetype = snapshotSource != null ? snapshotSource.getMimeType() : snapshot.getMimeType(); //prefer source mimetype
         
-        Collection<HtmlExtension> exts = HtmlExtension.getRegisteredExtensions(sourceMimetype);
+        Collection<? extends HtmlExtension> exts = HtmlExtensions.getRegisteredExtensions(sourceMimetype);
         Collection<UndeclaredContentResolver> resolvers = new ArrayList<UndeclaredContentResolver>();
         for (HtmlExtension ex : exts) {
             UndeclaredContentResolver resolver = ex.getUndeclaredContentResolver();
