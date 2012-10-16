@@ -69,7 +69,6 @@ import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
 import org.netbeans.modules.ods.tasks.C2C;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -160,9 +159,8 @@ public class QueryParameters {
         map.put(c, new TextFieldParameter(c, txt));
     }
     
-    void addParameter(Column[] columns, JTextField txt, JCheckBox... chk) {
-        // XXX kind of a hack to store under the first column name
-        map.put(columns[0], new CheckedTextFieldParameter(columns, txt, chk));
+    void createByTextCriteria(JTextField txt, JCheckBox chkSummary, JCheckBox chkDescription) {
+        map.put(Column.SUMMARY, new ByTextParameter(txt, chkSummary, chkDescription));
     }
             
     void createByPeopleCriteria(JList list, JCheckBox creatorCheckField, JCheckBox ownerCheckField, JCheckBox commenterCheckField, JCheckBox ccCheckField) {
@@ -365,50 +363,28 @@ public class QueryParameters {
         }
     }
 
-    static class CheckedTextFieldParameter implements Parameter {
+    static class ByTextParameter implements Parameter {
         
         private final JTextField txt;
-        private final JCheckBox[] chks;
-        private final Column[] columns;
+        private final JCheckBox chkSummary;
+        private final JCheckBox chkDescription;
         
-        public CheckedTextFieldParameter(Column[] columns, JTextField txt, JCheckBox... chks) {
-            assert columns.length == chks.length : "lenght of columns must be the same as lenght of checkboxes"; // NOI18N
-            this.columns = columns;
+        public ByTextParameter(JTextField txt, JCheckBox chkSummary, JCheckBox chkDescription) {
             this.txt = txt;
-            this.chks = chks;
+            this.chkSummary = chkSummary;
+            this.chkDescription = chkDescription;
         }
         
-        public void setValues(Collection values) {
-            if(values == null) {
-                for (int i = 0; i < chks.length; i++) {
-                    chks[i].setSelected(false);
-                }
-            } else {
-                assert values.size() == chks.length : "lenght of values must be the same as lenght of checkboxes"; // NOI18N
-                boolean allNull = true;
-                int i = 0;
-                for (Object v : values) {
-                    String s = (String) v;
-                    if(s == null) {
-                        chks[i].setSelected(false);
-                    } else {
-                        allNull = false;
-                        txt.setText(s); 
-                        chks[i].setSelected(true);
-                    }
-                    i++;
-                }
-                if(allNull) {
-                    txt.setText(""); // NOI18N
-                }
-            }
+        public void setValues(String text, boolean summary, boolean description) {
+            txt.setText(text != null ? text : ""); // NOI18N
+            chkSummary.setSelected(summary);
+            chkDescription.setSelected(description);
         }
         
         @Override
         public void setEnabled(boolean  b) {
-            for (JCheckBox chk : chks) {
-                chk.setEnabled(b);
-            }
+            chkSummary.setEnabled(b);
+            chkDescription.setEnabled(b);
             txt.setEnabled(b);
         }
 
@@ -423,23 +399,17 @@ public class QueryParameters {
             if( s == null || s.trim().isEmpty()) {
                 return null;
             }
-            CriteriaBuilder cb = new CriteriaBuilder();
-            boolean noneSelected = true;
-            for (int i = 0; i < chks.length; i++) {
-                if(chks[i].isSelected()) {
-                    noneSelected = false;
-                    if(cb.result == null) {
-                        cb.column(columns[i].getColumnName(), Criteria.Operator.STRING_CONTAINS, s);
-                    } else {
-                        cb.or(columns[i].getColumnName(), Criteria.Operator.STRING_CONTAINS, s);
-                    }
-                } 
+            if(chkSummary.isSelected() && chkDescription.isSelected()) {
+                return new NaryCriteria(
+                            Criteria.Operator.OR, 
+                            new ColumnCriteria(Column.SUMMARY.columnName, Criteria.Operator.STRING_CONTAINS, s),
+                            new ColumnCriteria(Column.DESCRIPTION.columnName, Criteria.Operator.STRING_CONTAINS, s));
+            } else if(chkSummary.isSelected()) {
+                return new ColumnCriteria(Column.SUMMARY.columnName, Criteria.Operator.STRING_CONTAINS, s);
+            } else if(chkDescription.isSelected()) {
+                return new ColumnCriteria(Column.DESCRIPTION.columnName, Criteria.Operator.STRING_CONTAINS, s);
             }
-            if(noneSelected) {
-                return null;
-            } else {
-                return cb.toCriteria();
-            }
+            return null;
         }
     }
     

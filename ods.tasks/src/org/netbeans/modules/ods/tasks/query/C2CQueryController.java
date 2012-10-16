@@ -172,7 +172,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
         // setup parameters
         parameters = new QueryParameters();
         
-        parameters.addParameter(new QueryParameters.Column[] {QueryParameters.Column.SUMMARY, QueryParameters.Column.DESCRIPTION}, panel.byTextTextField, panel.searchBySummaryCheckBox, panel.searchByDescriptionCheckBox);  
         parameters.addParameter(QueryParameters.Column.PRODUCT, panel.productList);  
         parameters.addParameter(QueryParameters.Column.COMPONENT, panel.componentList);
         parameters.addParameter(QueryParameters.Column.RELEASE, panel.releaseList);    
@@ -183,6 +182,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
         parameters.addParameter(QueryParameters.Column.STATUS, panel.statusList);      
         parameters.addParameter(QueryParameters.Column.RESOLUTION, panel.resolutionList);
         parameters.addParameter(QueryParameters.Column.KEYWORDS, panel.keywordsList);                   
+        
+        parameters.createByTextCriteria(panel.byTextTextField, panel.searchBySummaryCheckBox, panel.searchByDescriptionCheckBox);  
         parameters.createByPeopleCriteria(panel.userList, panel.creatorCheckBox, panel.ownerCheckBox, panel.commenterCheckBox, panel.ccCheckBox);                   
         parameters.createByDateCriteria(panel.byDateComboBox, panel.startTextField, panel.endTextField);
         
