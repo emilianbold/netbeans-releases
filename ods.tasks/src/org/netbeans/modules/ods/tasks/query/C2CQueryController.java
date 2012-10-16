@@ -172,20 +172,20 @@ public class C2CQueryController extends QueryController implements ItemListener,
         // setup parameters
         parameters = new QueryParameters();
         
-        parameters.addParameter(QueryParameters.Column.PRODUCT, panel.productList);  
-        parameters.addParameter(QueryParameters.Column.COMPONENT, panel.componentList);
-        parameters.addParameter(QueryParameters.Column.RELEASE, panel.releaseList);    
-        parameters.addParameter(QueryParameters.Column.ITERATION, panel.iterationList);
-        parameters.addParameter(QueryParameters.Column.TASK_TYPE, panel.issueTypeList);
-        parameters.addParameter(QueryParameters.Column.PRIORITY, panel.priorityList);  
-        parameters.addParameter(QueryParameters.Column.SEVERITY, panel.severityList);  
-        parameters.addParameter(QueryParameters.Column.STATUS, panel.statusList);      
-        parameters.addParameter(QueryParameters.Column.RESOLUTION, panel.resolutionList);
-        parameters.addParameter(QueryParameters.Column.KEYWORDS, panel.keywordsList);                   
+        parameters.createParameter(QueryParameters.Column.PRODUCT, panel.productList);  
+        parameters.createParameter(QueryParameters.Column.COMPONENT, panel.componentList);
+        parameters.createParameter(QueryParameters.Column.RELEASE, panel.releaseList);    
+        parameters.createParameter(QueryParameters.Column.ITERATION, panel.iterationList);
+        parameters.createParameter(QueryParameters.Column.TASK_TYPE, panel.issueTypeList);
+        parameters.createParameter(QueryParameters.Column.PRIORITY, panel.priorityList);  
+        parameters.createParameter(QueryParameters.Column.SEVERITY, panel.severityList);  
+        parameters.createParameter(QueryParameters.Column.STATUS, panel.statusList);      
+        parameters.createParameter(QueryParameters.Column.RESOLUTION, panel.resolutionList);
+        parameters.createParameter(QueryParameters.Column.KEYWORDS, panel.keywordsList);                   
         
-        parameters.createByTextCriteria(panel.byTextTextField, panel.searchBySummaryCheckBox, panel.searchByDescriptionCheckBox);  
-        parameters.createByPeopleCriteria(panel.userList, panel.creatorCheckBox, panel.ownerCheckBox, panel.commenterCheckBox, panel.ccCheckBox);                   
-        parameters.createByDateCriteria(panel.byDateComboBox, panel.startTextField, panel.endTextField);
+        parameters.createByTextParameter(panel.byTextTextField, panel.searchBySummaryCheckBox, panel.searchByDescriptionCheckBox);  
+        parameters.createByPeopleParameter(panel.userList, panel.creatorCheckBox, panel.ownerCheckBox, panel.commenterCheckBox, panel.ccCheckBox);                   
+        parameters.createByDateParameter(panel.byDateComboBox, panel.startTextField, panel.endTextField);
         
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 
@@ -330,7 +330,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
                                 parameters.get(QueryParameters.Column.KEYWORDS).populate(clientData.getKeywords());
                                 
-                                parameters.getByPeopleParameter().populateList(clientData.getUsers());
+                                parameters.getByPeopleParameter().populatePeople(clientData.getUsers());
                             } finally {
                                 logPopulate("Finnished populate query controller {0}"); // NOI18N
                             }

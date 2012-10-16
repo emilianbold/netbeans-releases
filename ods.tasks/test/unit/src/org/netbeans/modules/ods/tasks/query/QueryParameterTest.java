@@ -285,7 +285,7 @@ public class QueryParameterTest extends NbTestCase {
         assertNull(cp.getCriteria());
         
         Collection<TaskUserProfile> users = getUsers();
-        cp.populateList(users);
+        cp.populatePeople(users);
         assertEquals(-1, list.getSelectedIndex());
         assertFalse(chk1.isSelected());
         assertFalse(chk2.isSelected());

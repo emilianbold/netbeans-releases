@@ -147,27 +147,27 @@ public class QueryParameters {
         return map.values();
     }
     
-     void addParameter(Column c, JList list) {
+     void createParameter(Column c, JList list) {
         map.put(c, new ListParameter(list, c));
     }
     
-     void addParameter(Column c, JComboBox combo) {
+     void createParameter(Column c, JComboBox combo) {
         map.put(c, new ComboParameter(c, combo));
     }
     
-    void addParameter(Column c, JTextField txt) {
+    void createParameter(Column c, JTextField txt) {
         map.put(c, new TextFieldParameter(c, txt));
     }
     
-    void createByTextCriteria(JTextField txt, JCheckBox chkSummary, JCheckBox chkDescription) {
+    void createByTextParameter(JTextField txt, JCheckBox chkSummary, JCheckBox chkDescription) {
         map.put(Column.SUMMARY, new ByTextParameter(txt, chkSummary, chkDescription));
     }
             
-    void createByPeopleCriteria(JList list, JCheckBox creatorCheckField, JCheckBox ownerCheckField, JCheckBox commenterCheckField, JCheckBox ccCheckField) {
+    void createByPeopleParameter(JList list, JCheckBox creatorCheckField, JCheckBox ownerCheckField, JCheckBox commenterCheckField, JCheckBox ccCheckField) {
         map.put(Column.CREATOR, new ByPeopleParameter(list, creatorCheckField, ownerCheckField, commenterCheckField, ccCheckField));
     }
     
-    void createByDateCriteria(JComboBox cbo, JTextField fromField, JTextField toField) {
+    void createByDateParameter(JComboBox cbo, JTextField fromField, JTextField toField) {
         map.put(Column.CREATION, new ByDateParameter(cbo, fromField, toField));
     }
     
@@ -475,7 +475,7 @@ public class QueryParameters {
             // XXX
         }
         
-        public void populateList(Collection<TaskUserProfile> values) {
+        public void populatePeople(Collection<TaskUserProfile> values) {
             DefaultListModel model = new DefaultListModel();
             for (TaskUserProfile v : values) {
                 model.addElement(v);
