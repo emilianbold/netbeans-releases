@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.ui;
+package org.netbeans.modules.nativeexecution.signals;
 
-import java.net.URL;
-import org.netbeans.modules.cloud.amazon.AmazonInstance;
-import org.netbeans.modules.web.common.api.WebUtils;
-import org.openide.awt.HtmlBrowser;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.modules.nativeexecution.signals.SignalSupport.SIGNAL_SCOPE;
 
-/**
- *
- */
-public class ViewAdminConsoleAction extends NodeAction {
+public interface SignalSupportImplementation {
 
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        AmazonInstance ai = activatedNodes[0].getLookup().lookup(AmazonInstance.class);
-        String region = ai.getRegionURL();
-        if (region != null) {
-            if (region.startsWith("elasticbeanstalk.") && region.endsWith(".amazonaws.com")) { // NOI18N
-                region = region.substring(17, region.length()-14);
-            } else {
-                region = null;
-            }
-        }
-        URL url = WebUtils.stringToUrl("https://console.aws.amazon.com/elasticbeanstalk/home" + 
-                (region != null ? "?region="+region : "")); // NOI18N
-        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-    }
+    boolean isSupported(ExecutionEnvironment env, SIGNAL_SCOPE scope);
 
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
-            return false;
-        }
-        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(AmazonInstance.class) != null;
-    }
+    public int sendSignal(ExecutionEnvironment env, SIGNAL_SCOPE scope, int id, Signal signal);
 
-    @Override
-    public String getName() {
-        return "Open AWS Console";
-    }
+    public int sendSignal(ExecutionEnvironment env, String environment, Signal signal);
 
-    @Override
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-    
+    public int sigqueue(ExecutionEnvironment env, int id, Signal signal, int value);
 }
