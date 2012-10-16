@@ -652,7 +652,7 @@ public class ToolTipSupport {
      * {@link #getStatus() } gives the exact visibility state.
      */
     public boolean isToolTipVisible() {
-        return status > STATUS_VISIBILITY_ENABLED;
+        return status >= STATUS_VISIBILITY_ENABLED && toolTip != null;
     }
 
     private boolean isToolTipShowing() {
