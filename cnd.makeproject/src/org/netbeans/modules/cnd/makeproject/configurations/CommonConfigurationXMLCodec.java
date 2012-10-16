@@ -82,6 +82,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
+ * V86 - NB 7.3
+ *    roll back changes introduced in V85
  * V85 - NB 7.3
  *    Configurations descriptor is divided on three parts (public, default public and private).
  *    Actual for unmanaged projects.
@@ -246,7 +248,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 85;
+    public final static int CURRENT_VERSION = 86;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
