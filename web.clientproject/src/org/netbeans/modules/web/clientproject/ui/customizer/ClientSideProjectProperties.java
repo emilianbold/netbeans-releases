@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +57,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
@@ -80,7 +82,10 @@ public final class ClientSideProjectProperties {
     final ClientSideProject project;
     private final List<JavaScriptLibrarySelection.SelectedLibrary> newJsLibraries = new CopyOnWriteArrayList<JavaScriptLibrarySelection.SelectedLibrary>();
 
+    private volatile String siteRootFolder = null;
+    private volatile String testFolder = null;
     private volatile String jsLibFolder = null;
+    private volatile String encoding = null;
 
 
     public ClientSideProjectProperties(ClientSideProject project) {
@@ -134,6 +139,7 @@ public final class ClientSideProjectProperties {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws IOException {
+                    saveProperties();
                     saveConfig();
                     addNewJsLibraries();
                     ProjectManager.getDefault().saveProject(project);
@@ -143,6 +149,18 @@ public final class ClientSideProjectProperties {
         } catch (MutexException e) {
             LOGGER.log(Level.WARNING, null, e.getException());
         }
+    }
+
+    void saveProperties() {
+        // first, create possible foreign file references
+        String siteRootFolderReference = createForeignFileReference(siteRootFolder);
+        String testFolderReference = createForeignFileReference(testFolder);
+        // save properties
+        EditableProperties projectProperties = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRootFolderReference);
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_TEST_FOLDER, testFolderReference);
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_ENCODING, encoding);
+        project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
     }
 
     void saveConfig() {
@@ -178,6 +196,39 @@ public final class ClientSideProjectProperties {
         return project;
     }
 
+    public String getSiteRootFolder() {
+        if (siteRootFolder == null) {
+            siteRootFolder = getProjectProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, ""); // NOI18N
+        }
+        return siteRootFolder;
+    }
+
+    public void setSiteRootFolder(String siteRootFolder) {
+        this.siteRootFolder = siteRootFolder;
+    }
+
+    public String getTestFolder() {
+        if (testFolder == null) {
+            testFolder = getProjectProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, ""); // NOI18N
+        }
+        return testFolder;
+    }
+
+    public void setTestFolder(String testFolder) {
+        this.testFolder = testFolder;
+    }
+
+    public String getEncoding() {
+        if (encoding == null) {
+            encoding = getProjectProperty(ClientSideProjectConstants.PROJECT_ENCODING, ClientSideProjectUtilities.DEFAULT_PROJECT_CHARSET.name());
+        }
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
     public void setNewJsLibraries(List<SelectedLibrary> newJsLibraries) {
         assert newJsLibraries != null;
         // not needed to be locked, called always by just one caller
@@ -203,6 +254,28 @@ public final class ClientSideProjectProperties {
             names.add(name);
         }
         return names;
+    }
+
+    private String getProjectProperty(String property, String defaultValue) {
+        String value = project.getEvaluator().getProperty(property);
+        if (value != null) {
+            return value;
+        }
+        return defaultValue;
+    }
+
+    private void putProperty(EditableProperties properties, String property, String value) {
+        if (value != null) {
+            properties.put(property, value);
+        }
+    }
+
+    private String createForeignFileReference(String filePath) {
+        if (filePath == null || filePath.isEmpty()) {
+            return null;
+        }
+        File file = project.getProjectHelper().resolveFile(filePath);
+        return project.getReferenceHelper().createForeignFileReference(file, null);
     }
 
     private static String joinStrings(Collection<String> strings, String glue) {

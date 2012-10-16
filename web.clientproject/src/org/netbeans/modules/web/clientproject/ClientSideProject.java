@@ -155,10 +155,6 @@ public class ClientSideProject implements Project {
         return configurationProvider;
     }
 
-    public EditableProperties getProjectProperties() {
-        return getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-    }
-
     private RefreshOnSaveListener getRefreshOnSaveListener() {
         ClientProjectConfigurationImplementation cfg = configurationProvider.getActiveConfiguration();
         if (cfg != null) {
