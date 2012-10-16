@@ -49,7 +49,6 @@ import com.tasktop.c2c.server.common.service.domain.criteria.NaryCriteria;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.awt.Component;
-import java.lang.String;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -68,8 +67,8 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
-import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -77,17 +76,18 @@ import org.openide.util.Exceptions;
  */
 public class QueryParameters {
     
+    @NbBundle.Messages({"LBL_Created=Created", "LBL_Updated=Updated"})
     public enum Column {
         ASSIGNEE("assignee"), // NOI18N
         COMMENT("comment"), // NOI18N 
         COMMENTER("commentAuthor"), // NOI18N
         COMPONENT("componentName"), // NOI18N
         CREATOR("reporter"), // NOI18N
-        CREATION("creationDate"), // NOI18N
+        CREATION("creationDate", Bundle.LBL_Created()), // NOI18N
         DESCRIPTION("description"), // NOI18N
         ITERATION("iteration"), // NOI18N
         KEYWORDS("keywords"), // NOI18N
-        MODIFICATION("modificationDate"), // NOI18N
+        MODIFICATION("modificationDate", Bundle.LBL_Updated()), // NOI18N
         PRODUCT("productName"), // NOI18N
         RELEASE("release"), // NOI18N
         RESOLUTION("resolution"), // NOI18N
@@ -100,14 +100,28 @@ public class QueryParameters {
             
         
         private String columnName;
+        private String displayName;
         
         Column(String columnName) {
             this.columnName = columnName;
+        }
+        
+        Column(String columnName, String displayName) {
+            this(columnName);
+            this.displayName = displayName;
         }
 
         @Override
         public String toString() {
             return columnName;
+        }
+        
+        public String getColumnName() {
+            return columnName;
+        }
+        
+        String getDisplayName() {
+            return displayName != null ? displayName : columnName;
         }
         
     }
@@ -177,9 +191,9 @@ public class QueryParameters {
             CriteriaBuilder cb = new CriteriaBuilder();
             for (Object v : values) {
                 if(cb.result == null) {
-                    cb.column(getColumn().toString(), Criteria.Operator.EQUALS, valueToString(v));
+                    cb.column(getColumn().getColumnName(), Criteria.Operator.EQUALS, valueToString(v));
                 } else {
-                    cb.or(getColumn().toString(), Criteria.Operator.EQUALS, valueToString(v));
+                    cb.or(getColumn().getColumnName(), Criteria.Operator.EQUALS, valueToString(v));
                 }
             }
             return cb.toCriteria();
@@ -409,9 +423,9 @@ public class QueryParameters {
                 if(chks[i].isSelected()) {
                     noneSelected = false;
                     if(cb.result == null) {
-                        cb.column(columns[i].toString(), Criteria.Operator.STRING_CONTAINS, s);
+                        cb.column(columns[i].getColumnName(), Criteria.Operator.STRING_CONTAINS, s);
                     } else {
-                        cb.or(columns[i].toString(), Criteria.Operator.STRING_CONTAINS, s);
+                        cb.or(columns[i].getColumnName(), Criteria.Operator.STRING_CONTAINS, s);
                     }
                 } 
             }
@@ -514,7 +528,7 @@ public class QueryParameters {
                 List<Criteria> criteria = new LinkedList<Criteria>();
                 for (Object value : values) {
                     if(value instanceof TaskUserProfile) {
-                        criteria.add(new ColumnCriteria(c.toString(), Criteria.Operator.EQUALS, ((TaskUserProfile)value).getLoginName()));
+                        criteria.add(new ColumnCriteria(c.getColumnName(), Criteria.Operator.EQUALS, ((TaskUserProfile)value).getLoginName()));
                     }
                 }
                 l.addAll(criteria);
@@ -535,6 +549,7 @@ public class QueryParameters {
             
             DefaultComboBoxModel model = new DefaultComboBoxModel(new Column[] {Column.CREATION, Column.MODIFICATION});
             cbo.setModel(model);
+            cbo.setRenderer(new ParameterRenderer());
         }
         
         public void setValues(Column c, String from, String to) {
@@ -587,8 +602,8 @@ public class QueryParameters {
                 return null;
             }
             
-            ColumnCriteria dateGreaterThan = new ColumnCriteria(c.toString(), Criteria.Operator.GREATER_THAN, dateFrom);
-            ColumnCriteria dateLessThan = new ColumnCriteria(c.toString(), Criteria.Operator.LESS_THAN, dateTo);
+            ColumnCriteria dateGreaterThan = new ColumnCriteria(c.getColumnName(), Criteria.Operator.GREATER_THAN, dateFrom);
+            ColumnCriteria dateLessThan = new ColumnCriteria(c.getColumnName(), Criteria.Operator.LESS_THAN, dateTo);
             return new NaryCriteria(Criteria.Operator.AND, dateGreaterThan, dateLessThan);
         }
     }
@@ -641,6 +656,8 @@ public class QueryParameters {
         }
         if(value instanceof Keyword) {
             return ((Keyword) value).getName(); 
+        } else if(value instanceof Column) {
+            return ((Column) value).getDisplayName(); 
         }
         return value.toString();
     }
