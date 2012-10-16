@@ -62,6 +62,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -76,6 +78,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -111,6 +114,7 @@ import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.OwnerUtils;
@@ -123,6 +127,7 @@ import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -2102,12 +2107,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     
     
     private void showInBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInBrowserButtonActionPerformed
-//        try {
-//            URL url = new URL(issue.getRepository().getUrl() + BugzillaConstants.URL_SHOW_BUG + issue.getID());
-//            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-//        } catch (MalformedURLException muex) {
-//            Bugzilla.LOG.log(Level.INFO, "Unable to show the issue in the browser.", muex); // NOI18N
-//        }
+        KenaiProject kp = issue.getRepository().getLookup().lookup(KenaiProject.class);
+        assert kp != null; // all c2c repositories hould come from team support
+        if (kp == null) {
+            return;
+        }
+        try {
+            URL url = new URL(kp.getWebLocation() + C2CUtil.URL_FRAGMENT_TASK + issue.getID());
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        } catch (MalformedURLException muex) {
+            C2C.LOG.log(Level.INFO, "Unable to show the issue in the browser.", muex); // NOI18N
+        }
     }//GEN-LAST:event_showInBrowserButtonActionPerformed
 
     private void reloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadButtonActionPerformed
