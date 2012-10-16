@@ -258,7 +258,7 @@ public class RuleEditorPanel extends JPanel {
 
         node = new RuleNode(this);
 
-        sortMode = SortMode.NATURAL;
+        sortMode = SortMode.ALPHABETICAL;
 
         filters = new RuleEditorFilters(this, filtersSettings);
         filters.getInstance().hookChangeListener(new FiltersManager.FilterChangeListener() {
