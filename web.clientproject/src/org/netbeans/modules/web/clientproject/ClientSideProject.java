@@ -72,6 +72,7 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigur
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
 import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
+import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
@@ -155,10 +156,6 @@ public class ClientSideProject implements Project {
         return configurationProvider;
     }
 
-    public EditableProperties getProjectProperties() {
-        return getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-    }
-
     private RefreshOnSaveListener getRefreshOnSaveListener() {
         ClientProjectConfigurationImplementation cfg = configurationProvider.getActiveConfiguration();
         if (cfg != null) {
@@ -169,7 +166,8 @@ public class ClientSideProject implements Project {
     }
 
     public boolean isUsingEmbeddedServer() {
-        return !"external".equals(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER)); //NOI18N
+        // equalsIgnoreCase for backward compatibility, can be removed later
+        return !ClientSideProjectProperties.ProjectServer.EXTERNAL.name().equalsIgnoreCase(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER));
     }
 
     public FileObject getSiteRootFolder() {
