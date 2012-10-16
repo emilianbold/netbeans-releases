@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.tasks.ui.dashboard;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.LeafNode;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 
 /**
- * Category Node. E.g. My Projects, Open Projects
  *
- * @author Jan Becicka
+ * @author jpeska
  */
-public class TitleNode extends LeafNode {
+public class EmptyContentNode extends LeafNode {
 
-    private JPanel panel;
-    private JLabel lblName;
-    private String titleName;
-    private LinkButton[] buttons;
+    private final LinkButton linkButton;
+    private final String message;
     private final Object LOCK = new Object();
-    private ProgressLabel lblProgress;
+    private JPanel panel;
+    private TreeLabel lblMessage;
 
-    public TitleNode(String titleName, LinkButton... buttons) {
-        super(null);
-        this.titleName = titleName;
-        this.buttons = buttons;
-        lblProgress = createProgressLabel(NbBundle.getMessage(TitleNode.class, "LBL_LoadingInProgress"));
-        lblProgress.setForeground(ColorManager.getDefault().getDefaultBackground());
+    public EmptyContentNode(TreeListNode parent, String message, LinkButton linkButton) {
+        super(parent);
+        this.message = message;
+        this.linkButton = linkButton;
+    }
+
+    public EmptyContentNode(TreeListNode parent, String message) {
+        this(parent, message, null);
+    }
+
+    public EmptyContentNode(TreeListNode parent, LinkButton linkButton) {
+        this(parent, "", linkButton);
     }
 
     @Override
@@ -82,39 +89,23 @@ public class TitleNode extends LeafNode {
                 panel = new JPanel(new GridBagLayout());
                 panel.setBorder(new EmptyBorder(0, 0, 0, 0));
                 panel.setOpaque(false);
-                lblName = new TreeLabel(titleName);
-                lblName.setBorder(new EmptyBorder(0, 0, 0, 5));
-                lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
-                lblName.setForeground(ColorManager.getDefault().getDefaultBackground());
-                panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-
-                panel.add(lblProgress, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-
-                panel.add(new JLabel(), new GridBagConstraints(4, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
-
-
-                if (buttons != null) {
-                    for (int i = 0; i < buttons.length; i++) {
-                        LinkButton linkButton = buttons[i];
-                        panel.add(linkButton, new GridBagConstraints(5 + i, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
-                    }
+                if (message != null && !message.isEmpty()) {
+                    lblMessage = new TreeLabel(message);
+                    lblMessage.setBorder(new EmptyBorder(0, 0, 0, 5));
+                    panel.add(lblMessage, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
                 }
+                if (linkButton != null) {
+                    panel.add(linkButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+                }
+                panel.add(new JLabel(), new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 30), 0, 0));
             }
         }
-        return panel;
-    }
-
-    void setProgressVisible(final boolean visible) {
-        if (panel != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    lblProgress.setVisible(visible);
-                    panel.repaint();
-                    panel.revalidate();
-                    fireContentChanged();
-                }
-            });
+        if (lblMessage != null) {
+            lblMessage.setForeground(isSelected ? foreground : ColorManager.getDefault().getDisabledColor());
         }
+        if (linkButton != null) {
+            linkButton.setForeground(foreground, isSelected);
+        }
+        return panel;
     }
 }

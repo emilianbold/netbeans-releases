@@ -193,6 +193,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
             DashboardViewer dashboard = DashboardViewer.getInstance();
             AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
             List<Issue> issues = getTasks();
+            disposeTaskNodes();
             removeTaskListeners();
             if (taskListener == null) {
                 taskListener = new TaskListener();
@@ -224,7 +225,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     final void removeTaskListeners() {
         synchronized (LOCK) {
             if (taskListener != null) {
-                for (TaskNode taskNode : filteredTaskNodes) {
+                for (TaskNode taskNode : taskNodes) {
                     taskNode.getTask().removePropertyChangeListener(taskListener);
                 }
             }
@@ -271,9 +272,19 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         return pageSize * pageCountShown;
     }
 
-    void initPaging() {
-        pageSize = DashboardSettings.getInstance().getTasksLimitValue();
+    final void initPaging() {
+        pageSize = DashboardSettings.getInstance().isTasksLimit() ? DashboardSettings.getInstance().getTasksLimitValue() : Integer.MAX_VALUE;
         pageCountShown = 1;
+    }
+
+    private void disposeTaskNodes() {
+        synchronized(LOCK) {
+            if (taskNodes != null) {
+                for (TaskNode taskNode : taskNodes) {
+                    taskNode.dispose();
+                }
+            }
+        }
     }
 
     private class TaskListener implements PropertyChangeListener {
@@ -281,7 +292,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
-                Mutex.EVENT.readAccess(new Runnable() {
+                SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         updateNodes();

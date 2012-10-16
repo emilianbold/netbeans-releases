@@ -50,6 +50,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
@@ -70,7 +72,9 @@ import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.TreeList;
 import org.netbeans.modules.tasks.ui.treelist.TreeListModel;
+import org.netbeans.modules.tasks.ui.treelist.TreeListModelListener;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.netbeans.modules.tasks.ui.utils.DashboardRefresher;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
@@ -78,9 +82,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Singleton providing access to Kenai Dashboard window.
+ * Singleton providing access to Task Dashboard window.
  *
  * @author S. Aubrecht
+ * @author J. Peska
  */
 public final class DashboardViewer implements PropertyChangeListener {
 
@@ -120,6 +125,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private boolean persistExpanded = true;
     private TreeListNode activeTaskNode;
     static final Logger LOG = Logger.getLogger(DashboardViewer.class.getName());
+    private ModelListener modelListener;
 
     private DashboardViewer() {
         expandedNodes = new HashSet<TreeListNode>();
@@ -158,6 +164,8 @@ public final class DashboardViewer implements PropertyChangeListener {
         LinkButton btnAddRepo = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_repo.png", true), new CreateRepositoryAction()); //NOI18N
         btnAddRepo.setToolTipText(NbBundle.getMessage(DashboardViewer.class, "LBL_AddRepo")); // NOI18N
         titleRepositoryNode = new TitleNode(NbBundle.getMessage(TitleNode.class, "LBL_Repositories"), btnAddRepo); // NOI18N
+        modelListener = new ModelListener();
+        model.addModelListener(modelListener);
         model.addRoot(-1, titleCategoryNode);
         model.addRoot(-1, titleRepositoryNode);
 
@@ -173,7 +181,6 @@ public final class DashboardViewer implements PropertyChangeListener {
         treeList.setDragEnabled(true);
         treeList.setDropMode(DropMode.ON_OR_INSERT);
         treeList.setModel(model);
-        treeList.addPropertyChangeListener("dropLocation", new DropLocationListener());
         attachActions();
         dashboardComponent.setViewportView(treeList);
         dashboardComponent.invalidate();
@@ -209,6 +216,8 @@ public final class DashboardViewer implements PropertyChangeListener {
                     updateContent();
                 }
             });
+        } else if (evt.getPropertyName().equals(DashboardSettings.AUTO_SYNC_SETTINGS_CHANGED)){
+            DashboardRefresher.getInstance().setupDashboardRefresh();
         }
     }
 
@@ -230,6 +239,22 @@ public final class DashboardViewer implements PropertyChangeListener {
     private static class Holder {
 
         private static final DashboardViewer theInstance = new DashboardViewer();
+    }
+
+    public void addDashboardSelectionListener(ListSelectionListener listener) {
+        treeList.addListSelectionListener(listener);
+    }
+
+    public void removeDashboardSelectionListener(ListSelectionListener listener) {
+        treeList.removeListSelectionListener(listener);
+    }
+
+    public void addModelListener(TreeListModelListener listener) {
+        model.addModelListener(listener);
+    }
+
+    public void removeModelListener(TreeListModelListener listener) {
+        model.removeModelListener(listener);
     }
 
     public void setActiveTaskNode(TreeListNode activeTaskNode) {
@@ -435,20 +460,11 @@ public final class DashboardViewer implements PropertyChangeListener {
             if (isCategoryInFilter(newNode)) {
                 addCategoryToModel(newNode);
             }
-
             storeClosedCategories();
-//            if (newNode.isOpened()) {
-//                SwingUtilities.invokeLater(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        newNode.setExpanded(true);
-//                    }
-//                });
-//            }
         }
     }
 
-    private void addCategoryToModel(CategoryNode categoryNode) {
+    private void addCategoryToModel(final CategoryNode categoryNode) {
         int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
         int size = model.getRootNodes().size();
         boolean added = false;
@@ -457,19 +473,19 @@ public final class DashboardViewer implements PropertyChangeListener {
             if (node instanceof CategoryNode) {
                 CategoryNode displNode = (CategoryNode) node;
                 if (categoryNode.compareTo(displNode) < 0) {
-                    model.addRoot(model.getRootNodes().indexOf(node), categoryNode);
+                    addRootToModel(model.getRootNodes().indexOf(node), categoryNode);
                     added = true;
                     break;
                 }
             } else {
                 // the end of category list, add
-                model.addRoot(model.getRootNodes().indexOf(node), categoryNode);
+                addRootToModel(model.getRootNodes().indexOf(node), categoryNode);
                 added = true;
                 break;
             }
         }
         if (!added) {
-            model.addRoot(-1, categoryNode);
+            addRootToModel(-1, categoryNode);
         }
     }
 
@@ -542,7 +558,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             //add repository to the model - sorted
             RepositoryNode repositoryNode = new RepositoryNode(repository, false);
             repositoryNodes.add(repositoryNode);
-            addRepositoryToModel(repositoryNode);
+            addRepositoryToModel(repositoryNode, true);
         }
     }
 
@@ -590,17 +606,9 @@ public final class DashboardViewer implements PropertyChangeListener {
             }
             repositoryNodes.add(newNode);
             if (isRepositoryInFilter(newNode)) {
-                addRepositoryToModel(newNode);
+                addRepositoryToModel(newNode, newNode.isOpened());
             }
             storeClosedRepositories();
-            if (newNode.isOpened()) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        newNode.setExpanded(true);
-                    }
-                });
-            }
         }
     }
 
@@ -622,7 +630,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    private void addRepositoryToModel(RepositoryNode repositoryNode) {
+    private void addRepositoryToModel(final RepositoryNode repositoryNode, boolean expand) {
         int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
         int size = model.getRootNodes().size();
         boolean added = false;
@@ -631,19 +639,30 @@ public final class DashboardViewer implements PropertyChangeListener {
             if (node instanceof RepositoryNode) {
                 RepositoryNode displNode = (RepositoryNode) node;
                 if (repositoryNode.compareTo(displNode) < 0) {
-                    model.addRoot(model.getRootNodes().indexOf(node), repositoryNode);
+                    addRootToModel(model.getRootNodes().indexOf(node), repositoryNode);
                     added = true;
                     break;
                 }
             } else {
                 // the end of category list, add
-                model.addRoot(model.getRootNodes().indexOf(node), repositoryNode);
+                addRootToModel(model.getRootNodes().indexOf(node), repositoryNode);
                 added = true;
                 break;
             }
         }
         if (!added) {
-            model.addRoot(-1, repositoryNode);
+            addRootToModel(-1, repositoryNode);
+        }
+
+        if (expand) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (repositoryNode.isOpened()) {
+                        repositoryNode.setExpanded(true);
+                    }
+                }
+            });
         }
     }
 
@@ -778,6 +797,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 titleRepositoryNode.setProgressVisible(false);
                 loadCategories();
                 titleCategoryNode.setProgressVisible(false);
+                DashboardRefresher.getInstance().setupDashboardRefresh();
             }
         });
     }
@@ -859,7 +879,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             }
 
-            List<Repository> oldValue = getRepositories();
+            List<Repository> oldValue = getRepositories(false);
             for (Repository newRepository : newValue) {
                 if (!oldValue.contains(newRepository)) {
                     toAdd.add(newRepository);
@@ -875,17 +895,19 @@ public final class DashboardViewer implements PropertyChangeListener {
                 RepositoryNode repositoryNode = new RepositoryNode(newRepository, false);
                 repositoryNodes.add(repositoryNode);
                 if (isRepositoryInFilter(repositoryNode)) {
-                    addRepositoryToModel(repositoryNode);
+                    addRepositoryToModel(repositoryNode, repositoryNode.isOpened());
                 }
             }
         }
     }
 
-    private List<Repository> getRepositories() {
+    public List<Repository> getRepositories(boolean openedOnly) {
         synchronized (LOCK_REPOSITORIES) {
             List<Repository> repositories = new ArrayList<Repository>();
             for (RepositoryNode repositoryNode : repositoryNodes) {
-                repositories.add(repositoryNode.getRepository());
+                if (!(openedOnly && !repositoryNode.isOpened())) {
+                    repositories.add(repositoryNode.getRepository());
+                }
             }
             return repositories;
         }
@@ -911,12 +933,6 @@ public final class DashboardViewer implements PropertyChangeListener {
                     setRepositories(repoNodes);
                 }
             });
-        }
-    }
-
-    private void refreshQueries(Collection<Query> queries) {
-        for (Query query : queries) {
-            query.refresh();
         }
     }
 
@@ -1054,11 +1070,36 @@ public final class DashboardViewer implements PropertyChangeListener {
         return false;
     }
 
-    private static class DropLocationListener implements PropertyChangeListener {
+    private void handleSelection(TreeListNode node) {
+        ListSelectionModel selectionModel = treeList.getSelectionModel();
+        if (!selectionModel.isSelectionEmpty()) {
+            int indexOfNode = model.getAllNodes().indexOf(node);
+            if (selectionModel.isSelectedIndex(indexOfNode)) {
+                int minSelectionIndex = selectionModel.getMinSelectionIndex();
+                int maxSelectionIndex = selectionModel.getMaxSelectionIndex();
+                if (minSelectionIndex == maxSelectionIndex) {
+                    selectionModel.setSelectionInterval(minSelectionIndex, maxSelectionIndex);
+                } else {
+                    List<Integer> selectedIndexes = new ArrayList<Integer>(maxSelectionIndex - minSelectionIndex + 1);
+                    for (int i = minSelectionIndex; i <= maxSelectionIndex; i++) {
+                        if (selectionModel.isSelectedIndex(i)) {
+                            selectedIndexes.add(i);
+                        }
+                    }
+                    selectionModel.clearSelection();
+                    for (int index : selectedIndexes) {
+                        selectionModel.addSelectionInterval(index, index);
+                    }
+                }
+            }
+        }
+    }
+
+    private class ModelListener implements TreeListModelListener {
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            
+        public void nodeExpanded(TreeListNode node) {
+            handleSelection(node);
         }
     }
 }

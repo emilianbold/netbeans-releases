@@ -45,7 +45,6 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
@@ -234,7 +233,12 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
-                updateContent();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateContent();
+                    }
+                });
             }
         }
     }

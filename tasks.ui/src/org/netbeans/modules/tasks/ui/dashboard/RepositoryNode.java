@@ -82,6 +82,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
     private LinkButton btnCreateTask;
     private CloseRepositoryNodeAction closeRepositoryAction;
     private OpenRepositoryNodeAction openRepositoryAction;
+    private LinkButton btnEmtpyContent;
 
     public RepositoryNode(Repository repository, boolean loaded) {
         this(repository, loaded, true);
@@ -116,13 +117,20 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
             });
         }
         loaded = true;
-        List<QueryNode> children = getFilteredQueryNodes();
-        boolean expand = DashboardViewer.getInstance().expandNodes();
-        for (QueryNode queryNode : children) {
-            queryNode.setExpanded(expand);
+        DashboardViewer dashboard = DashboardViewer.getInstance();
+        if (!filteredQueryNodes.isEmpty()) {
+            List<QueryNode> children = filteredQueryNodes;
+            boolean expand = dashboard.expandNodes();
+            for (QueryNode queryNode : children) {
+                queryNode.setExpanded(expand);
+            }
+            Collections.sort(children);
+            return new ArrayList<TreeListNode>(children);
+        } else {
+            List<TreeListNode> children = new ArrayList<TreeListNode>();
+            children.add(new EmptyContentNode(this, NbBundle.getMessage(RepositoryNode.class, "LBL_NoQuery")));
+            return children;
         }
-        Collections.sort(children);
-        return new ArrayList<TreeListNode>(children);
     }
 
     @Override
@@ -189,7 +197,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
         for (int i = 0; i < selectedNodes.size(); i++) {
             TreeListNode treeListNode = selectedNodes.get(i);
             if (treeListNode instanceof RepositoryNode) {
-                repositoryNodes[i] = (RepositoryNode)treeListNode;
+                repositoryNodes[i] = (RepositoryNode) treeListNode;
             } else {
                 return null;
             }
@@ -218,7 +226,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
                 closeRepositoryAction = new CloseRepositoryNodeAction(this);
             }
             return closeRepositoryAction;
-        } else if (allClosed){
+        } else if (allClosed) {
             if (openRepositoryAction == null) {
                 openRepositoryAction = new OpenRepositoryNodeAction(this);
             }

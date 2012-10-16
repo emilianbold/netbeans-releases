@@ -55,6 +55,7 @@ import javax.swing.SwingUtilities;
 public class TreeListModel extends AbstractListModel implements TreeListListener {
 
     private final ArrayList<TreeListNode> nodes = new ArrayList<TreeListNode>(500);
+    private List<TreeListModelListener> modelListeners = new ArrayList<TreeListModelListener>();
 
     public int getSize() {
         synchronized (nodes) {
@@ -221,19 +222,24 @@ public class TreeListModel extends AbstractListModel implements TreeListListener
     private void addChildrenOf(TreeListNode parent) {
         int firstIndex = -1;
         int lastIndex = -1;
+        List<TreeListNode> children = parent.getChildren();
+        if (children == null || children.isEmpty()) {
+            return;
+        }
         synchronized (nodes) {
             firstIndex = nodes.indexOf(parent);
             if (firstIndex < 0) {
                 return; //the parent isn't visible in the model, so don't bother
             }
             firstIndex++;
-            lastIndex = addNodes(firstIndex, parent.getChildren()) - 1;
+            lastIndex = addNodes(firstIndex, children) - 1;
         }
         if (firstIndex >= 0) {
             if (lastIndex < firstIndex) {
                 lastIndex = firstIndex;
             }
             fireIntervalAdded(this, firstIndex, lastIndex);
+            fireNodeExpanded(parent);
         }
     }
 
@@ -323,5 +329,19 @@ public class TreeListModel extends AbstractListModel implements TreeListListener
                 int index = nodes.indexOf(rootNode);
                 return index;
             }
+    }
+
+    public void addModelListener(TreeListModelListener listener){
+        modelListeners.add(listener);
+    }
+
+    public void removeModelListener(TreeListModelListener listener){
+        modelListeners.remove(listener);
+    }
+
+    private void fireNodeExpanded(TreeListNode node){
+        for (TreeListModelListener listener : modelListeners) {
+            listener.nodeExpanded(node);
+        }
     }
 }
