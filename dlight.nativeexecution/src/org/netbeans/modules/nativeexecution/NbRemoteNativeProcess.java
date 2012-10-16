@@ -65,7 +65,7 @@ public final class NbRemoteNativeProcess extends NbNativeProcess {
         StringBuilder sb = new StringBuilder();
 
         for (String arg : command) {
-            sb.append(arg).append(' ');
+            sb.append('"').append(arg).append('"').append(' '); // NOI18N
         }
 
         streams = JschSupport.startCommand(info.getExecutionEnvironment(), sb.toString(), params); // NOI18N

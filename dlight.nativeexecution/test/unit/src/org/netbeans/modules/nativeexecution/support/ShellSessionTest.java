@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.nativeexecution.support;
 
-import java.io.IOException;
-import java.util.WeakHashMap;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
  *
  * @author Andrew
  */
-public final class SignalSupport {
+public class ShellSessionTest extends NativeExecutionBaseTestCase {
 
-    private static final WeakHashMap<ExecutionEnvironment, SignalSupport> cache =
-            new WeakHashMap<ExecutionEnvironment, SignalSupport>();
-    private final ExecutionEnvironment exEnv;
-    private static final HelperUtility sigqueueHelperUtility =
-            new HelperUtility("bin/nativeexecution/$osname-${platform}$_isa/sigqueue"); // NOI18N
-
-    public static synchronized SignalSupport getSignalSupportFor(ExecutionEnvironment execEnv) throws IOException {
-        if (!HostInfoUtils.isHostInfoAvailable(execEnv)) {
-            throw new IOException("Host info must be available at this point"); // NOI18N
-        }
-
-        SignalSupport result = cache.get(execEnv);
-        if (result == null) {
-            result = new SignalSupport(execEnv);
-            cache.put(execEnv, result);
-        }
-
-        return result;
+    public ShellSessionTest(String name) {
+        super(name);
     }
 
-    private SignalSupport(ExecutionEnvironment execEnv) throws IOException {
-        this.exEnv = execEnv;
+    @BeforeClass
+    public static void setUpClass() {
     }
 
-    public int sigqueue(int pid, int signo, int value) {
-        try {
-            ExitStatus status = ProcessUtils.execute(exEnv,
-                    sigqueueHelperUtility.getPath(exEnv),
-                    String.valueOf(pid),
-                    String.valueOf(signo),
-                    String.valueOf(value));
-            return status.exitCode;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return 1;
+    @AfterClass
+    public static void tearDownClass() {
+    }
+
+    @Before
+    @Override
+    public void setUp() {
+    }
+
+    @After
+    @Override
+    public void tearDown() {
+    }
+
+    /**
+     * Test of execute method, of class ShellSession.
+     */
+    @Test
+    public void testExecute() throws Exception {
+        System.out.println("execute");
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+        ExitStatus result1 = ShellSession.execute(env, "unknown-command");
+        String command = "echo out; echo error 1>&2; sh -c \"exit 100\"";
+        ExitStatus result2 = ShellSession.execute(env, command);
+
+        assertNotSame(0, result1.exitCode);
+        assertFalse(result1.error.isEmpty());
+
+        assertEquals("out\n", result2.output);
+        assertEquals("error\n", result2.error);
+        assertEquals(100, result2.exitCode);
     }
 }

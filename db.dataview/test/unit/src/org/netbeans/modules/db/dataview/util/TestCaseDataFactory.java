@@ -46,11 +46,13 @@ package org.netbeans.modules.db.dataview.util;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.netbeans.junit.Manager;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -84,12 +86,12 @@ public class TestCaseDataFactory {
     private TestCaseDataFactory() throws Exception {
     }
     
-    private File getDataDir() {
+    private File getDataDir() throws URISyntaxException {
        
         
         String className = getClass().getName();
         URL url = this.getClass().getResource(className.substring(className.lastIndexOf('.')+1)+".class"); // NOI18N
-        File dataDir = new File(url.getFile()).getParentFile();
+        File dataDir = Utilities.toFile(url.toURI()).getParentFile();
         int index = 0;
         while((index = className.indexOf('.', index)+1) > 0) {
                 dataDir = dataDir.getParentFile();
