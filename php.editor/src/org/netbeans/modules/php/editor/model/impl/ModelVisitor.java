@@ -1331,7 +1331,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (varComments != null) {
             for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
                 VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
-                handleVarAssignment(name, varScope, phpDocTypeTagInfo);
+                if (varScope != null) {
+                    handleVarAssignment(name, varScope, phpDocTypeTagInfo);
+                }
             }
         }
     }
@@ -1358,7 +1360,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (varComments != null) {
             for (PhpDocTypeTagInfo phpDocTypeTagInfo : varComments) {
                 VariableScope varScope = getVariableScope(phpDocTypeTagInfo.getRange().getStart());
-                if (varScope.equals(variableScope)) {
+                if (variableScope.equals(varScope)) {
                     handleVarAssignment(variableName, varScope, phpDocTypeTagInfo);
                 }
             }
