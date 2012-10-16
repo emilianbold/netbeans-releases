@@ -140,7 +140,7 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
             Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
             helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings(), ctx.getController().getElements())));
             int offset = ctx.getCompletionOffset() - nnattr.getValueOffset() - (nnattr.isValueQuoted() ? 1 : 0);
-            ContentAssistProposals buildContentAssistProposals = helper.buildContentAssistProposals(offset);
+            ContentAssistProposals buildContentAssistProposals = ((offset<=completedValue.length()) ? helper.buildContentAssistProposals(offset) : null);
             
             if(buildContentAssistProposals!=null && buildContentAssistProposals.hasProposals()){
                 for (String var : buildContentAssistProposals.identificationVariables()) {
