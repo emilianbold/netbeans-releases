@@ -86,6 +86,8 @@ public class WebKitPageModel extends PageModel {
     private List<? extends org.openide.nodes.Node> selectedNodes = Collections.EMPTY_LIST;
     /** Highlighted nodes. */
     private List<? extends org.openide.nodes.Node> highlightedNodes = Collections.EMPTY_LIST;
+    /** Selector of the selected rule. */
+    private String selectedSelector;
     /** WebKit DOM domain listener. */
     private DOM.Listener domListener;
     /** WebKit CSS domain listener. */
@@ -519,6 +521,21 @@ public class WebKitPageModel extends PageModel {
     }
 
     @Override
+    public void setSelectedSelector(String selector) {
+        synchronized (this) {
+            selectedSelector = selector;
+        }
+        firePropertyChange(PROP_SELECTED_RULE, null, null);
+    }
+
+    @Override
+    public String getSelectedSelector() {
+        synchronized (this) {
+            return selectedSelector;
+        }
+    }
+
+    @Override
     public void setSelectionMode(boolean selectionMode) {
         synchronized (this) {
             if (this.selectionMode == selectionMode) {
@@ -668,6 +685,10 @@ public class WebKitPageModel extends PageModel {
                     if (shouldSynchronizeSelection()) {
                         updateSelection();
                     }
+                } else if (propName.equals(PageModel.PROP_SELECTED_RULE)) {
+                    if (shouldSynchronizeSelection()) {
+                        updateSelectedRule(getSelectedSelector());
+                    }
                 } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
                     updateSelectionMode();
                     updateSynchronization();
@@ -696,8 +717,10 @@ public class WebKitPageModel extends PageModel {
         private void updateSynchronization() {
             if (shouldSynchronizeSelection()) {
                 updateSelection();
+                updateSelectedRule(getSelectedSelector());
             } else {
                 updateSelection(Collections.EMPTY_LIST);
+                updateSelectedRule(null);
             }
             if (shouldSynchronizeHighlight()) {
                 updateHighlight();
@@ -737,9 +760,13 @@ public class WebKitPageModel extends PageModel {
         }
 
         private void updateSelection(List<? extends org.openide.nodes.Node> nodes) {
+            updateSelection(nodes, ""); // NOI18N
+        }
+        
+        private void updateSelection(List<? extends org.openide.nodes.Node> nodes, String type) {
             synchronized (LOCK_SELECTION) {
                 // Initialize the next selection in all content documents
-                invokeInAllDocuments("NetBeans.initNextSelection();"); // NOI18N
+                invokeInAllDocuments("NetBeans.initNext" + type + "Selection();"); // NOI18N
 
                 // Add selected nodes into the next selection (in their document)
                 for (org.openide.nodes.Node node : nodes) {
@@ -747,13 +774,32 @@ public class WebKitPageModel extends PageModel {
                     webKitNode = convertNode(webKitNode);
                     RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
                     if (remote != null) {
-                        webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextSelection(this);}"); // NOI18N
+                        webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNext" + type + "Selection(this);}"); // NOI18N
                     }
                 }
 
                 // Finalize the next selection in all content documents
-                invokeInAllDocuments("NetBeans.finishNextSelection();"); // NOI18N
+                invokeInAllDocuments("NetBeans.finishNext" + type + "Selection();"); // NOI18N
             }
+        }
+
+        private void updateSelectedRule(String selector) {
+            List<DOMNode> domNodes;
+            if (selector == null) {
+                domNodes = Collections.EMPTY_LIST;
+            } else {
+                DOM dom = webKit.getDOM();
+                List<Node> nodes = dom.querySelectorAll(dom.getDocument(), selector);
+                domNodes = new ArrayList<DOMNode>(nodes.size());
+                for (Node node : nodes) {
+                    int nodeId = node.getNodeId();
+                    DOMNode domNode = getNode(nodeId);
+                    if (domNode != null) {
+                        domNodes.add(domNode);
+                    }
+                }
+            }
+            updateSelection(domNodes, "Rule"); // NOI18N
         }
 
         private synchronized void updateSelectionMode() {
