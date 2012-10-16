@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.api.gsf;
+package org.netbeans.modules.html.editor;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.Collections;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author marekfukala
  */
-public class HtmlExtensionTestSupport {
+public class HtmlExtensions {
     
-    //allow a cleanup after a registration of a test extension
-    public static final Map<String, Collection<HtmlExtension>> EXTENSIONS = HtmlExtension.EXTENSIONS;
+    public static HtmlExtension TEST_EXTENSION;
+    
+    public static Collection<? extends HtmlExtension> getRegisteredExtensions(String mimeType) {
+        if(TEST_EXTENSION != null) {
+            return Collections.singleton(TEST_EXTENSION);
+        }
+        Lookup lookup = MimeLookup.getLookup(mimeType);
+        return lookup.lookupAll(HtmlExtension.class);
+    }
+
     
 }
