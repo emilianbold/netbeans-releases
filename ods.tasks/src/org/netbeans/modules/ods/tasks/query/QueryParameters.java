@@ -562,6 +562,11 @@ public class QueryParameters {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
         @Override
         public Criteria getCriteria() {
+            Column c = (Column) cbo.getSelectedItem();
+            if(c == null) {
+                return null;
+            }
+            
             Date dateFrom;
             try {
                 dateFrom = df.parse(fromField.getText());
@@ -582,9 +587,8 @@ public class QueryParameters {
                 return null;
             }
             
-            ColumnCriteria dateGreaterThan = new ColumnCriteria(QueryParameters.Column.CREATION.toString(), Criteria.Operator.GREATER_THAN, dateFrom);
-            ColumnCriteria dateLessThan = new ColumnCriteria(QueryParameters.Column.CREATION.toString(), Criteria.Operator.LESS_THAN, dateTo);
-            
+            ColumnCriteria dateGreaterThan = new ColumnCriteria(c.toString(), Criteria.Operator.GREATER_THAN, dateFrom);
+            ColumnCriteria dateLessThan = new ColumnCriteria(c.toString(), Criteria.Operator.LESS_THAN, dateTo);
             return new NaryCriteria(Criteria.Operator.AND, dateGreaterThan, dateLessThan);
         }
     }
