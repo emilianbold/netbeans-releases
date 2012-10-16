@@ -181,8 +181,8 @@ NetBeans.insertGlassPane = function() {
 
     document.body.appendChild(canvas);
 
-    window.addEventListener('scroll', this.repaintGlassPane);
-    window.addEventListener('resize', this.repaintGlassPane);
+    window.addEventListener('scroll', this.paintGlassPane);
+    window.addEventListener('resize', this.paintGlassPane);
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
     if (MutationObserver) {
         var observer = new MutationObserver(function(mutations) {
@@ -214,7 +214,16 @@ NetBeans.setSelectionMode = function(selectionMode) {
 };
 
 // Repaints the glass-pane
+NetBeans.repaintRequested = false;
 NetBeans.repaintGlassPane = function() {
+    if (!NetBeans.repaintRequested) {
+        NetBeans.repaintRequested = true;
+        setTimeout(NetBeans.paintGlassPane, 100);
+    }
+};
+
+NetBeans.paintGlassPane = function() {
+    NetBeans.repaintRequested = false;
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
     if (canvas === null) {
         console.log("canvas not found!");
