@@ -120,7 +120,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
             resources.addAll(nbproject.getMavenProject().getTestResources());
             Set<File> old = new HashSet<File>(resourceUris);
             Set<File> added = new HashSet<File>();
-            if (resources != null) {
+            
                 for (Resource res : resources) {
                     String dir = res.getDirectory();
                     if (dir == null) {
@@ -133,7 +133,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                     }
                     added.add(file);
                 }
-            }
+            
             old.removeAll(added);
             for (File oldFile : old) {
                 FileUtil.removeRecursiveListener(this, oldFile);
@@ -395,7 +395,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                 //now check includes and excludes
                 List<String> incls = res.getIncludes();
                 if (incls.isEmpty()) {
-                    incls = Arrays.asList(CosChecker.DEFAULT_INCLUDES);
+                    incls = Arrays.asList(FilteredResourcesCoSSkipper.DEFAULT_INCLUDES);
                 }
                 boolean included = false;
                 for (String incl : incls) {
