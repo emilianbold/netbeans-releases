@@ -94,7 +94,10 @@ public enum PropertyCategory {
     SAFARI,
     
     //default, the rest
-    DEFAULT; 
+    DEFAULT, 
+    
+    //unknown
+    UNKNOWN;
     
     private String displayName;
     private String shortDescription;

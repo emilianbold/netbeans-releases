@@ -188,7 +188,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         RuleEditorController controller = ruleEditorTC.getRuleEditorController();
         LOG.log(Level.FINER, "SourceTask: calling controller.setModel({0})", model);
         controller.setModel(result.getModel());
-
+        
         if (rule == null) {
             controller.setNoRuleState();
         } else {

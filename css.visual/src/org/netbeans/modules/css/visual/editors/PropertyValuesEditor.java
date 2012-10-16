@@ -69,7 +69,6 @@ import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.CssColor;
 import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
 import org.netbeans.modules.css.model.api.Model;
@@ -215,29 +214,9 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
             }
 
         }
+        
+        setValue(str);
 
-        if (RuleNode.NONE_PROPERTY_NAME.equals(str)) {
-            setValue(str); //pass the empty value to the Property
-            return;
-        }
-
-        //first match fixed elements
-        for (FixedTextGrammarElement element : fixedElements) {
-            if (element.accepts(str)) {
-                setValue(str);
-                return;
-            }
-        }
-        //then units
-        for (UnitGrammarElement element : unitElements) {
-            if (element.accepts(str)) {
-                setValue(str);
-                return;
-            }
-        }
-
-        //report error
-        throw new IllegalArgumentException(str);
     }
 
     @Override
@@ -264,7 +243,6 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         env.getFeatureDescriptor().setValue("valueIncrement", new SpinnerModel() { //NOI18N
             private String getNextValue(boolean forward) {
                 String value = getAsText();
-                String newVal = null;
                 for (TokenAcceptor genericAcceptor : TokenAcceptor.ACCEPTORS) {
 
                     if (genericAcceptor instanceof TokenAcceptor.NumberPostfixAcceptor) {
@@ -279,7 +257,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                                 sb.append(postfix);
                             }
 
-                            newVal = sb.toString();
+                            return sb.toString();
                         }
                     } else if (genericAcceptor instanceof TokenAcceptor.Number) {
                         TokenAcceptor.Number acceptor = (TokenAcceptor.Number) genericAcceptor;
@@ -289,20 +267,12 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                             StringBuilder sb = new StringBuilder();
                             sb.append(i + (forward ? 1 : -1));
 
-                            newVal = sb.toString();
+                            return sb.toString();
                         }
                     }
 
                 }
-                
-                //check whether the modified value is valid
-                if(newVal != null) {
-                    ResolvedProperty rp = new ResolvedProperty(pmodel, newVal);
-                    if(rp.isResolved()) {
-                        return newVal;
-                    }
-                }
-
+               
                 //not acceptable token
                 return null;
             }

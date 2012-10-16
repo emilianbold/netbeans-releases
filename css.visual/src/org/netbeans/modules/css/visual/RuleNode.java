@@ -67,6 +67,7 @@ import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
@@ -262,18 +263,18 @@ public class RuleNode extends AbstractNode {
         return propertySets;
     }
 
-    private boolean matchesFilterText(PropertyDefinition pd) {
+    private boolean matchesFilterText(String text) {
         if (filterText == null) {
             return true;
         } else {
-            return pd.getName().contains(filterText);
+            return text.contains(filterText);
         }
     }
 
     private Collection<PropertyDefinition> filterByPrefix(Collection<PropertyDefinition> defs) {
         Collection<PropertyDefinition> filtered = new ArrayList<PropertyDefinition>();
         for (PropertyDefinition pd : defs) {
-            if (matchesFilterText(pd)) {
+            if (matchesFilterText(pd.getName())) {
                 filtered.add(pd);
             }
         }
@@ -307,9 +308,14 @@ public class RuleNode extends AbstractNode {
                 org.netbeans.modules.css.model.api.Property property = d.getProperty();
                 PropertyValue propertyValue = d.getPropertyValue();
                 if (property != null && propertyValue != null) {
-                    PropertyDefinition def = Properties.getProperty(property.getContent().toString());
-                    if (def != null && matchesFilterText(def)) {
-                        PropertyCategory category = def.getPropertyCategory();
+                    if (matchesFilterText(property.getContent().toString())) {
+                        PropertyDefinition def = Properties.getProperty(property.getContent().toString());
+                        PropertyCategory category;
+                        if(def != null) {
+                            category = def.getPropertyCategory();
+                        } else {
+                            category = PropertyCategory.UNKNOWN;
+                        }
 
                         List<Declaration> values = categoryToDeclarationsMap.get(category);
                         if (values == null) {
@@ -388,8 +394,7 @@ public class RuleNode extends AbstractNode {
                 org.netbeans.modules.css.model.api.Property property = d.getProperty();
                 PropertyValue propertyValue = d.getPropertyValue();
                 if (property != null && propertyValue != null) {
-                    PropertyDefinition def = Properties.getProperty(property.getContent().toString());
-                    if (def != null && matchesFilterText(def)) {
+                    if (matchesFilterText(property.getContent().toString())) {
                         filtered.add(d);
                     }
                 }
@@ -682,9 +687,20 @@ public class RuleNode extends AbstractNode {
 
     private DeclarationProperty createDeclarationProperty(Declaration declaration, boolean markAsModified) {
         ResolvedProperty resolvedProperty = declaration.getResolvedProperty();
-        return new DeclarationProperty(declaration, getDeclarationId(getRule(), declaration), getPropertyDisplayName(declaration), markAsModified, createPropertyValueEditor(resolvedProperty.getPropertyModel(), true));
+        return new DeclarationProperty(declaration, 
+                getDeclarationId(getRule(), declaration), 
+                getPropertyDisplayName(declaration), 
+                markAsModified, 
+                resolvedProperty == null ? null : createPropertyValueEditor(resolvedProperty.getPropertyModel(), 
+                true));
     }
 
+    @NbBundle.Messages({
+        "property.value.unexpected.token=Erroneous property value, unexpected token {0} found",
+        "property.value.not.resolved=Erroneous property value",
+        "property.unknown=No such property",
+        "property.description=Property {0} ({1} Module)"
+    })
     public class DeclarationProperty extends PropertySupport {
 
         private final String propertyName;
@@ -693,6 +709,7 @@ public class RuleNode extends AbstractNode {
         
         private Declaration declaration;
         private DeclarationInfo info;
+        private String shortDescription;
         
         private String valueSet;
 
@@ -706,6 +723,8 @@ public class RuleNode extends AbstractNode {
             this.markAsModified = markAsModified;
             this.editor = editor;
 
+            checkForErrors();
+
             //one may set a custom inplace editor by 
             //setValue("inplaceEditor", new MyInplaceEditor());
             
@@ -714,7 +733,39 @@ public class RuleNode extends AbstractNode {
         public Declaration getDeclaration() {
             return declaration;
         }
-
+        
+        /**
+         * Updates the {@link #info} field to {@link DeclarationInfo#ERRONEOUS} if
+         * the active declaration contains errors.
+         */
+        private void checkForErrors() {
+            String property = declaration.getProperty().getContent().toString();
+            PropertyModel model = Properties.getPropertyModel(property);
+            if(model != null) {
+                PropertyValue value = declaration.getPropertyValue();
+                if(value != null) {
+                    CharSequence content = value.getExpression().getContent();
+                    ResolvedProperty rp = new ResolvedProperty(model, content);
+                    if(!rp.isResolved()) {
+                        info = DeclarationInfo.ERRONEOUS;
+                        List<Token> unresolvedTokens = rp.getUnresolvedTokens();
+                        if(!unresolvedTokens.isEmpty()) {
+                            Token unexpectedToken = unresolvedTokens.iterator().next();
+                            shortDescription = Bundle.property_value_unexpected_token(unexpectedToken.toString());
+                        } else {
+                            shortDescription = Bundle.property_value_not_resolved();
+                        }
+                        return ;
+                    }
+                }
+                shortDescription = Bundle.property_description(property, model.getProperty().getCssModule().getDisplayName());
+            } else {
+                //flag as unknown
+                info = DeclarationInfo.ERRONEOUS;
+                shortDescription = Bundle.property_unknown();
+            }
+        }
+        
         private void updateDeclaration(Declaration declaration) {
             assert getDeclarationId(getRule(), declaration).equals(propertyName);
             
@@ -727,13 +778,38 @@ public class RuleNode extends AbstractNode {
              * doesn't require/expect the RuleEditorController.setDeclarationInfo(...) 
              * to be called for each "plain" declaration with null DeclarationInfo argument.
             */
-            this.info = null;
-            setDisplayName(getHtmlDisplayName());
+            DeclarationInfo oldInfo = info;
+            info = null;
             
-            //and fire property change to the node 
-            //this will trigger the property name and value repaint
-            firePropertyChange(propertyName, oldValue, newValue);
+            String oldShortDescription = shortDescription;
             
+            //possibly set the DeclarationInfo to ERRONEOUS
+            checkForErrors();
+            
+            if(!shortDescription.equals(oldShortDescription)) {
+                fireShortDescriptionChange(oldShortDescription, shortDescription);
+            }
+            
+            //now we need to fire property name property change with some 
+            //change so call setDeclarationInfo() which does property change
+            //from null to current value and hence forces the PS to repaint 
+            //the property
+            if(info != oldInfo) {
+                //DeclarationInfo has changed
+                setDeclarationInfo(info);
+            } else {
+                //no change to DeclarationInfo 
+                setDisplayName(getHtmlDisplayName());
+                //and fire property change to the node 
+                //this will trigger the property name and value repaint
+                firePropertyChange(propertyName, oldValue, newValue);
+            }
+            
+        }
+
+        @Override
+        public String getShortDescription() {
+            return shortDescription;
         }
 
         @Override
@@ -745,7 +821,7 @@ public class RuleNode extends AbstractNode {
             this.info = info;
             setDisplayName(getHtmlDisplayName());
             //force the property repaint - stupid way but there's
-            //doesn't seemt to be any better way
+            //doesn't seem to be any better way
             firePropertyChange(propertyName, null, getValue());
         }
 
@@ -784,6 +860,7 @@ public class RuleNode extends AbstractNode {
                 strike = true;
             }
             if (isErroneous()) {
+                strike = true;
                 color = COLOR_CODE_RED;
             }
 
