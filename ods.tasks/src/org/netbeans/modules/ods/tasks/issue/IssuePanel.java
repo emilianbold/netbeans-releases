@@ -2173,7 +2173,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void issueTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_issueTypeComboActionPerformed
-//        cancelHighlight(issueTypeLabel);
+        cancelHighlight(issueTypeLabel);
     }//GEN-LAST:event_issueTypeComboActionPerformed
 
     private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
@@ -2219,11 +2219,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_duplicateButtonActionPerformed
 
     private void priorityComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_priorityComboActionPerformed
-//        cancelHighlight(priorityLabel);
+        cancelHighlight(priorityLabel);
     }//GEN-LAST:event_priorityComboActionPerformed
 
     private void severityComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_severityComboActionPerformed
-//        cancelHighlight(priorityLabel);
+        cancelHighlight(priorityLabel);
     }//GEN-LAST:event_severityComboActionPerformed
 
     private void productComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productComboActionPerformed
