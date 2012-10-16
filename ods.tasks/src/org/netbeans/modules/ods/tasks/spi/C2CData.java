@@ -76,7 +76,7 @@ public final class C2CData {
     public static final String ATTR_DUPLICATE_OF = "duplicate_of";
     public static final String ATTR_DUEDATE = "task.common.date.due";
     public static final String ATTR_FOUND_IN_RELEASE = "softwareVersion";
-    public static final String ATTR_KEYWORDS = "keywords";
+    public static final String ATTR_TAGS = "keywords";
     public static final String ATTR_EXTERNAL_LINKS = "task_relations";
     public static final String ATTR_ESTIMATE_WITH_UNITS = "estimate_with_units";
     public static final String ATTR_REPORTER = "task.common.user.reporter";
