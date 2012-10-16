@@ -64,6 +64,8 @@ public abstract class PageModel {
     public static final String PROP_SELECTION_MODE = "selectionMode"; // NOI18N
     /** Name of the property that is fired when the synchronization of the selection is switched on/off. */
     public static final String PROP_SYNCHRONIZE_SELECTION = "synchronizeSelection"; // NOI18N
+    /** Name of the property that is fired when a rule is selected. */
+    public static final String PROP_SELECTED_RULE = "selectedRule"; // NOI18N
     /** Property change support. */
     private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 
@@ -101,6 +103,22 @@ public abstract class PageModel {
      * @param nodes highlighted nodes.
      */
     public abstract void setHighlightedNodes(List<? extends Node> nodes);
+
+    /**
+     * Sets (the selector of) the selected rule.
+     * 
+     * @param selector selector of a selected rule or {@code null} when
+     * no rule is selected.
+     */
+    public abstract void setSelectedSelector(String selector);
+
+    /**
+     * Returns (the selector of) the selected rule.
+     * 
+     * @return selector of the selected rule or {@code null} when no rule
+     * is selected.
+     */
+    public abstract String getSelectedSelector();
 
     /**
      * Switches the selection mode on or off.

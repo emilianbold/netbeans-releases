@@ -50,6 +50,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PHPCompletionItem;
 import org.netbeans.modules.php.editor.PHPCompletionItem.MethodDeclarationItem;
@@ -218,7 +219,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
         public void visit(FieldAccess fieldAccess) {
             if (isInside(fieldAccess.getStartOffset(), lineBegin, lineEnd)) {
                 String fieldName = CodeUtils.extractVariableName(fieldAccess.getField());
-                if (fieldName != null) {
+                if (StringUtils.hasText(fieldName)) {
                     Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, fieldAccess);
                     if (allTypes.size() == 1) {
                         TypeScope type = ModelUtils.getFirst(allTypes);
