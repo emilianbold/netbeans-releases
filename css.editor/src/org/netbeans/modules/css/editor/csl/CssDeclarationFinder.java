@@ -70,7 +70,7 @@ public class CssDeclarationFinder implements DeclarationFinder {
         FutureParamTask<DeclarationLocation, EditorFeatureContext> task = taskRef.getAndSet(null);
         if(task != null) {
             CssCslParserResult wrapper = (CssCslParserResult)info;
-            return task.run(new EditorFeatureContext(wrapper.getWrappedCssParserResult(), caretOffset));
+            return task.run(new EditorFeatureContext(wrapper, caretOffset));
         }
         
         return DeclarationLocation.NONE;
