@@ -214,29 +214,9 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
             }
 
         }
+        
+        setValue(str);
 
-        if (RuleNode.NONE_PROPERTY_NAME.equals(str)) {
-            setValue(str); //pass the empty value to the Property
-            return;
-        }
-
-        //first match fixed elements
-        for (FixedTextGrammarElement element : fixedElements) {
-            if (element.accepts(str)) {
-                setValue(str);
-                return;
-            }
-        }
-        //then units
-        for (UnitGrammarElement element : unitElements) {
-            if (element.accepts(str)) {
-                setValue(str);
-                return;
-            }
-        }
-
-        //report error
-        throw new IllegalArgumentException(str);
     }
 
     @Override
@@ -271,28 +251,28 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                             int i = acceptor.getNumberValue(value).intValue();
                             CharSequence postfix = acceptor.getPostfix(value);
 
-                            StringBuilder newVal = new StringBuilder();
-                            newVal.append(i + (forward ? 1 : -1));
+                            StringBuilder sb = new StringBuilder();
+                            sb.append(i + (forward ? 1 : -1));
                             if(postfix != null) {
-                                newVal.append(postfix);
+                                sb.append(postfix);
                             }
 
-                            return newVal.toString();
+                            return sb.toString();
                         }
                     } else if (genericAcceptor instanceof TokenAcceptor.Number) {
                         TokenAcceptor.Number acceptor = (TokenAcceptor.Number) genericAcceptor;
                         if (acceptor.accepts(value)) {
                             int i = acceptor.getNumberValue(value).intValue();
 
-                            StringBuilder newVal = new StringBuilder();
-                            newVal.append(i + (forward ? 1 : -1));
+                            StringBuilder sb = new StringBuilder();
+                            sb.append(i + (forward ? 1 : -1));
 
-                            return newVal.toString();
+                            return sb.toString();
                         }
                     }
 
                 }
-
+               
                 //not acceptable token
                 return null;
             }

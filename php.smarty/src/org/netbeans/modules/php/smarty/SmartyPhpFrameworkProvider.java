@@ -141,6 +141,10 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     public static FileObject locate(PhpModule phpModule, String relativePath, boolean subdirs) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return null;
+        }
 
         FileObject fileObject = sourceDirectory.getFileObject(relativePath);
         if (fileObject != null || !subdirs) {

@@ -90,7 +90,7 @@ public class CssCslParserResult extends ParserResult {
     
     public synchronized Model getModel() {
         if(model == null) {
-            model = Model.getModel(getWrappedCssParserResult());
+            model = Model.createModel(getWrappedCssParserResult());
         }
         return model;
     }

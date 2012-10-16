@@ -324,6 +324,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.cc", 54, 10, "file.cc", 46, 9); //clsS2pubFun in c2.clsS2pubFun();
     }
         
+    public void testBug219546() throws Exception {
+        // Bug 219546 - using directive with leading :: not working
+        performTest("bug219546.cpp", 19, 8, "bug219546.cpp", 8, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
