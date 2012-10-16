@@ -2448,10 +2448,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_ownerComboActionPerformed
 
     private void resolutionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolutionComboActionPerformed
-//        cancelHighlight(resolutionCombo); XXX
-//        if (resolutionCombo.getParent() == null) {
-//            return;
-//        }
+        cancelHighlight(resolutionCombo);
+        if (resolutionCombo.getParent() == null) {
+            return;
+        }
         TaskResolution duplicate = C2CUtil.getResolutionByValue(C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository()), RESOLUTION_DUPLICATE);
         boolean shown = duplicate.equals(resolutionCombo.getSelectedItem()); // NOI18N
         duplicateField.setVisible(shown);
