@@ -120,7 +120,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.ClassEnumBase;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ParserQueue.Position;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
@@ -282,58 +281,72 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         for (FileImpl fileImpl : allFileImpls) {
-            CharSequence fileKey = fileImpl.getAbsolutePath();
-            checkFileEntryConsistency(fileKey, restoring);
+            checkFileEntryConsistency(fileImpl, restoring);
         }
     }
 
-    private void checkFileEntryConsistency(CharSequence fileKey, boolean restoring) {
+    private void checkFileEntryConsistency(FileImpl fileImpl, boolean restoring) {
+        CharSequence fileKey = fileImpl.getAbsolutePath();
+        FileImpl.State fileState = fileImpl.getState();
         FileEntry entry = getFileContainer().getEntry(fileKey);
         if (entry != null) {
             Object lock = entry.getLock();
             synchronized (lock) {
                 List<PreprocessorStatePair> fcPairs = new ArrayList<PreprocessorStatePair>(entry.getStatePairs());
-                boolean hasParsing = false;
-                for (PreprocessorStatePair fcPair : fcPairs) {
-                    if (fcPair.pcState != FilePreprocessorConditionState.PARSING) {
-                        hasParsing = true;
-                    }
-                }
-                CsmUID<CsmFile> testFileUID = entry.getTestFileUID();
-                FileImpl fileImpl = (FileImpl) UIDCsmConverter.UIDtoFile(testFileUID);
-                if (fcPairs.isEmpty() && fileImpl.getState() != FileImpl.State.INITIAL) {
+                if (fcPairs.isEmpty() && fileState != FileImpl.State.INITIAL) {
                     CndUtils.assertTrueInConsole(false, "no states for own file ", fileImpl);
                 }
-                if (restoring) {
-                    for (PreprocessorStatePair pair : fcPairs) {
-                        CndUtils.assertTrueInConsole(pair.state.isValid(), "FC Should not contain invalid ", pair);
-                        CndUtils.assertTrueInConsole(pair.pcState != FilePreprocessorConditionState.PARSING, "FC Should not contain PARSING ", pair);
+                boolean hasParsing = false;
+                Boolean hasValid = fcPairs.isEmpty() ? Boolean.TRUE : null;
+                // check own File Container and remember what we have found for checking own includes files 
+                // from includedFileContainer later
+                for (PreprocessorStatePair fcPair : fcPairs) {
+                    if (fileState == FileImpl.State.PARSED) {
+                        CndUtils.assertTrueInConsole(fcPair.state.isValid(), "FC Should not contain invalid ", fcPair);
+                        CndUtils.assertTrueInConsole(fcPair.pcState != FilePreprocessorConditionState.PARSING, "FC Should not contain PARSING ", fcPair);
                     }
+                    if (fcPair.pcState == FilePreprocessorConditionState.PARSING) {
+                        hasParsing = true;
+                    }
+                    if (hasValid == null) {
+                        hasValid = fcPair.state.isValid();
+                    }
+                    CndUtils.assertTrueInConsole(hasValid == fcPair.state.isValid(), "FC Should not contain " + hasValid, fcPair);
                 }
+                CsmUID<CsmFile> testFileUID = entry.getTestFileUID();
+                FileImpl testFileImpl = (FileImpl) UIDCsmConverter.UIDtoFile(testFileUID);
+                if (!testFileImpl.equals(fileImpl)) {
+                    CndUtils.assertTrueInConsole(false, "different files: " + fileImpl, testFileImpl);
+                }
+                // check if input file was included by 'this' project
                 FileEntry includedFileEntry = this.includedFileContainer.getIncludedFileEntry(lock, this, fileKey);
                 if (includedFileEntry != null) {
+                    // it was included => check in which states it was included from 'this' project
                     List<PreprocessorStatePair> inclPairs = new ArrayList<PreprocessorStatePair>(includedFileEntry.getStatePairs());
                     if (inclPairs.isEmpty()) {
                         CndUtils.assertTrueInConsole(false, "no included states for included file ", fileImpl);
                     } else {
-                        for (PreprocessorStatePair pair : inclPairs) {
-                            if (restoring) {
-                                CndUtils.assertTrueInConsole(pair.state.isValid(), "Should not contain invalid ", pair);
-                                CndUtils.assertTrueInConsole(pair.pcState != FilePreprocessorConditionState.PARSING, "Should not contain PARSING ", pair);
+                        for (PreprocessorStatePair inclPair : inclPairs) {
+                            if (fileState == FileImpl.State.PARSED) {
+                                CndUtils.assertTrueInConsole(inclPair.state.isValid(), "Should not contain invalid ", inclPair);
+                                CndUtils.assertTrueInConsole(inclPair.pcState != FilePreprocessorConditionState.PARSING, "Should not contain PARSING ", inclPair);
                             }
+                            // check that any own include files are contributing in own FC container the same way
                             List<PreprocessorStatePair> statesToKeep = new ArrayList<PreprocessorStatePair>(4);
                             AtomicBoolean newStateFound = new AtomicBoolean();
-                            ComparisonResult resultPP = fillStatesToKeepBasedOnPPState(pair.state, fcPairs, statesToKeep, newStateFound);
-                            if (resultPP != ComparisonResult.KEEP_WITH_OTHERS) {
-                                if (restoring || hasParsing) {
-                                    CndUtils.assertTrueInConsole(false, "Should not constribute [" + restoring + "," + hasParsing + "] pair into File Container (state based) " + pair, fcPairs);
+                            ComparisonResult resultPP;
+                            resultPP = fillStatesToKeepBasedOnPPState(inclPair.state, fcPairs, statesToKeep, newStateFound);
+                            if (inclPair.state.isValid()) {
+                                if (resultPP != ComparisonResult.KEEP_WITH_OTHERS) {
+                                    CndUtils.assertTrueInConsole(false, "Should not contribute [" + restoring + "," + hasParsing + "] " + newStateFound + " " + resultPP + " pair into File Container (state based) " + inclPair + "vs.\n", fcPairs);
                                 }
+                            } else {
+                                CndUtils.assertTrueInConsole(resultPP == ComparisonResult.DISCARD && !hasValid, "Should not contribute invalid [" + restoring + "," + hasParsing + "] " + newStateFound + " " + resultPP + " pair into File Container (state based) " + inclPair + "vs.\n", fcPairs);                                
                             }
-                            ComparisonResult resultPC = fillStatesToKeepBasedOnPCState(pair.pcState, fcPairs, statesToKeep);
+                            // check that any own include files are contributing has not worse PC state in own FC container
+                            ComparisonResult resultPC = fillStatesToKeepBasedOnPCState(inclPair.pcState, fcPairs, statesToKeep);
                             if (resultPC != ComparisonResult.DISCARD) {
-                                if (restoring || hasParsing) {
-                                    CndUtils.assertTrueInConsole(false, "Should not constribute [" + restoring + "," + hasParsing + "] pair into File Container (PCState based) " + pair, fcPairs);
-                                }
+                                CndUtils.assertTrueInConsole(inclPair.pcState == FilePreprocessorConditionState.PARSING && hasParsing, "Should not contribute [" + restoring + "," + hasParsing + "] " + newStateFound + " " + resultPC + " pair into File Container (PCState based) " + inclPair, fcPairs);
                             }
                         }
                     }
@@ -2197,9 +2210,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      *
      * @param  newStateFound  OUT: set to true if new state is found among old ones
      *
-     * @return  BETTER - new state is better than old ones
-     *          SAME - new state is more or less  the same :) as old ones
-     *          WORSE - new state is worse than old ones
+     * @return  REPLACE_OTHERS - new state is better than old ones
+     *          KEEP_WITH_OTHERS - new state is more or less  the same :) as old ones
+     *          DISCARD - new state is worse than old ones
      */
     private static ComparisonResult fillStatesToKeepBasedOnPPState(
             APTPreprocHandler.State newState,
