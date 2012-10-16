@@ -218,6 +218,7 @@ public class TabbedController extends OptionsPanelController {
                 scroll.getViewport().setOpaque(false);
                 pane.setComponentAt(selectedIndex, scroll);
                 controller.update();
+		controller.isValid();
             }
             pcs.firePropertyChange(OptionsPanelController.PROP_HELP_CTX, null, null);
         }
