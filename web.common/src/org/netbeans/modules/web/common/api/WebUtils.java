@@ -58,7 +58,6 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -357,7 +356,19 @@ public class WebUtils {
         try {
             // #216436:
             // use URL to split the string into individual URI parts first:
-            URL u = new URL(urlString);
+            URL u;
+            try {
+                u = new URL(urlString);
+            } catch (MalformedURLException ex) {
+                // #219686 - try to use http protocol if protocol is missing:
+                if (!(urlString.startsWith("file:/") ||
+                    urlString.startsWith("http:/") ||
+                    urlString.startsWith("https:/"))) {
+                    urlString = "http://" + urlString;
+                }
+            }
+            u = new URL(urlString);
+                
             // and now use URI to properly encode spaces in path:
             return new URI(u.getProtocol(), u.getAuthority(), u.getPath(), u.getQuery(), u.getRef()).toURL();
         } catch (URISyntaxException ex) {
@@ -376,8 +387,8 @@ public class WebUtils {
         try {
             uri = url.toURI();
         } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
             // fallback:
+            LOGGER.log(Level.FINE, "URL '"+url+"' cannot be converted to URI.");
             return url.toExternalForm();
         }
         StringBuilder sb = new StringBuilder();
