@@ -46,7 +46,11 @@ import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
 import com.tasktop.c2c.server.common.service.domain.criteria.NaryCriteria;
+import com.tasktop.c2c.server.tasks.domain.AbstractDomainObject;
+import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
+import com.tasktop.c2c.server.tasks.domain.Milestone;
+import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.awt.Component;
 import java.text.ParseException;
@@ -55,10 +59,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -231,7 +238,9 @@ public class QueryParameters {
         }
         
         public void populate(Collection values) {
-            combo.setModel(new DefaultComboBoxModel(values.toArray()));
+            ArrayList l = new ArrayList(values);
+            Collections.sort(l, new ParameterComparator());
+            combo.setModel(new DefaultComboBoxModel(l.toArray()));
         }
         
         public void setValues(Collection values) {
@@ -286,8 +295,12 @@ public class QueryParameters {
         
         public void populate(Collection values) {
             DefaultListModel m = new DefaultListModel();
-            for (Object o : values) {
-                m.addElement(o);
+            if(values != null) {
+                ArrayList l = new ArrayList(values);
+                Collections.sort(l, new ParameterComparator());
+                for (Object o : l) {
+                    m.addElement(o);
+                }
             }
             list.setModel(m);
         }
@@ -461,10 +474,14 @@ public class QueryParameters {
             list.setEnabled(b);
         }
 
-        public void populatePeople(Collection<TaskUserProfile> values) {
+        public void populatePeople(List<TaskUserProfile> values) {
+            ArrayList<TaskUserProfile> l = new ArrayList<TaskUserProfile>(values);
             DefaultListModel model = new DefaultListModel();
-            for (TaskUserProfile v : values) {
-                model.addElement(v);
+            if(values != null) {
+                Collections.sort(l, new ParameterComparator());
+                for (TaskUserProfile v : l) {
+                    model.addElement(v);
+                }
             }
             list.setModel(model);
         }
@@ -623,6 +640,32 @@ public class QueryParameters {
         }
     }
     
+    private static class ParameterComparator implements Comparator {
+        @Override
+        public int compare(Object o1, Object o2) {
+            if(o1 == null && o2 == null) {
+                return 0;
+            } else if(o1 == null) {
+                return -1;
+            } else if(o1 == null) {
+                return 1;
+            }
+            if(o1.getClass() != o2.getClass()) {
+                return 0;
+            }
+            if(o1 instanceof Comparable) {
+                return ((Comparable)o1).compareTo((Comparable)o2);
+            } else if(o1 instanceof com.tasktop.c2c.server.tasks.domain.Component) {
+                return ((com.tasktop.c2c.server.tasks.domain.Component)o1).getName().compareTo(((com.tasktop.c2c.server.tasks.domain.Component)o2).getName());
+            } else if(o1 instanceof Product) { 
+                return ((Product)o1).getName().compareTo(((Product)o2).getName());
+            } else if(o1 instanceof Keyword) { 
+                return ((Keyword)o1).getName().compareTo(((Keyword)o2).getName());
+            }
+            return 0;
+        }
+    }
+                
     private static String valueToString(Object value) {
         if(value == null) {
             return ""; // NOI18N

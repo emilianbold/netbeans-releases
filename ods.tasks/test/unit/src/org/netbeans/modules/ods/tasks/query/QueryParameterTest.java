@@ -74,7 +74,7 @@ public class QueryParameterTest extends NbTestCase {
     private final static String VALUE2 = "value2";
     private final static String VALUE3 = "value3";
     private final static String VALUE4 = "value4";
-    private final static Collection<String> VALUES = Arrays.asList(VALUE1, VALUE2, VALUE3, VALUE4);
+    private final static List<String> VALUES = Arrays.asList(VALUE1, VALUE2, VALUE3, VALUE4);
 
     public QueryParameterTest(String arg0) {
         super(arg0);
@@ -278,7 +278,7 @@ public class QueryParameterTest extends NbTestCase {
         assertFalse(chk4.isSelected());
         assertNull(cp.getCriteria());
         
-        Collection<TaskUserProfile> users = getUsers();
+        List<TaskUserProfile> users = getUsers();
         cp.populatePeople(users);
         assertEquals(-1, list.getSelectedIndex());
         assertFalse(chk1.isSelected());
@@ -315,7 +315,7 @@ public class QueryParameterTest extends NbTestCase {
     }
     
 
-    private Collection<TaskUserProfile> getUsers() {
+    private List<TaskUserProfile> getUsers() {
         List<TaskUserProfile> ret = new LinkedList<TaskUserProfile>();
         TaskUserProfile user = new TaskUserProfile();
         user.setLoginName("user1");
