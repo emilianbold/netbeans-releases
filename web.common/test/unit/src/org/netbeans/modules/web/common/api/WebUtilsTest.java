@@ -197,6 +197,9 @@ public class WebUtilsTest extends CslTestBase {
     public void testStringToUrl() throws Exception {
         URL u = WebUtils.stringToUrl("http://localhost:1234/some path with spaces/zemědělství?more spaces#mě dě");
         assertEquals("http://localhost:1234/some%20path%20with%20spaces/zemědělství?more%20spaces#mě%20dě", u.toExternalForm());
+        // #219686
+        u = WebUtils.stringToUrl("localhost:1234/some-path");
+        assertEquals("http://localhost:1234/some-path", u.toExternalForm());
     }
     
     public void testUrlToString() throws Exception {
