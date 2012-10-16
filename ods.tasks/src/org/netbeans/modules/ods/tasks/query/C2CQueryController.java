@@ -90,6 +90,7 @@ import org.netbeans.modules.ods.tasks.C2CConfig;
 import org.netbeans.modules.ods.tasks.C2CConnector;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
 import org.netbeans.modules.ods.tasks.query.QueryParameters.ByDateParameter;
+import org.netbeans.modules.ods.tasks.query.QueryParameters.ListParameter;
 import org.netbeans.modules.ods.tasks.query.QueryParameters.Parameter;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
@@ -316,19 +317,18 @@ public class C2CQueryController extends QueryController implements ItemListener,
                         public void run() {
                             try {
                                 // XXX preselect default values
-                                Parameter productParameter = parameters.get(QueryParameters.Column.PRODUCT);
-                                productParameter.populate(clientData.getProducts());
+                                parameters.getListParameter(QueryParameters.Column.PRODUCT).populate(clientData.getProducts());
                                 populateProductDetails(clientData);
                                 
                                 // XXX add description to tooltip
-                                parameters.get(QueryParameters.Column.TASK_TYPE).populate(clientData.getTaskTypes());
-                                parameters.get(QueryParameters.Column.PRIORITY).populate(clientData.getPriorities());
-                                parameters.get(QueryParameters.Column.SEVERITY).populate(clientData.getSeverities());
+                                parameters.getListParameter(QueryParameters.Column.TASK_TYPE).populate(clientData.getTaskTypes());
+                                parameters.getListParameter(QueryParameters.Column.PRIORITY).populate(clientData.getPriorities());
+                                parameters.getListParameter(QueryParameters.Column.SEVERITY).populate(clientData.getSeverities());
 
-                                parameters.get(QueryParameters.Column.STATUS).populate(clientData.getStatuses());
-                                parameters.get(QueryParameters.Column.RESOLUTION).populate(clientData.getResolutions());
+                                parameters.getListParameter(QueryParameters.Column.STATUS).populate(clientData.getStatuses());
+                                parameters.getListParameter(QueryParameters.Column.RESOLUTION).populate(clientData.getResolutions());
 
-                                parameters.get(QueryParameters.Column.KEYWORDS).populate(clientData.getKeywords());
+                                parameters.getListParameter(QueryParameters.Column.KEYWORDS).populate(clientData.getKeywords());
                                 
                                 parameters.getByPeopleParameter().populatePeople(clientData.getUsers());
                             } finally {
@@ -687,9 +687,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onProductChanged(ListSelectionEvent e) {
-        Parameter productParameter = parameters.get(QueryParameters.Column.PRODUCT);
-        C2CData clientData = C2C.getInstance().getClientData(repository);
-        populateProductDetails(clientData);
+        populateProductDetails(C2C.getInstance().getClientData(repository));
     }
 
     public void autoRefresh() {
@@ -849,9 +847,9 @@ public class C2CQueryController extends QueryController implements ItemListener,
             newMilestones.addAll(clientData.getMilestones());
         }
         
-        parameters.get(QueryParameters.Column.COMPONENT).populate(newComponents);
-        parameters.get(QueryParameters.Column.ITERATION).populate(newIterations);
-        parameters.get(QueryParameters.Column.RELEASE).populate(newMilestones);
+        parameters.getListParameter(QueryParameters.Column.COMPONENT).populate(newComponents);
+        parameters.getListParameter(QueryParameters.Column.ITERATION).populate(newIterations);
+        parameters.getListParameter(QueryParameters.Column.RELEASE).populate(newMilestones);
     }
 
     private String toParameterValues(Collection values) {

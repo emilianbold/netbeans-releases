@@ -110,12 +110,6 @@ public class QueryParameterTest extends NbTestCase {
         assertFalse(chk2.isSelected());
         assertNull(cp.getCriteria());
         
-        cp.populate(Collections.singleton(VALUE3));
-        assertEquals("", txt.getText());
-        assertFalse(chk1.isSelected());
-        assertFalse(chk2.isSelected());
-        assertNull(cp.getCriteria());
-        
         cp.setValues(VALUE3, true, false);
         assertTrue(chk1.isSelected());
         assertFalse(chk2.isSelected());
@@ -216,7 +210,7 @@ public class QueryParameterTest extends NbTestCase {
         assertEquals(QueryParameters.Column.COMMENT, tp.getColumn());
         assertEquals("", text.getText());
 
-        tp.setValues(VALUE2);
+        tp.setValue(VALUE2);
         assertEquals(VALUE2, text.getText());
 
         String parameterValue = "NewValue";

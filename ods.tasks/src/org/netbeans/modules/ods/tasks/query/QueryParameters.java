@@ -131,8 +131,8 @@ public class QueryParameters {
 
     QueryParameters() { }
         
-    Parameter get(Column c) {
-        return (Parameter) map.get(c);
+    ListParameter getListParameter(Column c) {
+        return (ListParameter) map.get(c);
     }
     
     ByPeopleParameter getByPeopleParameter() {
@@ -172,7 +172,6 @@ public class QueryParameters {
     }
     
     static interface Parameter {
-        void populate(Collection values);
         void setEnabled(boolean b);
         Criteria getCriteria();
     }
@@ -231,7 +230,6 @@ public class QueryParameters {
             return item != null ? Collections.singleton(item) : null;
         }
         
-        @Override
         public void populate(Collection values) {
             combo.setModel(new DefaultComboBoxModel(values.toArray()));
         }
@@ -286,7 +284,6 @@ public class QueryParameters {
             return ret;
         }
         
-        @Override
         public void populate(Collection values) {
             DefaultListModel m = new DefaultListModel();
             for (Object o : values) {
@@ -343,7 +340,7 @@ public class QueryParameters {
             this.txt = txt;
         }
         
-        void setValues(String s) {
+        void setValue(String s) {
             txt.setText(s); 
         }
         
@@ -352,9 +349,8 @@ public class QueryParameters {
             txt.setEnabled(b);
         }
 
-        @Override
-        public void populate(Collection value) {
-            setValues((String)value.iterator().next());
+        public void populate(String txt) {
+            setValue(txt);
         }
 
         @Override
@@ -386,11 +382,6 @@ public class QueryParameters {
             chkSummary.setEnabled(b);
             chkDescription.setEnabled(b);
             txt.setEnabled(b);
-        }
-
-        @Override
-        public void populate(Collection value) {
-            // do nothing
         }
 
         @Override
@@ -470,11 +461,6 @@ public class QueryParameters {
             list.setEnabled(b);
         }
 
-        @Override
-        public void populate(Collection values) {
-            // XXX
-        }
-        
         public void populatePeople(Collection<TaskUserProfile> values) {
             DefaultListModel model = new DefaultListModel();
             for (TaskUserProfile v : values) {
@@ -543,11 +529,6 @@ public class QueryParameters {
             cbo.setEnabled(b);
             fromField.setEnabled(b);
             toField.setEnabled(b);
-        }
-
-        @Override
-        public void populate(Collection values) {
-            // XXX
         }
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
@@ -627,11 +608,6 @@ public class QueryParameters {
         @Override
         public void setEnabled(boolean  b) {
             chk.setEnabled(b);
-        }
-
-        @Override
-        public void populate(Collection b) {
-            // do nothing
         }
 
         @Override
