@@ -75,6 +75,7 @@ public class MavenGroovyExtender implements GroovyExtender {
     @Override
     public boolean isActive() {
         final Boolean[] retValue = new Boolean[1];
+        retValue[0] = false;
         try {
             pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 @Override
