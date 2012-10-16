@@ -950,7 +950,6 @@ public class ImportRemoteProject implements PropertyChangeListener {
                             new Object[]{projectCreator.getPath(), projectFolder.getPath(), makeLog});
             }
             DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, false);
-            DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
             FileObject conf1 = projectFolder.getFileObject().getFileObject("nbproject/configurations.xml"); //NOI18N
             ExitStatus execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()
                                          , "--netbeans-project="+projectFolder.getPath() // NOI18N
@@ -1073,7 +1072,6 @@ public class ImportRemoteProject implements PropertyChangeListener {
                                 logger.log(Level.INFO, "#model ready, explore model"); // NOI18N
                             }
                             DiscoveryProjectGenerator.fixExcludedHeaderFiles(makeProject, logger);
-                            DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
                         } catch (Throwable ex) {
                             isFinished = true;
                             Exceptions.printStackTrace(ex);

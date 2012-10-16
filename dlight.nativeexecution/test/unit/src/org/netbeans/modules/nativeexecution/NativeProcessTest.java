@@ -41,45 +41,49 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import java.util.concurrent.TimeoutException;
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import junit.framework.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.TaskFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import static org.junit.Assert.*;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
  * @author ak119685
  */
 public class NativeProcessTest extends NativeExecutionBaseTestCase {
+
     private static RequestProcessor rp = new RequestProcessor("NativeProcessTest RP");
 
     public NativeProcessTest(String name) {
@@ -90,6 +94,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
         super(name, execEnv);
     }
 
+    @SuppressWarnings("unchecked")
     public static Test suite() {
         return new NativeExecutionBaseTestSuite(NativeProcessTest.class);
     }
@@ -146,15 +151,49 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
     @org.junit.Test
     @ForAllEnvironments(section = "remote.platforms")
     public void testDestroySignal() throws Exception {
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(getTestExecutionEnvironment());
-        npb.getEnvironment().put("LC_ALL", "C"); // NOI18N
-        npb.setExecutable("/bin/sh").setArguments("-c", "trap \"echo OK && exit\" TERM \n read X"); // NOI18N
-        NativeProcess process = npb.call();
-        process.destroy();
-        String output = ProcessUtils.readProcessOutputLine(process);
-        String error = ProcessUtils.readProcessErrorLine(process);
-        assertEquals("OK", output); // NOI18N
-        assertEquals("", error); // NOI18N
+        for (int i = 1; i <= 5; i++) {
+            System.out.println("testDestroySignal: Round " + i + " @ " + getTestExecutionEnvironment().getDisplayName()); // NOI18N
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(getTestExecutionEnvironment());
+            npb.getEnvironment().put("LC_ALL", "C"); // NOI18N
+            npb.setExecutable("/bin/sh").setArguments("-c", "trap \"echo OK && exit\" TERM \n echo ready; read X"); // NOI18N
+            final NativeProcess process = npb.call();
+            assertEquals(State.RUNNING, process.getState());
+
+            final ReadableByteChannel channel = Channels.newChannel(process.getInputStream());
+            final BufferedReader br = new BufferedReader(Channels.newReader(channel, "UTF-8")); // NOI18N
+            final Callable<String> lineReader = new Callable<String>() {
+
+                @Override
+                public String call() throws Exception {
+                    return br.readLine();
+                }
+            };
+            String outputLine = getResult(lineReader, 2, TimeUnit.SECONDS);
+            assertEquals("ready", outputLine); // NOI18N
+
+            // Only after we have read 'ready' string we could be sure that
+            // signal handler is installed...
+            // Proceed with sending a signal.
+
+            process.destroy();
+
+            // Signal should lead to process termination.
+            getResult(new Callable<Void>() {
+
+                @Override
+                public Void call() throws Exception {
+                    process.waitFor();
+                    return null;
+                }
+            }, 2, TimeUnit.SECONDS);
+
+            assertNotSame(State.RUNNING, process.getState());
+
+            outputLine = getResult(lineReader, 2, TimeUnit.SECONDS);
+            String error = ProcessUtils.readProcessErrorLine(process);
+            assertEquals("OK", outputLine); // NOI18N
+            assertEquals("", error); // NOI18N
+        }
     }
 
     public void doTestDestroyInfiniteTasks(final ExecutionEnvironment execEnv) throws Exception {
@@ -334,6 +373,20 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
         startSupport.waitCompletion();
         killSupport.waitCompletion();
 
+    }
+
+    private <T> T getResult(Callable<T> callable, int timeout, TimeUnit units) {
+        Future<T> fresult = RequestProcessor.getDefault().submit(callable);
+        T result = null;
+        try {
+            result = fresult.get(timeout, units);
+        } catch (TimeoutException ex) {
+            fail("Expected result is not available in " + timeout + " " + units.name());
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            fail("Unexpected exception while waiting for a result...");
+        }
+        return result;
     }
 
     private class ShortTask implements Runnable {
