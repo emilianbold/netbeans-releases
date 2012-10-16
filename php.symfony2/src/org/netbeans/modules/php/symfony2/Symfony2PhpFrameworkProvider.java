@@ -112,7 +112,12 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public File[] getConfigurationFiles(PhpModule phpModule) {
-        FileObject configDir = phpModule.getSourceDirectory().getFileObject(CONFIG_DIRECTORY);
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return new File[0];
+        }
+        FileObject configDir = sourceDirectory.getFileObject(CONFIG_DIRECTORY);
         if (configDir != null && configDir.isFolder() && configDir.isValid()) {
             File[] configFiles = FileUtil.toFile(configDir).listFiles();
             if (configFiles != null) {
@@ -135,7 +140,12 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public PhpModuleProperties getPhpModuleProperties(PhpModule phpModule) {
         PhpModuleProperties properties = new PhpModuleProperties();
-        FileObject web = phpModule.getSourceDirectory().getFileObject("web"); // NOI18N
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return properties;
+        }
+        FileObject web = sourceDirectory.getFileObject("web"); // NOI18N
         if (web != null) {
             properties = properties.setWebRoot(web);
         }
