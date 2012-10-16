@@ -42,12 +42,16 @@
 
 package org.netbeans.modules.ods.tasks;
 
+import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
+import junit.framework.Test;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
@@ -55,6 +59,7 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ods.tasks.query.QueryParameters;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 
@@ -64,6 +69,13 @@ import org.netbeans.modules.ods.tasks.spi.C2CData;
  */
 public class ODSQueryTestCase extends AbstractC2CTestCase {
 
+    public static Test suite() {
+        return NbModuleSuite.emptyConfiguration()  
+                .addTest(ODSQueryTestCase.class)
+                .gui(false)
+                .suite();
+    }
+        
     public ODSQueryTestCase(String arg0) {
         super(arg0);
     }
@@ -230,6 +242,36 @@ public class ODSQueryTestCase extends AbstractC2CTestCase {
                        td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT3));
         }
     }
+
+    public void testQueryByDate() throws IOException, CoreException {
+        long t1 = System.currentTimeMillis();
+        String summary = "summary-" + t1;
+        TaskData td = createTaskData(summary, "This is the description of bug " + summary, "bug");
+        
+        ColumnCriteria dateGreaterThan = new ColumnCriteria(QueryParameters.Column.CREATION.toString(), Criteria.Operator.GREATER_THAN, new Date(t1 - 24 * 60 * 60 * 1000));
+        ColumnCriteria dateLessThan = new ColumnCriteria(QueryParameters.Column.CREATION.toString(), Criteria.Operator.LESS_THAN, new Date(t1 + 24 * 60 * 60 * 1000));
+
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
+        
+        CriteriaBuilder cb = new CriteriaBuilder();
+        cb.result = dateGreaterThan;
+        cb.and(dateLessThan);
+        
+        query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
+        
+        System.out.println(" Query Criteria : " + cb.toCriteria().toQueryString());
+        
+        Collector c = new Collector();
+        IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
+        assertEquals("Status is OK", status.getCode(), IStatus.OK);
+        assertFalse(c.arr.isEmpty());
+        for (TaskData data : c.arr) {
+            if(summary.equals(data.getRoot().getMappedAttribute(C2CData.ATTR_SUMMARY).getValue())) {
+                return;
+            }
+        }
+        fail("query should return TaskData with sumary '" + summary + "'");
+    }    
     
     private class Collector extends TaskDataCollector {
         List<TaskData> arr = new ArrayList<TaskData>();
