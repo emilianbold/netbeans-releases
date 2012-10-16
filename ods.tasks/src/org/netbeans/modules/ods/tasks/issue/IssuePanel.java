@@ -2120,52 +2120,52 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }//GEN-LAST:event_showInBrowserButtonActionPerformed
 
+    @NbBundle.Messages("IssuePanel.reloadMessage=Reloading server attributes")
     private void reloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadButtonActionPerformed
-//        String reloadMessage = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reloadMessage"); // NOI18N
-//        final ProgressHandle handle = ProgressHandleFactory.createHandle(reloadMessage);
-//        handle.start();
-//        handle.switchToIndeterminate();
-//        skipReload = true;
-//        enableComponents(false);
-//        RP.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                issue.getRepository().refreshConfiguration();
-//                EventQueue.invokeLater(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        try {
-//                            reloading = true;
-//                            Object product = productCombo.getSelectedItem();
-//                            Object platform = platformCombo.getSelectedItem();
-//                            Object os = osCombo.getSelectedItem();
-//                            Object priority = priorityCombo.getSelectedItem();
-//                            Object severity = severityCombo.getSelectedItem();
-//                            Object resolution = resolutionCombo.getSelectedItem();
-//                            Object issueType = issueTypeCombo.getSelectedItem();
-//                            initCombos();
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.IssuePanel_reloadMessage());
+        handle.start();
+        handle.switchToIndeterminate();
+        skipReload = true;
+        enableComponents(false);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                issue.getRepository().refreshConfiguration();
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            reloading = true;
+                            Object product = productCombo.getSelectedItem();
+                            Object iteration = iterationCombo.getSelectedItem();
+                            Object milestone = releaseCombo.getSelectedItem();
+                            Object owner = ownerCombo.getSelectedItem();
+                            Object priority = priorityCombo.getSelectedItem();
+                            Object severity = severityCombo.getSelectedItem();
+                            Object resolution = resolutionCombo.getSelectedItem();
+                            Object issueType = issueTypeCombo.getSelectedItem();
+                            initCombos();
 //                            initCustomFields();
-//                            selectInCombo(productCombo, product, false);
-//                            selectInCombo(platformCombo, platform, false);
-//                            selectInCombo(osCombo, os, false);
-//                            selectInCombo(priorityCombo, priority, false);
-//                            selectInCombo(severityCombo, severity, false);
-//                            initStatusCombo(statusCombo.getSelectedItem().toString());
-//                            selectInCombo(resolutionCombo, resolution, false);
-//                            if (BugzillaUtil.isNbRepository(issue.getRepository())) {
-//                                issueTypeCombo.setSelectedItem(issueType);
-//                            }
+                            selectInCombo(productCombo, product, false);
+                            selectInCombo(iterationCombo, iteration, false);
+                            selectInCombo(releaseCombo, milestone, false);
+                            selectInCombo(ownerCombo, owner, false);
+                            selectInCombo(priorityCombo, priority, false);
+                            selectInCombo(severityCombo, severity, false);
+                            initStatusCombo(statusCombo.getSelectedItem().toString(), issue.getFieldValue(IssueField.STATUS));
+                            selectInCombo(resolutionCombo, resolution, false);
+                            selectInCombo(issueTypeCombo, issueType, false);
 //                            reloadCustomFields(true);
-//                        } finally {
-//                            reloading = false;
-//                            enableComponents(true);
-//                            skipReload = false;
-//                        }
-//                    }
-//                });
-//                handle.finish();
-//            }
-//        });
+                        } finally {
+                            reloading = false;
+                            enableComponents(true);
+                            skipReload = false;
+                        }
+                    }
+                });
+                handle.finish();
+            }
+        });
     }//GEN-LAST:event_reloadButtonActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
