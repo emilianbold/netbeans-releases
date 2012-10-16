@@ -123,7 +123,7 @@ class Nodes {
     private static final String INSPECT_HIERARCHY_ACTION = "Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowHierarchyAction.instance";    //NOI18N
     @StaticResource
     private static final String ICON = "org/netbeans/modules/java/navigation/resources/wait.gif";   //NOI18N
-    private static final String ACTION_FOLDER = "Navigation/Hierarchy/text/x-java/Actions";  //NOI18N
+    private static final String ACTION_FOLDER = "Navigator/Actions/Hierarchy/text/x-java";  //NOI18N
     private static final WaitNode WAIT_NODE = new WaitNode();
 
     

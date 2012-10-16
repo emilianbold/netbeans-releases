@@ -90,7 +90,7 @@ import org.openide.util.lookup.InstanceContent.Convertor;
 public class ElementNode extends AbstractNode {
 
 
-    private static final String ACTION_FOLDER = "Navigation/Members/text/x-java/Actions";  //NOI18N
+    private static final String ACTION_FOLDER = "Navigator/Actions/Members/text/x-java";  //NOI18N
     private static Node WAIT_NODE;
     
     private OpenAction openAction;
