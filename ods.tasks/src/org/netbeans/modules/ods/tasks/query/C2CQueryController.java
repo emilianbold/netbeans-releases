@@ -60,6 +60,8 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -82,6 +84,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.bugtracking.util.*;
@@ -97,6 +100,7 @@ import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -660,29 +664,26 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onWeb() {
-//        String params = getUrlParameters(true);
-//        String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/query.cgi?format=advanced"; // NOI18N //XXX need constants
-//
-//        final String urlString = repoURL + (params != null && !params.equals("") ? params : ""); // NOI18N
-//        C2C.getInstance().getRequestProcessor().post(new Runnable() {
-//            @Override
-//            public void run() {
-//                URL url;
-//                try {
-//                    url = new URL(urlString);
-//                } catch (MalformedURLException ex) {
-//                    C2C.LOG.log(Level.SEVERE, null, ex);
-//                    return;
-//                }
-//                HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
-//                if (displayer != null) {
-//                    displayer.showURL (url);
-//                } else {
-//                    // XXX nice error message?
-//                    C2C.LOG.warning("No URLDisplayer found.");             // NOI18N
-//                }
-//            }
-//        });
+        KenaiProject kp = repository.getLookup().lookup(KenaiProject.class);
+        assert kp != null; // all c2c repositories should come from team support
+        if (kp == null) {
+            return;
+        }
+        try {
+            URL url;
+            if(!query.isSaved()) {
+                String queryString = getQueryString();
+                if(queryString == null) {
+                    return;
+                }
+                url = new URL(kp.getWebLocation() + C2CUtil.URL_FRAGMENT_QUERY + "(" + queryString.replace(' ', '+') + ")"); // NOI18N
+            } else {
+                url = new URL(kp.getWebLocation() + C2CUtil.URL_FRAGMENT_QUERY + query.getDisplayName().replace(' ', '+')); // NOI18N
+            }
+            HtmlBrowser.URLDisplayer.getDefault().showURLExternal(url);
+        } catch (MalformedURLException muex) {
+            C2C.LOG.log(Level.INFO, "Unable to show the issue in the browser.", muex); // NOI18N
+        }
     }
 
     private void onProductChanged(ListSelectionEvent e) {
@@ -883,10 +884,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
     
     private Criteria getCriteria() {
-        if(criteria == null) {
-            // XXX implement me!
-        }
-        return criteria;
+        throw new UnsupportedOperationException("do we need this?");
     }
     
 //
