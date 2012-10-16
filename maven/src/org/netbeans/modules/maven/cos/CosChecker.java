@@ -85,6 +85,7 @@ import static org.netbeans.modules.maven.cos.Bundle.*;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.customizer.RunJarPanel;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
+import org.netbeans.modules.maven.spi.cos.CompileOnSaveSkipper;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -97,6 +98,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -169,73 +171,6 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         return true;
     }
 
-    private boolean hasChangedFilteredResources(boolean includeTests, long stamp, RunConfig config) {
-        List<Resource> res = config.getMavenProject().getResources();
-        for (Resource r : res) {
-            if (r.isFiltering()) {
-                if (hasChangedResources(r, stamp)) {
-                    return true;
-                }
-                // if filtering resource not changed, proceed with CoS
-                continue;
-            }
-        }
-        if (includeTests) {
-            res = config.getMavenProject().getTestResources();
-            for (Resource r : res) {
-                if (r.isFiltering()) {
-                    if (hasChangedResources(r, stamp)) {
-                        return true;
-                    }
-                    // if filtering resource not changed, proceed with CoS
-                    continue;
-                }
-            }
-        }
-        return false;
-    }
-
-    static final String[] DEFAULT_INCLUDES = {"**"};
-
-    private boolean hasChangedResources(Resource r, long stamp) {
-        String dir = r.getDirectory();
-        File dirFile = FileUtil.normalizeFile(new File(dir));
-  //      System.out.println("checkresource dirfile =" + dirFile);
-        if (dirFile.exists()) {
-            List<File> toCopy = new ArrayList<File>();
-            DirectoryScanner ds = new DirectoryScanner();
-            ds.setBasedir(dirFile);
-            //includes/excludes
-            String[] incls = r.getIncludes().toArray(new String[0]);
-            if (incls.length > 0) {
-                ds.setIncludes(incls);
-            } else {
-                ds.setIncludes(DEFAULT_INCLUDES);
-            }
-            String[] excls = r.getExcludes().toArray(new String[0]);
-            if (excls.length > 0) {
-                ds.setExcludes(excls);
-            }
-            ds.addDefaultExcludes();
-            ds.scan();
-            String[] inclds = ds.getIncludedFiles();
-//            System.out.println("found=" + inclds.length);
-            for (String inc : inclds) {
-                File f = new File(dirFile, inc);
-                if (f.lastModified() >= stamp) { 
-                    toCopy.add(FileUtil.normalizeFile(f));
-                }
-            }
-            if (toCopy.size() > 0) {
-                    //the case of filtering source roots, here we want to return false
-                    //to skip CoS altogether.
-                return true;
-            }
-        }
-        return false;
-    }
-
-
     private boolean checkRunMainClass(final RunConfig config) {
         String actionName = config.getActionName();
         //compile on save stuff
@@ -256,10 +191,10 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 }
                 //check the COS timestamp against resources etc.
                 //if changed, perform part of the maven build. (or skip COS)
-                if (hasChangedFilteredResources(false, stamp, config)) {
-                    //we have some filtered resources modified or encountered other problem,
-                    //skip CoS
-                    return true;
+                for (CompileOnSaveSkipper skipper : Lookup.getDefault().lookupAll(CompileOnSaveSkipper.class)) {
+                    if (skipper.skip(config, false, stamp)) {
+                        return true;
+                    }
                 }
 
                 Map<String, Object> params = new HashMap<String, Object>();
@@ -386,12 +321,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
             //check the COS timestamp against resources etc.
             //if changed, perform part of the maven build. (or skip COS)
-            if (hasChangedFilteredResources(true, stamp, config)) {
-                //we have some filtered resources modified, skip CoS
-                return true;
+            
+            for (CompileOnSaveSkipper skipper : Lookup.getDefault().lookupAll(CompileOnSaveSkipper.class)) {
+                if (skipper.skip(config, true, stamp)) {
+                    return true;
+                }
             }
-
-            //#
             FileObject selected = config.getSelectedFileObject();
             ProjectSourcesClassPathProvider cpp = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class);
             ClassPath srcs = cpp.getProjectSourcesClassPath(ClassPath.SOURCE);

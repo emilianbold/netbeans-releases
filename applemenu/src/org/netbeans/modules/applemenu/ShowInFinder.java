@@ -66,6 +66,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -86,58 +87,67 @@ public final class ShowInFinder implements ActionListener {
 
     private final DataObject context;
 
+    private static final RequestProcessor RP = new RequestProcessor( "ShowInFinder", 1 );
+
     public ShowInFinder(DataObject context) {
         this.context = context;
     }
 
     @Override
-    public void actionPerformed(ActionEvent ev) {        
-        FileObject fobj = context.getPrimaryFile();
-        if (fobj == null) {
-            return;
-        }
-        LOG.log(Level.FINE, "Selected file: {0}", FileUtil.getFileDisplayName(fobj));       //NOI18N
-        if (FileUtil.getArchiveFile(fobj)!=null) {
-            fobj = FileUtil.getArchiveFile(fobj);
-        }
-        LOG.log(Level.FINE, "File to select in Finder: {0}", FileUtil.getFileDisplayName(fobj));    //NOI18N
-        final File file = FileUtil.toFile(fobj);
-        if (file == null) {
-            LOG.log(Level.INFO, "Ignoring non local file: {0}", FileUtil.getFileDisplayName(fobj)); //NOI18N
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ShowInFinder.class, "TXT_NoLocalFile"));
-            return;
-        }
-        final File folder = file.getParentFile();
-        if (folder == null) {
-            LOG.log(Level.INFO, "Ignoring file with no parent: {0}", FileUtil.getFileDisplayName(fobj)); //NOI18N
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ShowInFinder.class, "TXT_NoLocalFile"));
-            return;
-        }
-        final String _script = getScript();
-        if (_script == null) {
-            LOG.log(Level.INFO, "Cannot load apple scipt program"); //NOI18N
-            return;
-        }
-        final ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
-        if (cl == null) {
-            LOG.log(Level.INFO, "No ClassLoader to load AppleScriptEngine"); //NOI18N
-            return;
-        }
-        final ScriptEngineManager scriptEngineFactory = new ScriptEngineManager (cl);
-        final ScriptEngine appleScriptEngine = scriptEngineFactory.getEngineByName(APPLE_SCRIPT);
-        if (appleScriptEngine == null) {
-            LOG.log(Level.INFO, "No AppleScriptEngine found"); //NOI18N
-            return;
-        }
-        try {
-            appleScriptEngine.eval(
-                MessageFormat.format(
-                    _script,
-                    folder.getAbsolutePath(),
-                    file.getAbsolutePath()));
-        } catch (ScriptException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public void actionPerformed(ActionEvent ev) {
+        final DataObject dob = context;
+        RP.post( new Runnable() {
+
+            @Override
+            public void run() {
+                FileObject fobj = dob.getPrimaryFile();
+                if (fobj == null) {
+                    return;
+                }
+                LOG.log(Level.FINE, "Selected file: {0}", FileUtil.getFileDisplayName(fobj));       //NOI18N
+                if (FileUtil.getArchiveFile(fobj)!=null) {
+                    fobj = FileUtil.getArchiveFile(fobj);
+                }
+                LOG.log(Level.FINE, "File to select in Finder: {0}", FileUtil.getFileDisplayName(fobj));    //NOI18N
+                final File file = FileUtil.toFile(fobj);
+                if (file == null) {
+                    LOG.log(Level.INFO, "Ignoring non local file: {0}", FileUtil.getFileDisplayName(fobj)); //NOI18N
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ShowInFinder.class, "TXT_NoLocalFile"));
+                    return;
+                }
+                final File folder = file.getParentFile();
+                if (folder == null) {
+                    LOG.log(Level.INFO, "Ignoring file with no parent: {0}", FileUtil.getFileDisplayName(fobj)); //NOI18N
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ShowInFinder.class, "TXT_NoLocalFile"));
+                    return;
+                }
+                final String _script = getScript();
+                if (_script == null) {
+                    LOG.log(Level.INFO, "Cannot load apple scipt program"); //NOI18N
+                    return;
+                }
+                final ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+                if (cl == null) {
+                    LOG.log(Level.INFO, "No ClassLoader to load AppleScriptEngine"); //NOI18N
+                    return;
+                }
+                final ScriptEngineManager scriptEngineFactory = new ScriptEngineManager (cl);
+                final ScriptEngine appleScriptEngine = scriptEngineFactory.getEngineByName(APPLE_SCRIPT);
+                if (appleScriptEngine == null) {
+                    LOG.log(Level.INFO, "No AppleScriptEngine found"); //NOI18N
+                    return;
+                }
+                try {
+                    appleScriptEngine.eval(
+                        MessageFormat.format(
+                            _script,
+                            folder.getAbsolutePath(),
+                            file.getAbsolutePath()));
+                } catch (ScriptException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
     
     private static String getScript() {

@@ -767,7 +767,9 @@ final class PropUtils {
     }
     
     private static PropertyEditor ignored(PropertyEditor p) {
-        if (p != null && p.getClass().getName().equals("sun.beans.editors.EnumEditor")) { // NOI18N
+        if (p != null && (p.getClass().getName().equals("sun.beans.editors.EnumEditor") // NOI18N
+                            //#220154 - the package name has change in JDK 1.7 update 10
+                            || p.getClass().getName().equals("com.sun.beans.editors.EnumEditor"))) { // NOI18N
             return null;
         } else {
             return p;
