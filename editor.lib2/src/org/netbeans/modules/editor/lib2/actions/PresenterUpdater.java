@@ -229,7 +229,7 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
                         }
                     }
                     if (text == null) {
-                        text = (String) cAction.getValue(AbstractEditorAction.POPUP_TEXT_KEY);
+                        text = (String) action.getValue(AbstractEditorAction.POPUP_TEXT_KEY);
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.fine("POPUP_TEXT_KEY for action " + action + ": \"" + text + "\"\n"); // NOI18N
                         }
