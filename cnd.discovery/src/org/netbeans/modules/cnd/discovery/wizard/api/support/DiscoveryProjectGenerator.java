@@ -261,12 +261,4 @@ public final class DiscoveryProjectGenerator {
         }
         return normalizedItems;
     }
-    
-    public static void writeDefaultVersionedConfigurations(Project lastSelectedProject) {
-        ConfigurationDescriptorProvider pdp = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        final MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-        if (makeConfigurationDescriptor != null) {
-            makeConfigurationDescriptor.writeDefaultVersionedConfigurations();
-        }
-    }
 }
