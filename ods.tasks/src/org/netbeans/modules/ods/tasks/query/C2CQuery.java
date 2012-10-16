@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.ods.tasks.query;
 
+import com.tasktop.c2c.server.common.service.domain.SortInfo;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,21 +57,30 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
+import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
+import org.netbeans.modules.ods.client.api.ODSClient;
+import org.netbeans.modules.ods.client.api.ODSException;
+import org.netbeans.modules.ods.client.api.ODSFactory;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.C2CConnector;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -108,6 +119,8 @@ public abstract class C2CQuery {
     protected abstract Criteria getCriteria();
     protected abstract IRepositoryQuery getRepositoryQuery();
     protected abstract boolean isModifiable();
+    protected abstract boolean save(String name);
+    public abstract void remove();
     
     protected C2CQuery(C2CRepository repository, String name) {
         this.name = name;
@@ -147,7 +160,7 @@ public abstract class C2CQuery {
         this.name = name;
     }
 
-    void setSaved(boolean saved) {
+    protected void setSaved(boolean saved) {
         if(saved) {
 //            XXX info = null;
         }
@@ -161,10 +174,6 @@ public abstract class C2CQuery {
 
     public boolean contains(String id) {
         return issues.contains(id);
-    }
-
-    public void remove() {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     public Collection<C2CIssue> getIssues() {
@@ -260,7 +269,7 @@ public abstract class C2CQuery {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
     }
 
-    private void fireQueryRemoved() {
+    protected void fireQueryRemoved() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
     }
 
@@ -404,7 +413,7 @@ public abstract class C2CQuery {
     private static class CustomQuery extends C2CQuery {
 
         private IRepositoryQuery repositoryQuery;
-        private final SavedTaskQuery savedQuery;
+        private SavedTaskQuery savedQuery;
                 
         public CustomQuery(C2CRepository repository, SavedTaskQuery savedQuery) {
             super(repository, savedQuery != null ? savedQuery.getName() : null);
@@ -440,8 +449,96 @@ public abstract class C2CQuery {
         protected boolean isModifiable() {
             return true;
         }
+        
+        @Override
+        public synchronized boolean save(String name) { // XXX sync me properly !!!
+            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+            
+            ProjectAndClient pac = getProjectAndClient();
+            if(pac == null) {
+                C2C.LOG.log(Level.WARNING, "couldn''t save query : {0}", name);
+                return false;
+            }
+            
+            if(savedQuery == null) {
+                savedQuery = new SavedTaskQuery();
+                savedQuery.setDefaultSort(new SortInfo("taskId")); // XXX constant  ???
+                savedQuery.setName(name);
+                savedQuery.setQueryString(getController().getQueryString());
+                try {
+                    savedQuery = pac.client.createQuery(pac.projectId, savedQuery);
+                } catch (ODSException ex) {
+                    C2C.LOG.log(Level.WARNING, "exception while creating query : " + name, ex); // NOI18N
+                    return false;
+                }
+            } else {
+                savedQuery.setName(name);
+                savedQuery.setQueryString(getController().getQueryString());
+                try {
+                    savedQuery = pac.client.updateQuery(pac.projectId, savedQuery);
+                } catch (ODSException ex) {
+                    C2C.LOG.log(Level.WARNING, "exception while creating query : " + name, ex); // NOI18N
+                    return false;
+                }
+            }
+
+            setName(name);
+            setSaved(true); // XXX
+            return true;
+        }        
+
+        @Override
+        public synchronized void remove() {
+            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+            
+            ProjectAndClient pac = getProjectAndClient();
+            if(pac == null) {
+                C2C.LOG.log(Level.WARNING, "couldn''t save query : {0}", getDisplayName());
+                return;
+            }
+            
+            try {
+                pac.client.deleteQuery(pac.projectId, savedQuery.getId());
+            } catch (ODSException ex) {
+                C2C.LOG.log(Level.WARNING, "exception while removing query : " + getDisplayName(), ex);
+                return;
+            }
+            getRepository().removeQuery(this);
+            fireQueryRemoved();
+        }
+        
+        private class ProjectAndClient {
+            String projectId;
+            ODSClient client;
+
+            public ProjectAndClient(String projectId, ODSClient client) {
+                this.projectId = projectId;
+                this.client = client;
+            }
+        }
+
+        private ProjectAndClient getProjectAndClient() {
+            KenaiProject kp = getRepository().getLookup().lookup(KenaiProject.class);
+            assert kp != null; // all c2c repositories should come from team support
+            if (kp == null) {
+                C2C.LOG.log(Level.WARNING, "  no project available for query");
+                return null;
+            }
+            String url = kp.getFeatureLocation();
+            if(url.endsWith("/")) {
+                url = url.substring(0, url.length() - 1);
+            }
+            url = url.substring(0, url.length() - "/tasks".length());
+            String projectId = url.substring(url.lastIndexOf("/") + 1, url.length());
+            url = url.substring(0, url.length() - ("/s/" + projectId).length());
+            AuthenticationCredentials c = getRepository().getTaskRepository().getCredentials(AuthenticationType.REPOSITORY); // XXX repository info doesn't contain creds
+            ODSClient client = ODSFactory.getInstance().createClient(url, new PasswordAuthentication(c.getUserName(), c.getPassword().toCharArray()));        
+
+            return new ProjectAndClient(projectId, client);
+        }
     }
 
+    
     private static class PredefinedQuery extends C2CQuery {
         private final IRepositoryQuery repositoryQuery;
 
@@ -468,6 +565,17 @@ public abstract class C2CQuery {
         @Override
         protected boolean isModifiable() {
             return false;
+        }
+
+        @Override
+        protected boolean save(String name) {
+            throw new UnsupportedOperationException("Can't remove a predefined query.");
+        }
+
+        @Override
+        public void remove() {
+            // XXX this is called from API, need a proper error msg
+            throw new UnsupportedOperationException("Can't remove a predefined query.");
         }
     }
 }

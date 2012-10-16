@@ -47,6 +47,7 @@ import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.PasswordAuthentication;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,6 +67,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -78,6 +80,8 @@ import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
+import org.netbeans.modules.ods.client.api.ODSClient;
+import org.netbeans.modules.ods.client.api.ODSFactory;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -356,7 +360,7 @@ public class C2CRepository {
             remoteSavedQueries.addAll(queries);
         }
         for (C2CQuery q : queries) {
-            q.fireQuerySaved();
+            q.fireQuerySaved(); 
         }
     }
 
@@ -426,10 +430,6 @@ public class C2CRepository {
         C2C.getInstance().refreshClientData(this);
     }
 
-    public void saveQuery(C2CQuery query) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
     public String getID() {
         return info.getId();
     }
@@ -446,6 +446,13 @@ public class C2CRepository {
             executor = new C2CExecutor(this);
         }
         return executor;
+    }
+
+    public void removeQuery(C2CQuery query) {
+        getIssueCache().removeQuery(query.getDisplayName()); // XXX do we have to do this?
+        synchronized (QUERIES_LOCK) {
+            remoteSavedQueries.remove(query);
+        }
     }
 
     private class Cache extends IssueCache<C2CIssue, TaskData> {

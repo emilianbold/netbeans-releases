@@ -134,6 +134,7 @@
                 <friend>org.netbeans.modules.ods.tasks.bridge</friend>
                 <friend>org.netbeans.modules.ods.ui</friend>
                 <friend>org.netbeans.modules.ods.versioning</friend>
+                <friend>org.netbeans.modules.ods.tasks</friend>
                 <package>org.netbeans.modules.ods.api</package>
                 <package>org.netbeans.modules.ods.client.api</package>
             </friend-packages>

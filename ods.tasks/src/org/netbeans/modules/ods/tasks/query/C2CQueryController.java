@@ -544,13 +544,12 @@ public class C2CQueryController extends QueryController implements ItemListener,
      */
     private void save(String name) {
         C2C.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
-        query.setName(name);
-        repository.saveQuery(query);
-        query.setSaved(true); // XXX
-        setAsSaved();
-        if (!query.wasRun()) {
-            C2C.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
-            onRefresh();
+        if(query.save(name)) {
+            setAsSaved();
+            if (!query.wasRun()) {
+                C2C.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
+                onRefresh();
+            }
         }
         C2C.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
     }
