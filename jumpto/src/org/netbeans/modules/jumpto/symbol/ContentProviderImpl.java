@@ -327,7 +327,8 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             c.anchor = GridBagConstraints.WEST;
             c.insets = new Insets (0,0,0,7);
             rendererComponent.add( jlName, c);
-            
+            jlOwner.setOpaque(false);
+            jlOwner.setFont(list.getFont());
             c = new GridBagConstraints();
             c.gridx = 1;
             c.gridy = 0;

@@ -123,36 +123,11 @@ public final class Model {
     private static int globalModelSerialNumber;
     
     /**
-     * Gets the Model instance for given CssParserResult.
-     *
-     * This is the basic way how clients should obtain the Css Source Model.
-     *
-     * The returned model instance can be cached to the given parsing result.
-     *
-     * <b>This method should be called under the parsing lock as the parser
-     * result task should not escape the UserTask</b>
-     *
-     * @param parserResult
-     *
+     * @deprecated
      * @return an instance of the Css Source Model
      */
     public static synchronized Model getModel(CssParserResult parserResult) {
-        //try cache first
-        Reference<Model> cached_ref = PR_MODEL_CACHE.get(parserResult);
-        if (cached_ref != null) {
-            Model cached = cached_ref.get();
-            if (cached != null) {
-                return cached;
-            }
-        }
-
-        //recreate
-        Model model = createModel(parserResult);
-
-        //cache
-        PR_MODEL_CACHE.put(parserResult, new WeakReference<Model>(model));
-
-        return model;
+        return createModel(parserResult);
     }
     
     /**
@@ -528,10 +503,13 @@ public final class Model {
     @Override
     public String toString() {
         FileObject file = getLookup().lookup(FileObject.class);
+        Snapshot snapshot = getLookup().lookup(Snapshot.class);
         return new StringBuilder()
                 .append(getClass().getSimpleName())
                 .append(':')
                 .append(getSerialNumber())
+                .append(", snapshot=")
+                .append(snapshot.hashCode())
                 .append(", file=")
                 .append(file != null ? file.getNameExt() : null)
                 .append(", saved=")

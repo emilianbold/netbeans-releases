@@ -43,7 +43,7 @@ package org.netbeans.modules.css.editor.module.spi;
 
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
-import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 
@@ -66,7 +66,7 @@ public class CompletionContext extends EditorFeatureContext {
     /**
      * @doto use class accessor so clients cannot instantiate this.
      */
-    public CompletionContext(Node activeNode, Node activeTokeNode, CssParserResult result, 
+    public CompletionContext(Node activeNode, Node activeTokeNode, CssCslParserResult result, 
             TokenSequence<CssTokenId> tokenSequence, int activeTokenDiff, 
             QueryType queryType, int caretOffset, int anchorOffset, int embeddedCaretOffset, 
             int embeddedAnchorOffset, String prefix) {

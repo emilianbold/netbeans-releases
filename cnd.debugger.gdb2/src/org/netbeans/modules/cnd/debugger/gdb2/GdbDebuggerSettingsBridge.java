@@ -179,7 +179,7 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         // Temp fix. Begin
         DebugTarget debugTarget = debugger.getNDI().getDebugTarget();
         String runargs;
-        if (debugTarget != null) {
+        if ( (debugTarget != null) && (debugTarget.getUnparsedArgs() != null) ) {
             runargs = debugTarget.getUnparsedArgs();
         } else {
             // Temp fix. End

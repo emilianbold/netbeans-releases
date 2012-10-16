@@ -78,7 +78,7 @@ public class CssSemanticAnalyzer extends SemanticAnalyzer {
         resume();
         
         CssCslParserResult wrappedResult = (CssCslParserResult) result;
-        FeatureContext featureContext = new FeatureContext(wrappedResult.getWrappedCssParserResult());
+        FeatureContext featureContext = new FeatureContext(wrappedResult);
         semanticHighlights = CssModuleSupport.getSemanticHighlights(featureContext, featureCancel);
     }
 
