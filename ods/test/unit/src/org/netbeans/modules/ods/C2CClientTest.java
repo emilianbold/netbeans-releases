@@ -44,6 +44,9 @@ package org.netbeans.modules.ods;
 
 import org.netbeans.modules.ods.client.api.ODSFactory;
 import com.tasktop.c2c.server.cloud.domain.ServiceType;
+import com.tasktop.c2c.server.common.service.domain.SortInfo;
+import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
+import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.activity.TaskActivity;
 import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
@@ -54,6 +57,8 @@ import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
+import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -66,6 +71,7 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ods.client.api.ODSClient;
+import org.netbeans.modules.ods.client.api.ODSException;
 
 
 /**
@@ -75,7 +81,11 @@ import org.netbeans.modules.ods.client.api.ODSClient;
 public class C2CClientTest extends NbTestCase  {
 
     public static Test suite() {
-        return NbModuleSuite.create(C2CClientTest.class, null, null);
+        return NbModuleSuite
+                    .emptyConfiguration()
+                    .gui(false)
+                    .addTest(C2CClientTest.class)
+                    .suite();
     }
     private static boolean firstRun = true;
     private static String uname;
@@ -256,6 +266,36 @@ public class C2CClientTest extends NbTestCase  {
         assertNotNull(repositories);
         assertFalse(repositories.isEmpty());
     }
+    
+    public void testSavedQueries () throws Exception {
+        ODSClient client = getClient();
+
+        String queryName = "UnitTestQuery" + System.currentTimeMillis();
+        SortInfo sortInfo = new SortInfo("summary");
+        String queryString = new ColumnCriteria("summary", Criteria.Operator.STRING_CONTAINS, "test").toQueryString();
+        
+        SavedTaskQuery stq = new SavedTaskQuery();
+        stq.setName(queryName);
+        stq.setQueryString(queryString);
+        stq.setDefaultSort(sortInfo);
+        stq = client.createQuery(MY_PROJECT, stq);
+        assertEquals(queryName, stq.getName());
+        assertEquals(queryString, stq.getQueryString());
+        assertEquals(sortInfo.getSortField(), stq.getDefaultSort().getSortField());
+        assertQuery(client, stq, queryName, queryString);
+        
+        queryString = new ColumnCriteria("description", Criteria.Operator.STRING_CONTAINS, "test").toQueryString();
+        stq.setQueryString(queryString);
+        stq = client.updateQuery(MY_PROJECT, stq);
+        assertEquals(queryName, stq.getName());
+        assertEquals(queryString, stq.getQueryString());
+        assertEquals(sortInfo.getSortField(), stq.getDefaultSort().getSortField());
+        assertQuery(client, stq, queryName, queryString);
+        
+        client.deleteQuery(MY_PROJECT, stq.getId());
+        assertQuery(client, null, queryName, queryString);
+    }
+    
 //    
 //    public void testCreateDeleteProject () throws Exception {
 //        ODSClient client = getClient();
@@ -286,6 +326,30 @@ public class C2CClientTest extends NbTestCase  {
         assertEquals(ta1.getActivityType(), ta2.getActivityType());
         assertEquals(ta1.getAuthor().getRealname(), ta2.getAuthor().getRealname());
         assertEquals(ta1.getDescription(), ta2.getDescription());
+    }
+
+    private void assertQuery(ODSClient client, SavedTaskQuery stq, String name, String criteria) throws ODSException {
+        RepositoryConfiguration rc = client.getRepositoryContext(MY_PROJECT);
+        assertNotNull(rc);
+        assertFalse(rc.getSavedTaskQueries().isEmpty());
+        boolean found = false;
+        List<SavedTaskQuery> queries = rc.getSavedTaskQueries();
+        for (SavedTaskQuery q : queries) {
+            if(stq != null) {
+                if(q.getName().equals(name)) {
+                    found = true;
+                    assertEquals(criteria, q.getQueryCriteria().toQueryString());
+                    return;
+                }
+            } else {
+                if(q.getName().equals(name)) {
+                    fail("query wasn't supposed to be found");
+                }
+            }
+        }
+        if(stq != null && !found) {
+            fail("TasksClient didn't return just previously save query " + stq.getName());
+        }
     }
 
 }

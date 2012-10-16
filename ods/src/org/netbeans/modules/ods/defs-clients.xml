@@ -21,4 +21,7 @@
     <bean class="com.tasktop.c2c.server.scm.service.ScmServiceClient" id="scmService">
         <property name="restTemplate" ref="basicAuthRestTemplate"/>
     </bean>
+    <bean class="com.tasktop.c2c.server.tasks.service.TaskServiceClient" id="taskService">
+        <property name="restTemplate" ref="basicAuthRestTemplate"/>
+    </bean>
 </beans>

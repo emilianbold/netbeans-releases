@@ -52,6 +52,8 @@ import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
+import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -585,6 +587,26 @@ public class ODSBuilderAccessorTest {
                 private RuntimeException unsupportedByMock() {
                     return new UnsupportedOperationException(
                             "Not supported by mock instance.");
+                }
+
+                @Override
+                public SavedTaskQuery createQuery(String projectId, SavedTaskQuery query) throws ODSException {
+                    throw unsupportedByMock();
+                }
+
+                @Override
+                public SavedTaskQuery updateQuery(String projectId, SavedTaskQuery query) throws ODSException {
+                    throw unsupportedByMock();
+                }
+
+                @Override
+                public void deleteQuery(String projectId, Integer queryId) throws ODSException {
+                    throw unsupportedByMock();
+                }
+
+                @Override
+                public RepositoryConfiguration getRepositoryContext(String projectId) throws ODSException {
+                    throw unsupportedByMock();
                 }
             };
         }

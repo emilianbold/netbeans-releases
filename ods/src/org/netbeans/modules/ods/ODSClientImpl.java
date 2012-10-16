@@ -58,6 +58,9 @@ import com.tasktop.c2c.server.profile.service.HudsonServiceClient;
 import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.scm.service.ScmServiceClient;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
+import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
+import com.tasktop.c2c.server.tasks.service.TaskServiceClient;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -94,10 +97,12 @@ public final class ODSClientImpl implements ODSClient {
     private static final String PROFILE_SERVICE = "api"; //NOI18N
     private static final String HUDSON_SERVICE = "s/%s/hudson"; //NOI18N
     private static final String SCM_SERVICE = "s/%s/scm/api"; //NOI18N
+    private static final String TASK_SERVICE = "s/%s/tasks"; //NOI18N
     private AbstractWebLocation location;
     private ActivityServiceClient activityClient;
     private HudsonServiceClient hudsonClient;
     private ScmServiceClient scmClient;
+    private TaskServiceClient taskClient;
 
     private static ClassPathXmlApplicationContext appContext;
     
@@ -115,6 +120,7 @@ public final class ODSClientImpl implements ODSClient {
         activityClient = context.getBean(ActivityServiceClient.class);
         hudsonClient = context.getBean(HudsonServiceClient.class);
         scmClient = context.getBean(ScmServiceClient.class);
+        taskClient = context.getBean(TaskServiceClient.class);
         CredentialsInjector.configureRestTemplate(location, (RestTemplate) context.getBean(RestTemplate.class));
     }
 
@@ -280,6 +286,47 @@ public final class ODSClientImpl implements ODSClient {
         }, profileClient, PROFILE_SERVICE);
     }
 
+    @Override
+    public RepositoryConfiguration getRepositoryContext(String projectId) throws ODSException {
+        return run(new Callable<RepositoryConfiguration> () {
+            @Override
+            public RepositoryConfiguration call () throws Exception {
+                return taskClient.getRepositoryContext();
+            }
+        }, taskClient, buildUrl(TASK_SERVICE, projectId));
+    }
+    
+    @Override
+    public SavedTaskQuery createQuery(String projectId, final SavedTaskQuery query) throws ODSException {
+        return run(new Callable<SavedTaskQuery> () {
+            @Override
+            public SavedTaskQuery call () throws Exception {
+                return taskClient.createQuery(query);
+            }
+        }, taskClient, buildUrl(TASK_SERVICE, projectId));
+    }
+
+    @Override
+    public SavedTaskQuery updateQuery(String projectId, final SavedTaskQuery query) throws ODSException {
+        return run(new Callable<SavedTaskQuery> () {
+            @Override
+            public SavedTaskQuery call () throws Exception {
+                return taskClient.updateQuery(query);
+            }
+        }, taskClient, buildUrl(TASK_SERVICE, projectId));
+    }
+
+    @Override
+    public void deleteQuery(String projectId, final Integer queryId) throws ODSException {
+        run(new Callable<Void> () {
+            @Override
+            public Void call () throws Exception {
+                taskClient.deleteQuery(queryId);
+                return null;
+            }
+        }, taskClient, buildUrl(TASK_SERVICE, projectId));
+    }
+    
     private <T> T run (Callable<T> callable, AbstractRestServiceClient client, String service) throws ODSException {
         try {
             Authentication auth = null;

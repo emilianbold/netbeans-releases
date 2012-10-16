@@ -48,6 +48,8 @@ import com.tasktop.c2c.server.profile.domain.build.JobDetails;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
+import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.util.List;
 
 /**
@@ -86,4 +88,12 @@ public interface ODSClient {
 
     void watchProject(final String projectId) throws ODSException;
 
+    public SavedTaskQuery createQuery(String projectId, SavedTaskQuery query) throws ODSException;
+    
+    public SavedTaskQuery updateQuery(String projectId, SavedTaskQuery query) throws ODSException;
+
+    public void deleteQuery(String projectId, Integer queryId) throws ODSException;
+    
+    public RepositoryConfiguration getRepositoryContext(String projectId) throws ODSException;
+    
 }

@@ -13,6 +13,8 @@ import com.tasktop.c2c.server.profile.domain.build.JobDetails;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
+import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.net.PasswordAuthentication;
 import java.util.Collections;
 import java.util.List;
@@ -119,6 +121,26 @@ public class ODSJerseyClient implements ODSClient {
     public Project createProject (Project project) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+    
+    @Override
+    public SavedTaskQuery createQuery(String projectId, com.tasktop.c2c.server.tasks.domain.SavedTaskQuery query) throws ODSException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public SavedTaskQuery updateQuery(String projectId, com.tasktop.c2c.server.tasks.domain.SavedTaskQuery query) throws ODSException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void deleteQuery(String projectId, Integer queryId) throws ODSException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public RepositoryConfiguration getRepositoryContext(String projectId) throws ODSException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
     private Client getClient() {
         ClientConfig clientConfig = new DefaultClientConfig();
@@ -132,6 +154,7 @@ public class ODSJerseyClient implements ODSClient {
         }
         return c;
     }
+
 
 
 }
