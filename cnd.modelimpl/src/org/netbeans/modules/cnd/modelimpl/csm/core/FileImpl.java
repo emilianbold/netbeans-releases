@@ -1928,13 +1928,9 @@ public final class FileImpl implements CsmFile,
         State curState = state;
         if (curState != State.PARSED && curState != State.INITIAL) {
             if (TraceFlags.TIMING) {
-                System.err.printf("file is written in intermediate state %s, switching to PARSED: %s \n", curState, getAbsolutePath());
-                //if (CndUtils.isDebugMode() && !firstDump) {
-                //    firstDump = true;
-                //    CndUtils.threadsDump();
-                //}
+                System.err.printf("file is written in intermediate state %s, switching to INITIAL: %s \n", curState, getAbsolutePath());
             }
-            curState = State.PARSED;
+            curState = State.INITIAL;
         }
         output.writeByte(curState.ordinal());
     }

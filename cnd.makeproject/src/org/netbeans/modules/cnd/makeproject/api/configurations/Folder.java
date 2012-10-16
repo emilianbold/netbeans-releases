@@ -266,7 +266,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding item {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    addItemImpl(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, setModified, true, true);
+                    addItemImpl(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, setModified, true);
                 }
             }
         }
@@ -566,7 +566,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     private Item addItemActionImpl(Item item, boolean setModified, boolean excludedByDefault) {
-        if (addItemImpl(item, true, setModified, true, excludedByDefault) == null) {
+        if (addItemImpl(item, true, setModified, excludedByDefault) == null) {
             return null; // Nothing added
         }
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
@@ -576,18 +576,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Item addItem(Item item) {
-        return addItemImpl(item, true, true, true, false);
+        return addItemImpl(item, true, true, false);
     }
 
     public Item addItem(Item item, boolean notify, boolean setModified) {
-        return addItemImpl(item, notify, setModified, true, false);
+        return addItemImpl(item, notify, setModified, false);
     }
 
-    public Item addItemWithoutConfiguration(Item item) {
-        return addItemImpl(item, true, true, false, false);
-    }
-    
-    private Item addItemImpl(Item item, boolean notify, boolean setModified, boolean createConfiguration, boolean excludedByDefault) {
+    private Item addItemImpl(Item item, boolean notify, boolean setModified, boolean excludedByDefault) {
         if (item == null) {
             return null;
         }
@@ -627,7 +623,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 configurationDescriptor.setModified();
             }
             // Add configuration to all configurations
-            if (!createConfiguration || configurationDescriptor.getConfs() == null) {
+            if (configurationDescriptor.getConfs() == null) {
                 return item;
             }
             HashMap<Configuration, DeletedConfiguration> map = null;
