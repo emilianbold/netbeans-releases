@@ -177,6 +177,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         parameters.addParameter(QueryParameters.Column.RESOLUTION, panel.resolutionList);
         parameters.addParameter(QueryParameters.Column.KEYWORDS, panel.keywordsList);                   
         parameters.createByPeopleCriteria(panel.userList, panel.creatorCheckBox, panel.ownerCheckBox, panel.commenterCheckBox, panel.ccCheckBox);                   
+        parameters.createByDateCriteria(panel.byDateComboBox, panel.startTextField, panel.endTextField);
         
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 

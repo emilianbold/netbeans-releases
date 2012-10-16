@@ -50,10 +50,13 @@ import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.awt.Component;
 import java.lang.String;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,6 +68,8 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
+import org.netbeans.modules.ods.tasks.util.C2CUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -142,6 +147,10 @@ public class QueryParameters {
             
     void createByPeopleCriteria(JList list, JCheckBox creatorCheckField, JCheckBox ownerCheckField, JCheckBox commenterCheckField, JCheckBox ccCheckField) {
         map.put(Column.CREATOR, new ByPeopleParameter(list, creatorCheckField, ownerCheckField, commenterCheckField, ccCheckField));
+    }
+    
+    void createByDateCriteria(JComboBox cbo, JTextField fromField, JTextField toField) {
+        map.put(Column.CREATION, new ByDateParameter(cbo, fromField, toField));
     }
     
     static interface Parameter {
@@ -510,6 +519,73 @@ public class QueryParameters {
                 }
                 l.addAll(criteria);
             }
+        }
+    }
+    
+    static class ByDateParameter implements Parameter {
+        
+        private final JComboBox cbo;
+        private final JTextField fromField;
+        private final JTextField toField;
+        
+        public ByDateParameter(JComboBox cbo, JTextField fromField, JTextField toField) {
+            this.cbo = cbo;
+            this.fromField = fromField;
+            this.toField = toField;
+            
+            DefaultComboBoxModel model = new DefaultComboBoxModel(new Column[] {Column.CREATION, Column.MODIFICATION});
+            cbo.setModel(model);
+        }
+        
+        public void setValues(Column c, String from, String to) {
+            if(c != null) {
+                cbo.setSelectedItem(c);
+            } else {
+                cbo.setSelectedIndex(-1);
+            }
+            fromField.setText(from);
+            toField.setText(to);
+        }
+        
+        @Override
+        public void setEnabled(boolean  b) {
+            cbo.setEnabled(b);
+            fromField.setEnabled(b);
+            toField.setEnabled(b);
+        }
+
+        @Override
+        public void populate(Collection values) {
+            // XXX
+        }
+
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
+        @Override
+        public Criteria getCriteria() {
+            Date dateFrom;
+            try {
+                dateFrom = df.parse(fromField.getText());
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+            Date dateTo;
+            try {
+                String to = toField.getText();
+                if(to != null && !to.trim().isEmpty()) {
+                    dateTo = df.parse(to);
+                } else {
+                    dateTo = new Date(System.currentTimeMillis());
+                }
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+            
+            ColumnCriteria dateGreaterThan = new ColumnCriteria(QueryParameters.Column.CREATION.toString(), Criteria.Operator.GREATER_THAN, dateFrom);
+            ColumnCriteria dateLessThan = new ColumnCriteria(QueryParameters.Column.CREATION.toString(), Criteria.Operator.LESS_THAN, dateTo);
+            
+            return new NaryCriteria(Criteria.Operator.AND, dateGreaterThan, dateLessThan);
         }
     }
     
