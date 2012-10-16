@@ -31,7 +31,7 @@
                       <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
                       <Component id="endTextField" min="-2" pref="107" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace pref="62" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -64,10 +64,7 @@
         <Component class="javax.swing.JComboBox" name="byDateComboBox">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="2">
-                <StringItem index="0" value="Created"/>
-                <StringItem index="1" value="Updated"/>
-              </StringArray>
+              <StringArray count="0"/>
             </Property>
           </Properties>
           <AuxValues>

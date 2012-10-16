@@ -184,8 +184,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         byDatePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
-        byDateComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Created", "Updated" }));
-
         startLabel.setLabelFor(startTextField);
         org.openide.awt.Mnemonics.setLocalizedText(startLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.startLabel.text")); // NOI18N
 
@@ -222,7 +220,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addGroup(byDatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel9)
                     .addComponent(endTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(62, Short.MAX_VALUE))
         );
         byDatePanelLayout.setVerticalGroup(
             byDatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
