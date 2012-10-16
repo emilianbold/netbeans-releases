@@ -67,11 +67,10 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.ProcessInfo;
 import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
 import org.netbeans.modules.nativeexecution.api.ProcessStatusEx;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.SIGNAL_SCOPE;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.modules.nativeexecution.signals.SignalSupport;
 import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
@@ -337,12 +336,7 @@ public abstract class AbstractNativeProcess extends NativeProcess implements ExP
         } catch (IllegalThreadStateException ex) {
         }
 
-        try {
-            CommonTasksSupport.sendSignal(execEnv, SIGNAL_SCOPE.PROCESS, pid, Signal.SIGTERM, null).get();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException ex) {
-        }
+        SignalSupport.signalProcess(execEnv, pid, Signal.SIGTERM);
 
         try {
             waitTask.get(SIGKILL_TIMEOUT, TimeUnit.SECONDS);
@@ -360,12 +354,7 @@ public abstract class AbstractNativeProcess extends NativeProcess implements ExP
         } catch (IllegalThreadStateException ex) {
         }
 
-        try {
-            CommonTasksSupport.sendSignal(execEnv, SIGNAL_SCOPE.PROCESS, pid, Signal.SIGKILL, null).get();
-        } catch (InterruptedException ex1) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException ex1) {
-        }
+        SignalSupport.signalProcess(execEnv, pid, Signal.SIGKILL);
     }
 
     /**

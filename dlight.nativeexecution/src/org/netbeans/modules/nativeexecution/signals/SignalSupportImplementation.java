@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.signals;
 
-import java.io.IOException;
-import java.util.WeakHashMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.modules.nativeexecution.signals.SignalSupport.SIGNAL_SCOPE;
 
-/**
- *
- * @author Andrew
- */
-public final class SignalSupport {
+public interface SignalSupportImplementation {
 
-    private static final WeakHashMap<ExecutionEnvironment, SignalSupport> cache =
-            new WeakHashMap<ExecutionEnvironment, SignalSupport>();
-    private final ExecutionEnvironment exEnv;
-    private static final HelperUtility sigqueueHelperUtility =
-            new HelperUtility("bin/nativeexecution/$osname-${platform}$_isa/sigqueue"); // NOI18N
+    boolean isSupported(ExecutionEnvironment env, SIGNAL_SCOPE scope);
 
-    public static synchronized SignalSupport getSignalSupportFor(ExecutionEnvironment execEnv) throws IOException {
-        if (!HostInfoUtils.isHostInfoAvailable(execEnv)) {
-            throw new IOException("Host info must be available at this point"); // NOI18N
-        }
+    public int sendSignal(ExecutionEnvironment env, SIGNAL_SCOPE scope, int id, Signal signal);
 
-        SignalSupport result = cache.get(execEnv);
-        if (result == null) {
-            result = new SignalSupport(execEnv);
-            cache.put(execEnv, result);
-        }
+    public int sendSignal(ExecutionEnvironment env, String environment, Signal signal);
 
-        return result;
-    }
-
-    private SignalSupport(ExecutionEnvironment execEnv) throws IOException {
-        this.exEnv = execEnv;
-    }
-
-    public int sigqueue(int pid, int signo, int value) {
-        try {
-            ExitStatus status = ProcessUtils.execute(exEnv,
-                    sigqueueHelperUtility.getPath(exEnv),
-                    String.valueOf(pid),
-                    String.valueOf(signo),
-                    String.valueOf(value));
-            return status.exitCode;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return 1;
-    }
+    public int sigqueue(ExecutionEnvironment env, int id, Signal signal, int value);
 }
