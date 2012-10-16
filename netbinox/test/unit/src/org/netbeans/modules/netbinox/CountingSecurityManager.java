@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.netbinox;
 
+import com.sun.xml.internal.bind.v2.schemagen.xmlschema.Wildcard;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -60,6 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Assert;
 import org.openide.modules.Places;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -439,6 +441,9 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (prefix != null && !file.startsWith(prefix)) {
             return false;
         }
+        if (containsPath(file, "lib/jhall.jar")) {
+            return false;
+        }
         if (containsPath(file, "/var/cache/netigso/org.eclipse.osgi/.")) {
             // Just finite number of files in a cache
             return false;
@@ -517,7 +522,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (file.endsWith("org-netbeans-modules-projectui.jar")) {
             return false;
         }
-        if (file.startsWith(System.getProperty("java.home").replaceAll("[/\\\\][^/\\\\]*$", ""))) {
+        if (isFromJDK(file)) {
             return false;
         }
         if (file.startsWith(System.getProperty("netbeans.home") + File.separator + "lib")) {
@@ -595,5 +600,14 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
      */
     private static boolean isDisabled() {
         return Boolean.getBoolean("counting.security.disabled");
+    }
+    
+    private boolean isFromJDK(String file) {
+        String jdkDir = System.getProperty("java.home").replaceAll("[/\\\\][^/\\\\]*$", "");
+        if (Utilities.isWindows()) {
+            jdkDir = jdkDir.toLowerCase();
+            file = file.toLowerCase();
+        }
+        return file.startsWith(jdkDir);
     }
 }
