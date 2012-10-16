@@ -156,7 +156,7 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
     public TaskData createTaskData(String summary, String desc, String typeName) throws CoreException, MalformedURLException {
         AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
         TaskData data = C2CUtil.createTaskData(taskRepository);
-        C2CData clientData = C2CExtender.getData(rc, taskRepository);
+        C2CData clientData = C2CExtender.getData(rc, taskRepository, false);
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
         ta.setValue(summary);

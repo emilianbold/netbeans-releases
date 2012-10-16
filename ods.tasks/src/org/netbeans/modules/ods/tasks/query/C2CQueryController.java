@@ -810,8 +810,9 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onRefreshConfiguration() {
-//        postPopulate(getUrlParameters(false), true);
-        throw new UnsupportedOperationException("Not yet implemented");
+        if(modifiable) {
+            postPopulate(true);
+        }
     }
 
     private void remove() {

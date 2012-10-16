@@ -93,12 +93,12 @@ public final class TaskTopExtender extends C2CExtender<CfcClientData> {
     }
     
     @Override
-    protected synchronized C2CData spiClientData(AbstractRepositoryConnector rc, TaskRepository taskRepository) {
+    protected synchronized C2CData spiClientData(AbstractRepositoryConnector rc, TaskRepository taskRepository, boolean forceRefresh) {
         C2CRepositoryConnector cfc = (C2CRepositoryConnector)rc;
         IC2CClient client = cfc.getClientManager().getClient(taskRepository);
         CfcClientData clientData = client.getC2CClientData();
 
-        if (!clientData.isInitialized()) {
+        if (forceRefresh || !clientData.isInitialized()) {
             try {
                 client.updateRepositoryConfiguration(new NullProgressMonitor());
             } catch (CoreException ex) {

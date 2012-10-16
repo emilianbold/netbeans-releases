@@ -423,7 +423,7 @@ public class C2CRepository {
     }
 
     public void refreshConfiguration() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        C2C.getInstance().refreshClientData(this);
     }
 
     public void saveQuery(C2CQuery query) {

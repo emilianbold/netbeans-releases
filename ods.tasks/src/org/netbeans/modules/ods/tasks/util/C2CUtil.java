@@ -332,7 +332,8 @@ public class C2CUtil {
         return date;
     }
 
+    // XXX remove this - is the same as C2C.getclientData();
     public static C2CData getClientData (AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository) {
-        return C2CExtender.getData(repositoryConnector, taskRepository);
+        return C2CExtender.getData(repositoryConnector, taskRepository, false);
     }
 }

@@ -88,7 +88,7 @@ public final class NbExtender extends C2CExtender<NbExtender.Env> {
     }
 
     @Override
-    protected C2CData spiClientData(AbstractRepositoryConnector rc, TaskRepository taskRepository) {
+    protected C2CData spiClientData(AbstractRepositoryConnector rc, TaskRepository taskRepository, boolean forceRefresh) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

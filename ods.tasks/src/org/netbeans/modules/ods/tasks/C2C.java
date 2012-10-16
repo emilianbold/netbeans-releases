@@ -86,7 +86,11 @@ public class C2C {
     }
     
     public C2CData getClientData(C2CRepository repository) {
-        return C2CExtender.getData(cfcrc, repository.getTaskRepository());
+        return C2CExtender.getData(cfcrc, repository.getTaskRepository(), false);
+    }
+    
+    public void refreshClientData(C2CRepository repository) {
+        C2CExtender.getData(cfcrc, repository.getTaskRepository(), true);
     }
     
     public AbstractRepositoryConnector getRepositoryConnector() {

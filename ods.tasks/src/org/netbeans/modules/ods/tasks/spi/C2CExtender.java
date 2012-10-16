@@ -81,8 +81,8 @@ public abstract class C2CExtender<Data> {
         getDefault().spiAssignTaskRepositoryLocationFactory(rc, taskRepositoryLocationFactory);
     }
     
-    public static C2CData getData(AbstractRepositoryConnector rc, TaskRepository r) {
-        return getDefault().spiClientData(rc, r);
+    public static C2CData getData(AbstractRepositoryConnector rc, TaskRepository r, boolean forceRefresh) {
+        return getDefault().spiClientData(rc, r, forceRefresh);
     }
         
     public static void repositoryRemoved(AbstractRepositoryConnector rc, TaskRepository r) {
@@ -125,7 +125,7 @@ public abstract class C2CExtender<Data> {
     
     protected abstract AbstractRepositoryConnector spiCreate();
     protected abstract void spiAssignTaskRepositoryLocationFactory(AbstractRepositoryConnector rc, TaskRepositoryLocationFactory f);
-    protected abstract C2CData spiClientData(AbstractRepositoryConnector rc, TaskRepository taskRepository);
+    protected abstract C2CData spiClientData(AbstractRepositoryConnector rc, TaskRepository taskRepository, boolean forceRefresh);
     protected abstract void spiRepositoryRemove(AbstractRepositoryConnector rc, TaskRepository r);
     protected abstract IRepositoryQuery spiQuery(AbstractRepositoryConnector rc, PredefinedTaskQuery predefinedTaskQuery, String name, String connectorKind);
 

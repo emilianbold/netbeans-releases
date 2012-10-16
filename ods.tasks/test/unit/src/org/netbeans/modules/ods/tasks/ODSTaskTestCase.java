@@ -85,7 +85,7 @@ public class ODSTaskTestCase extends AbstractC2CTestCase {
     }
 
     public void testC2CTasks() throws Throwable {
-        C2CData clientData = C2CExtender.getData(rc, taskRepository);
+        C2CData clientData = C2CExtender.getData(rc, taskRepository, false);
 
         // create
 
