@@ -240,10 +240,12 @@ public class BraceMatchingSidebarComponent extends JComponent implements
                // runnable that can access visual hierearchy
                public void run() {
                     Rectangle visible = getVisibleRect();
-                    if (visible.y < tooltipYAnchor) {
-                        hideToolTip(true);
-                    } else if (autoHidden) {
-                        showTooltip();
+                    if (tooltipYAnchor < Integer.MAX_VALUE) {
+                        if (visible.y <= tooltipYAnchor) {
+                            hideToolTip(true);
+                        } else if (autoHidden) {
+                            showTooltip();
+                        }
                     }
                } 
             });
@@ -481,6 +483,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
             ToolTipSupport tts = baseUI.getEditorUI().getToolTipSupport();
             tts.setToolTipVisible(false);
             this.autoHidden = autoHidden;
+//            this.tooltipVisible = false;
         }
     }
     
@@ -583,6 +586,9 @@ public class BraceMatchingSidebarComponent extends JComponent implements
     
     private boolean isMatcherTooltipVisible() {
         ToolTipSupport tts = baseUI.getEditorUI().getToolTipSupport();
+        if (!(tts.isEnabled() && tts.isToolTipVisible())) {
+            return false;
+        }
         return tts.getToolTip() instanceof BraceToolTip;
     }
     
@@ -648,7 +654,8 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         tts.setToolTip(tooltip, 
                 PopupManager.ScrollBarBounds, 
                 new Point(-x, -y),
-                0, 0,
-                ToolTipSupport.FLAG_PERMANENT);
+                0, 0, 0);
+        tts.setToolTipVisible(true, false);
+//        this.tooltipVisible = true;
     }
 }
