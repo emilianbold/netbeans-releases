@@ -143,6 +143,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private static final String RESOLUTION_DUPLICATE = "DUPLICATE";             // NOI18N
     private static final String DEFAULT_PRIORITY = "Normal";                    // NOI18N
     private static final String DEFAULT_SEVERITY = "normal";                    // NOI18N
+    private static final String ICON_PATH_WARNING = "org/netbeans/modules/ods/tasks/resources/warning.gif"; //NOI18N
+    private static final String ICON_PATH_ERROR = "org/netbeans/modules/ods/tasks/resources/error.gif"; //NOI18N
+    private static final String ICON_PATH_INFO = "org/netbeans/modules/ods/tasks/resources/info.png"; //NOI18N
 
     private C2CIssue issue;
     
@@ -664,7 +667,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 }
             } else {
                 if (!isNew && valueModifiedByServer && (warningLabel != null)) {
-                    warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
+                    warningLabel.setIcon(ImageUtilities.loadImageIcon(ICON_PATH_WARNING, true));
                     String messageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.fieldModifiedWarning"); // NOI18N
                     String message = MessageFormat.format(messageFormat, fieldName, currentValue, newValue);
                     fieldWarnings.add(message);
@@ -674,7 +677,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             currentValue = newValue;
         } else {
             if (!isNew && valueModifiedByServer && (warningLabel != null)) {
-                warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/error.gif", true)); // NOI18N
+                warningLabel.setIcon(ImageUtilities.loadImageIcon(ICON_PATH_ERROR, true));
                 String messageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.fieldModifiedError"); // NOI18N
                 String message = MessageFormat.format(messageFormat, fieldName, newValue);
                 fieldErrors.add(message);
@@ -1304,38 +1307,38 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (noSummary) {
             JLabel noSummaryLabel = new JLabel();
             noSummaryLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noSummary")); // NOI18N
-            String icon = issue.isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
+            String icon = issue.isNew() ? ICON_PATH_INFO : ICON_PATH_ERROR;
             noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
             messagePanel.add(noSummaryLabel);
         }
         if (sameParent) {
             JLabel sameParentLabel = new JLabel();
             sameParentLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.sameParent")); // NOI18N
-            sameParentLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            sameParentLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(ICON_PATH_ERROR)));
             messagePanel.add(sameParentLabel);
         }
         if (!sameParent && cyclicDependency) {
             JLabel cyclicDependencyLabel = new JLabel();
             cyclicDependencyLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.cyclicDependency")); // NOI18N
-            cyclicDependencyLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            cyclicDependencyLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(ICON_PATH_ERROR)));
             messagePanel.add(cyclicDependencyLabel);
         }
         if (invalidTag) {
             JLabel invalidKeywordLabel = new JLabel();
             invalidKeywordLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.invalidTag")); // NOI18N
-            invalidKeywordLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            invalidKeywordLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(ICON_PATH_ERROR)));
             messagePanel.add(invalidKeywordLabel);
         }
         if (noDuplicateId) {
             JLabel noDuplicateLabel = new JLabel();
             noDuplicateLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noDuplicateId")); // NOI18N
-            noDuplicateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            noDuplicateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(ICON_PATH_ERROR)));
             messagePanel.add(noDuplicateLabel);
         }
         if (!invalidDateFields.isEmpty()) {
             JLabel invalidDateLabel = new JLabel();
             invalidDateLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.invalidDateField", invalidDateFields.iterator().next())); // NOI18N
-            invalidDateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            invalidDateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(ICON_PATH_ERROR)));
             messagePanel.add(invalidDateLabel);
         }
         if (noSummary || sameParent || cyclicDependency || invalidTag || noComponent || noIteration || noTargetMilestione || noDuplicateId || !invalidDateFields.isEmpty()) {
@@ -1345,12 +1348,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         for (String fieldError : fieldErrors) {
             JLabel errorLabel = new JLabel(fieldError);
-            errorLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/error.gif", true)); // NOI18N
+            errorLabel.setIcon(ImageUtilities.loadImageIcon(ICON_PATH_ERROR, true));
             messagePanel.add(errorLabel);
         }
         for (String fieldWarning : fieldWarnings) {
             JLabel warningLabel = new JLabel(fieldWarning);
-            warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
+            warningLabel.setIcon(ImageUtilities.loadImageIcon(ICON_PATH_WARNING, true));
             messagePanel.add(warningLabel);
         }
         if (noSummary || sameParent || cyclicDependency || invalidTag || noComponent || noIteration || noTargetMilestione || noDuplicateId || (fieldErrors.size() + fieldWarnings.size() > 0)
@@ -1365,7 +1368,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     void addMessage(String messageKey) {
         JLabel messageLabel = new JLabel();
         messageLabel.setText(NbBundle.getMessage(IssuePanel.class, messageKey));
-        String icon = issue.isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
+        String icon = issue.isNew() ? ICON_PATH_INFO : ICON_PATH_ERROR;
         messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
         messagePanel.add(messageLabel);
     }    
