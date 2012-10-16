@@ -47,6 +47,8 @@ package org.netbeans.modules.java.navigation;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -75,6 +77,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -86,7 +89,8 @@ import org.openide.util.lookup.InstanceContent.Convertor;
  */
 public class ElementNode extends AbstractNode {
 
-    
+
+    private static final String ACTION_FOLDER = "Navigation/Members/text/x-java/Actions";  //NOI18N
     private static Node WAIT_NODE;
     
     private OpenAction openAction;
@@ -132,19 +136,21 @@ public class ElementNode extends AbstractNode {
         
         if ( context || description.name == null ) {
             return description.ui.getActions();
-        }
-        else {
-            Action panelActions[] = description.ui.getActions();
-            
-            Action actions[]  = new Action[ 4 + panelActions.length ];
-            actions[0] = getOpenAction();
-            actions[1] = RefactoringActionsFactory.whereUsedAction();
-            actions[2] = RefactoringActionsFactory.popupSubmenuAction();
-            actions[3] = null;
-            for( int i = 0; i < panelActions.length; i++ ){
-                actions[4 + i] = panelActions[i];
+        } else {
+            final Action panelActions[] = description.ui.getActions();
+            final List<? extends Action> additionalActions = Utilities.actionsForPath(ACTION_FOLDER);
+            final int additionalActionSize = additionalActions.isEmpty() ? 0 : additionalActions.size() + 1;
+            final List<Action> actions = new ArrayList<Action>(4 + panelActions.length + additionalActionSize);
+            actions.add(getOpenAction());
+            actions.add(RefactoringActionsFactory.whereUsedAction());
+            actions.add(RefactoringActionsFactory.popupSubmenuAction());
+            actions.add(null);
+            if (additionalActionSize > 0) {
+                actions.addAll(additionalActions);
+                actions.add(null);
             }
-            return actions;
+            actions.addAll(Arrays.asList(panelActions));
+            return actions.toArray(new Action[actions.size()]);
         }
     }        
     
