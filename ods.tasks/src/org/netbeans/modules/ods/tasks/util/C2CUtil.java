@@ -117,7 +117,7 @@ public class C2CUtil {
         ta = rta.createMappedAttribute(C2CData.ATTR_DUPLICATE_OF);
         ta = rta.createMappedAttribute(C2CData.ATTR_DUEDATE);
         ta = rta.createMappedAttribute(C2CData.ATTR_FOUND_IN_RELEASE);
-        ta = rta.createMappedAttribute(C2CData.ATTR_KEYWORDS);
+        ta = rta.createMappedAttribute(C2CData.ATTR_TAGS);
         ta = rta.createMappedAttribute(C2CData.ATTR_EXTERNAL_LINKS);
         ta = rta.createMappedAttribute(C2CData.ATTR_OWNER);
         ta = rta.createMappedAttribute(C2CData.ATTR_VERSION);
