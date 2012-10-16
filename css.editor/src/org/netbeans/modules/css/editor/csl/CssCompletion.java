@@ -177,7 +177,7 @@ public class CssCompletion implements CodeCompletionHandler {
         CompletionContext completionContext =
                 new CompletionContext(node,
                 tokenNode,
-                info.getWrappedCssParserResult(),
+                info,
                 ts,
                 diff,
                 context.getQueryType(),
