@@ -147,7 +147,7 @@ public class QueryParameters {
         return map.values();
     }
     
-     void createParameter(Column c, JList list) {
+    void createParameter(Column c, JList list) {
         map.put(c, new ListParameter(list, c));
     }
     
