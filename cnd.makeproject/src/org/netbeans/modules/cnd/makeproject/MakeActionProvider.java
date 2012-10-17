@@ -1367,6 +1367,7 @@ public final class MakeActionProvider implements ActionProvider {
             if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
                 // Confiiguration was created with unknown tool set. Use the now default one.
                 cs = CompilerSetManager.get(env).getDefaultCompilerSet();
+                // NB: cs == null still possible (see #219798), although I don't know how to reproduce
                 String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname);
                 errs.add(errMsg);
                 runBTA = true;
@@ -1443,7 +1444,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
 
         // user counting mode
-        if (cs.getCompilerFlavor().isSunStudioCompiler() && !CndUtils.isUnitTestMode()) {
+        if (cs != null && cs.getCompilerFlavor().isSunStudioCompiler() && !CndUtils.isUnitTestMode()) {
             SunStudioUserCounter.countIDE(cs.getDirectory(), execEnv);
         }
         if (runBTA) {
@@ -1476,6 +1477,8 @@ public final class MakeActionProvider implements ActionProvider {
                     conf.getFortranRequired().setValue(model.isFortranRequired());
                     conf.getAssemblerRequired().setValue(model.isAsRequired());
                     conf.getCompilerSet().setValue(name);
+                    cs = conf.getCompilerSet().getCompilerSet();
+                    CndUtils.assertNotNull(cs, "Null compiler set for " + name); //NOI18N
                     pd.setModified();
                     pd.save();
                     lastValidation = true;
