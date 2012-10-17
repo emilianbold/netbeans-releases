@@ -171,6 +171,7 @@ public class WordMatchTest extends NbTestCase {
         compareText(doc, offset - 1, "ajo ", docLen + 2);
         wordMatch.matchWord(offset, false);
         compareText(doc, offset - 1, "ajo ", docLen + 2);
+        pane.setText(""); // Ensure this doc would affect WordMatch for other docs
     }
 
     private static void compareText(Document doc, int offset, String text, int docLen) throws Exception {
