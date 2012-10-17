@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
  *
@@ -140,11 +141,29 @@ public final class Repository {
     }
 
     /**
+     * Determines if this repository can be deleted or changed by the user.
+     * 
+     * @return <code>true</code> if this repository can be deleted or changed by 
+     *         the user. Otherwise <code>false</code>.
+     */
+    public boolean isMutable() {
+        return impl.isMutable();
+    }
+    
+    /**
      * Removes this repository
      */
     public void remove() {
         impl.remove();
     }
+    
+    /**
+     * Opens the modal edit repository dialog.<br>
+     * Blocks until the dialog isn't closed. 
+     */
+    public void edit() { 
+        BugtrackingUtil.editRepository(this);
+    }    
 
     /**
      * Registers a PropertyChangeListener 
