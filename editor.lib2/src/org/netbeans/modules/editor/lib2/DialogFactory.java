@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.spi.editor;
+package org.netbeans.modules.editor.lib2;
 
 import java.awt.Dialog;
 import java.awt.event.*;
