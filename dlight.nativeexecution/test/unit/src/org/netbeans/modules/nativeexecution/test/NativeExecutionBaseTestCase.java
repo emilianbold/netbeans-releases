@@ -49,7 +49,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -515,6 +517,15 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
     
+    public static void writeFile(FileObject fo, CharSequence content) throws IOException {
+        Writer writer = new OutputStreamWriter(fo.getOutputStream());
+        try {
+            writer.write(content.toString());
+        } finally {
+            writer.close();
+        }
+    }
+
     public static void writeFile(File file, List<? extends CharSequence> lines) throws IOException {
         Writer writer = new FileWriter(file);
         try {
@@ -553,6 +564,17 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
 
     public String readFile(File file) throws IOException {
         BufferedReader rdr = new BufferedReader(new FileReader(file));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = rdr.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        rdr.close();
+        return sb.toString();
+    }
+
+    public String readFile(FileObject fo) throws IOException {
+        BufferedReader rdr = new BufferedReader(new InputStreamReader(fo.getInputStream()));
         StringBuilder sb = new StringBuilder();
         String line;
         while ((line = rdr.readLine()) != null) {
