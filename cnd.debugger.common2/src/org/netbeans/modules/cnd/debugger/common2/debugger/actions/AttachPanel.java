@@ -628,10 +628,10 @@ public final class AttachPanel extends TopComponent {
 
             if (project == null) {
                 if (noproject) { // < no project>
-                    dt.createProject(false);
+                    dt.setProjectMode(DebugTarget.ProjectMode.NO_PROJECT);
                 } else { // <new project>
                     dt.setBuildFirst(false);
-                    dt.createProject(true);
+                    dt.setProjectMode(DebugTarget.ProjectMode.NEW_PROJECT);
                 }
             }
 
