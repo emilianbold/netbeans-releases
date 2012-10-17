@@ -59,6 +59,8 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.GrammarElementVisitor;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
@@ -74,12 +76,15 @@ import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.SortMode;
 import org.netbeans.modules.css.visual.editors.PropertyValuesEditor;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
@@ -106,9 +111,8 @@ public class RuleNode extends AbstractNode {
     private PropertyCategoryPropertySet[] propertySets;
     private RuleEditorPanel panel;
     private Map<PropertyDefinition, Declaration> addedDeclarations = new HashMap<PropertyDefinition, Declaration>();
-
     private Rule lastRule;
-    
+
     public RuleNode(RuleEditorPanel panel) {
         super(new RuleChildren());
         this.panel = panel;
@@ -181,7 +185,7 @@ public class RuleNode extends AbstractNode {
                             //notice: the same order of the properties as in the last model
                             //is ensured by the getUniquePropertyName() method which adds 
                             //index of the property in the rule to its name.
-                            
+
                             //create declaration name -> declaration maps se we may compare 
                             //(as the css source model elements do not comparable by equals/hashcode)
                             Map<String, Declaration> oName2DeclarationMap = new HashMap<String, Declaration>();
@@ -311,7 +315,7 @@ public class RuleNode extends AbstractNode {
                     if (matchesFilterText(property.getContent().toString())) {
                         PropertyDefinition def = Properties.getProperty(property.getContent().toString());
                         PropertyCategory category;
-                        if(def != null) {
+                        if (def != null) {
                             category = def.getPropertyCategory();
                         } else {
                             category = PropertyCategory.UNKNOWN;
@@ -442,44 +446,40 @@ public class RuleNode extends AbstractNode {
 
         return sets.toArray(new PropertyCategoryPropertySet[0]);
     }
-    
+
     /**
      * Returns an unique id of the property within current rule.
-     * 
+     *
      * Format of the ID:
-     * 
+     *
      * property name_S_D
-     * 
-     * Where:
-     * "S" is the property index within the rule
-     * "D" is the number of the property if there are more properties of same name
-     * 
+     *
+     * Where: "S" is the property index within the rule "D" is the number of the
+     * property if there are more properties of same name
+     *
      * Example:
-     * 
-     * div {
-     *    color: red;     // color_0
-     *    font: courier;  // font_1
-     *    color: green;   // color_2_1
-     * }
-     * 
+     *
+     * div { color: red; // color_0 font: courier; // font_1 color: green; //
+     * color_2_1 }
+     *
      * @param property
      */
     private String getDeclarationId(Rule rule, Declaration declaration) {
         assert rule.getModel() == declaration.getModel();
-        
+
         CharSequence searched = declaration.getProperty().getContent();
         Declarations ds = rule.getDeclarations();
         Collection<Declaration> declarations = ds != null ? ds.getDeclarations() : Collections.<Declaration>emptyList();
-        
-        int identityIndex = -1; 
+
+        int identityIndex = -1;
         int index = -1;
-        for(Declaration d : declarations ) {
+        for (Declaration d : declarations) {
             index++;
             CharSequence propName = d.getProperty().getContent();
-            if(LexerUtils.equals(searched, propName, false, false)) {
+            if (LexerUtils.equals(searched, propName, false, false)) {
                 identityIndex++;
             }
-            if(d == declaration) {
+            if (d == declaration) {
                 break;
             }
         }
@@ -488,7 +488,7 @@ public class RuleNode extends AbstractNode {
         b.append(searched);
         b.append('_');
         b.append(index);
-        if(identityIndex > 0) {
+        if (identityIndex > 0) {
             b.append('_');
             b.append(identityIndex);
         }
@@ -498,7 +498,7 @@ public class RuleNode extends AbstractNode {
     private String getPropertyDisplayName(Declaration declaration) {
         return declaration.getProperty().getContent().toString();
     }
-    
+
     public void applyModelChanges() {
         final Model model = getModel();
         model.runReadTask(new Model.ModelTask() {
@@ -656,7 +656,6 @@ public class RuleNode extends AbstractNode {
 
         protected abstract T getEmptyValue();
     }
-    
     private static String EMPTY = "";
 
     private class PlainPDP extends AbstractPDP<String> {
@@ -687,31 +686,31 @@ public class RuleNode extends AbstractNode {
 
     private DeclarationProperty createDeclarationProperty(Declaration declaration, boolean markAsModified) {
         ResolvedProperty resolvedProperty = declaration.getResolvedProperty();
-        return new DeclarationProperty(declaration, 
-                getDeclarationId(getRule(), declaration), 
-                getPropertyDisplayName(declaration), 
-                markAsModified, 
-                resolvedProperty == null ? null : createPropertyValueEditor(resolvedProperty.getPropertyModel(), 
+        return new DeclarationProperty(declaration,
+                getDeclarationId(getRule(), declaration),
+                getPropertyDisplayName(declaration),
+                markAsModified,
+                resolvedProperty == null ? null : createPropertyValueEditor(resolvedProperty.getPropertyModel(),
                 true));
     }
 
     @NbBundle.Messages({
-        "property.value.unexpected.token=Erroneous property value, unexpected token {0} found",
-        "property.value.not.resolved=Erroneous property value",
-        "property.unknown=No such property",
-        "property.description=Property {0} ({1} Module)"
+        "property.value.unexpected.token={0} - unexpected character(s) \"{1}\" found",
+        "property.value.not.resolved={0} - error in property value",
+        "property.unknown={0} - unknown property",
+        "property.description={0} ({1} Module)",
+        "property.no.file=No File"
     })
     public class DeclarationProperty extends PropertySupport {
 
         private final String propertyName;
         private final PropertyEditor editor;
         private final boolean markAsModified;
-        
         private Declaration declaration;
         private DeclarationInfo info;
         private String shortDescription;
-        
         private String valueSet;
+        private String locationPrefix;
 
         public DeclarationProperty(Declaration declaration, String propertyName, String propertyDisplayName, boolean markAsModified, PropertyEditor editor) {
             super(propertyName,
@@ -727,74 +726,131 @@ public class RuleNode extends AbstractNode {
 
             //one may set a custom inplace editor by 
             //setValue("inplaceEditor", new MyInplaceEditor());
-            
+
         }
 
         public Declaration getDeclaration() {
             return declaration;
         }
-        
+
         /**
-         * Updates the {@link #info} field to {@link DeclarationInfo#ERRONEOUS} if
-         * the active declaration contains errors.
+         * Updates the {@link #info} field to {@link DeclarationInfo#ERRONEOUS}
+         * if the active declaration contains errors.
          */
         private void checkForErrors() {
+            //suppress the errors for just added property
+            //it doesn't have the value yet, but this doesn't mean
+            //we want to mark it as erroneous while adding the value
+            if (getDeclaration().equals(panel.createdDeclaration)) {
+                return;
+            }
+
             String property = declaration.getProperty().getContent().toString();
             PropertyModel model = Properties.getPropertyModel(property);
-            if(model != null) {
+            if (model != null) {
                 PropertyValue value = declaration.getPropertyValue();
-                if(value != null) {
+                if (value != null) {
                     CharSequence content = value.getExpression().getContent();
                     ResolvedProperty rp = new ResolvedProperty(model, content);
-                    if(!rp.isResolved()) {
+                    if (!rp.isResolved()) {
                         info = DeclarationInfo.ERRONEOUS;
                         List<Token> unresolvedTokens = rp.getUnresolvedTokens();
-                        if(!unresolvedTokens.isEmpty()) {
+                        if (!unresolvedTokens.isEmpty()) {
                             Token unexpectedToken = unresolvedTokens.iterator().next();
-                            shortDescription = Bundle.property_value_unexpected_token(unexpectedToken.toString());
+                            String unexpectedText = unexpectedToken.image().toString();
+                            shortDescription = Bundle.property_value_unexpected_token(getLocationPrefix(), unexpectedText);
                         } else {
-                            shortDescription = Bundle.property_value_not_resolved();
+                            shortDescription = Bundle.property_value_not_resolved(getLocationPrefix());
                         }
-                        return ;
+                        return;
                     }
                 }
-                shortDescription = Bundle.property_description(property, model.getProperty().getCssModule().getDisplayName());
+
+
+                shortDescription = Bundle.property_description(getLocationPrefix(), model.getProperty().getCssModule().getDisplayName());
             } else {
                 //flag as unknown
                 info = DeclarationInfo.ERRONEOUS;
-                shortDescription = Bundle.property_unknown();
+                shortDescription = Bundle.property_unknown(getLocationPrefix());
             }
         }
-        
+
+        /**
+         * Returns the file:line prefix for the tooltip
+         */
+        private CharSequence getLocationPrefix() {
+            if (locationPrefix == null) {
+                final StringBuilder sb = new StringBuilder();
+                Model model = getModel();
+                Lookup lookup = model.getLookup();
+                FileObject file = lookup.lookup(FileObject.class);
+                if (file == null) {
+                    sb.append(Bundle.property_no_file());
+                } else {
+                    sb.append(file.getNameExt());
+                }
+                Snapshot snap = lookup.lookup(Snapshot.class);
+                final Document doc = lookup.lookup(Document.class);
+                if (snap != null && doc != null) {
+                    Declaration decl = getDeclaration();
+                    int ast_from = decl.getStartOffset();
+                    if (ast_from != -1) {
+                        //source element, not virtual which is not persisted yet
+                        final int doc_from = snap.getOriginalOffset(ast_from);
+                        if (doc_from != -1) {
+                            doc.render(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        int lineOffset = 1 + Utilities.getLineOffset((BaseDocument) doc, doc_from);
+                                        sb.append(':');
+                                        sb.append(lineOffset);
+                                    } catch (BadLocationException ex) {
+                                        //no-op
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+                sb.append(' ');
+                locationPrefix = sb.toString();
+            }
+
+            return locationPrefix;
+        }
+
         private void updateDeclaration(Declaration declaration) {
             assert getDeclarationId(getRule(), declaration).equals(propertyName);
-            
+
             //update the declaration
             String oldValue = getValue();
             this.declaration = declaration;
             String newValue = getValue();
+            
+            locationPrefix = null; //reset the prefix as it was computed for the original declaration
 
             /* Reset DeclarationInfo to default state (null) as the contract 
              * doesn't require/expect the RuleEditorController.setDeclarationInfo(...) 
              * to be called for each "plain" declaration with null DeclarationInfo argument.
-            */
+             */
             DeclarationInfo oldInfo = info;
             info = null;
-            
+
             String oldShortDescription = shortDescription;
-            
+
             //possibly set the DeclarationInfo to ERRONEOUS
             checkForErrors();
-            
-            if(!shortDescription.equals(oldShortDescription)) {
+
+            if (!shortDescription.equals(oldShortDescription)) {
                 fireShortDescriptionChange(oldShortDescription, shortDescription);
             }
-            
+
             //now we need to fire property name property change with some 
             //change so call setDeclarationInfo() which does property change
             //from null to current value and hence forces the PS to repaint 
             //the property
-            if(info != oldInfo) {
+            if (info != oldInfo) {
                 //DeclarationInfo has changed
                 setDeclarationInfo(info);
             } else {
@@ -804,7 +860,7 @@ public class RuleNode extends AbstractNode {
                 //this will trigger the property name and value repaint
                 firePropertyChange(propertyName, oldValue, newValue);
             }
-            
+
         }
 
         @Override
@@ -894,18 +950,17 @@ public class RuleNode extends AbstractNode {
 
         @Override
         public String getValue() {
-            if(valueSet != null) {
+            if (valueSet != null) {
                 return valueSet;
             }
             PropertyValue val = declaration.getPropertyValue();
             return val == null ? null : val.getExpression().getContent().toString().trim();
         }
-        
 
         @Override
         public void setValue(final Object o) {
             assert SwingUtilities.isEventDispatchThread();
-            
+
             final String asString = (String) o;
             if (asString == null || asString.isEmpty()) {
                 return;
@@ -918,27 +973,25 @@ public class RuleNode extends AbstractNode {
 
             this.valueSet = asString;
             SAVE_CHANGE_TASK.schedule(200);
-            
+
         }
-        
         private Task SAVE_CHANGE_TASK = RuleEditorPanel.RP.create(new Runnable() {
             @Override
             public void run() {
                 Mutex.EVENT.readAccess(new Runnable() {
-
                     @Override
                     public void run() {
                         //all the access to valueSet field is safe as 
                         //the field is only set in setValue() which always
                         //runs id EDT
-                        
+
                         //The tasks may schedule in such way that more than one tasks
                         //runs after the setValue(...) method called.
                         //In such case the first task sets the valueSet field to null
                         //and the other tasks cannot rule (they do not have anything
                         //to do anyway) so just quit in such case.
-                        if(valueSet == null) {
-                            return ;
+                        if (valueSet == null) {
+                            return;
                         }
 
                         Model model = getModel();
@@ -970,9 +1023,8 @@ public class RuleNode extends AbstractNode {
                             //the changes made by the writetask above
                         }
 
-                        valueSet = null; 
+                        valueSet = null;
                     }
-                    
                 });
 
             }

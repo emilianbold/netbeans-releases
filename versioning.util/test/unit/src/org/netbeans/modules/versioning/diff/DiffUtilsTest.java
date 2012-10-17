@@ -187,4 +187,9 @@ public class DiffUtilsTest extends NbTestCase {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.diff.DiffProvider.class)
+    public static class DummyBuiltInDiffProvider extends BuiltInDiffProvider {
+        public DummyBuiltInDiffProvider() {
+        }
+    }
 }

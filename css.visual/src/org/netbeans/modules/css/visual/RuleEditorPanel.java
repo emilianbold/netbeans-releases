@@ -70,6 +70,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -91,6 +92,7 @@ import org.netbeans.modules.css.visual.RuleNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
 import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
+import org.netbeans.modules.css.visual.actions.GoToSourceAction;
 import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
@@ -181,7 +183,8 @@ public class RuleEditorPanel extends JPanel {
     public RuleNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
-    private Declaration createdDeclaration;
+   
+    Declaration createdDeclaration;
     
     private AddPropertyComboBoxModel ADD_PROPERTY_CB_MODEL = new AddPropertyComboBoxModel();
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
@@ -469,7 +472,7 @@ public class RuleEditorPanel extends JPanel {
         sheet.requestFocus();
 //        sheet.select(descriptor, true);
         try {
-            call_PropertySheet_select(sheet, descriptor, showCategories);
+            call_PropertySheet_select(sheet, descriptor, true);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -951,6 +954,8 @@ public class RuleEditorPanel extends JPanel {
                     //custom popop for the whole panel
                     JPopupMenu pm = new JPopupMenu();
                     
+                    pm.add(new GoToSourceAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
+                    pm.addSeparator();
                     pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
 
                     return pm;

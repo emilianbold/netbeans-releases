@@ -43,11 +43,14 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Insets;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,21 +61,24 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.project.Project;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.ui.FakeRootNode;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
-import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
-import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -113,6 +119,13 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
      */
     private void initTreeView() {
         treeView = new BeanTreeView() {
+            {
+                MouseAdapter listener = createTreeMouseListener();
+                tree.addMouseListener(listener);
+                tree.addMouseMotionListener(listener);
+                tree.setCellRenderer(createTreeCellRenderer(tree.getCellRenderer()));
+            }
+
             @Override
             public void expandAll() {
                 // The original expandAll() doesn't work for us as it doesn't
@@ -224,11 +237,8 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
                     // Using dummy node as the root to release the old root
                     root = new AbstractNode(Children.LEAF);
                 } else {
-                    WebKitDebugging webKit = pageModel.getWebKit();
-                    Project project = pageModel.getProject();
-                    CSS css = webKit.getCSS();
                     filter.removePropertyChangeListeners();
-                    DocumentNode documentNode = new DocumentNode(project, css, filter);
+                    DocumentNode documentNode = new DocumentNode(pageModel, filter);
                     root = new FakeRootNode<DocumentNode>(documentNode,
                             new Action[] { new RefreshAction() });
                 }
@@ -267,6 +277,123 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
     @Override
     public final ExplorerManager getExplorerManager() {
         return manager;
+    }
+
+
+    // The last node we were hovering over.
+    Object lastHover = null;
+
+    /**
+     * Creates a mouse listener for the tree view.
+     *
+     * @return mouse listener for the tree view.
+     */
+    public MouseAdapter createTreeMouseListener() {
+        return new MouseAdapter() {
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                processEvent(e);
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                processEvent(e);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                processEvent(null);
+                // Make sure that lastHover != <any potential value>
+                // i.e., make sure that change in hover is triggered when
+                // mouse returns into this component
+                lastHover = new Object();
+            }
+
+            /**
+             * Processes the specified mouse event.
+             *
+             * @param e mouse event to process.
+             */
+            private void processEvent(MouseEvent e) {
+                Object hover = null;
+                if (e != null) {
+                    JTree tree = (JTree)e.getSource();
+                    TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+                    if (path != null) {
+                        hover = path.getLastPathComponent();
+                    }
+                }
+                if (hover != lastHover) {
+                    lastHover = hover;
+                    final String selector;
+                    if (hover != null) {
+                        Node node = Visualizer.findNode(hover);
+                        Rule rule = node.getLookup().lookup(Rule.class);
+                        if (rule != null) {
+                            selector = rule.getSelector();
+                        } else {
+                            selector = null;
+                        }
+                    } else {
+                        selector = null;
+                    }
+                    treeView.repaint();
+                    final PageModel pageModel = currentPageModel();
+                    if (pageModel != null) {
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                pageModel.setHighlightedSelector(selector);
+                            }
+                        });
+                    }
+                }
+            }
+        };
+    }
+
+    /**
+     * Returns the page model that corresponds to the content of the tree view.
+     *
+     * @return page model that corresponds to the content of the tree view.
+     */
+    private PageModel currentPageModel() {
+        Node node = manager.getRootContext();
+        if (node instanceof FakeRootNode) {
+            node = ((FakeRootNode)node).getRealRoot();
+        }
+        return node.getLookup().lookup(PageModel.class);
+    }
+
+    /**
+     * Creates a cell renderer for the tree view.
+     *
+     * @param delegate delegating/original tree renderer.
+     * @return call renderer for the tree view.
+     */
+    private TreeCellRenderer createTreeCellRenderer(final TreeCellRenderer delegate) {
+        Color origColor = UIManager.getColor("Tree.selectionBackground"); // NOI18N
+        Color color = origColor.brighter().brighter();
+        if (color.equals(Color.WHITE)) { // Issue 217127
+            color = origColor.darker();
+        }
+        // Color used for hovering highlight
+        final Color hoverColor = color;
+        return new DefaultTreeCellRenderer() {
+            @Override
+            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                JLabel component;
+                if (!selected && (value == lastHover)) {
+                    component = (JLabel)delegate.getTreeCellRendererComponent(tree, value, true, expanded, leaf, row, hasFocus);
+                    component.setBackground(hoverColor);
+                    component.setOpaque(true);
+                } else {
+                    component = (JLabel)delegate.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+                }
+                return component;
+            }
+        };
     }
 
     /**
