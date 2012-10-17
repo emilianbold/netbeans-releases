@@ -373,7 +373,7 @@ class CleanComboUI extends BasicComboBoxUI {
         protected Rectangle computePopupBounds(int px, int py, int pw, int ph) {
             if( comboBox instanceof ComboInplaceEditor ) {
                 ComboInplaceEditor inPlaceCombo = ( ComboInplaceEditor ) comboBox;
-                if( inPlaceCombo.isAutoComplete() || true)
+                if( inPlaceCombo.isAutoComplete )
                     return super.computePopupBounds( px, py, pw, ph );
             }
             Dimension d = list.getPreferredSize();

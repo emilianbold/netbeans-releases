@@ -45,6 +45,8 @@ package org.netbeans.modules.bugzilla.repository;
 import java.awt.EventQueue;
 import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -116,10 +118,13 @@ public class BugzillaRepository {
     private Task refreshIssuesTask;
     private Task refreshQueryTask;
 
+    private PropertyChangeSupport support;
+    
     private Lookup lookup;
 
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
+        support = new PropertyChangeSupport(this);
     }
 
     public BugzillaRepository(RepositoryInfo info) {
@@ -394,14 +399,28 @@ public class BugzillaRepository {
         getIssueCache().removeQuery(query.getStoredQueryName());
         getQueriesIntern().remove(query);
         stopRefreshing(query);
+        fireQueryListChanged();
     }
 
     public void saveQuery(BugzillaQuery query) {
         assert info != null;
         BugzillaConfig.getInstance().putQuery(this, query); 
         getQueriesIntern().add(query);
+        fireQueryListChanged();
     }
 
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+    
+    private void fireQueryListChanged() {
+        support.firePropertyChange(RepositoryProvider.EVENT_QUERY_LIST_CHANGED, null, null);
+    }
+    
     private Set<BugzillaQuery> getQueriesIntern() {
         if(queries == null) {
             queries = new HashSet<BugzillaQuery>(10);
