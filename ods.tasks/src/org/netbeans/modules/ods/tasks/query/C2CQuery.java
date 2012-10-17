@@ -456,7 +456,7 @@ public abstract class C2CQuery {
             
             ProjectAndClient pac = getProjectAndClient();
             if(pac == null) {
-                C2C.LOG.log(Level.WARNING, "couldn''t save query : {0}", name);
+                C2C.LOG.log(Level.WARNING, "couldn''t save query : {0}", name); // NOI18N
                 return false;
             }
             
@@ -493,14 +493,14 @@ public abstract class C2CQuery {
             
             ProjectAndClient pac = getProjectAndClient();
             if(pac == null) {
-                C2C.LOG.log(Level.WARNING, "couldn''t save query : {0}", getDisplayName());
+                C2C.LOG.log(Level.WARNING, "couldn''t save query : {0}", getDisplayName()); // NOI18N
                 return;
             }
             
             try {
                 pac.client.deleteQuery(pac.projectId, savedQuery.getId());
             } catch (ODSException ex) {
-                C2C.LOG.log(Level.WARNING, "exception while removing query : " + getDisplayName(), ex);
+                C2C.LOG.log(Level.WARNING, "exception while removing query : " + getDisplayName(), ex); // NOI18N
                 return;
             }
             getRepository().removeQuery(this);
@@ -521,16 +521,16 @@ public abstract class C2CQuery {
             KenaiProject kp = getRepository().getLookup().lookup(KenaiProject.class);
             assert kp != null; // all c2c repositories should come from team support
             if (kp == null) {
-                C2C.LOG.log(Level.WARNING, "  no project available for query");
+                C2C.LOG.log(Level.WARNING, "  no project available for query"); // NOI18N
                 return null;
             }
             String url = kp.getFeatureLocation();
             if(url.endsWith("/")) {
                 url = url.substring(0, url.length() - 1);
             }
-            url = url.substring(0, url.length() - "/tasks".length());
-            String projectId = url.substring(url.lastIndexOf("/") + 1, url.length());
-            url = url.substring(0, url.length() - ("/s/" + projectId).length());
+            url = url.substring(0, url.length() - "/tasks".length()); // NOI18N
+            String projectId = url.substring(url.lastIndexOf("/") + 1, url.length()); // NOI18N
+            url = url.substring(0, url.length() - ("/s/" + projectId).length()); // NOI18N
             AuthenticationCredentials c = getRepository().getTaskRepository().getCredentials(AuthenticationType.REPOSITORY); // XXX repository info doesn't contain creds
             ODSClient client = ODSFactory.getInstance().createClient(url, new PasswordAuthentication(c.getUserName(), c.getPassword().toCharArray()));        
 
@@ -569,13 +569,13 @@ public abstract class C2CQuery {
 
         @Override
         protected boolean save(String name) {
-            throw new UnsupportedOperationException("Can't remove a predefined query.");
+            throw new UnsupportedOperationException("Can't remove a predefined query."); // NOI18N
         }
 
         @Override
         public void remove() {
             // XXX this is called from API, need a proper error msg
-            throw new UnsupportedOperationException("Can't remove a predefined query.");
+            throw new UnsupportedOperationException("Can't remove a predefined query."); // NOI18N
         }
     }
 }
