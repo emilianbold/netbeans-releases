@@ -105,7 +105,9 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         Profile profile = ejbModule.getJ2eeProfile();
         boolean isSimplified = Profile.JAVA_EE_5.equals(profile) ||
                                Profile.JAVA_EE_6_FULL.equals(profile) ||
-                               Profile.JAVA_EE_6_WEB.equals(profile);
+                               Profile.JAVA_EE_6_WEB.equals(profile) ||
+                               Profile.JAVA_EE_7_FULL.equals(profile) ||
+                               Profile.JAVA_EE_7_WEB.equals(profile);
         MessageGenerator generator = MessageGenerator.create(
                 Templates.getTargetName(wiz),
                 pkg,
