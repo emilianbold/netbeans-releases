@@ -104,4 +104,14 @@ public class TestRepositoryProvider extends RepositoryProvider<TestRepository, T
     public Collection<TestIssue> simpleSearch(TestRepository r, String criteria) {
         return r.simpleSearch(criteria);
     }
+
+    @Override
+    public void removePropertyChangeListener(TestRepository r, PropertyChangeListener listener) {
+        r.removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public void addPropertyChangeListener(TestRepository r, PropertyChangeListener listener) {
+        r.addPropertyChangeListener(listener);
+    }
 }

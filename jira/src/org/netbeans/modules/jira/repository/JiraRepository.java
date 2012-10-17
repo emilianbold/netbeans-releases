@@ -53,6 +53,8 @@ import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
 import java.util.Map;
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -124,9 +126,12 @@ public class JiraRepository {
 
     private Lookup lookup;
     private RepositoryInfo info;
-
+    
+    private PropertyChangeSupport support;
+    
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
+        support = new PropertyChangeSupport(this);
     }
 
     public JiraRepository(RepositoryInfo info) {
@@ -281,6 +286,7 @@ public class JiraRepository {
             getQueriesIntern().remove(query);
         }
         stopRefreshing(query);
+        fireQueryListChanged();
     }
 
     public void saveQuery(JiraQuery query) {
@@ -289,8 +295,21 @@ public class JiraRepository {
         synchronized (QUERIES_LOCK) {
             getQueriesIntern().add(query);
         }
+        fireQueryListChanged();
     }
 
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+    
+    private void fireQueryListChanged() {
+        support.firePropertyChange(RepositoryProvider.EVENT_QUERY_LIST_CHANGED, null, null);
+    }
+    
     private Set<JiraQuery> getQueriesIntern() {
         synchronized (QUERIES_LOCK) {
             if(queries == null) {
