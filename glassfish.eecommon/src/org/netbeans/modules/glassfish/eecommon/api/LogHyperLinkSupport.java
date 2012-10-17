@@ -43,14 +43,11 @@
  */
 package org.netbeans.modules.glassfish.eecommon.api;
 
-import com.sun.org.omg.CORBA.ParDescriptionSeqHelper;
 import java.io.File;
-import java.net.URL;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.glassfish.tools.ide.utils.StringPrefixTree;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
@@ -420,12 +417,11 @@ public class LogHyperLinkSupport {
                 }
                 if (result == null) {
                     String path = className.replace('.', '/') + ".java";
-
                     boolean accessible;
                     if (className.startsWith("org.apache.jsp.")
                             && appContext != null) {
                         String contextPath = appContext.equals("/")
-                                ? "/_" // hande ROOT context
+                                ? "/_"                     // hande ROOT context
                                 : appContext;
                         path = serverRoot + contextPath + "/" + path;
                         accessible = new File(path).exists();
@@ -447,9 +443,6 @@ public class LogHyperLinkSupport {
             
         }
 
-        /** GlassFish server installation root. */
-        private final String appServerInstallDir;
-
         /** GlassFish server application context. */
         private String context;
 
@@ -465,10 +458,10 @@ public class LogHyperLinkSupport {
         private final PathAccess pathAccess;
 
         public AppServerLogSupport(String catalinaWork, String webAppContext) {
-            appServerInstallDir = catalinaWork;
             context = webAppContext;
             globalPathReg = GlobalPathRegistry.getDefault();
-            pathAccess = new PathAccess(globalPathReg, catalinaWork, webAppContext);
+            pathAccess = new PathAccess(
+                    globalPathReg, catalinaWork, webAppContext);
         }
 
         public LineInfo analyzeLine(String logLine) {
@@ -556,17 +549,6 @@ public class LogHyperLinkSupport {
                                 = pathAccess.find(className);
                         accessible = access.accessible;
                         path = access.path;
-
-//                        path = className.replace('.', '/') + ".java"; // NOI18N
-//                        accessible = globalPathReg.findResource(path) != null;
-//                        if (className.startsWith("org.apache.jsp.") && context != null) { // NOI18N
-//                            String contextPath = context.equals("/")
-//                                    ? "/_" // hande ROOT context
-//                                    : context;
-//                            path = appServerInstallDir + contextPath + "/" + path;
-//                            accessible = new File(path).exists();
-//                        }
-                        
                     }
                 }
             } // every other message treat as normal info message
