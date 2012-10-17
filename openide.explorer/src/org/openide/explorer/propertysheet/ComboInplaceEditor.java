@@ -46,17 +46,19 @@ package org.openide.explorer.propertysheet;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyEditor;
-import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.accessibility.Accessible;
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.plaf.ComboBoxUI;
+import javax.swing.plaf.basic.ComboPopup;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
-import org.openide.util.Lookup;
 
 
 /** A combo box inplace editor.  Does a couple of necessary things:
@@ -92,8 +94,10 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
     private boolean hasBeenEditable = false;
     private boolean needLayout = false;
 
-    private boolean popupCancelled = false;
     private boolean suppressFireActionEvent = false;
+    private boolean ignoreSelectionEvents = false;
+    final boolean isAutoComplete;
+    private boolean strictAutoCompleteMatching;
     
     /** Create a ComboInplaceEditor - the tableUI flag will tell it to use
      * less borders & such */
@@ -116,27 +120,17 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             updateUI();
         }
         
-        addPopupMenuListener(new PopupMenuListener() {
-
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent pme) {
-                popupCancelled = false;
-            }
-
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent pme) {
-                if( !popupCancelled ) {
-                    ComboInplaceEditor.super.fireActionEvent();
-                }
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent pme) {
-                popupCancelled = true;
-            }
-        });
-        
         originalRenderer = getRenderer();
+
+        ComboBoxEditor comboEditor = getEditor();
+        if( comboEditor.getEditorComponent() instanceof JTextComponent ) {
+            JTextComponent textEditor = ( JTextComponent ) comboEditor.getEditorComponent();
+            isAutoComplete = true;
+            Document doc = textEditor.getDocument();
+            doc.addDocumentListener( new AutoComleteListener() );
+        } else {
+            isAutoComplete = false;
+        }
     }
 
     /** Overridden to add a listener to the editor if necessary, since the
@@ -204,9 +198,9 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                 ? ((EnhancedPropertyEditor) editor).supportsEditingTaggedValues()
                 : ((env != null) && Boolean.TRUE.equals(env.getFeatureDescriptor().getValue("canEditAsText"))); //NOI18N
 
-            setEditable(editable);
+            strictAutoCompleteMatching = !editable;
+            setEditable(editable || isAutoComplete);
             setActionCommand(COMMAND_SUCCESS);
-            setupAutoComplete();
             
             //Support for custom ListCellRenderer injection via PropertyEnv
             //The instance obtained from the env by the "customListCellRendererSupport" key
@@ -283,7 +277,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                 return;
             }
 
-            if( isAutoComplete() && isPopupVisible() || suppressFireActionEvent ) {
+            if( suppressFireActionEvent ) {
                 return;
             }
 
@@ -324,6 +318,16 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
     @Override
     public Object getValue() {
         if (isEditable()) {
+            if( isAutoComplete ) {
+                Object editorItem = getEditor().getItem();
+                if( null != editorItem ) {
+                    int selItem = findMatch( editorItem.toString() );
+                    if( selItem >= 0 && selItem < getItemCount() )
+                        return getItemAt( selItem );
+                    if( strictAutoCompleteMatching )
+                        return getSelectedItem();
+                }
+            }
             return getEditor().getItem();
         } else {
             return getSelectedItem();
@@ -511,7 +515,9 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
 
     @Override
     public void setValue(Object o) {
+        ignoreSelectionEvents = true;
         setSelectedItem(o);
+        ignoreSelectionEvents = false;
     }
 
     /** Returns true if the combo box is editable */
@@ -714,25 +720,91 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         }
     }
 
-    private boolean autoComplete = false;
-    /**
-     * Use reflection to check if SwingX library is on class path and add auto-complete.
-     */
-    private void setupAutoComplete() {
-        if( Boolean.getBoolean( "nb.propertysheet.combobox.autocomplete.disable") ) //NOI18N
-            return;
-        try {
-            ClassLoader cl = Lookup.getDefault().lookup( ClassLoader.class );
-            Class c = cl.loadClass( "org.jdesktop.swingx.autocomplete.AutoCompleteDecorator" ); //NOI18N
-            Method m = c.getMethod( "decorate", JComboBox.class );
-            m.invoke( null, this );
-            autoComplete = true;
-        } catch( Exception e ) {
-            //ignore, SwingX is either not available or unsupported version
+    private class AutoComleteListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate( DocumentEvent e ) {
+            matchSelection( e );
+        }
+
+        @Override
+        public void removeUpdate( DocumentEvent e ) {
+            matchSelection( e );
+        }
+
+        @Override
+        public void changedUpdate( DocumentEvent e ) {
+            matchSelection( e );
         }
     }
 
-    boolean isAutoComplete() {
-        return autoComplete;
+    private void matchSelection( DocumentEvent e ) {
+        if( ignoreSelectionEvents || connecting )
+            return;
+        try {
+            ignoreSelectionEvents = true;
+            if( !isDisplayable() )
+                return;
+            String editorText;
+            try {
+                editorText = e.getDocument().getText( 0, e.getDocument().getLength() );
+            } catch( BadLocationException ex ) {
+                //ignore
+                return;
+            }
+            if( null == editorText )
+                editorText = "";
+
+            if( editorText.equals( getSelectedItem().toString() ) )
+                return;
+
+            if( !isPopupVisible() ) {
+                showPopup();
+            }
+
+            JList list = getPopupList();
+            if( null == list )
+                return;
+
+            int matchIndex = findMatch( editorText );
+
+            if( matchIndex >= 0 ) {
+                list.setSelectedIndex( matchIndex );
+                Rectangle rect = list.getCellBounds(matchIndex, matchIndex);
+                if( null != rect )
+                    list.scrollRectToVisible( rect );
+            } else {
+                list.clearSelection();
+                list.scrollRectToVisible( new Rectangle( 1, 1 ) );
+            }
+        } finally {
+            ignoreSelectionEvents = false;
+        }
+    }
+
+    private int findMatch( String editorText ) {
+        for( int i=0; i<getItemCount(); i++ ) {
+            String item = getItemAt( i ).toString();
+            if( item.toLowerCase().compareTo( editorText ) == 0 ) {
+                return i;
+            }
+        }
+
+        for( int i=0; i<getItemCount(); i++ ) {
+            String item = getItemAt( i ).toString();
+            if( item.toLowerCase().startsWith( editorText ) ) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private JList getPopupList() {
+        Accessible a = getUI().getAccessibleChild(this, 0);
+
+        if( a instanceof ComboPopup ) {
+            return ((ComboPopup) a).getList();
+        }
+        return null;
     }
 }
