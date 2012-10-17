@@ -215,7 +215,7 @@ public final class J2SEProject implements Project {
         };
         this.helper = helper;
         aux = helper.createAuxiliaryConfiguration();
-        UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux);
+        UpdateProjectImpl updateProject = new UpdateProjectImpl(this, helper, aux);
         this.updateHelper = new UpdateHelper(updateProject, helper);
         eval = createEvaluator();
         for (int v = 4; v < 10; v++) {
@@ -230,7 +230,7 @@ public final class J2SEProject implements Project {
 
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
-        lookup = createLookup(aux);
+        lookup = createLookup(aux, new J2SEProjectOperations(this, updateProject));
     }
 
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -356,7 +356,7 @@ public final class J2SEProject implements Project {
         return helper;
     }
 
-    private Lookup createLookup(final AuxiliaryConfiguration aux) {
+    private Lookup createLookup(final AuxiliaryConfiguration aux, final J2SEProjectOperations ops) {
         final FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
         final J2SELogicalViewProvider lvp = new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), refHelper);
         final Lookup base = Lookups.fixed(
@@ -384,7 +384,7 @@ public final class J2SEProject implements Project {
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
-            new J2SEProjectOperations(this),
+            ops,
             new J2SEConfigurationProvider(this),
             new J2SEPersistenceProvider(this, cpProvider),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
@@ -453,7 +453,7 @@ public final class J2SEProject implements Project {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
             @Override
             public Void run() {
-                Element data = helper.getPrimaryConfigurationData(true);
+                Element data = updateHelper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE, "name");
                 Element nameEl;
@@ -468,7 +468,7 @@ public final class J2SEProject implements Project {
                     data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
                 }
                 nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
-                helper.putPrimaryConfigurationData(data, true);
+                updateHelper.putPrimaryConfigurationData(data, true);
                 return null;
             }
         });
