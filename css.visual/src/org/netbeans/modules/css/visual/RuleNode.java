@@ -695,9 +695,9 @@ public class RuleNode extends AbstractNode {
     }
 
     @NbBundle.Messages({
-        "property.value.unexpected.token={0} - unexpected token {1} found",
-        "property.value.not.resolved={0} - erroneous property value",
-        "property.unknown={0} - no such property",
+        "property.value.unexpected.token={0} - unexpected character(s) \"{1}\" found",
+        "property.value.not.resolved={0} - error in property value",
+        "property.unknown={0} - unknown property",
         "property.description={0} ({1} Module)",
         "property.no.file=No File"
     })
@@ -757,7 +757,8 @@ public class RuleNode extends AbstractNode {
                         List<Token> unresolvedTokens = rp.getUnresolvedTokens();
                         if (!unresolvedTokens.isEmpty()) {
                             Token unexpectedToken = unresolvedTokens.iterator().next();
-                            shortDescription = Bundle.property_value_unexpected_token(getLocationPrefix(), unexpectedToken.toString());
+                            String unexpectedText = unexpectedToken.image().toString();
+                            shortDescription = Bundle.property_value_unexpected_token(getLocationPrefix(), unexpectedText);
                         } else {
                             shortDescription = Bundle.property_value_not_resolved(getLocationPrefix());
                         }
