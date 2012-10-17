@@ -42,12 +42,7 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
@@ -269,41 +264,6 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         FileObject fo = getFileObject(absPath);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
         return readFile(fo);
-    }
-
-    protected void writeFile(FileObject fo, CharSequence content) throws Exception {
-        writeFile(fo, content, 1);
-    }
-
-    protected void writeFile(FileObject fo, CharSequence content, int repeatCount) throws Exception {
-        BufferedWriter bw = null;
-        try {
-            bw = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream()));
-            for (int i = 0; i < repeatCount; i++) {
-                bw.append(content);
-            }
-        } finally {
-            if (bw != null) {
-                bw.close();
-            }
-        }
-    }
-
-    protected String readFile(FileObject fo) throws Exception {
-        assertTrue("File " +  fo.getPath() + " does not exist", fo.isValid());
-        InputStream is = fo.getInputStream();
-        BufferedReader rdr = new BufferedReader(new InputStreamReader(new BufferedInputStream(is)));
-        try {
-            assertNotNull("Null input stream", is);
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = rdr.readLine()) != null) {
-                sb.append(line);
-            }
-            return sb.toString();
-        } finally {
-            rdr.close();
-        }
     }
 
     protected String getFileName(ExecutionEnvironment execEnv, String absPath) {

@@ -42,6 +42,7 @@
 package org.netbeans.modules.nativeexecution.test;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -517,12 +518,15 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
     
-    public static void writeFile(FileObject fo, CharSequence content) throws IOException {
-        Writer writer = new OutputStreamWriter(fo.getOutputStream());
+    protected static void writeFile(FileObject fo, CharSequence content) throws Exception {
+        BufferedWriter bw = null;
         try {
-            writer.write(content.toString());
+            bw = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream()));
+            bw.append(content);
         } finally {
-            writer.close();
+            if (bw != null) {
+                bw.close();
+            }
         }
     }
 
@@ -573,15 +577,21 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         return sb.toString();
     }
 
-    public String readFile(FileObject fo) throws IOException {
-        BufferedReader rdr = new BufferedReader(new InputStreamReader(fo.getInputStream()));
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = rdr.readLine()) != null) {
-            sb.append(line).append("\n");
+    protected String readFile(FileObject fo) throws Exception {
+        assertTrue("File " +  fo.getPath() + " does not exist", fo.isValid());
+        InputStream is = fo.getInputStream();
+        BufferedReader rdr = new BufferedReader(new InputStreamReader(is));
+        try {
+            assertNotNull("Null input stream", is);
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = rdr.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            return sb.toString();
+        } finally {
+            rdr.close();
         }
-        rdr.close();
-        return sb.toString();
     }
 
     /**
