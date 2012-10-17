@@ -570,7 +570,9 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         //ensure exclusivity between this refreshUnits code(which can run even after this dialog is disposed) and uninitialization code
         synchronized(initLock) {
             //return immediatelly if uninialization(after removeNotify) was alredy called
-            if (units == null) return;
+            if (units == null) {
+                return;
+            }
             //TODO: REVIEW THIS CODE - problem is that is called from called from AWT thread
             //UpdateManager.getDefault().getUpdateUnits() should never be called fromn AWT because it may cause
             //long terming starvation because in fact impl. of this method calls AutoUpdateCatalogCache.getCatalogURL
