@@ -153,11 +153,10 @@ public final class WeakReferenceStableList<E> {
             int j = 0;
             for (int i = 0; i < array.length; i++) {
                 WeakRef<E> ref = array[i];
-                if (ref.get() != null) {
+                if (ref != null && ref.get() != null) {
                     newArray[j++] = ref;
                 }
             }
-            assert (j == newArray.length) : "Invalid entry count: j=" + j + " != array.length=" + array.length; // NOI18N
             assignList(newArray);
             emptyRefCount = 0;
         }
@@ -172,8 +171,6 @@ public final class WeakReferenceStableList<E> {
 
         WeakRef<E>[] array;
         
-        boolean checkForNulls;
-        
         public ImmutableList(WeakRef<E>[] array) {
             super();
             this.array = array;
@@ -181,11 +178,8 @@ public final class WeakReferenceStableList<E> {
         
         @Override
         public E get(int index) {
-            E e = array[index].get();
-            if (e == null) {
-                checkForNulls = true;
-            }
-            return e;
+            WeakRef<E> eRef = array[index];
+            return (eRef != null) ? eRef.get() : null;
         }
         
         @Override
@@ -216,10 +210,10 @@ public final class WeakReferenceStableList<E> {
             @Override
             public E next() {
                 E e = next;
-                updateNext();
                 if (e == null) {
                     throw new NoSuchElementException();
                 }
+                updateNext();
                 return e;
             }
             

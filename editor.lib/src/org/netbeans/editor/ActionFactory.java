@@ -737,7 +737,7 @@ public class ActionFactory {
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
-                if (!target.isEditable() || !target.isEnabled()) {
+                if (!target.isEditable() || !target.isEnabled() || Boolean.TRUE.equals(target.getClientProperty("AsTextField"))) {
                     target.getToolkit().beep();
                     return;
                 }

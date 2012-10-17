@@ -253,12 +253,14 @@ public class MetaComponentCreator {
         if (preMetaComp != null) {
             releasePrecreatedComponent();
         }
+        // find the component name (which may involve JavaSource) out of the LAF block locks
+        final String compName = formModel.getCodeStructure().getExternalVariableName(compClass, null, false);
 
         // Look&Feel UI defaults remapping needed
         FormLAF.executeWithLookAndFeel(formModel, new Mutex.ExceptionAction() {
             @Override
             public Object run() throws Exception {
-                preMetaComp = createVisualComponent(compClass); // this may fail and throw exception
+                preMetaComp = createVisualComponent(compClass, compName); // this may fail and throw exception
                 if (preMetaComp != null) {
                     String typeParams = classSource.getTypeParameters();
                     if (typeParams != null) {
@@ -269,6 +271,11 @@ public class MetaComponentCreator {
                 return preMetaComp;
             }
         });
+        if (preMetaComp != null && preMetaComp.getName() == null) {
+            // e.g. if the created component was enclosed in a scroll pane which also needs a name
+            preMetaComp.setStoredName(formModel.getCodeStructure().getExternalVariableName(
+                    preMetaComp.getBeanClass(), null, false));
+        }
         return preMetaComp;
     }
 
@@ -387,23 +394,25 @@ public class MetaComponentCreator {
             return null;
         }
 
+        // find the component name (which may involve JavaSource) out of the LAF block locks
+        final String compName = formModel.getCodeStructure().getExternalVariableName(compClass, null, false);
+
         try { // Look&Feel UI defaults remapping needed
             return (RADComponent) FormLAF.executeWithLookAndFeel(formModel,
                 new Mutex.ExceptionAction() {
                     @Override
                     public Object run() throws Exception {
-                        return createAndAddComponent2(compClass, target, constraints);
+                        return createAndAddComponent2(compClass, compName, target, constraints);
                     }
                 }
             );
-        }
-        catch (Exception ex) { // should not happen
+        } catch (Exception ex) { // should not happen, any exception should be handled inside createAndAddComponent2
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;
         }
     }
 
-    private RADComponent createAndAddComponent2(Class compClass,
+    private RADComponent createAndAddComponent2(Class compClass, String compName,
                                                 TargetInfo target,
                                                 Object constraints) {
         RADComponent targetComp = target.targetComponent;
@@ -421,7 +430,7 @@ public class MetaComponentCreator {
         if (target.componentType == ComponentType.MENU) {
             newMetaComp = addMenuComponent(compClass, targetComp);
         } else if (target.componentType == ComponentType.VISUAL) {
-            newMetaComp = addVisualComponent(compClass, targetComp, constraints);
+            newMetaComp = addVisualComponent(compClass, compName, targetComp, constraints);
         } else {
             newMetaComp = addOtherComponent(compClass, targetComp);
         }
@@ -851,13 +860,13 @@ public class MetaComponentCreator {
 
     // --------
 
-    private RADComponent addVisualComponent(Class compClass,
+    private RADComponent addVisualComponent(Class compClass, String compName,
                                             RADComponent targetComp,
                                             Object constraints)
     {
         RADVisualComponent newMetaComp;
         try {
-            newMetaComp = createVisualComponent(compClass);
+            newMetaComp = createVisualComponent(compClass, compName);
         } catch (Exception ex) { // failure already reported
             return null;
         } catch (LinkageError ex) {
@@ -872,7 +881,7 @@ public class MetaComponentCreator {
         return addVisualComponent2(newMetaComp, targetComp, constraints, true);
     }
 
-    private RADVisualComponent createVisualComponent(Class compClass) throws Exception, LinkageError {
+    private RADVisualComponent createVisualComponent(Class compClass, String compName) throws Exception, LinkageError {
         RADVisualComponent newMetaComp = null;
         RADVisualContainer newMetaCont =
             FormUtils.isContainer(compClass) ? new RADVisualContainer() : null;
@@ -935,7 +944,9 @@ public class MetaComponentCreator {
             }
         }
 
-        newMetaComp.setStoredName(formModel.getCodeStructure().getExternalVariableName(compClass, null, false));
+        if (compName != null) {
+            newMetaComp.setStoredName(compName);
+        }
 
         // for some components, we initialize their properties with some
         // non-default values e.g. a label on buttons, checkboxes
@@ -1593,7 +1604,7 @@ public class MetaComponentCreator {
             // [PENDING check for undo/redo!]
             RADVisualContainer metaScroll;
             try {
-                metaScroll = (RADVisualContainer) createVisualComponent(JScrollPane.class);
+                metaScroll = (RADVisualContainer) createVisualComponent(JScrollPane.class, null);
             } catch (Exception ex) { // won't happen, no problem creating a scroll pane
                 return newMetaComp;
             } catch (LinkageError ex) { // won't happen, no problem creating a scroll pane
@@ -1615,7 +1626,7 @@ public class MetaComponentCreator {
             Container menuBar = (Container) menuCont.getBeanInstance();
             RADVisualComponent menuComp;
             try {
-                menuComp = createVisualComponent(JMenu.class);
+                menuComp = createVisualComponent(JMenu.class, null);
                 menuComp.getBeanProperty("text") // NOI18N
                         .setValue(FormUtils.getBundleString("CTL_DefaultFileMenu")); // NOI18N
             } catch (Exception ex) { // won't happen, no reason why creating JMenu and setting its text should fail
@@ -1629,7 +1640,7 @@ public class MetaComponentCreator {
                     menuBar, menuBar, new Component[] { menu }, 0);
 
             try {
-                menuComp = createVisualComponent(JMenu.class);
+                menuComp = createVisualComponent(JMenu.class, null);
                 menuComp.getBeanProperty("text") // NOI18N
                         .setValue(FormUtils.getBundleString("CTL_DefaultEditMenu")); // NOI18N
             } catch (Exception ex) { // won't happen, no reason why creating JMenu and setting its text should fail

@@ -78,6 +78,8 @@ import org.openide.util.RequestProcessor;
 @OptionsPanelController.Keywords(keywords={"ant"}, location=JavaOptions.JAVA, tabTitle= "#Ant")
 public class AntCustomizer extends JPanel implements ActionListener {
     
+    private static final RequestProcessor RP = new RequestProcessor(AntCustomizer.class);
+
     private List<File> classpath = Collections.emptyList();
     private Map<String,String> properties = Collections.emptyMap();
     private boolean         changed = false;
@@ -160,7 +162,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
     
     private void updateAntVersion() { // #107094: asynch, since it can be slow
         lAntVersion.setText(NbBundle.getMessage(AntCustomizer.class, "LBL_please_wait"));
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 final String version = AntSettings.getAntVersion();
                 EventQueue.invokeLater(new Runnable() {
