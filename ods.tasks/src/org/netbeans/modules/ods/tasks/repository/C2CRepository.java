@@ -426,8 +426,9 @@ public class C2CRepository implements PropertyChangeListener {
             remoteSavedQueries = new HashSet<C2CQuery>();
             remoteSavedQueries.addAll(queries);
         }
-        for (C2CQuery q : queries) {
-            q.fireQuerySaved(); 
+        
+        if(!queries.isEmpty()) {
+            fireQueryListChanged();
         }
     }
 
@@ -516,12 +517,26 @@ public class C2CRepository implements PropertyChangeListener {
         synchronized (QUERIES_LOCK) {
             remoteSavedQueries.remove(query);
         }
+        fireQueryListChanged();
     }
 
     public void saveQuery(C2CQuery query) {
         synchronized (QUERIES_LOCK) {
             remoteSavedQueries.add(query);
         }
+        fireQueryListChanged();
+    }
+
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+
+    private void fireQueryListChanged() {
+        support.firePropertyChange(RepositoryProvider.EVENT_QUERY_LIST_CHANGED, null, null);
     }
     
     private class Cache extends IssueCache<C2CIssue, TaskData> {

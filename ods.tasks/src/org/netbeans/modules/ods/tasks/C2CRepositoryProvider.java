@@ -43,6 +43,7 @@ package org.netbeans.modules.ods.tasks;
 
 import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
@@ -106,6 +107,16 @@ public class C2CRepositoryProvider extends KenaiRepositoryProvider<C2CRepository
     @Override
     public Collection<C2CIssue> simpleSearch(C2CRepository r, String criteria) {
         return r.simpleSearch(criteria);
+    }
+
+    @Override
+    public void removePropertyChangeListener(C2CRepository r, PropertyChangeListener listener) {
+        r.removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public void addPropertyChangeListener(C2CRepository r, PropertyChangeListener listener) {
+        r.addPropertyChangeListener(listener);
     }
 
     /************************************************************************************
