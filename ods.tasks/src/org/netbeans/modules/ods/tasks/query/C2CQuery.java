@@ -153,16 +153,9 @@ public abstract class C2CQuery {
         return name;
     }
 
-    void setName(String name) {
+    protected void setSaved(String name) {
         this.name = name;
-    }
-
-    protected void setSaved(boolean saved) {
-        if(saved) {
-//            XXX info = null;
-        }
-        this.saved = saved;
-        fireQuerySaved();
+        this.saved = true;
     }
 
     long getLastRefresh() {
@@ -479,8 +472,9 @@ public abstract class C2CQuery {
                 }
             }
 
-            setName(name);
-            setSaved(true); // XXX
+            setSaved(name); 
+            getRepository().saveQuery(this);
+            fireQuerySaved();            
             return true;
         }        
 

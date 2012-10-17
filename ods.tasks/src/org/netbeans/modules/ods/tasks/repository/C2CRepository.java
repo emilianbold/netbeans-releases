@@ -47,6 +47,7 @@ import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.PasswordAuthentication;
@@ -74,6 +75,7 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.mylyn.util.MylynUtils;
@@ -109,12 +111,15 @@ public class C2CRepository implements PropertyChangeListener {
     private static final String ICON_PATH = "org/netbeans/modules/ods/tasks/resources/repository.png"; //NOI18N
     private final Image icon;
     
+    private PropertyChangeSupport support;
+    
     private KenaiProject kenaiProject;
     
     public C2CRepository (KenaiProject kenaiProject, String repoName, String url) {
         this(createInfo(repoName, url)); // use name as id - can't be changed anyway
         assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
+        this.support = new PropertyChangeSupport(this);
         KenaiUtil.getKenaiAccessor(url).addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
     }
     
@@ -396,7 +401,7 @@ public class C2CRepository implements PropertyChangeListener {
                 C2C.getInstance().getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
-                        getRemoteSavedQueries();
+                        requestRemoteSavedQueries();
                     }
                 });
             } else {
@@ -406,7 +411,7 @@ public class C2CRepository implements PropertyChangeListener {
         return ret;
     }
     
-    protected void getRemoteSavedQueries () {
+    protected void requestRemoteSavedQueries () {
         List<C2CQuery> queries = new ArrayList<C2CQuery>();
         ensureCredentials();
         RepositoryConfiguration conf = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), taskRepository).getRepositoryConfiguration();
@@ -513,6 +518,12 @@ public class C2CRepository implements PropertyChangeListener {
         }
     }
 
+    public void saveQuery(C2CQuery query) {
+        synchronized (QUERIES_LOCK) {
+            remoteSavedQueries.add(query);
+        }
+    }
+    
     private class Cache extends IssueCache<C2CIssue, TaskData> {
         Cache() {
             super(
