@@ -461,14 +461,10 @@ public class CacheTest extends NbTestCase {
         public Collection<TestIssue> simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
 
         @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
         @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        public void addPropertyChangeListener(PropertyChangeListener listener) { }
 
         private class TestCache extends IssueCache<CTestIssue, String> {
             public TestCache(String nameSpace, RepositoryImpl repository) {
