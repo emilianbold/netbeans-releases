@@ -173,7 +173,9 @@ class ModelElementFactory {
                     name, ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()));
         modelBuilder.getCurrentDeclarationScope().addProperty(name, result);
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
-        result.setDocumentation(docHolder.getDocumentation(objectNode));
+        if (docHolder != null) {
+            result.setDocumentation(docHolder.getDocumentation(objectNode));
+        }
         return result;
     }
 
