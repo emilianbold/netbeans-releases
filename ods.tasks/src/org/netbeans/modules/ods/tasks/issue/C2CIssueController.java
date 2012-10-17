@@ -99,7 +99,7 @@ public class C2CIssueController extends BugtrackingController {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(C2CIssue.class);
+        return new HelpCtx("org.netbeans.modules.ods.tasks.issue.C2CIssue"); // NOI18N
     }
 
     @Override

@@ -125,7 +125,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private QueryTask refreshTask;
 
     private final Object REFRESH_LOCK = new Object();
-    private final IssueTable issueTable;
+    private final IssueTable<C2CQuery> issueTable;
     private boolean modifiable;
     private Criteria criteria;
     private Criteria originalCriteria;
@@ -137,7 +137,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         this.modifiable = modifiable;
         this.criteria = criteria;
         
-        issueTable = new IssueTable(C2CUtil.getRepository(repository), query, query.getColumnDescriptors());
+        issueTable = new IssueTable<C2CQuery>(C2CUtil.getRepository(repository), query, query.getColumnDescriptors());
 //      XXX  setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
@@ -644,7 +644,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
             public void run() {
                 handle.start();
                 try {
-                    openIssue( (C2CIssue) repository.getIssue(id));
+                    openIssue(repository.getIssue(id));
                 } finally {
                     handle.finish();
                 }
@@ -764,7 +764,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
                 Collection<C2CIssue> issues = query.getIssues();
                 for (C2CIssue issue : issues) {
                     try {
-                        ((C2CIssue) issue).setSeen(true);
+                        issue.setSeen(true);
                     } catch (IOException ex) {
                         C2C.LOG.log(Level.SEVERE, null, ex);
                     }

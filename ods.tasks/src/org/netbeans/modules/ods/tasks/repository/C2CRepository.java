@@ -300,7 +300,7 @@ public class C2CRepository implements PropertyChangeListener {
             return null;
         }
         try {
-            C2CIssue issue = (C2CIssue) getIssueCache().setIssueData(id, taskData);
+            C2CIssue issue = getIssueCache().setIssueData(id, taskData);
             // XXX ensureConfigurationUptodate(issue);
             return issue;
         } catch (IOException ex) {
@@ -558,22 +558,22 @@ public class C2CRepository implements PropertyChangeListener {
         @Override
         public void setIssueData(C2CIssue issue, TaskData taskData) {
             assert issue != null && taskData != null;
-            ((C2CIssue)issue).setTaskData(taskData);
+            issue.setTaskData(taskData);
         }
         @Override
         public String getRecentChanges(C2CIssue issue) {
             assert issue != null;
-            return ((C2CIssue)issue).getRecentChanges();
+            return issue.getRecentChanges();
         }
         @Override
         public long getLastModified(C2CIssue issue) {
             assert issue != null;
-            return ((C2CIssue)issue).getLastModify();
+            return issue.getLastModify();
         }
         @Override
         public long getCreated(C2CIssue issue) {
             assert issue != null;
-            return ((C2CIssue)issue).getCreated();
+            return issue.getCreated();
         }
         @Override
         public String getID(TaskData issueData) {
@@ -583,7 +583,7 @@ public class C2CRepository implements PropertyChangeListener {
         @Override
         public Map<String, String> getAttributes(C2CIssue issue) {
             assert issue != null;
-            return ((C2CIssue)issue).getAttributes();
+            return issue.getAttributes();
         }
     }    
 }

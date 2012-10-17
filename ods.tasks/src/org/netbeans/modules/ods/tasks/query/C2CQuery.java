@@ -388,7 +388,7 @@ public abstract class C2CQuery {
             C2CIssue issue;
             try {
                 IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();
-                issue = (C2CIssue) cache.setIssueData(id, taskData);
+                issue = cache.setIssueData(id, taskData);
                 if (!issue.isNew() && issue.isOpened()) {
                     openedIssues.add(issue);
                 }
