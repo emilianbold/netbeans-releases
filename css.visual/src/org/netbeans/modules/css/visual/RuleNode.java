@@ -739,6 +739,13 @@ public class RuleNode extends AbstractNode {
          * the active declaration contains errors.
          */
         private void checkForErrors() {
+            //suppress the errors for just added property
+            //it doesn't have the value yet, but this doesn't mean
+            //we want to mark it as erroneous while adding the value
+            if(getDeclaration().equals(panel.createdDeclaration)) {
+                return ;
+            }
+            
             String property = declaration.getProperty().getContent().toString();
             PropertyModel model = Properties.getPropertyModel(property);
             if(model != null) {
