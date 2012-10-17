@@ -136,14 +136,6 @@ public final class RepositoryManager {
         return impl != null ? impl.getRepository() : null;
     }
     
-    /**
-     * Opens the modal edit repository dialog.<br>
-     * Blocks until the dialog isn't closed. 
-     */
-    public void editRepository(Repository repository) { 
-       BugtrackingUtil.editRepository(repository);
-    }    
-    
     private Collection<Repository> toRepositories(Collection<RepositoryImpl> impls) {
         Collection<Repository> ret = new ArrayList<Repository>(impls.size());
         for (RepositoryImpl impl : impls) {
