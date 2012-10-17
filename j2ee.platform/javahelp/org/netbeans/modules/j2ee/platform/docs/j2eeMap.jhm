@@ -269,6 +269,8 @@ Other names may be trademarks of their respective owners.
         <mapID target="ID_SERVICE" url="webservice/csh/editor/ID_SERVICE.html" />
 	<mapID target="ID_PORT" url="webservice/csh/editor/ID_PORT.html" />
         <mapID target="ID_EXTERNAL_BINDING" url="webservice/csh/editor/ID_EXTERNAL_BINDING.html" />
+        
+        <mapID target="js.client.rest" url="webservice/csh/wizards/JSClient4rest.html" />
 <!-- End of "Developing Web Services" CSH -->
 
 <!-- Start of J2EE Server CSH topics-->

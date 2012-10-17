@@ -281,8 +281,9 @@ public class PatternsTest extends RestTestBase {
         String patternsTypeName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromPatterns");
         createNewWSFile(getProject(), patternsTypeName);
         WizardOperator wo = new WizardOperator(patternsTypeName);
-        new JRadioButtonOperator(wo, pattern.ordinal()).clickMouse();
+        new JRadioButtonOperator(wo, pattern.ordinal()).changeSelection(true);
         wo.next();
+        wo.stepsWaitSelectedValue("Specify Resource Classes");
         wo = new RestWizardOperator(patternsTypeName);
         //set resource package
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, new Pkg());
@@ -372,7 +373,7 @@ public class PatternsTest extends RestTestBase {
         // add Jersey libraries neeed for JSONObject (also see #206526)
         JCheckBox useJerseyCheckBox = JCheckBoxOperator.findJCheckBox((Container) wo.getSource(), "Use Jersey specific features", true, true);
         if (useJerseyCheckBox != null) {
-            new JCheckBoxOperator(useJerseyCheckBox).changeSelection(true);
+            new JCheckBoxOperator(useJerseyCheckBox).setSelected(true);
         }
         wo.finish();
         String progressDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestServicesFromPatternsProgress");

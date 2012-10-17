@@ -513,6 +513,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 120000);
         try {
             node = ProjectsTabOperator.invoke().getProjectRootNode(name);
+            // expand project to prevent #217775
+            node.expand();
         } finally {
             JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
         }
