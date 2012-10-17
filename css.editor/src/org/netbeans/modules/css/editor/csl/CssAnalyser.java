@@ -147,7 +147,7 @@ public class CssAnalyser {
                                     }
 
                                     if (errorMsg == null) {
-                                        errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken);
+                                        errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken.image().toString());
                                     }
 
                                     Error error = makeError(valueNode.from(),

@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -392,8 +393,10 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             FileObject propsFO = projectDirectory.getFileObject(propertyPaths[i]);
             if (propsFO != null && propsFO.isValid()) {
                 Properties props = new Properties();
+                InputStream is = null;
                 try {
-                    props.load(propsFO.getInputStream());
+                    is = propsFO.getInputStream();
+                    props.load(is);
                     String path = props.getProperty("cache.location"); //NOI18N
                     if (path != null) {
                         if (CndPathUtilitities.isPathAbsolute(path)) {
@@ -404,6 +407,14 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     }
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
+                } finally {
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.INFO, "Error closing " + propsFO.getPath(), ex);
+                        }
+                    }
                 }
             }
         }
