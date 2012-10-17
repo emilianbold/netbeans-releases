@@ -97,7 +97,7 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
         command.add(nbStartPath);
 
         String wdir = info.getWorkingDirectory(true);
-        if (wdir != null) {
+        if (wdir != null && !wdir.isEmpty()) {
             command.add("--dir"); // NOI18N
             command.add(fixForWindows(wdir));
         }
