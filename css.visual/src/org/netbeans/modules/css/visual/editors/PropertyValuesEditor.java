@@ -189,7 +189,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         if(CHOOSE_COLOR_ITEM.equals(str)) {
             //color chooser
             final AtomicReference<Color> color_ref = new AtomicReference<Color>();
-            JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), CHOOSE_COLOR_ITEM, true, COLOR_CHOOSER,
+            JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), Bundle.choose_color_item(), true, COLOR_CHOOSER,
                     new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
