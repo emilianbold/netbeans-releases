@@ -181,7 +181,8 @@ public class RuleEditorPanel extends JPanel {
     public RuleNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
-    private Declaration createdDeclaration;
+   
+    Declaration createdDeclaration;
     
     private AddPropertyComboBoxModel ADD_PROPERTY_CB_MODEL = new AddPropertyComboBoxModel();
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
@@ -469,7 +470,7 @@ public class RuleEditorPanel extends JPanel {
         sheet.requestFocus();
 //        sheet.select(descriptor, true);
         try {
-            call_PropertySheet_select(sheet, descriptor, showCategories);
+            call_PropertySheet_select(sheet, descriptor, true);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
