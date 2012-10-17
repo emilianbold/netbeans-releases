@@ -106,6 +106,8 @@ public abstract class Executor {
     public abstract void sigqueue(int sig, int data) throws IOException;
 
     public abstract String readlink(long pid);
+    
+    public abstract String readDirLink(long pid);
 
     public abstract boolean is_64(String p);
 
