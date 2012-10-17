@@ -123,6 +123,14 @@ public abstract class PageModel {
     public abstract String getSelectedSelector();
 
     /**
+     * Returns the nodes matching the selector of the selected rule.
+     *
+     * @return nodes matching the selector of the selected rule.
+     * Returns an empty list when there is no rule selected.
+     */
+    public abstract List<? extends Node> getNodesMatchingSelectedRule();
+
+    /**
      * Sets (the selector of) the highlighted rule.
      * 
      * @param selector selector of a highlighted rule or {@code null}
