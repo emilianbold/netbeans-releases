@@ -88,6 +88,8 @@ public class WebKitPageModel extends PageModel {
     private List<? extends org.openide.nodes.Node> highlightedNodes = Collections.EMPTY_LIST;
     /** Selector of the selected rule. */
     private String selectedSelector;
+    /** Selector of the highlighted rule. */
+    private String highlightedSelector;
     /** WebKit DOM domain listener. */
     private DOM.Listener domListener;
     /** WebKit CSS domain listener. */
@@ -536,6 +538,47 @@ public class WebKitPageModel extends PageModel {
     }
 
     @Override
+    public void setHighlightedSelector(String selector) {
+        synchronized (this) {
+            highlightedSelector = selector;
+        }
+        setHighlightedNodes(matchingNodes(selector));
+        firePropertyChange(PROP_HIGHLIGHTED_RULE, null, null);
+    }
+
+    @Override
+    public String getHighlightedSelector() {
+        synchronized (this) {
+            return highlightedSelector;
+        }
+    }
+
+    /**
+     * Returns the nodes matching the specified selector.
+     *
+     * @param selector selector that should match the nodes.
+     * @return nodes matching the specified selector.
+     */
+    List<DOMNode> matchingNodes(String selector) {
+        List<DOMNode> domNodes;
+        if (selector == null) {
+            domNodes = Collections.EMPTY_LIST;
+        } else {
+            DOM dom = webKit.getDOM();
+            List<Node> matchingNodes = dom.querySelectorAll(dom.getDocument(), selector);
+            domNodes = new ArrayList<DOMNode>(matchingNodes.size());
+            for (Node node : matchingNodes) {
+                int nodeId = node.getNodeId();
+                DOMNode domNode = getNode(nodeId);
+                if (domNode != null) {
+                    domNodes.add(domNode);
+                }
+            }
+        }
+        return domNodes;
+    }
+
+    @Override
     public void setSelectionMode(boolean selectionMode) {
         synchronized (this) {
             if (this.selectionMode == selectionMode) {
@@ -784,22 +827,7 @@ public class WebKitPageModel extends PageModel {
         }
 
         private void updateSelectedRule(String selector) {
-            List<DOMNode> domNodes;
-            if (selector == null) {
-                domNodes = Collections.EMPTY_LIST;
-            } else {
-                DOM dom = webKit.getDOM();
-                List<Node> nodes = dom.querySelectorAll(dom.getDocument(), selector);
-                domNodes = new ArrayList<DOMNode>(nodes.size());
-                for (Node node : nodes) {
-                    int nodeId = node.getNodeId();
-                    DOMNode domNode = getNode(nodeId);
-                    if (domNode != null) {
-                        domNodes.add(domNode);
-                    }
-                }
-            }
-            updateSelection(domNodes, "Rule"); // NOI18N
+            updateSelection(matchingNodes(selector), "Rule"); // NOI18N
         }
 
         private synchronized void updateSelectionMode() {
