@@ -61,14 +61,12 @@ import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
@@ -80,7 +78,6 @@ import org.netbeans.modules.ods.tasks.C2CConnector;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
-import org.openide.util.Exceptions;
 
 
 /**
