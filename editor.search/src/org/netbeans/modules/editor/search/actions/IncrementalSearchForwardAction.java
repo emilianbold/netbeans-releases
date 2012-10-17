@@ -41,34 +41,26 @@
  */
 package org.netbeans.modules.editor.search.actions;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.search.SearchNbEditorKit;
-import org.openide.util.NbBundle;
 
-@EditorActionRegistration(name = SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD)
 public class IncrementalSearchForwardAction extends SearchAction {
 
     static final long serialVersionUID = -1;
-    private static final Map<String, String> SEARCH_ATTRS;
 
-    static {
-        Map<String, String> aMap = new HashMap<String, String>();
-        aMap.put(Action.NAME, SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD);
-        SEARCH_ATTRS = Collections.unmodifiableMap(aMap);
+    @EditorActionRegistration(name = SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD,
+            menuText="#" + SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD + "_menu_text") // NOI18N
+
+    public static Action create(Map<String, ?> attrs) {
+        return new IncrementalSearchForwardAction(attrs);
     }
 
     public IncrementalSearchForwardAction(Map<String, ?> attrs) {
         super(attrs);
-        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IncrementalSearchForwardAction.class, SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD));
         putValue(NbEditorKit.SYSTEM_ACTION_CLASS_NAME_PROPERTY, org.openide.actions.FindAction.class.getName());
     }
 
-    public IncrementalSearchForwardAction() {
-        this(SEARCH_ATTRS);
-    }
 }
