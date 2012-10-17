@@ -70,6 +70,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -91,6 +92,7 @@ import org.netbeans.modules.css.visual.RuleNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
 import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
+import org.netbeans.modules.css.visual.actions.GoToSourceAction;
 import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
@@ -952,6 +954,8 @@ public class RuleEditorPanel extends JPanel {
                     //custom popop for the whole panel
                     JPopupMenu pm = new JPopupMenu();
                     
+                    pm.add(new GoToSourceAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
+                    pm.addSeparator();
                     pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
 
                     return pm;
