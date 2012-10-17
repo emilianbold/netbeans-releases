@@ -70,7 +70,7 @@ public class ModelUtils {
         JsObject tmpObject = null;
         String firstName = fqName.get(0).getName();
         
-        while (tmpObject == null && result.getParent() != null) {
+        while (tmpObject == null && result != null && result.getParent() != null) {
             if (result instanceof JsFunctionImpl) {
                 tmpObject = ((JsFunctionImpl)result).getParameter(firstName);
             }
