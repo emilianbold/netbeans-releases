@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.netbinox;
 
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.Wildcard;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
