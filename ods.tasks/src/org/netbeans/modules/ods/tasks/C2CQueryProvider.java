@@ -48,7 +48,6 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
-import org.netbeans.modules.ods.tasks.kenai.KenaiRepository;
 import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 
@@ -115,8 +114,8 @@ public class C2CQueryProvider extends KenaiQueryProvider<C2CQuery, C2CIssue> {
     @Override
     public boolean needsLogin (C2CQuery q) {
         C2CRepository repository = q.getRepository();
-        return q != ((KenaiRepository) repository).getPredefinedQuery(PredefinedTaskQuery.ALL)
-                && q != ((KenaiRepository) repository).getPredefinedQuery(PredefinedTaskQuery.RECENT);
+        return q != (repository).getPredefinedQuery(PredefinedTaskQuery.ALL)
+            && q != (repository).getPredefinedQuery(PredefinedTaskQuery.RECENT);
     }
 
     @Override

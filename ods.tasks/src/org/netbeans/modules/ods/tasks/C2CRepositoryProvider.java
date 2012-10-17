@@ -48,7 +48,6 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
-import org.netbeans.modules.ods.tasks.kenai.KenaiRepository;
 import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.openide.util.Lookup;
@@ -110,19 +109,17 @@ public class C2CRepositoryProvider extends KenaiRepositoryProvider<C2CRepository
     }
 
     /************************************************************************************
-     * Team
+     * Team Support
      ************************************************************************************/
 
     @Override
     public C2CQuery getAllIssuesQuery (C2CRepository repository) {
-        assert repository instanceof KenaiRepository;
-        return ((KenaiRepository)repository).getPredefinedQuery(PredefinedTaskQuery.ALL);
+        return (repository).getPredefinedQuery(PredefinedTaskQuery.ALL);
     }
 
     @Override
     public C2CQuery getMyIssuesQuery (C2CRepository repository) {
-        assert repository instanceof KenaiRepository;
-        return ((KenaiRepository)repository).getPredefinedQuery(PredefinedTaskQuery.MINE);
+        return (repository).getPredefinedQuery(PredefinedTaskQuery.MINE);
     }
     
 }

@@ -45,6 +45,8 @@ import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.PasswordAuthentication;
@@ -67,10 +69,13 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.mylyn.util.MylynUtils;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.C2CConnector;
@@ -80,8 +85,6 @@ import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
-import org.netbeans.modules.ods.client.api.ODSClient;
-import org.netbeans.modules.ods.client.api.ODSFactory;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -91,7 +94,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Tomas Stupka
  */
-public class C2CRepository {
+public class C2CRepository implements PropertyChangeListener {
 
     private final Object INFO_LOCK = new Object();
     private final Object QUERIES_LOCK = new Object();
@@ -105,6 +108,15 @@ public class C2CRepository {
     private Collection<C2CQuery> remoteSavedQueries;
     private static final String ICON_PATH = "org/netbeans/modules/ods/tasks/resources/repository.png"; //NOI18N
     private final Image icon;
+    
+    private KenaiProject kenaiProject;
+    
+    public C2CRepository (KenaiProject kenaiProject, String repoName, String url) {
+        this(createInfo(repoName, url)); // use name as id - can't be changed anyway
+        assert kenaiProject != null;
+        this.kenaiProject = kenaiProject;
+        KenaiUtil.getKenaiAccessor(url).addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
+    }
     
     public C2CRepository() {
         this.icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -136,13 +148,63 @@ public class C2CRepository {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
     }
 
+    @NbBundle.Messages({"# {0} - repository name", "# {1} - url", "LBL_RepositoryTooltipNoUser={0} : {1}"})
+    private static RepositoryInfo createInfo (String repoName, String url) {
+        String id = getRepositoryId(repoName, url);
+        String tooltip = Bundle.LBL_RepositoryTooltipNoUser(repoName, url);
+        return new RepositoryInfo(id, C2CConnector.ID, url, repoName, tooltip);
+    }
+    
+    private static String getRepositoryId (String name, String url) {
+        return TextUtils.encodeURL(url) + ":" + name; //NOI18N
+    }
+    
+    public KenaiProject getKenaiProject () {
+        return kenaiProject;
+    }
+    
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(KenaiAccessor.PROP_LOGIN)) {
+
+            String user;
+            char[] psswd;
+            PasswordAuthentication pa =
+                    KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
+            if (pa != null) {
+                user = pa.getUserName();
+                psswd = pa.getPassword();
+            } else {
+                user = ""; //NOI18N
+                psswd = new char[0];
+            }
+
+            setCredentials(user, psswd, null, null);
+        }
+    }
+    
+
+    public boolean authenticate (String errroMsg) {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
+        if(pa == null) {
+            return false;
+        }
+        
+        String user = pa.getUserName();
+        char[] password = pa.getPassword();
+
+        setCredentials(user, password, null, null);
+
+        return true;
+    }
+    
     static TaskRepository createTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
         return MylynUtils.createTaskRepository(rc.getConnectorKind(), name, url, user, password, httpUser, httpPassword);
     }
     
     public void ensureCredentials() {
-        setCredentials(info.getUsername(), info.getPassword(), info.getHttpUsername(), info.getHttpPassword(), true);
+        authenticate(null);
     }
     
     public void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {
@@ -320,7 +382,7 @@ public class C2CRepository {
 
     public Lookup getLookup() {
         if(lookup == null) {
-            lookup = Lookups.fixed(getLookupObjects());
+            lookup = Lookups.fixed(new Object[] { getIssueCache(), kenaiProject });
         }
         return lookup;
     }
@@ -420,10 +482,6 @@ public class C2CRepository {
     
     private String getTooltip(String repoName, String user, String url) {
         return NbBundle.getMessage(C2CRepository.class, "LBL_RepositoryTooltip", new Object[] {repoName, user, url}); // NOI18N
-    }
-
-    protected Object[] getLookupObjects() {
-        return new Object[] { getIssueCache() };
     }
 
     public void refreshConfiguration() {

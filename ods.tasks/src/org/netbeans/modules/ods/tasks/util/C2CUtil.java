@@ -72,7 +72,6 @@ import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.mylyn.util.GetTaskDataCommand;
-import org.netbeans.modules.ods.tasks.kenai.KenaiRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -213,10 +212,7 @@ public class C2CUtil {
     public static Repository getRepository(C2CRepository c2cRepository) {
         //TODO review this, team projects were always initialized again and again
         //this caused problems with listeners
-        Repository repository = null;
-        if (c2cRepository instanceof KenaiRepository) {
-            repository = KenaiUtil.getRepository(((KenaiRepository) c2cRepository).getKenaiProject());
-        }
+        Repository repository = KenaiUtil.getRepository(c2cRepository.getKenaiProject());
         if (repository == null) {
             repository = createRepository(c2cRepository);
         }

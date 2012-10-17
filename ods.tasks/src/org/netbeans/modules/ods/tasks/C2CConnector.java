@@ -51,7 +51,6 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
-import org.netbeans.modules.ods.tasks.kenai.KenaiRepository;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 
@@ -95,12 +94,16 @@ public class C2CConnector extends KenaiBugtrackingConnector {
         return SimpleIssueFinder.getInstance();
     }
 
+    /***************************************************************************
+     * Team Support
+     ***************************************************************************/
+    
     @Override
     public Repository createRepository (KenaiProject project) {
         if (project == null || project.getType() != BugtrackingType.ODS) {
             return null;
         }
-        KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), project.getFeatureLocation());
+        C2CRepository repo = createKenaiRepository(project, project.getDisplayName(), project.getFeatureLocation());
         return C2CUtil.createRepository(repo);
     }
 
@@ -109,7 +112,7 @@ public class C2CConnector extends KenaiBugtrackingConnector {
         return BugtrackingType.ODS;
     }
 
-    private KenaiRepository createKenaiRepository (KenaiProject project, String displayName, String location) {
+    private C2CRepository createKenaiRepository (KenaiProject project, String displayName, String location) {
         final URL loc;
         try {
             loc = new URL(location);
@@ -117,9 +120,7 @@ public class C2CConnector extends KenaiBugtrackingConnector {
             C2C.LOG.log(Level.WARNING, null, ex);
             return null;
         }
-
-        String host = loc.getHost();
-        return new KenaiRepository(project, displayName, location);
+        return new C2CRepository(project, displayName, location);
     }
     
     
