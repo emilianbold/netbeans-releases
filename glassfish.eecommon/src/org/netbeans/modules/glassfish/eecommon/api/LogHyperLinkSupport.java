@@ -242,7 +242,8 @@ public class LogHyperLinkSupport {
                 }
             }
             if (dataObject != null) {
-                EditorCookie editorCookie = dataObject.getCookie(EditorCookie.class);
+                EditorCookie editorCookie
+                        = dataObject.getLookup().lookup(EditorCookie.class);
                 if (editorCookie == null) {
                     return;
                 }
