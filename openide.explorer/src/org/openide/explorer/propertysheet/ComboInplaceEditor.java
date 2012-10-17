@@ -752,10 +752,8 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                 //ignore
                 return;
             }
-            if( null == editorText )
-                editorText = "";
 
-            if( editorText.equals( getSelectedItem().toString() ) )
+            if( null != getSelectedItem() && getSelectedItem().toString().equals(editorText) )
                 return;
 
             if( !isPopupVisible() ) {
@@ -783,6 +781,9 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
     }
 
     private int findMatch( String editorText ) {
+        if( null == editorText || editorText.isEmpty() )
+            return -1;
+        
         for( int i=0; i<getItemCount(); i++ ) {
             String item = getItemAt( i ).toString();
             if( item.toLowerCase().compareTo( editorText ) == 0 ) {
