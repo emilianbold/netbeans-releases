@@ -43,12 +43,17 @@
  */
 package org.netbeans.modules.glassfish.eecommon.api;
 
+import com.sun.org.omg.CORBA.ParDescriptionSeqHelper;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Collections;
+import java.net.URL;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.tools.ide.utils.StringPrefixTree;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
+import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -305,12 +310,10 @@ public class LogHyperLinkSupport {
             /** Particular source file search result to be cached. */
             private static class ClassAccess {
 
-                /**
-                 * Is source file accessible in NetBeans?
-                 */
+                /** Is source file accessible in NetBeans? */
                 boolean accessible;
-                /**
-                 * Source file path from full class name (including package).
+
+                /** Source file path from full class name (including package).
                  */
                 String path;
 
@@ -325,6 +328,42 @@ public class LogHyperLinkSupport {
                     this.accessible = accessible;
                     this.path = path;
                 }
+            }
+
+            /**
+             * Event listener for being notified of changes in the set of
+             * available paths.
+             */
+            private static class PathRegistryListener
+                implements GlobalPathRegistryListener {
+
+                /**
+                 * Called when some paths are added.
+                 * <p/>
+                 * Only applies to the first copy of a path that is added.
+                 * <p/>
+                 * @param event An event giving details.
+                 */                @Override
+                public void pathsAdded(GlobalPathRegistryEvent event) {
+                    synchronized (accessCache) {
+                        accessCache.clear();
+                    }
+                }
+
+                /**
+                 * Called when some paths are removed.
+                 * <p/>
+                 * Only applies to the last copy of a path that is removed.
+                 * <p/>
+                 * @param event An event giving details.
+                 */
+                @Override
+                public void pathsRemoved(GlobalPathRegistryEvent event) {
+                    synchronized (accessCache) {
+                        accessCache.clear();
+                    }
+                }
+                
             }
 
             /** Classes search results cache.
@@ -356,6 +395,8 @@ public class LogHyperLinkSupport {
                 this.globalPathRegistry = globalPathRegistry;
                 this.serverRoot = serverRoot;
                 this.appContext = appContext;
+                this.globalPathRegistry.addGlobalPathRegistryListener(
+                        new PathRegistryListener());
             }
 
             /**
@@ -389,8 +430,9 @@ public class LogHyperLinkSupport {
                         path = serverRoot + contextPath + "/" + path;
                         accessible = new File(path).exists();
                     } else {
-                        accessible
-                                = globalPathRegistry.findResource(path) != null;
+                        FileObject resource
+                                = globalPathRegistry.findResource(path);
+                        accessible = resource != null;
                     }
                     synchronized(accessCache) {
                         result = accessCache.match(className);
