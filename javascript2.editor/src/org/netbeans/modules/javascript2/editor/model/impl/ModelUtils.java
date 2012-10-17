@@ -84,7 +84,16 @@ public class ModelUtils {
             }
         }
         if (tmpObject == null) {
-            tmpObject = builder.getGlobal();
+            DeclarationScope scope = builder.getCurrentDeclarationScope();
+            while (tmpObject == null && scope.getInScope() != null) {
+                tmpObject = ((JsFunction)scope).getParameter(firstName);
+                scope = scope.getInScope();
+            }
+            if (tmpObject == null) {
+                tmpObject = builder.getGlobal();
+            } else {
+                result = tmpObject;
+            }
         }
         for (int index = (tmpObject instanceof ParameterObject ? 1 : 0); index < fqName.size() ; index++) {
             Identifier name = fqName.get(index);
