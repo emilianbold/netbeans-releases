@@ -140,6 +140,25 @@ public class WeakReferenceStableListTest extends NbTestCase {
         check();
     }
     
+    public void testMultiGC() throws Exception {
+        int COUNT = 50;
+        Integer[] array = new Integer[COUNT];
+        for (int i = 0; i < COUNT; i++) {
+            array[i] = new Integer(1000 + i);
+            tested.add(array[i]);
+        }
+        for (int i = 0; i < COUNT; i++) {
+            if (i % 2 == 0) {
+                array[i] = null;
+            }
+        }
+        gc();
+
+        for (Object o : tested.getList()) {
+            tested.add(new Integer(2000 + ((Integer)o).intValue())); // Modify during scan
+        }
+    }
+
     private void add(Object o) {
         expected.add(o);
         tested.add(o);
