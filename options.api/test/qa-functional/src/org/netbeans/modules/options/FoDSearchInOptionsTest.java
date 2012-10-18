@@ -62,7 +62,7 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author theofanis
  */
-public class SearchInOptionsTest extends JellyTestCase {
+public class FoDSearchInOptionsTest extends JellyTestCase {
 
     private StringComparator stringComparator;
     private OptionsOperator optionsOperator;
@@ -72,7 +72,7 @@ public class SearchInOptionsTest extends JellyTestCase {
     /**
      * Constructor required by JUnit
      */
-    public SearchInOptionsTest(String testName) {
+    public FoDSearchInOptionsTest(String testName) {
         super(testName);
     }
 
@@ -80,8 +80,8 @@ public class SearchInOptionsTest extends JellyTestCase {
      * Creates suite from particular test cases.
      */
     public static Test suite() {
-        return NbModuleSuite.createConfiguration(SearchInOptionsTest.class).addTest(
-                "testSearchInOptionsWindow").clusters(".*").enableModules(".*").gui(true).suite();
+        return NbModuleSuite.createConfiguration(FoDSearchInOptionsTest.class).addTest(
+                "testSearchInOptionsWindow").clusters(".*").gui(true).suite();
     }
 
     public void testSearchInOptionsWindow() {
@@ -99,74 +99,56 @@ public class SearchInOptionsTest extends JellyTestCase {
         String[] selectedCategories = {"Editor"};
         ArrayList<String> enabledCategories = new ArrayList<String>();
         enabledCategories.add("Editor");
-        searchFor("general editor", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("general editor", tabIndexes, selectedCategories, enabledCategories, null);
 
         tabIndexes[0] = 6;
-        searchFor("macros", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("macros", tabIndexes, selectedCategories, enabledCategories, null);
 
         tabIndexes[0] = 2;
-        searchFor("completion", tabIndexes, selectedCategories, enabledCategories);
-
-        tabIndexes[0] = 3;
-        searchFor("templates", tabIndexes, selectedCategories, enabledCategories);
-
-        tabIndexes[0] = 8;
-        searchFor("dictionary", tabIndexes, selectedCategories, enabledCategories);
-
-        tabIndexes[0] = 7;
-        searchFor("save", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("completion", tabIndexes, selectedCategories, enabledCategories, null);
 
         enabledCategories.clear();
         enabledCategories.add("General");
         tabIndexes[0] = -1;
         selectedCategories[0] = "General";
-        searchFor("proxy", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("proxy", tabIndexes, selectedCategories, enabledCategories, null);
 
         enabledCategories.clear();
         enabledCategories.add("Fonts & Colors");
         tabIndexes[0] = 0;
         selectedCategories[0] = "FontsAndColors";
-        searchFor("syntax", tabIndexes, selectedCategories, enabledCategories);
-
-        tabIndexes[0] = 1;
-        searchFor("highlighting", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("syntax", tabIndexes, selectedCategories, enabledCategories, null);
 
         tabIndexes[0] = 4;
-        searchFor("versioning", tabIndexes, selectedCategories, enabledCategories);
-
-        enabledCategories.clear();
-        enabledCategories.add("Keymap");
-        tabIndexes[0] = -1;
-        selectedCategories[0] = "Keymaps";
-        searchFor("keymap", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("versioning", tabIndexes, selectedCategories, enabledCategories, null);
 
         enabledCategories.clear();
         enabledCategories.add("Java");
         tabIndexes[0] = 4;
         selectedCategories[0] = "Java";
-        searchFor("maven", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("maven", tabIndexes, selectedCategories, enabledCategories, "java");
 
         tabIndexes[0] = 0;
         selectedCategories[0] = "Java";
-        searchFor("ant", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("ant", tabIndexes, selectedCategories, enabledCategories, null);
 
         tabIndexes[0] = 6;
         selectedCategories[0] = "Java";
-        searchFor("fx", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("fx", tabIndexes, selectedCategories, enabledCategories, "javafx");
+
+        tabIndexes[0] = 2;
+        selectedCategories[0] = "Java";
+        searchFor("java card", tabIndexes, selectedCategories, enabledCategories, "javacard");
 
         enabledCategories.clear();
         enabledCategories.add("Miscellaneous");
         tabIndexes[0] = 3;
         selectedCategories[0] = "Miscellaneous";
-        searchFor("groovy", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("groovy", tabIndexes, selectedCategories, enabledCategories, "groovy");
 
         tabIndexes[0] = 6;
         selectedCategories[0] = "Miscellaneous";
-        searchFor("svg", tabIndexes, selectedCategories, enabledCategories);
-
-        tabIndexes[0] = 7;
-        selectedCategories[0] = "Miscellaneous";
-        searchFor("terminal", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("terminal", tabIndexes, selectedCategories, enabledCategories, null);
 
         enabledCategories.add("Fonts & Colors");
         tabIndexes = new int[2];
@@ -175,7 +157,7 @@ public class SearchInOptionsTest extends JellyTestCase {
         tabIndexes[1] = 1;
         selectedCategories[0] = "FontsAndColors";
         selectedCategories[1] = "Miscellaneous";
-        searchFor("diff", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("diff", tabIndexes, selectedCategories, enabledCategories, null);
 
         enabledCategories.clear();
         enabledCategories.add("PHP");
@@ -183,48 +165,48 @@ public class SearchInOptionsTest extends JellyTestCase {
         selectedCategories = new String[1];
         tabIndexes[0] = 5;
         selectedCategories[0] = "PHP";
-        searchFor("apigen", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("apigen", tabIndexes, selectedCategories, enabledCategories, null);
 
         tabIndexes[0] = 8;
-        searchFor("symfony2", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("symfony2", tabIndexes, selectedCategories, enabledCategories, "php");
 
         tabIndexes[0] = 11;
-        searchFor("smarty", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("smarty", tabIndexes, selectedCategories, enabledCategories, "php");
 
         enabledCategories.clear();
         enabledCategories.add("C/C++");
         tabIndexes[0] = 0;
         selectedCategories[0] = "C/C++";
-        searchFor("build tools", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("build tools", tabIndexes, selectedCategories, enabledCategories, null);
 
         tabIndexes[0] = 2;
-        searchFor("code assistance", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("code assistance", tabIndexes, selectedCategories, enabledCategories, null);
 
         enabledCategories.clear();
         enabledCategories.addAll(Arrays.asList("General", "Editor", "Fonts & Colors", "Keymap", "Java", "PHP", "C/C++", "Miscellaneous"));
-        searchFor("", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("", tabIndexes, selectedCategories, enabledCategories, null);
     }
 
-    private void searchFor(String searchTxt, int[] selectedTabIndexes, String[] selectedCategories, ArrayList<String> enabledCategories) {
+    private void searchFor(String searchTxt, int[] selectedTabIndexes, String[] selectedCategories, ArrayList<String> enabledCategories, String clusterName) {
         jTextFieldOperator.setText(searchTxt);
         new EventTool().waitNoEvent(500);
         jTextFieldOperator.pushKey(KeyEvent.VK_ENTER);
         new EventTool().waitNoEvent(1000);
         for (int i = 0; i < selectedCategories.length; i++) {
             String selectedCategory = selectedCategories[i];
-            if (selectedCategory.equals("General")) {
+            if (selectedCategory.equals("General")) { // NOI18N
                 optionsOperator.selectGeneral();
-            } else if (selectedCategory.equals("Editor")) {
+            } else if (selectedCategory.equals("Editor")) { // NOI18N
                 optionsOperator.selectEditor();
-            } else if (selectedCategory.equals("FontsAndColors")) {
+            } else if (selectedCategory.equals("FontsAndColors")) { // NOI18N
                 optionsOperator.selectFontAndColors();
-            } else if (selectedCategory.equals("Keymaps")) {
+            } else if (selectedCategory.equals("Keymaps")) { // NOI18N
                 optionsOperator.selectKeymap();
-            } else if (selectedCategory.equals("Java")) {
+            } else if (selectedCategory.equals("Java")) { // NOI18N
                 optionsOperator.selectJava();
-            } else if (selectedCategory.equals("Miscellaneous")) {
+            } else if (selectedCategory.equals("Miscellaneous")) { // NOI18N
                 optionsOperator.selectMiscellaneous();
-            } else if (selectedCategory.equals("PHP") || selectedCategory.equals("C/C++")) {
+            } else if (selectedCategory.equals("PHP") || selectedCategory.equals("C/C++")) { // NOI18N
                 optionsOperator.selectCategory(selectedCategory);
             }
             new EventTool().waitNoEvent(1000);
@@ -232,6 +214,10 @@ public class SearchInOptionsTest extends JellyTestCase {
             if (selectedTabIndex != -1) {
                 jTabbedPaneOperator = new JTabbedPaneOperator(optionsOperator);
                 assertEquals(selectedTabIndex, jTabbedPaneOperator.getSelectedIndex());
+		if(clusterName != null) {
+		    JLabelOperator jLabelOperator = new JLabelOperator(jTabbedPaneOperator);
+		    assertEquals("In order to use this functionality, support for "+clusterName+" must be activated.", jLabelOperator.getText()); // NOI18N
+		}
             }
         }
         for (String category : enabledCategories) {
