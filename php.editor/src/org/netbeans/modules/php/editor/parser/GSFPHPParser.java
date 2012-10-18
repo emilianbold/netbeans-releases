@@ -252,7 +252,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                     return false;
                 }
                 context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end);
-                context.sanitizedRange = new OffsetRange(start, end);
                 return true;
             }
         }
@@ -268,7 +267,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                     return false;
                 }
                 context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end);
-                context.sanitizedRange = new OffsetRange(start, end);
                 return true;
             }
         }
@@ -292,7 +290,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 }
 
                 context.sanitizedSource = source.substring(0, start) + sb.toString() + source.substring(end);
-                context.sanitizedRange = new OffsetRange(start, end);
                 return true;
             }
         }
@@ -314,7 +311,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                     }
                 }
                 context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end);
-                context.sanitizedRange = new OffsetRange(start, end);
                 return true;
             }
         }
@@ -548,7 +544,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                         }
                         break;
                     default:
-                        // do nothing
+                    // do nothing
                 }
                 if (token.sym != ASTPHP5Symbols.T_INLINE_HTML) {
                     lastPHPToken = token;
@@ -564,12 +560,10 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 String lastTokenText = source.substring(lastPHPToken.left, lastPHPToken.right).trim();
                 if ("?>".equals(lastTokenText)) {   //NOI18N
                     context.sanitizedSource = source.substring(0, lastPHPToken.left) + Utils.getRepeatingChars('}', count) + source.substring(lastPHPToken.left);
-                    context.sanitizedRange = new OffsetRange(lastPHPToken.left, lastPHPToken.left + count);
                     return true;
                 }
                 if (token.sym == ASTPHP5Symbols.EOF) {
                     context.sanitizedSource = source.substring(0, token.left) + Utils.getRepeatingChars('}', count) + source.substring(token.left);
-                    context.sanitizedRange = new OffsetRange(token.left, token.left + count);
                     return true;
                 }
             }
@@ -599,7 +593,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         }
         if (start > -1 && start < end) {
             context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end);
-            context.sanitizedRange = new OffsetRange(start, end);
             return true;
         }
         return false;
@@ -724,7 +717,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         private int errorOffset;
         private String source;
         private String sanitizedSource;
-        private OffsetRange sanitizedRange = OffsetRange.NONE;
         private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
 
@@ -737,10 +729,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         @Override
         public String toString() {
             return "PHPParser.Context(" + snapshot.getSource().getFileObject() + ")"; // NOI18N
-        }
-
-        public OffsetRange getSanitizedRange() {
-            return sanitizedRange;
         }
 
         public Sanitize getSanitized() {
