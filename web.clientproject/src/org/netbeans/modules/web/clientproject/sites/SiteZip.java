@@ -57,7 +57,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.clientproject.util.FileUtilities;
+import org.netbeans.modules.web.clientproject.util.FileUtilities.ZipEntryFilter;
+import org.netbeans.modules.web.clientproject.util.FileUtilities.ZipEntryTask;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
@@ -73,7 +75,7 @@ public class SiteZip implements SiteTemplateImplementation {
 
     private static final String USED_TEMPLATES = "last.templates"; //NOI18N
     private static final String SEPARATOR = "=s e p="; //NOI18N
-    private static final SiteHelper.ZipEntryFilter NB_TEMPLATE_FILTER = new SiteHelper.ZipEntryFilter() {
+    private static final ZipEntryFilter NB_TEMPLATE_FILTER = new ZipEntryFilter() {
         @Override
         public boolean accept(ZipEntry zipEntry) {
             return !zipEntry.isDirectory()
@@ -118,7 +120,11 @@ public class SiteZip implements SiteTemplateImplementation {
         assert !EventQueue.isDispatchThread();
         assert isPrepared();
         try {
-            SiteHelper.runOnZipEntries(getArchiveFile(), new SiteHelper.ZipEntryTask() {
+            FileUtilities.runOnZipEntries(getArchiveFile(), new ZipEntryTask() {
+                @Override
+                public void run(ZipEntry zipEntry) {
+                    // noop
+                }
                 @Override
                 public void run(InputStream zipEntryInputStream) {
                     EditableProperties templateProperties = new EditableProperties(false);
@@ -153,7 +159,7 @@ public class SiteZip implements SiteTemplateImplementation {
      * Return project dir for NB template, site root otherwise.
      */
     private FileObject getTargetDir(FileObject projectDir, ProjectProperties projectProperties) throws IOException {
-        if (SiteHelper.listZipFiles(getArchiveFile(), NB_TEMPLATE_FILTER).isEmpty()) {
+        if (FileUtilities.listZipFiles(getArchiveFile(), NB_TEMPLATE_FILTER).isEmpty()) {
             // not nb template
             return projectDir.getFileObject(projectProperties.getSiteRootFolder());
         }
@@ -162,7 +168,7 @@ public class SiteZip implements SiteTemplateImplementation {
 
     @Override
     public Collection<String> supportedLibraries() {
-        return SiteHelper.listJsFilenamesFromZipFile(getArchiveFile());
+        return FileUtilities.listJsFilenamesFromZipFile(getArchiveFile());
     }
 
     private File getArchiveFile() {

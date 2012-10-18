@@ -49,17 +49,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -136,85 +131,6 @@ public final class SiteHelper {
         }
         String rootFolder = getZipRootFolder(new FileInputStream(zipFile));
         unzipProjectTemplateFile(targetDir, new FileInputStream(zipFile), rootFolder, ignoredFiles);
-    }
-
-    public static void runOnZipEntries(@NonNull File zipFile, @NonNull ZipEntryTask entryTask, @NullAllowed ZipEntryFilter entryFilter) throws IOException {
-        ZipFile zip = new ZipFile(zipFile);
-        try {
-            Enumeration<? extends ZipEntry> entries = zip.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry zipEntry = entries.nextElement();
-                boolean accept = true;
-                if (entryFilter != null) {
-                    accept = entryFilter.accept(zipEntry);
-                }
-                if (accept) {
-                    InputStream inputStream = zip.getInputStream(zipEntry);
-                    try {
-                        entryTask.run(inputStream);
-                    } finally {
-                        inputStream.close();
-                    }
-                }
-            }
-        } finally {
-            zip.close();
-        }
-    }
-
-    /**
-     * Get list of files from the given ZIP file according to the given {@link ZipEntryFilter filter}.
-     * @param zipFile ZIP file to be listed
-     * @param entryFilter filter to be applied on the ZIP file entries
-     * @return list of files from the given ZIP file according to the given {@link ZipEntryFilter filter}
-     * @throws IOException if any error occurs
-     */
-    public static List<String> listZipFiles(File zipFile, ZipEntryFilter entryFilter) throws IOException {
-        assert zipFile != null;
-        assert entryFilter != null;
-        List<String> files = new ArrayList<String>();
-        ZipFile zip = new ZipFile(zipFile);
-        try {
-            Enumeration<? extends ZipEntry> entries = zip.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry zipEntry = entries.nextElement();
-                if (entryFilter.accept(zipEntry)) {
-                    files.add(zipEntry.getName());
-                }
-            }
-        } finally {
-            zip.close();
-        }
-        return files;
-    }
-
-    /**
-     * Get list of JS file names (just filenames, without any relative path) from the given ZIP file.
-     * <p>
-     * If any error occurs, this error is logged with INFO level and an empty list is returned.
-     * @param zipFile ZIP file to be listed
-     * @return list of JS file names (just filenames, without any relative path) from the given ZIP file
-     * @see #listZipFiles(File, ZipEntryFilter)
-     */
-    public static List<String> listJsFilenamesFromZipFile(File zipFile) {
-        try {
-            List<String> entries = SiteHelper.listZipFiles(zipFile, new SiteHelper.ZipEntryFilter() {
-                @Override
-                public boolean accept(ZipEntry zipEntry) {
-                    return !zipEntry.isDirectory()
-                            && zipEntry.getName().toLowerCase().endsWith(".js"); // NOI18N
-                }
-            });
-            List<String> files = new ArrayList<String>(entries.size());
-            for (String entry : entries) {
-                String[] segments = entry.split("/"); // NOI18N
-                files.add(segments[segments.length - 1]);
-            }
-            return files;
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
-        return Collections.emptyList();
     }
 
     @NbBundle.Messages("SiteHelper.error.emptyZip=ZIP file with site template is either empty or its download failed.")
@@ -323,39 +239,6 @@ public final class SiteHelper {
             source.close();
         }
         return folder;
-    }
-
-    //~ Inner classes
-
-    /**
-     * Filter for {@link ZipEntry}s.
-     * <p>
-     * Instances of this interface may be passed to the {@link SiteHelper#listZipFiles(File, ZipEntryFilter)} method.
-     * @see SiteHelper#listZipFiles(File, ZipEntryFilter)
-     */
-    public interface ZipEntryFilter {
-
-        /**
-         * Test whether or not the specified {@link ZipEntry} should be
-         * accepted.
-         *
-         * @param zipEntry the {@link ZipEntry} to be tested
-         * @return {@ code true} if {@link ZipEntry} should be accepted, {@code false} otherwise
-         */
-        boolean accept(ZipEntry zipEntry);
-    }
-
-    /**
-     * Task for {@link ZipEntry}s, their content.
-     * @see SiteHelper#runOnZipEntries(File, ZipEntryTask, ZipEntryFilter)
-     */
-    public interface ZipEntryTask {
-
-        /**
-         * Run task on the given content, typically read it.
-         * @param zipEntryInputStream content of the given {@link ZipEntry}
-         */
-        void run(InputStream zipEntryInputStream);
     }
 
 }
