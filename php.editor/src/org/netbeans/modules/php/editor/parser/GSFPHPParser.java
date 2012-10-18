@@ -620,14 +620,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
     }
 
-    private static String asString(CharSequence sequence) {
-        if (sequence instanceof String) {
-            return (String) sequence;
-        } else {
-            return sequence.toString();
-        }
-    }
-
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PhpLanguageProperties.PROP_PHP_VERSION.equals(evt.getPropertyName())) {
