@@ -40,7 +40,6 @@ package org.netbeans.modules.maven.problems;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.netbeans.api.project.Project;
@@ -75,6 +74,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         assertEquals("g:m:jar:0", p.getLookup().lookup(NbMavenProject.class).getMavenProject().getId());
         ProblemReporterImpl pr = getReporter(p);
         pr.doIDEConfigChecks();
+        waitForReports();
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "par", "0", null, "pom", null, new DefaultArtifactHandler("pom"))), pr.getMissingArtifacts());
     }
@@ -87,25 +87,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         ProblemReporterImpl pr = getReporter(p);
         pr.doIDEConfigChecks();
-        final Object lock = new Object();
-        pr.RP.post(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                synchronized (lock) {
-                    lock.notifyAll();
-                }
-            }
-        });
-        synchronized (lock) {
-            lock.wait(5000);
-        }
-        
+        waitForReports();
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "plug", "0", null, "jar", null, new DefaultArtifactHandler("jar"))), pr.getMissingArtifacts());
     }
@@ -118,9 +100,20 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         ProblemReporterImpl pr = getReporter(p);
         pr.doIDEConfigChecks();
-        final Object lock = new Object();
-        pr.RP.post(new Runnable() {
+        waitForReports();
+        assertFalse(pr.getReports().isEmpty());
+        assertEquals(Collections.singleton(new DefaultArtifact("g", "b", "1.0-SNAPSHOT", "compile", "jar", null, new DefaultArtifactHandler("jar"))), pr.getMissingArtifacts());
+    }
 
+    // XXX write test for FCL and reloading (requires modifications to local repo)
+
+    /**
+     * Waits until reports are initialized in
+     * NbMavenProjectImpl.loadOriginalMavenProject().
+     */
+    private void waitForReports() throws Exception {
+        final Object lock = new Object();
+        ProblemReporterImpl.RP.post(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -136,10 +129,5 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         synchronized (lock) {
             lock.wait(5000);
         }
-        assertFalse(pr.getReports().isEmpty());
-        assertEquals(Collections.singleton(new DefaultArtifact("g", "b", "1.0-SNAPSHOT", "compile", "jar", null, new DefaultArtifactHandler("jar"))), pr.getMissingArtifacts());
     }
-
-    // XXX write test for FCL and reloading (requires modifications to local repo)
-
 }
