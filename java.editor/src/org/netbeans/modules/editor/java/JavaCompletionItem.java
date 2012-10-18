@@ -2185,13 +2185,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Position startPos = null;
             Position endPos = null;
             try {
-                startPos = doc.createPosition(offset, Bias.Backward);
+                startPos = doc.createPosition(offset + (insertName ? 0 : length), Bias.Backward);
                 endPos = doc.createPosition(offset + length);
             } catch (BadLocationException ex) {
+                return null; // Invalid offset -> do nothing
             }
-            CharSequence cs = super.substituteText(c, offset, length, insertName ? text : null, toAdd);
+            CharSequence cs = insertName
+                    ? super.substituteText(c, startPos.getOffset(), length, text, toAdd)
+                    : super.substituteText(c, startPos.getOffset(), 0, null, toAdd);
             StringBuilder sb = new StringBuilder();
-            if (startPos != null && endPos != null && toAdd != null) {
+            if (toAdd != null) {
                 CharSequence postfix = getInsertPostfix(c);
                 if (postfix != null) {
                     int postfixLen = postfix.length();
@@ -2346,11 +2349,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
             BaseDocument doc = (BaseDocument) c.getDocument();
             Position startPos = null;
             try {
-                startPos = doc.createPosition(offset, Bias.Backward);
+                startPos = doc.createPosition(offset + length, Bias.Backward);
             } catch (BadLocationException ex) {
+                return null; // Invalid offset -> do nothing
             }
-            CharSequence cs = super.substituteText(c, offset, length, text, toAdd);
-            if (startPos != null && toAdd != null) {
+            CharSequence cs = super.substituteText(c, offset, 0, null, toAdd);
+            if (toAdd != null) {
                 CharSequence postfix = getInsertPostfix(c);
                 if (postfix != null) {
                     int postfixLen = postfix.length();
@@ -2359,7 +2363,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         String toAddText = toAdd.toString();
                         if (isAbstract) {
                             try {
-                                final int off = startPos.getOffset() + text.length() + toAddText.indexOf('{') + 1;
+                                final int off = startPos.getOffset() + toAddText.indexOf('{') + 1;
                                 ModificationResult mr = ModificationResult.runModificationTask(Collections.singletonList(Source.create(c.getDocument())), new UserTask() {
                                     @Override
                                     public void run(ResultIterator resultIterator) throws Exception {
