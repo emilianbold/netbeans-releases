@@ -102,6 +102,7 @@ import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -1999,6 +2000,13 @@ widthcheck:  {
             Window w = SwingUtilities.getWindowAncestor(focusOwner);
             if (w != null) {
                 return w.getGraphicsConfiguration();
+            } else {
+                //#217737 - try to find the main window which could be placed in secondary screen
+                for( Frame f : Frame.getFrames() ) {
+                    if( "NbMainWindow".equals(f.getName())) { //NOI18N
+                        return f.getGraphicsConfiguration();
+                    }
+                }
             }
         }
 
