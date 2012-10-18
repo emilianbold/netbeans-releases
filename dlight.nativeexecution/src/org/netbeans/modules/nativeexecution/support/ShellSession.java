@@ -52,9 +52,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.RequestProcessor;
@@ -102,16 +105,28 @@ public final class ShellSession {
                 return process;
             }
 
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-            npb.setExecutable("/bin/sh").setArguments("-s"); // NOI18N
-            npb.getEnvironment().put("LC_ALL", "C"); // NOI18N
-            NativeProcess sh = npb.call();
+            try {
+                String shell;
 
-            if (sh.getState() == State.RUNNING) {
-                process = new ShellProcess(sh);
-                processes.put(env, process);
-            } else {
-                process = null;
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                if (HostInfo.OSFamily.WINDOWS.equals(hostInfo.getOSFamily())) {
+                    shell = hostInfo.getShell();
+                } else {
+                    shell = "/bin/sh"; // NOI18N
+                }
+
+                NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+                npb.setExecutable(shell).setArguments("-s"); // NOI18N
+                npb.getEnvironment().put("LC_ALL", "C"); // NOI18N
+                NativeProcess sh = npb.call();
+
+                if (sh.getState() == State.RUNNING) {
+                    process = new ShellProcess(sh);
+                    processes.put(env, process);
+                } else {
+                    process = null;
+                }
+            } catch (ConnectionManager.CancellationException ex) {
             }
         }
 
