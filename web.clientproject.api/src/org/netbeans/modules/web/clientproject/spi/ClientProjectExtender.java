@@ -63,7 +63,8 @@ public interface ClientProjectExtender {
     public Panel<WizardDescriptor> createWizardPanel();
 
     /**
-     * Creates additional changes in Client Side Project.
+     * Creates additional changes in Client Side Project if extender is enabled 
+     * in wizard.
      * @param projectRoot
      * @param siteRoot
      * @param libsFolder 

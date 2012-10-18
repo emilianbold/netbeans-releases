@@ -48,6 +48,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -147,7 +148,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             ProjectChooser.setProjectsFolder(parent);
         }
         
-        for (ClientProjectExtender extender:extenders) {
+        for (ClientProjectExtender extender: enabledExtenders()) {
             extender.apply(project.getProjectDirectory(), siteRoot, (FileObject) wizardDescriptor.getProperty(NewProjectWizard.LIBRARIES_FOLDER));
         }
 
@@ -217,7 +218,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public boolean hasNext() {
-        return index < panels.length + enabledExtendersCount() -1;
+        return index < panels.length + enabledExtenders().size() -1;
     }
 
     @Override
@@ -260,9 +261,9 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         // noop
     }
     
-    private int enabledExtendersCount() {
-        final Collection prop = (Collection)wizardDescriptor.getProperty(Wizard.EXTENDERS);
-        return prop==null?0:prop.size();
+    private Collection<? extends ClientProjectExtender> enabledExtenders() {
+        final Collection<? extends ClientProjectExtender> prop = (Collection<? extends ClientProjectExtender>)wizardDescriptor.getProperty(Wizard.EXTENDERS);
+        return prop==null?(Collection<? extends ClientProjectExtender>)Collections.EMPTY_LIST:prop;
     }
 
     //~ Inner classes
