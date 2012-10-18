@@ -61,6 +61,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -165,13 +166,18 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     }
      */
     
-    private class DebuggerStateChangeListener implements PropertyChangeListener {
+    private class DebuggerStateChangeListener implements PropertyChangeListener, Runnable {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (JPDADebugger.STATE_DISCONNECTED == ((Integer) evt.getNewValue()).intValue()) {
-                closeToolTip();
+                SwingUtilities.invokeLater(this);
             }
+        }
+
+        @Override
+        public void run() {
+            closeToolTip();
         }
         
     }

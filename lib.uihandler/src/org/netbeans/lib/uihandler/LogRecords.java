@@ -32,10 +32,13 @@
 package org.netbeans.lib.uihandler;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
+import java.io.RandomAccessFile;
 import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -90,8 +93,98 @@ public final class LogRecords {
         os.write(arr);
         os.flush();
     }
+    
+    private static class HandlerDelegate extends Handler {
+        
+        private Handler hd;
+        private boolean afterLast;
+        private long lastNumber;
+        
+        HandlerDelegate(Handler hd) {
+            this.hd = hd;
+        }
 
+        @Override
+        public void publish(LogRecord record) {
+            long sn = record.getSequenceNumber();
+            if (afterLast) {
+                if (sn <= lastNumber) {
+                    return ;
+                } else {
+                    afterLast = false;
+                }
+            }
+            lastNumber = sn;
+            hd.publish(record);
+        }
+
+        @Override
+        public void flush() {
+            hd.flush();
+        }
+
+        @Override
+        public void close() throws SecurityException {
+            hd.close();
+        }
+
+        @Override
+        public String toString() {
+            return hd.toString();
+        }
+        
+        void setContinueAfterLast() {
+            afterLast = true;
+        }
+
+    }
+
+    public static void scan(File f, Handler h) throws IOException {
+        HandlerDelegate hd = new HandlerDelegate(h);
+        InputStream is = null;
+        List<LogRecord> errorLogRecords = new ArrayList<LogRecord>();        
+        try {
+            is = new FileInputStream(f);
+            LogRecords.scan(is, hd, errorLogRecords);
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "LogRecords scan throwed {0}", ex);
+            is.close();
+            is = null;
+            //LOG.severe("Stream closed.");
+            if (repairFile(f)) {
+                errorLogRecords.clear();
+                LOG.info("LogRecords File repaired. :-)");
+                hd.setContinueAfterLast();
+                is = new FileInputStream(f);
+                LogRecords.scan(is, hd);
+                return ;
+            } else {
+                LOG.info("LogRecords File NOT repaired. :-(");
+            }
+            LOG.severe("Throwing the original exception... :-(");
+            throw ex;
+        } finally {
+            for (LogRecord lr : errorLogRecords) {
+                LOG.log(lr);
+            }
+            if (is != null) {
+                is.close();
+            }
+        }
+    }
+    
     public static void scan(InputStream is, Handler h) throws IOException {
+        List<LogRecord> errorLogRecords = new ArrayList<LogRecord>();
+        try {
+            scan(is, h, errorLogRecords);
+        } finally {
+            for (LogRecord lr : errorLogRecords) {
+                LOG.log(lr);
+            }
+        }
+    }
+    
+    private static void scan(InputStream is, Handler h, List<LogRecord> errorLogRecords) throws IOException {
         PushbackInputStream wrap = new PushbackInputStream(is, 32);
         byte[] arr = new byte[5];
         int len = wrap.read(arr);
@@ -135,14 +228,20 @@ public final class LogRecords {
             try{
                 f.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true); // NOI18N
             }catch (SAXNotRecognizedException snre){
-                LOG.log(Level.INFO, null, snre);
+                LogRecord lr = new LogRecord(Level.INFO, null);
+                lr.setThrown(snre);
+                errorLogRecords.add(lr);
             }
             p = f.newSAXParser();
         } catch (ParserConfigurationException ex) {
-            LOG.log(Level.SEVERE, null, ex);
+            LogRecord lr = new LogRecord(Level.SEVERE, null);
+            lr.setThrown(ex);
+            errorLogRecords.add(lr);
             throw new IOException(ex);
         } catch (SAXException ex) {
-            LOG.log(Level.SEVERE, null, ex);
+            LogRecord lr = new LogRecord(Level.SEVERE, null);
+            lr.setThrown(ex);
+            errorLogRecords.add(lr);
             throw new IOException(ex);
         }
         
@@ -150,24 +249,34 @@ public final class LogRecords {
         try {
             p.parse(is, parser);
         } catch (SAXParseException ex) {
-            LOG.log(Level.WARNING, "Line = "+ex.getLineNumber()+", column = "+ex.getColumnNumber(), ex);
+            LogRecord lr = new LogRecord(Level.WARNING, "Line = "+ex.getLineNumber()+", column = "+ex.getColumnNumber());
+            lr.setThrown(ex);
+            errorLogRecords.add(lr);
             throw new IOException(ex);
         } catch (SAXException ex) {
-            LOG.log(Level.WARNING, null, ex);
+            LogRecord lr = new LogRecord(Level.WARNING, null);
+            lr.setThrown(ex);
+            errorLogRecords.add(lr);
             throw new IOException(ex);
         } catch (InternalError error){
-            LOG.log(Level.WARNING, "Input file corruption", error);
+            LogRecord lr = new LogRecord(Level.WARNING, "Input file corruption");
+            lr.setThrown(error);
+            errorLogRecords.add(lr);
             throw new IOException(error);
         } catch (IOException ex) {
             throw ex;
         } catch (RuntimeException ex) {
-            LOG.log(Level.WARNING, "Input file corruption", ex);
+            LogRecord lr = new LogRecord(Level.WARNING, "Input file corruption");
+            lr.setThrown(ex);
+            errorLogRecords.add(lr);
             throw new IOException(ex);
         } finally {
             List<SAXParseException> fatalErrors = parser.getFatalErrors();
             if (fatalErrors != null) {
                 for (SAXParseException ex : fatalErrors) {
-                    LOG.log(Level.WARNING, "Fatal SAX Parse Exception: Line = "+ex.getLineNumber()+", column = "+ex.getColumnNumber(), ex);
+                    LogRecord lr = new LogRecord(Level.WARNING, "Fatal SAX Parse Exception: Line = "+ex.getLineNumber()+", column = "+ex.getColumnNumber());
+                    lr.setThrown(ex);
+                    errorLogRecords.add(lr);
                 }
             }
         }
@@ -175,6 +284,74 @@ public final class LogRecords {
 
     static Level parseLevel(String lev) {
         return "USER".equals(lev) ? Level.SEVERE : Level.parse(lev);
+    }
+    
+    private static final String RECORD_ELM_START = "<record>"; // NOI18N
+    private static final String RECORD_ELM_END = "</record>"; // NOI18N
+    
+    private static boolean repairFile(File f) {
+        boolean repaired = false;
+        RandomAccessFile raf = null;
+        try {
+            raf = new RandomAccessFile(f, "rw");
+            String line;
+            long recordEndPos = -1l;
+            while ((line = raf.readLine()) != null) {
+                if (line.equals(RECORD_ELM_END)) {
+                    recordEndPos = raf.getFilePointer();
+                }
+                if (line.endsWith(RECORD_ELM_START)) {
+                    long recordStartPos = raf.getFilePointer();
+                    long elmStart = recordStartPos - RECORD_ELM_START.length() - 1;
+                    if (0 < recordEndPos && recordEndPos < elmStart) {
+                        deletePart(raf, recordEndPos, elmStart);
+                        recordStartPos -= elmStart - recordEndPos;
+                        raf.seek(recordStartPos);
+                        repaired = true;
+                    }
+                }
+            }
+            return repaired;
+        } catch (IOException ioex) {
+            return false;
+        } finally {
+            try {
+                if (raf != null) {
+                    raf.close();
+                }
+            } catch (IOException ex) {
+            }
+        }
+    }
+    
+    /**
+     * Deletes bytes from <pos1, pos2).
+     */
+    private static void deletePart(RandomAccessFile raf, long pos1, long pos2) throws IOException {
+        if (pos1 == pos2) {
+            return ;
+        }
+        assert pos1 < pos2 : "The first position is higher: "+pos1+", "+pos2+".";
+        int buffLength = 3;
+        byte[] buffer = new byte[buffLength];
+        long length = raf.length();
+        //long chunks = (length - pos2)/buffLength;
+        while ((pos2 + buffLength) <= length) {
+            raf.seek(pos2);
+            raf.readFully(buffer);
+            raf.seek(pos1);
+            raf.write(buffer);
+            pos1 += buffLength;
+            pos2 += buffLength;
+        }
+        if (pos2 < length) {
+            int l = (int) (length - pos2);
+            raf.seek(pos2);
+            raf.readFully(buffer, 0, l);
+            raf.seek(pos1);
+            raf.write(buffer, 0, l);
+        }
+        raf.setLength(length - (pos2 - pos1));
     }
     
     private static final class Parser extends DefaultHandler {

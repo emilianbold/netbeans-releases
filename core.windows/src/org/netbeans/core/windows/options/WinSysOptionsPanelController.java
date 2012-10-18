@@ -99,7 +99,7 @@ public final class WinSysOptionsPanelController extends OptionsPanelController {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return new HelpCtx( "org.netbeans.core.windows.options.WinSysOptionsPanelController" ); //NOI18N
     }
 
     @Override

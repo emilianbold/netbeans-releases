@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ide.ergonomics.fod;
 
-package org.netbeans.modules.php.phpdoc.ui.options;
-
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.util.concurrent.Callable;
+import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.phpdoc.PhpDocScript;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 /**
- * @author Tomas Mysik
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@OptionsPanelController.SubRegistration(
-    location=UiUtils.OPTIONS_PATH,
-    id=PhpDocScript.OPTIONS_SUB_PATH,
-    displayName="#LBL_PHPDocOptionsName",
-//    toolTip="#LBL_OptionsTooltip"
-    position=170
-)
-public class PhpDocOptionsPanelController extends OptionsPanelController implements ChangeListener {
-    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+public final class OptionCntrl extends OptionsPanelController 
+implements Callable<JComponent>, Runnable {
+    private final FileObject fo;
+    private ConfigurationPanel panel;
+    private Lookup master;
 
-    private PhpDocOptionsPanel phpDocOptionsPanel = null;
-    private volatile boolean changed = false;
+    public OptionCntrl(FileObject fo) {
+        this.fo = fo;
+    }
+    
+    static OptionsPanelController advanced(FileObject fo) {
+        return new OptionCntrl(fo);
+    }
+    
+    static OptionsPanelController basic(FileObject fo) {
+        return new OptionCntrl(fo);
+    }
 
     @Override
     public void update() {
-        getComponent(null);
-        phpDocOptionsPanel.setPhpDoc(getOptions().getPhpDoc());
-
-        changed = false;
     }
 
     @Override
     public void applyChanges() {
-        getComponent(null);
-        getOptions().setPhpDoc(phpDocOptionsPanel.getPhpDoc());
-
-        changed = false;
     }
 
     @Override
@@ -91,58 +88,49 @@ public class PhpDocOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public boolean isValid() {
-        getComponent(null);
-        // warnings
-        String warning = PhpDocScript.validate(phpDocOptionsPanel.getPhpDoc());
-        if (warning != null) {
-            phpDocOptionsPanel.setWarning(warning);
-            return true;
-        }
-
-        // everything ok
-        phpDocOptionsPanel.clearError();
         return true;
     }
 
     @Override
     public boolean isChanged() {
-        return changed;
+        return false;
     }
 
     @Override
     public JComponent getComponent(Lookup masterLookup) {
-        if (phpDocOptionsPanel == null) {
-            phpDocOptionsPanel = new PhpDocOptionsPanel();
-            phpDocOptionsPanel.addChangeListener(this);
+        if (panel == null) {
+            FeatureInfo info = FoDLayersProvider.getInstance().whichProvides(fo);
+            assert info != null;
+            master = masterLookup;
+            panel = new ConfigurationPanel(info.clusterName, this, info, false);
         }
-        return phpDocOptionsPanel;
+        return panel;
     }
 
     @Override
+    public JComponent call() throws Exception {
+        assert EventQueue.isDispatchThread();
+        // it would be better not to close the dialog...
+        EventQueue.invokeLater(this);
+        return new JButton();
+    }
+    
+    @Override
+    public void run() {
+        OptionsDisplayer.getDefault().open();
+    }
+    
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.php.phpdoc.ui.options.PhpDocOptions"); // NOI18N
+        return HelpCtx.DEFAULT_HELP;
     }
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
-        propertyChangeSupport.addPropertyChangeListener(l);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
-        propertyChangeSupport.removePropertyChangeListener(l);
     }
 
-    @Override
-    public void stateChanged(ChangeEvent e) {
-        if (!changed) {
-            changed = true;
-            propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-        }
-        propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
-    }
-
-    private PhpDocOptions getOptions() {
-        return PhpDocOptions.getInstance();
-    }
 }

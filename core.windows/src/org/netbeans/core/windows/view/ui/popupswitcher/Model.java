@@ -45,7 +45,8 @@ import java.util.ArrayList;
 import javax.swing.Icon;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
-import org.netbeans.core.windows.TopComponentTracker;
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.windows.TopComponent;
 
@@ -255,13 +256,14 @@ class Model extends AbstractTableModel {
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
         TopComponent[] windows = wmi.getRecentViewList();
         ArrayList<Item> items = new ArrayList<Item>( windows.length );
-        TopComponentTracker tcTracker = TopComponentTracker.getDefault();
 
         for( TopComponent tc : windows ) {
             if (tc == null) {
                 continue;
             }
-            if( documentsOnly == tcTracker.isEditorTopComponent( tc ) ) {
+            ModeImpl mode = ( ModeImpl ) wmi.findMode( tc );
+            boolean isEditor = null != mode && mode.getKind() == Constants.MODE_KIND_EDITOR;
+            if( documentsOnly == isEditor ) {
                 items.add( Item.create( tc ) );
             }
         }
@@ -270,7 +272,13 @@ class Model extends AbstractTableModel {
     }
 
     private static boolean isEditorTCActive() {
+        boolean res = true;
         TopComponent tc = TopComponent.getRegistry().getActivated();
-        return null != tc && TopComponentTracker.getDefault().isEditorTopComponent( tc );
+        if( null != tc ) {
+            ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
+            if( null != mode )
+                res = mode.getKind() == Constants.MODE_KIND_EDITOR;
+        }
+        return res;
     }
 }

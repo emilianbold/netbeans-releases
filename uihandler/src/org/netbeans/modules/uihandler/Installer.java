@@ -741,10 +741,8 @@ public class Installer extends ModuleInstall implements Runnable {
     private static boolean fileContentReported;
     
     private static void scan(File f, Handler handler){
-        InputStream is = null;
         try {
-            is = new FileInputStream(f);
-            LogRecords.scan(is, handler);
+            LogRecords.scan(f, handler);
         } catch (IOException ex) {
             LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will be submitted", ex);
             if (!fileContentReported) {
@@ -753,14 +751,6 @@ public class Installer extends ModuleInstall implements Runnable {
                 } finally {
                     fileContentReported = true;
                 }
-            }
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException ex) {
-                LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will be submitted", ex);
             }
         }
     }
@@ -811,12 +801,10 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             H hndlr = new H();
 
-            InputStream is = null;
             File f1 = logFileMetrics(1);
             if ((f1 != null) && f1.exists()) {
                 try {
-                    is = new FileInputStream(f1);
-                    LogRecords.scan(is, hndlr);
+                    LogRecords.scan(f1, hndlr);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(
                         Exceptions.attachMessage(ex, "Broken metrics log file, not all metrics data will be submitted")
@@ -827,14 +815,6 @@ public class Installer extends ModuleInstall implements Runnable {
                         } finally {
                             fileContentReported = true;
                         }
-                    }
-                } finally {
-                    try {
-                        if (is != null) {
-                            is.close();
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
                     }
                 }
             }

@@ -45,39 +45,25 @@ import java.io.File;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Provides the location of JavaFX runtime bundled with NetBeans (if any).
+ * Provides the location of JavaFX runtime bundled with JDK 
  * 
  * @author S. Aubrecht
  */
 @ServiceProvider(service=WebBrowserImplProvider.JFXRuntimePathProvider.class, position=11000)
-public class BundleJFXRuntimeProvider implements WebBrowserImplProvider.JFXRuntimePathProvider {
-
-    private static final String PATH_32BIT = "i586"; //NOI18N
-    private static final String PATH_64BIT = "x64"; //NOI18N
+public class JDKBundleJFXRuntimeProvider implements WebBrowserImplProvider.JFXRuntimePathProvider {
 
     @Override
     public String getJFXRuntimePath() {
-        String nbDir = System.getProperty( "netbeans.home"); //NOI18N
-        if( null == nbDir || nbDir.isEmpty() )
+        String jreDir = System.getProperty( "java.home"); //NOI18N
+        if( null == jreDir || jreDir.isEmpty() )
             return null;
-        File nbInstallDir = new File(nbDir).getParentFile();
-        File bundleFolder = new File( new File( new File( nbInstallDir, "ide" ), "javafxrt" ), is32Bit() ? PATH_32BIT : PATH_64BIT ); //NOI18N
-        if( bundleFolder.exists() && bundleFolder.isDirectory() ) {
-            File rtJar = new File( new File( bundleFolder, "lib" ), "jfxrt.jar" ); //NOI18N
+        File jreFolder = new File( jreDir );
+        if( jreFolder.exists() && jreFolder.isDirectory() ) {
+            File rtJar = new File( new File( jreFolder, "lib" ), "jfxrt.jar" ); //NOI18N
             if( rtJar.exists() && rtJar.isFile() && rtJar.canRead() ) {
-                return bundleFolder.getAbsolutePath();
+                return jreFolder.getAbsolutePath();
             }
         }
         return null;
-    }
-
-    private static boolean is32Bit() {
-        String osarch = System.getProperty("os.arch"); //NOI18N
-        for (String x : new String[]{"x86", "i386", "i486", "i586", "i686"}) { //NOI18N
-            if (x.equals(osarch)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
