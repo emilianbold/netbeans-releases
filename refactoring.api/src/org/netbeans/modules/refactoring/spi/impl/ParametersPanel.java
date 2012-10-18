@@ -476,7 +476,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                             } else {
                                 //UndoWatcher.watch(session, ParametersPanel.this);
                                 session.addProgressListener(ParametersPanel.this);
-                                session.doRefactoring(true);
+                                try {
+                                    session.doRefactoring(true);
+                                } finally {
+                                    session.removeProgressListener(ParametersPanel.this);
+                                }
                                 //UndoWatcher.stopWatching(ParametersPanel.this);
                             }
                         }
