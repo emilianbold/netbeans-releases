@@ -706,7 +706,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     public static class Context {
 
         private final Snapshot snapshot;
-        private int errorOffset;
         private String source;
         private String sanitizedSource;
         private int caretOffset;
@@ -730,10 +729,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             return sanitizedSource;
         }
 
-        public int getErrorOffset() {
-            return errorOffset;
-        }
-
         public Snapshot getSnapshot() {
             return snapshot;
         }
@@ -749,6 +744,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         public int getCaretOffset() {
             return caretOffset;
         }
-        
+
     }
 }
