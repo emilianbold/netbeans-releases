@@ -119,12 +119,12 @@ public class C2CRepository implements PropertyChangeListener {
         this(createInfo(repoName, url)); // use name as id - can't be changed anyway
         assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
-        this.support = new PropertyChangeSupport(this);
         KenaiUtil.getKenaiAccessor(url).addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
     }
     
     public C2CRepository() {
         this.icon = ImageUtilities.loadImage(ICON_PATH, true);
+        this.support = new PropertyChangeSupport(this);
     }
     
     public C2CRepository(RepositoryInfo info) {
