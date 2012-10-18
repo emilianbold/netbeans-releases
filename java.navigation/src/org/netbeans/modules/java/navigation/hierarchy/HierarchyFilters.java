@@ -51,7 +51,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.navigation.base.Filters;
 import org.netbeans.modules.java.navigation.base.FiltersDescription;
 import org.netbeans.modules.java.navigation.base.FiltersManager;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -62,13 +61,10 @@ final class HierarchyFilters extends Filters<Object> {
     static final String PROP_NATURAL_SORT = "naturalSort";  //NOI18N
     static final String PROP_FQN = "fqn";                   //NOI18N
 
-    private final PropertyChangeSupport support;
-    private volatile boolean fqn;
-    private JToggleButton fqNameButton;
+    private final PropertyChangeSupport support;    
 
 
-    HierarchyFilters() {
-        fqn = NbPreferences.forModule(HierarchyFilters.class).getBoolean(PROP_FQN, false);
+    HierarchyFilters() {        
         this.support = new PropertyChangeSupport(this);
     }
 
@@ -91,36 +87,13 @@ final class HierarchyFilters extends Filters<Object> {
     }
 
     @Override
-    protected FiltersManager createFilters() {
-        FiltersDescription desc = new FiltersDescription();
-        return FiltersDescription.createManager(desc);
+    protected void fqnUpdated() {
+        support.firePropertyChange(PROP_FQN,null,null);
     }
 
     @Override
-    protected AbstractButton[] createCustomButtons() {
-        assert SwingUtilities.isEventDispatchThread();
-        AbstractButton[] res = new AbstractButton[1];
-        if(null == fqNameButton) {
-            fqNameButton = new JToggleButton(NameActions.createFullyQualifiedNameAction(this));
-            fqNameButton.setToolTipText(fqNameButton.getText());
-            fqNameButton.setText(null);
-            fqNameButton.setSelected(isFqn());
-            fqNameButton.setFocusable( false );
-        }
-        res[0] = fqNameButton;
-        return res;
-    }
-
-    boolean isFqn() {
-        return fqn;
-    }
-
-    void setFqn(final boolean fqn) {
-        this.fqn = fqn;
-        NbPreferences.forModule(HierarchyFilters.class).putBoolean(PROP_FQN, fqn);
-        if(null != fqNameButton) {
-            fqNameButton.setSelected(fqn);
-        }
-        support.firePropertyChange(PROP_FQN,null,null);
+    protected FiltersManager createFilters() {
+        FiltersDescription desc = new FiltersDescription();
+        return FiltersDescription.createManager(desc);
     }
 }

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.navigation.hierarchy;
+package org.netbeans.modules.java.navigation.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
@@ -48,6 +48,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.modules.java.navigation.base.Filters;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -56,14 +57,14 @@ import org.openide.util.actions.Presenter;
  *
  * @author Tomas Zezula
  */
-class NameActions {
+public class NameActions {
 
     private NameActions() {
         throw new IllegalStateException();
     }
 
 
-    static Action createFullyQualifiedNameAction(@NonNull final HierarchyFilters filters) {
+    public static Action createFullyQualifiedNameAction(@NonNull final Filters filters) {
         assert filters != null;
         return new FullyQualifiedNameAction(filters);
     }
@@ -74,13 +75,13 @@ class NameActions {
         @StaticResource
         private static final String ICON = "org/netbeans/modules/java/navigation/resources/fqn.png";  //NOI18N
 
-        private final HierarchyFilters filters;
+        private final Filters filters;
         private JRadioButtonMenuItem menuItem;
 
         @NbBundle.Messages({
             "LBL_FullyQualifiedName=Fully Qualified Names"
         })
-        public FullyQualifiedNameAction (@NonNull final HierarchyFilters filters) {
+        public FullyQualifiedNameAction (@NonNull final Filters filters) {
             assert filters != null;
             this.filters = filters;
             putValue(Action.NAME, Bundle.LBL_FullyQualifiedName());
