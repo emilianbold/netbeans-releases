@@ -65,6 +65,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -318,10 +319,10 @@ public class GoToSupport {
                     el = controller.getTrees().getElement(path);
 
                     if (parentLeaf.getKind() == Kind.METHOD_INVOCATION && isError(el)) {
-                        ExecutableElement ee = Utilities.fuzzyResolveMethodInvocation(controller, path.getParentPath(), new TypeMirror[1], new int[1]);
+                        List<ExecutableElement> ee = Utilities.fuzzyResolveMethodInvocation(controller, path.getParentPath(), new ArrayList<TypeMirror>(), new int[1]);
 
-                        if (ee != null) {
-                            el = ee;
+                        if (!ee.isEmpty()) {
+                            el = ee.iterator().next();
                         } else {
                             ExpressionTree select = ((MethodInvocationTree)parentLeaf).getMethodSelect();
                             Name methodName = null;
