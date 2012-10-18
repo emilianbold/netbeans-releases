@@ -157,7 +157,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
     public void removeChangeListener(ChangeListener l) {
         // noop
     }
-
+    
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
         Project project = Templates.getProject(descriptor);
         SourceGroup[] groups = getSourceGroups(project, Templates.getTemplate(descriptor));

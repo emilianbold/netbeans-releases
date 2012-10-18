@@ -43,6 +43,7 @@ package org.netbeans.modules.web.clientproject.spi;
 
 import java.io.IOException;
 import java.util.Collection;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
@@ -126,35 +127,60 @@ public interface SiteTemplateImplementation {
         private String configFolder;
 
 
+        /**
+         * Get Site Root folder, usually relative path.
+         * @return Site Root folder, usually relative path; never returns {@code null} or empty string
+         */
         @NonNull
         public String getSiteRootFolder() {
             return siteRootFolder;
         }
 
+        /**
+         * Set Site Root folder, never {@code null} or empty string.
+         * @param siteRootFolder Site Root folder, never {@code null} or empty string
+         * @return itself
+         */
         public ProjectProperties setSiteRootFolder(@NonNull String siteRootFolder) {
-            Parameters.notNull("siteRootFolder", siteRootFolder);
+            Parameters.notEmpty("siteRootFolder", siteRootFolder);
             this.siteRootFolder = siteRootFolder;
             return this;
         }
 
-        @NonNull
+        /**
+         * Get Test folder, usually relative path.
+         * @return Test folder, usually relative path; can be {@code null} if no Test folder is present
+         */
+        @CheckForNull
         public String getTestFolder() {
             return testFolder;
         }
 
-        public ProjectProperties setTestFolder(@NonNull String testFolder) {
-            Parameters.notNull("testFolder", testFolder);
+        /**
+         * Set Test folder, can be {@code null} if there are no tests available.
+         * @param testFolder Test folder, can be {@code null} if there are no tests available
+         * @return itself
+         */
+        public ProjectProperties setTestFolder(String testFolder) {
             this.testFolder = testFolder;
             return this;
         }
 
-        @NonNull
+        /**
+         * Get Config folder, usually relative path.
+         * @return Config folder, usually relative path; can be {@code null} if no Config folder is present
+         */
+        @CheckForNull
         public String getConfigFolder() {
             return configFolder;
         }
 
-        public ProjectProperties setConfigFolder(@NonNull String configFolder) {
-            Parameters.notNull("configFolder", configFolder);
+        /**
+         * Set Config folder, can be {@code null} if there is no config available.
+         * @param configFolder Config folder, can be {@code null} if there is no config available
+         * @return itself
+         */
+        public ProjectProperties setConfigFolder(String configFolder) {
             this.configFolder = configFolder;
             return this;
         }

@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.clientproject.spi.platform;
 
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfiguration;
 

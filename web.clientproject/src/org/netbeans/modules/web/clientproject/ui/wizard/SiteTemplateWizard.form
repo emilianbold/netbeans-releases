@@ -21,26 +21,30 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="infoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+              <Component id="infoLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Component id="onlineTemplateDescriptionLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  </Group>
+                  <Component id="archiveTemplatePanel" alignment="1" max="32767" attributes="0"/>
+                  <Component id="onlineTemplateScrollPane" alignment="0" max="32767" attributes="0"/>
+                  <Component id="onlineTemplateDescriptionScrollPane" alignment="1" max="32767" attributes="0"/>
+              </Group>
+          </Group>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="noTemplateRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="archiveTemplateRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="onlineTemplateRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="onlineTemplateDescriptionLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          </Group>
-                          <Component id="archiveTemplatePanel" alignment="1" max="32767" attributes="0"/>
-                          <Component id="onlineTemplateScrollPane" alignment="0" max="32767" attributes="0"/>
-                          <Component id="onlineTemplateDescriptionScrollPane" alignment="0" max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
               </Group>
-              <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
+          <Component id="customCheckBoxPanel" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -56,12 +60,13 @@
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="onlineTemplateRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="onlineTemplateScrollPane" pref="106" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <Component id="onlineTemplateScrollPane" pref="64" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="onlineTemplateDescriptionLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="onlineTemplateDescriptionScrollPane" min="-2" pref="60" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="onlineTemplateDescriptionScrollPane" min="-2" pref="70" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="customCheckBoxPanel" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -143,6 +148,10 @@
         <Component class="javax.swing.JTextPane" name="onlineTemplateDescriptionTextPane">
         </Component>
       </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="customCheckBoxPanel">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
     </Container>
   </SubComponents>
 </Form>
