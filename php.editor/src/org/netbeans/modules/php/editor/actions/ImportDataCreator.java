@@ -63,7 +63,6 @@ public class ImportDataCreator {
     private final Map<String, List<UsedNamespaceName>> usedNames;
     private final Index phpIndex;
     private final QualifiedName currentNamespace;
-    private ImportData data;
     private boolean shouldShowUsesPanel = false;
     private final Options options;
     private final List<PossibleItem> possibleItems = new LinkedList<PossibleItem>();
@@ -85,7 +84,7 @@ public class ImportDataCreator {
         for (String typeName : usedNames.keySet()) {
             processTypeName(typeName);
         }
-        data = new ImportData(possibleItems.size());
+        ImportData data = new ImportData(possibleItems.size());
         int index = 0;
         for (PossibleItem possibleItem : possibleItems) {
             possibleItem.insertData(data, index);
