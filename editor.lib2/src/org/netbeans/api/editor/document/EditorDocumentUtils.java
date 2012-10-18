@@ -87,8 +87,34 @@ public final class EditorDocumentUtils {
      * @since 1.58
      */
     public static void runExclusive(Document doc, Runnable r) {
+//    public static void runExclusive(@NonNull Document doc, @NonNull Runnable r) {
         EditorDocumentHandler.runExclusive(doc, r);
     }
     
-    
+//    /**
+//     * Reset a possible undo merging so any upcoming edits will be undone separately.
+//     * <br/>
+//     * If document does not support undo merging reset the method does nothing.
+//     * 
+//     * @param doc document
+//     */
+//    public static void resetUndoMerge(@NonNull Document doc) {
+//        EditorDocumentHandler.resetUndoMerge(doc);
+//    }
+//
+//    /**
+//     * Get identifier's end offset for forward direction (or identifier's start
+//     * offset for backward direction).
+//     *
+//     * @param doc non-null document to check.
+//     * @param offset offset where search should start (for backward direction
+//     * char at offset-1 is the first to check).
+//     * @param backward false for forward direction or true for backward
+//     * direction.
+//     * @return identifier's end offset (or start offset for backward direction).
+//     */
+//    public static int getIdentifierEnd(@NonNull Document doc, int offset, boolean backward) {
+//        return EditorDocumentHandler.getIdentifierEnd(doc, offset, backward);
+//    }
+
 }

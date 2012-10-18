@@ -347,13 +347,17 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream out) throws IOException, BadLocationException {
         // not calling super.
         String enc = EncodingUtil.detectEncoding(doc);
-        Charset cs;
-
-        if (enc != null) {
-            cs = Charset.forName(enc);
-        } else {
-            // fallback to the original encoding, no encoding in document istelf.
-            cs = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile());
+        
+        // saved form saveDocument()
+        Charset cs = fileEncoding.get();
+        // + fallback, if no info is available
+        if (cs == null) {
+            if (enc != null) {
+                cs = Charset.forName(enc);
+            } else {
+                // fallback to the original encoding, no encoding in document istelf.
+                cs = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile());
+            }
         }
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Saving using encoding");//, new RuntimeException (enc)); // NOI18N
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("!!! TextEditorSupport::saveFromKitToStream: enc = " + enc);
@@ -375,6 +379,12 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             w.close();
         }
     }
+    
+    /**
+     * It's not possible to open input stream from saveFromStreamToKit as FEQ.getEncoding() does. This TL
+     * variable passes the desired encoding to the inner method through openIDE/text call machinery.
+     */
+    private ThreadLocal<Charset> fileEncoding = new ThreadLocal<Charset>();
 
 
 
@@ -387,7 +397,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("saveDocument()..."); // NOI18N
         final StyledDocument doc = getDocument();
         String enc = EncodingUtil.detectEncoding(doc);
-        Charset cs;
+        Charset cs = null;
         
         try {
             if (enc == null) {
@@ -401,12 +411,17 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         } catch (BadLocationException ble) {
             // should not happen
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
+            return;
         } catch (UnsupportedCharsetException ex) {
             // handle invalid character set
             handleUnsupportedEncoding(doc, enc);
+            return;
         }
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("!!! TextEditorSupport::saveDocument: enc = " + enc);
         try {
+            // Note: this pass-around of encoding duplicates the DataEditorSupport's implemnetation. In addition to what DES.saveFromKitToStream does, this impl
+            // detects encoding from the to-be-saved document AND handles invalid encoding gracefully (by asking the user).
+            fileEncoding.set(cs);
             super.saveDocument();
             //moved from Env.save()
             getDataObject().setModified(false);
@@ -415,7 +430,9 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             handleUnsupportedEncoding(doc, enc);
         } catch (UnsupportedEncodingException ex) {
             handleUnsupportedEncoding(doc, enc);
-        } // of catch UnsupportedEncodingException
+        } finally {
+            fileEncoding.remove();
+        }
     }
 
     private void handleUnsupportedEncoding(StyledDocument doc, String enc) throws IOException {

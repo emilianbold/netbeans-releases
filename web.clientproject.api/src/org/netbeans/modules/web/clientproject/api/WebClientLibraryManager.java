@@ -68,6 +68,8 @@ import org.openide.modules.SpecificationVersion;
  *
  */
 public final class WebClientLibraryManager {
+
+    private static final Logger LOGGER = Logger.getLogger(WebClientLibraryManager.class.getName());
     
     /**
      * Library TYPE.
@@ -225,10 +227,16 @@ public final class WebClientLibraryManager {
         boolean missingFiles = false;
         List<FileObject> result = new LinkedList<FileObject>();
         for (Library library : libraries) {
-            FileObject libRoot = folder.createFolder(
-                    library.getProperties().get(
-                            PROPERTY_REAL_NAME).replace(' ', '-')+"-"+ // NOI18N
-                            library.getProperties().get(PROPERTY_VERSION));
+            String libRootName = library.getProperties()
+                    .get(PROPERTY_REAL_NAME).replace(' ', '-') // NOI18N
+                    + "-" // NOI18N
+                    + library.getProperties().get(PROPERTY_VERSION);
+            FileObject libRoot = folder.getFileObject(libRootName);
+            if (libRoot == null) {
+                libRoot = folder.createFolder(libRootName);
+            } else if (libRoot.isData()) {
+                throw new IOException("File '" + libRootName + "' already exists and is not a folder");
+            }
             List<URL> urls =null;
             String vol = volume;
             if ( volume != null ){
@@ -265,19 +273,22 @@ public final class WebClientLibraryManager {
     private static FileObject copySingleFile(URL url, String name, FileObject 
             libRoot) throws IOException 
     {
-        FileObject fo = libRoot.createData(name);
+        FileObject fo = libRoot.getFileObject(name);
+        if (fo == null) {
+            fo = libRoot.createData(name);
+        } else {
+            LOGGER.log(Level.INFO, "File {0} already exists, it will be overwritten.", FileUtil.getFileDisplayName(fo));
+        }
         InputStream is;
         try {
             is = url.openStream();
         } 
         catch (FileNotFoundException ex) {
-            Logger.getLogger(WebClientLibraryManager.class.getName()).log(Level.INFO, 
-                    "could not open stream for "+url, ex); // NOI18N
+            LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
             return null;
         } 
         catch (IOException ex) {
-            Logger.getLogger(WebClientLibraryManager.class.getName()).log(Level.INFO, 
-                    "could not open stream for "+url, ex); // NOI18N
+            LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
             return null;
         }
         OutputStream os = null;

@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -58,7 +57,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -199,8 +197,14 @@ public class RemoteOpenHelper {
             @Override
             public void run() {
                 FileObject fo = FileSystemProvider.fileToFileObject(fileChooser.getSelectedFile());
-                lastUsedDirs.put(env, fo.getParent().getPath());
-                if (fo == null || !fo.isValid() || ! fo.isData()) {
+                if (fo == null) {
+                    return;
+                }                
+                FileObject parent = fo.getParent();
+                if (parent != null) {
+                    lastUsedDirs.put(env, parent.getPath());
+                }
+                if (!fo.isValid() || ! fo.isData()) {
                     return;
                 }
                 try {
@@ -235,8 +239,14 @@ public class RemoteOpenHelper {
             @Override
             public void run() {
                 FileObject remoteProjectFO = FileSystemProvider.fileToFileObject(fileChooser.getSelectedFile());
-                lastUsedDirs.put(env, remoteProjectFO.getParent().getPath());
-                if (remoteProjectFO == null || !remoteProjectFO.isFolder()) {
+                if (remoteProjectFO == null) {
+                    return;
+                }
+                FileObject parent = remoteProjectFO.getParent();
+                if (parent != null) {
+                    lastUsedDirs.put(env, parent.getPath());
+                }
+                if (!remoteProjectFO.isValid() || !remoteProjectFO.isFolder()) {
                     return;
                 }
                 Project project;

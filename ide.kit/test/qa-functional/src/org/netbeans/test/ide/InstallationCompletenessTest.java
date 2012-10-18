@@ -128,10 +128,18 @@ public class InstallationCompletenessTest extends NbTestCase {
         for (String missing : kitsGolden) {
             System.out.println("MISSING - IDE does not contain:" + missing);
         }
-        assertTrue("Some modules are missing", kitsGolden.isEmpty());
-        assertTrue("Some modules are redundant", redundantKits.isEmpty());
+        assertTrue("Some modules are missing:\n" + setToString(kitsGolden), kitsGolden.isEmpty());
+        assertTrue("Some modules are redundant:\n" + setToString(redundantKits), redundantKits.isEmpty());
     }
 
+    private String setToString(Set<String> set){
+        String resStr = "";
+        for (String s : set) {
+            resStr = resStr.concat(s + "\n");
+        }
+        return resStr;
+    }
+    
     private  Set<String> getModulesForDistro(String distro, File f) {
         Set<String> result = new HashSet<String>();
         Type distroT = Type.valueOf(distro.toUpperCase());
@@ -154,7 +162,6 @@ public class InstallationCompletenessTest extends NbTestCase {
                     toRemove.add(kit);
                 }
             }
-            assertFalse("Javacard modules found on non-win", toRemove.isEmpty());
             set.removeAll(toRemove);
         }
         return set;

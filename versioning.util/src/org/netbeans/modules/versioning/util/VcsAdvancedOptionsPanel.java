@@ -53,7 +53,7 @@ import org.netbeans.spi.options.OptionsPanelController;
  *
  * @author  pbuzek
  */
-@OptionsPanelController.Keywords(keywords={"systems", "versioning"}, location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
+@OptionsPanelController.Keywords(keywords={"systems", "versioning", "#KW_VersioningOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
 public class VcsAdvancedOptionsPanel extends javax.swing.JPanel {
 
     HashMap<String, JComponent> versioningPanels = new HashMap<String, JComponent>();

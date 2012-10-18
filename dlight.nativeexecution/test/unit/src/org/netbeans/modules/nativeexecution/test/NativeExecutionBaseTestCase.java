@@ -42,6 +42,7 @@
 package org.netbeans.modules.nativeexecution.test;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -49,7 +50,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -91,6 +94,10 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public class NativeExecutionBaseTestCase extends NbTestCase {
+    static {
+        // Setting netbeans.dirs makes installedFileLocator work properly
+        System.setProperty("netbeans.dirs", NbClustersInfoProvider.getClusters());
+    }
 
     protected static class TestLogHandler extends Handler {
 
@@ -511,6 +518,18 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
     
+    protected static void writeFile(FileObject fo, CharSequence content) throws Exception {
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream()));
+            bw.append(content);
+        } finally {
+            if (bw != null) {
+                bw.close();
+            }
+        }
+    }
+
     public static void writeFile(File file, List<? extends CharSequence> lines) throws IOException {
         Writer writer = new FileWriter(file);
         try {
@@ -556,6 +575,26 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
         rdr.close();
         return sb.toString();
+    }
+
+    protected String readFile(FileObject fo) throws Exception {
+        assertTrue("File " +  fo.getPath() + " does not exist", fo.isValid());
+        InputStream is = fo.getInputStream();
+        BufferedReader rdr = new BufferedReader(new InputStreamReader(is));
+        try {
+            assertNotNull("Null input stream", is);
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = rdr.readLine()) != null) {
+                if (sb.length() > 0) {
+                    sb.append("\n");
+                }
+                sb.append(line);
+            }
+            return sb.toString();
+        } finally {
+            rdr.close();
+        }
     }
 
     /**

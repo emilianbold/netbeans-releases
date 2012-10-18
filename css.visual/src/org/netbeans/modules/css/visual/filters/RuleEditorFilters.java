@@ -126,7 +126,7 @@ public final class RuleEditorFilters {
             desc.addFilter(SHOW_CATEGORIES,
                     Bundle.filters_show_categories(),
                     Bundle.filters_show_categories_tooltip(),
-                    true,
+                    false,
                     new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/showCategories.gif")), //NOI18N
                     null);
         }

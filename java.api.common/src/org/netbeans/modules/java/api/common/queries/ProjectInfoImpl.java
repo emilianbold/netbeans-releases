@@ -62,6 +62,7 @@ import org.w3c.dom.Element;
 abstract class ProjectInfoImpl implements ProjectInformation, AntProjectListener {
 
     public static final String DEFAULT_ELEMENT_NAME = "name"; // NOI18N
+    private static final String UNKNOWN = "???";    //NOI18N
     private final Object guard = new Object(); // guard for property changes
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final Project project;
@@ -124,17 +125,18 @@ abstract class ProjectInfoImpl implements ProjectInformation, AntProjectListener
      * @return the property value, or '???' if not found
      */
     protected String getElementTextFromConfiguration(final String elementName) {
-        String elementText = ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
             @Override
             public String run() {
                 Element data = getPrimaryConfigurationData();
                 Element element = XMLUtil.findElement(data, elementName, null);
-                return (element != null) ? XMLUtil.findText(element) : "???"; // NOI18N
+                String name = element == null ? null : XMLUtil.findText(element);
+                if (name == null) {
+                    name = UNKNOWN;
+                }
+                return name;
             }
         });
-
-        return elementText;
     }
 
     /**

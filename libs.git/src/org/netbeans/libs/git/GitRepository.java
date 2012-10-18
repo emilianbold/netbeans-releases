@@ -85,7 +85,7 @@ public final class GitRepository {
             GitRepository repository = repositoryPool.get(repositoryLocation);
             if (repository == null) {
                 // careful about keeping the reference to the repositoryRoot, rather create a new instance
-                repositoryPool.put(repositoryLocation, repository = new GitRepository(new File(repositoryLocation.getParentFile(), repositoryLocation.getName())));
+                repositoryPool.put(repositoryLocation, repository = new GitRepository(new File(repositoryLocation.getAbsolutePath())));
             }
             return repository;
         }

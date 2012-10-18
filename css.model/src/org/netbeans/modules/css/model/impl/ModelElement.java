@@ -44,6 +44,7 @@ package org.netbeans.modules.css.model.impl;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -57,6 +58,8 @@ import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.PlainElement;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -348,8 +351,30 @@ public abstract class ModelElement implements Element {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(getModelClass(this).getSimpleName());
-        sb.append(":");
+        sb.append("(model=");
+        sb.append(model);
+        sb.append(",sihc=");
         sb.append(System.identityHashCode(this));
+        sb.append(",type=");
+        if(node != null) {
+            sb.append("source[ofs=");
+            sb.append(node.from());
+            sb.append('-');
+            sb.append(node.to());
+            sb.append(";line=");
+            try {
+                sb.append(1 + LexerUtils.getLineOffset(model.getOriginalSource(), node.from()));
+                sb.append('-');
+                sb.append(1 + LexerUtils.getLineOffset(model.getOriginalSource(), node.to()));
+            } catch (BadLocationException ex) {
+                sb.append("BLE!");
+            }
+            sb.append(']');
+        } else {
+            sb.append("AI");
+        }
+        sb.append(')');
+        
         return sb.toString();
     }
 

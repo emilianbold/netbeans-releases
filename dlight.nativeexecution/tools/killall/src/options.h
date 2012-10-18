@@ -15,6 +15,7 @@ extern "C" {
 #endif
 
 #define P_QUEUE 1000
+#define P_ENV 1001
 
     typedef enum {
         S_PID, /* A process identifier */
@@ -26,7 +27,7 @@ extern "C" {
         int id;
         sigscope_t scope;
         int sig;
-        const char* magicenv;
+        int nosignal;
     };
 
     typedef struct options options_t;

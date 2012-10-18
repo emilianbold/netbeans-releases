@@ -158,14 +158,8 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
                     final ASTNode leaf = path.leaf();
                     final ASTNode leafParent = path.leafParent();
 
-                    if (leaf instanceof MethodNode) {
-                        final MethodNode methodNode = (MethodNode) leaf;
-                        return new MethodRefactoringElement(fileObject, methodNode, ElementUtils.getDeclaringClass(methodNode));
-                    }
-
-                    if (leaf instanceof ConstructorNode) {
-                        final ConstructorNode constructor = (ConstructorNode) leaf;
-                        return new MethodRefactoringElement(fileObject, constructor, ElementUtils.getDeclaringClass(constructor));
+                    if (leaf instanceof MethodNode || leaf instanceof ConstructorNode) {
+                        return new MethodRefactoringElement(fileObject, leaf, ElementUtils.getDeclaringClass(leaf));
                     }
 
                     if (leaf instanceof ConstructorCallExpression) {

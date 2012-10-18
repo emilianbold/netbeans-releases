@@ -42,6 +42,7 @@
 package org.netbeans.modules.bugtracking;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -82,6 +83,14 @@ public class RepositoryImpl<R, Q, I> {
         this.queryProvider = queryProvider;
         this.r = r;
         support = new PropertyChangeSupport(this);
+        repositoryProvider.addPropertyChangeListener(r, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(RepositoryProvider.EVENT_QUERY_LIST_CHANGED.equals(evt.getPropertyName())) {
+                    fireQueryListChanged();
+                }
+            }
+        });
     }
     
     public Repository getRepository() {

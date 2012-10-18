@@ -54,13 +54,13 @@ import javax.swing.KeyStroke;
 import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 import java.util.HashMap;
-import org.netbeans.spi.editor.DialogFactory;
+import org.netbeans.modules.editor.lib2.DialogFactory;
 
 /** 
  * 
  * @author Vita Stejskal
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.DialogFactory.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.lib2.DialogFactory.class)
 public class NbDialogFactory implements DialogFactory {
 
     /**

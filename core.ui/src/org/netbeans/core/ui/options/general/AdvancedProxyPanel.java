@@ -54,7 +54,7 @@ import org.openide.NotificationLineSupport;
  *
  * @author  Jiri Rechtacek
  */
-@OptionsPanelController.Keywords(keywords={"advanced proxy"}, location=OptionsDisplayer.GENERAL)
+@OptionsPanelController.Keywords(keywords={"advanced proxy", "#KW_AdvancedProxy"}, location=OptionsDisplayer.GENERAL)
 public class AdvancedProxyPanel extends javax.swing.JPanel {
     private GeneralOptionsModel options;
     private String oldHttpsHost;

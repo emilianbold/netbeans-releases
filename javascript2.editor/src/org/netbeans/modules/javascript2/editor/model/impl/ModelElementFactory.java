@@ -76,7 +76,11 @@ class ModelElementFactory {
         int end = Token.descPosition(functionNode.getLastToken()) + Token.descLength(functionNode.getLastToken());
         List<Identifier> parameters = new ArrayList(functionNode.getParameters().size());
         for(IdentNode node: functionNode.getParameters()) {
-            parameters.add(create(parserResult, node));
+            IdentifierImpl param = create(parserResult, node);
+            if (param != null) {
+                // can be null, if it's a generated embeding. 
+                parameters.add(param);
+            }
         }
         JsFunctionImpl result; 
         if (fqName.size() > 1) {
@@ -169,7 +173,9 @@ class ModelElementFactory {
                     name, ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()));
         modelBuilder.getCurrentDeclarationScope().addProperty(name, result);
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
-        result.setDocumentation(docHolder.getDocumentation(objectNode));
+        if (docHolder != null) {
+            result.setDocumentation(docHolder.getDocumentation(objectNode));
+        }
         return result;
     }
 

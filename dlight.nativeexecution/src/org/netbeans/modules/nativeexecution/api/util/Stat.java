@@ -39,13 +39,12 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.api.util;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.support.ShellSession;
 import org.openide.util.Exceptions;
 
@@ -55,32 +54,39 @@ import org.openide.util.Exceptions;
  * @author Egor Ushakov
  */
 public final class Stat {
-    private static final Logger LOG = org.netbeans.modules.nativeexecution.support.Logger.getInstance();
 
+    private static final Logger LOG = org.netbeans.modules.nativeexecution.support.Logger.getInstance();
     private final long inode;
     private final long ctime;
-
     private static final HelperUtility statHelperUtility =
             new HelperUtility("bin/nativeexecution/$osname-${platform}$_isa/stat"); // NOI18N
 
     /**
      * Returns Stat structure
+     *
      * @param filename - name of file
      * @param exEnv - environment where file is located
      * @return Stat structure, null if stat failed
      */
     public static Stat get(String filename, ExecutionEnvironment exEnv) {
         try {
-            String[] res = ShellSession.execute(exEnv, statHelperUtility.getPath(exEnv) + " " + filename); //NOI18N
-            if (res.length > 1) {
-                return new Stat(Long.valueOf(res[0].split(": ")[1].trim()), //NOI18N
-                    Long.valueOf(res[1].split(": ")[1].trim())); //NOI18N
-            } else {
-                LOG.log(Level.WARNING, "stat result for file {0} is incorrect: {1}", new Object[]{filename, res}); //NOI18N
+            StringBuilder sb = new StringBuilder();
+            sb.append('"').append(statHelperUtility.getPath(exEnv)).append('"'); // NOI18N
+            sb.append(' ').append('"').append(filename).append('"'); // NOI18N
+            ExitStatus res = ShellSession.execute(exEnv, sb.toString()); // NOI18N
+            if (res.isOK()) {
+                String[] data = res.output.split("\n"); // NOI18N
+                if (data.length > 1) {
+                    return new Stat(Long.valueOf(data[0].split(": ")[1].trim()), //NOI18N
+                            Long.valueOf(data[1].split(": ")[1].trim())); //NOI18N
+                }
             }
+
+            LOG.log(Level.WARNING, "stat result for file {0} is incorrect: {1}", new Object[]{filename, res.toString()}); // NOI18N
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
+
         return null;
     }
 
@@ -99,6 +105,6 @@ public final class Stat {
 
     @Override
     public String toString() {
-	return "inode=" + inode + ", " + "ctime=" + ctime; //NOI18N
+        return "inode=" + inode + ", " + "ctime=" + ctime; // NOI18N
     }
 }

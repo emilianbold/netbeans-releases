@@ -51,6 +51,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -91,6 +92,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Actual implementation of Find Usages query search for C/C++
@@ -146,7 +148,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                 for (CsmObject csmObject : referencedObjects) {
                     files.addAll(getRelevantFiles(startFile, csmObject, refactoring));
                 }
-                LOG.log(Level.INFO, "preparing files took {0}ms", System.currentTimeMillis() - time);
+                LOG.log(Level.FINE, "preparing files took {0}ms", System.currentTimeMillis() - time);
                 fireProgressListenerStart(ProgressEvent.START, files.size() + 2);
                 res = processObjectUsagesQuery(referencedObjects, files, bagToAdd);
             }
@@ -159,7 +161,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             fireProgressListenerStart(ProgressEvent.START, 2);
             res = processOverridenMethodsQuery((CsmMethod)referencedObject);
         }   
-        LOG.log(Level.INFO, "preparing FindUsages elements took {0}ms", System.currentTimeMillis() - time);
+        LOG.log(Level.FINE, "preparing FindUsages elements took {0}ms", System.currentTimeMillis() - time);
         fireProgressListenerStep();
         return res;
     }
@@ -205,6 +207,22 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
 //    protected Problem checkParameters(CompilationController info) {
 //        return null;
 //    }
+    
+    public static Collection<RefactoringElementImplementation> getWhereUsed(CsmReference ref, Map<Object, Boolean> params) {
+        CsmObject targetObject = ref.getReferencedObject();
+        Lookup lkp = Lookups.singleton(ref);
+        WhereUsedQuery query = new WhereUsedQuery(lkp);
+        Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(targetObject, ref.getContainingFile().getProject());
+        CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
+        query.getContext().add(ar);
+        // set parameters
+        for (Map.Entry<Object, Boolean> entry : params.entrySet()) {
+            query.putValue(entry.getKey(), entry.getValue());
+        }
+        CsmWhereUsedQueryPlugin whereUsedPlugin = new CsmWhereUsedQueryPlugin(query);
+        Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject, null);
+        return elements;
+    }
     
     private Problem checkParametersForMethod(boolean overriders, boolean usages) {
         if (!(usages || overriders)) {
@@ -347,7 +365,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                 }
             }
         });
-        LOG.log(Level.INFO, "creation of sorted {0} files took {1}ms", new Object[] {sortedFiles.size(), System.currentTimeMillis()-time});
+        LOG.log(Level.FINE, "creation of sorted {0} files took {1}ms", new Object[] {sortedFiles.size(), System.currentTimeMillis()-time});
         final List<OneFileWorker> work = new ArrayList<OneFileWorker>(sortedFiles.size());
         for (final CsmFile file : sortedFiles) {
             OneFileWorker task = new OneFileWorker(interrupter, file, onlyUsages, xRef, kinds, objs);
@@ -390,7 +408,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                     }
                 }
                 total += exposedElements.size();
-                LOG.log(Level.FINE, "[{0}/{1}] {2}", new Object[] {++indexNonEmpty, total, workUnit.file.getAbsolutePath()});
+                LOG.log(Level.FINEST, "[{0}/{1}] {2}", new Object[] {++indexNonEmpty, total, workUnit.file.getAbsolutePath()});
             }
         }
         return elements;

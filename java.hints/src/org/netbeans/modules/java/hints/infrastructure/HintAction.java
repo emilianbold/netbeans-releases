@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -26,31 +26,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints.infrastructure;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.EditorCookie.Observable;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
-import org.openide.text.NbDocument;
-import org.openide.util.Lookup;
 
 public abstract class HintAction extends TextAction implements PropertyChangeListener {
     
@@ -62,7 +58,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
         super(key);
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
         
-        TopComponent.getRegistry().addPropertyChangeListener(WeakListeners.propertyChange(this, TopComponent.getRegistry()));
+        EditorRegistry.addPropertyChangeListener(WeakListeners.propertyChange(this, TopComponent.getRegistry()));
         
         setEnabled(false);
         updateEnabled();
@@ -119,33 +115,30 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
     
     protected abstract void perform(JavaSource js, JTextComponent pane, int[] selection);
 
-    private Reference<EditorCookie.Observable> lastECO;
-    private Reference<PropertyChangeListener> lastECOListener;
     private JTextComponent getCurrentFile(int[] span) {
-        TopComponent tc = TopComponent.getRegistry().getActivated();
-        Lookup l = tc != null ? tc.getLookup() : null;
-        EditorCookie ec = l != null ? l.lookup(EditorCookie.class) : null;
-        JTextComponent pane = ec != null ? NbDocument.findRecentEditorPane(ec) : null;
-
-        if(pane == null) {
-            if (ec instanceof Observable) {
-                Observable lastECO = this.lastECO != null ? this.lastECO.get() : null;
-                PropertyChangeListener lastECOListener = this.lastECOListener != null ? this.lastECOListener.get() : null;
-
-                if (lastECO != null && lastECOListener != null) {
-                    lastECO.removePropertyChangeListener(lastECOListener);
-                }
-
-                Observable eco = (Observable) ec;
-                PropertyChangeListener ecoListener = WeakListeners.propertyChange(this, eco);
-
-                eco.addPropertyChangeListener(ecoListener);
-
-                this.lastECO = new WeakReference<Observable>(eco);
-                this.lastECOListener = new WeakReference<PropertyChangeListener>(ecoListener);
-            }
+        JTextComponent pane = EditorRegistry.lastFocusedComponent();
+        
+        if (pane == null) return null;
+        
+        Document doc = pane.getDocument();
+        Object stream = doc != null ? doc.getProperty(Document.StreamDescriptionProperty) : null;
+        
+        if (!(stream instanceof DataObject))
             return null;
+        
+        if (!"text/x-java".equals(NbEditorUtilities.getMimeType(doc))) //NOI18N
+            return null;
+        
+        TopComponent tc = TopComponent.getRegistry().getActivated();
+        Component c = pane;
+        
+        while (c != null) {
+            if (c == tc) break;
+            c = c.getParent();
         }
+        
+        if (c == null) return null;
+        
         if (span != null) {
             span[0] = pane.getSelectionStart();
             span[1] = pane.getSelectionEnd();
@@ -154,16 +147,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
                 return null;
         }
         
-        Document doc = pane.getDocument();
-        Object stream = doc != null ? doc.getProperty(Document.StreamDescriptionProperty) : null;
-        
-        if (!(stream instanceof DataObject))
-            return null;
-        
-        if ("text/x-java".equals(NbEditorUtilities.getMimeType(doc))) //NOI18N
-            return pane;
-        else
-            return null;
+        return pane;
     }
     
     protected boolean requiresSelection() {

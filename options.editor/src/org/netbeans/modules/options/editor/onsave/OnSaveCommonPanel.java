@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  *
  * @author Miloslav Metelka
  */
-@OptionsPanelController.Keywords(keywords = {"all languages"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_OnSave_DisplayName")
+@OptionsPanelController.Keywords(keywords = {"#KW_OnSave"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_OnSave_DisplayName")
 public class OnSaveCommonPanel extends javax.swing.JPanel {
     
     private static final String[] LINE_OPTIONS = new String[] { "never", "always", "modified-lines" }; // NOI18N

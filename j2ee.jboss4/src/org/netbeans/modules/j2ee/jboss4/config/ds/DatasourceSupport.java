@@ -110,7 +110,7 @@ public class DatasourceSupport {
         }
 
         public void fileDeleted(FileEvent fe) {
-            assert(fe.getSource() == datasourcesFO) : fe.getSource() + ":" + datasourcesFO;
+            assert ((FileObject) fe.getSource()).getPath().equals(datasourcesFO.getPath()) : fe.getSource() + ":" + datasourcesFO;
             datasources = null;
         }
     } 

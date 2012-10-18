@@ -120,7 +120,7 @@ public class WSUtils {
     
     private static final String JAX_WS_XML_PATH = "nbproject/jax-ws.xml"; // NOI18N
 
-    private static final String JAX_WS_ENDORSED="JAX-WS-ENDORSED"; //NOI18N
+    public static final String JAX_WS_ENDORSED="JAX-WS-ENDORSED"; //NOI18N
     
     /** downloads XML resources from source URI to target folder
      * (USAGE : this method can download a wsdl file and all wsdl/XML schemas,
@@ -401,7 +401,7 @@ public class WSUtils {
         }
     }
 
-    private static Library createJaxWsApiLibrary() throws IOException {
+    public static Library createJaxWsApiLibrary() throws IOException {
         List<URL> apiJars = getJaxWsApiJars();
         if (apiJars.size() > 0) {
             Map<String, List<URL>> map = Collections.<String, List<URL>>singletonMap("classpath", apiJars); //NOI18N
@@ -414,17 +414,21 @@ public class WSUtils {
         List<URL> urls = new ArrayList<URL>();
         File apiJar = InstalledFileLocator.getDefault().locate("modules/ext/jaxws22/api/jaxws-api.jar", null, false); // NOI18N
         if (apiJar != null) {
-            URL url = apiJar.toURI().toURL();
+            URL url = new URL("jar:nbinst://org.netbeans.modules.websvc.jaxws21api/modules/ext/jaxws22/api/jaxws-api.jar!/");
+            /*URL url = apiJar.toURI().toURL();
             if (FileUtil.isArchiveFile(url)) {
                 urls.add(FileUtil.getArchiveRoot(url));
-            }
+            }*/
+            urls.add(url);
         }
         apiJar = InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
         if (apiJar != null) {
-            URL url = apiJar.toURI().toURL();
+            URL url = new URL("jar:nbinst://org.netbeans.libs.jaxb/modules/ext/jaxb/jaxb-impl.jar!/");
+            /*URL url = apiJar.toURI().toURL();
             if (FileUtil.isArchiveFile(url)) {
                 urls.add(FileUtil.getArchiveRoot(url));
-            }
+            }*/
+            urls.add(url);
         }
         return urls;
     }

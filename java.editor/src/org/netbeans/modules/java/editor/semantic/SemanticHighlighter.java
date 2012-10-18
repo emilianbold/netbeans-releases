@@ -1200,15 +1200,9 @@ public class SemanticHighlighter extends JavaParserResultTask {
 
         @Override
         public Void visitArrayAccess(ArrayAccessTree tree, EnumSet<UseTypes> d) {
-            if (tree.getExpression() != null && tree.getExpression().getKind() == Kind.IDENTIFIER) {
-                handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), EnumSet.of(UseTypes.READ));
-            }
+            scan(tree.getExpression(), EnumSet.of(UseTypes.READ));
+            scan(tree.getIndex(), EnumSet.of(UseTypes.READ));
             
-            if (tree.getIndex() instanceof IdentifierTree) {
-                handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getIndex()), EnumSet.of(UseTypes.READ));
-            }
-            
-            super.visitArrayAccess(tree, null);
             return null;
         }
 

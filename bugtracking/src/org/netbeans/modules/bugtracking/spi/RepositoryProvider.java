@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.openide.util.Lookup;
 
@@ -54,6 +55,11 @@ import org.openide.util.Lookup;
  */
 public abstract class RepositoryProvider<R, Q, I> {
 
+    /**
+     * A query from this repository was saved or removed
+     */
+    public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
+    
     /**
      * Returns the repository info or null in case the repository is new
      * 
@@ -124,4 +130,11 @@ public abstract class RepositoryProvider<R, Q, I> {
      */
     public abstract Collection<I> simpleSearch(R r, String criteria);
 
+    /*********
+     * EVENTS
+     *********/
+
+    public abstract void removePropertyChangeListener(R r, PropertyChangeListener listener);
+
+    public abstract void addPropertyChangeListener(R r, PropertyChangeListener listener);    
 }

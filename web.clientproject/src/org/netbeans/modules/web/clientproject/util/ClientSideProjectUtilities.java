@@ -90,7 +90,7 @@ public final class ClientSideProjectUtilities {
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectUtilities.class.getName());
 
-    private static final Charset DEFAULT_PROJECT_CHARSET = getDefaultProjectCharset();
+    public static final Charset DEFAULT_PROJECT_CHARSET = getDefaultProjectCharset();
 
 
     private ClientSideProjectUtilities() {

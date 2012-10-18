@@ -54,7 +54,7 @@ import org.netbeans.spi.options.OptionsPanelController;
  *
  * @author Tomas Stupka
  */
-@OptionsPanelController.Keywords(keywords={"issue tracking"}, location=OptionsDisplayer.ADVANCED, tabTitle="#LBL_IssueTracking")
+@OptionsPanelController.Keywords(keywords={"issue tracking", "#KW_IssueTracking"}, location=OptionsDisplayer.ADVANCED, tabTitle="#LBL_IssueTracking")
 class BugtrackingOptionsPanel extends javax.swing.JPanel {
     
     /** Creates new form VcsAdvancedOptionsPanel */

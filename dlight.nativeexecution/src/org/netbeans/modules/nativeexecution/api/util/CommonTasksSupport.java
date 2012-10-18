@@ -55,9 +55,8 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
-import org.netbeans.modules.nativeexecution.pty.NbKillUtility;
+import org.netbeans.modules.nativeexecution.signals.SignalSupport;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.netbeans.modules.nativeexecution.support.SignalSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -461,32 +460,6 @@ public final class CommonTasksSupport {
                 "mkdir -p " + dirname); // NOI18N
     }
 
-    public enum SIGNAL_SCOPE {
-        PROCESS,
-        GROUP,
-        SESSION
-    }
-
-    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, final SIGNAL_SCOPE scope, final int id, final Signal signal, final Writer error) {
-        final String descr = "Sending signal " + signal + " to " + scope + " " + id; // NOI18N
-        return NativeTaskExecutorService.submit(new Callable<Integer>() {
-
-            @Override
-            public Integer call() throws Exception {
-                switch (scope) {
-                    case PROCESS:
-                        return NbKillUtility.getInstance().signalProcess(execEnv, signal, id);
-                    case GROUP:
-                        return NbKillUtility.getInstance().signalGroup(execEnv, signal, id);
-                    case SESSION:
-                        return NbKillUtility.getInstance().signalSession(execEnv, signal, id);
-                    default:
-                        return -1;
-                }
-            }
-        }, descr);
-    }
-
     /**
      * Sends the signal to the process.
      *
@@ -500,7 +473,14 @@ public final class CommonTasksSupport {
      *         means failure.
      */
     public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, final int pid, final Signal signal, final Writer error) {
-        return sendSignal(execEnv, SIGNAL_SCOPE.PROCESS, pid, signal, error);
+        final String descr = "Sending signal " + signal + " to the process " + pid; // NOI18N
+        return NativeTaskExecutorService.submit(new Callable<Integer>() {
+
+            @Override
+            public Integer call() throws Exception {
+                return SignalSupport.signalProcess(execEnv, pid, signal);
+            }
+        }, descr);
     }
 
     /**
@@ -516,11 +496,25 @@ public final class CommonTasksSupport {
      *         means failure.
      */
     public static Future<Integer> sendSignalGrp(final ExecutionEnvironment execEnv, final int pid, final Signal signal, final Writer error) {
-        return sendSignal(execEnv, SIGNAL_SCOPE.GROUP, pid, signal, error);
+        final String descr = "Sending signal " + signal + " to the group " + pid; // NOI18N
+        return NativeTaskExecutorService.submit(new Callable<Integer>() {
+
+            @Override
+            public Integer call() throws Exception {
+                return SignalSupport.signalProcessGroup(execEnv, pid, signal);
+            }
+        }, descr);
     }
 
     public static Future<Integer> sendSignalSession(final ExecutionEnvironment execEnv, final int pid, final Signal signal, final Writer error) {
-        return sendSignal(execEnv, SIGNAL_SCOPE.SESSION, pid, signal, error);
+        final String descr = "Sending signal " + signal + " to the session " + pid; // NOI18N
+        return NativeTaskExecutorService.submit(new Callable<Integer>() {
+
+            @Override
+            public Integer call() throws Exception {
+                return SignalSupport.signalProcessGroup(execEnv, pid, signal);
+            }
+        }, descr);
     }
 
     public static class UploadStatus {
@@ -612,30 +606,45 @@ public final class CommonTasksSupport {
     }
 
     /**
-     * Queue a signal to a process (sigqueue)
+     * Queue a signal to a process (sigqueue).
      *
-     * @param execEnv  execution environment of the process
-     * @param pid  pid of the process
-     * @param signo  signal number
-     * @param value  signal value
-     * @param error  if not <tt>null</tt> and some error occurs,
-     *        an error message will be written to this <tt>Writer</tt>
-     * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
-     *         of the signal task. <tt>0</tt> means success, any other value
-     *         means failure.
+     * Deprecated. Do not use int signo as it may denote different signals on
+     * different platforms.
+     *
+     * @param execEnv execution environment of the process
+     * @param pid pid of the process
+     * @param signo signal number
+     * @param value signal value
+     * @param error if not <tt>null</tt> and some error occurs, an error message
+     * will be written to this <tt>Writer</tt>
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code of the
+     * signal task. <tt>0</tt> means success, any other value means failure.
      */
+    @Deprecated
     public static Future<Integer> sigqueue(final ExecutionEnvironment execEnv,
-            final int pid,
-            final int signo,
-            final int value,
-            final Writer error) {
+            final int pid, final int signo, final int value, final Writer error) {
         final String descr = "Sigqueue " + signo + " with value " + value + " to " + pid; // NOI18N
+        return NativeTaskExecutorService.submit(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                for (Signal signal : Signal.values()) {
+                    if (signal.getID() == signo) {
+                        return SignalSupport.sigqueue(execEnv, pid, signal, value);
+                    }
+                }
+                return -1;
+            }
+        }, descr);
+    }
+
+    public static Future<Integer> sigqueue(final ExecutionEnvironment execEnv,
+            final int pid, final Signal signal, final int value, final Writer error) {
+        final String descr = "Sigqueue " + signal + " with value " + value + " to " + pid; // NOI18N
 
         return NativeTaskExecutorService.submit(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                SignalSupport support = SignalSupport.getSignalSupportFor(execEnv);
-                return support.sigqueue(pid, signo, value);
+                return SignalSupport.sigqueue(execEnv, pid, signal, value);
             }
         }, descr);
     }

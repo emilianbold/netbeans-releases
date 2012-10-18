@@ -43,6 +43,7 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
@@ -51,6 +52,7 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Root node of the document section of CSS Styles view.
@@ -64,12 +66,16 @@ public class DocumentNode extends AbstractNode {
     /**
      * Creates a new {@code DocumentNode}.
      *
-     * @param project owning project of the inspected page.
-     * @param css CSS domain of WebKit debugging.
+     * @param pageModel owning model of the node.
      * @param filter filter for the subtree of the node.
      */
-    DocumentNode(Project project, CSS css, Filter filter) {
-        super(Children.create(new DocumentChildFactory(project, css, filter), true));
+    DocumentNode(WebKitPageModel pageModel, Filter filter) {
+        super(Children.create(
+                new DocumentChildFactory(
+                    pageModel.getProject(),
+                    pageModel.getWebKit().getCSS(),
+                    filter),
+                true), Lookups.fixed(pageModel));
         setDisplayName(NbBundle.getMessage(DocumentNode.class, "DocumentNode.displayName")); // NOI18N
         setIconBaseWithExtension(ICON_BASE);
     }

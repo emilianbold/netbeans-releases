@@ -1102,7 +1102,6 @@ public class ImportProject implements PropertyChangeListener {
         }
         if (changed) {
             DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, true);
-            DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
         } else {
             pdp.endModifications(false, null);
         }
@@ -1227,7 +1226,6 @@ public class ImportProject implements PropertyChangeListener {
             logger.log(Level.INFO, "#start fixing excluded header files by model"); // NOI18N
         }
         if (DiscoveryProjectGenerator.fixExcludedHeaderFiles(makeProject, logger)) {
-            DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
         }
         importResult.put(Step.FixExcluded, State.Successful);
     }
@@ -1304,7 +1302,6 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
-                    DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
@@ -1339,7 +1336,6 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
-                    DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
                     if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
                         importResult.put(Step.DiscoveryLog, State.Successful);
                     } else {
@@ -1371,7 +1367,6 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
-                    DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);

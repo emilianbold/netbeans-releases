@@ -48,6 +48,7 @@ DBGPORT=${DBGPORT-5858}
 TMP_PREFIX=${TMP_PREFIX-/var/tmp}
 USERDIR="--userdir ${TMP_PREFIX}/${USER}/cnd-userdir"
 PARSERRORS="-J-Dparser.report.errors=true"
+XREF_LOG="-J-Dorg.netbeans.modules.cnd.refactoring.plugins.level=FINE"
 DEBUG="-J-Xdebug -J-Djava.compiler=NONE -J-Xrunjdwp:transport=dt_socket,server=y"
 PRG=$0
 NB_COPY="${TMP_PREFIX}/${USER}/nb-copy"
@@ -107,6 +108,7 @@ do
                 echo "Disabled verbose mode"
                 PARSERRORS=""
                 VERBOSE=false
+                XREF_LOG=""
                 ;;
 	--nodebug|-nodebug)
 		echo "Debug mode OFF"
@@ -217,4 +219,4 @@ else
     NBDIST="${NB_COPY}"
 fi
 
-"${NBDIST}/bin/netbeans" -J-ea -J-server -J-DSUNW_NO_UPDATE_NOTIFY=true ${USERDIR} ${DEBUG} ${PROFILE} ${DEFS} ${PARAMS}
+"${NBDIST}/bin/netbeans" -J-ea -J-server -J-DSUNW_NO_UPDATE_NOTIFY=true ${XREF_LOG} ${USERDIR} ${DEBUG} ${PROFILE} ${DEFS} ${PARAMS}

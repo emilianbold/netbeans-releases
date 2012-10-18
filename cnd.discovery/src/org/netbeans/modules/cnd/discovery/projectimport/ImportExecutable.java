@@ -299,9 +299,6 @@ public class ImportExecutable implements PropertyChangeListener {
                                     extension.apply(map, lastSelectedProject);
                                     discoverScripts(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                     DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, false);
-                                    if (createProjectMode) {
-                                        DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(lastSelectedProject);
-                                    }
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
                                         cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies,
                                                 DiscoveryWizardDescriptor.adaptee(map).getSearchPaths(), DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
@@ -616,9 +613,6 @@ public class ImportExecutable implements PropertyChangeListener {
                             }
                         }
                         DiscoveryProjectGenerator.fixExcludedHeaderFiles(makeProject, ImportProject.logger);
-                        if (createProjectMode) {
-                            DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(lastSelectedProject);
-                        }
                         if (cd != null) {
                             cd.create();
                         }

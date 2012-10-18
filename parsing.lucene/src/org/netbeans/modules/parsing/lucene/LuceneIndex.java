@@ -125,7 +125,6 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
     }
 
     public static LuceneIndex create (final File cacheRoot, final Analyzer analyzer) throws IOException {
-        assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
         return new LuceneIndex (cacheRoot, analyzer);
     }
 

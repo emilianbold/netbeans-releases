@@ -237,6 +237,12 @@ public final class IndexManager {
     public static Index createIndex(final @NonNull File cacheFolder, final @NonNull Analyzer analyzer) throws IOException {        
         Parameters.notNull("cacheFolder", cacheFolder); //NOI18N
         Parameters.notNull("analyzer", analyzer);       //NOI18N
+        if (!cacheFolder.canRead()) {
+            throw new IOException(String.format("Cannot read cache folder: %s.", cacheFolder.getAbsolutePath()));   //NOI18N
+        }
+        if (!cacheFolder.canWrite()) {
+            throw new IOException(String.format("Cannot write to cache folder: %s.", cacheFolder.getAbsolutePath()));   //NOI18N
+        }
         final Index index = factory.createIndex(cacheFolder, analyzer);
         assert index != null;
         indexes.put(cacheFolder, new Ref(cacheFolder,index));

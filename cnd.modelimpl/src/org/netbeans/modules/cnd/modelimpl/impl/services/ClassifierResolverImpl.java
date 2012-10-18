@@ -215,7 +215,14 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
                     System.err.printf("findVisibleDeclaration: we have several classifiers %s visible from %s\n", uniqueName, file.getAbsolutePath()); // NOI18N
                     int ind = 0;
                     for (CsmClassifier csmClassifier : visibles) {
-                        System.err.printf("[%d] %s\n", ind++, csmClassifier); // NOI18N
+                        String fileName = "<builtin"; // NOI18N
+                        if (CsmKindUtilities.isOffsetable(csmClassifier)) {
+                            CsmFile containingFile = ((CsmOffsetable)csmClassifier).getContainingFile();
+                            if (containingFile != null) {
+                                fileName = containingFile.getAbsolutePath().toString();
+                            }
+                        }
+                        System.err.printf("[%d] %s from %s\n", ind++, csmClassifier, fileName); // NOI18N
                     }
                 }
             }

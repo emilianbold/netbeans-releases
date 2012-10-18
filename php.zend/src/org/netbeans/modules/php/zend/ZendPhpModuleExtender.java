@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.zend;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -86,17 +87,24 @@ public class ZendPhpModuleExtender extends PhpModuleExtender {
         // prefetch commands
         ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).refreshFrameworkCommandsLater(null);
 
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            assert false : "Module extender for no sources of: " + phpModule.getName();
+            return Collections.emptySet();
+        }
+
         // return files
         Set<FileObject> files = new HashSet<FileObject>();
-        FileObject appConfig = phpModule.getSourceDirectory().getFileObject("application/configs/application.ini"); // NOI18N
+        FileObject appConfig = sourceDirectory.getFileObject("application/configs/application.ini"); // NOI18N
         if (appConfig != null) {
             files.add(appConfig);
         }
-        FileObject indexController = phpModule.getSourceDirectory().getFileObject("application/controllers/IndexController.php"); // NOI18N
+        FileObject indexController = sourceDirectory.getFileObject("application/controllers/IndexController.php"); // NOI18N
         if (indexController != null) {
             files.add(indexController);
         }
-        FileObject bootstrap = phpModule.getSourceDirectory().getFileObject("application/Bootstrap.php"); // NOI18N
+        FileObject bootstrap = sourceDirectory.getFileObject("application/Bootstrap.php"); // NOI18N
         if (bootstrap != null) {
             files.add(bootstrap);
         }

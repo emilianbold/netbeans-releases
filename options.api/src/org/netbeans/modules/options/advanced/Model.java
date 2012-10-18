@@ -346,6 +346,11 @@ public final class Model extends TabbedPanelModel {
         public void removePropertyChangeListener(PropertyChangeListener l) {
             delegate.removePropertyChangeListener(l);
         }
+
+        @Override
+        public void handleSuccessfulSearch(String searchText, List<String> matchedKeywords) {
+            delegate.handleSuccessfulSearch(searchText, matchedKeywords);
+        }
     }            
 }
 

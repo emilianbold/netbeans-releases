@@ -166,8 +166,13 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
 
     @Override
     public ChunkInfo get(final Key key) {
-	final long entry = map.get(key);
-	return (entry == LongHashMap.NO_VALUE) ? null : new LongChunkInfo(entry);
+        try {
+            lock.readLock().lock();
+            final long entry = map.get(key);
+            return (entry == LongHashMap.NO_VALUE) ? null : new LongChunkInfo(entry);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override

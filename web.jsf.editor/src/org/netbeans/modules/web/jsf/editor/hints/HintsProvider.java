@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.html.editor.api.gsf.ErrorBadgingRule;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -128,7 +129,7 @@ public abstract class HintsProvider {
         
     }
 
-    private static final class BadgingRule extends Rule {
+    private static final class BadgingRule extends Rule implements ErrorBadgingRule {
 
         public BadgingRule(HintSeverity severity, boolean showInTaskList) {
             super(severity, showInTaskList);

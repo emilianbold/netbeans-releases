@@ -50,6 +50,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.nativeexecution.test.NbClustersInfoProvider;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
@@ -64,6 +65,10 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
     
     public static final String MSPEC;
     static {
+        // Setting netbeans.dirs makes installedFileLocator work properly
+        // Needed for native execution...
+        System.setProperty("netbeans.dirs", NbClustersInfoProvider.getClusters()); // NOI18N
+        
         String mspec = System.getProperty("remote.fstck.mspec");
         if (mspec == null) {
             mspec = System.getenv("REMOTE_FSTCK_MSPEC");
@@ -73,7 +78,7 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
         }
         MSPEC = mspec;
     }
-    
+
     private ExecutionEnvironment execEnv = null;
     private String tmpDir;
             

@@ -60,6 +60,7 @@ import org.netbeans.modules.css.refactoring.api.CssRefactoring;
 import org.netbeans.modules.css.refactoring.api.EntryHandle;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.html.editor.HtmlExtensions;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
@@ -95,7 +96,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             return loc;
         }
 
-        for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions(info.getSnapshot().getSource().getMimeType())) {
+        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(info.getSnapshot().getSource().getMimeType())) {
             loc = ext.findDeclaration(info, caretOffset);
             if (loc != null) {
                 return loc;
@@ -127,7 +128,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
 
         //html extensions
         String mimeType = NbEditorUtilities.getMimeType(doc);
-        for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions(mimeType)) {
+        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(mimeType)) {
             range = ext.getReferenceSpan(doc, caretOffset);
             if (range != null) {
                 return range;

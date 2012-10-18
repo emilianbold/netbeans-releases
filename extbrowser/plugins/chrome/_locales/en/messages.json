@@ -107,7 +107,7 @@
         "message": "Save and Close"
     },
     "_WindowSettingsNotAvailable": {
-        "message": "Window settings not available (NetBeans IDE is not running?)."
+        "message": "Window settings not available (is any project running from NetBeans IDE?)."
     },
     "_New_hellip": {
         "message": "New..."

@@ -46,6 +46,7 @@ import java.util.*;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.*;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -93,17 +94,10 @@ import org.openide.util.Exceptions;
  *
  * @author marekfukala
  */
+@MimeRegistration(mimeType=JsfUtils.XHTML_MIMETYPE, service=HtmlExtension.class)
 public class JsfHtmlExtension extends HtmlExtension {
 
-    private static boolean activated = false;
     private static final String EL_ENABLED_KEY = "el_enabled"; //NOI18N
-
-    static synchronized void activate() {
-        if (!activated) {
-            HtmlExtension.register(JsfUtils.XHTML_MIMETYPE, new JsfHtmlExtension()); //NOI18N
-            activated = true;
-        }
-    }
 
     @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights(HtmlParserResult result, SchedulerEvent event) {

@@ -70,6 +70,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -91,6 +92,7 @@ import org.netbeans.modules.css.visual.RuleNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
 import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
+import org.netbeans.modules.css.visual.actions.GoToSourceAction;
 import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
@@ -108,6 +110,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -153,7 +156,7 @@ import org.openide.util.actions.Presenter;
 public class RuleEditorPanel extends JPanel {
 
     private static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
-    static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
+    public static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
     
     static RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
     
@@ -180,7 +183,8 @@ public class RuleEditorPanel extends JPanel {
     public RuleNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
-    private Declaration createdDeclaration;
+   
+    Declaration createdDeclaration;
     
     private AddPropertyComboBoxModel ADD_PROPERTY_CB_MODEL = new AddPropertyComboBoxModel();
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
@@ -257,7 +261,7 @@ public class RuleEditorPanel extends JPanel {
 
         node = new RuleNode(this);
 
-        sortMode = SortMode.NATURAL;
+        sortMode = SortMode.ALPHABETICAL;
 
         filters = new RuleEditorFilters(this, filtersSettings);
         filters.getInstance().hookChangeListener(new FiltersManager.FilterChangeListener() {
@@ -383,7 +387,7 @@ public class RuleEditorPanel extends JPanel {
         filterTextField.getDocument().addDocumentListener(new DocumentListener() {
  
             private void contentChanged() {
-                node.setFilterPrefix(filterTextField.getText());
+                node.setFilterText(filterTextField.getText());
             }
             
             @Override
@@ -468,7 +472,7 @@ public class RuleEditorPanel extends JPanel {
         sheet.requestFocus();
 //        sheet.select(descriptor, true);
         try {
-            call_PropertySheet_select(sheet, descriptor, showCategories);
+            call_PropertySheet_select(sheet, descriptor, true);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -536,6 +540,15 @@ public class RuleEditorPanel extends JPanel {
     public Model getModel() {
         return model;
     }
+    
+    public void releaseModel() {
+        if(model == null) {
+            return ;
+        }
+        setNoRuleState();
+        model.removePropertyChangeListener(MODEL_LISTENER);
+        this.model = null;
+    }
 
     //runs in EDT
     public void setModel(final Model model) {
@@ -545,10 +558,26 @@ public class RuleEditorPanel extends JPanel {
         }
 
         if (this.model != null) {
-            if(model.getSerialNumber() <= this.model.getSerialNumber()) {
-                LOG.log(Level.FINE, "attempt to set the same or older model");
+            //new model for the same file, check if the model is not the same
+            //as the current one
+            if(model.getSerialNumber() == this.model.getSerialNumber()) {
+                LOG.log(Level.FINE, "attempt to set the same model");
                 return; //no change
             }
+            
+            //check if the set model is not even older than the curren one
+            //if the model is for the same file
+            FileObject old = this.model.getLookup().lookup(FileObject.class);
+            FileObject neww = model.getLookup().lookup(FileObject.class);
+            assert old != null; 
+            assert neww != null;
+            if(neww != null && neww.equals(old)) {
+                if(model.getSerialNumber() < this.model.getSerialNumber()) { //or even older!
+                    LOG.log(Level.WARNING, "attempt to set the older model {0} while the current is {1}!!!", new Object[]{model, this.model});
+                    return; //no change
+                }
+            }
+            
             this.model.removePropertyChangeListener(MODEL_LISTENER);
         }
 
@@ -585,6 +614,7 @@ public class RuleEditorPanel extends JPanel {
                 setRule(match);
             }
             
+            //isn't this unnecessary as we already called setNoRuleState() or setRule(...)?!?!
             CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, match);
 
         } else {
@@ -924,6 +954,8 @@ public class RuleEditorPanel extends JPanel {
                     //custom popop for the whole panel
                     JPopupMenu pm = new JPopupMenu();
                     
+                    pm.add(new GoToSourceAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
+                    pm.addSeparator();
                     pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
 
                     return pm;

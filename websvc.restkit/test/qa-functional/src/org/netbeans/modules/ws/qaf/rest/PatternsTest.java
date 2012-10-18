@@ -41,16 +41,14 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import java.awt.event.KeyEvent;
+import java.awt.Container;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
-import javax.swing.tree.TreePath;
+import javax.swing.JCheckBox;
 import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 import org.openide.filesystems.FileObject;
@@ -122,7 +120,6 @@ public class PatternsTest extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
     }
-    private static boolean jerseyAdded = false;
 
     /**
      * Def constructor.
@@ -136,43 +133,6 @@ public class PatternsTest extends RestTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        // add Jersey library, otherwise package org.codehaus.jettison is not added from server libraries, see issue #206526
-        if (!PatternsTest.jerseyAdded && getProjectType().isAntBasedProject()) {
-            ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(getProjectName());
-            prn.select();
-            if (prn.isCollapsed()) {
-                prn.expand();
-            }
-
-            JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 120000); //NOI18N
-            Node libNode = new Node(prn, "Libraries");
-            libNode.callPopup();
-            JPopupMenuOperator popup = new JPopupMenuOperator();
-            popup.pushMenuNoBlock("Add Library...");
-            NbDialogOperator libraries = new NbDialogOperator("Add Library");
-
-            JTreeOperator jto = new JTreeOperator(libraries);
-            Node gl = new Node(jto, jto.findPath("Global libraries")); //NOI18N
-            JTreeOperator jtolibs = gl.tree();
-
-
-            System.out.println("==== NULL");
-            TreePath[] tps = jtolibs.getChildPaths(jto.findPath("Global libraries"));
-            TreePath path=null;
-            for (int i = 0; i < tps.length; i++) {
-                if (tps[i].toString().contains("Jersey")) { // version independent
-                    path = tps[i];
-                    break;
-                }
-            }
-            assertNotNull("Jersey library not found", path);
-            new Node(jtolibs, path).select();
-            libraries.pushKey(KeyEvent.VK_ENTER);
-            waitScanFinished();
-            PatternsTest.jerseyAdded = true;
-        }
-
-
     }
 
     /**
@@ -321,8 +281,9 @@ public class PatternsTest extends RestTestBase {
         String patternsTypeName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromPatterns");
         createNewWSFile(getProject(), patternsTypeName);
         WizardOperator wo = new WizardOperator(patternsTypeName);
-        new JRadioButtonOperator(wo, pattern.ordinal()).clickMouse();
+        new JRadioButtonOperator(wo, pattern.ordinal()).changeSelection(true);
         wo.next();
+        wo.stepsWaitSelectedValue("Specify Resource Classes");
         wo = new RestWizardOperator(patternsTypeName);
         //set resource package
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, new Pkg());
@@ -408,6 +369,11 @@ public class PatternsTest extends RestTestBase {
                     nbo.ok();
                 }
             }
+        }
+        // add Jersey libraries neeed for JSONObject (also see #206526)
+        JCheckBox useJerseyCheckBox = JCheckBoxOperator.findJCheckBox((Container) wo.getSource(), "Use Jersey specific features", true, true);
+        if (useJerseyCheckBox != null) {
+            new JCheckBoxOperator(useJerseyCheckBox).setSelected(true);
         }
         wo.finish();
         String progressDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestServicesFromPatternsProgress");
