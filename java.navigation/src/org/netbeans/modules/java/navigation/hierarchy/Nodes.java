@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.navigation.hierarchy;
 
+import org.netbeans.modules.java.navigation.actions.NameActions;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Transferable;
