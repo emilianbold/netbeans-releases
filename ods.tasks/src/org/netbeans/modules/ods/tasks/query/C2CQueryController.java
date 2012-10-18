@@ -993,9 +993,9 @@ public class C2CQueryController extends QueryController implements ItemListener,
             }
         }
         Criteria crit = cb.toCriteria();
-        String queryString = crit.toQueryString();
+        String queryString = crit == null ? null : crit.toQueryString();
         C2C.LOG.log(Level.FINE, "returning queryString [{0}]", queryString); // NOI18N        
-        return crit == null ? null : queryString;
+        return queryString;
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
