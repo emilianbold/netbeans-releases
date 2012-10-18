@@ -107,9 +107,9 @@ public final class BeforeSaveTasks {
                 tasks.add(task);
             }
         }
-        if (tasks.size() > 0) {
+//        if (tasks.size() > 0) {//jlahoda: commented as a hotfix - the "beforeSaveEnd" would not be run is tasks.isEmpty() (e.g. in tests), leading to a NPE in CloneableEditorSupport.saveDocument (after 3e982b70e64e)
             new TaskRunnable(doc, tasks, context).run();
-        }
+//        }
     }
 
     private static final class TaskRunnable implements Runnable {
