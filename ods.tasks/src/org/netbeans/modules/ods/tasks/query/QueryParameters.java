@@ -281,7 +281,7 @@ public class QueryParameters {
         private Collection getValues() {
             Object[] values = list.getSelectedValues();
             if(values == null || values.length == 0) {
-                return null; //EMPTY_PARAMETER_VALUE;
+                return null; 
             }
             List ret = new ArrayList();
             ret.addAll(Arrays.asList(values));
@@ -335,7 +335,15 @@ public class QueryParameters {
 
         @Override
         public Criteria getCriteria() {
-            return getCriteria(getValues());
+            Criteria ret = null;
+            try {
+                ret = getCriteria(getValues());
+                return ret;
+            } finally {
+                if(C2C.LOG.isLoggable(Level.FINER)) {
+                    C2C.LOG.log(Level.FINER, "ListParameter {0} returned criteria [{1}]", new Object[] {getColumn().columnName, ret == null ? null : ret.toQueryString()}); // NOI18N        
+                }                
+            }
         }
     }
 
@@ -394,21 +402,28 @@ public class QueryParameters {
 
         @Override
         public Criteria getCriteria() {
-            String s = txt.getText();
-            if( s == null || s.trim().isEmpty()) {
-                return null;
-            }
-            if(chkSummary.isSelected() && chkDescription.isSelected()) {
-                return new NaryCriteria(
-                            Criteria.Operator.OR, 
+            Criteria ret = null;
+            try {
+                String s = txt.getText();
+                if (s == null || s.trim().isEmpty()) {
+                    return ret;
+                }
+                if (chkSummary.isSelected() && chkDescription.isSelected()) {
+                    ret = new NaryCriteria(
+                            Criteria.Operator.OR,
                             new ColumnCriteria(Column.SUMMARY.columnName, Criteria.Operator.STRING_CONTAINS, s),
                             new ColumnCriteria(Column.DESCRIPTION.columnName, Criteria.Operator.STRING_CONTAINS, s));
-            } else if(chkSummary.isSelected()) {
-                return new ColumnCriteria(Column.SUMMARY.columnName, Criteria.Operator.STRING_CONTAINS, s);
-            } else if(chkDescription.isSelected()) {
-                return new ColumnCriteria(Column.DESCRIPTION.columnName, Criteria.Operator.STRING_CONTAINS, s);
+                } else if (chkSummary.isSelected()) {
+                    ret = new ColumnCriteria(Column.SUMMARY.columnName, Criteria.Operator.STRING_CONTAINS, s);
+                } else if (chkDescription.isSelected()) {
+                    ret = new ColumnCriteria(Column.DESCRIPTION.columnName, Criteria.Operator.STRING_CONTAINS, s);
+                }
+                return ret;
+            } finally {
+                if(C2C.LOG.isLoggable(Level.FINER)) {
+                    C2C.LOG.log(Level.FINER, "ByTextParameter returned criteria[{0}]", ret == null ? null : ret.toQueryString()); // NOI18N        
+                }
             }
-            return null;
         }
     }
     
@@ -483,18 +498,25 @@ public class QueryParameters {
 
         @Override
         public Criteria getCriteria() {
-            Object[] values = list.getSelectedValues();
-            if(values == null || values.length == 0) {
-                return null;
-            }
-    
-            List<Criteria> criteria = new LinkedList<Criteria>();
-            addUserCriteria(creatorCheckField, Column.CREATOR, values, criteria);
-            addUserCriteria(ownerCheckField, Column.ASSIGNEE, values, criteria);
-            addUserCriteria(commenterCheckField, Column.COMMENTER, values, criteria);
-            addUserCriteria(ccCheckField, Column.WATCHER, values, criteria);
+            Criteria ret = null;
+            try {
+                Object[] values = list.getSelectedValues();
+                if(values == null || values.length == 0) {
+                    return ret;
+                }
 
-            return criteria.isEmpty() ? null : new NaryCriteria(Criteria.Operator.OR, criteria.toArray(new Criteria[criteria.size()]));
+                List<Criteria> criteria = new LinkedList<Criteria>();
+                addUserCriteria(creatorCheckField, Column.CREATOR, values, criteria);
+                addUserCriteria(ownerCheckField, Column.ASSIGNEE, values, criteria);
+                addUserCriteria(commenterCheckField, Column.COMMENTER, values, criteria);
+                addUserCriteria(ccCheckField, Column.WATCHER, values, criteria);
+                ret = criteria.isEmpty() ? null : new NaryCriteria(Criteria.Operator.OR, criteria.toArray(new Criteria[criteria.size()]));
+                return ret;
+            } finally {
+                if(C2C.LOG.isLoggable(Level.FINER)) {
+                    C2C.LOG.log(Level.FINER, "ByPeopleParameter returned criteria[{0}]", ret == null ? null : ret.toQueryString()); // NOI18N        
+                }
+            }
         }
 
         private void addUserCriteria(JCheckBox chk, Column c, Object[] values, List<Criteria> l) {
@@ -546,38 +568,44 @@ public class QueryParameters {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
         @Override
         public Criteria getCriteria() {
-            
-            Column c = (Column) cbo.getSelectedItem();
-            if(c == null) {
-                return null;
-            }
-            
-            Date dateFrom = null;
+            Criteria ret = null;
             try {
-                dateFrom = getDateFrom();
-            } catch (ParseException ex) {
-                C2C.LOG.log(Level.WARNING, fromField.getText(), ex);
+                Column c = (Column) cbo.getSelectedItem();
+                if(c == null) {
+                    return ret;
+                }
+
+                Date dateFrom = null;
+                try {
+                    dateFrom = getDateFrom();
+                } catch (ParseException ex) {
+                    C2C.LOG.log(Level.WARNING, fromField.getText(), ex);
+                }
+
+                Date dateTo = null;
+                try {
+                    dateTo = getDateTo();
+                } catch (ParseException ex) {
+                    C2C.LOG.log(Level.WARNING, toField.getText(), ex);
+                }
+
+                if(dateFrom != null && dateTo != null) {
+                    ret = new NaryCriteria(
+                            Criteria.Operator.AND, 
+                            new ColumnCriteria(c.getColumnName(), Criteria.Operator.GREATER_THAN, dateFrom), 
+                            new ColumnCriteria(c.getColumnName(), Criteria.Operator.LESS_THAN, dateTo));
+
+                } else if (dateFrom != null) {
+                    ret = new ColumnCriteria(c.getColumnName(), Criteria.Operator.GREATER_THAN, dateFrom);
+                } else if (dateTo != null) { 
+                    ret = new ColumnCriteria(c.getColumnName(), Criteria.Operator.LESS_THAN, dateTo);
+                }
+                return ret;
+            } finally {
+                if(C2C.LOG.isLoggable(Level.FINER)) {
+                    C2C.LOG.log(Level.FINER, "ByDateParameter returned criteria[{0}]", ret == null ? null :  ret.toQueryString()); // NOI18N        
+                }
             }
-            
-            Date dateTo = null;
-            try {
-                dateTo = getDateTo();
-            } catch (ParseException ex) {
-                C2C.LOG.log(Level.WARNING, toField.getText(), ex);
-            }
-            
-            if(dateFrom != null && dateTo != null) {
-                return new NaryCriteria(
-                        Criteria.Operator.AND, 
-                        new ColumnCriteria(c.getColumnName(), Criteria.Operator.GREATER_THAN, dateFrom), 
-                        new ColumnCriteria(c.getColumnName(), Criteria.Operator.LESS_THAN, dateTo));
-                
-            } else if (dateFrom != null) {
-                return new ColumnCriteria(c.getColumnName(), Criteria.Operator.GREATER_THAN, dateFrom);
-            } else if (dateTo != null) { 
-                return new ColumnCriteria(c.getColumnName(), Criteria.Operator.LESS_THAN, dateTo);
-            }
-            return null;
         }
         
         Date getDateFrom() throws ParseException {

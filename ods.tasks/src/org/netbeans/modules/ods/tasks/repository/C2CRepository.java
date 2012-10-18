@@ -420,6 +420,8 @@ public class C2CRepository implements PropertyChangeListener {
             for (SavedTaskQuery sq : savedQueries) {
                 C2CQuery q = C2CQuery.createSaved(this, sq);
                 queries.add(q);
+                
+                C2C.LOG.log(Level.FINER, "added remote query {0} to repository {1}", new Object[]{sq.getName(), getDisplayName()});
             }
         }
         synchronized (QUERIES_LOCK) {
@@ -442,6 +444,8 @@ public class C2CRepository implements PropertyChangeListener {
                 predefinedQueries = new EnumMap<PredefinedTaskQuery, C2CQuery>(PredefinedTaskQuery.class);
                 for (Map.Entry<PredefinedTaskQuery, IRepositoryQuery> e : queries.entrySet()) {
                     predefinedQueries.put(e.getKey(), C2CQuery.createPredefined(C2CRepository.this, e.getValue().getSummary(), e.getValue()));
+                    
+                    C2C.LOG.log(Level.FINER, "added predefined query {0} to repository {1}", new Object[]{e.getKey().name(), getDisplayName()});
                 }
             }
         }
