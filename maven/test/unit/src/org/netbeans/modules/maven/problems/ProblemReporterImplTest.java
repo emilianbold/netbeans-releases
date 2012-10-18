@@ -74,7 +74,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         assertEquals("g:m:jar:0", p.getLookup().lookup(NbMavenProject.class).getMavenProject().getId());
         ProblemReporterImpl pr = getReporter(p);
         pr.doIDEConfigChecks();
-        waitForReports(pr);
+        waitForReports();
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "par", "0", null, "pom", null, new DefaultArtifactHandler("pom"))), pr.getMissingArtifacts());
     }
@@ -87,7 +87,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         ProblemReporterImpl pr = getReporter(p);
         pr.doIDEConfigChecks();
-        waitForReports(pr);
+        waitForReports();
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "plug", "0", null, "jar", null, new DefaultArtifactHandler("jar"))), pr.getMissingArtifacts());
     }
@@ -100,7 +100,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         ProblemReporterImpl pr = getReporter(p);
         pr.doIDEConfigChecks();
-        waitForReports(pr);
+        waitForReports();
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "b", "1.0-SNAPSHOT", "compile", "jar", null, new DefaultArtifactHandler("jar"))), pr.getMissingArtifacts());
     }
@@ -111,7 +111,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
      * Waits until reports are initialized in
      * NbMavenProjectImpl.loadOriginalMavenProject().
      */
-    private void waitForReports(ProblemReporterImpl pr) throws Exception {
+    private void waitForReports() throws Exception {
         final Object lock = new Object();
         ProblemReporterImpl.RP.post(new Runnable() {
             @Override
