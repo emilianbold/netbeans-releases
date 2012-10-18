@@ -62,10 +62,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.debugger.Properties;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressUtils;
 
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
@@ -98,8 +96,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  * Panel which presents a list of available processes and lets user
@@ -941,16 +941,28 @@ public final class AttachPanel extends TopComponent {
 
                 // Workaround for IZ 134708                
                 SwingUtilities.invokeLater(new Runnable() {
+
                     @Override
                     public void run() {
-                        String msg = NbBundle.getMessage(AttachController.class, "PROGRESS_PREPARE_TARGET"); // NOI18N
-                        final ProgressHandle progress = ProgressHandleFactory.createHandle(msg);
-                        final AttachRunnable tp = new AttachRunnable(loadedPID, progress);
-                        ProgressUtils.runOffEventThreadWithProgressDialog(
-                                tp, msg, progress, false, 300, 1000);
+                        String title = NbBundle.getMessage(AttachController.class, "PROGRESS_PREPARE_TARGET"); // NOI18N
+                        final TargetPreparator tp = new TargetPreparator(loadedPID);
+
+                        Runnable cont = new Runnable() {
+
+                            @Override
+                            public void run() {
+                                if (tp.cancelled.get()) {
+                                    return;
+                                }
+                                DebugTarget target = tp.targetRef.get();
+                                if (target != null) {
+                                    NativeDebuggerManager.get().attach(target);
+                                }
+                            }
+                        };
+                        ModalMessageDlg.runLongTask(WindowManager.getDefault().getMainWindow(), tp, cont, null, title, title);
                     }
                 });
-
 
                 return true;
             } else {
@@ -1050,114 +1062,91 @@ public final class AttachPanel extends TopComponent {
 
     }
     
-    private class AttachRunnable implements Runnable, Cancellable {
+    private class TargetPreparator implements Runnable, Cancellable {
 
         private final String pidString;
-        private final ProgressHandle phandle;
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
+        private final AtomicReference<DebugTarget> targetRef = new AtomicReference<DebugTarget>(null);
 
-        public AttachRunnable(String process, ProgressHandle phandle) {
+        public TargetPreparator(String process) {
             this.pidString = process;
-            this.phandle = phandle;
         }
 
         @Override
         public void run() {
-            phandle.start();
-            try {
-                Object pidobj = pidString;
+            Object pidobj = pidString;
 
-                if (pidobj == null) {
-                    int selectedRow = procTable.getSelectedRow();
-                    if (selectedRow == -1) {
-                        return;
-                    }
-
-                    pidobj = processModel.getValueAt(selectedRow, getPsData().pidColumnIdx());
-                }
-
-                if (!(pidobj instanceof String)) {
+            if (pidobj == null) {
+                int selectedRow = procTable.getSelectedRow();
+                if (selectedRow == -1) {
                     return;
                 }
 
-                ProjectSupport.ProjectSeed seed;
+                pidobj = processModel.getValueAt(selectedRow, getPsData().pidColumnIdx());
+            }
 
-                String pidstring = (String) pidobj;
-                long pid = Long.parseLong(pidstring);
+            if (!(pidobj instanceof String)) {
+                return;
+            }
 
-                assert pid != 0;
+            ProjectSupport.ProjectSeed seed;
 
-                String executable = null;
-                Object path = executableProjectPanel.getExecutablePath();
-                Project project = executableProjectPanel.getSelectedProject();
-                boolean noproject = executableProjectPanel.getNoProject();
+            String pidstring = (String) pidobj;
+            long pid = Long.parseLong(pidstring);
 
-                if (path != null) {
-                    executable = path.toString();
-                    // convert to world
-                    executable = psData.getFileMapper().engineToWorld(executable);
+            assert pid != 0;
+
+            String executable = null;
+            Object path = executableProjectPanel.getExecutablePath();
+            Project project = executableProjectPanel.getSelectedProject();
+            boolean noproject = executableProjectPanel.getNoProject();
+
+            if (path != null) {
+                executable = path.toString();
+                // convert to world
+                executable = psData.getFileMapper().engineToWorld(executable);
 //                executablePickList.addElement(executable);
 //                executableProjectPanel.setExecutablePaths(
 //                        executablePickList.getElementsDisplayName());
-                }
+            }
 
-                seed = new ProjectSupport.ProjectSeed(
-                        project, engine.getType(), noproject,
-                        executable,
-                        ProjectSupport.Model.DONTCARE,
+            seed = new ProjectSupport.ProjectSeed(
+                    project, engine.getType(), noproject,
+                    executable,
+                    ProjectSupport.Model.DONTCARE,
                         /*corefile*/ null,
-                        pid,
+                    pid,
                         /*workingdir*/ null,
                         /*args*/ null,
                         /*envs*/ null,
-                        getHostName());
+                    getHostName());
 
-                ProjectSupport.getProject(seed);
+            ProjectSupport.getProject(seed);
 
-                if (cancelled.get()) {
-                    return;
-                }
-
-                // For persistance
-                executableProjectPanel.setLastSelectedProject(seed.project());
-                lastExecPath = seed.executable();
-
-                // Do it
-                final DebugTarget dt = new DebugTarget(seed.conf());
-                dt.setExecutable(seed.executableNoSentinel());
-                dt.setPid(seed.pid());
-                dt.setHostName(seed.getHostName());
-                dt.setEngine(engine.getType());
-
-                if (project == null) {
-                    if (noproject) { // < no project>
-                        dt.setProjectMode(DebugTarget.ProjectMode.NO_PROJECT);
-                    } else { // <new project>
-                        dt.setBuildFirst(false);
-                        dt.setProjectMode(DebugTarget.ProjectMode.NEW_PROJECT);
-                    }
-                }
-
-                if (cancelled.get()) {
-                    return;
-                }
-
-                // The intention is to return from this method (to give
-                // ProgressUtils a chance to dispose it's dialog) and to 
-                // continue attach process... 
-                // But this doesn't work this way, as ProgressUtils usess
-                // invokeLater as well... So now there is a chance to see 
-                // two progress dialogs simultaniously... 
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        NativeDebuggerManager.get().attach(dt);
-                    }
-                });
-            } finally {
-                phandle.finish();
+            if (cancelled.get()) {
+                return;
             }
+
+            // For persistance
+            executableProjectPanel.setLastSelectedProject(seed.project());
+            lastExecPath = seed.executable();
+
+            // Do it
+            final DebugTarget dt = new DebugTarget(seed.conf());
+            dt.setExecutable(seed.executableNoSentinel());
+            dt.setPid(seed.pid());
+            dt.setHostName(seed.getHostName());
+            dt.setEngine(engine.getType());
+
+            if (project == null) {
+                if (noproject) { // < no project>
+                    dt.setProjectMode(DebugTarget.ProjectMode.NO_PROJECT);
+                } else { // <new project>
+                    dt.setBuildFirst(false);
+                    dt.setProjectMode(DebugTarget.ProjectMode.NEW_PROJECT);
+                }
+            }
+            targetRef.set(dt);
         }
 
         @Override
