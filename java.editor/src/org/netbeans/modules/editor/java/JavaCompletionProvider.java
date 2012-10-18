@@ -2075,6 +2075,26 @@ public class JavaCompletionProvider implements CompletionProvider {
                     lastCase = t;
                 }
                 if (lastCase != null) {
+                    StatementTree last = null;
+                    for(StatementTree stat : lastCase.getStatements()) {
+                        int pos = (int)sourcePositions.getStartPosition(root, stat);
+                        if (pos == Diagnostic.NOPOS || offset <= pos)
+                            break;
+                        last = stat;
+                    }
+                    if (last != null) {
+                        if (last.getKind() == Tree.Kind.TRY) {
+                            if (((TryTree)last).getFinallyBlock() == null) {
+                                addKeyword(env, CATCH_KEYWORD, null, false);
+                                addKeyword(env, FINALLY_KEYWORD, null, false);
+                                if (((TryTree)last).getCatches().size() == 0)
+                                    return;
+                            }
+                        } else if (last.getKind() == Tree.Kind.IF) {
+                            if (((IfTree)last).getElseStatement() == null)
+                                addKeyword(env, ELSE_KEYWORD, null, false);
+                        }
+                    }
                     localResult(env);
                     addKeywordsForBlock(env);
                 } else {
