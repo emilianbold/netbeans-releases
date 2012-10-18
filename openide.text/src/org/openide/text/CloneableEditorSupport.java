@@ -1125,25 +1125,40 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
-        // Run before-save actions
+        // Perform the save and possibly run on-save actions first.
+        // Due to consistency of UndoRedoManager both save actions and actual save
+        // (reading doc's contents) should be done under single runAtomic().
+        final SaveAsReader saveAsReader = new SaveAsReader();
+        Runnable saveDocTask = new Runnable() {
+            @Override
+            public void run() {
+                saveAsReader.run();
+            }
+        };
         Runnable beforeSaveRunnable = (Runnable) myDoc.getProperty("beforeSaveRunnable");
         if (beforeSaveRunnable != null) {
-            UndoRedo.Manager urm = getUndoRedo();
-            if (urm instanceof UndoRedoManager) {
-                ((UndoRedoManager)undoRedo).setPerformingSaveActions(true);
-            }
-            try {
-                beforeSaveRunnable.run();
-            } finally {
-                if (urm instanceof UndoRedoManager) {
-                    ((UndoRedoManager)undoRedo).setPerformingSaveActions(false);
+            // Create runnable that marks next edit fired from document as save actions.
+            // This assumes that before save tasks will run in a single atomic edit.
+            // At the end of the edit an actual save task will be done.
+            Runnable beforeSaveStart = new Runnable() {
+                @Override
+                public void run() {
+                    UndoRedo.Manager urm = getUndoRedo();
+                    if (urm instanceof UndoRedoManager) {
+                        ((UndoRedoManager) undoRedo).markNextEditAsSaveActions();
+                    }
                 }
-            }
-        }
-        // undoRedo.markSavepoint() will be done in SaveAsReader runnable
+            };
+            // Property to be run by beforeSaveRunnable before actual save actions
+            myDoc.putProperty("beforeSaveStart", beforeSaveStart);
+            // Property to be run by beforeSaveRunnable after actual save actions
+            myDoc.putProperty("beforeSaveEnd", saveDocTask);
 
-        SaveAsReader saveAsReader = new SaveAsReader();
-        myDoc.render(saveAsReader);
+            beforeSaveRunnable.run();
+
+        } else { // No on-save tasks
+            myDoc.render(saveAsReader); // Run under doc's readlock
+        }
         saveAsReader.after();
     }
 

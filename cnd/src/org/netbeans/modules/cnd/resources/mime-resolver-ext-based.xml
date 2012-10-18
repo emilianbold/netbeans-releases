@@ -43,8 +43,8 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE MIME-Resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN"
-		    "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+<!DOCTYPE MIME-Resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.1//EN"
+		    "http://www.netbeans.org/dtds/mime-resolver-1_1.dtd">
 
 <MIME-resolver >
     <file>
@@ -73,7 +73,7 @@ made subject to such option by the copyright holder.
     </file>
     <file>
         <ext name=""/>
-        <name name="core" substring="false"/>
+        <name name="core" substring="false" ignorecase="false"/>
         <resolver mime="application/x-core+elf"/>
     </file>
     <file>

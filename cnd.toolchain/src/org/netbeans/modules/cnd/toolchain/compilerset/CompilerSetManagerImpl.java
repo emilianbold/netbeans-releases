@@ -98,6 +98,7 @@ import org.openide.util.RequestProcessor.Task;
  */
 public final class CompilerSetManagerImpl extends CompilerSetManager {
     static final boolean DISABLED = Boolean.getBoolean("cnd.toolchain.disabled"); // NOI18N
+    static final boolean PREFER_STUDIO = "true".equals(System.getProperty("cnd.toolchain.prefer.studio", "true")); // NOI18N;
 
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(CompilerSetManagerImpl.class.getName(), 1);
@@ -113,7 +114,6 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     private int platform = -1;
     private Task initializationTask;
     private CompilerSetProvider provider;
-
 
     public CompilerSetManagerImpl(ExecutionEnvironment env) {
         this(env, true);
@@ -457,14 +457,16 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             }
         }
         CompilerSet bestCandidate = null;
-        for (CompilerSet cs : sets) {
-            if (cs.getCompilerFlavor().isSunStudioCompiler()) {
-                if ("OracleSolarisStudio".equals(cs.getName())) { // NOI18N
-                    setDefault(cs);
-                    return;
-                }
-                if (bestCandidate == null) {
-                    bestCandidate = cs;
+        if (PREFER_STUDIO) {
+            for (CompilerSet cs : sets) {
+                if (cs.getCompilerFlavor().isSunStudioCompiler()) {
+                    if ("OracleSolarisStudio".equals(cs.getName())) { // NOI18N
+                        setDefault(cs);
+                        return;
+                    }
+                    if (bestCandidate == null) {
+                        bestCandidate = cs;
+                    }
                 }
             }
         }
