@@ -518,7 +518,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
     
-    protected static void writeFile(FileObject fo, CharSequence content) throws Exception {
+    protected static void writeFile(FileObject fo, CharSequence content) throws IOException {
         BufferedWriter bw = null;
         try {
             bw = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream()));
@@ -577,7 +577,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         return sb.toString();
     }
 
-    protected String readFile(FileObject fo) throws Exception {
+    protected String readFile(FileObject fo) throws IOException {
         assertTrue("File " +  fo.getPath() + " does not exist", fo.isValid());
         InputStream is = fo.getInputStream();
         BufferedReader rdr = new BufferedReader(new InputStreamReader(is));
