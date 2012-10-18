@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.ods.tasks;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
@@ -52,7 +49,6 @@ import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
-import org.netbeans.modules.ods.tasks.util.C2CUtil;
 
 /**
  *
@@ -69,10 +65,10 @@ public class C2CConnector extends KenaiBugtrackingConnector {
     
     @Override
     public Repository createRepository(RepositoryInfo info) {
-        C2CRepository bugzillaRepository = new C2CRepository(info);
+        C2CRepository c2cRepository = new C2CRepository(info);
         return C2C.getInstance().getBugtrackingFactory().
                 createRepository(
-                    bugzillaRepository, 
+                    c2cRepository, 
                     C2C.getInstance().getRepositoryProvider(), 
                     C2C.getInstance().getQueryProvider(), 
                     C2C.getInstance().getIssueProvider());
@@ -80,10 +76,10 @@ public class C2CConnector extends KenaiBugtrackingConnector {
 
     @Override
     public Repository createRepository() {
-        C2CRepository bugzillaRepository = new C2CRepository();
+        C2CRepository c2cRepository = new C2CRepository();
         return C2C.getInstance().getBugtrackingFactory().
                 createRepository(
-                    bugzillaRepository, 
+                    c2cRepository, 
                     C2C.getInstance().getRepositoryProvider(), 
                     C2C.getInstance().getQueryProvider(), 
                     C2C.getInstance().getIssueProvider());
@@ -103,25 +99,17 @@ public class C2CConnector extends KenaiBugtrackingConnector {
         if (project == null || project.getType() != BugtrackingType.ODS) {
             return null;
         }
-        C2CRepository repo = createKenaiRepository(project, project.getDisplayName(), project.getFeatureLocation());
-        return C2CUtil.createRepository(repo);
+        return C2C.getInstance().getBugtrackingFactory().
+                createRepository(
+                    new C2CRepository(project), 
+                    C2C.getInstance().getRepositoryProvider(), 
+                    C2C.getInstance().getQueryProvider(), 
+                    C2C.getInstance().getIssueProvider());
     }
 
     @Override
     public BugtrackingType getType () {
         return BugtrackingType.ODS;
     }
-
-    private C2CRepository createKenaiRepository (KenaiProject project, String displayName, String location) {
-        final URL loc;
-        try {
-            loc = new URL(location);
-        } catch (MalformedURLException ex) {
-            C2C.LOG.log(Level.WARNING, null, ex);
-            return null;
-        }
-        return new C2CRepository(project, displayName, location);
-    }
-    
     
 }

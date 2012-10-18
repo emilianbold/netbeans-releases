@@ -114,8 +114,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
     protected QueryPanel panel;
 
-    private static final String CHANGED_NOW = "Now";                            // NOI18N
-
     private RequestProcessor rp = new RequestProcessor("C2C query", 1, true);  // NOI18N
 
     private final C2CRepository repository;
@@ -469,7 +467,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
             }
         } else if (e.getSource() == panel.idTextField ||
                    e.getSource() == panel.byTextTextField 
-//                ||
+//                XXX any other field ???
 //                   e.getSource() == panel.peopleTextField ||
 //                   e.getSource() == panel.changedFromTextField ||
 //                   e.getSource() == panel.newValueTextField ||
@@ -501,7 +499,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
            e.getSource() == panel.statusList ||
            e.getSource() == panel.resolutionList ||
            e.getSource() == panel.priorityList 
-//                ||
+//           XXX any other field ???
 //           e.getSource() == panel.changedList
                 )
         {
@@ -753,8 +751,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
         originalCriteria = criteria;
         criteria = null;
         panel.setModifyVisible(true);
-        
-        
     }
 
     private void onMarkSeen() {
@@ -881,61 +877,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
         return sb.toString();
     }
     
-    private Criteria getCriteria() {
-        throw new UnsupportedOperationException("do we need this?");
-    }
-    
-//
-//    private void setParameters(String urlParameters) {
-//        if(urlParameters == null) {
-//            return;
-//        }
-//        String[] params = urlParameters.split("&"); // NOI18N
-//        if(params == null || params.length == 0) return;
-//        Map<String, List<ParameterValue>> normalizedParams = new HashMap<String, List<ParameterValue>>();
-//        for (String p : params) {
-//            int idx = p.indexOf("="); // NOI18N
-//            if(idx > -1) {
-//                String parameter = p.substring(0, idx);
-//                String value = p.substring(idx + 1, p.length());
-//
-//                ParameterValue pv = new ParameterValue(value, value);
-//                List<ParameterValue> values = normalizedParams.get(parameter);
-//                if(values == null) {
-//                    values = new ArrayList<ParameterValue>();
-//                    normalizedParams.put(parameter, values);
-//                }
-//                values.add(pv);
-//            } else {
-//                // XXX warning!!
-//            }
-//        }
-//
-//        List<ParameterValue> componentPV = null;
-//        List<ParameterValue> versionPV = null;
-//        for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
-//            QueryParameter qp = parameters.get(e.getKey());
-//            if(qp != null) {
-//                if(qp == componentParameter) {
-//                    componentPV = e.getValue();
-//                } else if(qp == versionParameter) {
-//                    versionPV = e.getValue();
-//                } else {
-//                    List<ParameterValue> pvs = e.getValue();
-//                    qp.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
-//                }
-//            }
-//        }
-//        setDependentParameter(componentParameter, componentPV);
-//        setDependentParameter(versionParameter, versionPV);
-//    }
-//                
-//    private void setDependentParameter(QueryParameter qp, List<ParameterValue> values) {
-//        if(values != null) {
-//            qp.setValues(values.toArray(new ParameterValue[values.size()]));
-//        }
-//    }
-
     private void setIssueCount(final int count) {
         EventQueue.invokeLater(new Runnable() {
             @Override
@@ -967,7 +908,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
     @Override
     public IssueTable getIssueTable() {
-        return null; // XXX issueTable;
+        return issueTable;
     }
 
     private void hideModificationFields () {

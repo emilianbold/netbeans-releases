@@ -115,11 +115,11 @@ public class C2CRepository implements PropertyChangeListener {
     
     private KenaiProject kenaiProject;
     
-    public C2CRepository (KenaiProject kenaiProject, String repoName, String url) {
-        this(createInfo(repoName, url)); // use name as id - can't be changed anyway
+    public C2CRepository (KenaiProject kenaiProject) {
+        this(createInfo(kenaiProject.getDisplayName(), kenaiProject.getFeatureLocation())); // use name as id - can't be changed anyway
         assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
-        KenaiUtil.getKenaiAccessor(url).addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
+        KenaiUtil.getKenaiAccessor(kenaiProject.getFeatureLocation()).addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
     }
     
     public C2CRepository() {
@@ -212,8 +212,15 @@ public class C2CRepository implements PropertyChangeListener {
         authenticate(null);
     }
     
-    public void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {
-        setCredentials(user, password, httpUser, httpPassword, false);
+    public synchronized void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {
+        String oldUser = taskRepository == null ? null : taskRepository.getUserName();
+        if (oldUser == null) {
+            oldUser = ""; //NOI18N
+        }
+        MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
+        if (!oldUser.equals(user)) {
+            resetRepository();
+        }
     }
 
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
@@ -222,34 +229,12 @@ public class C2CRepository implements PropertyChangeListener {
         info = new RepositoryInfo(id, C2CConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
     }
     
-    private void setCredentials(String user, char[] password, String httpUser, char[] httpPassword, boolean keepConfiguration) {
-        String oldUser = taskRepository == null ? null : taskRepository.getUserName();
-        if (oldUser == null) {
-            oldUser = ""; //NOI18N
-        }
-        MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
-        if (!oldUser.equals(user)) {
-            resetRepository(keepConfiguration);
-        }
-    }
-    
     private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
-
-        String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
-        AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;
-        String oldUser = c != null ? c.getUserName() : "";
-        String oldPassword = c != null ? c.getPassword() : "";
-
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        resetRepository(oldUrl.equals(url) && oldUser.equals(user) && oldPassword.equals(new String(password))); // XXX reset the configuration only if the host changed
-                                                                                                     //     on psswd and user change reset only taskrepository
+        resetRepository(); 
     }    
     
-    synchronized void resetRepository(boolean keepConfiguration) {
-//        XXX
-//        if(!keepConfiguration) {
-//            bc = null;
-//        }
+    synchronized void resetRepository() {
         synchronized (QUERIES_LOCK) {
             remoteSavedQueries = null;
         }
@@ -284,12 +269,7 @@ public class C2CRepository implements PropertyChangeListener {
     }
 
     public void remove() {
-        Collection<C2CQuery> qs = getQueries();
-        C2CQuery[] toRemove = qs.toArray(new C2CQuery[qs.size()]);
-        for (C2CQuery q : toRemove) {
-//            removeQuery(q);
-        }
-        resetRepository(true);
+        resetRepository();
     }
 
     public C2CIssue getIssue(final String id) {
@@ -460,12 +440,6 @@ public class C2CRepository implements PropertyChangeListener {
     }
 
     public C2CIssue createIssue() {
-        //        XXX
-        //        BugzillaConfiguration conf = getConfiguration();
-        //        if(conf == null || !conf.isValid()) {
-        //            // invalid connection data?
-        //            return null;
-        //        }
         TaskData data = C2CUtil.createTaskData(getTaskRepository());
         return new C2CIssue(data, this);
     }

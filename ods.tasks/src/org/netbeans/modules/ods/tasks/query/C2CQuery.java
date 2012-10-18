@@ -190,10 +190,6 @@ public abstract class C2CQuery {
         return columnDescriptors;
     }
     
-    public String getParametersString() {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
     public void addNotifyListener(QueryNotifyListener l) {
         synchronized(notifyListeners) {
             notifyListeners.add(l);
@@ -560,7 +556,7 @@ public abstract class C2CQuery {
 
         @Override
         protected boolean save(String name) {
-            throw new UnsupportedOperationException("Can't remove a predefined query."); // NOI18N
+            throw new UnsupportedOperationException("Can't save a predefined query."); // NOI18N
         }
 
         @Override

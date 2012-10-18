@@ -61,16 +61,12 @@ public class C2CConfig {
 
     private static C2CConfig instance = null;
     private static final String LAST_CHANGE_FROM    = "c2c.last_change_from";      // NOI18N // XXX
-    private static final String QUERY_NAME          = "c2c.query_";                // NOI18N
     private static final String QUERY_REFRESH_INT   = "c2c.query_refresh";         // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "c2c.query_auto_refresh_";   // NOI18N
     private static final String ISSUE_REFRESH_INT   = "c2c.issue_refresh";         // NOI18N
-    private static final String DELIMITER           = "<=>";                            // NOI18N
-//    private static final String CHECK_UPDATES       = "c2c.check_updates";         // NOI18N
 
     public static final int DEFAULT_QUERY_REFRESH = 30;
     public static final int DEFAULT_ISSUE_REFRESH = 15;
-    private Map<String, Icon> priorityIcons;
 
     private C2CConfig() { }
 
@@ -97,87 +93,12 @@ public class C2CConfig {
         getPreferences().putBoolean(QUERY_AUTO_REFRESH + queryName, refresh);
     }
 
-//    public void setCheckUpdates(boolean bl) {
-//        getPreferences().putBoolean(CHECK_UPDATES, bl);
-//    }
-
-    public int getQueryRefreshInterval() {
-        return getPreferences().getInt(QUERY_REFRESH_INT, DEFAULT_QUERY_REFRESH);
-    }
-
     public int getIssueRefreshInterval() {
         return getPreferences().getInt(ISSUE_REFRESH_INT, DEFAULT_ISSUE_REFRESH);
     }
 
     public boolean getQueryAutoRefresh(String queryName) {
         return getPreferences().getBoolean(QUERY_AUTO_REFRESH + queryName, false);
-    }
-
-//    public boolean getCheckUpdates() {
-//        return getPreferences().getBoolean(CHECK_UPDATES, true);
-//    }
-
-    public void putQuery(C2CRepository repository, C2CQuery query) {
-        getPreferences().put(
-                getQueryKey(repository.getID(), query.getDisplayName()),
-                query.getParametersString());
-    }
-
-    public void removeQuery(C2CRepository repository, C2CQuery query) {
-        getPreferences().remove(getQueryKey(repository.getID(), query.getDisplayName()));
-    }
-
-    public C2CQuery getQuery(C2CRepository repository, String queryName) {
-        String value = getStoredQuery(repository, queryName);
-        if(value == null) {
-            return null;
-        }
-        String[] values = value.split(DELIMITER);
-        assert values.length >= 2;
-        String parametersString = values[0];
-        return null; // XXX new C2CQuery(queryName, repository, parametersString, true, true);
-    }
-
-    public String getUrlParams(C2CRepository repository, String queryName) {
-        String value = getStoredQuery(repository, queryName);
-        if(value == null) {
-            return null;
-        }
-        String[] values = value.split(DELIMITER);
-        assert values.length >= 2;
-        return values[0];
-    }
-
-    public String[] getQueries(String repoID) {
-        return getKeysWithPrefix(QUERY_NAME + repoID + DELIMITER);
-    }
-
-    private String[] getKeysWithPrefix(String prefix) {
-        String[] keys = null;
-        try {
-            keys = getPreferences().keys();
-        } catch (BackingStoreException ex) {
-            C2C.LOG.log(Level.SEVERE, null, ex); // XXX
-        }
-        if (keys == null || keys.length == 0) {
-            return new String[0];
-        }
-        List<String> ret = new ArrayList<String>();
-        for (String key : keys) {
-            if (key.startsWith(prefix)) {
-                ret.add(key.substring(prefix.length()));
-            }
-        }
-        return ret.toArray(new String[ret.size()]);
-    }
-
-    private String getQueryKey(String repositoryID, String queryName) {
-        return QUERY_NAME + repositoryID + DELIMITER + queryName;
-    }
-
-    private String getStoredQuery(C2CRepository repository, String queryName) {
-        String value = getPreferences().get(getQueryKey(repository.getID(), queryName), null);
-        return value;
     }
 
     public void setLastChangeFrom(String value) {
@@ -187,21 +108,5 @@ public class C2CConfig {
     public String getLastChangeFrom() {
         return getPreferences().get(LAST_CHANGE_FROM, "");                      // NOI18N
     }
-    
-    public String getDefaultParameters() {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-//    public Icon getPriorityIcon(String priority) {
-//        if(priorityIcons == null) {
-//            priorityIcons = new HashMap<String, Icon>();
-//            priorityIcons.put("P1", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p1.png", true)); // NOI18N
-//            priorityIcons.put("P2", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p2.png", true)); // NOI18N
-//            priorityIcons.put("P3", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p3.png", true)); // NOI18N
-//            priorityIcons.put("P4", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p4.png", true)); // NOI18N
-//            priorityIcons.put("P5", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p5.png", true)); // NOI18N
-//        }
-//        return priorityIcons.get(priority);
-//    }
 
 }
