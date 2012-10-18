@@ -327,6 +327,9 @@ public abstract class AbstractEditorAction extends TextAction implements
         // Possibly delegate to getDelegateAction()
         Action dAction = getDelegateAction();
         if (dAction != null) {
+            if (!(dAction instanceof AbstractEditorAction)) {
+                checkTogglePreferencesValue();
+            }
             dAction.actionPerformed(evt);
             return;
         }
@@ -355,10 +358,7 @@ public abstract class AbstractEditorAction extends TextAction implements
             }
         }
 
-        // Possibly toggle preferences node's value if this is a toggle action
-        if (preferencesNodeAndListener != null) {
-            preferencesNodeAndListener.togglePreferencesValue();
-        }
+        checkTogglePreferencesValue();
 
         if (asynchronous()) {
             RequestProcessor.getDefault().post(new Runnable () {
@@ -513,6 +513,13 @@ public abstract class AbstractEditorAction extends TextAction implements
         String preferencesKey = (String) attrs.get(PREFERENCES_KEY_KEY);
         if (preferencesKey != null) {
             preferencesNodeAndListener = new PreferencesNodeAndListener(preferencesKey);
+        }
+    }
+
+    private void checkTogglePreferencesValue() {
+        // Possibly toggle preferences node's value if this is a toggle action
+        if (preferencesNodeAndListener != null) {
+            preferencesNodeAndListener.togglePreferencesValue();
         }
     }
     
