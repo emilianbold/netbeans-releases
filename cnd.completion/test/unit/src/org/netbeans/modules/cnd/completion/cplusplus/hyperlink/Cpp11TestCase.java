@@ -149,4 +149,10 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug215662.cpp", 7, 96, "bug215662.cpp", 4, 20);
     }
     
+    public void testBug218848() throws Exception {
+        // Bug 218848 - auto in for loop produces not recognized
+        performTest("bug218848.cpp", 256, 15, "bug218848.cpp", 248, 9);
+        performTest("bug218848.cpp", 260, 15, "bug218848.cpp", 248, 9);
+    }        
+    
 }

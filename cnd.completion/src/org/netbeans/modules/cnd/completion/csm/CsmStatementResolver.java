@@ -106,6 +106,9 @@ public class CsmStatementResolver {
             case FOR:
                 found = findInner((CsmForStatement) stmt, offset, context);
                 break;
+            case RANGE_FOR:
+                found = findInner((CsmRangeForStatement) stmt, offset, context);
+                break;
             case SWITCH:
                 found = findInner((CsmSwitchStatement) stmt, offset, context);
                 break;
@@ -342,6 +345,23 @@ public class CsmStatementResolver {
         return findInnerObject(stmt.getBody(), offset, context);
     }
 
+    private static boolean findInner(CsmRangeForStatement stmt, int offset, CsmContext context) {
+        assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
+        if (findInnerObject(stmt.getDeclaration(), offset, context)) {
+            return true;
+        }
+        if (CsmOffsetUtilities.isInObject(stmt.getInitializer(), offset)) {
+            CsmExpression initializerExpression = stmt.getInitializer();
+            CsmContextUtilities.updateContextObject(initializerExpression, offset, context);
+            
+            if(findInner(initializerExpression, offset, context)) {
+                return true;
+            }
+            return true;
+        }
+        return findInnerObject(stmt.getBody(), offset, context);
+    }
+    
     private static boolean findInner(CsmSwitchStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
         if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getCondition())

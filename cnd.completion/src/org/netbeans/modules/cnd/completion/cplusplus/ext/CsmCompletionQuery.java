@@ -100,6 +100,8 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.deep.CsmRangeForStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
@@ -968,6 +970,52 @@ abstract public class CsmCompletionQuery {
                             if(resolveType != null) {
                                 resolveType = CsmCompletion.createType(resolveType.getClassifier(), oldType.getPointerDepth(), oldType.getArrayDepth(), oldType.isConst());
                             }
+                        }
+                    }
+                } else {
+                    if(CsmKindUtilities.isStatement(var.getScope()) ) {
+                        if(((CsmStatement) var.getScope()).getKind().equals(CsmStatement.Kind.RANGE_FOR)) {
+                            CsmRangeForStatement forStmt = (CsmRangeForStatement) var.getScope();
+                            CsmExpression initializer = forStmt.getInitializer();
+                            if(initializer != null && initializer.getText() != null) {
+                                TokenHierarchy<String> hi = TokenHierarchy.create(initializer.getText().toString(), CndLexerUtilities.getLanguage(getBaseDocument()));
+                                List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(initializer.getEndOffset(), true);
+                                // Go from inner to outer TSes
+                                TokenSequence<TokenId> cppts = null;
+                                for (int i = tsList.size() - 1; i >= 0; i--) {
+                                    TokenSequence<?> ts = tsList.get(i);
+                                    final Language<?> lang = ts.languagePath().innerLanguage();
+                                    if (CndLexerUtilities.isCppLanguage(lang, false)) {
+                                        @SuppressWarnings("unchecked") // NOI18N
+                                        TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
+                                        cppts = uts;
+                                    }
+                                }
+                                if(cppts != null && !antiLoop.contains(initializer)) {
+                                    antiLoop.add(initializer);
+
+                                    CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initializer.getEndOffset(), initializer.getStartOffset());
+                                    tp.enableTemplateSupport(true);
+                                    CndTokenUtilities.processTokens(tp, getBaseDocument(), initializer.getStartOffset(), initializer.getEndOffset());
+                                    CsmCompletionExpression exp = tp.getResultExp();
+
+                                    resolveType = resolveType(exp);
+                                    if(resolveType != null) {
+                                        if(resolveType.getArrayDepth() == 0) {
+                                            CsmClassifier cls = CsmBaseUtilities.getOriginalClassifier((CsmClassifier)resolveType.getClassifier(), contextFile);
+                                            List<CsmObject> decls = findFieldsAndMethods(finder, contextElement, cls, "begin", true, false, false, true, false, false, false); // NOI18N
+                                            for (CsmObject csmObject : decls) {
+                                                if(CsmKindUtilities.isFunction(csmObject)) {
+                                                    resolveType = ((CsmFunction)csmObject).getReturnType();
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        resolveType = CsmCompletion.createType(resolveType.getClassifier(), oldType.getPointerDepth(), oldType.getArrayDepth(), oldType.isConst());
+                                    }
+                                }     
+                            }
+                            
                         }
                     }
                 }
