@@ -103,7 +103,7 @@ public class AndroidActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
     }
 
     private String checkDevices(Project p) {
