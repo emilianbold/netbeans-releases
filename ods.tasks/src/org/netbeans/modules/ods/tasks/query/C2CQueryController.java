@@ -45,8 +45,6 @@ package org.netbeans.modules.ods.tasks.query;
 import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
-import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
-import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
@@ -64,12 +62,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -123,6 +118,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private QueryTask refreshTask;
 
     private final Object REFRESH_LOCK = new Object();
+    private final Object CRITERIA_LOCK = new Object();
+    
     private final IssueTable<C2CQuery> issueTable;
     private boolean modifiable;
     private Criteria criteria;
@@ -570,8 +567,10 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private void onCancelChanges() {
         assert EventQueue.isDispatchThread();
         
-        criteria = originalCriteria;
-        originalCriteria = null;
+        synchronized(CRITERIA_LOCK) {
+            criteria = originalCriteria;
+            originalCriteria = null;
+        }
         
         setAsSaved();
     }
@@ -737,19 +736,22 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private void onModify() {
         assert EventQueue.isDispatchThread();
         
-        if(criteria instanceof ColumnCriteria) {
-            ColumnCriteria cc = (ColumnCriteria) criteria;
-//            Parameter p = parameters.get(cc.getColumnName());
-//            p.setValues(cc.getColumnValue());
+        synchronized(CRITERIA_LOCK) {
+            if(criteria instanceof ColumnCriteria) {
+                ColumnCriteria cc = (ColumnCriteria) criteria;
+    //            Parameter p = parameters.get(cc.getColumnName());
+    //            p.setValues(cc.getColumnValue());
+            }
+
+    //      XXX anything interesting here?         
+    //      changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
+    //      peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
+    //      panel.changedToTextField.setText(CHANGED_NOW);
+        
+            originalCriteria = criteria;
+            criteria = null;
         }
         
-//      XXX anything interesting here?         
-//      changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-//      peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-//      panel.changedToTextField.setText(CHANGED_NOW);
-
-        originalCriteria = criteria;
-        criteria = null;
         panel.setModifyVisible(true);
     }
 
@@ -891,20 +893,26 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     String getQueryString() {
-        CriteriaBuilder cb = new CriteriaBuilder();
-        for(Parameter p : parameters.getAll()) {
-            Criteria c = p.getCriteria();
-            if(c == null) {
-                continue;
+        String queryString = null;
+        synchronized(CRITERIA_LOCK) {
+            if(criteria != null) {
+                return criteria.toQueryString();
             }
-            if(cb.result == null) {
-                cb.result = c;
-            } else {
-                cb.and(p.getCriteria());
+            CriteriaBuilder cb = new CriteriaBuilder();
+            for(Parameter p : parameters.getAll()) {
+                Criteria c = p.getCriteria();
+                if(c == null) {
+                    continue;
+                }
+                if(cb.result == null) {
+                    cb.result = c;
+                } else {
+                    cb.and(p.getCriteria());
+                }
             }
+            criteria = cb.toCriteria();
+            queryString = criteria == null ? null : criteria.toQueryString();
         }
-        Criteria crit = cb.toCriteria();
-        String queryString = crit == null ? null : crit.toQueryString();
         C2C.LOG.log(Level.FINE, "returning queryString [{0}]", queryString); // NOI18N        
         return queryString;
     }
