@@ -48,7 +48,7 @@ import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -93,14 +93,24 @@ abstract class OnlineSites implements SiteTemplateImplementation {
     }
 
     @Override
-    public void apply(AntProjectHelper helper, ProgressHandle handle) throws IOException {
+    public void configure(ProjectProperties projectProperties) {
+        // noop by default
+    }
+
+    @Override
+    public final void apply(FileObject projectDir, ProjectProperties projectProperties, ProgressHandle handle) throws IOException {
         assert !EventQueue.isDispatchThread();
         if (!isPrepared()) {
             // not correctly prepared, user has to know about it already
             LOGGER.info("Template not correctly prepared, nothing to be applied"); //NOI18N
             return;
         }
-        SiteHelper.unzipProjectTemplate(helper, libFile, handle);
+        SiteHelper.unzipProjectTemplate(getTargetDir(projectDir, projectProperties), libFile, handle);
+    }
+
+    protected FileObject getTargetDir(FileObject projectDir, ProjectProperties projectProperties) {
+        // by default, extract template to site root
+        return projectDir.getFileObject(projectProperties.getSiteRootFolder());
     }
 
     @Override
@@ -113,6 +123,11 @@ abstract class OnlineSites implements SiteTemplateImplementation {
     @ServiceProvider(service=SiteTemplateImplementation.class, position=150)
     public static class SiteAngularJsSeed extends OnlineSites {
 
+        private static final String SITE_ROOT_FOLDER = "app"; // NOI18N
+        private static final String TEST_FOLDER = "test"; // NOI18N
+        private static final String CONFIG_FOLDER = "config"; // NOI18N
+
+
         @NbBundle.Messages({"SiteAngularJsSeed.name=AngularJS Seed",
                 "SiteAngularJsSeed.description=Site template for AngularJS projects."})
         public SiteAngularJsSeed() {
@@ -121,8 +136,20 @@ abstract class OnlineSites implements SiteTemplateImplementation {
                     new File(SiteHelper.getJsLibsDirectory(), "angularjs-seed.zip")); // NOI18N
         }
 
+        @Override
+        public void configure(ProjectProperties projectProperties) {
+            projectProperties.setSiteRootFolder(SITE_ROOT_FOLDER)
+                    .setTestFolder(TEST_FOLDER)
+                    .setConfigFolder(CONFIG_FOLDER);
+        }
+
+        @Override
+        protected FileObject getTargetDir(FileObject projectDir, ProjectProperties projectProperties) {
+            return projectDir;
+        }
+
     }
-    
+
     @NbBundle.Messages("SiteInitializr.description=Site template from initializr.com.")
     @ServiceProvider(service=SiteTemplateImplementation.class, position=200)
     public static class BootstrapSiteInitializr extends OnlineSites {
@@ -175,7 +202,7 @@ abstract class OnlineSites implements SiteTemplateImplementation {
         }
 
     }
-    
+
     @ServiceProvider(service=SiteTemplateImplementation.class, position=320)
     public static class SiteHtml5BoilerplateV3 extends OnlineSites {
 
@@ -188,7 +215,7 @@ abstract class OnlineSites implements SiteTemplateImplementation {
         }
 
     }
-    
+
     @ServiceProvider(service=SiteTemplateImplementation.class, position=400)
     public static class SiteTwitterBootstrap extends OnlineSites {
 
@@ -201,5 +228,5 @@ abstract class OnlineSites implements SiteTemplateImplementation {
         }
 
     }
-    
+
 }
