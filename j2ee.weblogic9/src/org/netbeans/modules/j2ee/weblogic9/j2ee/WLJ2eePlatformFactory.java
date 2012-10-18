@@ -760,7 +760,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     new WebLogicJaxWsStack(platformRoot), WSStack.Source.SERVER);
             Collections.addAll(content, platformRoot, 
                     new JpaSupportImpl(this),new JsxWsPoliciesSupportImpl(this), 
-                    new JaxRsStackSupportImpl(this), wsStack );
+                    new JaxRsStackSupportImpl(this, dm.getServerVersion()), wsStack );
            
             Lookup baseLookup = Lookups.fixed(content.toArray());
             return LookupProviderSupport.createCompositeLookup(baseLookup, 
