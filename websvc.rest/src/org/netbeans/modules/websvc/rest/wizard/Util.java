@@ -111,6 +111,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.JavaEE6EntityResourcesGenerator;
@@ -546,8 +547,7 @@ public class Util {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             Profile profile = wm.getJ2eeProfile();
-            if (  !profile.equals(Profile.JAVA_EE_6_FULL) && 
-                !profile.equals(Profile.JAVA_EE_6_WEB) )
+            if (  !RestUtils.isJavaEE6(project))
             {
                 return false;
             }

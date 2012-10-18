@@ -63,6 +63,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -438,7 +439,12 @@ public class SiteTemplateWizard extends JPanel {
         }
 
         @Override
-        public void apply(AntProjectHelper helper, ProgressHandle handle) {
+        public void configure(ProjectProperties properties) {
+            // noop
+        }
+
+        @Override
+        public void apply(FileObject projectDir, ProjectProperties projectProperties, ProgressHandle handle) throws IOException {
             // noop
         }
 
