@@ -666,6 +666,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         descriptor.setMessage("");
 
         if (rui != null) {
+            stop(null);
             rui.getRefactoring().removeProgressListener(this);
         }
         if (!cancelRequest) {
@@ -822,6 +823,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (dialog == null) return;
                 if (progressBar != null && progressBar.isVisible()) {
                     LOGGER.log(Level.INFO, "{0} called start multiple times", event.getSource());
                     stop(event);
@@ -911,6 +913,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 //progressPanel.validate();
                 //setButtonsEnabled(true); 
                 //validate();
+                progressHandle = null;
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
