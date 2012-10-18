@@ -87,7 +87,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     @Override
     public void cancel(CancelReason reason, SourceModificationEvent event) {
         super.cancel(reason, event);
-        LOGGER.fine("ParserTask cancel: " + reason.name());
+        LOGGER.log(Level.FINE, "ParserTask cancel: {0}", reason.name());
     }
 
     @Override
@@ -152,7 +152,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             }
         }
 
-        PHPParseResult result;
+        PHPParseResult phpParserResult;
         // calling the php ast parser itself
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
         ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
@@ -197,21 +197,21 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                     }
                 }
                 if (ok) {
-                    result = new PHPParseResult(context.getSnapshot(), program);
+                    phpParserResult = new PHPParseResult(context.getSnapshot(), program);
                 } else {
-                    result = sanitize(context, sanitizing, errorHandler);
+                    phpParserResult = sanitize(context, sanitizing, errorHandler);
                 }
             } else {
-                LOGGER.fine("The parser value is not a Program: " + rootSymbol.value);
-                result = sanitize(context, sanitizing, errorHandler);
+                LOGGER.log(Level.FINE, "The parser value is not a Program: {0}", rootSymbol.value);
+                phpParserResult = sanitize(context, sanitizing, errorHandler);
             }
-            result.setErrors(errorHandler.displaySyntaxErrors(program));
+            phpParserResult.setErrors(errorHandler.displaySyntaxErrors(program));
         } else { // there was no rootElement
-            result = sanitize(context, sanitizing, errorHandler);
-            result.setErrors(errorHandler.displayFatalError());
+            phpParserResult = sanitize(context, sanitizing, errorHandler);
+            phpParserResult.setErrors(errorHandler.displayFatalError());
         }
 
-        return result;
+        return phpParserResult;
     }
 
     private boolean isStatementOk(final Statement statement, final String source) throws IOException {
@@ -281,7 +281,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 int end = Utils.getRowEnd(source, error.getPreviousToken().right);
                 int start = Utils.getRowStart(source, error.getPreviousToken().left);
 
-                StringBuffer sb = new StringBuffer(end - start);
+                StringBuilder sb = new StringBuilder(end - start);
                 for (int index = start; index < end; index++) {
                     if (source.charAt(index) == ' ' || source.charAt(index) == '}'
                             || source.charAt(index) == '\n' || source.charAt(index) == '\r') {
@@ -580,7 +580,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     private boolean sanitizeRemoveBlock(Context context, int index) {
         String source = context.getSource();
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
-        Symbol token = null;
+        Symbol token;
         int start = -1;
         int end = -1;
         try {
@@ -643,6 +643,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PhpLanguageProperties.PROP_PHP_VERSION.equals(evt.getPropertyName())) {
             forceReparsing();
