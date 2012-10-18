@@ -84,6 +84,7 @@ public final class ClientSideProjectProperties {
 
     private volatile String siteRootFolder = null;
     private volatile String testFolder = null;
+    private volatile String configFolder = null;
     private volatile String jsLibFolder = null;
     private volatile String encoding = null;
     private volatile String startFile = null;
@@ -161,10 +162,12 @@ public final class ClientSideProjectProperties {
         // first, create possible foreign file references
         String siteRootFolderReference = createForeignFileReference(siteRootFolder);
         String testFolderReference = createForeignFileReference(testFolder);
+        String configFolderReference = createForeignFileReference(configFolder);
         // save properties
         EditableProperties projectProperties = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRootFolderReference);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_TEST_FOLDER, testFolderReference);
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, configFolderReference);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_ENCODING, encoding);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_START_FILE, startFile);
         if (projectServer != null) {
@@ -237,7 +240,26 @@ public final class ClientSideProjectProperties {
     }
 
     public void setTestFolder(String testFolder) {
+        if (testFolder == null) {
+            // we need to find out that some value was set ("no value" in this case)
+            testFolder = ""; // NOI18N
+        }
         this.testFolder = testFolder;
+    }
+
+    public String getConfigFolder() {
+        if (configFolder == null) {
+            configFolder = getProjectProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, ""); // NOI18N
+        }
+        return configFolder;
+    }
+
+    public void setConfigFolder(String configFolder) {
+        if (configFolder == null) {
+            // we need to find out that some value was set ("no value" in this case)
+            configFolder = ""; // NOI18N
+        }
+        this.configFolder = configFolder;
     }
 
     public String getEncoding() {
@@ -356,8 +378,13 @@ public final class ClientSideProjectProperties {
     }
 
     private String createForeignFileReference(String filePath) {
-        if (filePath == null || filePath.isEmpty()) {
+        if (filePath == null) {
+            // not set at all
             return null;
+        }
+        if (filePath.isEmpty()) {
+            // empty value will be saved
+            return ""; // NOI18N
         }
         File file = project.getProjectHelper().resolveFile(filePath);
         return project.getReferenceHelper().createForeignFileReference(file, null);

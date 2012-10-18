@@ -63,7 +63,6 @@ import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation.Pro
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -287,16 +286,16 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 // configure
                 siteTemplate.configure(projectProperties);
                 // init project
-                initProject(projectHelper, projectProperties);
+                initProject(project, projectProperties);
                 // any site template selected
                 applySiteTemplate(projectHelper.getProjectDirectory(), projectProperties, siteTemplate, handle);
             } else {
                 // init standard project
-                initProject(projectHelper, projectProperties);
+                initProject(project, projectProperties);
             }
 
             // get application dir:
-            FileObject siteRootDir = ClientSideProjectUtilities.getSiteRootFolder(projectHelper);
+            FileObject siteRootDir = project.getSiteRootFolder();
             assert siteRootDir != null;
 
             // js libs
@@ -336,12 +335,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             wizardDescriptor.putProperty(LIBRARIES_FOLDER, null);
         }
 
-        private void initProject(AntProjectHelper projectHelper, ProjectProperties properties) throws IOException {
-            ClientSideProjectUtilities.initializeProject(projectHelper,
+        private void initProject(ClientSideProject project, ProjectProperties properties) throws IOException {
+            ClientSideProjectUtilities.initializeProject(project,
                     properties.getSiteRootFolder(),
                     properties.getTestFolder(),
-                    properties.getConfigFolder(),
-                    true);
+                    properties.getConfigFolder());
         }
 
         @NbBundle.Messages({
@@ -399,22 +397,17 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
             File projectDir = FileUtil.toFile(project.getProjectDirectory());
             File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
-            ReferenceHelper referenceHelper = project.getReferenceHelper();
             // #218736
             String testFolder;
             String configFolder;
             if (projectDir.equals(siteRoot)) {
-                testFolder = ""; // NOI18N
-                configFolder = ""; // NOI18N
+                testFolder = null;
+                configFolder = null;
             } else {
-                testFolder = getExistingDir(wizardDescriptor, TEST_ROOT, ClientSideProjectConstants.DEFAULT_TEST_FOLDER, referenceHelper, project.getProjectDirectory());
-                configFolder = getExistingDir(wizardDescriptor, CONFIG_ROOT, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER, referenceHelper, project.getProjectDirectory());
+                testFolder = getExistingDir(wizardDescriptor, TEST_ROOT, ClientSideProjectConstants.DEFAULT_TEST_FOLDER);
+                configFolder = getExistingDir(wizardDescriptor, CONFIG_ROOT, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
             }
-            ClientSideProjectUtilities.initializeProject(project.getProjectHelper(),
-                    referenceHelper.createForeignFileReference(siteRoot, null),
-                    testFolder,
-                    configFolder,
-                    false);
+            ClientSideProjectUtilities.initializeProject(project, siteRoot.getAbsolutePath(), testFolder, configFolder);
             return FileUtil.toFileObject(siteRoot);
         }
 
@@ -425,20 +418,13 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             wizardDescriptor.putProperty(TEST_ROOT, null);
         }
 
-        private String getExistingDir(WizardDescriptor wizardDescriptor, String property, String defaultDir, ReferenceHelper referenceHelper,
-                FileObject projectDir) throws IOException {
+        private String getExistingDir(WizardDescriptor wizardDescriptor, String property, String defaultDir) throws IOException {
             File dir = (File) wizardDescriptor.getProperty(property);
-            if (dir == null) {
-                // use default dir
-                FileObject folder = projectDir.getFileObject(defaultDir);
-                if (folder == null) {
-                    folder = projectDir.createFolder(defaultDir);
-                }
-                dir = FileUtil.toFile(folder);
+            if (dir != null) {
+                // dir set
+                return dir.getAbsolutePath();
             }
-            // dir must exist already
-            assert dir.isDirectory() : "Existing directory expected: " + dir;
-            return referenceHelper.createForeignFileReference(dir, null);
+            return defaultDir;
         }
 
     }
