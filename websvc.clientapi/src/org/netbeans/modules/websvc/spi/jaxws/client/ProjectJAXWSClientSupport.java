@@ -104,6 +104,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
     protected static final String JAVA_EE_VERSION_NONE="java-ee-version-none"; //NOI18N
     protected static final String JAVA_EE_VERSION_15="java-ee-version-15"; //NOI18N
     protected static final String JAVA_EE_VERSION_16="java-ee-version-16"; //NOI18N
+    protected static final String JAVA_EE_VERSION_17="java-ee-version-17"; //NOI18N
     
     Project project;
     private AntProjectHelper helper;

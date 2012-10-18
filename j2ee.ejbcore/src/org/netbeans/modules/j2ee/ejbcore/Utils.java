@@ -270,7 +270,8 @@ public class Utils {
                     Profile profile = ejbJars.length > 0 ? ejbJars[0].getJ2eeProfile() : null;
 
                     if (J2eeModule.Type.EJB.equals(type) || (J2eeModule.Type.WAR.equals(type) &&
-                                (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_6_FULL.equals(profile)))){
+                                (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_6_FULL.equals(profile) ||
+                                Profile.JAVA_EE_7_WEB.equals(profile) || Profile.JAVA_EE_7_FULL.equals(profile)))){
                         isEJBModule = true;
                     }
             }
