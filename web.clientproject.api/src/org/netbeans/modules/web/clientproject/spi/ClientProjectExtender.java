@@ -39,47 +39,60 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.ios;
+package org.netbeans.modules.web.clientproject.spi;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.CordovaPerformer;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Lookup;
+import java.beans.PropertyChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Instances to be registered in Lookup
  * @author Jan Becicka
  */
-public class IOSActionProvider implements ActionProvider {
-    private final Project p;
+public interface ClientProjectExtender {
 
-    public IOSActionProvider(Project p) {
-        this.p = p;
-    }
+    /**
+     * Creates Wizard Descriptor Panel which can be added to New Client Project
+     * Wizard.
+     * @return 
+     */
+    @CheckForNull
+    public Panel<WizardDescriptor> createWizardPanel();
+
+    /**
+     * Creates additional changes in Client Side Project.
+     * @param projectRoot
+     * @param siteRoot
+     * @param libsFolder 
+     */
+    public void apply(FileObject projectRoot, FileObject siteRoot, FileObject libsFolder);
     
-    @Override
-    public String[] getSupportedActions() {
-        return new String[]{
-                    COMMAND_BUILD,
-                    COMMAND_CLEAN,
-                    COMMAND_RUN
-                };
-    }
+    /**
+     * Tests if given template requires modifications by this extender.
+     * @param impl null means no template was selected
+     * @return 
+     */
+    public boolean isExtenderRequired(@NullAllowed SiteTemplateImplementation impl);
 
-    @Override
-    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        if (COMMAND_BUILD.equals(command)) {
-            new CordovaPerformer(CordovaPerformer.BUILD_IOS).perform(p);
-        } else if (COMMAND_CLEAN.equals(command)) {
-            new CordovaPerformer(CordovaPerformer.CLEAN_IOS).perform(p);
-        } else if (COMMAND_RUN.equals(command)) {
-            new CordovaPerformer(CordovaPerformer.RUN_IOS).perform(p);
-        }
-    }
+    /**
+     * Invokes options dialog.
+     * @param changeListener gets notified about changes in options dialog. 
+     */
+    public void openOptionsDialog(@NullAllowed PropertyChangeListener changeListener);
 
-    @Override
-    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        return true;
-    }
+    /**
+     * Is extender ready? Is customization required through {@link #openOptionsDialog(java.beans.PropertyChangeListener) 
+     * @return 
+     */
+    public boolean isExtenderReady();
+
+    /**
+     * Display name of the extender.
+     * @return
+     */
+    public String getDisplayName();
     
 }
