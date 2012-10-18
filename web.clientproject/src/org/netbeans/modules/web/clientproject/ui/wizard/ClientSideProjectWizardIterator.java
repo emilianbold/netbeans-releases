@@ -59,6 +59,7 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation.ProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -278,18 +279,25 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             AntProjectHelper projectHelper = project.getProjectHelper();
             // site template
             SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);
+            ProjectProperties projectProperties = new ProjectProperties()
+                    .setSiteRootFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER)
+                    .setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER)
+                    .setConfigFolder(ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
             if (siteTemplate != null) {
+                // configure
+                siteTemplate.configure(projectProperties);
+                // init project
+                initProject(projectHelper, projectProperties);
                 // any site template selected
-                applySiteTemplate(projectHelper, siteTemplate, handle);
+                applySiteTemplate(projectHelper.getProjectDirectory(), projectProperties, siteTemplate, handle);
+            } else {
+                // init standard project
+                initProject(projectHelper, projectProperties);
             }
 
             // get application dir:
             FileObject siteRootDir = ClientSideProjectUtilities.getSiteRootFolder(projectHelper);
-            if (siteRootDir == null) {
-                ClientSideProjectUtilities.initializeProject(projectHelper);
-                siteRootDir = ClientSideProjectUtilities.getSiteRootFolder(projectHelper);
-                assert siteRootDir != null;
-             }
+            assert siteRootDir != null;
 
             // js libs
             FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
@@ -328,15 +336,23 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             wizardDescriptor.putProperty(LIBRARIES_FOLDER, null);
         }
 
+        private void initProject(AntProjectHelper projectHelper, ProjectProperties properties) throws IOException {
+            ClientSideProjectUtilities.initializeProject(projectHelper,
+                    properties.getSiteRootFolder(),
+                    properties.getTestFolder(),
+                    properties.getConfigFolder(),
+                    true);
+        }
+
         @NbBundle.Messages({
             "# {0} - template name",
             "ClientSideProjectWizardIterator.error.applyingSiteTemplate=Cannot apply template \"{0}\"."
         })
-        private void applySiteTemplate(AntProjectHelper helper, SiteTemplateImplementation siteTemplate, final ProgressHandle handle) {
+        private void applySiteTemplate(FileObject projectDir, ProjectProperties projectProperties, SiteTemplateImplementation siteTemplate, final ProgressHandle handle) {
             assert !EventQueue.isDispatchThread();
             final String templateName = siteTemplate.getName();
             try {
-                siteTemplate.apply(helper, handle);
+                siteTemplate.apply(projectDir, projectProperties, handle);
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
                 errorOccured(Bundle.ClientSideProjectWizardIterator_error_applyingSiteTemplate(templateName));
