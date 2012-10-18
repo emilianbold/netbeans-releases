@@ -352,7 +352,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             
             tp = tp.getParentPath();
             
-            if (Utilities.fuzzyResolveMethodInvocation(info, tp, new TypeMirror[1], index) != null) {
+            if (!Utilities.fuzzyResolveMethodInvocation(info, tp, new ArrayList<TypeMirror>(), index).isEmpty()) {
                 Tree a;
                 
                 if (tp.getLeaf().getKind() == Kind.METHOD_INVOCATION) {

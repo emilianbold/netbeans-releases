@@ -312,6 +312,9 @@ public final class Git {
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by git
                 topmost =  file;
+                if (topmost.getParentFile() == null) {
+                    LOG.log(Level.WARNING, "found managed root folder {0}", file); //NOI18N
+                }
             } else {
                 LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
                 if(file.exists()) { // could be created later ...

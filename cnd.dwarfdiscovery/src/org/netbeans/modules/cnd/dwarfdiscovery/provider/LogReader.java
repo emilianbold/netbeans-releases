@@ -99,6 +99,7 @@ public class LogReader {
     private final CompilerSettings compilerSettings;
     private final RelocatablePathMapper localMapper;
     private final FileSystem fileSystem;
+    private final Map<String,String> alreadyConverted = new HashMap<String,String>();
 
     public LogReader(String fileName, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
         if (root.length()>0) {
@@ -119,6 +120,11 @@ public class LogReader {
 
     private String convertPath(String path){
         if (CndPathUtilitities.isPathAbsolute(path)) {
+            String originalPath = path;
+            String converted = alreadyConverted.get(path);
+            if (converted != null) {
+                return converted;
+            }
             if(pathMapper != null) {
                 String local = pathMapper.getLocalPath(path);
                 if (local != null) {
@@ -144,7 +150,7 @@ public class LogReader {
                             if (localMapper.discover(fs, root, path)) {
                                 resolvedPath = localMapper.getPath(path);
                                 fo = fileSystem.findResource(resolvedPath.getPath());
-                                if (fo != null && fo.isValid() && fo.isData()) {
+                                if (fo != null && fo.isValid()) {
                                     path = fo.getPath();
                                 }
                             }
@@ -172,7 +178,7 @@ public class LogReader {
                             if (localMapper.discover(fs, root, path)) {
                                 resolvedPath = localMapper.getPath(path);
                                 fo = fileSystem.findResource(resolvedPath.getPath());
-                                if (fo != null && fo.isValid() && fo.isData()) {
+                                if (fo != null && fo.isValid()) {
                                     path = fo.getPath();
                                 }
                             }
@@ -186,6 +192,7 @@ public class LogReader {
                     }
                 }
             }
+            alreadyConverted.put(originalPath, path);
         }
         return path;
     }

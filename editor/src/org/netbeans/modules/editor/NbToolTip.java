@@ -156,6 +156,9 @@ public class NbToolTip extends FileChangeAdapter {
             }
             Lookup l = Lookups.forPath("Editors/" + mimeType + "/ToolTips");  //NOI18N
             Collection<? extends Annotation> res = l.lookupAll(Annotation.class);
+            if (res.contains(null)) {
+                throw new IllegalStateException("Lookup returning null instance: " + l); // NOI18N
+            }
             annos = res.toArray(new Annotation[res.size()]);
             synchronized (NbToolTip.class) {
                 tipAnnotations = annos;

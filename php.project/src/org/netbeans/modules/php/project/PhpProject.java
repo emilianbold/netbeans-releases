@@ -107,6 +107,7 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
@@ -604,7 +605,7 @@ public final class PhpProject implements Project {
                 new PhpSubTreeSearchOptions(),
                 InternalWebServer.createForProject(this),
                 ProjectPropertiesProblemProvider.createForProject(this),
-                //UILookupMergerSupport.createProjectProblemsProviderMerger(),
+                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                 new ProjectWebRootProviderImpl()
                 // ?? getRefHelper()
         });

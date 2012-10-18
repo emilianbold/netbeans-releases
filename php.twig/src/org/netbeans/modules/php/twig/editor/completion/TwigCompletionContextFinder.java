@@ -63,9 +63,34 @@ public class TwigCompletionContextFinder {
         ALL;
     }
 
+    private static enum ValuedTokenId {
+        FILTER_PUNCTUATION_TOKEN(TwigTokenId.T_TWIG_PUNCTUATION, "|"), //NOI18N
+        FILTER_TAG_TOKEN(TwigTokenId.T_TWIG_TAG, "filter"); //NOI18N
+
+        private final TwigTokenId id;
+        private final String value;
+
+        private ValuedTokenId(TwigTokenId id, String value) {
+            this.id = id;
+            this.value = value;
+        }
+
+        public TwigTokenId getId() {
+            return id;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+    }
+
     private static final List<Object[]> FILTER_TOKEN_CHAINS = Arrays.asList(
-            new Object[]{TwigTokenId.T_TWIG_PUNCTUATION},
-            new Object[]{TwigTokenId.T_TWIG_PUNCTUATION, TwigTokenId.T_TWIG_NAME}
+            new Object[]{ValuedTokenId.FILTER_PUNCTUATION_TOKEN},
+            new Object[]{ValuedTokenId.FILTER_PUNCTUATION_TOKEN, TwigTokenId.T_TWIG_NAME},
+            new Object[]{ValuedTokenId.FILTER_TAG_TOKEN},
+            new Object[]{ValuedTokenId.FILTER_TAG_TOKEN, TwigTokenId.T_TWIG_WHITESPACE},
+            new Object[]{ValuedTokenId.FILTER_TAG_TOKEN, TwigTokenId.T_TWIG_WHITESPACE, TwigTokenId.T_TWIG_NAME}
     );
 
     public static CompletionContext find(final TwigParserResult parserResult, final int offset) {
@@ -145,6 +170,15 @@ public class TwigCompletionContextFinder {
             }
             if (tokenId instanceof TwigTokenId) {
                 if (tokenSequence.token().id() == tokenId) {
+                    moreTokens = tokenSequence.movePrevious();
+                } else {
+                    accept = false;
+                    break;
+                }
+            } else if (tokenId instanceof ValuedTokenId) {
+                ValuedTokenId valuedToken = (ValuedTokenId) tokenId;
+                Token token = tokenSequence.token();
+                if (token != null && valuedToken.getId().equals(token.id()) && token.text().equals(valuedToken.getValue())) {
                     moreTokens = tokenSequence.movePrevious();
                 } else {
                     accept = false;

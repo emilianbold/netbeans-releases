@@ -46,6 +46,7 @@ import java.awt.Color;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ImportNode;
@@ -83,7 +84,9 @@ public class FindUsagesPainter {
         final int columnStart = node.getColumnNumber();
         final int columnEnd = node.getLastColumnNumber();
 
-        if (node instanceof ConstructorNode) {
+        if (node instanceof ClassNode) {
+            return colorLine(line, ((ClassNode) node).getNameWithoutPackage());
+        } else if (node instanceof ConstructorNode) {
             return colorLine(line, ((ConstructorNode) node).getDeclaringClass().getNameWithoutPackage());
         } else if (node instanceof ConstructorCallExpression) {
             return colorLine(line, ((ConstructorCallExpression) node).getType().getNameWithoutPackage());

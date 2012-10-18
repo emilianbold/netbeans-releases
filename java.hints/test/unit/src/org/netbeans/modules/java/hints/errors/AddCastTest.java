@@ -128,6 +128,14 @@ public class AddCastTest extends ErrorHintsTestBase {
                        "[AddCastFix:...i&0x07:short]",
                        "package test; public class Test { private void t(int i) { short s = (short) (i & 0x07); } }");
     }
+    
+    public void test220031() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test<T> { private T[] f = new Object[0]; }",
+                       -1,
+                       "[AddCastFix:...new Object[...]:T[]]",
+                       "package test; public class Test<T> { private T[] f = (T[]) new Object[0]; }");
+    }
 
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {

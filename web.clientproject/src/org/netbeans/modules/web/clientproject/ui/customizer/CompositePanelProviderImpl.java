@@ -43,7 +43,6 @@ package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -97,12 +96,11 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     @Override
     public JComponent createComponent(Category category, Lookup context) {
         String categoryName = category.getName();
-        ClientSideProject project = context.lookup(ClientSideProject.class);
         ClientSideProjectProperties uiProperties = context.lookup(ClientSideProjectProperties.class);
         if (SOURCES.equals(categoryName)) {
-            return new SourcesPanel(category, project);
+            return new SourcesPanel(category, uiProperties);
         } else if (RUN.equals(categoryName)) {
-            return new RunPanel(category, project);
+            return new RunPanel(category, uiProperties);
         } else if (JS_FILES.equals(categoryName)) {
             return new JavaScriptFilesPanel(category, uiProperties);
         }

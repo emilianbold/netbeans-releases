@@ -347,6 +347,10 @@ public class FileEncodingQuery {
                         if (!remainder.hasRemaining()) {
                             remainder = null;
                         }
+                        if (!result.isUnderflow()) {
+                            // perhaps did not fit into 'out'
+                            return result;
+                        }
                     }
                     CoderResult result = currentEncoder.encode(in, out, false);
                     return result;
@@ -368,7 +372,9 @@ public class FileEncodingQuery {
             }
 
             private CoderResult encodeHead (CharBuffer in, ByteBuffer out, boolean flush) {
-                buffer.flip();
+                // if buffer is missing, get data from the remainder, case for repeated implFlush() call.
+                CharBuffer b = buffer == null ? remainder : buffer;
+                b.flip();
                 CoderResult result = null;
                 for (int i=0; i<delegates.size(); i++) {
                     currentEncoder=delegates.get(i).newEncoder();
@@ -383,13 +389,10 @@ public class FileEncodingQuery {
                     }
                     int outPos = out.position();
                     try {
-                        CharBuffer view = buffer.asReadOnlyBuffer();
+                        CharBuffer view = b.asReadOnlyBuffer();
                         result = currentEncoder.encode(view, out, in==null);
                         if (result.isOverflow()) {
-                            //Should never happen
-                            if (flush) {
-                                currentEncoder.flush(out);
-                            }
+                            // the output is smaller, interrupt encoding the head.
                             LOG.log(Level.FINEST, ENCODER_SELECTED, currentEncoder);
                             remainder = view;
                             buffer = null;
@@ -402,8 +405,10 @@ public class FileEncodingQuery {
                             if (in != null) {
                                 result = currentEncoder.encode(in, out, false);
                             }
-                            if (flush) {
-                                result = currentEncoder.flush(out);
+                            if (result.isUnderflow()) {
+                                if (flush) {
+                                    result = currentEncoder.flush(out);
+                                }
                             }
                             LOG.log(Level.FINEST, ENCODER_SELECTED, currentEncoder);
                             buffer = null;
@@ -425,7 +430,9 @@ public class FileEncodingQuery {
             @Override
             protected CoderResult implFlush(ByteBuffer out) {
                 lastByteBuffer = null;
-                if (buffer != null) {
+                // if the previous encodeHead overflew, the caller should probably call encodeLoop, but is also
+                // permitted to call flush -> implFlush again.
+                if (buffer != null || remainder != null) {
                     return encodeHead(null, out, true);
                 }
                 else {

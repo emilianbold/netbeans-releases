@@ -319,7 +319,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER ) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
 
             if ( e.getSource() instanceof JTree ) {
                 JTree tree = (JTree) e.getSource();

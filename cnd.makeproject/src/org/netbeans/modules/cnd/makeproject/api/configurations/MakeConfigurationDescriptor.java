@@ -93,7 +93,6 @@ import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXM
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.configurations.SPIAccessor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -125,10 +124,6 @@ import org.w3c.dom.NodeList;
 
 public final class MakeConfigurationDescriptor extends ConfigurationDescriptor implements ChangeListener {
     
-    static {
-        SPIAccessor.register(new SPIAccessorImpl());
-    }
-
     public static final String EXTERNAL_FILES_FOLDER = "ExternalFiles"; // NOI18N
     public static final String TEST_FILES_FOLDER = "TestFiles"; // NOI18N
     public static final String ROOT_FOLDER = "root"; // NOI18N
@@ -1193,21 +1188,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return allOk;
     }
 
-    public boolean writeDefaultVersionedConfigurations() {
-        FileObject fo = getProjectDirFileObject();
-        if (fo != null) {
-            LOGGER.log(Level.FINE, "Start of writting default versioned configurations descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
-            try {
-                new ConfigurationXMLWriter(fo, this).writeDefaultCondigurations();
-                LOGGER.log(Level.FINE, "End of writting default versioned configurations descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
-                return true;
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Error writing default versioned configurations", ex);
-            }
-        }
-        return false;
-    }
-
     private void ConfigurationProjectXMLWriter() {
         // And save the project
         if (getProject() == null) {
@@ -1931,18 +1911,5 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     private static String getString(String s, String a1) {
         return NbBundle.getMessage(MakeConfigurationDescriptor.class, s, a1);
-    }
-    
-    private static final class SPIAccessorImpl extends SPIAccessor {
-
-        @Override
-        public void setDefaultConfigurationsRestored(MakeConfigurationDescriptor cd, boolean restored) {
-            cd.defaultConfigurationsRestored = restored;
-        }
-
-        @Override
-        public boolean isDefaultConfigurationsRestored(MakeConfigurationDescriptor cd) {
-            return cd.defaultConfigurationsRestored;
-        }
     }
 }

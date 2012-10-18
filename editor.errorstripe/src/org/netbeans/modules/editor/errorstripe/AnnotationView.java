@@ -57,6 +57,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Field;
 import java.text.MessageFormat;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
@@ -83,6 +84,7 @@ import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.errorstripe.caret.CaretMark;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
@@ -296,7 +298,36 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         return line;
     }
     
+    private static Field currWriterField;
+    private static boolean isWriteLocked(AbstractDocument doc) {
+        if (currWriterField == null) {
+            Field f = null;
+            try {
+                f = AbstractDocument.class.getDeclaredField("currWriter"); // NOI18N
+            } catch (NoSuchFieldException ex) {
+                throw new IllegalStateException(ex);
+            }
+            f.setAccessible(true);
+            synchronized (doc) {
+                currWriterField = f;
+            }
+        }
+        try {
+            synchronized (doc) {
+                return currWriterField.get(doc) != null;
+            }
+        } catch (IllegalAccessException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+    
     public void paintComponent(Graphics g) {
+        if (isWriteLocked(doc)) {
+            // Try a little bit later ;-)
+            repaint(100);
+            return;
+        }
 //        Thread.dumpStack();
         long startTime = System.currentTimeMillis();
         super.paintComponent(g);
@@ -313,10 +344,18 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
 //        SortedMap marks = getMarkMap();
         int currentline = getCurrentLine();
         int annotatedLine = data.findNextUsedLine(-1);
-        
+
         AbstractDocument adoc = doc;
-        if (adoc != null)
+        // Try once again for the case if it was locked during the painting:
+        if (isWriteLocked(doc)) {
+            // Try a little bit later ;-)
+            repaint(100);
+            return;
+        }
+
+        if (adoc != null) {
             adoc.readLock();
+        }
         try {
             while (annotatedLine != Integer.MAX_VALUE) {
 //            System.err.println("annotatedLine = " + annotatedLine );
@@ -589,6 +628,9 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             if (getComponentHeight() <= getUsableHeight()) {
                 //1:1 mapping:
                 int positionOffset = pane.viewToModel(new Point(1, (int) (offset - topOffset())));
+                if (positionOffset == -1) {
+                    return null;
+                }
                 int line = Utilities.getLineOffset(doc, positionOffset);
                 
                 if (ERR.isLoggable(VIEW_TO_MODEL_IMPORTANCE)) {

@@ -46,13 +46,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
-import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.HtmlErrorFilter;
 import static org.netbeans.modules.html.editor.HtmlErrorFilter.*;
+import org.netbeans.modules.html.editor.HtmlExtensions;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.ProjectDefaultHtmlSourceVersionController;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
@@ -148,7 +149,7 @@ public class HtmlHintsProvider implements HintsProvider {
     @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
         //html extensions
-        for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
             ext.computeSelectionHints(manager, context, suggestions, start, end);
         }
 
@@ -262,7 +263,7 @@ public class HtmlHintsProvider implements HintsProvider {
         }
 
         //html extensions
-        for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
             ext.computeErrors(manager, context, hints, unhandled);
         }
         

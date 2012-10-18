@@ -125,7 +125,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         return result;
     }
 
-    protected static void instantiateSample(String name, final File destdir) throws IOException, InterruptedException, InvocationTargetException {
+    protected FileObject instantiateSample(String name, final File destdir) throws IOException, InterruptedException, InvocationTargetException {
         if(destdir.exists()) {
             assertTrue("Can not remove directory " + destdir.getAbsolutePath(), removeDirectoryContent(destdir));
         }
@@ -155,6 +155,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         if (exRef.get() != null) {
             throw exRef.get();
         }
+        return CndFileUtils.toFileObject(destdir);
     }
 
     @Override
@@ -213,8 +214,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         //File projectDir = new File(getWorkDir(), projectDirShortName);
         File projectDir = File.createTempFile(projectDirShortName + "_", "", getWorkDir());
         projectDir.delete();
-        instantiateSample(sampleName, projectDir);
-        FileObject projectDirFO = CndFileUtils.toFileObject(projectDir);
+        FileObject projectDirFO = instantiateSample(sampleName, projectDir);
         ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
         MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
         descriptor.save(); // make sure all necessary configuration files in nbproject/ are written

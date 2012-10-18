@@ -343,6 +343,9 @@ public final class Resolver3 implements Resolver {
         CsmObject result = null;
         for (CsmUsingDirective udir : CsmUsingResolver.getDefault().findUsingDirectives(containingNS)) {
             String fqn = udir.getName() + "::" + nameToken; // NOI18N
+            if(fqn.startsWith("::")) { // NOI18N
+                fqn = fqn.substring(2);
+            }
             result = findClassifierUsedInFile(fqn);
             if (result != null) {
                 break;

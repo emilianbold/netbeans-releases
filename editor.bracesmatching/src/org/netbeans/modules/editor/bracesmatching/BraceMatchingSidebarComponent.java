@@ -180,6 +180,8 @@ public class BraceMatchingSidebarComponent extends JComponent implements
      */
     private Coloring coloring;
     
+    private static final RequestProcessor RP = new RequestProcessor(BraceMatchingSidebarComponent.class);
+    
     public BraceMatchingSidebarComponent(JTextComponent editor) {
         this.editor = editor;
         this.mimeType = DocumentUtilities.getMimeType(editor);
@@ -230,7 +232,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
      * update is yet another runnable replanned to AWT, the Updater only 
      * provides coalescing of the scroll events.
      */
-    private Task scrollUpdater = RequestProcessor.getDefault().create(new Runnable() {
+    private Task scrollUpdater = RP.create(new Runnable() {
         @Override
         // delayed runnable
         public void run() {
@@ -238,10 +240,12 @@ public class BraceMatchingSidebarComponent extends JComponent implements
                // runnable that can access visual hierearchy
                public void run() {
                     Rectangle visible = getVisibleRect();
-                    if (visible.y < tooltipYAnchor) {
-                        hideToolTip(true);
-                    } else if (autoHidden) {
-                        showTooltip();
+                    if (tooltipYAnchor < Integer.MAX_VALUE) {
+                        if (visible.y <= tooltipYAnchor) {
+                            hideToolTip(true);
+                        } else if (autoHidden) {
+                            showTooltip();
+                        }
                     }
                } 
             });
@@ -479,6 +483,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
             ToolTipSupport tts = baseUI.getEditorUI().getToolTipSupport();
             tts.setToolTipVisible(false);
             this.autoHidden = autoHidden;
+//            this.tooltipVisible = false;
         }
     }
     
@@ -489,7 +494,10 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         int start = Integer.MAX_VALUE;
         int end = -1;
         
-        for (int i = 0; i < matches.length; i += 2) {
+        // See issue #219683: in if-then-elif-else constructs, only the 2 initial pairs
+        // (start and end of the initial tag/construct) are interesting. For finer control,
+        // a language SPI has to be created.
+        for (int i = 0; i < Math.min(matches.length, 4); i += 2) {
             int s = matches[i];
             int e = matches[i+1];
             
@@ -578,6 +586,9 @@ public class BraceMatchingSidebarComponent extends JComponent implements
     
     private boolean isMatcherTooltipVisible() {
         ToolTipSupport tts = baseUI.getEditorUI().getToolTipSupport();
+        if (!(tts.isEnabled() && tts.isToolTipVisible())) {
+            return false;
+        }
         return tts.getToolTip() instanceof BraceToolTip;
     }
     
@@ -643,7 +654,8 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         tts.setToolTip(tooltip, 
                 PopupManager.ScrollBarBounds, 
                 new Point(-x, -y),
-                0, 0,
-                ToolTipSupport.FLAG_PERMANENT);
+                0, 0, 0);
+        tts.setToolTipVisible(true, false);
+//        this.tooltipVisible = true;
     }
 }

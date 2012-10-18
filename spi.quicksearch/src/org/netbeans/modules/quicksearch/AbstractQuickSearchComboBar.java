@@ -134,7 +134,12 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
         });
 
         command = createCommandField();
-        command.setToolTipText(org.openide.util.NbBundle.getMessage(AbstractQuickSearchComboBar.class, "AbstractQuickSearchComboBar.command.toolTipText", new Object[] {"(" + SearchResultRender.getKeyStrokeAsText(keyStroke) + ")"})); // NOI18N
+        String shortcutText = "";                                       //NOI18N
+        if (!SearchResultRender.getKeyStrokeAsText(keyStroke).isEmpty()) {
+            shortcutText = "(" + SearchResultRender.getKeyStrokeAsText( //NOI18N
+                    keyStroke) + ")";                                   //NOI18N
+        }
+        command.setToolTipText(org.openide.util.NbBundle.getMessage(AbstractQuickSearchComboBar.class, "AbstractQuickSearchComboBar.command.toolTipText", new Object[] {shortcutText})); // NOI18N
         command.setName("command"); // NOI18N
         command.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
@@ -325,9 +330,12 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
         } else {
             sb.append(NbBundle.getMessage(AbstractQuickSearchComboBar.class, "MSG_DiscoverabilityHint")); //NOI18N
         }
-        sb.append(" (");
-        sb.append(SearchResultRender.getKeyStrokeAsText(keyStroke));
-        sb.append(")");
+        String keyStrokeAsText = SearchResultRender.getKeyStrokeAsText(keyStroke);
+        if (!keyStrokeAsText.isEmpty()) {
+            sb.append(" (");                                            //NOI18N
+            sb.append(keyStrokeAsText);
+            sb.append(")");                                             //NOI18N
+        }
 
         return sb.toString();
     }

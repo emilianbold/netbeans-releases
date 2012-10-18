@@ -54,7 +54,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author Tomas Stupka
  */
-@OptionsPanelController.Keywords(keywords={"bugzilla", "issue tracking"}, location=OptionsDisplayer.ADVANCED, tabTitle="Issue Tracking")
+@OptionsPanelController.Keywords(keywords={"bugzilla", "issue tracking", "#KW_IssueTracking"}, location=OptionsDisplayer.ADVANCED, tabTitle="Issue Tracking")
 public class BugzillaOptionsPanel extends javax.swing.JPanel {
 
     /** Creates new form SvnOptionsPanel */

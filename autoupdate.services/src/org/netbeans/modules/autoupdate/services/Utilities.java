@@ -1118,13 +1118,36 @@ public class Utilities {
         if (m2deps != null) {
             res = m2deps.get (m);
             if (res == null) {
-                res = mm.getModuleInterdependencies(m, true, false, true);
+                res = filterDependingOnOtherProvider(m, mm.getModuleInterdependencies(m, true, false, true));
                 m2deps.put (m, res);
             }
         } else {
-            res = mm.getModuleInterdependencies(m, true, false, true);
+            res = filterDependingOnOtherProvider(m, mm.getModuleInterdependencies(m, true, false, true));
         }
         return res;
+    }
+    
+    private static Set<Module> filterDependingOnOtherProvider(Module m, Set<Module> modules) {
+        Set<Module> alive = new HashSet<Module> ();
+        for (String token : m.getProvides()) {
+            for (Module depM : modules) {
+                for (Dependency dep : depM.getDependencies()) {
+                    if (dep.getType() == Dependency.TYPE_REQUIRES || dep.getType() == Dependency.TYPE_NEEDS) {
+                        if (token.equals(dep.getName())) {
+                            // check other installed providers
+                            assert UpdateManagerImpl.getInstance().getInstalledProviders(token).contains(m) :
+                                    "Provides of token " + token + " " + UpdateManagerImpl.getInstance().getInstalledProviders(token) +
+                                    " contains " + m;
+                            if (UpdateManagerImpl.getInstance().getInstalledProviders(token).size() > 1) {
+                                alive.add(depM);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        modules.removeAll(alive);
+        return modules;
     }
     
     public static String formatDate(Date date) {

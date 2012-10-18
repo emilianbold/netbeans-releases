@@ -46,6 +46,7 @@ import java.util.Set;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.spi.APTIndexingFilterProvider;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.openide.filesystems.FileSystem;
@@ -89,7 +90,7 @@ public class CndIndexingFilterProviderImpl implements APTIndexingFilterProvider 
         
         private void indexToken(APTToken token) {
             // index only identifiers
-            if (APTUtils.isID(token)) {
+            if (APTUtils.isID(token) || token.getType() == APTTokenTypes.ID_DEFINED) {
                 ids.add(token.getText());
 //                Logger.getLogger(IndexingFilterProviderImpl.class.getName()).info("Indexed " + token.getText());
             } else if (APTUtils.isEOF(token)) {

@@ -131,7 +131,7 @@ public class Utils {
                 ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css");
                 if(ri != null) {
                     CssCslParserResult result = (CssCslParserResult)ri.getParserResult();
-                    model_ref.set(Model.getModel(result.getWrappedCssParserResult()));
+                    model_ref.set(result.getModel());
                 }
                 
             }

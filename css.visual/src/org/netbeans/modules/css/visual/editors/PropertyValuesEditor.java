@@ -189,7 +189,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         if(CHOOSE_COLOR_ITEM.equals(str)) {
             //color chooser
             final AtomicReference<Color> color_ref = new AtomicReference<Color>();
-            JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), CHOOSE_COLOR_ITEM, true, COLOR_CHOOSER,
+            JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), Bundle.choose_color_item(), true, COLOR_CHOOSER,
                     new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -214,29 +214,9 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
             }
 
         }
+        
+        setValue(str);
 
-        if (RuleNode.NONE_PROPERTY_NAME.equals(str)) {
-            setValue(str); //pass the empty value to the Property
-            return;
-        }
-
-        //first match fixed elements
-        for (FixedTextGrammarElement element : fixedElements) {
-            if (element.accepts(str)) {
-                setValue(str);
-                return;
-            }
-        }
-        //then units
-        for (UnitGrammarElement element : unitElements) {
-            if (element.accepts(str)) {
-                setValue(str);
-                return;
-            }
-        }
-
-        //report error
-        throw new IllegalArgumentException(str);
     }
 
     @Override
@@ -271,28 +251,28 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                             int i = acceptor.getNumberValue(value).intValue();
                             CharSequence postfix = acceptor.getPostfix(value);
 
-                            StringBuilder newVal = new StringBuilder();
-                            newVal.append(i + (forward ? 1 : -1));
+                            StringBuilder sb = new StringBuilder();
+                            sb.append(i + (forward ? 1 : -1));
                             if(postfix != null) {
-                                newVal.append(postfix);
+                                sb.append(postfix);
                             }
 
-                            return newVal.toString();
+                            return sb.toString();
                         }
                     } else if (genericAcceptor instanceof TokenAcceptor.Number) {
                         TokenAcceptor.Number acceptor = (TokenAcceptor.Number) genericAcceptor;
                         if (acceptor.accepts(value)) {
                             int i = acceptor.getNumberValue(value).intValue();
 
-                            StringBuilder newVal = new StringBuilder();
-                            newVal.append(i + (forward ? 1 : -1));
+                            StringBuilder sb = new StringBuilder();
+                            sb.append(i + (forward ? 1 : -1));
 
-                            return newVal.toString();
+                            return sb.toString();
                         }
                     }
 
                 }
-
+               
                 //not acceptable token
                 return null;
             }

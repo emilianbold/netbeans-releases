@@ -121,7 +121,7 @@ public class FXMLHyperlinkProvider implements HyperlinkProviderExt {
 
         Token t = ts.token();
         FileObject fo = getFileObject(doc);
-        String name = t.toString();
+        String name = t.text().toString();
 
         FileObject props = findFile(fo, name);
         if (props != null) {
@@ -167,7 +167,7 @@ public class FXMLHyperlinkProvider implements HyperlinkProviderExt {
         String javaPath = path.trim().replace("\"", "").replace('.', '/') + ".java"; // NOI18N
         fo = cp.findResource(javaPath);
         if (fo == null) {
-            javaPath = docPath.substring(rootPath.length()) + '\\' + javaPath; // NOI18N
+            javaPath = docPath.substring(rootPath.length()) + '/' + javaPath; // NOI18N
             fo = cp.findResource(javaPath);
         }
         
@@ -178,7 +178,7 @@ public class FXMLHyperlinkProvider implements HyperlinkProviderExt {
             fo = cp.findResource(cssPath);
             // try full path
             if (fo == null) {
-                cssPath = docPath.substring(rootPath.length()) + '\\' + cssPath; // NOI18N
+                cssPath = docPath.substring(rootPath.length()) + '/' + cssPath; // NOI18N
                 fo = cp.findResource(cssPath);
             }
         }
@@ -212,7 +212,7 @@ public class FXMLHyperlinkProvider implements HyperlinkProviderExt {
             return null;
         }
         Token t = ts.token();
-        if (findFile(fo, t.toString()) != null) {
+        if (findFile(fo, t.text().toString()) != null) {
             return new int[]{ts.offset() + 1, ts.offset() + t.length() - 1};
         }
         return null;

@@ -1557,7 +1557,9 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
 
             if (result == null) {
                 result = java.beans.PropertyEditorManager.findEditor(type);
-                if (result != null && result.getClass().getName().equals("sun.beans.editors.EnumEditor")) { // NOI18N
+                if (result != null && (result.getClass().getName().equals("sun.beans.editors.EnumEditor") //NOI18N
+                                        //#220154 - the package name has change in JDK 1.7 update 10
+                                        || result.getClass().getName().equals("com.sun.beans.editors.EnumEditor")) ) { // NOI18N
                     result = null;
                 }
                 edRef = new SoftReference<PropertyEditor>(result);

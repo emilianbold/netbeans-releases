@@ -307,6 +307,19 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
      * @param rules rules selected in this panel.
      */
     void updateRulesEditor(final Collection<? extends Rule> rules) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                if (pageModel != null) {
+                    String selector = null;
+                    if  (rules.size() == 1) {
+                        Rule rule = rules.iterator().next();
+                        selector = rule.getSelector();
+                    }
+                    pageModel.setSelectedSelector(selector);
+                }
+            }
+        });
         final RuleInfo ruleInfo = (rules.size() == 1) ? lookup.lookup(RuleInfo.class) : null;
         EventQueue.invokeLater(new Runnable() {
             @Override

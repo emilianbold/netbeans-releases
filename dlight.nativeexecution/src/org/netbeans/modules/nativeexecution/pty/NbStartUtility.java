@@ -43,6 +43,7 @@ package org.netbeans.modules.nativeexecution.pty;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.MissingResourceException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -50,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -58,7 +58,7 @@ import org.openide.util.Exceptions;
  */
 public class NbStartUtility extends HelperUtility {
 
-    private static final boolean DISABLED = true; // Boolean.getBoolean("disable.nbstart"); // NOI18N
+    private static final boolean ENABLED = Boolean.getBoolean("enable.nbstart"); // NOI18N
     private final static NbStartUtility instance = new NbStartUtility();
 
     public NbStartUtility() {
@@ -69,7 +69,8 @@ public class NbStartUtility extends HelperUtility {
         return instance;
     }
 
-    public String getLocalFileLocationFor(final HostInfo hostInfo) {
+    @Override
+    protected String getLocalFileLocationFor(final HostInfo hostInfo)  throws MissingResourceException {
         String osname = hostInfo.getOS().getFamily().cname();
         String platform = hostInfo.getCpuFamily().name().toLowerCase();
         String bitness = hostInfo.getOS().getBitness() == HostInfo.Bitness._64 ? "_64" : ""; // NOI18N
@@ -83,7 +84,7 @@ public class NbStartUtility extends HelperUtility {
         File file = fl.locate(path.toString(), codeNameBase, false);
 
         if (file == null || !file.exists()) {
-            return null;
+            throw new MissingResourceException(path.toString(), null, null);
         }
 
         return file.getAbsolutePath();
@@ -100,7 +101,7 @@ public class NbStartUtility extends HelperUtility {
     }
 
     public boolean isSupported(HostInfo hostInfo) {
-        if (DISABLED) {
+        if (!ENABLED) {
             return false;
         }
 

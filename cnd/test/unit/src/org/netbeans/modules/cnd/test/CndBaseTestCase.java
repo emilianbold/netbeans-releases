@@ -46,24 +46,20 @@ package org.netbeans.modules.cnd.test;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Collections;
-import java.util.TreeSet;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.EditorKit;
-import junit.framework.Assert;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.cplusplus.HKit;
@@ -74,8 +70,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -110,73 +104,11 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
 
     private static final boolean TRACE_START_STOP = false;
 
-    static {
-        // Setting netbeans.dirs makes installedFileLocator work properly
-        File[] clusters = findClusters();
-        StringBuilder sb = new StringBuilder();
-        for (File cluster : clusters) {
-            if (sb.length() > 0) {
-                sb.append(File.pathSeparator);
-            }
-            sb.append(cluster.getPath());
-        }
-        System.setProperty("netbeans.dirs", sb.toString());
-    }
-
     private MimePath mimePath1;
     private MimePath mimePath2;
     private MimePath mimePath3;
     private MimePath mimePath4;
     private MimePath mimePath5;
-
-    // it's like what org.netbeans.junit.NbModuleSuite does,
-    // but reusing NbModuleSuite will cause too massive changes in existing CND tests
-    private static File[] findClusters() {
-        File netbeans = findNetbeans();
-        assert netbeans != null;
-        File[] clusters = netbeans.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File dir) {
-                if (dir.isDirectory()) {
-                    File m = new File(new File(dir, "config"), "Modules");
-                    return m.exists();
-                }
-                return false;
-            }
-        });
-        return clusters;
-    }
-
-    // it's like what org.netbeans.junit.NbModuleSuite does,
-    // but reusing NbModuleSuite will cause too massive changes in existing CND tests
-    private static File findNetbeans() {
-        try {
-            Class<?> lookup = Class.forName("org.openide.util.Lookup"); // NOI18N
-            File util = new File(lookup.getProtectionDomain().getCodeSource().getLocation().toURI());
-            Assert.assertTrue("Util exists: " + util, util.exists());
-            return util.getParentFile().getParentFile().getParentFile();
-        } catch (Exception ex) {
-            try {
-                File nbjunit = new File(NbModuleSuite.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-                File harness = nbjunit.getParentFile().getParentFile();
-                Assert.assertEquals("NbJUnit is in harness", "harness", harness.getName());
-                TreeSet<File> sorted = new TreeSet<File>();
-                File[] listFiles = harness.getParentFile().listFiles();
-                if (listFiles != null) {
-                    for (File p : listFiles) {
-                        if (p.getName().startsWith("platform")) {
-                            sorted.add(p);
-                        }
-                    }
-                }
-                Assert.assertFalse("Platform shall be found in " + harness.getParent(), sorted.isEmpty());
-                return sorted.last();
-            } catch (Exception ex2) {
-                Assert.fail("Cannot find utilities JAR: " + ex + " and: " + ex2);
-            }
-            return null;
-        }
-    }
     
     /** Creates a new instance of BaseTestCase */
     public CndBaseTestCase(String testName) {

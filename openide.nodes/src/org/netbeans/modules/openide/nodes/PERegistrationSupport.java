@@ -216,7 +216,7 @@ public final class PERegistrationSupport {
         
         synchronized void register() {
             pkgResult = Lookup.getDefault().lookupResult(PERegistrationSupport.PEPackageRegistration.class);
-            Set<String> newPath = new HashSet<String> ();
+            Set<String> newPath = new LinkedHashSet<String> ();
             for (PEPackageRegistration pkgReg : pkgResult.allInstances()) {
                 newPath.add(pkgReg.pkg);
             }

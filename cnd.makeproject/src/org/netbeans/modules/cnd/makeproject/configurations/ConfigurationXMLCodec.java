@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.Kind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -132,12 +131,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private String relativeOffset;
     private Map<String, String> cache = new HashMap<String, String>();
     private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
-    private final boolean publicLocation;
 
-    public ConfigurationXMLCodec(String tag, boolean shared, FileObject projectDirectory, MakeConfigurationDescriptor projectDescriptor, String relativeOffset) {
-        super(projectDescriptor, shared, false);
+    public ConfigurationXMLCodec(String tag, FileObject projectDirectory, MakeConfigurationDescriptor projectDescriptor, String relativeOffset) {
+        super(projectDescriptor, true);
         this.tag = tag;
-        this.publicLocation = shared;
         this.projectDirectory = projectDirectory;
         this.projectDescriptor = projectDescriptor;
         this.remoteProject = projectDescriptor.getProject().getLookup().lookup(RemoteProject.class);
@@ -209,14 +206,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 confType = MakeConfiguration.TYPE_CUSTOM;
                 customizerId = atts.getValue(CUSTOMIZERID_ATTR);
             }
-            for(Configuration c : projectDescriptor.getConfs().getConfigurations()) {
-                if (atts.getValue(NAME_ATTR).equals(c.getName())) {
-                    currentConf = c;
-                }
-            }
-            if (currentConf == null) {
-                currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), confType, customizerId);
-            }
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), confType, customizerId);
 
             // switch out old decoders
             for (int dx = 0; dx < decoders.size(); dx++) {
@@ -228,7 +218,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             ConfigurationAuxObject[] profileAuxObjects = currentConf.getAuxObjects();
             decoders = new ArrayList<XMLDecoder>();
             for (int i = 0; i < profileAuxObjects.length; i++) {
-                if (profileAuxObjects[i].shared() == publicLocation) {
+                if (profileAuxObjects[i].shared()) {
                     XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
                     registerXMLDecoder(newDecoder);
                     decoders.add(newDecoder);
@@ -255,16 +245,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 boolean projectFiles = atts.getValue(PROJECT_FILES_ATTR).equals(TRUE_VALUE);
                 String kindAttr = atts.getValue(KIND_ATTR);
                 String root = getString(atts.getValue(ROOT_ATTR));
-                Folder aFolder = currentFolder.findFolderByName(name);
-                if (aFolder != null) {
-                    currentFolder = aFolder;
-                } else {
-                    currentFolder = currentFolder.addNewFolder(name, displayName, projectFiles, kindAttr);
-                }
+                currentFolder = currentFolder.addNewFolder(name, displayName, projectFiles, kindAttr);
                 if (root != null) {
                     currentFolder.setRoot(root);
                 }
-                if (currentFolder.getKind() == Kind.IMPORTANT_FILES_FOLDER) {
+                if (!projectFiles) {
                     projectDescriptor.setExternalFileItems(currentFolder);
                 }
                 currentFolderStack.push(currentFolder);
@@ -282,12 +267,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, projectDescriptor.getProject());
                     name = CndPathUtilitities.getBaseName(absRootPath);
                 }
-                Folder aFolder = currentFolder.findFolderByName(name);
-                if (aFolder != null) {
-                    currentFolder = aFolder;
-                } else {
-                    currentFolder = currentFolder.addNewFolder(name, name, true, Folder.Kind.SOURCE_DISK_FOLDER);
-                }
+                currentFolder = currentFolder.addNewFolder(name, name, true, Folder.Kind.SOURCE_DISK_FOLDER);
                 if (root != null) {
                     currentFolder.setRoot(root);
                 }
@@ -614,14 +594,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(ITEM_PATH_ELEMENT)) {
             String path = currentText;
             path = getString(adjustOffset(path));
-            currentFolder.addItemWithoutConfiguration(createItem(path));
+            currentFolder.addItem(createItem(path));
         } else if (element.equals(ITEM_NAME_ELEMENT)) {
             String path = currentFolder.getRootPath() + '/' + currentText;
             if (path.startsWith("./")) { // NOI18N
                 path = path.substring(2);
             }
             path = getString(adjustOffset(path));
-            currentFolder.addItemWithoutConfiguration(createItem(path));
+            currentFolder.addItem(createItem(path));
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {
             CndUtils.assertNotNullInConsole(currentItemConfiguration, "null currentItemConfiguration"); //NOI18N
             if (currentItemConfiguration != null) {

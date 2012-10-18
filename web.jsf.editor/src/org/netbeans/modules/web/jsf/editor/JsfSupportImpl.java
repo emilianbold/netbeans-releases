@@ -177,9 +177,6 @@ public class JsfSupportImpl implements JsfSupport {
                 }
             }
         });
-        //register html extension
-        //TODO this should be done declaratively via layer
-        JsfHtmlExtension.activate();
 
         webBeansModel = new MetaModelSupport(project).getMetaModel();
 

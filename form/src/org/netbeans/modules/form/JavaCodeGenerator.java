@@ -176,9 +176,6 @@ class JavaCodeGenerator extends CodeGenerator {
     private static String variablesFooter;
     private static String eventDispatchCodeComment;
 
-    /** The FormLoaderSettings instance */
-    private static FormLoaderSettings formSettings = FormLoaderSettings.getInstance();
-
     private FormModel formModel;
     private EditorSupport formEditorSupport;
     private FormEditor formEditor;
@@ -207,6 +204,29 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private static int indentSize = 4;
     private static boolean braceOnNewLine = false;
+
+    private static final String GUARD_BEGIN_INITCOMPONENTS;
+    private static final String GUARD_END_INITCOMPONENTS;
+    private static final String GUARD_BEGIN_VARIABLES;
+    private static final String GUARD_END_VARIABLES;
+    static {
+        if (FormUtils.getPresetValue("KEEP_GUARD_COMMENTS", false)) { // NOI18N
+            GUARD_BEGIN_INITCOMPONENTS = "//GEN-BEGIN:initComponents"; // NOI18N
+            GUARD_END_INITCOMPONENTS = "//GEN-END:initComponents"; // NOI18N
+            GUARD_BEGIN_VARIABLES = "//GEN-BEGIN:variables"; // NOI18N
+            GUARD_END_VARIABLES = "//GEN-END:variables"; // NOI18N
+        } else if (FormUtils.getPresetValue("REPLACE_GUARD_COMMENTS_WITH_SPACES", false)) { // NOI18N
+            GUARD_BEGIN_INITCOMPONENTS = "                          "; // NOI18N
+            GUARD_END_INITCOMPONENTS = "                        "; // NOI18N
+            GUARD_BEGIN_VARIABLES = "                     "; // NOI18N
+            GUARD_END_VARIABLES = "                   "; // NOI18N
+        } else {
+            GUARD_BEGIN_INITCOMPONENTS = ""; // NOI18N
+            GUARD_END_INITCOMPONENTS = ""; // NOI18N
+            GUARD_BEGIN_VARIABLES = ""; // NOI18N
+            GUARD_END_VARIABLES = ""; // NOI18N
+        }
+    }
 
     private static class PropertiesFilter implements FormProperty.Filter {
 		
@@ -967,7 +987,7 @@ class JavaCodeGenerator extends CodeGenerator {
             return;
 
         // find indent engine to use or imitate
-        IndentEngine indentEngine = formSettings.getUseIndentEngine()
+        IndentEngine indentEngine = FormLoaderSettings.getInstance().getUseIndentEngine()
                 ? IndentEngine.find(formEditor.getSourcesDocument()) : null;
 
         final SimpleSection initComponentsSection = formEditor.getInitComponentSection();
@@ -991,7 +1011,7 @@ class JavaCodeGenerator extends CodeGenerator {
         cleanup();
 
         try {
-            boolean foldGeneratedCode = formSettings.getFoldGeneratedCode();
+            boolean foldGeneratedCode = FormLoaderSettings.getInstance().getFoldGeneratedCode();
             if (foldGeneratedCode) {
                 writer.write("// <editor-fold defaultstate=\"collapsed\" desc=\""); // NOI18N
                 writer.write(FormUtils.getBundleString("MSG_GeneratedCode")); // NOI18N
@@ -1060,6 +1080,14 @@ class JavaCodeGenerator extends CodeGenerator {
             if (indentEngine == null) {
                 newText = indentCode(newText, 1);
             }
+            if (GUARD_BEGIN_INITCOMPONENTS.length() > 0) {
+                int i1 = newText.indexOf('\n');
+                int i2 = newText.lastIndexOf('\n');
+                if (i1 > 0 && i2 > i1 && i2 == newText.length()-1) {
+                    newText = newText.substring(0, i1) + GUARD_BEGIN_INITCOMPONENTS
+                            + newText.substring(i1, i2) + GUARD_END_INITCOMPONENTS + "\n"; // NOI18N
+                }
+            }
             initComponentsSection.setText(newText);
             
             clearUndo();
@@ -1104,7 +1132,7 @@ class JavaCodeGenerator extends CodeGenerator {
             return;
         }
 
-        IndentEngine indentEngine = formSettings.getUseIndentEngine()
+        IndentEngine indentEngine = FormLoaderSettings.getInstance().getUseIndentEngine()
                 ? IndentEngine.find(formEditor.getSourcesDocument()) : null;
 
         StringWriter variablesBuffer = new StringWriter(1024);
@@ -1134,6 +1162,14 @@ class JavaCodeGenerator extends CodeGenerator {
             String newText = variablesBuffer.toString();
             if (indentEngine == null) {
                 newText = indentCode(newText, 1);
+            }
+            if (GUARD_BEGIN_VARIABLES.length() > 0) {
+                int i1 = newText.indexOf('\n');
+                int i2 = newText.lastIndexOf('\n');
+                if (i1 > 0 && i2 > i1 && i2 == newText.length()-1) {
+                    newText = newText.substring(0, i1) + GUARD_BEGIN_VARIABLES
+                            + newText.substring(i1, i2) + GUARD_END_VARIABLES + "\n"; // NOI18N
+                }
             }
 
             variablesSection.setText(newText);        
@@ -3095,7 +3131,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (sec != null && bodyText == null)
             return; // already exists, no need to generate
 
-        IndentEngine indentEngine = formSettings.getUseIndentEngine()
+        IndentEngine indentEngine = FormLoaderSettings.getInstance().getUseIndentEngine()
                 ? IndentEngine.find(formEditor.getSourcesDocument()) : null;
         StringWriter buffer = new StringWriter();
 
@@ -3459,6 +3495,9 @@ class JavaCodeGenerator extends CodeGenerator {
         if (handleInitComponents) {
             SimpleSection initComponentsSection = formEditor.getInitComponentSection();
             int[] span = formEditor.getFormJavaSource().getMethodSpan("initComponents"); // NOI18N
+            if (span == null) {
+                return;
+            }
             list.add(new int[] { span[0], initComponentsSection.getEndPosition().getOffset() });
             // also includes the listener class if generated
         }

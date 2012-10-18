@@ -10,13 +10,35 @@ CONF=$(OS)-x86
 PNAME=killall
 CC=gcc
 
+SOURCES_SunOS=\
+	$(ROOT_DIR)/src/solaris/pfind.c
+
+SOURCES_Linux=\
+	$(ROOT_DIR)/src/linux/pfind.c
+
+SOURCES_Mac=\
+	$(ROOT_DIR)/src/macosx/pfind.c
+
+SOURCES_SunOS-x86=$(SOURCES_SunOS)
+SOURCES_SunOS-x86_64=$(SOURCES_SunOS)
+SOURCES_SunOS-sparc=$(SOURCES_SunOS)
+SOURCES_SunOS-sparc_64=$(SOURCES_SunOS)
+SOURCES_Linux-x86=$(SOURCES_Linux)
+SOURCES_Linux-x86_64=$(SOURCES_Linux)
+SOURCES_MacOSX-x86=$(SOURCES_Mac)
+SOURCES_MacOSX-x86_64=$(SOURCES_Mac)
+
 SOURCES=\
 	$(ROOT_DIR)/src/error.c \
 	$(ROOT_DIR)/src/killall.c \
-	$(ROOT_DIR)/src/options.c
+	$(ROOT_DIR)/src/options.c \
+	$(SOURCES_$(CONF))
 
 SRC_DIRS=\
-	$(ROOT_DIR)/src
+	$(ROOT_DIR)/src \
+	$(ROOT_DIR)/src/linux \
+	$(ROOT_DIR)/src/solaris \
+	$(ROOT_DIR)/src/macosx
 
 MKDIR=mkdir -p
 OBJ_DIR=$(ROOT_DIR)/build/$(CONF)
@@ -72,7 +94,6 @@ clean: clean_deps
 clean-all:
 	$(RM) -r $(ROOT_DIR)/build
 	$(RM) -r $(ROOT_DIR)/dist
-	$(RM) .make.state*
 
 install:
 	cp $(EXEC) $(INSTALL_DIR)
