@@ -1142,9 +1142,13 @@ public final class AttachPanel extends TopComponent {
                     return;
                 }
 
-                // Need to return from this method before starting attach
-                // This is to give ProgressUtils a chance to dispose it's dialog
-                RequestProcessor.getDefault().post(new Runnable() {
+                // The intention is to return from this method (to give
+                // ProgressUtils a chance to dispose it's dialog) and to 
+                // continue attach process... 
+                // But this doesn't work this way, as ProgressUtils usess
+                // invokeLater as well... So now there is a chance to see 
+                // two progress dialogs simultaniously... 
+                SwingUtilities.invokeLater(new Runnable() {
 
                     @Override
                     public void run() {
