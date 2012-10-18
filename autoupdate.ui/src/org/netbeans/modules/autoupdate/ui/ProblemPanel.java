@@ -101,7 +101,7 @@ public class ProblemPanel extends javax.swing.JPanel {
     }
     
     @Messages({"proxy_taTitle_Text=Unable to connect to the Update Center",
-        "proxy_taMessage_WarningTextWithReload=Check your proxy settings or try again later. The server may be unavailable at the moment. \n\nYou may also want to make sure that your firewall is not blocking network traffic. \n\nYour cache may be out of date. Please click Reload Catalog to refresh content.",
+        "proxy_taMessage_WarningTextWithReload=Check your proxy settings or try again later. The server may be unavailable at the moment. \n\nYou may also want to make sure that your firewall is not blocking network traffic. \n\nYour cache may be out of date. Please click Check for Updates to refresh content.",
         "proxy_taMessage_WarningText=Check your proxy settings or try again later. The server may be unavailable at the moment. \n\nYou may also want to make sure that your firewall is not blocking network traffic.",
         "proxy_taMessage_ErrorText=Not all of the plugins have been successfully downloaded. The server may be unavailable at the moment. Try again later."})
     private void initProxyProblem(String problemDescription) {
