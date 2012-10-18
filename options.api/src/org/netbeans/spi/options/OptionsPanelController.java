@@ -48,6 +48,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.options.OptionsPanelControllerAccessor;
@@ -171,6 +172,17 @@ public abstract class OptionsPanelController {
      */
     public Lookup getLookup () {
         return Lookup.EMPTY;
+    }
+
+    /**
+     * Handle successful search in some panel in options window.
+     * By default no action is performed. Each implementor should make special
+     * actions, for example to choose a specific sub-panel, if this is required.
+     * @param searchText the text the user has entered in the search box in the options window.
+     * @param matchedKeywords the list of matched keywords for a specific panel in the options window.
+     * @since 1.30
+     */
+    public void handleSuccessfulSearch(String searchText, List<String> matchedKeywords) {
     }
 
     /**

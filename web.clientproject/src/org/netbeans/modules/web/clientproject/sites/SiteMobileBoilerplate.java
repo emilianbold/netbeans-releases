@@ -48,7 +48,7 @@ import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -87,14 +87,19 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
     }
 
     @Override
-    public void apply(AntProjectHelper helper, ProgressHandle handle) throws IOException {
+    public void configure(ProjectProperties projectProperties) {
+        // noop
+    }
+
+    @Override
+    public void apply(FileObject projectDir, ProjectProperties projectProperties, ProgressHandle handle) throws IOException {
         assert !EventQueue.isDispatchThread();
         if (!isPrepared()) {
             // not correctly prepared, user has to know about it already
             LOGGER.info("Template not correctly prepared, nothing to be applied"); //NOI18N
             return;
         }
-        SiteHelper.unzipProjectTemplate(helper, LIB_FILE, handle);
+        SiteHelper.unzipProjectTemplate(projectDir.getFileObject(projectProperties.getSiteRootFolder()), LIB_FILE, handle);
     }
 
     @Override
