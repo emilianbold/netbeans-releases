@@ -1,35 +1,15 @@
--- phpMyAdmin SQL Dump
--- version 3.3.10deb1
--- http://www.phpmyadmin.net
---
--- Počítač: localhost
--- Vygenerováno: Pátek 14. října 2011, 13:08
--- Verze MySQL: 5.1.54
--- Verze PHP: 5.3.5-1ubuntu7.2
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT=0;
 START TRANSACTION;
 
---
--- Databáze: `rentaflat`
---
-
 -- --------------------------------------------------------
-
---
--- Struktura tabulky `disposition`
---
 
 CREATE TABLE `disposition` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `text` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=15 ;
-
---
--- Vypisuji data pro tabulku `disposition`
---
 
 INSERT INTO `disposition` (`id`, `text`) VALUES
 (1, '1+0'),
@@ -49,10 +29,6 @@ INSERT INTO `disposition` (`id`, `text`) VALUES
 
 -- --------------------------------------------------------
 
---
--- Struktura tabulky `location`
---
-
 CREATE TABLE `location` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `city_part` text,
@@ -60,19 +36,11 @@ CREATE TABLE `location` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
 
---
--- Vypisuji data pro tabulku `location`
---
-
 INSERT INTO `location` (`id`, `city_part`, `city`) VALUES
 (1, 'Chodov', 'Prague'),
 (2, 'Vinohrady', 'Prague');
 
 -- --------------------------------------------------------
-
---
--- Struktura tabulky `property`
---
 
 CREATE TABLE `property` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -101,10 +69,6 @@ CREATE TABLE `property` (
   KEY `property_build_id_idx` (`property_build_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=10 ;
 
---
--- Vypisuji data pro tabulku `property`
---
-
 INSERT INTO `property` (`id`, `reference_no`, `title`, `text`, `disposition_id`, `area`, `floor`, `lift`, `cellar`, `balcony`, `location_id`, `price`, `created_on`, `street`, `property_build_id`, `terace`, `loggia`, `garden`, `garage`, `parking_place`) VALUES
 (1, 'NetBeans001', 'Great flat for PHP Development', 'This fabulous three bedroomed penthouse apartment is arranged over the sixth and seventh floors (with lift and concierge) of Orechovka, a smart residential development on the banks of the River Vltava.  The property offers chic and spacious accommodation and comprises vast reception room with door to the roof terrace, contemporary kitchen with ample space for dining, master bedroom with en suite shower room, two additional bedrooms, bathroom, good storage space, balcony, roof terrace, and secure underground parking.', 11, 110.00, 2, 1, 0.00, 40.00, 1, 1000, '2010-11-03 11:15:44', 'V parku 2308/8', 1, 0.00, 0.00, 0.00, 0.00, 1),
 (2, 'NetBeans002', 'Great flat for J2EE Development', 'Benefiting from well proportioned living space and high-quality interiors throughout, this recently refurbished two bedroomed flat is attractively arranged over the ground and lower ground floors of a beautiful period block in the heart of historic Marylebone.  The property comprises reception room with well equipped contemporary kitchen, master bedroom with en suite shower room, second bedroom/study, bathroom and guest cloakroom. ', 7, 99.20, 3, 0, 0.00, 0.00, 1, 1500, '2010-11-08 15:32:51', 'V parku 2308/8', 1, 0.00, 0.00, 0.00, 0.00, 0),
@@ -118,32 +82,17 @@ INSERT INTO `property` (`id`, `reference_no`, `title`, `text`, `disposition_id`,
 
 -- --------------------------------------------------------
 
---
--- Struktura tabulky `property_build`
---
-
 CREATE TABLE `property_build` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `text` text NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
 
---
--- Vypisuji data pro tabulku `property_build`
---
-
 INSERT INTO `property_build` (`id`, `text`) VALUES
 (1, 'brick'),
 (2, 'concrete'),
 (3, 'skeletal structure');
 
---
--- Omezení pro exportované tabulky
---
-
---
--- Omezení pro tabulku `property`
---
 ALTER TABLE `property`
   ADD CONSTRAINT `property_disposition_id_disposition_id` FOREIGN KEY (`disposition_id`) REFERENCES `disposition` (`id`),
   ADD CONSTRAINT `property_location_id_location_id` FOREIGN KEY (`location_id`) REFERENCES `location` (`id`),
