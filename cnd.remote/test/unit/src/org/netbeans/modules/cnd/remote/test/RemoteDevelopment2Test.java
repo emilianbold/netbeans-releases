@@ -42,80 +42,29 @@
 
 package org.netbeans.modules.cnd.remote.test;
 
-import java.util.Collection;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.remote.fs.CndFileUtilTestCase;
-import org.netbeans.modules.cnd.remote.mapper.IncludeMappingsTestCase;
-import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
-import org.netbeans.modules.cnd.remote.support.DownloadTestCase;
-import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
-import org.netbeans.modules.cnd.remote.support.TransportTestCase;
-import org.netbeans.modules.cnd.remote.support.UploadTestCase;
+import org.netbeans.modules.cnd.remote.fs.RemoteCodeModelTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class RemoteDevelopmentTest extends CndBaseTestSuite {
+public class RemoteDevelopment2Test extends CndBaseTestSuite {
 
-    public static final String PLATFORMS_SECTION = "remote.platforms";
-    public static final String DEFAULT_SECTION = "remote";
-
-   public RemoteDevelopmentTest() {
+   public RemoteDevelopment2Test() {
        this("Remote Development", // NOI18N
-           MappingsTestCase.class,
-           IncludeMappingsTestCase.class,
-           DownloadTestCase.class,
-           ServerListTestCase.class,
-           TransportTestCase.class,
-           UploadTestCase.class,           
-           CndFileUtilTestCase.class
+           RemoteCodeModelTestCase.class
        );
    }
 
-    public RemoteDevelopmentTest(Class testClass) {
-        this(testClass.getName(), testClass);
-    }
-
-    /** mainly for debugging purposes - launches the given test multiple times  */
-    public RemoteDevelopmentTest(Class testClass, int passes) {
-        this(testClass.getName(), multiply(testClass, passes));
-    }
-
-    private static Class[] multiply(Class testClass, int passes) {
-        Class[] result = new Class[passes];
-        for (int i = 0; i < passes; i++) {
-            result[i] = testClass;
-        }
-        return result;
-    }
-
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteDevelopmentTest(String name, Test... tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteDevelopmentTest(String name, Collection<Test> tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    private RemoteDevelopmentTest(String name, Class... testClasses) {
-        super(name, PLATFORMS_SECTION, testClasses);
+    private RemoteDevelopment2Test(String name, Class... testClasses) {
+        super(name, "remote.platforms", testClasses);
     }
 
     public static Test suite() {
-        TestSuite suite = new RemoteDevelopmentTest();
+        TestSuite suite = new RemoteDevelopment2Test();
         return suite;
     }
 }
