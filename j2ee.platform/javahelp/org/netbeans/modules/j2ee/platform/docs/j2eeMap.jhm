@@ -269,8 +269,6 @@ Other names may be trademarks of their respective owners.
         <mapID target="ID_SERVICE" url="webservice/csh/editor/ID_SERVICE.html" />
 	<mapID target="ID_PORT" url="webservice/csh/editor/ID_PORT.html" />
         <mapID target="ID_EXTERNAL_BINDING" url="webservice/csh/editor/ID_EXTERNAL_BINDING.html" />
-        
-        <mapID target="js.client.rest" url="webservice/csh/wizards/JSClient4rest.html" />
 <!-- End of "Developing Web Services" CSH -->
 
 <!-- Start of J2EE Server CSH topics-->
@@ -295,6 +293,11 @@ Other names may be trademarks of their respective owners.
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerJarContent" url="enterprise/csh/CustomizerJarContent.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerLibraries" url="enterprise/csh/CustomizerLibraries.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun" url="enterprise/csh/CustomizerRun.html" />
+    <!-- New Master/Detail Form wizard csh -->
+    <mapID target="org.netbeans.modules.form.j2ee.wizard.MasterPanel" url="enterprise/csh/NewMasterFormWizard_MasterTable.html" />
+    <mapID target="org.netbeans.modules.form.j2ee.wizard.DetailPanel" url="enterprise/csh/NewMasterFormWizard_DetailOptions.html" />
+
+
 <!-- End of Enterprise Application CSH topics -->
 
 <!-- Start of EJB CSH topics -->  

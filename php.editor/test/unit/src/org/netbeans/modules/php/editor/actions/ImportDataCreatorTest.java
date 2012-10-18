@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
+import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
@@ -179,17 +180,17 @@ public class ImportDataCreatorTest extends PHPCodeCompletionTestBase {
         sb.append("Caret position: ").append(testResult.caretPosition);
         sb.append("\nShould show uses panel: ").append(testResult.shouldShowUsesPanel ? "true" : "false");
         sb.append("\nDefaults:\n");
-        for (String def : testResult.defaults) {
-            sb.append(" ").append(def).append("\n");
+        for (ImportData.DataItem dataItem : testResult.getItems()) {
+            sb.append(" ").append(dataItem.getDefaultVariant().getName()).append("\n");
         }
         sb.append("\nNames:\n");
-        for (String name : testResult.names) {
-            sb.append(" ").append(name).append("\n");
+        for (ImportData.DataItem dataItem : testResult.getItems()) {
+            sb.append(" ").append(dataItem.getTypeName()).append("\n");
         }
         sb.append("\nVariants:\n");
-        for (String[] variants : testResult.variants) {
-            for (String variant : variants) {
-                sb.append(" ").append(variant).append("\n");
+        for (ImportData.DataItem dataItem : testResult.getItems()) {
+            for (ItemVariant itemVariant : dataItem.getVariants()) {
+                sb.append(" ").append(itemVariant.getName()).append("\n");
             }
             sb.append("\n");
         }
