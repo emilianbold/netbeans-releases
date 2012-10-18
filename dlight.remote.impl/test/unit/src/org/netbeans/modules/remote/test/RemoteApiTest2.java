@@ -51,59 +51,29 @@ import org.netbeans.modules.remote.impl.fs.*;
  *
  * @author Vladimir Kvashin
  */
-public class RemoteApiTest extends NativeExecutionBaseTestSuite {
+public class RemoteApiTest2 extends NativeExecutionBaseTestSuite {
 
     @SuppressWarnings("unchecked")
-    public RemoteApiTest() {
+    public RemoteApiTest2() {
         this("Remote API", getTestClasses());
     }
 
     @SuppressWarnings("unchecked")
     /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
         return new Class[] {
-           // some tests moved to RemoteApiLinksAndListenersTest
-           AdeMockupTestCase.class,
-           RemoteFileSystemTestCase.class,
-           RemotePathTestCase.class,
-           RemoteURLTestCase.class,
-           RenameTestCase.class,
-           EscapeWindowsNameTestCase.class,
-           CaseSensivityTestCase.class,
-           DirectoryStorageSftpTestCase.class,
-           DirectoryReaderTestCase.class,
-           RefreshTestCase.class,
-           RefreshTestCase_IZ_210125.class,
-           RefreshNonInstantiatedTestCase.class,
-           RefreshDirSyncCountTestCase.class,
-           CanonicalTestCase.class,
-           CreateDataAndFolderTestCase.class,
-           NormalizationTestCase.class,
-           ReadOnlyDirTestCase.class,
-           ScheduleRefreshParityTestCase.class,
-           WritingQueueTestCase.class,
-           RemoteFileSystemOffilneTestCase.class,
+           RemoteLinksTestCase.class,
+           RemoteLinksChangeLinkTestCase.class,
+           RemoteLinksChangeLinkTestCase2.class,
+           ListenersTestCase.class,
+           ListenersParityTestCase.class
         };
     }
     
-    @SuppressWarnings("unchecked")
-    public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
-        return new RemoteApiTest(testClass.getName(), testClass);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
-        Class[] classes = new Class[timesToRepeat];
-        for (int i = 0; i < classes.length; i++) {
-            classes[i] = testClass;            
-        }
-        return new RemoteApiTest(testClass.getName(), classes);
-    }
-    
-    public RemoteApiTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
+    public RemoteApiTest2(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
         super(name, "remote.platforms", testClasses);
     }
 
     public static Test suite() {
-        return new RemoteApiTest();
+        return new RemoteApiTest2();
     }
 }
