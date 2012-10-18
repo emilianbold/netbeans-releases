@@ -194,7 +194,7 @@ NetBeans.insertGlassPane = function() {
     });
 
     // Clear highlight when the mouse leaves the window
-    canvas.addEventListener('mouseout', function(e) {
+    window.addEventListener('mouseout', function(e) {
         if (e.toElement === null) {
             self.lastHighlighted = null;
             // HACK notify NetBeans
