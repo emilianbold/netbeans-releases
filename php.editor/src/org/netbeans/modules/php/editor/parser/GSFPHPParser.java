@@ -134,7 +134,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
     protected PHPParseResult parseBuffer(final Context context, final Sanitize sanitizing, PHP5ErrorHandler errorHandler) throws Exception {
         boolean sanitizedSource = false;
-        String source = context.source;
+        String source = context.getSource();
         if (errorHandler == null) {
             errorHandler = new PHP5ErrorHandler(context, this);
         }
@@ -142,9 +142,9 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             boolean ok = sanitizeSource(context, sanitizing, errorHandler);
 
             if (ok) {
-                assert context.sanitizedSource != null;
+                assert context.getSanitizedSource() != null;
                 sanitizedSource = true;
-                source = context.sanitizedSource;
+                source = context.getSanitizedSource();
             } else {
                 // Try next trick
                 return sanitize(context, sanitizing, errorHandler);
@@ -161,9 +161,9 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         java_cup.runtime.Symbol rootSymbol = parser.parse();
         if (scanner.getCurlyBalance() != 0 && !sanitizedSource) {
             sanitizeSource(context, Sanitize.MISSING_CURLY, null);
-            if (context.sanitizedSource != null) {
-                context.source = context.getSanitizedSource();
-                source = context.source;
+            if (context.getSanitizedSource() != null) {
+                context.setSource(context.getSanitizedSource());
+                source = context.getSource();
                 scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
                 parser = new ASTPHP5Parser(scanner);
                 rootSymbol = parser.parse();
@@ -237,14 +237,14 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             List<PHP5ErrorHandler.SyntaxError> syntaxErrors = errorHandler.getSyntaxErrors();
             if (syntaxErrors.size() > 0) {
                 PHP5ErrorHandler.SyntaxError error = syntaxErrors.get(0);
-                String source = context.source;
+                String source = context.getSource();
                 int end = error.getCurrentToken().right;
                 int start = error.getCurrentToken().left;
                 String replace = source.substring(start, end);
                 if ("}".equals(replace)) {
                     return false;
                 }
-                context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end);
+                context.setSanitizedSource(source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end));
                 return true;
             }
         }
@@ -252,13 +252,13 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             List<PHP5ErrorHandler.SyntaxError> syntaxErrors = errorHandler.getSyntaxErrors();
             if (syntaxErrors.size() > 0) {
                 PHP5ErrorHandler.SyntaxError error = syntaxErrors.get(0);
-                String source = context.source;
+                String source = context.getSource();
                 int end = error.getPreviousToken().right;
                 int start = error.getPreviousToken().left;
                 if (source.substring(start, end).equals("}")) {
                     return false;
                 }
-                context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end);
+                context.setSanitizedSource(source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end));
                 return true;
             }
         }
@@ -266,7 +266,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             List<PHP5ErrorHandler.SyntaxError> syntaxErrors = errorHandler.getSyntaxErrors();
             if (syntaxErrors.size() > 0) {
                 PHP5ErrorHandler.SyntaxError error = syntaxErrors.get(0);
-                String source = context.source;
+                String source = context.getSource();
 
                 int end = Utils.getRowEnd(source, error.getPreviousToken().right);
                 int start = Utils.getRowStart(source, error.getPreviousToken().left);
@@ -281,15 +281,15 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                     }
                 }
 
-                context.sanitizedSource = source.substring(0, start) + sb.toString() + source.substring(end);
+                context.setSanitizedSource(source.substring(0, start) + sb.toString() + source.substring(end));
                 return true;
             }
         }
         if (sanitizing == Sanitize.EDITED_LINE) {
-            if (context.caretOffset > -1) {
+            if (context.getCaretOffset() > -1) {
                 String source = context.getSource();
-                int start = context.caretOffset - 1;
-                int end = context.caretOffset;
+                int start = context.getCaretOffset() - 1;
+                int end = context.getCaretOffset();
                 // fix until new line or }
                 char c = source.charAt(start);
                 while (start > 0 && c != '\n' && c != '\r' && c != '{' && c != '}') {
@@ -302,7 +302,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                         c = source.charAt(end++);
                     }
                 }
-                context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end);
+                context.setSanitizedSource(source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end));
                 return true;
             }
         }
@@ -396,9 +396,9 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
                         if (canBeSanitized) {
                             int sanitizedChars = numberOfSanitizedChars(containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese);
-                            context.sanitizedSource = source.substring(0, start + currentLeftOffset - 1)
+                            context.setSanitizedSource(source.substring(0, start + currentLeftOffset - 1)
                                     + sanitizationString(delimiter, containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese)
-                                    + source.substring(start + currentLeftOffset + sanitizedChars - phpOpenDelimiter.length() + 1);
+                                    + source.substring(start + currentLeftOffset + sanitizedChars - phpOpenDelimiter.length() + 1));
                             return true;
                         } else {
                             break;
@@ -513,7 +513,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                                     c = source.charAt(--index);
                                 }
                             }
-                            context.sanitizedSource = source;
+                            context.setSanitizedSource(source);
                         }
                         break;
                     case ASTPHP5Symbols.T_CURLY_OPEN:
@@ -551,11 +551,11 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             if (lastPHPToken != null) {
                 String lastTokenText = source.substring(lastPHPToken.left, lastPHPToken.right).trim();
                 if ("?>".equals(lastTokenText)) {   //NOI18N
-                    context.sanitizedSource = source.substring(0, lastPHPToken.left) + Utils.getRepeatingChars('}', count) + source.substring(lastPHPToken.left);
+                    context.setSanitizedSource(source.substring(0, lastPHPToken.left) + Utils.getRepeatingChars('}', count) + source.substring(lastPHPToken.left));
                     return true;
                 }
                 if (token.sym == ASTPHP5Symbols.EOF) {
-                    context.sanitizedSource = source.substring(0, token.left) + Utils.getRepeatingChars('}', count) + source.substring(token.left);
+                    context.setSanitizedSource(source.substring(0, token.left) + Utils.getRepeatingChars('}', count) + source.substring(token.left));
                     return true;
                 }
             }
@@ -584,7 +584,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             LOGGER.log(Level.INFO, "Exception during removing block", exception);   //NOI18N
         }
         if (start > -1 && start < end) {
-            context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end);
+            context.setSanitizedSource(source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end));
             return true;
         }
         return false;
@@ -722,6 +722,10 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             return "PHPParser.Context(" + snapshot.getSource().getFileObject() + ")"; // NOI18N
         }
 
+        public void setSanitizedSource(String sanitizedSource) {
+            this.sanitizedSource = sanitizedSource;
+        }
+
         public String getSanitizedSource() {
             return sanitizedSource;
         }
@@ -734,8 +738,17 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             return snapshot;
         }
 
+        private void setSource(String source) {
+            this.source = source;
+        }
+
         public String getSource() {
             return source;
         }
+
+        public int getCaretOffset() {
+            return caretOffset;
+        }
+        
     }
 }
