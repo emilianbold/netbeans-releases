@@ -37,42 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.test;
+package org.netbeans.modules.remote.test;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.remote.sync.FtpSyncWorkerTestCase;
-import org.netbeans.modules.cnd.remote.sync.RfsRemoteControllerDeathTestCase;
-import org.netbeans.modules.cnd.remote.sync.ZipSyncWorkerTestCase;
-import org.netbeans.modules.cnd.remote.sync.download.RemoteBuildUpdatesDownloadTestCase;
-import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.remote.impl.fs.*;
 
 /**
  *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public class RemoteDevelopmentTest3 extends CndBaseTestSuite {
+public class RemoteApi2Test extends NativeExecutionBaseTestSuite {
 
-   public RemoteDevelopmentTest3() {
-       this("Remote Development", // NOI18N
-           HostSetupTestCase.class,
-           RemoteBuildUpdatesDownloadTestCase.class,
-           ZipSyncWorkerTestCase.class,
-           FtpSyncWorkerTestCase.class,
-           RfsRemoteControllerDeathTestCase.class           
-       );
-   }
+    @SuppressWarnings("unchecked")
+    public RemoteApi2Test() {
+        this("Remote API", getTestClasses());
+    }
 
-    private RemoteDevelopmentTest3(String name, Class... testClasses) {
+    @SuppressWarnings("unchecked")
+    /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
+        return new Class[] {
+           RemoteLinksTestCase.class,
+           RemoteLinksChangeLinkTestCase.class,
+           RemoteLinksChangeLinkTestCase2.class,
+           ListenersTestCase.class,
+           ListenersParityTestCase.class
+        };
+    }
+    
+    public RemoteApi2Test(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
         super(name, "remote.platforms", testClasses);
     }
 
     public static Test suite() {
-        TestSuite suite = new RemoteDevelopmentTest3();
-        return suite;
+        return new RemoteApi2Test();
     }
 }

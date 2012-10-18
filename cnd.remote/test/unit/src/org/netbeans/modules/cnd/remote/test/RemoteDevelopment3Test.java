@@ -44,27 +44,35 @@ package org.netbeans.modules.cnd.remote.test;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.remote.fs.RemoteCodeModelTestCase;
+import org.netbeans.modules.cnd.remote.sync.FtpSyncWorkerTestCase;
+import org.netbeans.modules.cnd.remote.sync.RfsRemoteControllerDeathTestCase;
+import org.netbeans.modules.cnd.remote.sync.ZipSyncWorkerTestCase;
+import org.netbeans.modules.cnd.remote.sync.download.RemoteBuildUpdatesDownloadTestCase;
+import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class RemoteDevelopmentTest2 extends CndBaseTestSuite {
+public class RemoteDevelopment3Test extends CndBaseTestSuite {
 
-   public RemoteDevelopmentTest2() {
+   public RemoteDevelopment3Test() {
        this("Remote Development", // NOI18N
-           RemoteCodeModelTestCase.class
+           HostSetupTestCase.class,
+           RemoteBuildUpdatesDownloadTestCase.class,
+           ZipSyncWorkerTestCase.class,
+           FtpSyncWorkerTestCase.class,
+           RfsRemoteControllerDeathTestCase.class           
        );
    }
 
-    private RemoteDevelopmentTest2(String name, Class... testClasses) {
+    private RemoteDevelopment3Test(String name, Class... testClasses) {
         super(name, "remote.platforms", testClasses);
     }
 
     public static Test suite() {
-        TestSuite suite = new RemoteDevelopmentTest2();
+        TestSuite suite = new RemoteDevelopment3Test();
         return suite;
     }
 }

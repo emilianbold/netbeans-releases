@@ -58,9 +58,9 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  *
  * @author Sergey Grinev
  */
-public class RemoteDevelopmentTest4 extends CndBaseTestSuite {
+public class RemoteDevelopment4Test extends CndBaseTestSuite {
 
-   public RemoteDevelopmentTest4() {
+   public RemoteDevelopment4Test() {
        this("Remote Development", // NOI18N           
            RfsSunStudioRemoteBuildTestCase.class,
            LinuxTouchRfsBuildTestCase.class,
@@ -73,12 +73,12 @@ public class RemoteDevelopmentTest4 extends CndBaseTestSuite {
        );
    }
 
-    private RemoteDevelopmentTest4(String name, Class... testClasses) {
+    private RemoteDevelopment4Test(String name, Class... testClasses) {
         super(name, "remote.platforms", testClasses);
     }
 
     public static Test suite() {
-        TestSuite suite = new RemoteDevelopmentTest4();
+        TestSuite suite = new RemoteDevelopment4Test();
         return suite;
     }
 }

@@ -37,43 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.test;
+package org.netbeans.modules.cnd.remote.test;
 
 import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import org.netbeans.modules.remote.impl.fs.*;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.remote.fs.RemoteCodeModelTestCase;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Sergey Grinev
  */
-public class RemoteApiTest2 extends NativeExecutionBaseTestSuite {
+public class RemoteDevelopment2Test extends CndBaseTestSuite {
 
-    @SuppressWarnings("unchecked")
-    public RemoteApiTest2() {
-        this("Remote API", getTestClasses());
-    }
+   public RemoteDevelopment2Test() {
+       this("Remote Development", // NOI18N
+           RemoteCodeModelTestCase.class
+       );
+   }
 
-    @SuppressWarnings("unchecked")
-    /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
-        return new Class[] {
-           RemoteLinksTestCase.class,
-           RemoteLinksChangeLinkTestCase.class,
-           RemoteLinksChangeLinkTestCase2.class,
-           ListenersTestCase.class,
-           ListenersParityTestCase.class
-        };
-    }
-    
-    public RemoteApiTest2(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
+    private RemoteDevelopment2Test(String name, Class... testClasses) {
         super(name, "remote.platforms", testClasses);
     }
 
     public static Test suite() {
-        return new RemoteApiTest2();
+        TestSuite suite = new RemoteDevelopment2Test();
+        return suite;
     }
 }
