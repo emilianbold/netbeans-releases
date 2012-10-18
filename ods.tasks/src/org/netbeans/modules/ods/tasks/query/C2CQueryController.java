@@ -847,36 +847,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
         parameters.getListParameter(QueryParameters.Column.RELEASE).populate(newMilestones);
     }
 
-    private String toParameterValues(Collection values) {
-        List<String> l = new ArrayList<String>(values.size());
-        for (Object o : values) {
-            if(o instanceof Product) {
-                l.add(((Product) o).getName());
-            } else if(o instanceof com.tasktop.c2c.server.tasks.domain.Component) {
-                l.add(((com.tasktop.c2c.server.tasks.domain.Component) o).getName());
-            } else if(o instanceof Keyword) {
-                l.add(((Keyword) o).getName());
-            } else if(o instanceof AbstractReferenceValue) {
-                l.add(((AbstractReferenceValue) o).getValue());
-            } else if(o instanceof String) {
-                l.add(o.toString());
-            } else {
-                throw new IllegalStateException("Unknown parameter type " + o.getClass()); // NOI18N
-            }
-        }
-        
-        Collections.sort(l); // XXX e.g. Milestone has a sortkey
-        
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < l.size(); i++) {
-            sb.append(l.get(i));
-            if(i < values.size() - 1) {
-                sb.append(",");
-            }
-        }    
-        return sb.toString();
-    }
-    
     private void setIssueCount(final int count) {
         EventQueue.invokeLater(new Runnable() {
             @Override
