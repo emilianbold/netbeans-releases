@@ -89,7 +89,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.weighty = 1.0;
         listPanel.add(myListEditorPanel, gridBagConstraints);
         if (inheritValues != null) {
-            inheritEditorPane.setFont(UIManager.getFont("Label.font"));
+            inheritEditorPane.setFont(UIManager.getFont("Label.font")); //NOI18N
             inheritEditorPane.setBackground(inheritPanel.getBackground());
             inheritEditorPane.setText(inheritText);
             inheritEditorPane.setCaretPosition(0);
