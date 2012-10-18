@@ -493,7 +493,7 @@ class CompletionContextFinder {
     }
 
     private static boolean isEachOfTokens(Token[] tokens, PHPTokenId[] tokenIds) {
-        Set<PHPTokenId> set = new HashSet<PHPTokenId>();
+        Set<PHPTokenId> set = EnumSet.noneOf(PHPTokenId.class);
         for (Token token : tokens) {
             TokenId searchedId = token.id();
             for (PHPTokenId tokenId : tokenIds) {
@@ -681,7 +681,7 @@ class CompletionContextFinder {
         boolean isNsSeparator = false;
         boolean isString = false;
         Token<PHPTokenId> stringToken = null;
-        boolean nokeywords = true;
+        boolean nokeywords;
         List<? extends Token<PHPTokenId>> preceedingLineTokens = getPreceedingLineTokens(token, tokenOffset, tokenSequence);
         for (Token<PHPTokenId> cToken : preceedingLineTokens) {
             TokenId id = cToken.id();
@@ -861,7 +861,7 @@ class CompletionContextFinder {
 
     static boolean lineContainsAny(Token<PHPTokenId> token, int tokenOffset, TokenSequence<PHPTokenId> tokenSequence, List<PHPTokenId> ids) {
         List<? extends Token<PHPTokenId>> preceedingLineTokens = getPreceedingLineTokens(token, tokenOffset, tokenSequence);
-        for (Token t : preceedingLineTokens) {
+        for (Token<PHPTokenId> t : preceedingLineTokens) {
             if (ids.contains(t.id())) {
                 return true;
             }
