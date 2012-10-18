@@ -403,6 +403,9 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue219634.js", "    $.getJSON('json_txt.php', {mon^_yr: mon_yr, period: period},", true);
     }
 
+    public void testIssue220102() throws Exception {
+        checkOccurrences("testfiles/coloring/issue220102.js", "        role: da^ta.role,", true);
+    }
 
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N

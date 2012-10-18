@@ -233,7 +233,8 @@ public final class EarProjectGenerator {
             SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
         }
-        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
+                j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
             if (rh.getProjectLibraryManager().getLibrary(Util.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
                 rh.copyLibrary(LibraryManager.getDefault().getLibrary(Util.ENDORSED_LIBRARY_NAME)); // NOI18N
             }
@@ -525,7 +526,8 @@ public final class EarProjectGenerator {
             } else if (Profile.JAVA_EE_5.equals(j2eeProfile)) {
                 template = FileUtil.getConfigFile(
                         "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
-            } else if (Profile.JAVA_EE_6_FULL.equals(j2eeProfile) || Profile.JAVA_EE_6_WEB.equals(j2eeProfile)) {
+            } else if (Profile.JAVA_EE_6_FULL.equals(j2eeProfile) || Profile.JAVA_EE_6_WEB.equals(j2eeProfile) ||
+                    Profile.JAVA_EE_7_FULL.equals(j2eeProfile) || Profile.JAVA_EE_7_WEB.equals(j2eeProfile)) {
                 template = FileUtil.getConfigFile(
                         "org-netbeans-modules-j2ee-earproject/ear-6.xml"); // NOI18N
             } else {
@@ -644,7 +646,8 @@ public final class EarProjectGenerator {
                 EarProjectProperties.JAR_CONTENT_ADDITIONAL+"}:${"+ // NOI18N
                 EarProjectProperties.RUN_CLASSPATH+"}"); // NOI18N
 
-        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
+                j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
             ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{Util.ENDORSED_LIBRARY_CLASSPATH});
         }
         

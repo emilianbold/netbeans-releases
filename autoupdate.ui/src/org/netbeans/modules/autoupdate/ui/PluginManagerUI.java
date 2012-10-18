@@ -285,12 +285,11 @@ public class PluginManagerUI extends javax.swing.JPanel  {
         }
     }
 
-    private UnitTable createTabForModel(UnitCategoryTableModel model) {
-        UnitTable table = new UnitTable(model);
+    private UnitTable createTabForModel(final UnitCategoryTableModel model) {
+        final UnitTable table = new UnitTable(model);
         selectFirstRow(table);
         
         final UnitTab tab = new UnitTab(table, new UnitDetails(), this);
-        tpTabs.add(tab, model.getTabIndex());
         if (initTask != null) {
             tab.setWaitingState(! initTask.isFinished());
             initTask.addTaskListener(new TaskListener() {
@@ -307,7 +306,13 @@ public class PluginManagerUI extends javax.swing.JPanel  {
                 }
             });
         }
-        decorateTabTitle(table);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                tpTabs.add(tab, model.getTabIndex());
+                decorateTabTitle(table);
+            }
+        });
         return table;
     }
     
@@ -519,9 +524,14 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         this.setDropTarget(dt);
 
 
-        SettingsTab tab = new SettingsTab (this);
-        tpTabs.add (tab, INDEX_OF_SETTINGS_TAB);
-        tpTabs.setTitleAt(INDEX_OF_SETTINGS_TAB, tab.getDisplayName());
+        final SettingsTab tab = new SettingsTab(this);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                tpTabs.add(tab, INDEX_OF_SETTINGS_TAB);
+                tpTabs.setTitleAt(INDEX_OF_SETTINGS_TAB, tab.getDisplayName());
+            }
+        });
     }
     
     void decorateTabTitle (UnitTable table) {
@@ -560,7 +570,9 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         //ensure exclusivity between this refreshUnits code(which can run even after this dialog is disposed) and uninitialization code
         synchronized(initLock) {
             //return immediatelly if uninialization(after removeNotify) was alredy called
-            if (units == null) return;
+            if (units == null) {
+                return;
+            }
             //TODO: REVIEW THIS CODE - problem is that is called from called from AWT thread
             //UpdateManager.getDefault().getUpdateUnits() should never be called fromn AWT because it may cause
             //long terming starvation because in fact impl. of this method calls AutoUpdateCatalogCache.getCatalogURL
