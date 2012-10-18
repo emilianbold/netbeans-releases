@@ -52,7 +52,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java_cup.runtime.Symbol;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -238,13 +237,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             List<PHP5ErrorHandler.SyntaxError> syntaxErrors = errorHandler.getSyntaxErrors();
             if (syntaxErrors.size() > 0) {
                 PHP5ErrorHandler.SyntaxError error = syntaxErrors.get(0);
-                String source;
-                if (context.sanitized == Sanitize.NONE) {
-                    source = context.source;
-                } else {
-                    source = context.sanitizedSource;
-                }
-
+                String source = context.source;
                 int end = error.getCurrentToken().right;
                 int start = error.getCurrentToken().left;
                 String replace = source.substring(start, end);
@@ -260,7 +253,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             if (syntaxErrors.size() > 0) {
                 PHP5ErrorHandler.SyntaxError error = syntaxErrors.get(0);
                 String source = context.source;
-
                 int end = error.getPreviousToken().right;
                 int start = error.getPreviousToken().left;
                 if (source.substring(start, end).equals("}")) {
@@ -718,7 +710,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         private String source;
         private String sanitizedSource;
         private int caretOffset;
-        private Sanitize sanitized = Sanitize.NONE;
 
         public Context(Snapshot snapshot, String source, int caretOffset) {
             this.snapshot = snapshot;
@@ -731,10 +722,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             return "PHPParser.Context(" + snapshot.getSource().getFileObject() + ")"; // NOI18N
         }
 
-        public Sanitize getSanitized() {
-            return sanitized;
-        }
-
         public String getSanitizedSource() {
             return sanitizedSource;
         }
@@ -743,16 +730,10 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             return errorOffset;
         }
 
-        /**
-         * @return the file
-         */
         public Snapshot getSnapshot() {
             return snapshot;
         }
 
-        /**
-         * @return the source
-         */
         public String getSource() {
             return source;
         }
