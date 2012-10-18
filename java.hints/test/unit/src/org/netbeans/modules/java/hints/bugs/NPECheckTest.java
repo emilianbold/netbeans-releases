@@ -416,6 +416,36 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testNeg220162a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public static void processThrowable(@NullAllowed Object obj) {\n" +
+                       "            if (!(obj == null)) {\n" +
+                       "                String s = obj.toString();\n" +
+                       "            }\n" +
+                       "    }\n" +
+                       "@interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testNeg220162b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public static void processThrowable(@NullAllowed Object obj) {\n" +
+                       "            if (!(obj != null)) {\n" +
+                       "                String s = obj.toString();\n" +
+                       "            }\n" +
+                       "    }\n" +
+                       "@interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("4:31-4:39:verifier:DN");
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
