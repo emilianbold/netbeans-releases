@@ -1,0 +1,6 @@
+Code completion result for source line:
+window.TEST.case.f|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     freeze(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
+FIELD      fixed: Number                   [PUBLIC]   issue220101.js
