@@ -149,6 +149,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/general/issue218689.html", "            b.v^", false);
     }
 
+    public void testIssue220101() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220101.js", "window.TEST.case.f^", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
