@@ -39,60 +39,60 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi.platform;
+package org.netbeans.modules.web.clientproject.spi;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfiguration;
+import java.beans.PropertyChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
 
 /**
- * Implementation of project configuration and associated actions, customizer, etc.
+ * Instances to be registered in Lookup
+ * @author Jan Becicka
  */
-public interface ClientProjectConfigurationImplementation extends ProjectConfiguration {
+public interface ClientProjectExtender {
 
     /**
-     * Configuration's unique ID used to persist selected configuration etc.
+     * Creates Wizard Descriptor Panel which can be added to New Client Project
+     * Wizard.
+     * @return 
      */
-    @NonNull String getId();
+    @CheckForNull
+    public Panel<WizardDescriptor> createWizardPanel();
+
+    /**
+     * Creates additional changes in Client Side Project.
+     * @param projectRoot
+     * @param siteRoot
+     * @param libsFolder 
+     */
+    public void apply(FileObject projectRoot, FileObject siteRoot, FileObject libsFolder);
     
     /**
-     * Configuration's customizer.
-     * @return can return null if none
+     * Tests if given template requires modifications by this extender.
+     * @param impl null means no template was selected
+     * @return 
      */
-    ProjectConfigurationCustomizer getProjectConfigurationCustomizer();
+    public boolean isExtenderRequired(@NullAllowed SiteTemplateImplementation impl);
 
     /**
-     * Persist changes done in configuration's customizer.
+     * Invokes options dialog.
+     * @param changeListener gets notified about changes in options dialog. 
      */
-    void save();
+    public void openOptionsDialog(@NullAllowed PropertyChangeListener changeListener);
+
+    /**
+     * Is extender ready? Is customization required through {@link #openOptionsDialog(java.beans.PropertyChangeListener) 
+     * @return 
+     */
+    public boolean isExtenderReady();
+
+    /**
+     * Display name of the extender.
+     * @return
+     */
+    public String getDisplayName();
     
-    /**
-     * Configuration's action provider.
-     * @return can return null
-     */
-    ActionProvider getActionProvider();
-
-    /**
-     * Can this platform be deleted?
-     */
-    boolean canBeDeleted();
-
-    /**
-     * Delete this configuration.
-     */
-    void delete();
-
-
-    /**
-     * Configuration's handler changes in project sources.
-     * @return can return null
-     */
-    RefreshOnSaveListener getRefreshOnSaveListener();
-
-    /**
-     * Notification that configuration is not active anymore.
-     */
-    void deactivate();
-
-    boolean isHighlightSelectionEnabled();
 }

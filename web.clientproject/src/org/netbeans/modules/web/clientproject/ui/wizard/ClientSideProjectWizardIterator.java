@@ -46,6 +46,8 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -58,6 +60,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation.ProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
@@ -73,6 +76,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public final class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
@@ -83,6 +87,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
+    private WizardDescriptor.Panel<WizardDescriptor>[] extenderPanels;
+    private Collection<? extends ClientProjectExtender> extenders;
     private WizardDescriptor wizardDescriptor;
 
 
@@ -140,6 +146,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
+        
+        for (ClientProjectExtender extender:extenders) {
+            extender.apply(project.getProjectDirectory(), siteRoot, (FileObject) wizardDescriptor.getProperty(NewProjectWizard.LIBRARIES_FOLDER));
+        }
 
         handle.finish();
         return files;
@@ -154,10 +164,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public void initialize(WizardDescriptor wiz) {
         this.wizardDescriptor = wiz;
         index = 0;
+        extenders = Lookup.getDefault().lookupAll(ClientProjectExtender.class);
         panels = wizard.createPanels();
         // Make sure list of steps is accurate.
         String[] steps = wizard.createSteps();
-        for (int i = 0; i < panels.length; i++) {
+        int i = 0;
+        for (; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             assert steps[i] != null : "Missing name for step: " + i; //NOI18N
             if (c instanceof JComponent) { // assume Swing components
@@ -168,6 +180,19 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             }
         }
+        extenderPanels = new Panel[extenders.size()];
+        String steps2[] = Arrays.copyOf(steps, steps.length + 1);
+        for (ClientProjectExtender extender: extenders) {
+            extenderPanels[i-panels.length] = extender.createWizardPanel();
+            JComponent component = (JComponent) extenderPanels[i-panels.length].getComponent();
+
+            steps2[i] = component.getName();
+            // Step #.
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
+            // Step name (actually the whole list for reference).
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps2);
+            i++;
+        }
     }
 
     @Override
@@ -176,6 +201,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         wizardDescriptor.putProperty(Wizard.NAME, null);
         wizard.uninitialize(wizardDescriptor);
         panels = null;
+        extenders = null;
+        extenderPanels = null;
     }
 
     @NbBundle.Messages({
@@ -190,7 +217,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public boolean hasNext() {
-        return index < panels.length - 1;
+        return index < panels.length + enabledExtendersCount() -1;
     }
 
     @Override
@@ -216,6 +243,9 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
+        if (index>=panels.length) {
+            return extenderPanels[index-panels.length];
+        }
         return panels[index];
     }
 
@@ -229,12 +259,18 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public void removeChangeListener(ChangeListener l) {
         // noop
     }
+    
+    private int enabledExtendersCount() {
+        final Collection prop = (Collection)wizardDescriptor.getProperty(Wizard.EXTENDERS);
+        return prop==null?0:prop.size();
+    }
 
     //~ Inner classes
 
     public interface Wizard {
         String PROJECT_DIRECTORY = "PROJECT_DIRECTORY"; // NOI18N
         String NAME = "NAME"; // NOI18N
+        String EXTENDERS = "EXTENDERS";
 
         WizardDescriptor.Panel<WizardDescriptor>[] createPanels();
         String[] createSteps();
