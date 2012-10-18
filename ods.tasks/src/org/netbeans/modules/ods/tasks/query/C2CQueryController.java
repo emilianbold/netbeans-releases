@@ -538,12 +538,19 @@ public class C2CQueryController extends QueryController implements ItemListener,
      */
     private void save(String name) {
         C2C.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
-        if(query.save(name)) {
-            setAsSaved();
-            if (!query.wasRun()) {
-                C2C.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
-                onRefresh();
+        try {
+            panel.setRemoteInvocationRunning(true);
+            enableFields(false);
+            if(query.save(name)) {
+                setAsSaved();
+                if (!query.wasRun()) {
+                    C2C.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
+                    onRefresh();
+                }
             }
+        } finally {
+            panel.setRemoteInvocationRunning(false);
+            enableFields(true);
         }
         C2C.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
     }
@@ -958,7 +965,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    panel.setQueryRunning(false);
+                    panel.setRemoteInvocationRunning(false);
                     panel.setLastRefresh(getLastRefresh());
                     panel.showNoContentPanel(false);
                     enableFields(true);
@@ -1002,7 +1009,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    panel.setQueryRunning(running);
+                    panel.setRemoteInvocationRunning(running);
                 }
             });
         }
