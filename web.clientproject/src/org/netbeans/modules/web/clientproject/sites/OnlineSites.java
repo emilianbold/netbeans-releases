@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -115,7 +116,7 @@ abstract class OnlineSites implements SiteTemplateImplementation {
 
     @Override
     public Collection<String> supportedLibraries() {
-        return SiteHelper.listJsFilenamesFromZipFile(libFile);
+        return FileUtilities.listJsFilenamesFromZipFile(libFile);
     }
 
     //~ Inner classes
