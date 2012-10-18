@@ -102,44 +102,35 @@ public class TestCaseDataFactory {
     }
     
     private void process() throws Exception{
-       File data_dir=getDataDir();
-       HashMap<String,Object> map=new HashMap<String,Object>();
-       String[] dir=data_dir.list();
-       for(int i=0;i<dir.length;i++){
-           String dir_name=dir[i];
-           String path=data_dir.getAbsolutePath()+File.separator+dir[i];
-           if(new File(path).isDirectory()){
-                
-                for(int index=0;index<FILES.length;index++){
-                    File f=new File(path+File.separator+FILES[index]);
-                    if(!f.exists()) {
-                        throw new RuntimeException("File called "+FILES[index] +"in directory "+dir_name+"doesn't exist");
-                    }
-                    map.put(FILES[index],f);
-                    
-                }
-                String[] s=new File(path).list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                         return  name.endsWith(".jar") || name.endsWith(".zip") ? true : false;
-                    }
-                });
-                if(s.length==0) {
-                    throw new RuntimeException("the driver doesn't  extist for test case called: "+dir_name);
-                }
-                ArrayList<File> drivers=new ArrayList<File>();
-                for(int myint=0;myint<s.length;myint++){
-                   File file=new File(path+File.separator+s[myint]);
-                   drivers.add(file);
-                   
-                }
-                map.put(DB_JARS,drivers.toArray(new File[0]));
-                  
-                TestCaseContext context=new TestCaseContext(map,dir_name);
-                list.add(context);
-                
-           }
-       }
+        File data_dir = getDataDir();
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        File etcDir = new File(data_dir, "etc");
+        for (int index = 0; index < FILES.length; index++) {
+            File f = new File(etcDir, FILES[index]);
+            if (!f.exists()) {
+                throw new RuntimeException("File called " + FILES[index] + " in directory " + etcDir + " doesn't exist");
+            }
+            map.put(FILES[index], f);
+        }
+        String[] s = etcDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".jar") || name.endsWith(".zip") ? true : false;
+            }
+        });
+        if (s.length == 0) {
+            throw new RuntimeException("the driver doesn't exist in folder: " + etcDir);
+        }
+        ArrayList<File> drivers = new ArrayList<File>();
+        for (int myint = 0; myint < s.length; myint++) {
+            File file = new File(etcDir, s[myint]);
+            drivers.add(file);
+
+        }
+        map.put(DB_JARS, drivers.toArray(new File[0]));
+
+        TestCaseContext context = new TestCaseContext(map, etcDir.getName());
+        list.add(context);
     }
     
     public Object[] getTestCaseContext(){
