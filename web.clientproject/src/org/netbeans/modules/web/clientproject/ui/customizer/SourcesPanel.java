@@ -158,9 +158,9 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void storeData() {
         File siteRootFolder = getSiteRootFolder();
-        uiProperties.setSiteRootFolder(siteRootFolder != null ? siteRootFolder.getAbsolutePath() : null);
+        uiProperties.setSiteRootFolder(siteRootFolder != null ? siteRootFolder.getAbsolutePath() : ""); // NOI18N
         File testFolder = getTestFolder();
-        uiProperties.setTestFolder(testFolder != null ? testFolder.getAbsolutePath() : null);
+        uiProperties.setTestFolder(testFolder != null ? testFolder.getAbsolutePath() : ""); // NOI18N
         uiProperties.setEncoding(getEncoding().name());
     }
 
