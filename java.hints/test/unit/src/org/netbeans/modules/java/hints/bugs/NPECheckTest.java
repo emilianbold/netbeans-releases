@@ -494,6 +494,38 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testForLoop() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import javax.swing.tree.TreePath;\n" +
+                       "class Test {\n" +
+                       "    public void t(TreePath tp) {\n" +
+                       "        tp.toString();\n" +
+                       "        for (TreePath p = tp; p != null; p = p.getParentPath()) {\n" +
+                       "            System.err.println(p.getLastPathComponent());\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testWhile() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import javax.swing.tree.TreePath;\n" +
+                       "class Test {\n" +
+                       "    public void t(TreePath tp) {\n" +
+                       "        tp.toString();\n" +
+                       "        while (tp != null) {\n" +
+                       "            tp = tp.getParentPath();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

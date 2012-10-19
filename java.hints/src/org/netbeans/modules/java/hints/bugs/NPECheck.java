@@ -633,6 +633,14 @@ public class NPECheck {
             
             scan(node.getStatement(), p);
             
+            testedTo = new HashMap<VariableElement, State>();
+            
+            scan(node.getCondition(), p);
+            
+            variable2State.putAll(testedTo);
+            
+            scan(node.getStatement(), p);
+            
             variable2State = new HashMap<VariableElement, State>(oldVariable2State);
             
             for (Entry<VariableElement, State> e : testedTo.entrySet()) {
@@ -668,7 +676,20 @@ public class NPECheck {
             not = false;
             return super.visitMethod(node, p);
         }
-        
+
+        @Override
+        public State visitForLoop(ForLoopTree node, Void p) {
+            scan(node.getInitializer(), p);
+            
+            scan(node.getStatement(), p);
+            scan(node.getUpdate(), p);
+            
+            scan(node.getCondition(), p);
+            scan(node.getStatement(), p);
+            scan(node.getUpdate(), p);
+            return null;
+        }
+
     }
     
     static enum State {
