@@ -140,7 +140,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
             return null;
         }
         AtomicBoolean visible = new AtomicBoolean(false);
-        CsmClassifier result = findVisibleDeclaration(project, qualifiedName, file, visible, classesOnly, false);
+        CsmClassifier result = findVisibleDeclaration(project, qualifiedName, file, visible, classesOnly);
         // we prefer to skip even visible class forward based classes
         if (!ForwardClass.isForwardClass(result) && visible.get()) {
             assert result != null : "how can visible be true without a result?";
@@ -151,7 +151,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
         for (Iterator<CsmProject> iter = libraries.iterator(); iter.hasNext();) {
             visible.set(false);
             CsmProject lib = iter.next();
-            CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, file, visible, classesOnly, false);
+            CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, file, visible, classesOnly);
             // we prefer to skip even visible class forward based classes
             if (!ForwardClass.isForwardClass(visibleDecl) && visible.get()) {
                 return visibleDecl;
@@ -164,7 +164,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
     }
 
     private CsmClassifier findVisibleDeclaration(CsmProject project, CharSequence uniqueName,
-            CsmFile file, AtomicBoolean visible, boolean classesOnly, boolean stop) {
+            CsmFile file, AtomicBoolean visible, boolean classesOnly) {
         Collection<CsmClassifier> decls = project.findClassifiers(uniqueName);
         List<CsmClassifier> visibles = new ArrayList<CsmClassifier>();
         CsmClassifier first = null;
