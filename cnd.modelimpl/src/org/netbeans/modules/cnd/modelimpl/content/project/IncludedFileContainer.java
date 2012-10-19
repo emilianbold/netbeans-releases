@@ -226,6 +226,12 @@ public final class IncludedFileContainer {
         return fileEntry;
     }
 
+    /*tests-only*/public void debugClearState() {
+        for (Entry entry : list) {
+            entry.storage.debugClearState();
+        }
+    }
+
     public final static class Storage extends ProjectComponent  {
 
         private FileEntry getFileEntry(CharSequence fileKey) {
@@ -294,6 +300,15 @@ public final class IncludedFileContainer {
         @Override
         public String toString() {
             return "Storage:" + getKey(); // NOI18N
+        }
+
+        private void debugClearState() {
+            List<FileEntry> files;
+            files = new ArrayList<FileEntry>(myFiles.values());
+            for (FileEntry file : files) {
+                file.debugClearState();
+            }
+            put();
         }
 
     }

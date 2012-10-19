@@ -1637,7 +1637,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     public final void debugInvalidateFiles() {
         // TODO: do we need to change states in dependent projects' storages???
+        Collection<FileImpl> allFileImpls = getAllFileImpls();
+        for (FileImpl fileImpl : allFileImpls) {
+            fileImpl.debugInvalidate();
+        }
         getFileContainer().debugClearState();
+        this.includedFileContainer.debugClearState();
         for (Iterator<CsmProject> it = getLibraries().iterator(); it.hasNext();) {
             ProjectBase lib = (ProjectBase) it.next();
             lib.debugInvalidateFiles();
