@@ -479,6 +479,21 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testIfWithMultipartCondition() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void t(Object obj) {\n" +
+                       "        if (obj == null || obj.hashCode() == 0) {\n" +
+                       "            return ;\n" +
+                       "        }\n" +
+                       "        System.err.println(obj.toString());\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
