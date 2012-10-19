@@ -49,28 +49,29 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.util.Date;
-import java.util.Map;
 import java.text.DateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.FileEntry;
-import org.openide.loaders.UniFileLoader;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.FileEntry;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.UniFileLoader;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -226,7 +227,7 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
             java.text.Format frm = createFormat(f, name, ext);
 
             EditorKit kit = createEditorKit(mime);
-            Document doc = kit.createDefaultDocument();
+            final Document doc = kit.createDefaultDocument();
             doc.putProperty("mimeType", mime); //NOI18N
 
             String lsType = (String)doc.getProperty(DefaultEditorKit.EndOfLineStringProperty);
@@ -264,10 +265,24 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
                         }
                         doc.insertString(doc.getLength(), "\n", null); // NOI18N
                         offset++;
-                        Reformat reformat = Reformat.get(doc);
+                        final Reformat reformat = Reformat.get(doc);
                         reformat.lock();
                         try {
-                            reformat.reformat(0, doc.getLength());
+                            final Runnable runnable = new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        reformat.reformat(0, doc.getLength());
+                                    } catch (BadLocationException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                }
+                            };
+                            if (doc instanceof BaseDocument) {
+                                ((BaseDocument)doc).runAtomic(runnable);
+                            } else {
+                                doc.render(runnable);
+                            }
                         } finally {
                             reformat.unlock();
                         }

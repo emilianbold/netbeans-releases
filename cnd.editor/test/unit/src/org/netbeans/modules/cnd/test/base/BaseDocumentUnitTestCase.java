@@ -60,7 +60,6 @@ import junit.framework.TestCase;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
-import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Vladimir Voskresensky copied this class to prevent dependency on editor tests
@@ -119,12 +118,12 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
             return pane.getDocument();
         }
 
-        public void typeChar(final char ch) {
+        private void typeChar(final char ch) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
                     public void run() {
-                        KeyEvent keyEvent;
+                        final KeyEvent keyEvent;
                         switch (ch) {
                             case '\n':
                                 keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
@@ -146,7 +145,12 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
                                         EventQueue.getMostRecentEventTime(),
                                         0, KeyEvent.VK_UNDEFINED, ch);
                         }
-                        SwingUtilities.processKeyBindings(keyEvent);
+                        ((BaseDocument)document()).runAtomic(new Runnable() {
+                            @Override
+                            public void run() {
+                                SwingUtilities.processKeyBindings(keyEvent);
+                            }
+                        });
                     }
                 });
             } catch (Exception e) {
@@ -154,7 +158,7 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
             }
         }
 
-        public void typeText(String text) {
+        public void typeText(final String text) {
             for (int i = 0; i < text.length(); i++) {
                 typeChar(text.charAt(i));
             }
