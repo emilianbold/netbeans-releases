@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jersey>
-    <server version="12.1.1.0">
+    <server version="12">
         <jar name="com.sun.jersey.client_1.1.0.0_1-9.jar"
              groupId="com.sun.jersey" artifactId="jersey-client" version="1.9"/>
         <jar name="com.sun.jersey.json_1.1.0.0_1-9.jar"
