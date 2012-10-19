@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.ods.tasks.query;
 
-import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
@@ -744,10 +743,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
         assert EventQueue.isDispatchThread();
         
         synchronized(CRITERIA_LOCK) {
-            if(criteria instanceof ColumnCriteria) {
-                ColumnCriteria cc = (ColumnCriteria) criteria;
-    //            Parameter p = parameters.get(cc.getColumnName());
-    //            p.setValues(cc.getColumnValue());
+            if(criteria != null) {
+                parameters.setCriteriaValues(criteria);
             }
 
     //      XXX anything interesting here?         
