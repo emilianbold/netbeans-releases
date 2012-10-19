@@ -117,7 +117,7 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
         src = FileUtil.createFolder(d, "b/src/main/java");
         r = SourceForBinaryQuery.findSourceRoots2(new URL(d.toURL(), "b/target/classes/"));
         assertEquals(Collections.singletonList(src), Arrays.asList(r.getRoots()));
-        assertFalse(r.preferSources());
+        assertTrue(r.preferSources()); //#215242 project's target classes are always preferred. ForeignClassBundlers only apply to local repository content
     }
 
     @ProjectServiceProvider(service=ForeignClassBundler.class, projectType="org-netbeans-modules-maven/war")
