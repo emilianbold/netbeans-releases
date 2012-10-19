@@ -50,16 +50,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 
 /**
  *
@@ -118,35 +114,23 @@ import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
             default:
                 throw new NoSuchAlgorithmException("Unexpected OS: " + oSFamily); // NOI18N
         }
-        // Get remote check sum
-        NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-        processBuilder.setExecutable(cmd);
-        processBuilder.setArguments(args);
-        processBuilder.setX11Forwarding(false);
-        processBuilder.setInitialSuspend(false);
-        processBuilder.unbufferOutput(false);
-        processBuilder.useExternalTerminal(null);
-        final Process process = processBuilder.call();
-        Future<List<String>> output = NativeTaskExecutorService.submit(new Callable<List<String>>() {
-            public List<String> call() throws Exception {
-                return ProcessUtils.readProcessOutput(process);
-            }
-        }, "Reading md5 command output"); //NOI18N
 
-        // calculate local sum while remote process is running
-        String localCheckSum = getLocalChecksum(localFile);
+        // Get remote check sum        
+        ExitStatus result = ProcessUtils.execute(executionEnvironment, cmd, args);
 
-        process.waitFor();
-        List<String> lines = output.get();
+        // On MacOSX - sh -c "md5 non-existent || openssl -md5 non-existent" 
+        //             has status 0.
 
-        if (lines.isEmpty() || lines.get(0).length() < 1) {
+        if (!result.isOK() || result.output.isEmpty()) {
             //throw new CheckSumException("The output of the '" + cmd + "' command is empty"); //NOI18N
             // TODO: should we check existence via a separate command?
             // it's easy to do, but will take some execution timem while result will be the same: copy the file
             return Result.INEXISTENT;
         }
-        String line = lines.get(0);
-        String[] parts = line.split(" "); // NOI18N
+
+        // calculate local sum while remote process is running
+        String localCheckSum = getLocalChecksum(localFile);
+        String[] parts = result.output.split(" "); // NOI18N
         if (parts.length == 0) {
             throw new CheckSumException("Line shouldn't be empty"); // NOI18N
         }

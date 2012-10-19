@@ -132,7 +132,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                         }
                     });
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOG.log(Level.INFO, "IO Error while saving " + projectDirectory.getFileObject(CONFIG_FILE_NAME), ex);
                 }
             }
         });
@@ -145,7 +145,6 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
 
     private Document loadConfig(FileObject config) throws IOException, SAXException {
         synchronized (configIOLock) {
-            //TODO shall be have some kind of caching here to prevent frequent IO?
             return XMLUtil.parse(new InputSource(config.toURL().toString()), false, true, null, null);
         }
     }
@@ -209,7 +208,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                         LOG.log(Level.INFO, ex.getMessage(), ex);
                         cachedDoc = null;
                     } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        LOG.log(Level.INFO, "IO Error while loading " + config.getPath(), ex);
                         cachedDoc = null;
                     } finally {
                         timeStamp = config.lastModified();

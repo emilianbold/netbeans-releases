@@ -43,19 +43,27 @@ package org.netbeans.modules.websvc.saas.util;
 
 import java.awt.Image;
 import java.beans.BeanInfo;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.xml.bind.JAXBContext;
@@ -79,7 +87,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.Param;
 import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
-import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
+import org.netbeans.modules.websvc.saas.model.wadl.Representation;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.spi.MethodNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
@@ -100,11 +108,22 @@ import org.xml.sax.XMLReader;
  * @author nam
  */
 public class SaasUtil {
+    
     public static final String APPLICATION_WADL = "resources/application.wadl";
     public static final String DEFAULT_SERVICE_NAME = "Service";
     public static final String CATALOG = "catalog";
-
-    public static <T> T loadJaxbObject(FileObject input, Class<T> type, boolean includeAware) throws IOException {
+    
+    private static final ReadInputStream IS_READER = new InputStreamJaxbReader(); 
+    
+    public static <T> T loadJaxbObject(FileObject input, Class<T> type, 
+            boolean includeAware) throws IOException 
+    {
+        return loadJaxbObject(input, type, includeAware, IS_READER) ;
+    }
+    
+    public static <T> T loadJaxbObject(FileObject input, Class<T> type, 
+            boolean includeAware, ReadInputStream reader) throws IOException 
+    {
         if (input == null) {
             return null;
         }
@@ -113,7 +132,7 @@ public class SaasUtil {
             Exception jbex = null;
             try {
                 in = input.getInputStream();
-                T t = loadJaxbObject(in, type, includeAware);
+                T t = reader.loadJaxbObject(in, type, includeAware);
                 if (t != null) {
                     return t;
                 }
@@ -139,7 +158,55 @@ public class SaasUtil {
         return loadJaxbObject(in, type, false);
     }
 
-    public static <T> T loadJaxbObject(InputStream in, Class<T> type, boolean includeAware) throws JAXBException {
+    public static <T> T loadJaxbObject(Reader reader, Class<T> type, 
+            boolean includeAware) throws JAXBException 
+    {
+        Unmarshaller unmarshaller = getUnmarshaller(type);
+        Object object;
+        //TODO fix claspath: http://www.jroller.com/navanee/entry/unsupportedoperationexception_this_parser_does_not
+        includeAware = false;
+        if (includeAware) {
+            SAXSource saxSource = getSAXSourceWithXIncludeEnabled(reader);
+            object = unmarshaller.unmarshal(saxSource);
+        } 
+        else {
+            object = unmarshaller.unmarshal(reader);
+        }
+        return cast(type, object);
+    }
+    
+    public static <T> T loadJaxbObject(InputStream in, Class<T> type, 
+            boolean includeAware) throws JAXBException 
+    {
+        Unmarshaller unmarshaller = getUnmarshaller(type);
+        Object object;
+        //TODO fix claspath: http://www.jroller.com/navanee/entry/unsupportedoperationexception_this_parser_does_not
+        includeAware = false;
+        if (includeAware) {
+            SAXSource saxSource = getSAXSourceWithXIncludeEnabled(in);
+            object = unmarshaller.unmarshal(saxSource);
+        } 
+        else {
+            object = unmarshaller.unmarshal(in);
+        }
+
+        return cast(type, object);
+    }
+
+    private static <T> T cast( Class<T> type, Object o ) {
+        if (type.equals(o.getClass())) {
+            return type.cast(o);
+        } else if (o instanceof JAXBElement) {
+            JAXBElement<?> e = (JAXBElement<?>) o;
+            return type.cast(e.getValue());
+        }
+
+        throw new IllegalArgumentException("Expect: " + type.getName() + " get: " + o.getClass().getName());
+    }
+
+    private static <T> Unmarshaller getUnmarshaller( Class<T> type )
+            throws JAXBException
+    {
         ClassLoader original = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader( SaasUtil.class.getClassLoader());
         JAXBContext jc = null;
@@ -150,27 +217,18 @@ public class SaasUtil {
             Thread.currentThread().setContextClassLoader( original);
         }
         Unmarshaller unmarshaller = jc.createUnmarshaller();
-        Object o;
-        //TODO fix claspath: http://www.jroller.com/navanee/entry/unsupportedoperationexception_this_parser_does_not
-        includeAware = false;
-        if (includeAware) {
-            SAXSource ss = getSAXSourceWithXIncludeEnabled(in);
-            o = unmarshaller.unmarshal(ss);
-        } else {
-            o = unmarshaller.unmarshal(in);
-        }
-
-        if (type.equals(o.getClass())) {
-            return type.cast(o);
-        } else if (o instanceof JAXBElement) {
-            JAXBElement e = (JAXBElement) o;
-            return type.cast(e.getValue());
-        }
-
-        throw new IllegalArgumentException("Expect: " + type.getName() + " get: " + o.getClass().getName());
+        return unmarshaller;
     }
 
     public static SAXSource getSAXSourceWithXIncludeEnabled(InputStream in) {
+        return getSAXSourceWithXIncludeEnabled(new InputSource(in));
+    }
+    
+    public static SAXSource getSAXSourceWithXIncludeEnabled(Reader reader) {
+        return getSAXSourceWithXIncludeEnabled(new InputSource(reader));
+    }
+    
+    public static SAXSource getSAXSourceWithXIncludeEnabled(InputSource source) {
         try {
             SAXParserFactory spf = SAXParserFactory.newInstance();
             spf.setNamespaceAware(true);
@@ -178,7 +236,7 @@ public class SaasUtil {
             spf.setXIncludeAware(true);
             SAXParser saxParser = spf.newSAXParser();
             XMLReader xmlReader = saxParser.getXMLReader();
-            return new SAXSource(xmlReader, new InputSource(in));
+            return new SAXSource(xmlReader, source);
         } catch (ParserConfigurationException ex) {
             Exceptions.printStackTrace(ex);
         } catch (SAXException ex) {
@@ -249,9 +307,13 @@ public class SaasUtil {
     }
 
     public static Application loadWadl(InputStream in) throws JAXBException {
-        return loadJaxbObject(in, Application.class, true);
+        Reader reader = getWadlReader(in);
+        if ( reader == null ){
+            return null;
+        }
+        return loadJaxbObject(reader, Application.class, true);
     }
-
+    
     public static SaasServices loadSaasServices(FileObject wadlFile) throws IOException {
         return loadJaxbObject(wadlFile, SaasServices.class, true);
     }
@@ -285,10 +347,14 @@ public class SaasUtil {
 
     public static Resource getParentResource(Application app, Method wm) {
         Resource r = null;
-        for (Resource base : app.getResources().getResource()) {
-            r = findParentResource(base, wm);
-            if (r != null) {
-                return r;
+        for(org.netbeans.modules.websvc.saas.model.wadl.Resources wadlResources : 
+            app.getResources())
+        {
+            for (Resource base : wadlResources.getResource()) {
+                r = findParentResource(base, wm);
+                if (r != null) {
+                    return r;
+                }
             }
         }
         return null;
@@ -326,10 +392,14 @@ public class SaasUtil {
                 }
             }
         }
-        for (Resource base : app.getResources().getResource()) {
-            result = findMethodById(base, methodId);
-            if (result != null) {
-                return result;
+        for (org.netbeans.modules.websvc.saas.model.wadl.Resources wadlResources : app
+                .getResources())
+        {
+            for (Resource base : wadlResources.getResource()) {
+                result = findMethodById(base, methodId);
+                if (result != null) {
+                    return result;
+                }
             }
         }
         return null;
@@ -399,7 +469,13 @@ public class SaasUtil {
 
     static List<Resource> getCurrentResources(Application app, Resource current) {
         if (current == null) {
-            return app.getResources().getResource();
+            List<Resource> result = new LinkedList<Resource>();
+            for (org.netbeans.modules.websvc.saas.model.wadl.Resources wadlResources : app
+                    .getResources())
+            {
+                result.addAll(wadlResources.getResource());
+            }
+            return result;
         }
         List<Resource> result = new ArrayList<Resource>();
         for (Object o : current.getMethodOrResource()) {
@@ -423,17 +499,17 @@ public class SaasUtil {
         }
     }
 
-    public static Set<String> getMediaTypesFromJAXBElement(List<JAXBElement<RepresentationType>> repElements) {
+    public static Set<String> getMediaTypesFromJAXBElement(List<JAXBElement<Representation>> repElements) {
         Set<String> result = new HashSet<String>();
-        for (JAXBElement<RepresentationType> repElement : repElements) {
+        for (JAXBElement<Representation> repElement : repElements) {
             result.add(repElement.getValue().getMediaType());
         }
         return result;
     }
 
-    public static Set<String> getMediaTypes(List<RepresentationType> repTypes) {
+    public static Set<String> getMediaTypes(List<Representation> repTypes) {
         Set<String> result = new HashSet<String>();
-        for (RepresentationType repType : repTypes) {
+        for (Representation repType : repTypes) {
             result.add(repType.getMediaType());
         }
         return result;
@@ -447,11 +523,7 @@ public class SaasUtil {
         StringBuffer sb = new StringBuffer();
         sb.append(m.getName());
         sb.append(" : ");
-        try {
-            sb.append(saas.getWadlModel().getResources().getBase());
-        } catch(IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        sb.append(saas.getBaseURL());
         for (Resource r : paths) {
             sb.append(r.getPath());
             sb.append('/');
@@ -629,6 +701,9 @@ public class SaasUtil {
         if (urlLowerCase.endsWith(Saas.NS_WADL)) {
             return Saas.NS_WADL;
         }
+        else if (urlLowerCase.endsWith(Saas.NS_WADL_09)) {
+            return Saas.NS_WADL_09;
+        }
 
         try {
             InputStream is = new URI(url).toURL().openStream();
@@ -643,8 +718,12 @@ public class SaasUtil {
             String doc = os.toString("UTF-8");      //NOI18N
             if (doc.contains(Saas.NS_WSDL) || doc.contains(Saas.WSDL_EXT)) {
                 return Saas.NS_WSDL;
-            } else if (doc.contains(Saas.NS_WADL)) {
+            } 
+            else if (doc.contains(Saas.NS_WADL)) {
                 return Saas.NS_WADL;
+            }
+            else if (doc.contains(Saas.NS_WADL_09)) {
+                return Saas.NS_WADL_09;
             }
         } catch (Exception ex) {
         }
@@ -706,5 +785,75 @@ public class SaasUtil {
         String pack1 = toValidJavaName(saas.getTopLevelGroup().getName());
         String pack2 = toValidJavaName(saas.getDisplayName());
         return (pack1 + "." + pack2).toLowerCase();
+    }
+    
+    private static Reader getWadlReader( InputStream inputStream ) 
+            throws JAXBException
+    {
+        StringReader iReader = null;
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+            StringBuilder builder = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
+                builder.append('\n');
+            }
+            String xml = builder.toString();
+            if (xml.contains(Saas.NS_WADL)) {
+                xml = xml.replace(Saas.NS_WADL, Saas.NS_WADL_09);
+            }
+            iReader = new StringReader(xml);
+        }
+        catch (IOException e) {
+            Logger.getLogger(SaasUtil.class.getName()).log(Level.WARNING, null,e);
+            throw new JAXBException(e);
+        }
+        finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                }
+                catch (IOException e) {
+                }
+            }
+        }
+        return iReader;
+    }
+    
+    public static interface ReadInputStream {
+        
+        <T> T loadJaxbObject(InputStream inputStream,  Class<T> type, 
+                boolean includeAware) throws JAXBException;
+    }
+    
+    private static class ApplicationReader implements ReadInputStream {
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.websvc.saas.util.SaasUtil.ReadInputStream#loadJaxbObject(java.io.InputStream, java.lang.Class, boolean)
+         */
+        @Override
+        public <T> T loadJaxbObject( InputStream inputStream, Class<T> type,
+                boolean includeAware ) throws JAXBException
+        {
+            return SaasUtil.loadJaxbObject(getWadlReader(inputStream), type, 
+                    includeAware);
+        }
+        
+    }
+    
+    private static class InputStreamJaxbReader implements ReadInputStream {
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.websvc.saas.util.SaasUtil.ReadInputStream#loadJaxbObject(java.io.InputStream, java.lang.Class, boolean)
+         */
+        @Override
+        public <T> T loadJaxbObject( InputStream inputStream, Class<T> type,
+                boolean includeAware ) throws JAXBException
+        {
+            return SaasUtil.loadJaxbObject(inputStream, type, includeAware);
+        }
+        
     }
 }

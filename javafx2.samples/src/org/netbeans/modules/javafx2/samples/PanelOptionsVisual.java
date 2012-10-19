@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,10 +34,16 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.javafx2.samples;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
@@ -52,6 +52,8 @@ import javax.swing.*;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.openide.WizardDescriptor;
@@ -68,9 +70,10 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
 
     private PanelConfigureProject panel;
 
-    private volatile RequestProcessor.Task task;
+    private volatile RequestProcessor.Task task = null;
     private DetectPlatformTask detectPlatformTask;
     boolean detectPlatformTaskPerformed = false;
+    private ProgressHandle progressHandle;
     
     private ComboBoxModel platformsModel;
     private ListCellRenderer platformsCellRenderer;
@@ -78,7 +81,7 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
 
 
     /** Creates new form PanelOptionsVisual */
-    public PanelOptionsVisual(PanelConfigureProject panel) {
+    PanelOptionsVisual(PanelConfigureProject panel) {
         this.panel = panel;
 
         detectPlatformTask = new DetectPlatformTask();
@@ -102,6 +105,8 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
         JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(jpcl, JavaPlatformManager.getDefault()));
         
         selectJavaFXEnabledPlatform();
+        progressLabel.setVisible(false);
+        progressPanel.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -116,7 +121,9 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
         lblPlatform = new javax.swing.JLabel();
         platformComboBox = new javax.swing.JComboBox();
         btnManagePlatforms = new javax.swing.JButton();
-        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 100), new java.awt.Dimension(0, 0));
+        progressLabel = new javax.swing.JLabel();
+        progressPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -128,6 +135,8 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 12);
         add(lblPlatform, gridBagConstraints);
+        lblPlatform.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_labelPlatform")); // NOI18N
+        lblPlatform.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_labelPlatform")); // NOI18N
 
         platformComboBox.setModel(platformsModel);
         platformComboBox.setRenderer(platformsCellRenderer);
@@ -145,7 +154,7 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(platformComboBox, gridBagConstraints);
 
-        btnManagePlatforms.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Manage_Button")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnManagePlatforms, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Manage_Button")); // NOI18N
         btnManagePlatforms.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnManagePlatformsActionPerformed(evt);
@@ -154,15 +163,36 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 0);
         add(btnManagePlatforms, gridBagConstraints);
+        btnManagePlatforms.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_buttonManagePlatforms")); // NOI18N
+        btnManagePlatforms.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_buttonManagePlatforms")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 0.1;
         add(filler1, gridBagConstraints);
+
+        progressLabel.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_Platform_Progress")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        add(progressLabel, gridBagConstraints);
+        progressLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_platformProgress")); // NOI18N
+        progressLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_platformProgress")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.1;
+        add(progressPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManagePlatformsActionPerformed
@@ -190,10 +220,11 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
-        if (!JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, detectPlatformTaskPerformed ?
-                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform") : // NOI18N
-                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.creatingDefaultFXPlatform") ); // NOI18N
+        if (task != null || !JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
+            if(detectPlatformTaskPerformed) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform")); // NOI18N
+            }
             return false;
         }
         return true;
@@ -215,12 +246,28 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     private javax.swing.Box.Filler filler1;
     private javax.swing.JLabel lblPlatform;
     private javax.swing.JComboBox platformComboBox;
+    private javax.swing.JLabel progressLabel;
+    private javax.swing.JPanel progressPanel;
     // End of variables declaration//GEN-END:variables
 
     private void checkPlatforms() {
         if (!JavaFXPlatformUtils.isThereAnyJavaFXPlatform()) {
             task = RequestProcessor.getDefault().create(detectPlatformTask);
             task.addTaskListener(this);
+            progressPanel.setVisible (true);
+            progressLabel.setVisible (true);
+            progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(PanelOptionsVisual.class,"TXT_SetupFXPlatformProgress")); // NOI18N
+            progressPanel.removeAll();
+            progressPanel.setLayout (new GridBagLayout ());
+            GridBagConstraints c = new GridBagConstraints ();
+            c.gridx = c.gridy = GridBagConstraints.RELATIVE;
+            c.gridheight = c.gridwidth = GridBagConstraints.REMAINDER;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1.0;
+            JComponent pc = ProgressHandleFactory.createProgressComponent(this.progressHandle);
+            ((GridBagLayout)progressPanel.getLayout ()).setConstraints(pc,c);
+            progressPanel.add (pc);
+            progressHandle.start();
             task.schedule(0);
         }
     }
@@ -231,6 +278,11 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
 
             @Override
             public void run() {
+                detectPlatformTaskPerformed = true;
+                assert progressHandle != null;
+                progressHandle.finish();
+                progressPanel.setVisible(false);
+                progressLabel.setVisible(false);
                 JavaPlatform platform = detectPlatformTask.getPlatform();
                 if (platform != null) {
                     // reload platform combo box model
@@ -238,9 +290,8 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
 
                     // select javafx platform
                     selectJavaFXEnabledPlatform();
-                    detectPlatformTaskPerformed = true;
-                    panel.fireChangeEvent();
                 }
+                panel.fireChangeEvent();
             }
         });
         this.task.removeTaskListener(this);
@@ -256,6 +307,10 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     
     private class DetectPlatformTask implements Runnable {
         private JavaPlatform platform;
+
+        private DetectPlatformTask() {
+            this.platform = null;
+        }
 
         public JavaPlatform getPlatform() {
             return platform;

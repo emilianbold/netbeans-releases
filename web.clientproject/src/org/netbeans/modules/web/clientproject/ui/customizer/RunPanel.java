@@ -48,30 +48,26 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.IOException;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
+import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties.ProjectServer;
 import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -79,70 +75,157 @@ import org.openide.util.NbBundle;
  *
  * @author david
  */
-public class RunPanel extends javax.swing.JPanel implements DocumentListener, ItemListener, HelpCtx.Provider {
+public class RunPanel extends JPanel implements DocumentListener, ItemListener, HelpCtx.Provider {
 
-    private ClientSideProject project;
-    private ComboBoxModel model;
-    private ProjectCustomizer.Category category;
-    
-    /**
-     * Creates new form RunPanel
-     */
-    public RunPanel(ProjectCustomizer.Category category, ClientSideProject p) {
+    private static final long serialVersionUID = 98712411454L;
+
+    private final ClientSideProject project;
+    private final ComboBoxModel webServerModel;
+    private final ProjectCustomizer.Category category;
+    private final ClientSideProjectProperties uiProperties;
+
+
+    public RunPanel(ProjectCustomizer.Category category, ClientSideProjectProperties uiProperties) {
+        assert category != null;
+        assert uiProperties != null;
+
         this.category = category;
-        this.project = p;
+        this.uiProperties = uiProperties;
+        project = uiProperties.getProject();
+        webServerModel = new DefaultComboBoxModel(ClientSideProjectProperties.ProjectServer.values());
+
         initComponents();
-        
-        final ClientSideConfigurationProvider configProvider = project.getProjectConfigurations();
+        init();
+        initListeners();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.customizer.RunPanel"); // NOI18N
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        FileObject siteRoot = getSiteRoot();
+        String info;
+        if (siteRoot != null) {
+            info = NbBundle.getMessage(RunPanel.class, "URL_DESCRIPTION", FileUtil.getFileDisplayName(siteRoot));
+        } else {
+            info = " "; // NOI18N
+        }
+        jProjectURLDescriptionLabel.setText(info);
+        jFileToRunTextField.setEnabled(siteRoot != null);
+        jBrowseButton.setEnabled(siteRoot != null);
+        validateData();
+    }
+
+    private void init() {
+        // config
+        ClientSideConfigurationProvider configProvider = project.getProjectConfigurations();
         jConfigurationComboBox.setRenderer(new ConfigRenderer(jConfigurationComboBox.getRenderer()));
         jConfigurationComboBox.setModel(new DefaultComboBoxModel(configProvider.getConfigurations().toArray()));
-        jConfigurationComboBox.setSelectedItem(configProvider.getActiveConfiguration());
+        jConfigurationComboBox.setSelectedItem(uiProperties.getActiveConfiguration());
         updateConfigurationCustomizer();
-        
-        jFileToRunTextField.setText(project.getStartFile());
-        model = new DefaultComboBoxModel(new String[]{NbBundle.getMessage(RunPanel.class, "EMBEDDED_LIGHTWEIGHT"), 
-            NbBundle.getMessage(RunPanel.class, "EXTERNAL")});
-        jServerComboBox.setModel(model);
-        jServerComboBox.addItemListener(this);
-        jServerComboBox.setSelectedIndex(getServer());
-        //jServerComboBox.setSelectedIndex(cfg.isUseServer() ? 1 : 0);
-        jWebRootTextField.getDocument().addDocumentListener(this);
-        jWebRootTextField.setText(project.getWebContextRoot());
-        jProjectURLTextField.setText(project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL));
-        jProjectURLTextField.getDocument().addDocumentListener(this);
+        // start file
+        jFileToRunTextField.setText(uiProperties.getStartFile());
+        // server
+        jServerComboBox.setModel(webServerModel);
+        jServerComboBox.setRenderer(new ServerRenderer(jServerComboBox.getRenderer()));
+        jServerComboBox.setSelectedItem(uiProperties.getProjectServer());
+        //jServerComboBox.setSelectedIndex(cfg.isUseServer() ? 1 : 0); // XXX: indexes are obsolete, use enums directly
+        // url
+        jProjectURLTextField.setText(uiProperties.getProjectUrl());
+        // web root
+        jWebRootTextField.setText(uiProperties.getWebRoot());
         updateWebRootEnablement();
-        jProjectURLDescriptionLabel.setText(
-                NbBundle.getMessage(RunPanel.class, "URL_DESCRIPTION", FileUtil.getFileDisplayName(project.getSiteRootFolder())));
-        
-        category.setStoreListener(new ActionListener() {
+    }
+
+    private void initListeners() {
+        // config
+        jConfigurationComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                EditableProperties ep = project.getProjectProperties();
-                ep.setProperty(ClientSideProjectConstants.PROJECT_START_FILE, jFileToRunTextField.getText());
-                if (isEmbeddedServer()) {
-                    ep.setProperty(ClientSideProjectConstants.PROJECT_WEB_ROOT, jWebRootTextField.getText());
-                } else {
-                    ep.setProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL, jProjectURLTextField.getText());
-                }
-                ep.setProperty(ClientSideProjectConstants.PROJECT_SERVER, isEmbeddedServer() ? "internal" : "external"); //NOI18N
-                project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                try {
-                    configProvider.setActiveConfiguration(
-                            (ClientProjectConfigurationImplementation)jConfigurationComboBox.getSelectedItem());
-                } catch (IllegalArgumentException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                validateAndStore();
             }
         });
-        
+        // start file
+        jFileToRunTextField.getDocument().addDocumentListener(this);
+        // server
+        jServerComboBox.addItemListener(this);
+        // url
+        jProjectURLTextField.getDocument().addDocumentListener(this);
+        // web root
+        jWebRootTextField.getDocument().addDocumentListener(this);
+    }
+
+    void validateAndStore() {
+        validateData();
+        storeData();
+    }
+
+    private void validateData() {
+        // start file
+        String error = validateStartFile();
+        if (error != null) {
+            category.setErrorMessage(error);
+            category.setValid(false);
+            return;
+        }
+        // project url
+        error = validateProjectUrl();
+        if (error != null) {
+            category.setErrorMessage(error);
+            category.setValid(false);
+            return;
+        }
+        // all ok
+        category.setErrorMessage(" "); // NOI18N
+        category.setValid(true);
+    }
+
+    @NbBundle.Messages({
+        "RunPanel.error.siteRoot.invalid=Invalid Site Root, fix it in Sources category.",
+        "RunPanel.error.startFile.invalid=Start File must be a valid file.",
+        "RunPanel.error.startFile.notUnderSiteRoot=Start File must be underneath Site Root directory."
+    })
+    private String validateStartFile() {
+        FileObject siteRoot = getSiteRoot();
+        if (siteRoot == null) {
+            return Bundle.RunPanel_error_siteRoot_invalid();
+        }
+        File startFile = getResolvedStartFile();
+        if (startFile == null || !startFile.isFile()) {
+            return Bundle.RunPanel_error_startFile_invalid();
+        }
+        if (!FileUtil.isParentOf(siteRoot, FileUtil.toFileObject(startFile))) {
+            return Bundle.RunPanel_error_startFile_notUnderSiteRoot();
+        }
+        return null;
+    }
+
+    @NbBundle.Messages("RunPanel.error.projectUrl.invalid=External server root URL of this project is missing.")
+    private String validateProjectUrl() {
+        if (!jProjectURLTextField.isVisible()) {
+            return null;
+        }
+        if (getProjectUrl().isEmpty()) {
+            return Bundle.RunPanel_error_projectUrl_invalid();
+        }
+        return null;
+    }
+
+    private void storeData() {
+        uiProperties.setActiveConfiguration(getActiveConfiguration());
+        uiProperties.setStartFile(getStartFile());
+        uiProperties.setProjectServer(getProjectServer());
+        uiProperties.setProjectUrl(getProjectUrl());
+        uiProperties.setWebRoot(getWebRoot());
     }
 
     private void updateConfigurationCustomizer() {
         jConfigurationPlaceholder.removeAll();
-        final ClientProjectConfigurationImplementation selectedConfiguration = 
-                (ClientProjectConfigurationImplementation)jConfigurationComboBox.getSelectedItem();
+        ClientProjectConfigurationImplementation selectedConfiguration = getActiveConfiguration();
         if (selectedConfiguration != null) {
             ProjectConfigurationCustomizer customizerPanel = selectedConfiguration.getProjectConfigurationCustomizer();
             if (customizerPanel != null) {
@@ -152,9 +235,55 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         validate();
         repaint();
     }
-    
-    private int getServer() {
-        return project.isUsingEmbeddedServer() ? 0 : 1;
+
+    private ClientProjectConfigurationImplementation getActiveConfiguration() {
+        return (ClientProjectConfigurationImplementation) jConfigurationComboBox.getSelectedItem();
+    }
+
+    @CheckForNull
+    private FileObject getSiteRoot() {
+        File siteRoot = uiProperties.getResolvedSiteRootFolder();
+        if (siteRoot == null) {
+            return null;
+        }
+        return FileUtil.toFileObject(siteRoot);
+    }
+
+    private String getStartFile() {
+        return jFileToRunTextField.getText();
+    }
+
+    @CheckForNull
+    private File getResolvedStartFile() {
+        String startFile = getStartFile();
+        if (startFile == null) {
+            return null;
+        }
+        File directFile = new File(startFile);
+        if (directFile.isAbsolute()) {
+            return directFile;
+        }
+        FileObject siteRoot = getSiteRoot();
+        if (siteRoot == null) {
+            return null;
+        }
+        FileObject fo = siteRoot.getFileObject(startFile);
+        if (fo == null) {
+            return null;
+        }
+        return FileUtil.toFile(fo);
+    }
+
+    private ClientSideProjectProperties.ProjectServer getProjectServer() {
+        return (ProjectServer) jServerComboBox.getSelectedItem();
+    }
+
+    private String getProjectUrl() {
+        return jProjectURLTextField.getText();
+    }
+
+    private String getWebRoot() {
+        return jWebRootTextField.getText();
     }
 
     /**
@@ -278,32 +407,36 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    @NbBundle.Messages({
+        "RunPanel.browse.startFile.title=Select Start File",
+        "RunPanel.browse.startFile.filter.html=HTML Documents"
+    })
     private void jBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseButtonActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
-        chooser.addChoosableFileFilter(new FileNameExtensionFilter(org.openide.util.NbBundle.getMessage(RunPanel.class, "HTML_DOCUMENTS"), "html"));
-        chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
-        File file = new File(FileUtil.toFile(project.getSiteRootFolder()), jFileToRunTextField.getText());
-        if (file.exists()) {
-            chooser.setSelectedFile(file);
+        FileObject siteRootFolder = getSiteRoot();
+        assert siteRootFolder != null;
+        File workDir;
+        File startFile = getResolvedStartFile();
+        if (startFile != null && startFile.exists()) {
+            workDir = startFile.getParentFile();
         } else {
-            chooser.setCurrentDirectory(FileUtil.toFile(project.getSiteRootFolder()));
+            workDir = FileUtil.toFile(siteRootFolder);
         }
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File selected = FileUtil.normalizeFile(chooser.getSelectedFile());
-            FileObject fo = FileUtil.toFileObject(selected);
-            if (fo != null) {
-                String rel = FileUtil.getRelativePath(project.getSiteRootFolder(), fo);
-                if (rel != null) {
-                    jFileToRunTextField.setText(rel);
-                } else {
-                    DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                        org.openide.util.NbBundle.getMessage(RunPanel.class, "WARNING")));
-                }
-            }
+        File file = new FileChooserBuilder(SourcesPanel.class)
+                .setTitle(Bundle.RunPanel_browse_startFile_title())
+                .setFilesOnly(true)
+                .setDefaultWorkingDirectory(workDir)
+                .forceUseOfDefaultWorkingDirectory(true)
+                .addFileFilter(new FileNameExtensionFilter(Bundle.RunPanel_browse_startFile_filter_html(), "html", "htm")) // NOI18N
+                .showOpenDialog();
+        if (file == null) {
+            return;
         }
-        
+        String filePath = FileUtil.getRelativePath(siteRootFolder, FileUtil.toFileObject(file));
+        if (filePath == null) {
+            // path cannot be relativized
+            filePath = file.getAbsolutePath();
+        }
+        jFileToRunTextField.setText(filePath);
     }//GEN-LAST:event_jBrowseButtonActionPerformed
 
     private void jConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jConfigurationComboBoxActionPerformed
@@ -348,11 +481,11 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         }
         jWebRootExampleLabel.setText(NbBundle.getMessage(RunPanel.class, "RunPanel.jWebRootExampleLabel.text", s.toString()));
     }
-    
+
     private boolean isEmbeddedServer() {
-        return jServerComboBox.getSelectedIndex() == 0;
+        return jServerComboBox.getSelectedItem() == ClientSideProjectProperties.ProjectServer.INTERNAL;
     }
-    
+
     private void updateWebRootEnablement() {
         jWebRootTextField.setVisible(isEmbeddedServer());
         jWebRootLabel.setVisible(isEmbeddedServer());
@@ -361,37 +494,25 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         jProjectURLTextField.setVisible(!isEmbeddedServer());
         jProjectURLDescriptionLabel.setVisible(!isEmbeddedServer());
         updateWebRooExample();
-        validateProjectURL();
+        validateAndStore();
     }
-    
-    private void validateProjectURL() {
-        if (!jProjectURLTextField.isVisible()) {
-            category.setValid(true);
-            category.setErrorMessage(null);
-            return;
-        }
-        category.setValid(jProjectURLTextField.getText().length() > 0);
-        if (!category.isValid()) {
-            category.setErrorMessage(org.openide.util.NbBundle.getMessage(RunPanel.class, "ERROR_URL_MISSING"));
-        } else {
-            category.setErrorMessage(null);
-        }
-    }
-    
+
     @Override
     public void insertUpdate(DocumentEvent e) {
         updateWebRooExample();
-        validateProjectURL();
+        validateAndStore();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
         updateWebRooExample();
-        validateProjectURL();
+        validateAndStore();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
+        updateWebRooExample();
+        validateAndStore();
     }
 
     @Override
@@ -399,14 +520,11 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         updateWebRootEnablement();
     }
 
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.customizer.RunPanel");
-    }
-    
-    private static class ConfigRenderer implements ListCellRenderer {
-        
-        private ListCellRenderer original;
+    //~ Inner classes
+
+    private static final class ConfigRenderer implements ListCellRenderer {
+
+        private final ListCellRenderer original;
 
         public ConfigRenderer(ListCellRenderer original) {
             this.original = original;
@@ -419,7 +537,24 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
             }
             return original.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
-        
+
+    }
+
+    private static final class ServerRenderer implements ListCellRenderer {
+
+        private final ListCellRenderer original;
+
+
+        public ServerRenderer(ListCellRenderer original) {
+            this.original = original;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            value = ((ClientSideProjectProperties.ProjectServer) value).getTitle();
+            return original.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+
     }
 
 }

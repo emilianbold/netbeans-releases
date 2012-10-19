@@ -93,9 +93,11 @@ import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -371,6 +373,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                 return JavaFixAllImports.NOT_VALID_IMPORT_HTML + displayName;
         }
 
+        @Messages("WRN_FileInvalid=Cannot resolve file - already deleted?")
         public ChangeInfo implement() throws IOException {
             JavaSource js = JavaSource.forFileObject(file);            
             
@@ -422,7 +425,16 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             if (js != null) {
                 js.runModificationTask(task).commit();
             } else {
-                DataObject od = DataObject.find(file);
+                DataObject od;
+                
+                try {
+                    od = DataObject.find(file);
+                } catch (DataObjectNotFoundException donfe) {
+                    LOG.log(Level.INFO, null, donfe);
+                    StatusDisplayer.getDefault().setStatusText(Bundle.WRN_FileInvalid());
+                    return null;
+                }
+                
                 EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
                 Document doc = ec != null ? ec.openDocument() : null;
                 String topLevelLanguageMIMEType = doc != null ? NbEditorUtilities.getMimeType(doc) : null;
@@ -437,6 +449,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             }
             return null;
         }
+        private static final Logger LOG = Logger.getLogger(FixImport.class.getName());
         
         @Override
         public int hashCode() {

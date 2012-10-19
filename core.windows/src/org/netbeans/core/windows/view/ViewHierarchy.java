@@ -141,6 +141,7 @@ final class ViewHierarchy {
             }
             if( null == mainFrame ) {
                 mainFrame = new JFrame();
+                mainFrame.setName( "NbMainWindow" ); //NOI18N
             }
             Logger.getLogger(MainWindow.class.getName()).log(Level.FINE, "Installing MainWindow into " + mainFrame); //NOI18N
             mainWindow = MainWindow.install(mainFrame);

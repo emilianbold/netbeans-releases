@@ -181,6 +181,8 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     
     public static class MethodBuilder extends FunctionBuilder implements MemberBuilder {
         
+        private boolean _virtual = false;
+        private boolean _explicit = false;
         private CsmVisibility visibility = CsmVisibility.PUBLIC;
 
         public CsmVisibility getVisibility() {
@@ -190,15 +192,21 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         public void setVisibility(CsmVisibility visibility) {
             this.visibility = visibility;
         }
+
+        public boolean isVirtual() {
+            return _virtual;
+        }
+
+        public boolean isExplicit() {
+            return _explicit;
+        }
         
         @Override
         public MethodImpl create() {
             CsmClass cls = (CsmClass) getScope();
-            boolean _virtual = false;
-            boolean _explicit = false;
 
 
-            MethodImpl method = new MethodImpl(getName(), getRawName(), cls, getVisibility(), _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            MethodImpl method = new MethodImpl(getName(), getRawName(), cls, getVisibility(), isVirtual(), isExplicit(), isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
             StringBuilder clsTemplateSuffix = new StringBuilder();

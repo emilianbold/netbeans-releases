@@ -69,7 +69,9 @@ import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.spi.CsmRefactoringNameProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -543,6 +545,7 @@ public final class CsmRefactoringUtils {
         }
         return containingFile;
     } 
+    
     
     @ServiceProvider(service=CsmRefactoringNameProvider.class, position=100)
     public static final class CsmRefactoringNameProviderImpl implements CsmRefactoringNameProvider {

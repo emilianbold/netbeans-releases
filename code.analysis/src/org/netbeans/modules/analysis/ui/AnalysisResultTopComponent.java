@@ -94,8 +94,8 @@ persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_AnalysisResultAction",
 preferredID = "AnalysisResultTopComponent")
 @Messages({
-    "CTL_AnalysisResultAction=Inspector Window",
-    "CTL_AnalysisResultTopComponent=Inspector Window",
+    "CTL_AnalysisResultAction=Inspector",
+    "CTL_AnalysisResultTopComponent=Inspector",
     "HINT_AnalysisResultTopComponent=This is an Inspector Window"
 })
 public final class AnalysisResultTopComponent extends TopComponent implements ExplorerManager.Provider {

@@ -65,6 +65,7 @@ import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
+import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
@@ -177,12 +178,22 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
                         //this itself means that the node is undeclared since
                         //otherwise it wouldn't appear in the pure html parse tree
-                        Hint hint = new Hint(ERROR_RULE_BADGING,
+                        hints.add(new Hint(ERROR_RULE_BADGING,
                                 NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT", openTag.name().toString()), //NOI18N
                                 context.parserResult.getSnapshot().getSource().getFileObject(),
                                 JsfUtils.createOffsetRange(snapshot, docText, node.from(), node.from() + openTag.name().length() + 1 /* "<".length */),
-                                fixes, DEFAULT_ERROR_HINT_PRIORITY);
-                        hints.add(hint);
+                                fixes, DEFAULT_ERROR_HINT_PRIORITY));
+                        
+                        //put the hint to the close tag as well
+                        CloseTag matchingCloseTag = openTag.matchingCloseTag();
+                        if(matchingCloseTag != null) {
+                            hints.add(new Hint(ERROR_RULE_BADGING,
+                                    NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT", openTag.name().toString()), //NOI18N
+                                    context.parserResult.getSnapshot().getSource().getFileObject(),
+                                    JsfUtils.createOffsetRange(snapshot, docText, matchingCloseTag.from(), matchingCloseTag.to()),
+                                    fixes, DEFAULT_ERROR_HINT_PRIORITY));
+                        }
+                        
                     }
                 }
             }, ElementType.OPEN_TAG);

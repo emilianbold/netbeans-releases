@@ -203,7 +203,12 @@ public final class Composer {
     }
 
     private FileObject getLockFile(PhpModule phpModule) {
-        return phpModule.getSourceDirectory().getFileObject(LOCK_FILENAME);
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return null;
+        }
+        return sourceDirectory.getFileObject(LOCK_FILENAME);
     }
 
     private boolean userConfirmation(String title, String question) {

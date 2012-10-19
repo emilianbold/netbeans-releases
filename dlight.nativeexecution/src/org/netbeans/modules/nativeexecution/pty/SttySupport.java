@@ -42,8 +42,9 @@
 package org.netbeans.modules.nativeexecution.pty;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.ShellSession;
 
 /**
@@ -57,26 +58,14 @@ public final class SttySupport {
     private SttySupport() {
     }
 
-    /**
-     *
-     * @param env
-     * @param tty
-     * @param args
-     * @return may return null in case of failure
-     */
-    public static String[] apply(final ExecutionEnvironment env, final String tty, final String args) {
-        String[] result = null;
-
+    public static void apply(final ExecutionEnvironment env, final String tty, final String args) {
         if (!disableSTTY) {
             try {
-                result = ShellSession.execute(env, "/bin/stty " + args + " < " + tty + " 2>/dev/null"); // NOI18N
+                ShellSession.execute(env, "/bin/stty " + args + " < " + tty + " 2>/dev/null"); // NOI18N
             } catch (IOException ex) {
                 // bad luck.. still just ignore..
-            } catch (CancellationException ex) {
-                // TODO:CancellationException error processing
+                Logger.getInstance().log(Level.FINE, "SttySupport.apply() failed", ex); // NOI18N
             }
         }
-
-        return result;
     }
 }

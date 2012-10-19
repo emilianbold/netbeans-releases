@@ -1,6 +1,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #include "killall.h"
+#include "pfind.h"
 
 const char* progname;
 
@@ -161,7 +162,7 @@ int str2sig(const char *name, int *sig_ret) {
     }
     return -1;
 }
-#endif    
+#endif // not defined SOLARIS
 
 static int sendsignal(sigscope_t scope, int id, int sig) {
     switch (scope) {
@@ -178,6 +179,24 @@ static int sendsignal(sigscope_t scope, int id, int sig) {
     }
 }
 
+static int signal_by_env(int sig, const char* magicenv, int nosig) {
+    pid_t* pids = pfind(magicenv);
+
+    if (pids != NULL) {
+        pid_t* p;
+        for (p = pids; *p != 0; p++) {
+            if (nosig) {
+                printf("%d\n", (int) *p);
+            } else {
+                sendsignal(S_PID, (int) (*p), sig);
+            }
+        }
+        free(pids);
+    }
+
+    return 0;
+}
+
 int main(int argc, char** argv) {
     options_t params;
     int nopt;
@@ -189,15 +208,21 @@ int main(int argc, char** argv) {
     nopt = readopts(argc, argv, &params);
     argv += nopt;
     argc -= nopt;
+
     if (argc == 0) {
-        err_quit("\n\nusage: %s -p|-g|-s signal_name [-m env] id\n"
+        err_quit("\n\nusage: %s -p|-g|-s signal_name id\n"
                 "\t-p\t\tsend signal signal_name to a process with the specified id\n"
                 "\t-g\t\tsend signal signal_name to all processes with the specified process group ID\n"
                 "\t-s\t\tsend signal signal_name to all processes with the specified session ID\n"
-                "\t-m\t\tin addition find all processes that have env entry in their environment and send the signal to them\n"
                 "\nusage: %s -q signal_name pid value\n"
-                "\t-q\t\tsignal process with the given signal and integer value attached.\n",
-                progname, progname);
+                "\t-q\t\tsignal process with the given signal and integer value attached.\n"
+                "\nusage: %s [-n] -e signal_name env\n"
+                "\t-e\t\tfind all processes that have env entry in their environment and send the signal to them\n",
+                progname, progname, progname);
+    }
+
+    if (params.scope == P_ENV) {
+        return signal_by_env(params.sig, argv[0], params.nosignal);
     }
 
     params.id = atoi(argv[0]);

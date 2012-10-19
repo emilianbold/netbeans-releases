@@ -46,7 +46,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
-import org.netbeans.modules.editor.lib2.actions.PresenterEditorAction;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -62,6 +61,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.spi.editor.AbstractEditorAction;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -103,21 +103,21 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
     }
 
     private void register(Element e, EditorActionRegistration annotation) throws LayerGenerationException {
-        String className;
-        String methodName;
+        String actionClassName;
+        String createActionMethodName;
         TypeMirror swingActionType = processingEnv.getTypeUtils().getDeclaredType(
                 processingEnv.getElementUtils().getTypeElement("javax.swing.Action"));
         TypeMirror utilMapType = processingEnv.getTypeUtils().getDeclaredType(
                 processingEnv.getElementUtils().getTypeElement("java.util.Map"));
-        boolean directActionCreation = false; // Whether construct AlwaysEnabledAction or annotated action directly
+        boolean directActionCreation = false; // Whether construct wrapper action or annotated action directly
         switch (e.getKind()) {
             case CLASS:
-                className = processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString();
+                actionClassName = processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString();
                 if (e.getModifiers().contains(Modifier.ABSTRACT)) {
-                    throw new LayerGenerationException(className + " must not be abstract", e);
+                    throw new LayerGenerationException(actionClassName + " must not be abstract", e);
                 }
                 if (!e.getModifiers().contains(Modifier.PUBLIC)) {
-                    throw new LayerGenerationException(className + " is not public", e);
+                    throw new LayerGenerationException(actionClassName + " is not public", e);
                 }
                 ExecutableElement defaultCtor = null;
                 ExecutableElement mapCtor = null;
@@ -134,45 +134,38 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
                 }
                 String msgBase = "No-argument (or single-argument \"Map<String,?> attrs\") constructor";
                 if (defaultCtor == null && mapCtor == null) {
-                    throw new LayerGenerationException(msgBase + " not present in " + className, e);
+                    throw new LayerGenerationException(msgBase + " not present in " + actionClassName, e);
                 }
                 boolean defaultCtorPublic = (defaultCtor != null && defaultCtor.getModifiers().contains(Modifier.PUBLIC));
                 boolean mapCtorPublic = (mapCtor != null && mapCtor.getModifiers().contains(Modifier.PUBLIC));
                 if (!defaultCtorPublic && !mapCtorPublic) {
-                    throw new LayerGenerationException(msgBase + " not public in " + className, e);
+                    throw new LayerGenerationException(msgBase + " not public in " + actionClassName, e);
                 }
 
                 if (!processingEnv.getTypeUtils().isAssignable(e.asType(), swingActionType)) {
-                    throw new LayerGenerationException(className + " is not assignable to javax.swing.Action", e);
+                    throw new LayerGenerationException(actionClassName + " is not assignable to javax.swing.Action", e);
                 }
-                if (mapCtorPublic) {
-                    directActionCreation = true;
-                }
-                methodName = null;
+                createActionMethodName = null;
                 break;
 
             case METHOD:
-                className = processingEnv.getElementUtils().getBinaryName((TypeElement) e.getEnclosingElement()).toString();
-                methodName = e.getSimpleName().toString();
+                actionClassName = processingEnv.getElementUtils().getBinaryName((TypeElement) e.getEnclosingElement()).toString();
+                createActionMethodName = e.getSimpleName().toString();
                 if (!e.getModifiers().contains(Modifier.STATIC)) {
-                    throw new LayerGenerationException(className + "." + methodName + " must be static", e); // NOI18N
+                    throw new LayerGenerationException(actionClassName + "." + createActionMethodName + " must be static", e); // NOI18N
                 }
-                // It appears that actually even non-public method registration works - so commented following
-//                    if (!e.getModifiers().contains(Modifier.PUBLIC)) {
-//                        throw new LayerGenerationException(className + "." + methodName + " must be public", e);
-//                    }
                 List<? extends VariableElement> params = ((ExecutableElement)e).getParameters();
                 boolean emptyParams = params.isEmpty();
                 boolean mapParam = (params.size() == 1 && processingEnv.getTypeUtils().isAssignable(
                         params.get(0).asType(), utilMapType));
                 if (!emptyParams && !mapParam)
                 {
-                    throw new LayerGenerationException(className + "." + methodName +
+                    throw new LayerGenerationException(actionClassName + "." + createActionMethodName +
                             " must not take arguments (or have a single-argument \"Map<String,?> attrs\")", e); // NOI18N
                 }
                 TypeMirror returnType = ((ExecutableElement)e).getReturnType();
                 if (swingActionType != null && !processingEnv.getTypeUtils().isAssignable(returnType, swingActionType)) {
-                    throw new LayerGenerationException(className + "." + methodName + " is not assignable to javax.swing.Action", e);
+                    throw new LayerGenerationException(actionClassName + "." + createActionMethodName + " is not assignable to javax.swing.Action", e);
                 }
                 if (mapParam) {
                     directActionCreation = true;
@@ -185,170 +178,142 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         }
 
         String actionName = annotation.name();
-        StringBuilder filePath = new StringBuilder(50);
+        StringBuilder actionFilePathBuilder = new StringBuilder(50);
         String mimeType = annotation.mimeType();
-        filePath.append("Editors");
+        actionFilePathBuilder.append("Editors");
         if (mimeType.length() > 0) {
-            filePath.append("/").append(mimeType);
+            actionFilePathBuilder.append("/").append(mimeType);
         }
-        filePath.append("/Actions/").append(actionName).append(".instance");
+        actionFilePathBuilder.append("/Actions/").append(actionName).append(".instance");
         LayerBuilder layer = layer(e);
-        LayerBuilder.File file = layer.file(filePath.toString());
+        String actionFilePath = actionFilePathBuilder.toString();
+        LayerBuilder.File actionFile = layer.file(actionFilePath);
         String preferencesKey = annotation.preferencesKey();
-        boolean checkBoxPresenter = (preferencesKey.length() > 0);
 
         // Resolve icon resource
         String iconResource = annotation.iconResource();
         if (iconResource.length() > 0) {
-            file.stringvalue("iconBase", iconResource);
+            actionFile.stringvalue(AbstractEditorAction.ICON_RESOURCE_KEY, iconResource);
         }
 
         // Resolve short description bundle key
         String shortDescription = annotation.shortDescription();
         if (shortDescription.length() > 0) {
-            if ("BY_ACTION_NAME".equals(shortDescription)) {
-                shortDescription = "#" + actionName;
+            if ("INHERIT".equals(shortDescription)) {
+                actionFile.methodvalue(AbstractEditorAction.DISPLAY_NAME_KEY,
+                        EditorActionUtilities.class.getName(), "getGlobalActionShortDescription");
+                actionFile.methodvalue(Action.SHORT_DESCRIPTION,
+                        EditorActionUtilities.class.getName(), "getGlobalActionShortDescription");
+            } else {
+                if ("BY_ACTION_NAME".equals(shortDescription)) {
+                    shortDescription = "#" + actionName;
+                }
+                actionFile.bundlevalue(AbstractEditorAction.DISPLAY_NAME_KEY, shortDescription);
+                actionFile.bundlevalue(Action.SHORT_DESCRIPTION, shortDescription);
             }
-            file.bundlevalue(Action.SHORT_DESCRIPTION, shortDescription);
         }
 
         // Resolve menu text bundle key
         String menuText = annotation.menuText();
         if (menuText.length() > 0) {
-            file.bundlevalue("menuText", menuText);
+            actionFile.bundlevalue("menuText", menuText);
         } else if (shortDescription.length() > 0) { // Use shortDesc instead
             menuText = shortDescription;
-            file.bundlevalue("menuText", menuText);
+            actionFile.bundlevalue("menuText", menuText);
         }
 
         // Resolve popup menu text bundle key
         String popupText = annotation.popupText();
         if (popupText.length() > 0) {
-            file.bundlevalue("popupText", popupText);
+            actionFile.bundlevalue("popupText", popupText);
         } else if (menuText.length() > 0) { // Use menuText instead
             popupText = menuText;
-            file.bundlevalue("popupText", popupText);
+            actionFile.bundlevalue("popupText", popupText);
         }
 
-        // Check presenters
-        String presenterActionName = null;
-
-        // Check menu path
+        // Check menu path and generate menu presenter shadow file
         String menuPath = annotation.menuPath();
         int menuPosition = annotation.menuPosition();
         if (menuPosition != Integer.MAX_VALUE) {
-            StringBuilder presenterFilePath = new StringBuilder(50);
-            presenterFilePath.append("Menu/");
+            StringBuilder menuPresenterFilePath = new StringBuilder(50);
+            menuPresenterFilePath.append("Menu/");
             if (menuPath.length() > 0) {
-                presenterFilePath.append(menuPath).append('/');
+                menuPresenterFilePath.append(menuPath).append('/');
             }
-            presenterFilePath.append(actionName).append(".shadow");
-            LayerBuilder.File presenterShadowFile = layer.file(presenterFilePath.toString());
-            if (presenterActionName == null) {
-                if (checkBoxPresenter) { // Point directly to AlwaysEnabledAction
-                    presenterActionName = "Editors/Actions/" + actionName + ".instance";
-                } else {
-                    presenterActionName = generatePresenterAction(layer, actionName);
-                }
-            }
-            presenterShadowFile.stringvalue("originalFile", presenterActionName);
-            presenterShadowFile.intvalue("position", menuPosition);
-            presenterShadowFile.write();
+            menuPresenterFilePath.append(actionName).append(".shadow");
+            LayerBuilder.File menuPresenterShadowFile = layer.file(menuPresenterFilePath.toString());
+            menuPresenterShadowFile.stringvalue("originalFile", actionFilePath);
+            menuPresenterShadowFile.intvalue("position", menuPosition);
+            menuPresenterShadowFile.write();
         }
 
-        // Check popup path
+        // Check popup path and generate popup presenter shadow file
         String popupPath = annotation.popupPath();
         int popupPosition = annotation.popupPosition();
         if (popupPosition != Integer.MAX_VALUE) {
-            StringBuilder presenterFilePath = new StringBuilder(50);
-            presenterFilePath.append("Editors/Popup/");
+            StringBuilder popupPresenterFilePath = new StringBuilder(50);
+            popupPresenterFilePath.append("Editors/Popup/");
             if (mimeType.length() > 0) {
-                presenterFilePath.append(mimeType).append("/");
+                popupPresenterFilePath.append(mimeType).append("/");
             }
             if (popupPath.length() > 0) {
-                presenterFilePath.append(popupPath).append('/');
+                popupPresenterFilePath.append(popupPath).append('/');
             }
-            presenterFilePath.append(actionName).append(".shadow");
-            LayerBuilder.File presenterShadowFile = layer.file(presenterFilePath.toString());
-            if (presenterActionName == null) {
-                if (checkBoxPresenter) { // Point directly to AlwaysEnabledAction
-                    presenterActionName = "Editors/Actions/" + actionName + ".instance";
-                } else {
-                    presenterActionName = generatePresenterAction(layer, actionName);
-                }
-            }
-            presenterShadowFile.stringvalue("originalFile", presenterActionName);
-            presenterShadowFile.intvalue("position", popupPosition);
-            presenterShadowFile.write();
+            popupPresenterFilePath.append(actionName).append(".shadow");
+            LayerBuilder.File popupPresenterShadowFile = layer.file(popupPresenterFilePath.toString());
+            popupPresenterShadowFile.stringvalue("originalFile", actionFilePath);
+            popupPresenterShadowFile.intvalue("position", popupPosition);
+            popupPresenterShadowFile.write();
         }
         
+        // Generate toolBar presenter
         int toolBarPosition = annotation.toolBarPosition();
         if (toolBarPosition != Integer.MAX_VALUE) {
-            StringBuilder presenterFilePath = new StringBuilder(50);
-            presenterFilePath.append("Editors/Toolbar/");
+            StringBuilder toolBarPresenterFilePath = new StringBuilder(50);
+            toolBarPresenterFilePath.append("Editors/Toolbar/");
             if (mimeType.length() > 0) {
-                presenterFilePath.append(mimeType).append("/");
+                toolBarPresenterFilePath.append(mimeType).append("/");
             }
-            presenterFilePath.append(actionName).append(".shadow");
-            LayerBuilder.File presenterShadowFile = layer.file(presenterFilePath.toString());
-            if (presenterActionName == null) {
-                presenterActionName = generatePresenterAction(layer, actionName);
-            }
-            presenterShadowFile.stringvalue("originalFile", presenterActionName);
-            presenterShadowFile.intvalue("position", toolBarPosition);
-            presenterShadowFile.write();
+            toolBarPresenterFilePath.append(actionName).append(".shadow");
+            LayerBuilder.File toolBarPresenterShadowFile = layer.file(toolBarPresenterFilePath.toString());
+            toolBarPresenterShadowFile.stringvalue("originalFile", actionFilePath);
+            toolBarPresenterShadowFile.intvalue("position", toolBarPosition);
+            toolBarPresenterShadowFile.write();
         }
 
         if (preferencesKey.length() > 0) {
-            file.stringvalue("preferencesKey", preferencesKey);
-            file.methodvalue("preferencesNode", EditorActionUtilities.class.getName(), "getGlobalPreferences");
-            file.boolvalue("preferencesDefault", annotation.preferencesDefault());
+            actionFile.stringvalue("preferencesKey", preferencesKey);
+            actionFile.methodvalue("preferencesNode", EditorActionUtilities.class.getName(), "getGlobalPreferences");
+            actionFile.boolvalue("preferencesDefault", annotation.preferencesDefault());
         }
 
+        actionFile.stringvalue(Action.NAME, actionName);
         // Deafult helpID is action's name
-        file.stringvalue("helpID", actionName);
+        actionFile.stringvalue("helpID", actionName);
 
-        // Resolve accelerator through method
-        file.methodvalue(Action.ACCELERATOR_KEY, EditorActionUtilities.class.getName(), "getAccelerator");
+        // Accelerator filled with MULTI_ACCELERATOR_LIST_KEY property by infrastructure
+//        file.methodvalue(Action.ACCELERATOR_KEY, EditorActionUtilities.class.getName(), "getAccelerator");
 
-        // Always generate Action.NAME since although AlwaysEnabledAction tweaks its retrieval to "displayName"
-        // some tools may query FO's properties and expect it there.
-        file.stringvalue(Action.NAME, actionName);
 
         // Resolve weight attribute that allows to override existing action
         int weight = annotation.weight();
         if (weight != 0) {
-            file.intvalue("weight", weight);
+            actionFile.intvalue("weight", weight);
         }
 
         if (directActionCreation) {
-            if (methodName != null) {
-                file.methodvalue("instanceCreate", className, methodName);
-            } else {
-                file.newvalue("instanceCreate", className);
-            }
+            actionFile.methodvalue("instanceCreate", actionClassName, createActionMethodName);
 
-        } else { // Create always enabled action
-            file.methodvalue("instanceCreate", "org.openide.awt.Actions",
-                    checkBoxPresenter ? "checkbox" : "alwaysEnabled");
-            file.stringvalue("displayName", actionName);
-
-            if (methodName != null) {
-                file.methodvalue("delegate", className, methodName);
+        } else { // Create wrapper action
+            actionFile.methodvalue("instanceCreate", "org.netbeans.modules.editor.lib2.actions.WrapperEditorAction", "create");
+            actionFile.boolvalue(AbstractEditorAction.WRAPPER_ACTION_KEY, true);
+            if (createActionMethodName != null) {
+                actionFile.methodvalue("delegate", actionClassName, createActionMethodName);
             } else {
-                file.newvalue("delegate", className);
+                actionFile.newvalue("delegate", actionClassName);
             }
         }
-        file.write();
-    }
-
-    private String generatePresenterAction(LayerBuilder layer, String actionName) {
-        String presenterActionName = "Editors/ActionPresenters/" + actionName + ".instance";
-        LayerBuilder.File presenterActionFile = layer.file(presenterActionName);
-        presenterActionFile.methodvalue("instanceCreate", PresenterEditorAction.class.getName(), "create");
-        presenterActionFile.stringvalue(Action.NAME, actionName);
-        presenterActionFile.write();
-        return presenterActionName;
+        actionFile.write();
     }
 
 }

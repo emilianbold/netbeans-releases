@@ -93,7 +93,11 @@ public class Rule {
         }
         String originCode = (String)rule.get("origin"); // NOI18N
         origin = StyleSheetOrigin.forCode(originCode);
-        style = new Style((JSONObject)rule.get("style")); // NOI18N
+        if (rule.containsKey("style")) { // NOI18N
+            style = new Style((JSONObject)rule.get("style")); // NOI18N
+        } else {
+            throw new IllegalArgumentException("Style attribute is missing! Rule: " + rule); // NOI18N
+        }
         if (rule.containsKey("selectorRange")) { // NOI18N
             selectorRange = new SourceRange((JSONObject)rule.get("selectorRange")); // NOI18N
         }

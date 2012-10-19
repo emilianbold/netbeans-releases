@@ -44,6 +44,8 @@
 package org.netbeans.modules.xml;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.*;
@@ -81,8 +83,8 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
     /** generated Serialized Version UID */
     private static final long serialVersionUID = 2890472952957502631L;
 
-    /** Delegate sync support */
-    private final DTDSyncSupport sync;
+    /** Synchronization implementation delegate. */
+    private Reference<XMLSyncSupport> refSync;
     
     /** Cookie Manager */
     private final DataObjectCookieManager cookieManager;
@@ -93,7 +95,7 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
         CookieSet set = getCookieSet();
         set.add (cookieManager = new DataObjectCookieManager (this, set));
         
-        sync = new DTDSyncSupport(this);        
+         
         final TextEditorSupport.TextEditorSupportFactory editorFactory =
             TextEditorSupport.findEditorSupportFactory (this, DTDKit.MIME_TYPE);
         editorFactory.registerCookies (set);
@@ -149,8 +151,24 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
         return dataNode;
     }
 
+    private synchronized Synchronizator getSyncIfAvailable() {
+        if (refSync == null) {
+            return null;
+        }
+        return refSync.get();
+    }
+    
     /** @return provider of sync interface.  */
-    public Synchronizator getSyncInterface() {
+    public synchronized Synchronizator getSyncInterface() {
+        Synchronizator sync = null;
+        if (refSync != null) {
+            sync = refSync.get();
+        }
+        if (sync != null) {
+            return sync;
+        }
+        sync = new DTDSyncSupport(this);       
+        refSync = new WeakReference(sync);
         return sync;
     }
 

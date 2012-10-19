@@ -49,21 +49,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.logging.Level;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -129,78 +124,26 @@ public final class SiteHelper {
         "# {0} - file name",
         "SiteHelper.progress.unzip=Unziping file {0}"
     })
-    public static void unzipProjectTemplate(AntProjectHelper helper, File zipFile, @NullAllowed ProgressHandle progressHandle) throws IOException {
+    public static void unzipProjectTemplate(@NonNull FileObject targetDir, @NonNull File zipFile, @NullAllowed ProgressHandle progressHandle, String... ignoredFiles) throws IOException {
+        assert targetDir != null;
         if (progressHandle != null) {
             progressHandle.progress(Bundle.SiteHelper_progress_unzip(zipFile.getName()));
         }
         String rootFolder = getZipRootFolder(new FileInputStream(zipFile));
-        unzipProjectTemplateFile(helper, new FileInputStream(zipFile), null, rootFolder);
-    }
-
-    /**
-     * Get list of files from the given ZIP file according to the given {@link ZipEntryFilter filter}.
-     * @param zipFile ZIP file to be listed
-     * @param entryFilter filter to be applied on the ZIP file entries
-     * @return list of files from the given ZIP file according to the given {@link ZipEntryFilter filter}
-     * @throws IOException if any error occurs
-     */
-    public static List<String> listZipFiles(File zipFile, ZipEntryFilter entryFilter) throws IOException {
-        assert zipFile != null;
-        assert entryFilter != null;
-        List<String> files = new ArrayList<String>();
-        ZipFile zip = new ZipFile(zipFile);
-        try {
-            Enumeration<? extends ZipEntry> entries = zip.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry zipEntry = entries.nextElement();
-                if (entryFilter.accept(zipEntry)) {
-                    files.add(zipEntry.getName());
-                }
-            }
-        } finally {
-            zip.close();
-        }
-        return files;
-    }
-
-    /**
-     * Get list of JS file names (just filenames, without any relative path) from the given ZIP file.
-     * <p>
-     * If any error occurs, this error is logged with INFO level and an empty list is returned.
-     * @param zipFile ZIP file to be listed
-     * @return list of JS file names (just filenames, without any relative path) from the given ZIP file
-     * @see #listZipFiles(File, ZipEntryFilter)
-     */
-    public static List<String> listJsFilenamesFromZipFile(File zipFile) {
-        try {
-            List<String> entries = SiteHelper.listZipFiles(zipFile, new SiteHelper.ZipEntryFilter() {
-                @Override
-                public boolean accept(ZipEntry zipEntry) {
-                    return !zipEntry.isDirectory()
-                            && zipEntry.getName().toLowerCase().endsWith(".js"); // NOI18N
-                }
-            });
-            List<String> files = new ArrayList<String>(entries.size());
-            for (String entry : entries) {
-                String[] segments = entry.split("/"); // NOI18N
-                files.add(segments[segments.length - 1]);
-            }
-            return files;
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
-        return Collections.emptyList();
-
+        unzipProjectTemplateFile(targetDir, new FileInputStream(zipFile), rootFolder, ignoredFiles);
     }
 
     @NbBundle.Messages("SiteHelper.error.emptyZip=ZIP file with site template is either empty or its download failed.")
-    private static void unzipProjectTemplateFile(AntProjectHelper helper, InputStream source, ProgressHandle handle, String rootFolder) throws IOException {
-        FileObject projectRoot = null;
+    private static void unzipProjectTemplateFile(FileObject targetDir, InputStream source, String rootFolder, String... ignoredFiles) throws IOException {
         boolean firstItem = true;
         try {
             int stripLen = rootFolder != null ? rootFolder.length() : 0;
             ZipInputStream str = new ZipInputStream(source);
             ZipEntry entry;
+            Set<String> ignored = Collections.emptySet();
+            if (ignoredFiles != null && ignoredFiles.length > 0) {
+                ignored = new HashSet<String>(Arrays.asList(ignoredFiles));
+            }
             while ((entry = str.getNextEntry()) != null) {
                 String entryName = entry.getName();
                 if (stripLen > 0) {
@@ -209,34 +152,8 @@ public final class SiteHelper {
                 if (entryName.length() == 0) {
                     continue;
                 }
-                if (firstItem) {
-                    if (ClientSideProjectConstants.TEMPLATE_DESCRIPTOR.equals(entryName)) {
-                        EditableProperties ep = new EditableProperties(false);
-                        ep.load(str);
-                        // setup project according to metadata provided:
-                        ClientSideProjectUtilities.initializeProject(helper, 
-                                ep.getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER), 
-                                ep.getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER),
-                                ep.getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
-                                true);
-                        // and also unzip it directly into the root of project:
-                        projectRoot = helper.getProjectDirectory();
-                        firstItem = false;
-                        continue;
-                    } if (rootFolder != null && rootFolder.indexOf("angular") != -1) { //NOI18N
-                        ClientSideProjectUtilities.initializeProject(helper, 
-                                "app",  //NOI18N
-                                "test", //NOI18N
-                                "config", //NOI18N
-                                false);
-                        // and also unzip it directly into the root of project:
-                        projectRoot = helper.getProjectDirectory();
-                    } else {
-                        // no metadata - assume that files in template are site root
-                        // and therefore put them into default "public_html" folder
-                        ClientSideProjectUtilities.initializeProject(helper);
-                        projectRoot = ClientSideProjectUtilities.getSiteRootFolder(helper);
-                    }
+                if (ignored.contains(entryName)) {
+                    continue;
                 }
                 firstItem = false;
                 if (entry.isDirectory()) {
@@ -244,7 +161,9 @@ public final class SiteHelper {
                     if (entryName.startsWith("build") || entryName.startsWith("nbproject")) { //NOI18N
                         continue;
                     }
-                    FileUtil.createFolder(projectRoot, entryName);
+                    if (targetDir.getFileObject(entryName) == null) {
+                        FileUtil.createFolder(targetDir, entryName);
+                    }
                 } else {
                     // ignore internal GIT files:
                     if (entryName.startsWith(".git") || entryName.contains("/.git")) { //NOI18N
@@ -254,7 +173,7 @@ public final class SiteHelper {
                     if (entryName.startsWith("build/") || entryName.startsWith("nbproject/")) { //NOI18N
                         continue;
                     }
-                    FileObject fo = FileUtil.createData(projectRoot, entryName);
+                    FileObject fo = FileUtil.createData(targetDir, entryName);
                     writeFile(str, fo);
                 }
             }
@@ -320,26 +239,6 @@ public final class SiteHelper {
             source.close();
         }
         return folder;
-    }
-
-    //~ Inner classes
-
-    /**
-     * Filter for {@link ZipEntry}s.
-     * <p>
-     * Instances of this interface may be passed to the {@link SiteHelper#listZipFiles(File, ZipEntryFilter)} method.
-     * @see SiteHelper#listZipFiles(File, ZipEntryFilter)
-     */
-    public interface ZipEntryFilter {
-
-        /**
-         * Test whether or not the specified {@link ZipEntry} should be
-         * accepted.
-         *
-         * @param zipEntry the {@link ZipEntry} to be tested
-         * @return {@ code true} if {@link ZipEntry} should be accepted, {@code false} otherwise
-         */
-        boolean accept(ZipEntry zipEntry);
     }
 
 }

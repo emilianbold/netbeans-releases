@@ -76,6 +76,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
@@ -95,7 +96,6 @@ import org.openide.util.RequestProcessor;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
@@ -117,8 +117,12 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
 
     private final WLJ2eePlatformFactory.J2eePlatformImplImpl platformImpl;
 
-    JaxRsStackSupportImpl(WLJ2eePlatformFactory.J2eePlatformImplImpl platformImpl) {
+    private final Version serverVersion;
+
+    JaxRsStackSupportImpl(WLJ2eePlatformFactory.J2eePlatformImplImpl platformImpl,
+            Version serverVersion) {
         this.platformImpl = platformImpl;
+        this.serverVersion = serverVersion;
     }
 
     @Override
@@ -482,7 +486,7 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
         }
         return urls;
     }
-    
+   
     private boolean addJsr311ServerLibraryApi( Project project ) {
         /*
          *  WL has a deployable JSR311 war. But it will appear in the project's

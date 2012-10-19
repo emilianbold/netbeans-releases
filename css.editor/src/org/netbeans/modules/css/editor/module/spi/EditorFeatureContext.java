@@ -42,7 +42,7 @@
 package org.netbeans.modules.css.editor.module.spi;
 
 import javax.swing.text.Document;
-import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 
 /**
  * Context for editor based features
@@ -53,7 +53,7 @@ public class EditorFeatureContext extends FeatureContext {
 
     private int caretOffset;
 
-    public EditorFeatureContext(CssParserResult result, int caretOffset) {
+    public EditorFeatureContext(CssCslParserResult result, int caretOffset) {
         super(result);
         this.caretOffset = caretOffset;
     }

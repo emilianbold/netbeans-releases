@@ -67,7 +67,8 @@ import org.openide.filesystems.FileObject;
 @ProjectServiceProvider(service=PersistenceEnvironment.class, projectType={
     "org-netbeans-modules-maven",
     "org-netbeans-modules-java-j2seproject",
-    "org-netbeans-modules-web-project"
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject"
 })
 public class PersistenceEnvironmentImpl implements PersistenceEnvironment{
         /** Handle to the current project to which this HibernateEnvironment is bound*/

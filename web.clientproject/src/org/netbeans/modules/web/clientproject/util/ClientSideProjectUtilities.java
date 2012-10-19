@@ -42,21 +42,21 @@
 package org.netbeans.modules.web.clientproject.util;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckReturnValue;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -64,19 +64,17 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
+import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -90,7 +88,7 @@ public final class ClientSideProjectUtilities {
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectUtilities.class.getName());
 
-    private static final Charset DEFAULT_PROJECT_CHARSET = getDefaultProjectCharset();
+    public static final Charset DEFAULT_PROJECT_CHARSET = getDefaultProjectCharset();
 
 
     private ClientSideProjectUtilities() {
@@ -107,41 +105,44 @@ public final class ClientSideProjectUtilities {
      * @throws IOException if any error occurs
      */
     public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
+        // create project
         AntProjectHelper projectHelper = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
         setProjectName(projectHelper, name);
-        Map<String, String> properties = Collections.singletonMap(ClientSideProjectConstants.PROJECT_ENCODING, DEFAULT_PROJECT_CHARSET.name());
-        saveProjectProperties(projectHelper, properties);
+        ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(dirFO);
+        // set encoding
+        ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+        projectProperties.setEncoding(DEFAULT_PROJECT_CHARSET.name());
+        projectProperties.save();
         return projectHelper;
     }
 
-    public static void initializeProject(AntProjectHelper projectHelper) throws IOException {
-        initializeProject(projectHelper, ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER,
-                ClientSideProjectConstants.DEFAULT_TEST_FOLDER, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER, true);
-    }
-
-    public static void initializeProject(AntProjectHelper projectHelper, String siteRoot, String test, String config, boolean createFolders) throws IOException {
-        if (createFolders) {
-            // create dirs
-            projectHelper.getProjectDirectory().createFolder(siteRoot);
-            projectHelper.getProjectDirectory().createFolder(test);
-            projectHelper.getProjectDirectory().createFolder(config);
+    public static void initializeProject(@NonNull ClientSideProject project, @NonNull String siteRoot, @NullAllowed String test,
+            @NullAllowed String config) throws IOException {
+        File projectDirectory = FileUtil.toFile(project.getProjectDirectory());
+        assert projectDirectory != null;
+        assert projectDirectory.isDirectory();
+        // ensure directories exists
+        ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, siteRoot));
+        if (test != null) {
+            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, test));
+        }
+        if (config != null) {
+            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, config));
         }
         // save project
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
-        properties.put(ClientSideProjectConstants.PROJECT_TEST_FOLDER, test);
-        properties.put(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, config);
-        saveProjectProperties(projectHelper, properties);
+        ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+        projectProperties.setSiteRootFolder(siteRoot);
+        projectProperties.setTestFolder(test);
+        projectProperties.setConfigFolder(config);
+        projectProperties.save();
     }
 
-    // XXX performance (also perhaps incorrect place, should be directly on ClientSideProject (and cached))
-    public static FileObject getSiteRootFolder(AntProjectHelper projectHelper) throws IOException {
-        EditableProperties properties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        String siteRoot = properties.getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
-        if (siteRoot == null || siteRoot.length() == 0) {
-            return null;
+    private static void ensureDirectoryExists(File folder) {
+        if (!folder.isDirectory()) {
+            if (!folder.mkdirs()) {
+                LOGGER.log(Level.WARNING, "Folder cannot be created", folder);
+            }
         }
-        return projectHelper.getProjectDirectory().getFileObject(siteRoot);
     }
 
     public static void setProjectName(final AntProjectHelper projectHelper, final String name) {
@@ -172,7 +173,7 @@ public final class ClientSideProjectUtilities {
     public static SourceGroup[] getSourceGroups(Project project) {
         assert project instanceof ClientSideProject : "ClientSideProject project expected but got: " + project.getClass().getName();
         Sources sources = ProjectUtils.getSources(project);
-        List<SourceGroup> res= new ArrayList<SourceGroup>();
+        List<SourceGroup> res = new ArrayList<SourceGroup>();
         res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)));
         res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST)));
         res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_CONFIG)));
@@ -243,29 +244,6 @@ public final class ClientSideProjectUtilities {
             }
         }
         return failed;
-    }
-
-    // XXX remove and call ClientSideProjectProperties
-    private static void saveProjectProperties(final AntProjectHelper projectHelper, final Map<String, String> properties) throws IOException {
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws IOException {
-                    if (!properties.isEmpty()) {
-                        EditableProperties projectProperties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        for (Map.Entry<String, String> entry : properties.entrySet()) {
-                            projectProperties.setProperty(entry.getKey(), entry.getValue());
-                        }
-                        projectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-                    }
-                    Project project = ProjectManager.getDefault().findProject(projectHelper.getProjectDirectory());
-                    ProjectManager.getDefault().saveProject(project);
-                    return null;
-                }
-            });
-        } catch (MutexException e) {
-            throw (IOException) e.getException();
-        }
     }
 
     // #217970

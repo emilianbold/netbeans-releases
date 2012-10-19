@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.visual.api;
 
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Model;
@@ -143,6 +144,7 @@ public final class RuleEditorController {
      * @param cssSourceModel an instance of {@link Model}
      */
     public void setModel(final Model cssSourceModel) {
+        RuleEditorPanel.LOG.log(Level.FINE, "setModel({0}) called by {1}", new Object[]{cssSourceModel, Thread.currentThread().getStackTrace()[2].toString()});
         Parameters.notNull("cssSourceModel", cssSourceModel);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -158,6 +160,7 @@ public final class RuleEditorController {
      * @param rule a non null instance of {@link Rule). <b>MUST belong to the selected css model instance!</b>
      */
     public void setRule(final Rule rule) {
+        RuleEditorPanel.LOG.log(Level.FINE, "setRule({0}) called by {1}", new Object[]{rule, Thread.currentThread().getStackTrace()[2].toString()});
         Parameters.notNull("rule", rule);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -172,6 +175,7 @@ public final class RuleEditorController {
      * The panel will show some informational message instead of the css rule properties.
      */
     public void setNoRuleState() {
+        RuleEditorPanel.LOG.log(Level.FINE, "setNoRuleState() called by {0}", new Object[]{Thread.currentThread().getStackTrace()[2].toString()});
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {

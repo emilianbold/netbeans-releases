@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -55,89 +56,106 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHP54UnhandledError extends DefaultVisitor {
+public class PHP54UnhandledError extends AbstractUnhandledError {
 
-    private FileObject fileObject;
-    private List<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
-    private static final String BINARY_PREFIX = "0b"; //NOI18N
-    private boolean checkAnonymousObjectVariable;
-
-    public PHP54UnhandledError(FileObject fobj) {
-        this.fileObject = fobj;
+    @Override
+    void compute(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {
+        PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
+        if (phpParseResult.getProgram() == null) {
+            return;
+        }
+        FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileObject != null && appliesTo(fileObject)) {
+            PHP54UnhandledError.CheckVisitor checkVisitor = new PHP54UnhandledError.CheckVisitor(fileObject);
+            phpParseResult.getProgram().accept(checkVisitor);
+            errors.addAll(checkVisitor.getErrors());
+        }
     }
 
     public static  boolean appliesTo(FileObject fobj) {
         return !CodeUtils.isPhp_54(fobj);
     }
 
-    public Collection<PHPVerificationError> getErrors() {
-        return Collections.unmodifiableCollection(errors);
-    }
+    private static class CheckVisitor extends DefaultVisitor {
+        private List<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
+        private static final String BINARY_PREFIX = "0b"; //NOI18N
+        private boolean checkAnonymousObjectVariable;
+        private final FileObject fileObject;
 
-    @Override
-    public void visit(TraitDeclaration node) {
-        Identifier name = node.getName();
-        if (name != null) {
-            createError(name);
-        } else {
+        public CheckVisitor(FileObject fileObject) {
+            this.fileObject = fileObject;
+        }
+
+        public Collection<PHPVerificationError> getErrors() {
+            return Collections.unmodifiableCollection(errors);
+        }
+
+        @Override
+        public void visit(TraitDeclaration node) {
+            Identifier name = node.getName();
+            if (name != null) {
+                createError(name);
+            } else {
+                createError(node);
+            }
+        }
+
+        @Override
+        public void visit(UseTraitStatement node) {
             createError(node);
         }
-    }
 
-    @Override
-    public void visit(UseTraitStatement node) {
-        createError(node);
-    }
+        @Override
+        public void visit(MethodInvocation node) {
+            checkAnonymousObjectVariable = true;
+            super.visit(node);
+            checkAnonymousObjectVariable = false;
+        }
 
-    @Override
-    public void visit(MethodInvocation node) {
-        checkAnonymousObjectVariable = true;
-        super.visit(node);
-        checkAnonymousObjectVariable = false;
-    }
+        @Override
+        public void visit(FieldAccess node) {
+            checkAnonymousObjectVariable = true;
+            super.visit(node);
+            checkAnonymousObjectVariable = false;
+        }
 
-    @Override
-    public void visit(FieldAccess node) {
-        checkAnonymousObjectVariable = true;
-        super.visit(node);
-        checkAnonymousObjectVariable = false;
-    }
+        @Override
+        public void visit(AnonymousObjectVariable node) {
+            if (checkAnonymousObjectVariable) {
+                createError(node);
+            }
+        }
 
-    @Override
-    public void visit(AnonymousObjectVariable node) {
-        if (checkAnonymousObjectVariable) {
+        @Override
+        public void visit(DereferencedArrayAccess node) {
             createError(node);
         }
-    }
 
-    @Override
-    public void visit(DereferencedArrayAccess node) {
-        createError(node);
-    }
-
-    @Override
-    public void visit(Scalar node) {
-        if (node.getScalarType().equals(Scalar.Type.REAL) && node.getStringValue().startsWith(BINARY_PREFIX)) {
-            createError(node);
+        @Override
+        public void visit(Scalar node) {
+            if (node.getScalarType().equals(Scalar.Type.REAL) && node.getStringValue().startsWith(BINARY_PREFIX)) {
+                createError(node);
+            }
         }
-    }
 
-    @Override
-    public void visit(StaticMethodInvocation node) {
-        Expression name = node.getMethod().getFunctionName().getName();
-        if (name instanceof ReflectionVariable) {
-            createError(name);
+        @Override
+        public void visit(StaticMethodInvocation node) {
+            Expression name = node.getMethod().getFunctionName().getName();
+            if (name instanceof ReflectionVariable) {
+                createError(name);
+            }
         }
-    }
 
-    private  void createError(int startOffset, int endOffset){
-        PHPVerificationError error = new PHP54VersionError(fileObject, startOffset, endOffset);
-        errors.add(error);
-    }
+        private  void createError(int startOffset, int endOffset){
+            PHPVerificationError error = new PHP54VersionError(fileObject, startOffset, endOffset);
+            errors.add(error);
+        }
 
-    private void createError(ASTNode node){
-        createError(node.getStartOffset(), node.getEndOffset());
-        super.visit(node);
+        private void createError(ASTNode node){
+            createError(node.getStartOffset(), node.getEndOffset());
+            super.visit(node);
+        }
+
     }
 
     private static class PHP54VersionError extends PHPVerificationError {
@@ -165,6 +183,12 @@ public class PHP54UnhandledError extends DefaultVisitor {
             return KEY;
         }
 
+    }
+
+    @Override
+    @Messages("PHP54VersionErrorHintDispName=Language feature not compatible with PHP version indicated in project settings")
+    public String getDisplayName() {
+        return Bundle.PHP54VersionErrorHintDispName();
     }
 
 }

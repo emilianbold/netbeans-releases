@@ -97,6 +97,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
 import org.openide.awt.ToolbarWithOverflow;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -360,7 +361,8 @@ import org.openide.util.lookup.ProxyLookup;
 
                                 MultiKeyBinding mkb = keybsMap.get(actionName);
                                 if (mkb != null) {
-                                    button.setToolTipText(tooltipText + " (" + getMnemonic(mkb) + ")"); // NOI18N
+                                    button.setToolTipText(tooltipText + " (" + // NOI18N
+                                            EditorActionUtilities.getKeyMnemonic(mkb) + ")"); // NOI18N
                                 } else {
                                     button.setToolTipText(tooltipText);
                                 }
@@ -388,52 +390,6 @@ import org.openide.util.lookup.ProxyLookup;
         presentersAdded = false;        
         removeAll();
     }    
-
-    /** Utility method for getting the mnemonic of the multi key binding.
-     * @param binding multi key binding
-     * @return mnemonic for the binding.
-     */
-    private static String getMnemonic(MultiKeyBinding binding) {
-        StringBuilder sb = new StringBuilder();
-        for (KeyStroke keyStroke : binding.getKeyStrokeList()) {
-            if (sb.length() > 0) {
-                sb.append(' '); //NOI18N
-            }
-            sb.append(getKeyMnemonic(keyStroke));
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Get the mnemonic for a keystroke.
-     * @param key a keystroke
-     * @return mnemonic of tghe keystroke.
-     */
-    private static String getKeyMnemonic(KeyStroke key) {
-        String sk = org.openide.util.Utilities.keyToString(key);
-        StringBuffer sb = new StringBuffer();
-        int mods = key.getModifiers();
-        if ((mods & KeyEvent.CTRL_MASK) != 0) {
-            sb.append("Ctrl+"); // NOI18N
-        }
-        if ((mods & KeyEvent.ALT_MASK) != 0) {
-            sb.append("Alt+"); // NOI18N
-        }
-        if ((mods & KeyEvent.SHIFT_MASK) != 0) {
-            sb.append("Shift+"); // NOI18N
-        }
-        if ((mods & KeyEvent.META_MASK) != 0) {
-            sb.append("Meta+"); // NOI18N
-        }
-        
-        int i = sk.indexOf('-'); //NOI18N
-        if (i != -1) {
-            sk = sk.substring(i + 1);
-        }
-        sb.append(sk);
-        
-        return sb.toString();
-    }
 
     private Map<String, MultiKeyBinding> getKeyBindingMap() {
         Map<String, MultiKeyBinding> map = new HashMap<String, MultiKeyBinding>();
@@ -547,6 +503,9 @@ import org.openide.util.lookup.ProxyLookup;
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.log(Level.FINE, "Item {0} converted to a Presenter.Toolbar {1}", new Object [] { s2s(item), s2s(presenter) }); //NOI18N
                     }
+                    if (presenter instanceof JComponent) {
+                        ((JComponent)presenter).putClientProperty(JTextComponent.class, c);
+                    }
                     item = presenter;
                 }
             }
@@ -622,7 +581,8 @@ import org.openide.util.lookup.ProxyLookup;
         
         for (MultiKeyBinding mkb : keybindings) {
             if (actionName.equals(mkb.getActionName())) {
-                b.setToolTipText(b.getToolTipText() + " (" + getMnemonic(mkb) + ")"); // NOI18N
+                b.setToolTipText(b.getToolTipText() + " (" + // NOI18N
+                        EditorActionUtilities.getKeyMnemonic(mkb) + ")"); // NOI18N
                 break; // multiple shortcuts ?
             }
         }

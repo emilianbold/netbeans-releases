@@ -60,6 +60,7 @@ import org.netbeans.spi.settings.Saver;
 import org.netbeans.modules.settings.Env;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.xml.XMLUtil;
 
 /** Implementation of xml properties format described by
  * /org/netbeans/modules/settings/resources/properties.dtd
@@ -283,7 +284,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             w.write("<property name=\""); // NOI18N
             w.write(key);
             w.write("\" value=\""); // NOI18N
-            w.write(p.getProperty(key));
+            w.write(XMLUtil.toAttributeValue( p.getProperty(key) ));
             w.write("\"/>"+XMLSettingsSupport.LINE_SEPARATOR); // NOI18N
         }
     }

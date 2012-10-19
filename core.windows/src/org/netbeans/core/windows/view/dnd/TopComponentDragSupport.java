@@ -601,7 +601,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
                     SwingUtilities.invokeLater(createDropIntoFreeAreaTask(
                             evt, evt.getLocation(), floatingFrames));
                 }},
-                250 // XXX #21918, Neccessary to skip after possible ESC key event.
+                350 // XXX #21918, Neccessary to skip after possible ESC key event.
             );
         } finally {
             windowDnDManager.dragFinishedEx();
@@ -641,11 +641,11 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         return new Runnable() {
             @Override
             public void run() {
+                removeListening();
                 // XXX #21918. Don't move the check sooner
                 // (before the enclosing blocks), it would be invalid.
                 if(hackESC) {
                     windowDnDManager.dragFinished();
-                    removeListening();
                     return;
                 }
 

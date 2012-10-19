@@ -145,6 +145,12 @@ public class XMLLexerFormatter {
             
             String currentIndent = doc.getText(rowStart, i - rowStart);
             if (!currentIndent.equals(newIndentText)) {
+                // first insert, then remove - less disruption to Positions in the altered text, i.e.
+                // Positions at the beginning of token will stick with the token, not with the whitespace start
+                // Because comments start at the line start, not at the non-whitespace, adjust insertion point if nonwhite > startOffset
+                if (so < i) {
+                    so = i;
+                }
                 doc.insertString(so, newIndentText, null);
                 doc.remove(rowStart, i - rowStart);
             }

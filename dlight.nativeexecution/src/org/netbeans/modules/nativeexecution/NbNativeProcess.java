@@ -57,8 +57,8 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.netbeans.modules.nativeexecution.pty.NbKillUtility;
 import org.netbeans.modules.nativeexecution.pty.NbStartUtility;
+import org.netbeans.modules.nativeexecution.signals.SignalSupport;
 import org.netbeans.modules.nativeexecution.support.Logger;
 
 /**
@@ -97,7 +97,7 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
         command.add(nbStartPath);
 
         String wdir = info.getWorkingDirectory(true);
-        if (wdir != null) {
+        if (wdir != null && !wdir.isEmpty()) {
             command.add("--dir"); // NOI18N
             command.add(fixForWindows(wdir));
         }
@@ -156,7 +156,7 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
         if (info.isCommandLineDefined()) {
             command.add(hostInfo.getShell());
             command.add("-c"); // NOI18N
-            command.add("exec " + info.getCommandLineForShell()); // NOI18N
+            command.add(info.getCommandLineForShell()); // NOI18N
         } else {
             command.add(fixForWindows(info.getExecutable()));
             command.addAll(info.getArguments());
@@ -226,28 +226,15 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
 
     @Override
     protected int destroyImpl() {
-        try {
-            String psidstr = getProcessInfo("PSID"); // NOI18N
-            if (psidstr == null) {
-                // the reason is an early exception while process creation ...
-                return 0;
-            }
+        if (destroyed()) {
+            return 0;
+        }
 
-            int psid = Integer.parseInt(getProcessInfo("PSID")); // NOI18N
-            int res;
-            String magicEnv = "NBMAGIC=" + getProcessInfo("NBMAGIC"); // NOI18N
-            res = NbKillUtility.getInstance().signalAll(info.getExecutionEnvironment(), Signal.SIGTERM, magicEnv); // NOI18N
-            if (res != 0) {
-                if (psid == getPID()) {
-                    // Signal session if this process is a session leader only.
-                    NbKillUtility.getInstance().signalSession(info.getExecutionEnvironment(), Signal.SIGTERM, psid); // NOI18N
-                } else {
-                    // Signal process group.
-                    NbKillUtility.getInstance().signalGroup(info.getExecutionEnvironment(), Signal.SIGTERM, getPID()); // NOI18N
-                }
-            }
-        } catch (IOException ex) {
-            Logger.getInstance().log(Level.FINE, "exception", ex); // NOI18N
+        // signal using env
+        String env = getProcessInfo("NBMAGIC"); // NOI18N
+        if (env != null) {
+            String magicEnv = "NBMAGIC=" + env; // NOI18N
+            SignalSupport.signalProcessesByEnv(info.getExecutionEnvironment(), magicEnv, Signal.SIGTERM);
         }
 
         return 0;
@@ -259,5 +246,14 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
 
     protected String fixForWindows(String path) {
         return isWindows() ? WindowsSupport.getInstance().convertToCygwinPath(path) : path;
+    }
+
+    private boolean destroyed() {
+        try {
+            exitValue();
+            return true;
+        } catch (IllegalThreadStateException ex) {
+            return false;
+        }
     }
 }

@@ -59,7 +59,7 @@ import org.netbeans.validation.api.ui.ValidationUI;
 import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.util.NbBundle;
 
-@OptionsPanelController.Keywords(keywords={"java card"}, location=JavaOptions.JAVA, tabTitle= "#JavaCardOptionsCategory_Title")
+@OptionsPanelController.Keywords(keywords={"java card", "#KW_JavaCardOptions"}, location=JavaOptions.JAVA, tabTitle= "#JavaCardOptionsCategory_Title")
 final class JavacardOptions extends javax.swing.JPanel implements ValidationUI, DocumentListener {
 
     private final JavacardOptionsPanelController controller;

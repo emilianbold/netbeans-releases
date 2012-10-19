@@ -128,6 +128,12 @@ public class ModelUtils {
      * the given rule from the other model.
      */
     public Rule findMatchingRule(Model model, Rule rule) {
+       assert rule.getModel() == model;
+        
+       if(rule.getParent() == null) {
+           //detached or not attached yet rule
+           return null;
+       }
        
        //find id of the given rule in the given model 
        final RuleRefModelVisitor ruleRef = new RuleRefModelVisitor(model, rule);
@@ -178,7 +184,7 @@ public class ModelUtils {
                 return ;
             }
             
-            CharSequence foundRuleId = model.getElementSource(rule.getSelectorsGroup());
+            CharSequence foundRuleId = LexerUtils.trim(model.getElementSource(rule.getSelectorsGroup()));
             if (LexerUtils.equals(getRuleId(), foundRuleId, false, false)) {
                 ruleIndex++;
             }
@@ -195,7 +201,7 @@ public class ModelUtils {
         
         public synchronized CharSequence getRuleId() {
             if(ruleId == null) {
-                ruleId = model.getElementSource(rule.getSelectorsGroup());
+                ruleId = LexerUtils.trim(model.getElementSource(rule.getSelectorsGroup()));
             }
             return ruleId;
         }

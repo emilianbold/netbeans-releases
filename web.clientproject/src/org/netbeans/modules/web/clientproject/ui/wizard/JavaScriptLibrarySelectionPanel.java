@@ -113,6 +113,7 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
     @Override
     public void storeSettings(WizardDescriptor settings) {
         wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARIES_FOLDER, librariesFolder);
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARIES_PATH, javaScriptLibrarySelection.getLibrariesFolder());
     }
 
     @Override

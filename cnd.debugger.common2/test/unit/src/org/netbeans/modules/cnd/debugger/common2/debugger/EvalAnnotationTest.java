@@ -42,15 +42,16 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.netbeans.modules.cnd.debugger.common2.debugger.test.CndBaseTestCase;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class EvalAnnotationTest {
+public class EvalAnnotationTest extends CndBaseTestCase {
     
-    public EvalAnnotationTest() {
+    public EvalAnnotationTest(String name) {
+        super(name);
     }
 
     @Test

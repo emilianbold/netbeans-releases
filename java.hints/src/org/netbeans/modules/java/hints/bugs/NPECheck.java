@@ -219,6 +219,7 @@ public class NPECheck {
         private Map<VariableElement, State> variable2State = new HashMap<VariableElement, NPECheck.State>();
         private Map<VariableElement, State> testedTo = new HashMap<VariableElement, NPECheck.State>();
         private final Map<Tree, State> expressionState = new IdentityHashMap<Tree, State>();
+        private boolean not;
 
         public VisitorImpl(CompilationInfo info) {
             this.info = info;
@@ -395,11 +396,22 @@ public class NPECheck {
 
         @Override
         public State visitBinary(BinaryTree node, Void p) {
-            State left = scan(node.getLeftOperand(), p);
-            boolean rightAlreadyProcessed = false;
+            State left = null;
+            boolean subnodesAlreadyProcessed = false;
+            Kind kind = node.getKind();
             
-            if (node.getKind() == Kind.CONDITIONAL_AND) {
-                boolean isParentAnd = getCurrentPath().getLeaf().getKind() == Kind.CONDITIONAL_AND;
+            if (not) {
+                switch (kind) {
+                    case CONDITIONAL_AND: kind = Kind.CONDITIONAL_OR; break;
+                    case CONDITIONAL_OR: kind = Kind.CONDITIONAL_AND; break;
+                    case EQUAL_TO: kind = Kind.NOT_EQUAL_TO; break;
+                    case NOT_EQUAL_TO: kind = Kind.EQUAL_TO; break;
+                }
+            }
+            
+            if (kind == Kind.CONDITIONAL_AND) {
+                left = scan(node.getLeftOperand(), p);
+                
                 Map<VariableElement, State> oldVariable2State = variable2State;
                 Map<VariableElement, State> oldTestedTo = testedTo;
                 
@@ -411,53 +423,54 @@ public class NPECheck {
                 scan(node.getRightOperand(), p);
                 variable2State = oldVariable2State;
                 
-                if (isParentAnd) {
-                    Map<VariableElement, State> o = new HashMap<VariableElement, NPECheck.State>(oldTestedTo);
-                    
-                    o.putAll(testedTo);
-                    
-                    testedTo = o;
-                }
+                Map<VariableElement, State> o = new HashMap<VariableElement, NPECheck.State>(oldTestedTo);
+
+                o.putAll(testedTo);
+
+                testedTo = o;
                 
-                rightAlreadyProcessed = true;
+                subnodesAlreadyProcessed = true;
             }
             
-            if (node.getKind() == Kind.CONDITIONAL_OR) {
-                boolean isParentOr = getCurrentPath().getLeaf().getKind() == Kind.CONDITIONAL_OR;
+            if (kind == Kind.CONDITIONAL_OR) {
+                boolean oldNot = not;
+                
+                not ^= true;
+                left = scan(node.getLeftOperand(), p);
+                not = oldNot;
+                
                 Map<VariableElement, State> oldVariable2State = variable2State;
                 Map<VariableElement, State> oldTestedTo = testedTo;
                 
                 variable2State = new HashMap<VariableElement, NPECheck.State>(variable2State);
-                
-                for (Entry<VariableElement, State> e : testedTo.entrySet()) {
-                    State reversed = e.getValue().reverse();
-                    if (reversed != null)
-                        variable2State.put(e.getKey(), reversed);
-                }
+                variable2State.putAll(testedTo);
                 
                 testedTo = new HashMap<VariableElement, State>();
                 
                 scan(node.getRightOperand(), p);
                 variable2State = oldVariable2State;
                 
-                if (isParentOr) {
-                    Map<VariableElement, State> o = new HashMap<VariableElement, NPECheck.State>(oldTestedTo);
-                    
-                    o.putAll(testedTo);
-                    
-                    testedTo = o;
-                }
+                Map<VariableElement, State> o = new HashMap<VariableElement, NPECheck.State>(oldTestedTo);
+
+                o.putAll(testedTo);
+
+                testedTo = o;
                 
-                rightAlreadyProcessed = true;
+                subnodesAlreadyProcessed = true;
             }
             
             State right = null;
             
-            if (!rightAlreadyProcessed) {
+            if (!subnodesAlreadyProcessed) {
+                boolean oldNot = not;
+
+                not = false;
+                left = scan(node.getLeftOperand(), p);
                 right = scan(node.getRightOperand(), p);
+                not = oldNot;
             }
             
-            if (node.getKind() == Kind.EQUAL_TO) {
+            if (kind == Kind.EQUAL_TO) {
                 if (right == State.NULL) {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getLeftOperand()));
                     
@@ -478,7 +491,7 @@ public class NPECheck {
                 }
             }
             
-            if (node.getKind() == Kind.NOT_EQUAL_TO) {
+            if (kind == Kind.NOT_EQUAL_TO) {
                 if (right == State.NULL) {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getLeftOperand()));
                     
@@ -632,6 +645,19 @@ public class NPECheck {
             testedTo = oldTestedTo;
             
             return null;
+        }
+
+        @Override
+        public State visitUnary(UnaryTree node, Void p) {
+            boolean oldNot = not;
+            
+            not ^= node.getKind() == Kind.LOGICAL_COMPLEMENT;
+            
+            State res = scan(node.getExpression(), p);
+            
+            not = oldNot;
+            
+            return res;
         }
         
     }

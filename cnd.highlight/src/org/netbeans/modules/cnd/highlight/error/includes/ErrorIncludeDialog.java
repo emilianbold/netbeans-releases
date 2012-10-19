@@ -695,6 +695,10 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                             FileObject fo = fsPath.getFileObject();
                             if (fo != null && fo.isValid() && fo.isFolder()) {
                                 buf.append(fsPath.getPath());
+                            } else if (fo != null && fo.isValid() && fo.isData()) {
+                                buf.append("<font color='green'>");  // NOI18N
+                                buf.append(fsPath.getPath());
+                                buf.append("</font>");  // NOI18N
                             } else {
                                 buf.append("<font color='red'>");  // NOI18N
                                 buf.append(fsPath.getPath());
@@ -711,6 +715,10 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                             FileObject fo = fsPath.getFileObject();
                             if (fo != null && fo.isValid() && fo.isFolder()) {
                                 buf.append(fsPath.getPath());
+                            } else if (fo != null && fo.isValid() && fo.isData()) {
+                                buf.append("<font color='green'>");  // NOI18N
+                                buf.append(fsPath.getPath());
+                                buf.append("</font>");  // NOI18N
                             } else {
                                 buf.append("<font color='red'>");  // NOI18N
                                 buf.append(fsPath.getPath());

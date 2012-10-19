@@ -327,6 +327,7 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void block_declaration(Token token);
     void end_block_declaration(Token token);
     void id_expression(Token token);
+    void end_id_expression(Token token);
     void alias_declaration(Token usingToken, Token identToken, Token assignequalToken);
     void end_alias_declaration(Token token);
     void function_specifier(int kind, Token token);

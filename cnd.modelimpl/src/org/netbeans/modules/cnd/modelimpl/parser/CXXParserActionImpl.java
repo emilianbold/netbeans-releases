@@ -413,6 +413,7 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     @Override public void block_declaration(Token token) {orig.block_declaration(convertToken(token));}
     @Override public void end_block_declaration(Token token) {orig.end_block_declaration(convertToken(token));}
     @Override public void id_expression(Token token) {orig.id_expression(convertToken(token));}
+    @Override public void end_id_expression(Token token) {orig.end_id_expression(convertToken(token));}
     @Override public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {orig.alias_declaration(convertToken(usingToken), convertToken(identToken), convertToken(assignequalToken));}
     @Override public void end_alias_declaration(Token token) {orig.end_alias_declaration(convertToken(token));}
     @Override public void function_specifier(int kind, Token token) {orig.function_specifier(kind, convertToken(token));}

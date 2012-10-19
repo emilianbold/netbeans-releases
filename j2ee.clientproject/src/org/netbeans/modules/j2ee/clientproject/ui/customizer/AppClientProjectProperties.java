@@ -350,6 +350,8 @@ final public class AppClientProjectProperties {
             minimalSourceLevel = new SpecificationVersion("1.6");
         } else if (Profile.JAVA_EE_5.equals(profile)) {
             minimalSourceLevel = new SpecificationVersion("1.5");
+        } else if (Profile.JAVA_EE_7_FULL.equals(profile)) {
+            minimalSourceLevel = new SpecificationVersion("1.7");
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel(PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();

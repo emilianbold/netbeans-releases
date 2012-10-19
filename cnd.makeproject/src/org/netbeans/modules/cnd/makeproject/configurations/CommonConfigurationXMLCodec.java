@@ -67,10 +67,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.Kind;
-import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
@@ -84,6 +82,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
+ * V87 - NB 7.3 
+ *    roll back default value in BooleanConfiguration for ItemConfiguration (69fa2dbc8b7c)
+ * V86 - NB 7.3
+ *    roll back changes introduced in V85
  * V85 - NB 7.3
  *    Configurations descriptor is divided on three parts (public, default public and private).
  *    Actual for unmanaged projects.
@@ -248,7 +250,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 85;
+    public final static int CURRENT_VERSION = 87;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -423,55 +425,33 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String QT_QMAKE_SPEC_ELEMENT = "qmakeSpec"; // NOI18N
     private final ConfigurationDescriptor projectDescriptor;
     private final boolean publicLocation;
-    private final boolean versionedLocation;
     
     public static final int PROJECT_LEVEL = 0;
     public static final int FOLDER_LEVEL = 1;
     public static final int ITEM_LEVEL = 2;
 
-    protected CommonConfigurationXMLCodec(ConfigurationDescriptor projectDescriptor, boolean publicLocation, boolean versionedLocation) {
+    protected CommonConfigurationXMLCodec(ConfigurationDescriptor projectDescriptor, boolean publicLocation) {
         this.projectDescriptor = projectDescriptor;
         this.publicLocation = publicLocation;
-        this.versionedLocation = versionedLocation;
     }
 
     // interface XMLEncoder
     @Override
-    public void encode(XMLEncoderStream xes) {
+   public void encode(XMLEncoderStream xes) {
         xes.elementOpen(CONFIGURATION_DESCRIPTOR_ELEMENT, CURRENT_VERSION);
-        boolean isMakefileConfiguration = false;
-        MakeConfiguration activeConfiguration = ((MakeConfigurationDescriptor) projectDescriptor).getActiveConfiguration();
-        if (activeConfiguration != null) {
-            isMakefileConfiguration = activeConfiguration.isMakefileConfiguration();
+        if (publicLocation) {
+            writeLogicalFolders(xes);
+            writeSourceRoots(xes);
+            //writeSourceEncoding(xes);
         }
-        if (versionedLocation) {
-            if (isMakefileConfiguration) {
-                writeLogicalFolders(xes, true, isMakefileConfiguration);
-                writeConfsBlock(xes);
-            }
-        } else {
-            if (publicLocation) {
-                if (isMakefileConfiguration) {
-                    writeLogicalFolders(xes, false, isMakefileConfiguration);
-                } else {
-                    writeLogicalFolders(xes, true, isMakefileConfiguration);
-                }
-                writeSourceRoots(xes);
-                //writeSourceEncoding(xes);
-            } else {
-                if (isMakefileConfiguration) {
-                    writeLogicalFolders(xes, true, isMakefileConfiguration);
-                }
-            }
-            xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor) projectDescriptor).getProjectMakefileName());
-            //if (!publicLocation) {
-            //    xes.element(DEFAULT_CONF_ELEMENT, "" + projectDescriptor.getConfs().getActiveAsIndex()); // NOI18N
-            //}
-            writeConfsBlock(xes);
-        }
+        xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor) projectDescriptor).getProjectMakefileName());
+//        if (!publicLocation) {
+//            xes.element(DEFAULT_CONF_ELEMENT, "" + projectDescriptor.getConfs().getActiveAsIndex()); // NOI18N
+//        }
+        writeConfsBlock(xes);
         xes.elementClose(CONFIGURATION_DESCRIPTOR_ELEMENT);
     }
-
+    
     private void writeConfsBlock(XMLEncoderStream xes) {
         xes.elementOpen(CONFS_ELEMENT);
 
@@ -497,53 +477,33 @@ public abstract class CommonConfigurationXMLCodec
 
             }
 
-            if (versionedLocation) {
+            writeToolsSetBlock(xes, makeConfiguration);
+            if (publicLocation) {
+                if (makeConfiguration.isQmakeConfiguration()) {
+                    writeQmakeConfiguration(xes, makeConfiguration.getQmakeConfiguration());
+                }
                 if (makeConfiguration.isMakefileConfiguration()) {
+                    writeCodeAssistanceConfiguration(xes, makeConfiguration.getCodeAssistanceConfiguration());
                     writeMakefileProjectConfBlock(xes, makeConfiguration);
-                    ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
-                    for (int j = 0; j < profileAuxObjects.length; j++) {
-                        ConfigurationAuxObject auxObject = profileAuxObjects[j];
-                        if (!auxObject.shared()) {
-                            if ((auxObject instanceof ItemConfiguration) ||
-                                (auxObject instanceof FolderConfiguration)) {
-                                XMLEncoder encoder = auxObject.getXMLEncoder();
-                                encoder.encode(xes);
-                            }
-                        }
+                } else {
+                    writeCompiledProjectConfBlock(xes, makeConfiguration);
+                }
+                writePackaging(xes, makeConfiguration.getPackagingConfiguration());
+                ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
+                for (int j = 0; j < profileAuxObjects.length; j++) {
+                    ConfigurationAuxObject auxObject = profileAuxObjects[j];
+                    if (auxObject.shared()) {
+                        XMLEncoder encoder = auxObject.getXMLEncoder();
+                        encoder.encode(xes);
                     }
                 }
             } else {
-                writeToolsSetBlock(xes, makeConfiguration);
-                if (publicLocation) {
-                    if (makeConfiguration.isQmakeConfiguration()) {
-                        writeQmakeConfiguration(xes, makeConfiguration.getQmakeConfiguration());
-                    }
-                    if (makeConfiguration.isMakefileConfiguration()) {
-                        writeCodeAssistanceConfiguration(xes, makeConfiguration.getCodeAssistanceConfiguration());
-                        writeMakefileProjectConfBlock(xes, makeConfiguration);
-                    } else {
-                        writeCompiledProjectConfBlock(xes, makeConfiguration);
-                    }
-                    writePackaging(xes, makeConfiguration.getPackagingConfiguration());
-                    ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
-                    for (int j = 0; j < profileAuxObjects.length; j++) {
-                        ConfigurationAuxObject auxObject = profileAuxObjects[j];
-                        if (auxObject.shared()) {
-                            XMLEncoder encoder = auxObject.getXMLEncoder();
-                            encoder.encode(xes);
-                        }
-                    }
-                } else {
-                    if (makeConfiguration.isMakefileConfiguration()) {
-                        writeMakefileProjectConfBlock(xes, makeConfiguration);
-                    }
-                    ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
-                    for (int j = 0; j < profileAuxObjects.length; j++) {
-                        ConfigurationAuxObject auxObject = profileAuxObjects[j];
-                        if (!auxObject.shared()) {
-                            XMLEncoder encoder = auxObject.getXMLEncoder();
-                            encoder.encode(xes);
-                        }
+                ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
+                for (int j = 0; j < profileAuxObjects.length; j++) {
+                    ConfigurationAuxObject auxObject = profileAuxObjects[j];
+                    if (!auxObject.shared()) {
+                        XMLEncoder encoder = auxObject.getXMLEncoder();
+                        encoder.encode(xes);
                     }
                 }
             }
@@ -619,47 +579,30 @@ public abstract class CommonConfigurationXMLCodec
     private void writeMakefileProjectConfBlock(XMLEncoderStream xes,
             MakeConfiguration makeConfiguration) {
         xes.elementOpen(MAKEFILE_TYPE_ELEMENT);
-        if (versionedLocation) {
-            xes.elementOpen(MAKETOOL_ELEMENT);
-                writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration(), PROJECT_LEVEL);
-                writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration(), PROJECT_LEVEL);
-                writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
-                writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
-            xes.elementClose(MAKETOOL_ELEMENT);
-        } else {
-            xes.elementOpen(MAKETOOL_ELEMENT);
-            if (publicLocation) {
-                xes.element(BUILD_COMMAND_WORKING_DIR_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().getValue());
-                xes.element(BUILD_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue());
-                xes.element(CLEAN_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue());
-                xes.element(EXECUTABLE_PATH_ELEMENT, makeConfiguration.getMakefileConfiguration().getOutput().getValue());
-            } else {
-                writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration(), PROJECT_LEVEL);
-                writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration(), PROJECT_LEVEL);
-                writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
-                writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
-            }
-            //IZ#110443:Adding "Dependencies" node for makefile projects property is premature
-            //if (makeConfiguration.getLinkerConfiguration() != null)
-            //    writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
-            xes.elementClose(MAKETOOL_ELEMENT);
-            if (publicLocation) {
-                writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
-            }
-        }
+        xes.elementOpen(MAKETOOL_ELEMENT);
+        xes.element(BUILD_COMMAND_WORKING_DIR_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().getValue());
+        xes.element(BUILD_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue());
+        xes.element(CLEAN_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue());
+        xes.element(EXECUTABLE_PATH_ELEMENT, makeConfiguration.getMakefileConfiguration().getOutput().getValue());
+        writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration(), PROJECT_LEVEL);
+        writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration(), PROJECT_LEVEL);
+        writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
+        writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
+        //IZ#110443:Adding "Dependencies" node for makefile projects property is premature
+        //if (makeConfiguration.getLinkerConfiguration() != null)
+        //    writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
+        xes.elementClose(MAKETOOL_ELEMENT);
+        writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
         xes.elementClose(MAKEFILE_TYPE_ELEMENT);
     }
 
-    private void writeLogicalFolders(XMLEncoderStream xes, boolean recursive, boolean isMakefileConfiguration) {
-        writeLogicalFolder(xes, ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders(), 0, recursive, isMakefileConfiguration);
+
+    private void writeLogicalFolders(XMLEncoderStream xes) {
+        writeLogicalFolder(xes, ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders(), 0);
     }
 
-    private void writeLogicalFolder(XMLEncoderStream xes, Folder folder, final int level, boolean recursive, boolean isMakefileConfiguration) {
+    private void writeLogicalFolder(XMLEncoderStream xes, Folder folder, final int level) {
         Kind kind = folder.getKind();
-        if (isMakefileConfiguration && recursive && kind == Kind.IMPORTANT_FILES_FOLDER) {
-            // important items belong to public area
-            return;
-        }
         Kind storedKind = null;
         if (kind != null) {
             switch (kind) {
@@ -681,27 +624,24 @@ public abstract class CommonConfigurationXMLCodec
             attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
         }
         xes.elementOpen(LOGICAL_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
-        if (recursive || level == 0 ||
-            (level == 1 && kind == Kind.IMPORTANT_FILES_FOLDER)) {
-            // write out subfolders
-            Folder[] subfolders = folder.getFoldersAsArray();
-            for (int i = 0; i < subfolders.length; i++) {
-                if (subfolders[i].isDiskFolder()) {
-                    writeDiskFolder(xes, subfolders[i], recursive);
-                } else {
-                    writeLogicalFolder(xes, subfolders[i], level + 1, recursive, isMakefileConfiguration);
-                }
+        // write out subfolders
+        Folder[] subfolders = folder.getFoldersAsArray();
+        for (int i = 0; i < subfolders.length; i++) {
+            if (subfolders[i].isDiskFolder()) {
+                writeDiskFolder(xes, subfolders[i]);
+            } else {
+                writeLogicalFolder(xes, subfolders[i], level + 1);
             }
-            // write out items
-            Item[] items = folder.getItemsAsArray();
-            for (int i = 0; i < items.length; i++) {
-                xes.element(ITEM_PATH_ELEMENT, items[i].getPath());
-            }
+        }
+        // write out items
+        Item[] items = folder.getItemsAsArray();
+        for (int i = 0; i < items.length; i++) {
+            xes.element(ITEM_PATH_ELEMENT, items[i].getPath());
         }
         xes.elementClose(LOGICAL_FOLDER_ELEMENT);
     }
 
-    private void writeDiskFolder(XMLEncoderStream xes, Folder folder, boolean recursive) {
+    private void writeDiskFolder(XMLEncoderStream xes, Folder folder) {
         List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
         if (folder.getRoot() != null) {
             // Do not store source root name. See bug #216604
@@ -711,17 +651,15 @@ public abstract class CommonConfigurationXMLCodec
             attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N    
         }
         xes.elementOpen(DISK_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
-        if (recursive) {
-            // write out subfolders
-            Folder[] subfolders = folder.getFoldersAsArray();
-            for (int i = 0; i < subfolders.length; i++) {
-                writeDiskFolder(xes, subfolders[i], recursive);
-            }
-            // write out items
-            Item[] items = folder.getItemsAsArray();
-            for (int i = 0; i < items.length; i++) {
-                xes.element(ITEM_NAME_ELEMENT, items[i].getName());
-            }
+        // write out subfolders
+        Folder[] subfolders = folder.getFoldersAsArray();
+        for (int i = 0; i < subfolders.length; i++) {
+            writeDiskFolder(xes, subfolders[i]);
+        }
+        // write out items
+        Item[] items = folder.getItemsAsArray();
+        for (int i = 0; i < items.length; i++) {
+            xes.element(ITEM_NAME_ELEMENT, items[i].getName());
         }
         xes.elementClose(DISK_FOLDER_ELEMENT);
     }

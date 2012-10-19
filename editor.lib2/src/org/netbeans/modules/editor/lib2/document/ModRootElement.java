@@ -106,7 +106,6 @@ public final class ModRootElement extends AbstractRootElement<ModElement> implem
      * @param compoundEdit compound edit to add the resulting edit to. When null no adding is done.
      */
     public void resetMods(UndoableEdit compoundEdit) {
-        this.children = emptyMods();
         ResetModsEdit edit = new ResetModsEdit();
         if (compoundEdit != null) {
             compoundEdit.addEdit(edit);

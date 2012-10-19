@@ -105,22 +105,22 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
             imp = imps[0];
         }
         if (exp != null) {
-			if (testPackagePatterns(exp, value)) {
-				return Boolean.TRUE;
-			}
+            if (testPackagePatterns(exp, value)) {
+                return Boolean.TRUE;
+            }
         }
-		if (testPackagePatterns(imp != null ? imp : DEFAULT_IMP, value)) {
-			return Boolean.FALSE;
-		}
+        Boolean result = null;
+        if (testPackagePatterns(imp != null ? imp : DEFAULT_IMP, value)) {
+            result = Boolean.FALSE;
+        }
         if (exp == null) {
             //handle default behaviour if not defined..
             //TODO handle 1.x bundle plugin defaults..
             if (!value.contains(".impl") && !value.contains(".internal")) { //NOI18N
-                return Boolean.TRUE;
+                result = Boolean.TRUE;
             }
-
         }
-        return null;
+        return result;
     }
     
 	static boolean testPackagePatterns(String patterns, String value) {

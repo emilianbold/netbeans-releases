@@ -167,6 +167,10 @@ public final class NavigatorController implements LookupListener, PropertyChange
 
     /** boolean flag to indicate that the tc.open is in progress*/
     private boolean tcOpening = false;
+    
+    /** boolean flag to indicate first update*/
+    private boolean uiready;
+
 
     /** Creates a new instance of NavigatorController */
     public NavigatorController(NavigatorDisplayer navigatorTC) {
@@ -250,7 +254,12 @@ public final class NavigatorController implements LookupListener, PropertyChange
     public void activatePanel (NavigatorPanel panel) {
         String iaeText = "Panel is not available for activation: "; //NOI18N
         if (currentPanels == null) {
-            throw new IllegalArgumentException(iaeText + panel);
+            if (inUpdate) {
+                cacheLastSelPanel(panel);
+                return;
+            } else {
+                throw new IllegalArgumentException(iaeText + panel);
+            }
         }
         NavigatorPanel toActivate = null;
         boolean contains = false;
@@ -266,7 +275,12 @@ public final class NavigatorController implements LookupListener, PropertyChange
             }
         }
         if (!contains) {
-            throw new IllegalArgumentException(iaeText + panel);
+            if (inUpdate) {
+                cacheLastSelPanel(panel);
+                return;
+            } else {
+                throw new IllegalArgumentException(iaeText + panel);
+            }
         }
         NavigatorPanel oldPanel = navigatorTC.getSelectedPanel();
         if (!toActivate.equals(oldPanel)) {
@@ -392,7 +406,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
                 @Override
                 public void run() {
                     final List<NavigatorPanel> providers = obtainProviders(nodes, panelsPolicy, lkpHints);
-                    WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                    runWhenUIReady(new Runnable() {
                         @Override
                         public void run() {
                             showProviders(providers, force);
@@ -411,6 +425,20 @@ public final class NavigatorController implements LookupListener, PropertyChange
         }
     }
 
+    private void runWhenUIReady (final Runnable runnable) {
+        if (uiready) {
+            SwingUtilities.invokeLater(runnable);
+        } else {
+            //first start, w8 for UI to be ready
+            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                @Override
+                public void run() {
+                    uiready = true;
+                    runnable.run();
+                }
+            });
+        }
+    }
     
     /** Shows obtained navigator providers
      * @param providers obtained providers

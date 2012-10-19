@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.navigation.hierarchy;
 
+import org.netbeans.modules.java.navigation.actions.NameActions;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Transferable;
@@ -52,7 +53,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -123,6 +124,7 @@ class Nodes {
     private static final String INSPECT_HIERARCHY_ACTION = "Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowHierarchyAction.instance";    //NOI18N
     @StaticResource
     private static final String ICON = "org/netbeans/modules/java/navigation/resources/wait.gif";   //NOI18N
+    private static final String ACTION_FOLDER = "Navigator/Actions/Hierarchy/text/x-java";  //NOI18N
     private static final WaitNode WAIT_NODE = new WaitNode();
 
     
@@ -313,13 +315,19 @@ class Nodes {
             if (context) {
                 return globalActions;
             } else {
-                Action actions[]  = new Action[ 4 + globalActions.length ];
-                actions[0] = getOpenAction();
-                actions[1] = FileUtil.getConfigObject(INSPECT_HIERARCHY_ACTION, Action.class);
-                actions[2] = RefactoringActionsFactory.whereUsedAction();
-                actions[3] = null;
-                System.arraycopy(globalActions, 0, actions, 4, globalActions.length);
-                return actions;
+                final List<? extends Action> additionalActions = Utilities.actionsForPath(ACTION_FOLDER);
+                final int additionalActionSize = additionalActions.isEmpty() ? 0 : additionalActions.size() + 1;
+                final List<Action> actions  = new ArrayList<Action>(4 + globalActions.length + additionalActionSize);
+                actions.add(getOpenAction());
+                actions.add(FileUtil.getConfigObject(INSPECT_HIERARCHY_ACTION, Action.class));
+                actions.add(RefactoringActionsFactory.whereUsedAction());
+                actions.add(null);
+                if (additionalActionSize > 0) {
+                    actions.addAll(additionalActions);
+                    actions.add(null);
+                }
+                actions.addAll(Arrays.asList(globalActions));
+                return actions.toArray(new Action[actions.size()]);
             }
         }
 
@@ -361,11 +369,7 @@ class Nodes {
         @Override
         protected void createPasteTypes(Transferable t, List<PasteType> s) {
             // Do nothing
-        }
-
-        Description getDescription() {
-            return description;
-        }
+        }        
 
         private synchronized Action getOpenAction() {
             if ( openAction == null) {
@@ -385,6 +389,7 @@ class Nodes {
         @NonNull
         private static Lookup createLookup (@NonNull Description desc) {
             final InstanceContent ic = new InstanceContent();
+            ic.add(desc);
             ic.add(desc, ConvertDescription2TreePathHandle);
             ic.add(desc, ConvertDescription2FileObject);
             ic.add(desc, ConvertDescription2DataObject);
@@ -507,6 +512,8 @@ class Nodes {
         public void propertyChange(PropertyChangeEvent evt) {
             if (HierarchyFilters.PROP_NATURAL_SORT.equals(evt.getPropertyName())) {
                 updateComparator();
+            } else if (!hierarchy.isNaturalSort() && HierarchyFilters.PROP_FQN.equals(evt.getPropertyName())) {
+                updateComparator();
             }
         }
 
@@ -522,8 +529,8 @@ class Nodes {
     private static final class OrderComparator implements Comparator<Node> {
         @Override
         public int compare(Node n1, Node n2) {
-            final int o1 = ((TypeNode)n1).getDescription().getSourceOrder();
-            final int o2 = ((TypeNode)n2).getDescription().getSourceOrder();
+            final int o1 = n1.getLookup().lookup(Description.class).getSourceOrder();
+            final int o2 = n2.getLookup().lookup(Description.class).getSourceOrder();
             return o1 < o2 ? -1 : o1 == o2 ? 0 : 1;
         }
     }

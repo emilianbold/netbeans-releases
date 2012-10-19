@@ -73,4 +73,41 @@ public final class EditorUtilities {
         return EditorActionUtilities.getAction(editorKit, actionName);
     }
 
+//    /**
+//     * Reset caret's magic position.
+//     * @param component target text component.
+//     */
+//    public static void resetCaretMagicPosition(JTextComponent component) {
+//        Caret caret;
+//        if (component != null && (caret = component.getCaret()) != null) {
+//            caret.setMagicCaretPosition(null);
+//        }
+//    }
+//    
+//    /**
+//     * Reset a possible undo merging so any upcoming edits will be undone separately.
+//     * @param component target text component.
+//     */
+//    public static void resetUndoMerge(JTextComponent component) {
+//        Document doc;
+//        if (component != null && (doc = component.getDocument()) != null) {
+//            EditorDocumentUtils.resetUndoMerge(doc);
+//        }
+//    }
+//    
+//    /**
+//     * Reset word match so that a possible next press of Ctrl+K/L starts from scratch.
+//     *
+//     * @param component target text component.
+//     */
+//    public static void resetWordMatch(JTextComponent component) {
+//        if (component != null) {
+//            resetWordMatch(component.getDocument());
+//        }
+//    }
+//    
+//    public static void resetWordMatch(@NonNull Document doc) {
+//        WordMatch.get(doc).reset();
+//    }
+
 }

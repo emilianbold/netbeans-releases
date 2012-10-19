@@ -43,6 +43,7 @@ package org.netbeans.modules.cordova.template;
 
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.cordova.CordovaPlatform;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -54,6 +55,7 @@ public class CordovaTemplatePanel extends javax.swing.JPanel {
      * Creates new form CordovaTemplatePanel
      */
     public CordovaTemplatePanel() {
+        setName(NbBundle.getMessage(CordovaTemplatePanel.class, "LBL_CordovaSetup"));
         initComponents();
         update();
     }

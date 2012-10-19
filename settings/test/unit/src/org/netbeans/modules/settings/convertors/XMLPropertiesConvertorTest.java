@@ -105,7 +105,22 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         Object obj = c.read(car);
         assertEquals(foo, obj);
     }
-    
+
+    public void testReadWriteEscaping() throws Exception {
+        FileObject dtdFO = FileUtil.getConfigFile("/xml/lookups/NetBeans_org_netbeans_modules_settings_xtest/DTD_XML_FooSetting_1_0.instance");
+        assertNotNull("Provider not found", dtdFO);
+        Convertor c = XMLPropertiesConvertor.create(dtdFO);
+        FooSetting foo = new FooSetting();
+        foo.setProperty1("<tag>");
+        CharArrayWriter caw = new CharArrayWriter(1024);
+        c.write(caw, foo);
+        caw.flush();
+        caw.close();
+        CharArrayReader car = new CharArrayReader(caw.toCharArray());
+        Object obj = c.read(car);
+        assertEquals(foo, obj);
+    }
+
     public void testRegisterUnregisterSaver() throws Exception {
         FileObject dtdFO = fs.findResource("/xml/lookups/NetBeans_org_netbeans_modules_settings/DTD_XML_FooSetting_1_0.instance");
         assertNotNull("Provider not found", dtdFO);

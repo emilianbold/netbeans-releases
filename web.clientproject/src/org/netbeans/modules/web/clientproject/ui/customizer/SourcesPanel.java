@@ -45,61 +45,168 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.charset.Charset;
-import javax.swing.JFileChooser;
-import javax.swing.JTextField;
+import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
-public class SourcesPanel extends javax.swing.JPanel implements HelpCtx.Provider {
+public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
-    private ClientSideProject project;
-    
-    /**
-     * Creates new form SourcesPanel
-     */
-    public SourcesPanel(ProjectCustomizer.Category category, ClientSideProject p) {
-        this.project = p;
+    private static final long serialVersionUID = -49835154831321L;
+
+    private final ProjectCustomizer.Category category;
+    private final ClientSideProjectProperties uiProperties;
+    private final ClientSideProject project;
+
+
+    public SourcesPanel(ProjectCustomizer.Category category, ClientSideProjectProperties uiProperties) {
+        assert category != null;
+        assert uiProperties != null;
+
+        this.category = category;
+        this.uiProperties = uiProperties;
+        project = uiProperties.getProject();
+
         initComponents();
+        init();
+        initListeners();
+        validateData();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.customizer.SourcesPanel"); // NOI18N
+    }
+
+    private void init() {
         jProjectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
-        String s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
-        if (s == null) {
-            s = ""; //NOI18N
-        }
-        jSiteRootFolderTextField.setText(s);
-        s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
-        if (s == null) {
-            s = ""; //NOI18N
-        }
-        jTestFolderTextField.setText(s);
-        String originalEncoding = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_ENCODING);
-        if (originalEncoding == null) {
-            originalEncoding = Charset.defaultCharset().name();
-        }
-        jEncodingComboBox.setModel(ProjectCustomizer.encodingModel(originalEncoding));
+        jSiteRootFolderTextField.setText(uiProperties.getSiteRootFolder());
+        jTestFolderTextField.setText(uiProperties.getTestFolder());
+        jEncodingComboBox.setModel(ProjectCustomizer.encodingModel(uiProperties.getEncoding()));
         jEncodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
-        
-        category.setStoreListener(new ActionListener() {
+    }
+
+    private void initListeners() {
+        DocumentListener documentListener = new DefaultDocumentListener();
+        jSiteRootFolderTextField.getDocument().addDocumentListener(documentListener);
+        jTestFolderTextField.getDocument().addDocumentListener(documentListener);
+        jEncodingComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                EditableProperties ep = project.getProjectProperties();
-                ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, jSiteRootFolderTextField.getText());
-                ep.setProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, jTestFolderTextField.getText());
-                Charset enc = (Charset)jEncodingComboBox.getSelectedItem();
-                if (enc != null && enc.name() != null) {
-                    ep.setProperty(ClientSideProjectConstants.PROJECT_ENCODING, enc.name());
-                }
-                project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                validateAndStore();
             }
         });
+    }
+
+    void validateAndStore() {
+        validateData();
+        storeData();
+    }
+
+    private void validateData() {
+        // site root
+        String error = validateSiteRoot();
+        if (error != null) {
+            category.setErrorMessage(error);
+            category.setValid(false);
+            return;
+        }
+        // test
+        error = validateTest();
+        if (error != null) {
+            category.setErrorMessage(error);
+            category.setValid(false);
+            return;
+        }
+        // all ok
+        category.setErrorMessage(" "); // NOI18N
+        category.setValid(true);
+    }
+
+    @NbBundle.Messages("SourcesPanel.error.siteRoot.invalid=Site Root must be a valid directory.")
+    private String validateSiteRoot() {
+        File siteRootFolder = getSiteRootFolder();
+        if (siteRootFolder == null || !siteRootFolder.isDirectory()) {
+            return Bundle.SourcesPanel_error_siteRoot_invalid();
+        }
+        return null;
+    }
+
+    @NbBundle.Messages({
+        "SourcesPanel.error.test.invalid=Unit Tests must be a valid directory.",
+        "SourcesPanel.error.test.notUnderProjectDir=Unit Tests must be underneath project directory."
+    })
+    private String validateTest() {
+        File testFolder = getTestFolder();
+        if (testFolder == null) {
+            // can be empty
+            return null;
+        }
+        if (!testFolder.isDirectory()) {
+            return Bundle.SourcesPanel_error_test_invalid();
+        }
+        if (!FileUtil.isParentOf(project.getProjectDirectory(), FileUtil.toFileObject(testFolder))) {
+            return Bundle.SourcesPanel_error_test_notUnderProjectDir();
+        }
+        return null;
+    }
+
+    private void storeData() {
+        File siteRootFolder = getSiteRootFolder();
+        uiProperties.setSiteRootFolder(siteRootFolder != null ? siteRootFolder.getAbsolutePath() : ""); // NOI18N
+        File testFolder = getTestFolder();
+        uiProperties.setTestFolder(testFolder != null ? testFolder.getAbsolutePath() : ""); // NOI18N
+        uiProperties.setEncoding(getEncoding().name());
+    }
+
+    private File getSiteRootFolder() {
+        return resolveFile(jSiteRootFolderTextField.getText());
+    }
+
+    private File getTestFolder() {
+        return resolveFile(jTestFolderTextField.getText());
+    }
+
+    private Charset getEncoding() {
+        return (Charset) jEncodingComboBox.getSelectedItem();
+    }
+
+    private File resolveFile(String path) {
+        if (path == null || path.isEmpty()) {
+            return null;
+        }
+        return FileUtil.normalizeFile(project.getProjectHelper().resolveFile(path));
+    }
+
+    private String browseFolder(String title, File currentPath) {
+        File workDir = null;
+        if (currentPath != null) {
+            workDir = currentPath.getParentFile();
+        }
+        if (workDir == null || !workDir.exists()) {
+            workDir = FileUtil.toFile(project.getProjectDirectory());
+        }
+        File folder = new FileChooserBuilder(SourcesPanel.class)
+                .setTitle(title)
+                .setDirectoriesOnly(true)
+                .setDefaultWorkingDirectory(workDir)
+                .forceUseOfDefaultWorkingDirectory(true)
+                .setFileHiding(true)
+                .showOpenDialog();
+        if (folder == null) {
+            return null;
+        }
+        String filePath = FileUtil.getRelativePath(project.getProjectDirectory(), FileUtil.toFileObject(folder));
+        if (filePath == null) {
+            // path cannot be relativized
+            filePath = folder.getAbsolutePath();
+        }
+        return filePath;
     }
 
     /**
@@ -198,45 +305,20 @@ public class SourcesPanel extends javax.swing.JPanel implements HelpCtx.Provider
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    @NbBundle.Messages("SourcesPanel.browse.siteRootFolder=Select Site Root")
     private void jBrowseSiteRootButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseSiteRootButtonActionPerformed
-        browse(jSiteRootFolderTextField, true, project.getProjectDirectory());
+        String filePath = browseFolder(Bundle.SourcesPanel_browse_siteRootFolder(), getSiteRootFolder());
+        if (filePath != null) {
+            jSiteRootFolderTextField.setText(filePath);
+        }
     }//GEN-LAST:event_jBrowseSiteRootButtonActionPerformed
 
-    private void browse(JTextField tf, boolean allowNonProjectFolders, FileObject baseFolder) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        File file = PropertyUtils.resolveFile(FileUtil.toFile(baseFolder), tf.getText());
-        if (file.exists()) {
-            chooser.setSelectedFile(file);
-        } else {
-            chooser.setCurrentDirectory(FileUtil.toFile(baseFolder));
-        }
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File selected = FileUtil.normalizeFile(chooser.getSelectedFile());
-            FileObject fo = FileUtil.toFileObject(selected);
-            if (fo != null && fo.isFolder()) {
-                String rel = FileUtil.getRelativePath(baseFolder, fo);
-                if (rel != null) {
-                    tf.setText(rel);
-                } else {
-                    if (allowNonProjectFolders) {
-                        tf.setText(FileUtil.getFileDisplayName(fo));
-                    } else {
-                        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                            org.openide.util.NbBundle.getMessage(SourcesPanel.class, "WRONG_FOLDER")));
-                    }
-                }
-            }
-        }
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.customizer.SourcesPanel");
-    }
-    
+    @NbBundle.Messages("SourcesPanel.browse.testFolder=Select Unit Tests")
     private void jBrowseTestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseTestButtonActionPerformed
-        browse(jTestFolderTextField, false, project.getProjectDirectory());
+        String filePath = browseFolder(Bundle.SourcesPanel_browse_testFolder(), getTestFolder());
+        if (filePath != null) {
+            jTestFolderTextField.setText(filePath);
+        }
     }//GEN-LAST:event_jBrowseTestButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -251,4 +333,30 @@ public class SourcesPanel extends javax.swing.JPanel implements HelpCtx.Provider
     private javax.swing.JTextField jSiteRootFolderTextField;
     private javax.swing.JTextField jTestFolderTextField;
     // End of variables declaration//GEN-END:variables
+
+    //~ Inner classes
+
+    private final class DefaultDocumentListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            processChange();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            processChange();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            processChange();
+        }
+
+        private void processChange() {
+            validateAndStore();
+        }
+
+    }
+
 }

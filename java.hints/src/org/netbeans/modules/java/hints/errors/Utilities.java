@@ -74,6 +74,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
@@ -780,6 +781,11 @@ public class Utilities {
 
         public @Override String visitNewClass(NewClassTree nct, Void p) {
             return "...new " + simpleName(nct.getIdentifier()) + "(...)"; // NOI18N
+        }
+
+        @Override
+        public String visitNewArray(NewArrayTree nct, Void p) {
+            return "...new " + simpleName(nct.getType()) + "[...]"; // NOI18N
         }
 
         @Override

@@ -286,13 +286,13 @@ public final class GsfUtilities {
 
             // If the caller hasn't specified an offset, and the document is
             // already open, don't jump to a particular line!
-            if (offset == -1 && ec.getDocument() != null && search == null) {
+            if (ec != null && offset == -1 && ec.getDocument() != null && search == null) {
                 ec.open();
                 return true;
             }
 
             // Simple text search if no known offset (e.g. broken/unparseable source)
-            if ((ec != null) && (search != null) && (offset == -1)) {
+            if ((search != null) && (offset == -1)) {
                 StyledDocument doc = NbDocument.getDocument(od);
 
                 try {

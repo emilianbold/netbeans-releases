@@ -48,7 +48,9 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-@OptionsPanelController.SubRegistration(location = "Advanced",
+@OptionsPanelController.SubRegistration(
+id="MobilePlatforms",
+location = "Advanced",
 displayName = "#AdvancedOption_DisplayName_MobilePlatforms",
 keywords = "#AdvancedOption_Keywords_MobilePlatforms",
 keywordsCategory = "Advanced/MobilePlatforms")

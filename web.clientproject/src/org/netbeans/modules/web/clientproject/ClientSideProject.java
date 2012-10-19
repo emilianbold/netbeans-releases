@@ -72,6 +72,7 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigur
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
 import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
+import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
@@ -87,6 +88,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -154,10 +156,6 @@ public class ClientSideProject implements Project {
         return configurationProvider;
     }
 
-    public EditableProperties getProjectProperties() {
-        return getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-    }
-
     private RefreshOnSaveListener getRefreshOnSaveListener() {
         ClientProjectConfigurationImplementation cfg = configurationProvider.getActiveConfiguration();
         if (cfg != null) {
@@ -168,7 +166,8 @@ public class ClientSideProject implements Project {
     }
 
     public boolean isUsingEmbeddedServer() {
-        return !"external".equals(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER)); //NOI18N
+        // equalsIgnoreCase for backward compatibility, can be removed later
+        return !ClientSideProjectProperties.ProjectServer.EXTERNAL.name().equalsIgnoreCase(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER));
     }
 
     public FileObject getSiteRootFolder() {
@@ -311,7 +310,9 @@ public class ClientSideProject implements Project {
                new ProjectWebRootProviderImpl(),
                new ClientSideProjectSources(this, projectHelper, eval),
                ProjectPropertiesProblemProvider.createForProject(this),
-               //UILookupMergerSupport.createProjectProblemsProviderMerger(),
+               UILookupMergerSupport.createProjectProblemsProviderMerger(),
+               SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
+                    ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
        });
     }
 

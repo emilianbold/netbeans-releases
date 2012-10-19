@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -59,13 +60,33 @@ import org.netbeans.editor.Utilities;
  */
 /* package */ class CamelCaseOperations {
 
-    static int nextCamelCasePosition(JTextComponent textComponent, boolean skipEOL) throws BadLocationException {
+    static int nextCamelCasePosition(final JTextComponent textComponent, final boolean skipEOL) throws BadLocationException {
 
         // get current caret position
-        int offset = textComponent.getCaretPosition();
+        final int offset = textComponent.getCaretPosition();
 
+        final Document doc = textComponent.getDocument();
+        final Object[] out = new Object[] {offset, null};
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    out[0] = nextCamelCasePositionImpl(doc, offset, skipEOL, textComponent);
+                } catch (BadLocationException ex) {
+                    out[1] = ex;
+                }
+            }
+        };
+        doc.render(r);
+        if (out[1] != null) {
+            throw (BadLocationException)out[1];
+        }
+        return (Integer)out[0];
+    }
+
+    private static int nextCamelCasePositionImpl(Document doc, int offset, boolean skipEOL, JTextComponent textComponent) throws BadLocationException {
         // get token chain at the offset
-        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(textComponent, offset, true, false);
+        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, true, false);
         if (ts != null) {
             Token<TokenId> token = ts.token();
             // is this an identifier or include strings,
@@ -73,8 +94,8 @@ import org.netbeans.editor.Utilities;
             // due to false as last param of getCppTokenSequence call
             String category = token.id().primaryCategory();
             if (CppTokenId.IDENTIFIER_CATEGORY.equals(category)
-                || CppTokenId.PREPROCESSOR_USER_INCLUDE_CATEGORY.equals(category)
-                || CppTokenId.PREPROCESSOR_SYS_INCLUDE_CATEGORY.equals(category)) {
+                    || CppTokenId.PREPROCESSOR_USER_INCLUDE_CATEGORY.equals(category)
+                    || CppTokenId.PREPROCESSOR_SYS_INCLUDE_CATEGORY.equals(category)) {
                 CharSequence image = token.text();
                 if (image != null && image.length() > 0) {
                     int length = image.length();
@@ -115,15 +136,35 @@ import org.netbeans.editor.Utilities;
         // not recognized situation - simply return next word offset
         return Utilities.getNextWord(textComponent, offset);
     }
-
-    static int previousCamelCasePosition(JTextComponent textComponent) throws BadLocationException {
+    
+    static int previousCamelCasePosition(final JTextComponent textComponent) throws BadLocationException {
         // get current caret position
-        int offset = textComponent.getCaretPosition();
+        final int offset = textComponent.getCaretPosition();
 
         // Are we at the beginning of the document
         if (offset == 0) {
             return 0;
         }
+        final Document doc = textComponent.getDocument();
+        final Object[] out = new Object[]{offset, null};
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    out[0] = previousCamelCasePositionImpl(textComponent, offset);
+                } catch (BadLocationException ex) {
+                    out[1] = ex;
+                }
+            }
+        };
+        doc.render(r);
+        if (out[1] != null) {
+            throw (BadLocationException)out[1];
+        }
+        return (Integer)out[0];
+    }
+
+    private static int previousCamelCasePositionImpl(JTextComponent textComponent, int offset) throws BadLocationException {
         TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(textComponent, offset, true, true);
         if (ts != null) {
             Token<TokenId> token = ts.token();

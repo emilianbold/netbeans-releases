@@ -121,8 +121,8 @@ public final class J2eeProjectCapabilities {
      */
     public boolean isEjb31Supported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
-        boolean ee6 = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_6_FULL);
-        return ee6 && (J2eeModule.Type.EJB.equals(moduleType) ||
+        boolean ee6or7 = ejbJarProfile != null && (ejbJarProfile.equals(Profile.JAVA_EE_6_FULL) || ejbJarProfile.equals(Profile.JAVA_EE_7_FULL));
+        return ee6or7 && (J2eeModule.Type.EJB.equals(moduleType) ||
                 J2eeModule.Type.WAR.equals(moduleType));
     }
 
@@ -132,8 +132,8 @@ public final class J2eeProjectCapabilities {
      */
     public boolean isEjb31LiteSupported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
-        boolean ee6Web = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_6_WEB);
-        return isEjb31Supported() || (J2eeModule.Type.WAR.equals(moduleType) && ee6Web);
+        boolean ee6or7Web = ejbJarProfile != null && (ejbJarProfile.equals(Profile.JAVA_EE_6_WEB) || ejbJarProfile.equals(Profile.JAVA_EE_7_WEB));
+        return isEjb31Supported() || (J2eeModule.Type.WAR.equals(moduleType) && ee6or7Web);
     }
 
     /**

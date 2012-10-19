@@ -358,9 +358,11 @@ public class PropertiesOpen extends CloneableOpenSupport
 
     /** Helper method. Closes documents. */
     private synchronized void closeDocuments() {
-        BundleStructure structure = bundleStructure;
-        for (int i = 0; i< structure.getEntryCount(); i++) {
-            closeEntry(structure.getNthEntry(i));
+        for (int i = 0; i< bundleStructure.getEntryCount(); i++) {
+            PropertiesFileEntry nthEntry = bundleStructure.getNthEntry(i);
+            if (nthEntry != null) {
+                closeEntry(nthEntry);
+            }
         }
     }
 

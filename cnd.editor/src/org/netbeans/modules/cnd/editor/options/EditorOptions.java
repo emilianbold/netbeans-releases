@@ -539,6 +539,7 @@ public class EditorOptions {
         namedDefaults.put(OPEN_SOLARIS_PROFILE, solaris);
         solaris.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
         solaris.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
+        solaris.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
         solaris.put(newLineBeforeBraceLambda, BracePlacement.NEW_LINE.name());
         solaris.put(newLineFunctionDefinitionName, true);
         solaris.put(indentSize, 8);
@@ -556,6 +557,7 @@ public class EditorOptions {
         KandR.put(absoluteLabelIndent, false);
         KandR.put(indentCasesFromSwitch, false);
         KandR.put(indentNamespace, false);
+        KandR.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
         KandR.put(newLineBeforeBraceLambda, BracePlacement.NEW_LINE.name());
 
         //MYSQL_PROFILE

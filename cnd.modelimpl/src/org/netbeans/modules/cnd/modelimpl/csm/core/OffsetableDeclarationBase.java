@@ -393,6 +393,9 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         
         public void setTypedefSpecifier() {
             this.typedefSpecifier = true;
+            if(typeBuilder != null) {
+                typeBuilder.setTypedef();
+            }            
         }
 
         public boolean hasTypedefSpecifier() {
@@ -490,6 +493,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
 
         private int level = 0;
         private CharSequence name;
+        private NameBuilder nameBuilder;
         
         public void setName(CharSequence name) {
             this.name = name;
@@ -509,6 +513,14 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         
         public boolean isTopDeclarator() {
             return level == 0;
+        }
+
+        public NameBuilder getNameBuilder() {
+            return nameBuilder;
+        }
+
+        public void setNameBuilder(NameBuilder nameBuilder) {
+            this.nameBuilder = nameBuilder;
         }
         
     }    

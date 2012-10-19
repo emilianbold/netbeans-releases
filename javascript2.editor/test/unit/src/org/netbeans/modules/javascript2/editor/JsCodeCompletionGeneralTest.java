@@ -145,6 +145,41 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/general/issue215863.js", "a^lert(\"Text\");", false);
     }
 
+    public void testIssue218689() throws Exception {
+        checkCompletion("testfiles/completion/general/issue218689.html", "            b.v^", false);
+    }
+
+    public void testIssue220101() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220101.js", "window.TEST.case.f^", false);
+    }
+
+    public void testIssue220088_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220088.js", "this.m^odal.modalBody = \"aaa\"; // cc here", false);
+    }
+
+    public void testIssue220088_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220088.js", "this.modal.m^odalBody = \"aaa\"; // cc here", false);
+    }
+
+    public void testIssue220088_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220088.js", "$(this.m^odal.modalHeader).text(header); // cc here", false);
+    }
+
+    public void testIssue220088_04() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220088.js", "$(this.modal.m^odalHeader).text(header); // cc here", false);
+    }
+
+    public void testIssue220088_05() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220088.js", "var issue220088 = new S^ynergy();", false);
+    }
+
+    public void testIssue220088_06() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220088.js", "issue220088.m^odal.modalBody;", false);
+    }
+
+    public void testIssue220088_07() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220088.js", "issue220088.modal.m^odalBody;", false);
+    }
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

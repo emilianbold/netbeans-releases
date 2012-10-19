@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,12 +51,14 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
@@ -80,7 +83,16 @@ public final class ClientSideProjectProperties {
     final ClientSideProject project;
     private final List<JavaScriptLibrarySelection.SelectedLibrary> newJsLibraries = new CopyOnWriteArrayList<JavaScriptLibrarySelection.SelectedLibrary>();
 
+    private volatile String siteRootFolder = null;
+    private volatile String testFolder = null;
+    private volatile String configFolder = null;
     private volatile String jsLibFolder = null;
+    private volatile String encoding = null;
+    private volatile String startFile = null;
+    private volatile String webRoot = null;
+    private volatile String projectUrl = null;
+    private volatile ProjectServer projectServer = null;
+    private volatile ClientProjectConfigurationImplementation activeConfiguration = null;
 
 
     public ClientSideProjectProperties(ClientSideProject project) {
@@ -134,7 +146,9 @@ public final class ClientSideProjectProperties {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws IOException {
-                    saveConfig();
+                    saveProperties();
+                    saveConfigs();
+                    setActiveConfig();
                     addNewJsLibraries();
                     ProjectManager.getDefault().saveProject(project);
                     return null;
@@ -145,10 +159,40 @@ public final class ClientSideProjectProperties {
         }
     }
 
-    void saveConfig() {
+    void saveProperties() {
+        // first, create possible foreign file references
+        String siteRootFolderReference = createForeignFileReference(siteRootFolder);
+        String testFolderReference = createForeignFileReference(testFolder);
+        String configFolderReference = createForeignFileReference(configFolder);
+        // save properties
+        EditableProperties projectProperties = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRootFolderReference);
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_TEST_FOLDER, testFolderReference);
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, configFolderReference);
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_ENCODING, encoding);
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_START_FILE, startFile);
+        if (projectServer != null) {
+            putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SERVER, projectServer.name());
+        }
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_PROJECT_URL, projectUrl);
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_WEB_ROOT, webRoot);
+        project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+    }
+
+    void saveConfigs() {
         assert ProjectManager.mutex().isWriteAccess() : "Write mutex required"; //NOI18N
         for (ClientProjectConfigurationImplementation config : project.getLookup().lookup(ClientSideConfigurationProvider.class).getConfigurations()) {
             config.save();
+        }
+    }
+
+    void setActiveConfig() throws IOException {
+        if (activeConfiguration != null) {
+            try {
+                project.getProjectConfigurations().setActiveConfiguration(activeConfiguration);
+            } catch (IllegalArgumentException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
         }
     }
 
@@ -164,8 +208,8 @@ public final class ClientSideProjectProperties {
             progressHandle.start();
             try {
                 List<SelectedLibrary> failedLibs = ClientSideProjectUtilities.applyJsLibraries(newJsLibraries, jsLibFolder, project.getSiteRootFolder(), progressHandle);
-                LOGGER.log(Level.INFO, "Failed download of JS libraries: {0}", failedLibs);
                 if (!failedLibs.isEmpty()) {
+                    LOGGER.log(Level.INFO, "Failed download of JS libraries: {0}", failedLibs);
                     errorOccured(Bundle.ClientSideProjectProperties_error_jsLibs(joinStrings(getLibraryNames(failedLibs), "<br>"))); // NOI18N
                 }
             } finally {
@@ -178,6 +222,121 @@ public final class ClientSideProjectProperties {
         return project;
     }
 
+    public String getSiteRootFolder() {
+        if (siteRootFolder == null) {
+            siteRootFolder = getProjectProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, ""); // NOI18N
+        }
+        return siteRootFolder;
+    }
+
+    public void setSiteRootFolder(String siteRootFolder) {
+        this.siteRootFolder = siteRootFolder;
+    }
+
+    public String getTestFolder() {
+        if (testFolder == null) {
+            testFolder = getProjectProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, ""); // NOI18N
+        }
+        return testFolder;
+    }
+
+    public void setTestFolder(String testFolder) {
+        if (testFolder == null) {
+            // we need to find out that some value was set ("no value" in this case)
+            testFolder = ""; // NOI18N
+        }
+        this.testFolder = testFolder;
+    }
+
+    public String getConfigFolder() {
+        if (configFolder == null) {
+            configFolder = getProjectProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, ""); // NOI18N
+        }
+        return configFolder;
+    }
+
+    public void setConfigFolder(String configFolder) {
+        if (configFolder == null) {
+            // we need to find out that some value was set ("no value" in this case)
+            configFolder = ""; // NOI18N
+        }
+        this.configFolder = configFolder;
+    }
+
+    public String getEncoding() {
+        if (encoding == null) {
+            encoding = getProjectProperty(ClientSideProjectConstants.PROJECT_ENCODING, ClientSideProjectUtilities.DEFAULT_PROJECT_CHARSET.name());
+        }
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    public String getStartFile() {
+        if (startFile == null) {
+            startFile = project.getStartFile();
+        }
+        return startFile;
+    }
+
+    public void setStartFile(String startFile) {
+        this.startFile = startFile;
+    }
+
+    public String getWebRoot() {
+        if (webRoot == null) {
+            webRoot = project.getWebContextRoot();
+        }
+        return webRoot;
+    }
+
+    public void setWebRoot(String webRoot) {
+        this.webRoot = webRoot;
+    }
+
+    public String getProjectUrl() {
+        if (projectUrl == null) {
+            projectUrl = getProjectProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL, ""); // NOI18N
+        }
+        return projectUrl;
+    }
+
+    public void setProjectUrl(String projectUrl) {
+        this.projectUrl = projectUrl;
+    }
+
+    public ProjectServer getProjectServer() {
+        if (projectServer == null) {
+            String value = getProjectProperty(ClientSideProjectConstants.PROJECT_SERVER, ProjectServer.INTERNAL.name());
+            // toUpperCase() so we are backward compatible, can be later removed
+            try {
+                projectServer = ProjectServer.valueOf(value.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                LOGGER.log(Level.INFO, "Unknown project server type", ex);
+                // fallback
+                projectServer = ProjectServer.INTERNAL;
+            }
+        }
+        return projectServer;
+    }
+
+    public void setProjectServer(ProjectServer projectServer) {
+        this.projectServer = projectServer;
+    }
+
+    public ClientProjectConfigurationImplementation getActiveConfiguration() {
+        if (activeConfiguration == null) {
+            activeConfiguration = project.getProjectConfigurations().getActiveConfiguration();
+        }
+        return activeConfiguration;
+    }
+
+    public void setActiveConfiguration(ClientProjectConfigurationImplementation activeConfiguration) {
+        this.activeConfiguration = activeConfiguration;
+    }
+
     public void setNewJsLibraries(List<SelectedLibrary> newJsLibraries) {
         assert newJsLibraries != null;
         // not needed to be locked, called always by just one caller
@@ -188,6 +347,11 @@ public final class ClientSideProjectProperties {
     public void setJsLibFolder(String jsLibFolder) {
         assert jsLibFolder != null;
         this.jsLibFolder = jsLibFolder;
+    }
+
+    @CheckForNull
+    public File getResolvedSiteRootFolder() {
+        return resolveFile(getSiteRootFolder());
     }
 
     private static void errorOccured(String message) {
@@ -205,6 +369,41 @@ public final class ClientSideProjectProperties {
         return names;
     }
 
+    private String getProjectProperty(String property, String defaultValue) {
+        String value = project.getEvaluator().getProperty(property);
+        if (value != null) {
+            return value;
+        }
+        return defaultValue;
+    }
+
+    private void putProperty(EditableProperties properties, String property, String value) {
+        if (value != null) {
+            properties.put(property, value);
+        }
+    }
+
+    private String createForeignFileReference(String filePath) {
+        if (filePath == null) {
+            // not set at all
+            return null;
+        }
+        if (filePath.isEmpty()) {
+            // empty value will be saved
+            return ""; // NOI18N
+        }
+        File file = project.getProjectHelper().resolveFile(filePath);
+        return project.getReferenceHelper().createForeignFileReference(file, null);
+    }
+
+    @CheckForNull
+    private File resolveFile(String path) {
+        if (path == null || path.isEmpty()) {
+            return null;
+        }
+        return project.getProjectHelper().resolveFile(path);
+    }
+
     private static String joinStrings(Collection<String> strings, String glue) {
         StringBuilder sb = new StringBuilder(200);
         for (String string : strings) {
@@ -214,6 +413,29 @@ public final class ClientSideProjectProperties {
             sb.append(string);
         }
         return sb.toString();
+    }
+
+    //~ Inner classes
+
+    @NbBundle.Messages({
+        "ProjectServer.internal.title=Embedded Lightweight",
+        "ProjectServer.external.title=External"
+    })
+    public static enum ProjectServer {
+        INTERNAL(Bundle.ProjectServer_internal_title()),
+        EXTERNAL(Bundle.ProjectServer_external_title());
+
+        private final String title;
+
+        private ProjectServer(String title) {
+            assert title != null;
+            this.title = title;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
     }
 
 }

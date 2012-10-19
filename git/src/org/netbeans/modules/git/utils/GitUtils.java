@@ -78,6 +78,7 @@ import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.status.GitStatusNode;
 import org.netbeans.modules.git.ui.status.StatusAction;
+import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.Utils;
@@ -669,7 +670,30 @@ public final class GitUtils {
         return new File(getGitFolderForRoot(repository), "index.lock").exists(); //NOI18N
     }
 
-    public static void openInRevision (final File originalFile, final int lineNumber, final String revision, boolean showAnnotations, ProgressMonitor pm) throws IOException {
+    public static void openInRevision (File originalFile, String revision1, int lineNumber,
+            String revisionToOpen, boolean showAnnotations, ProgressMonitor pm) throws IOException {
+        File file1 = VersionsCache.getInstance().getFileRevision(originalFile, revision1, pm);
+        if (file1 == null) { // can be null if the file does not exist or is empty in the given revision
+            file1 = File.createTempFile("tmp", "-" + originalFile.getName(), Utils.getTempFolder()); //NOI18N
+            file1.deleteOnExit();
+        }
+        if (pm.isCanceled()) {
+            return;
+        }
+        File file = VersionsCache.getInstance().getFileRevision(originalFile, revisionToOpen, pm);
+        if (file == null) { // can be null if the file does not exist or is empty in the given revision
+            file = File.createTempFile("tmp", "-" + originalFile.getName(), Utils.getTempFolder()); //NOI18N
+            file.deleteOnExit();
+        }
+        if (pm.isCanceled()) {
+            return;
+        }
+        int matchingLine = DiffUtils.getMatchingLine(file1, file, lineNumber);
+        openInRevision(file, originalFile, matchingLine, revisionToOpen, showAnnotations, pm);
+    }
+    
+    public static void openInRevision (File originalFile, int lineNumber, String revision,
+            boolean showAnnotations, ProgressMonitor pm) throws IOException {
         File file = VersionsCache.getInstance().getFileRevision(originalFile, revision, pm);
         if (pm.isCanceled()) {
             return;
@@ -678,8 +702,11 @@ public final class GitUtils {
             file = File.createTempFile("tmp", "-" + originalFile.getName(), Utils.getTempFolder()); //NOI18N
             file.deleteOnExit();
         }
+        openInRevision(file, originalFile, lineNumber, revision, showAnnotations, pm);
+    }
 
-        final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+    private static void openInRevision (final File fileToOpen, final File originalFile, final int lineNumber, final String revision, boolean showAnnotations, ProgressMonitor pm) throws IOException {
+        final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fileToOpen));
         EditorCookie ec = null;
         org.openide.cookies.OpenCookie oc = null;
         try {

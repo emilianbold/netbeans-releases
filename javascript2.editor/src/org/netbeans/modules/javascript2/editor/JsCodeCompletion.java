@@ -467,7 +467,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
             resultList.add(JsCompletionItem.Factory.create(element, request));
         }
     }
-    
+
+    private int checkRecursion;
+
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, request.anchor);
@@ -544,7 +546,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
             JsIndex jsIndex = JsIndex.get(fo);
             Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
-            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, exp, offset));
+            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, exp, request.anchor));
             
             int cycle = 0;
             boolean resolvedAll = false;
@@ -593,42 +595,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             boolean isFunction = false; // addding Function to the prototype chain?
             List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
             for (TypeUsage typeUsage : resolveTypeFromExpression) {
-                // at first try to find the type in the model
-                JsObject jsObject = ModelUtils.findJsObjectByName(request.result.getModel(), typeUsage.getType());
-                if (jsObject != null) {
-                    lastResolvedObjects.add(jsObject);
-                }
-                //if (jsObject == null) {
-                    for (JsObject libGlobal : getLibrariesGlobalObjects()) {
-                        for (JsObject object : libGlobal.getProperties().values()) {
-                            if (object.getName().equals(typeUsage.getType())) {
-                                jsObject = object;
-                                lastResolvedObjects.add(jsObject);
-                                break;
-                            }
-                        }
-                        if (jsObject != null) {
-                            break;
-                        }
-                    }
-                //}
-                if(jsObject == null || !jsObject.isDeclared()){
-                    // look at the index
-//                    if (exp.get(1).equals("@pro")) {
-                    boolean isObject = typeUsage.getType().equals("Object");
-                    if(exp.get(1).equals("@pro") && !isObject) {
-                        for(IndexResult indexResult : jsIndex.findFQN(typeUsage.getType())){
-                            JsElement.Kind kind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
-                            if (kind.isFunction()) {
-                                isFunction = true;
-                            }
-                        }
-                    }
-//                    }
-                    if (!isObject) {
-                        addObjectPropertiesFromIndex(typeUsage.getType(), jsIndex, request, addedProperties);
-                    }
-                }
+                checkRecursion = 0;
+                isFunction = processTypeInModel(request, request.result.getModel(), typeUsage, lastResolvedObjects, exp.get(1).equals("@pro"), jsIndex, addedProperties);
             }
             for (JsObject resolved : lastResolvedObjects) {
                 if(!isFunction && resolved.getJSKind().isFunction()) {
@@ -740,6 +708,53 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
         return caseSensitive ? theString.startsWith(prefix)
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
+    }
+
+    private boolean processTypeInModel(CompletionRequest request, Model model, TypeUsage type, List<JsObject> lastResolvedObjects, boolean prop, JsIndex index, HashMap<String, JsElement> addedProperties) {
+        if (++checkRecursion > 10) {
+            return false;
+        }
+        boolean isFunction = false;
+        // at first try to find the type in the model
+        JsObject jsObject = ModelUtils.findJsObjectByName(model, type.getType());
+        if (jsObject != null) {
+            lastResolvedObjects.add(jsObject);
+        }
+
+        for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+            for (JsObject object : libGlobal.getProperties().values()) {
+                if (object.getName().equals(type.getType())) {
+                    jsObject = object;
+                    lastResolvedObjects.add(jsObject);
+                    break;
+                }
+            }
+            if (jsObject != null) {
+                break;
+            }
+        }
+
+        if (jsObject == null || !jsObject.isDeclared()) {
+            boolean isObject = type.getType().equals("Object");   //NOI18N
+            if (prop && !isObject) {
+                for (IndexResult indexResult : index.findFQN(type.getType())) {
+                    JsElement.Kind kind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
+                    if (kind.isFunction()) {
+                        isFunction = true;
+                    }
+                }
+            }
+            if (!isObject) {
+                addObjectPropertiesFromIndex(type.getType(), index, request, addedProperties);
+            }
+        } else if (jsObject != null && jsObject.getDeclarationName() != null) {
+            Collection<? extends TypeUsage> assignments = jsObject.getAssignmentForOffset(jsObject.getDeclarationName().getOffsetRange().getEnd());
+            for (TypeUsage assignment : assignments) {
+                boolean isFun = processTypeInModel(request, model, assignment, lastResolvedObjects, prop, index, addedProperties);
+                isFunction = isFunction ? true : isFun;
+            }
+        }
+        return isFunction;
     }
     
     private void addObjectPropertiesToCC(JsObject jsObject, CompletionRequest request, Map<String, JsElement> addedProperties) {

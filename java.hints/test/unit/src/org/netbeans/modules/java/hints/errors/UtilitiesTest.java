@@ -123,6 +123,10 @@ public class UtilitiesTest extends NbTestCase {
         //TODO: better display name:
         performShortNameTest("package test; public class Test { public void t(Object... obj) { | }}", "((boolean[]) obj)[i]", "...(boolean)[]");
     }
+    
+    public void testShortName220031() throws Exception {
+        performShortNameTest("package test; public class Test { public void t() { | }}", "new Object[0]", "...new Object[...]");
+    }
 
     public void testNameGuessKeywordNoShortName2() throws Exception {
         assertEquals("aDo", Utilities.adjustName("do"));
