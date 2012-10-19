@@ -69,8 +69,6 @@ public class JerseyLibraryHelper {
 
     private static final String LIBRARY_TYPE = "wl_jersey"; // NOI18N
 
-    private static final String VOLUME_TYPE_CLASSPATH = "classpath"; //NOI18N
-
     @CheckForNull
     static LibraryImplementation3 getJerseyInMemoryLibrary(
             Version serverVersion, FileObject modulesFolder) {
