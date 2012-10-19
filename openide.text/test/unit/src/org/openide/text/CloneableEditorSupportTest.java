@@ -370,12 +370,24 @@ implements CloneableEditorSupport.Env {
     
     public void testDocumentBeforeSaveRunnableProcessed() throws Exception {
         content = "Ahoj\nMyDoc";
-        javax.swing.text.Document doc = support.openDocument ();
+        final javax.swing.text.Document doc = support.openDocument ();
         assertNotNull (doc);
         final boolean[] processed = { false };
         doc.putProperty("beforeSaveRunnable", new Runnable() {
             public void run() {
+                // See CloneableEditorSupport for property explanation
+                Runnable beforeSaveStart = (Runnable) doc.getProperty("beforeSaveStart");
+                if (beforeSaveStart != null) {
+                    beforeSaveStart.run();
+                }
+
                 processed[0] = true;
+
+                // See CloneableEditorSupport for property explanation
+                Runnable beforeSaveEnd = (Runnable) doc.getProperty("beforeSaveEnd");
+                if (beforeSaveEnd != null) {
+                    beforeSaveEnd.run();
+                }
             }
         });
         doc.insertString(0, "Nazdar", null); // Modify doc to allow save
