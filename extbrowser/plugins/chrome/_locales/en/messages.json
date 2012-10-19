@@ -27,10 +27,10 @@
 
     // select mode
     "_StartSelectMode": {
-        "message": "Start Inspect in NetBeans Mode"
+        "message": "Start Inspect in NetBeans Mode (Ctrl+Shift+S)"
     },
     "_StopSelectMode": {
-        "message": "Stop Inspect in NetBeans Mode"
+        "message": "Stop Inspect in NetBeans Mode (Ctrl+Shift+S)"
     },
 
     // presets

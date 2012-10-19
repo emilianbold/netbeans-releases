@@ -45,6 +45,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -63,19 +64,19 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.CssHelpResolver;
 import org.netbeans.modules.css.editor.csl.CssNodeElement;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
-import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Pair;
@@ -118,7 +119,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
         module("presentation_levels", "http://www.w3.org/TR/css3-preslev"),
         module("generated_and_replaced_content", "http://www.w3.org/TR/css3-content") //NOI18N
     };
-    private static Collection<PropertyDefinition> propertyDescriptors;
+    private static Map<String, PropertyDefinition> propertyDescriptors;
 
     private static CssModule module(String name, String url) {
         return new DefaultCssModule(name, url);
@@ -165,12 +166,12 @@ public class DefaultCssEditorModule extends CssEditorModule {
     private static class Css21HelpResolver extends HelpResolver {
 
         @Override
-        public String getHelp(PropertyDefinition property) {
+        public String getHelp(FileObject context, PropertyDefinition property) {
             return CssHelpResolver.instance().getPropertyHelp(property.getName());
         }
 
         @Override
-        public URL resolveLink(PropertyDefinition property, String link) {
+        public URL resolveLink(FileObject context, PropertyDefinition property, String link) {
 //            return CssHelpResolver.getHelpZIPURLasString() == null ? null :
 //            new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURLasString() +
 //                    normalizeLink( elementHandle, link));
@@ -183,13 +184,12 @@ public class DefaultCssEditorModule extends CssEditorModule {
         }
     }
 
-    @Override
-    public synchronized Collection<PropertyDefinition> getProperties() {
+    private synchronized Map<String, PropertyDefinition> getProperties() {
         if (propertyDescriptors == null) {
-            propertyDescriptors = new ArrayList<PropertyDefinition>();
+            propertyDescriptors = new HashMap<String, PropertyDefinition>();
             for (CssModule module : MODULE_PROPERTY_DEFINITION_FILE_NAMES) {
                 String path = MODULE_PATH_BASE + module.getName();
-                propertyDescriptors.addAll(Utilities.parsePropertyDefinitionFile(path, module));
+                propertyDescriptors.putAll(Utilities.parsePropertyDefinitionFile(path, module));
             }
 
         }
@@ -197,7 +197,17 @@ public class DefaultCssEditorModule extends CssEditorModule {
     }
 
     @Override
-    public Collection<HelpResolver> getHelpResolvers() {
+    public Collection<String> getPropertyNames(FileObject file) {
+        return getProperties().keySet();
+    }
+
+    @Override
+    public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+        return getProperties().get(propertyName);
+    }
+    
+    @Override
+    public Collection<HelpResolver> getHelpResolvers(FileObject context) {
         //CSS2.1 legacy help - to be removed
         return Arrays.asList(new HelpResolver[]{
                     new Css21HelpResolver(),

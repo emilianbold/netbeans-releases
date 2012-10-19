@@ -44,19 +44,21 @@ package org.netbeans.modules.css.editor.module;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.editor.module.spi.Browser;
+import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
 import org.netbeans.modules.css.lib.api.CssModule;
+import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinitionProvider;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,7 +71,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
     private Browser browser;
     private CssModule module;
     private final Set<String> supportedPropertiesNames = new HashSet<String>();
-    private final Collection<PropertyDefinition> vendorSpecificProperties = new HashSet<PropertyDefinition>();
+    private final Map<String, PropertyDefinition> vendorSpecificProperties = new HashMap<String, PropertyDefinition>();
 
     public BrowserSpecificDefinitionParser(String resourcePath, Browser browser, CssModule module) {
         this.resourcePath = resourcePath;
@@ -103,7 +105,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
 
                 if (propertyName.startsWith(browser.getVendorSpecificPropertyPrefix())) {
                     //vendor specific property
-                    vendorSpecificProperties.add(new PropertyDefinition(propertyName, value, browser.getPropertyCategory(), module));
+                    vendorSpecificProperties.put(propertyName, new PropertyDefinition(propertyName, value, browser.getPropertyCategory(), module));
                     supportedPropertiesNames.add(propertyName);
 
                 } else {
@@ -112,7 +114,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
                         case '!':
                             //experimental property only
                             String vendorSpecificPropertyName = createVendorSpecificPropertyName(browser.getVendorSpecificPropertyPrefix(), propertyName);
-                            vendorSpecificProperties.add(new ProxyProperty(vendorSpecificPropertyName, browser.getPropertyCategory(), propertyName));
+                            vendorSpecificProperties.put(vendorSpecificPropertyName, new ProxyProperty(vendorSpecificPropertyName, browser.getPropertyCategory(), propertyName));
                             supportedPropertiesNames.add(vendorSpecificPropertyName);
                             break;
                         case '+':
@@ -122,7 +124,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
                         case '*':
                             //standard + experimental property                            
                             vendorSpecificPropertyName = createVendorSpecificPropertyName(browser.getVendorSpecificPropertyPrefix(), propertyName);
-                            vendorSpecificProperties.add(new ProxyProperty(vendorSpecificPropertyName, browser.getPropertyCategory(), propertyName));
+                            vendorSpecificProperties.put(vendorSpecificPropertyName, new ProxyProperty(vendorSpecificPropertyName, browser.getPropertyCategory(), propertyName));
                             supportedPropertiesNames.add(propertyName);
                             supportedPropertiesNames.add(vendorSpecificPropertyName);
                             break;
@@ -133,7 +135,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
 
                         default:
                             //even standard property can be vendor specific (zoom for webkit)
-                            vendorSpecificProperties.add(new PropertyDefinition(propertyName, value, browser.getPropertyCategory(), module));
+                            vendorSpecificProperties.put(propertyName, new PropertyDefinition(propertyName, value, browser.getPropertyCategory(), module));
                             supportedPropertiesNames.add(propertyName);
 
                     }
@@ -155,7 +157,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
         return supportedPropertiesNames.contains(propertyName);
     }
 
-    public Collection<PropertyDefinition> getVendorSpecificProperties() {
+    public Map<String, PropertyDefinition> getVendorSpecificProperties() {
         return vendorSpecificProperties;
     }
 
@@ -163,25 +165,36 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
 
         private String delegateToPropertyName;
 
+        private static final String EMPTY_GRAMMAR = "[]";
+        
         public ProxyProperty(String name, PropertyCategory category, String delegateToPropertyName) {
             super(name, null, category, module);
             this.delegateToPropertyName = delegateToPropertyName;
         }
-
+        
         @Override
-        public String getValueGrammar() {
+        public synchronized GroupGrammarElement getGrammarElement(FileObject context) {
             //try to get the normal property first
-            Collection<PropertyDefinition> p = Properties.getProperties(delegateToPropertyName);
+            PropertyDefinition p = Properties.getPropertyDefinition(context, delegateToPropertyName);
             if(p == null) {
                 //the browser specific definition may address an invisible property
-                p = Properties.getProperties(delegateToPropertyName, true);
+                p = Properties.getPropertyDefinition(context, delegateToPropertyName, true);
             }
             
             if (p == null) {
                 Logger.getAnonymousLogger().warning(String.format("Cannot fine property %s referred in %s", delegateToPropertyName, resourcePath)); //NOI18N
-                return ""; //return empty grammar definition
+                return super.getGrammarElement(context);
             }
-            return new PropertyModel(delegateToPropertyName, p).getGrammar();
+            
+            return p.getGrammarElement(context);
         }
+
+        @Override
+        public String getGrammar() {
+            //the property have empty grammar as the getGrammarElement is overridden
+            return EMPTY_GRAMMAR;
+        }
+        
+        
     }
 }
