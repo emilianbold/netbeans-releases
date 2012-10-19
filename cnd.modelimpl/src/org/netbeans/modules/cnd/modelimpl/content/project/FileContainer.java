@@ -698,7 +698,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             return this;
         }
 
-        private synchronized void debugClearState() {
+        /*tests-only*/public synchronized void debugClearState() {
             data = null;
         }
 
