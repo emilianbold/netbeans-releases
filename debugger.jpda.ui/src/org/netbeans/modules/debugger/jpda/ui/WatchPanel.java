@@ -208,7 +208,6 @@ public class WatchPanel {
             c.debugger = d;
             if (c.line > 0) {
                 adjustContext = false;
-                c.line--;
             }
         } else {
             EditorContext context = EditorContextBridge.getContext();
@@ -382,7 +381,7 @@ public class WatchPanel {
                 @Override
                 public void run() {
                     String origText = editorPane.getText();
-                    DialogBinding.bindComponentToFile(file, (line >= 0) ? line : 0, 0, 0, editorPane);
+                    DialogBinding.bindComponentToFile(file, (line > 0) ? (line - 1) : 0, 0, 0, editorPane);
                     Document editPaneDoc = editorPane.getDocument();
                     editPaneDoc.putProperty("org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck", "true");
                     editPaneDoc.putProperty(WrapperFactory.class,
