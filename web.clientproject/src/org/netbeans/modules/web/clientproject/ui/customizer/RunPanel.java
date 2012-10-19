@@ -388,7 +388,7 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         File workDir;
         File startFile = getAbsoluteStartFile();
         if (startFile != null && startFile.exists()) {
-            workDir = startFile;
+            workDir = startFile.getParentFile();
         } else {
             workDir = FileUtil.toFile(siteRootFolder);
         }
