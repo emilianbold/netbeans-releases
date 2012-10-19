@@ -659,6 +659,14 @@ public class NPECheck {
             
             return res;
         }
+
+        @Override
+        public State visitMethod(MethodTree node, Void p) {
+            variable2State = new HashMap<VariableElement, NPECheck.State>();
+            testedTo = new HashMap<VariableElement, NPECheck.State>();
+            not = false;
+            return super.visitMethod(node, p);
+        }
         
     }
     

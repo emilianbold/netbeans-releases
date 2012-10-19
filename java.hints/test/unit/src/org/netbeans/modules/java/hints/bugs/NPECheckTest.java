@@ -461,6 +461,24 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testSimpleMethodBoundaryCheck219006() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public Object obj = null;\n" +
+                       "    public String toString() {\n" +
+                       "        return obj.toString();\n" +
+                       "    }\n" +
+                       "    public void t() {\n" +
+                       "        if (obj != null) {\n" +
+                       "            System.err.println(obj.toString());\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
