@@ -98,7 +98,7 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class CommentsPanel extends JPanel {
-    static final RequestProcessor RP = new RequestProcessor("Bugzilla Comments Panel", 5, false); // NOI18N
+    static final RequestProcessor RP = new RequestProcessor("ODCS Tasks Comments Panel", 5, false); // NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private final static int MAX_COMMENT_HEIGHT = 10000;

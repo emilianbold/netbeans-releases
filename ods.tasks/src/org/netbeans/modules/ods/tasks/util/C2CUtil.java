@@ -143,24 +143,6 @@ public class C2CUtil {
         ta = rta.createMappedAttribute(C2CData.ATTR_PARENT);
         ta = rta.createMappedAttribute(C2CData.ATTR_SUBTASK);
         ta = rta.createMappedAttribute(C2CData.ATTR_NEWCOMMENT);
-        
-        
-//        ta.setValue(clientData.get().get(0).getValue());
-        
-//        ta = rta.createMappedAttribute(BugzillaAttribute.PRODUCT.getKey());
-//        ta.setValue(TEST_PROJECT);
-//
-//        String platform = client.getRepositoryConfiguration().getPlatforms().get(0);
-//        ta = rta.createMappedAttribute(BugzillaAttribute.REP_PLATFORM.getKey());
-//        ta.setValue(platform);
-//
-//        String version = client.getRepositoryConfiguration().getVersions(TEST_PROJECT).get(0);
-//        ta = rta.createMappedAttribute(BugzillaAttribute.VERSION.getKey());
-//        ta.setValue(version);
-//
-//        String component = client.getRepositoryConfiguration().getComponents(TEST_PROJECT).get(0);
-//        ta = rta.createMappedAttribute(BugzillaAttribute.COMPONENT.getKey());
-//        ta.setValue(component);
 
         return data;
     }

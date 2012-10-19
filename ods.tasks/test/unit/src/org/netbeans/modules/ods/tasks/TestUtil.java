@@ -89,44 +89,5 @@ public class TestUtil {
     public static TaskData getTaskData(AbstractRepositoryConnector cfcrc, TaskRepository taskRepository, String id) throws CoreException {
         return cfcrc.getTaskData(taskRepository, id, new NullProgressMonitor());
     }
-
-//    public static String createIssue(BugzillaRepository repo, String summary) throws MalformedURLException, CoreException {
-//        BugzillaRepositoryConnector brc = Bugzilla.getInstance().getRepositoryConnector();
-//        TaskRepository tr = repo.getTaskRepository();
-//        TaskData data = TestUtil.createTaskData(brc, tr, summary, ISSUE_DESCRIPTION, ISSUE_SEVERITY);
-//        RepositoryResponse rr = TestUtil.postTaskData(brc, tr, data);
-//        return rr.getTaskId();
-//    }
-////
-////    public static RepositoryResponse addComment(BugzillaRepository repository, TaskData data, String comment) throws CoreException {
-////        return addComment(repository.getTaskRepository(), id, comment);
-////    }
-//
-//    public static RepositoryResponse addComment(TaskRepository taskRepository, String id, String comment) throws CoreException {
-//        TaskData data = getTaskData(taskRepository, id);
-//        return addComment(taskRepository, data, comment);
-//    }
-//
-//    public static RepositoryResponse addComment(TaskRepository taskRepository, TaskData data, String comment) throws CoreException {
-//        TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
-//        ta.setValue(comment);
-//
-//        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>();
-//        attrs.add(ta);
-//        return Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(taskRepository, data, attrs, new NullProgressMonitor());
-//    }
-//
-//    public static BugzillaRepository getRepository(String name, String url, String user, String psswd) {
-//        RepositoryInfo info = new RepositoryInfo(name, BugzillaConnector.ID, url, name, name, user, null, psswd.toCharArray(), null);
-//        return new BugzillaRepository(info);
-//    }
-//
-//    public static void validate(BugzillaRepositoryConnector brc, TaskRepository repository) throws Throwable {
-//        try {
-//            brc.getClientManager().getClient(repository, NULL_PROGRESS_MONITOR).validate(NULL_PROGRESS_MONITOR);
-//        } catch (Exception ex) {
-//            handleException(ex);
-//        }
-//    }
     
 }

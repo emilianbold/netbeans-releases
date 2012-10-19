@@ -93,31 +93,6 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         return ts.getSortkey().intValue();
     }
 
-//    private Integer getPrioritySortKey(String priority) {
-//        BugzillaConfiguration bc = getC2CIssue().getRepository().getConfiguration();
-//        if(bc == null || !bc.isValid()) {
-//            return null;
-//        }
-//        List<String> p = bc.getPriorities();
-//        if(p == null) {
-//            return null;
-//        }
-//        return p.indexOf(priority);
-//    }
-//
-//    private Integer getResolutionSortKey(String resolution) {
-//        
-//        BugzillaConfiguration bc = getC2CIssue().getRepository().getConfiguration();
-//        if(bc == null || !bc.isValid()) {
-//            return null;
-//        }
-//        List<String> r = bc.getResolutions();
-//        if(r == null) {
-//            return null;
-//        }
-//        return r.indexOf(resolution);
-//    }
-
     private class IDProperty extends IssueNode<C2CIssue>.IssueProperty<String> {
         public IDProperty() {
             super(C2CIssue.LABEL_NAME_ID,

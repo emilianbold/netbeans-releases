@@ -338,7 +338,7 @@ public class C2CRepository implements PropertyChangeListener {
         }
 
         // XXX shouldn't be only a perfect match 
-        IRepositoryQuery iquery = new RepositoryQuery(taskRepository.getConnectorKind(), "bugzilla simple search query");            // NOI18N
+        IRepositoryQuery iquery = new RepositoryQuery(taskRepository.getConnectorKind(), "ODCS simple task search");            // NOI18N
         iquery.setAttribute(TaskAttribute.SUMMARY, criteria);
         
         PerformQueryCommand queryCmd = 

@@ -423,7 +423,7 @@ public abstract class C2CQuery {
         @Override
         protected void refresh(boolean autoRefresh) {
             String queryString = getController().getQueryString();
-            // XXX what if queryString == null
+            assert queryString != null;
             if(savedQuery != null) {
                 savedQuery.setQueryString(queryString);
             } 

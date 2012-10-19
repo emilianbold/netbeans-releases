@@ -306,11 +306,10 @@ public class C2CRepositoryController implements RepositoryController, DocumentLi
             return false;
         }
 
-        // XXX
-//        if(!BugzillaClient.isValidUrl(url) || "http://".equals(url) || "https://".equals(url)) {
-//            errorMessage = NbBundle.getMessage(C2CRepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
-//            return false;
-//        }
+        if("http://".equals(url) || "https://".equals(url)) {
+            errorMessage = NbBundle.getMessage(C2CRepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
+            return false;
+        }
 
         // the url format is ok - lets enable the validate button
         panel.validateButton.setEnabled(true);

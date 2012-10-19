@@ -261,7 +261,7 @@ public class C2CIssue {
     }
 
     @Messages({"LBL_NEW_STATUS=New", "LBL_SUMMARY_CHANGED_STATUS=Summary changed",
-        "# CC is a bugzilla attributes name, do not translate",
+        "# CC is the ODCS task trackers attributes name, do not translate",
         "LBL_CC_FIELD_CHANGED_STATUS=CC field changed",
         "LBL_TAGS_CHANGED_STATUS=Tags changed",
         "LBL_DEPENDENCE_CHANGED_STATUS=Associations changed",

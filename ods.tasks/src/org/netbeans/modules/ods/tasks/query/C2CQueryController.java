@@ -316,7 +316,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
                                 parameters.getListParameter(QueryParameters.Column.PRODUCT).populate(clientData.getProducts());
                                 populateProductDetails(clientData);
                                 
-                                // XXX add description to tooltip
                                 parameters.getListParameter(QueryParameters.Column.TASK_TYPE).populate(clientData.getTaskTypes());
                                 parameters.getListParameter(QueryParameters.Column.PRIORITY).populate(clientData.getPriorities());
                                 parameters.getListParameter(QueryParameters.Column.SEVERITY).populate(clientData.getSeverities());
