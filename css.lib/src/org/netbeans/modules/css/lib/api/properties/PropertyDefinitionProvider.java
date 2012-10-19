@@ -43,6 +43,7 @@ package org.netbeans.modules.css.lib.api.properties;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -52,27 +53,31 @@ import org.openide.util.Lookup;
  */
 public interface PropertyDefinitionProvider {
     
-    public Collection<PropertyDefinition> getProperties();
+    public Collection<String> getPropertyNames(FileObject context);
+    
+    public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName);
+    
     
     public static class Query {
         
-        public static Collection<PropertyDefinition> getProperties() {
-            Collection<PropertyDefinition> all = new ArrayList<PropertyDefinition>();
+        public static Collection<String> getPropertyNames(FileObject context) {
+            Collection<String> all = new ArrayList<String>();
             Collection<? extends PropertyDefinitionProvider> providers = Lookup.getDefault().lookupAll(PropertyDefinitionProvider.class);
             for(PropertyDefinitionProvider provider : providers) {
-                all.addAll(provider.getProperties());
+                all.addAll(provider.getPropertyNames(context));
             }
             return all;
         }
         
-        public static Collection<PropertyDefinition> getProperties(String propertyName) {
-            Collection<PropertyDefinition> filtered = new ArrayList<PropertyDefinition>();
-            for(PropertyDefinition property : getProperties()) {
-                if(property.getName().equals(propertyName)) {
-                    filtered.add(property);
+        public static PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+            Collection<? extends PropertyDefinitionProvider> providers = Lookup.getDefault().lookupAll(PropertyDefinitionProvider.class);
+            for(PropertyDefinitionProvider provider : providers) {
+                PropertyDefinition def = provider.getPropertyDefinition(context, propertyName);
+                if(def != null) {
+                    return def;
                 }
             }
-            return filtered;
+            return null;
         }
         
     }

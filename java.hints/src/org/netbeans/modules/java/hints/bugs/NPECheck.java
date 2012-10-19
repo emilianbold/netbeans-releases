@@ -303,6 +303,7 @@ public class NPECheck {
 
         @Override
         public State visitIf(IfTree node, Void p) {
+            Map<VariableElement, State> oldVariable2StateBeforeCondition = new HashMap<VariableElement, State>(variable2State);
             Map<VariableElement, State> oldTestedTo = testedTo;
             
             testedTo = new HashMap<VariableElement, NPECheck.State>();
@@ -317,14 +318,18 @@ public class NPECheck {
             scan(node.getThenStatement(), null);
             
             Map<VariableElement, State> variableStatesAfterThen = new HashMap<VariableElement, NPECheck.State>(variable2State);
+            Map<VariableElement, State> testedToAfterThen =  new HashMap<VariableElement, NPECheck.State>(testedTo);
+            
+            variable2State = new HashMap<VariableElement, NPECheck.State>(oldVariable2StateBeforeCondition);
+            testedTo = new HashMap<VariableElement, NPECheck.State>();
+            not = true;
+            scan(node.getCondition(), p);
+            not = false;
             
             variable2State = new HashMap<VariableElement, NPECheck.State>(oldVariable2State);
+            variable2State.putAll(testedTo);
             
-            for (Map.Entry<VariableElement, State> entry : testedTo.entrySet()) {
-                State reversed = entry.getValue().reverse();
-                if (reversed != null)
-                    variable2State.put(entry.getKey(), reversed);
-            }
+            Map<VariableElement, State> negTestedTo = new HashMap<VariableElement, State>(testedTo);
 
             scan(node.getElseStatement(), null);
             
@@ -336,7 +341,7 @@ public class NPECheck {
             
             if (node.getElseStatement() == null) {
                 for (Entry<VariableElement, State> e : variableStatesAfterThen.entrySet()) {
-                    if (testedTo.get(e.getKey()) == State.NULL) {
+                    if (testedToAfterThen.get(e.getKey()) == State.NULL) {
                         if (e.getValue() != null) {
                             switch (e.getValue()) {
                                 case NOT_NULL:
@@ -382,11 +387,7 @@ public class NPECheck {
                     }
                 }
             } else {
-                for (Entry<VariableElement, State> test : testedTo.entrySet()) {
-                    State reversed = test.getValue().reverse();
-                    if (reversed != null)
-                        variable2State.put(test.getKey(), reversed);
-                }
+                variable2State.putAll(negTestedTo);
             }
             
             testedTo = oldTestedTo;
@@ -521,8 +522,8 @@ public class NPECheck {
             
             Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
 
-            if (isVariableElement(e) && (variable2State.get(e) == null || !variable2State.get(e).isNotNull())) {
-                testedTo.put((VariableElement) e, State.NOT_NULL_TEST_ONLY);
+            if (isVariableElement(e) && (variable2State.get(e) == null || !variable2State.get(e).isNotNull()) && !not) {
+                testedTo.put((VariableElement) e, State.NOT_NULL);
             }
             
             return null;
@@ -632,6 +633,14 @@ public class NPECheck {
             
             scan(node.getStatement(), p);
             
+            testedTo = new HashMap<VariableElement, State>();
+            
+            scan(node.getCondition(), p);
+            
+            variable2State.putAll(testedTo);
+            
+            scan(node.getStatement(), p);
+            
             variable2State = new HashMap<VariableElement, State>(oldVariable2State);
             
             for (Entry<VariableElement, State> e : testedTo.entrySet()) {
@@ -659,7 +668,28 @@ public class NPECheck {
             
             return res;
         }
-        
+
+        @Override
+        public State visitMethod(MethodTree node, Void p) {
+            variable2State = new HashMap<VariableElement, NPECheck.State>();
+            testedTo = new HashMap<VariableElement, NPECheck.State>();
+            not = false;
+            return super.visitMethod(node, p);
+        }
+
+        @Override
+        public State visitForLoop(ForLoopTree node, Void p) {
+            scan(node.getInitializer(), p);
+            
+            scan(node.getStatement(), p);
+            scan(node.getUpdate(), p);
+            
+            scan(node.getCondition(), p);
+            scan(node.getStatement(), p);
+            scan(node.getUpdate(), p);
+            return null;
+        }
+
     }
     
     static enum State {
@@ -667,7 +697,6 @@ public class NPECheck {
         POSSIBLE_NULL,
         POSSIBLE_NULL_REPORT,
         NOT_NULL,
-        NOT_NULL_TEST_ONLY,
         NOT_NULL_BE_NPE;
         
         public @CheckForNull State reverse() {
@@ -680,14 +709,12 @@ public class NPECheck {
                 case NOT_NULL:
                 case NOT_NULL_BE_NPE:
                     return NULL;
-                case NOT_NULL_TEST_ONLY:
-                    return null;
                 default: throw new IllegalStateException();
             }
         }
         
         public boolean isNotNull() {
-            return this == NOT_NULL || this == NOT_NULL_BE_NPE || this == NOT_NULL_TEST_ONLY;
+            return this == NOT_NULL || this == NOT_NULL_BE_NPE;
         }
         
         public static State collect(State s1, State s2) {
