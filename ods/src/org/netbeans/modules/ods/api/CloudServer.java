@@ -182,7 +182,9 @@ public final class CloudServer {
     }
 
     public PasswordAuthentication getPasswordAuthentication() {
-        return auth;
+        PasswordAuthentication pw = auth;
+        return pw == null ? null : new PasswordAuthentication(pw.getUserName(), 
+                pw.getPassword() == null ? null : pw.getPassword().clone());
     }
 
     public void login(String username, char[] password) throws ODSException {
