@@ -168,6 +168,9 @@ public abstract class CompletionResultItem implements CompletionItem {
     }
     
     protected int removeTextLength(JTextComponent component, int offset, int removeLength) {
+        if (removeLength <= 0) {
+            return 0;
+        }
         TokenSequence s = createTokenSequence(component);
         s.move(offset);
         s.moveNext();
