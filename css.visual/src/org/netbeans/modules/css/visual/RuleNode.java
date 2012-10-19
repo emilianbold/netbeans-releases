@@ -54,7 +54,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -67,7 +66,6 @@ import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
@@ -75,7 +73,6 @@ import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.SortMode;
 import org.netbeans.modules.css.visual.editors.PropertyValuesEditor;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
@@ -122,6 +119,10 @@ public class RuleNode extends AbstractNode {
         return panel.getModel();
     }
 
+    public FileObject getFileObject() {
+        return getModel().getLookup().lookup(FileObject.class);
+    }
+    
     public Rule getRule() {
         return panel.getRule();
     }
@@ -299,6 +300,7 @@ public class RuleNode extends AbstractNode {
                 ? Collections.<Declaration>emptyList()
                 : getRule().getDeclarations().getDeclarations();
 
+        FileObject file = getFileObject();
 
         if (isShowCategories()) {
             //create property sets for property categories
@@ -313,7 +315,7 @@ public class RuleNode extends AbstractNode {
                 PropertyValue propertyValue = d.getPropertyValue();
                 if (property != null && propertyValue != null) {
                     if (matchesFilterText(property.getContent().toString())) {
-                        PropertyDefinition def = Properties.getProperty(property.getContent().toString());
+                        PropertyDefinition def = Properties.getPropertyDefinition(file, property.getContent().toString());
                         PropertyCategory category;
                         if (def != null) {
                             category = def.getPropertyCategory();
@@ -350,7 +352,8 @@ public class RuleNode extends AbstractNode {
                 //Show all properties
                 for (PropertyCategory cat : PropertyCategory.values()) {
                     //now add all the remaining properties
-                    List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(filterByPrefix(cat.getProperties()));
+//                    List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(filterByPrefix(cat.getProperties()));
+                    List<PropertyDefinition> allInCat = getCategoryProperties(cat);
                     if (allInCat.isEmpty()) {
                         continue; //skip empty categories (when filtering)
                     }
@@ -364,7 +367,7 @@ public class RuleNode extends AbstractNode {
 
                     //remove already used
                     for (Declaration d : propertySet.getDeclarations()) {
-                        PropertyDefinition def = Properties.getProperty(d.getProperty().getContent().toString());
+                        PropertyDefinition def = Properties.getPropertyDefinition(file, d.getProperty().getContent().toString());
                         allInCat.remove(def);
                     }
 
@@ -374,7 +377,7 @@ public class RuleNode extends AbstractNode {
                         if (alreadyAdded != null) {
                             propertySet.add(alreadyAdded, true);
                         } else {
-                            propertySet.add(pd);
+                            propertySet.add(file, pd);
                         }
                     }
 
@@ -420,12 +423,12 @@ public class RuleNode extends AbstractNode {
 
             if (isShowAllProperties()) {
                 //Show all properties
-                List<PropertyDefinition> all = new ArrayList<PropertyDefinition>(filterByPrefix(Properties.getProperties(true)));
+                List<PropertyDefinition> all = new ArrayList<PropertyDefinition>(filterByPrefix(Properties.getPropertyDefinitions(file, true)));
                 Collections.sort(all, PropertyUtils.PROPERTY_DEFINITIONS_COMPARATOR);
 
                 //remove already used
                 for (Declaration d : set.getDeclarations()) {
-                    PropertyDefinition def = Properties.getProperty(d.getProperty().getContent().toString());
+                    PropertyDefinition def = Properties.getPropertyDefinition(file, d.getProperty().getContent().toString());
                     all.remove(def);
                 }
 
@@ -435,7 +438,7 @@ public class RuleNode extends AbstractNode {
                     if (alreadyAdded != null) {
                         set.add(alreadyAdded, true);
                     } else {
-                        set.add(pd);
+                        set.add(file, pd);
                     }
                 }
 
@@ -447,6 +450,20 @@ public class RuleNode extends AbstractNode {
         return sets.toArray(new PropertyCategoryPropertySet[0]);
     }
 
+     /**
+     * Returns a list of *visible* properties with this category.
+     */
+    public List<PropertyDefinition> getCategoryProperties(PropertyCategory cat) {
+        Collection<PropertyDefinition> defs = Properties.getPropertyDefinitions(getModel().getLookup().lookup(FileObject.class), true);
+        List<PropertyDefinition> defsInCat = new ArrayList<PropertyDefinition>();
+        for(PropertyDefinition d : defs) {
+            if(d.getPropertyCategory() == cat) {
+                defsInCat.add(d);
+            }
+        }
+        return defsInCat;
+    }
+    
     /**
      * Returns an unique id of the property within current rule.
      *
@@ -546,8 +563,8 @@ public class RuleNode extends AbstractNode {
             return declaration2PropertyMap.get(declaration);
         }
 
-        public void add(PropertyDefinition propertyDefinition) {
-            properties.add(createPropertyDefinitionProperty(propertyDefinition));
+        public void add(FileObject context, PropertyDefinition propertyDefinition) {
+            properties.add(createPropertyDefinitionProperty(context, propertyDefinition));
         }
 
         @Override
@@ -556,13 +573,13 @@ public class RuleNode extends AbstractNode {
         }
     }
 
-    private Property createPropertyDefinitionProperty(PropertyDefinition definition) {
-        PropertyModel pmodel = Properties.getPropertyModel(definition.getName());
-        return new PropertyDefinitionProperty(definition, createPropertyValueEditor(pmodel, false));
+    private Property createPropertyDefinitionProperty(FileObject context, PropertyDefinition definition) {
+        PropertyDefinition pmodel = Properties.getPropertyDefinition(context, definition.getName());
+        return new PropertyDefinitionProperty(definition, createPropertyValueEditor(context, pmodel, false));
     }
 
-    private PropertyValuesEditor createPropertyValueEditor(PropertyModel pmodel, boolean addNoneProperty) {
-        GroupGrammarElement rootElement = pmodel.getGrammarElement();
+    private PropertyValuesEditor createPropertyValueEditor(FileObject context, PropertyDefinition pmodel, boolean addNoneProperty) {
+        GroupGrammarElement rootElement = pmodel.getGrammarElement(context);
         final Collection<UnitGrammarElement> unitElements = new ArrayList<UnitGrammarElement>();
         final Collection<FixedTextGrammarElement> fixedElements = new ArrayList<FixedTextGrammarElement>();
 
@@ -690,7 +707,7 @@ public class RuleNode extends AbstractNode {
                 getDeclarationId(getRule(), declaration),
                 getPropertyDisplayName(declaration),
                 markAsModified,
-                resolvedProperty == null ? null : createPropertyValueEditor(resolvedProperty.getPropertyModel(),
+                resolvedProperty == null ? null : createPropertyValueEditor(getFileObject(), resolvedProperty.getPropertyDefinition(),
                 true));
     }
 
@@ -746,7 +763,7 @@ public class RuleNode extends AbstractNode {
             }
 
             String property = declaration.getProperty().getContent().toString();
-            PropertyModel model = Properties.getPropertyModel(property);
+            PropertyDefinition model = Properties.getPropertyDefinition(getFileObject(), property);
             if (model != null) {
                 PropertyValue value = declaration.getPropertyValue();
                 if (value != null) {
@@ -766,8 +783,7 @@ public class RuleNode extends AbstractNode {
                     }
                 }
 
-
-                shortDescription = Bundle.property_description(getLocationPrefix(), model.getProperty().getCssModule().getDisplayName());
+                shortDescription = Bundle.property_description(getLocationPrefix(), model.getCssModule().getDisplayName());
             } else {
                 //flag as unknown
                 info = DeclarationInfo.ERRONEOUS;

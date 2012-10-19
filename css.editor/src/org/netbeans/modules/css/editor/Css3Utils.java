@@ -124,14 +124,14 @@ public final class Css3Utils {
         return CharSequenceUtilities.startsWith(propertyName, "_") || CharSequenceUtilities.startsWith(propertyName, "-"); //NOI18N
     }
     
-    public static boolean isVendorSpecificPropertyValue(CharSequence value) {
+    public static boolean isVendorSpecificPropertyValue(FileObject file, CharSequence value) {
         if(value == null) {
             throw new NullPointerException();
         }
         if(value.length() == 0) {
             return false;
         }
-        for(Browser b : CssModuleSupport.getBrowsers()) {
+        for(Browser b : CssModuleSupport.getBrowsers(file)) {
             if(LexerUtils.startsWith(value, b.getVendorSpecificPropertyPrefix(), true, false)) {
                 return true;
             }
