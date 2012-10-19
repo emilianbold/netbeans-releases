@@ -42,6 +42,7 @@
 package org.netbeans.modules.cordova.android;
 
 import java.io.IOException;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
@@ -75,7 +76,23 @@ public class AndroidActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        if (COMMAND_BUILD.equals(command)) {
+        String checkAndroid = checkAndroid();
+        if (checkAndroid!=null) {
+                NotifyDescriptor not = new NotifyDescriptor(
+                        checkAndroid, 
+                        "Error", 
+                        NotifyDescriptor.OK_CANCEL_OPTION, 
+                        NotifyDescriptor.ERROR_MESSAGE,
+                        null, 
+                        null);
+                Object value = DialogDisplayer.getDefault().notify(not);
+                if (NotifyDescriptor.CANCEL_OPTION != value) {
+                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                }
+                return;
+            } 
+
+            if (COMMAND_BUILD.equals(command)) {
             new CordovaPerformer(CordovaPerformer.BUILD_ANDROID).perform(p);
         } else if (COMMAND_CLEAN.equals(command)) {
             new CordovaPerformer(CordovaPerformer.CLEAN_ANDROID).perform(p);
@@ -128,6 +145,13 @@ public class AndroidActionProvider implements ActionProvider {
             Exceptions.printStackTrace(iOException);
         }
         return "Unknown Error";
+    }
+
+    private String checkAndroid() {
+        if (!AndroidPlatform.getDefault().isReady()) {
+            return "Android Platform is not configured.\nConfigure?";
+        }
+        return null;
     }
     
 }
