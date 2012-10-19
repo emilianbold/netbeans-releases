@@ -55,6 +55,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
@@ -94,37 +95,27 @@ public class JerseyLibraryHelper {
 
                 Server serverToUse = null;
                 for (Server server : handler.getServers()) {
-                    if (serverVersion.equals(server.getVersion())) {
-                        serverToUse = server;
-                        break;
+                    if (serverVersion.isAboveOrEqual(server.getVersion())) {
+                        if (serverToUse == null || serverToUse.getVersion().isBelowOrEqual(server.getVersion())) {
+                            serverToUse = server;
+                        }
                     }
                 }
                 if (serverToUse != null) {
-                    LibraryImplementation3 impl = LibrariesSupport.createLibraryImplementation3(
-                            LIBRARY_TYPE, VOLUME_TYPE_CLASSPATH);
-                    StringBuilder mavenDeps = new StringBuilder();
+                    List<String> mavenDeps = new ArrayList<String>();
                     List<URL> cp = new ArrayList<URL>();
                     for (ServerJar jar : serverToUse.getServerJars()) {
                         FileObject fo = getJarFile(modulesFolder, jar.getFilename());
                         if (fo != null) {
                             cp.add(URLMapper.findURL(fo, URLMapper.EXTERNAL));
                         }
-                        mavenDeps.append(jar.getGroupId());
-                        mavenDeps.append(':'); // NOI18N
-                        mavenDeps.append(jar.getArtifactId());
-                        mavenDeps.append(':'); // NOI18N
-                        mavenDeps.append(jar.getVersion());
-                        mavenDeps.append(':'); // NOI18N
-                        mavenDeps.append("jar"); // NOI18N
-                        mavenDeps.append('\n'); // NOI18N
+                        mavenDeps.add(jar.getGroupId() + ":" + jar.getArtifactId()
+                                + ":" + jar.getVersion() + ":" + "jar");
                     }
 
-                    impl.setContent(VOLUME_TYPE_CLASSPATH, cp);
-                    final Map<String,String> props = new HashMap<String, String>();
-                    // properties: "maven-dependencies", "maven-repositories"
-                    props.put("maven-dependencies", mavenDeps.toString());  //NOI18N
-                    props.put("maven-repositories", "default\n"); //NOI18N
-                    impl.setProperties(props);
+                    return CommonProjectUtils.createJavaLibraryImplementation(LIBRARY_TYPE,
+                            cp.toArray(new URL[cp.size()]), new URL[] {}, new URL[] {},
+                            mavenDeps.toArray(new String[mavenDeps.size()]), new String[] {"default"}); // NOI18N
                 }
             } finally {
                 is.close();
