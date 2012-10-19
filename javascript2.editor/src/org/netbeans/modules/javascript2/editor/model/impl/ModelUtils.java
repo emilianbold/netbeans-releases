@@ -47,6 +47,7 @@ import com.oracle.nashorn.parser.TokenType;
 import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.ActionFactory;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -418,6 +419,22 @@ public class ModelUtils {
             for (int i = exp.size() - 1; i > -1; i--) {
                 String kind = exp.get(i);
                 String name = exp.get(--i);
+                if ("this".equals(name)) {
+                    JsObject thisObject = ModelUtils.findJsObject(model, offset);
+                    JsObject first = thisObject;
+                    while (thisObject != null && thisObject.getParent() != null
+                            && thisObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
+                            && thisObject.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
+                            && thisObject.getJSKind() != JsElement.Kind.OBJECT_LITERAL) {
+                        thisObject = thisObject.getParent();
+                    }
+                    if ((thisObject == null || thisObject.getParent() == null) && first != null) {
+                        thisObject = first;
+                    }
+                    if (thisObject != null) {
+                        name = thisObject.getName();
+                    }
+                }
                 if (i == (exp.size() - 2)) {
                     JsObject localObject = null;
                     // resolving the first part of expression
