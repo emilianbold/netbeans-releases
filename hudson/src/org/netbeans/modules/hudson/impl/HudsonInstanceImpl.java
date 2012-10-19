@@ -70,7 +70,11 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
+import org.netbeans.modules.hudson.constants.HudsonInstanceConstants;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
+import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
+import org.netbeans.modules.hudson.spi.BuilderConnector;
+import org.netbeans.modules.hudson.spi.RemoteFileSystem;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.ui.notification.ProblemNotificationController;
 import org.openide.filesystems.FileSystem;
@@ -78,7 +82,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -92,7 +95,8 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     private static final Logger LOG = Logger.getLogger(HudsonInstanceImpl.class.getName());
 
     private HudsonInstanceProperties properties;
-    private final HudsonConnector connector;
+    private BuilderConnector builderConnector;
+    private String info; // additional info for transient instances
     
     private HudsonVersion version;
     private boolean connected;
@@ -114,9 +118,11 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     private final Map<String,Reference<RemoteFileSystem>> workspaces = new HashMap<String,Reference<RemoteFileSystem>>();
     private final Map<String,Reference<RemoteFileSystem>> artifacts = new HashMap<String,Reference<RemoteFileSystem>>();
     
-    private HudsonInstanceImpl(HudsonInstanceProperties properties, boolean interactive) {
+    private HudsonInstanceImpl(HudsonInstanceProperties properties, boolean interactive, BuilderConnector builderConnector, String info) {
+        this.builderConnector = builderConnector;
         this.properties = properties;
-        this.connector = new HudsonConnector(this);
+        this.info = info;
+
         RP = new RequestProcessor(getUrl(), 1, true);
         final AtomicBoolean firstSynch = new AtomicBoolean(interactive); // #200643
         synchronization = RP.create(new Runnable() {
@@ -171,12 +177,30 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         return properties.getPreferences();
     }
     
+    public static HudsonInstanceImpl createHudsonInstance(String name, String url, BuilderConnector client, int sync) {
+        HudsonInstanceProperties hudsonInstanceProperties =
+                new HudsonInstanceProperties(name, url,
+                Integer.toBinaryString(sync));
+        HudsonInstanceImpl instance = new HudsonInstanceImpl(
+                hudsonInstanceProperties, true, client, null);
+        if (null == HudsonManagerImpl.getDefault().addInstance(instance)) {
+            return null;
+        }
+        return instance;
+    }
+
     public static HudsonInstanceImpl createHudsonInstance(String name, String url, String sync) {
-        return createHudsonInstance(new HudsonInstanceProperties(name, url, sync), true);
+        return createHudsonInstance(new HudsonInstanceProperties(name, url, sync), true, null);
     }
     
     public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties, boolean interactive) {
-        HudsonInstanceImpl instance = new HudsonInstanceImpl(properties, interactive);
+        return createHudsonInstance(properties, interactive, null);
+    }
+
+    public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties, boolean interactive, String info) {
+        HudsonConnector connector = new HudsonConnector(properties.get(HudsonInstanceConstants.INSTANCE_URL));
+        HudsonInstanceImpl instance = new HudsonInstanceImpl(properties, interactive, connector, info);
+
         assert instance.getName() != null;
         assert instance.getUrl() != null;
         assert instance.getProperties().get(INSTANCE_SYNC) != null;
@@ -204,10 +228,18 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         fireContentChanges();
     }
     
-    public HudsonConnector getConnector() {
-        return connector;
+    public BuilderConnector getBuilderConnector() {
+        return builderConnector;
     }
     
+    public void changeBuilderConnector(BuilderConnector connector) {
+        assert !(connector instanceof HudsonConnector);
+        this.builderConnector = connector;
+        this.jobs.clear();
+        this.views.clear();
+        synchronize(false);
+    }
+
     @Override public HudsonVersion getVersion() {
         return version;
     }
@@ -305,7 +337,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
         final AtomicReference<ProgressHandle> handle = new AtomicReference<ProgressHandle>();
         ProgressHandle handleObject = ProgressHandleFactory.createHandle(
-                MSG_Synchronizing(getName()),
+                Bundle.MSG_Synchronizing(getName()),
                 new Cancellable() {
                     @Override
                     public boolean cancel() {
@@ -336,7 +368,12 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                         Collection<HudsonView> oldViews = getViews();
                         
                         // Retrieve jobs
-                        Collection<HudsonJob> retrieved = getConnector().getAllJobs(authentication);
+                        BuilderConnector.InstanceData instanceData =
+                                getBuilderConnector().getInstanceData(
+                                authentication);
+                        configureViews(instanceData.getViewsData());
+                        Collection<HudsonJob> retrieved = createJobs(
+                                instanceData.getJobsData());
                         
                         // Exit when instance is terminated
                         if (terminated) {
@@ -344,9 +381,9 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                         }
                         
                         // Set connected and version
-                        connected = getConnector().isConnected();
-                        version = getConnector().getHudsonVersion(authentication);
-                        forbidden = getConnector().forbidden;
+                        connected = getBuilderConnector().isConnected();
+                        version = getBuilderConnector().getHudsonVersion(authentication);
+                        forbidden = getBuilderConnector().isForbidden();
                         
                         // Update state
                         fireStateChanges();
@@ -432,7 +469,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     /* access from HudsonJobImpl */ FileSystem getRemoteWorkspace(final HudsonJob job) {
         return getFileSystemFromCache(workspaces, job.getName(), new Callable<RemoteFileSystem>() {
             @Override public RemoteFileSystem call() throws Exception {
-                return new RemoteFileSystem(job);
+                return builderConnector.getWorkspace(job);
             }
         });
     }
@@ -440,7 +477,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     /* access from HudsonJobBuildImpl */ FileSystem getArtifacts(final HudsonJobBuild build) {
         return getFileSystemFromCache(artifacts, build.getJob().getName() + "/" + build.getNumber(), new Callable<RemoteFileSystem>() { // NOI18N
             @Override public RemoteFileSystem call() throws Exception {
-                return new RemoteFileSystem(build);
+                return builderConnector.getArtifacts(build);
             }
         });
     }
@@ -450,7 +487,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                 module.getBuild().getNumber() + "/" + module.getName(), // NOI18N
                 new Callable<RemoteFileSystem>() {
             @Override public RemoteFileSystem call() throws Exception {
-                return new RemoteFileSystem(module);
+                return builderConnector.getArtifacts(module);
             }
         });
     }
@@ -461,6 +498,9 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
             if (fs == null) {
                 try {
                     fs = create.call();
+                    if (fs == null) {
+                        return null;
+                    }
                     cache.put(key, new WeakReference<RemoteFileSystem>(fs));
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
@@ -471,4 +511,60 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         }
     }
 
+    public Collection<HudsonJob> createJobs(
+            Collection<BuilderConnector.JobData> data) {
+
+        Collection<HudsonJob> jobList = new ArrayList<HudsonJob>();
+
+        for (BuilderConnector.JobData jd : data) {
+
+            HudsonJobImpl job = new HudsonJobImpl(this);
+            if (jd.isSecured()) {
+                job.putProperty(JOB_COLOR, HudsonJob.Color.secured);
+            }
+            job.putProperty(JOB_NAME, jd.getJobName());
+            job.putProperty(JOB_URL, jd.getJobUrl());
+            job.putProperty(JOB_COLOR, jd.getColor());
+            job.putProperty(JOB_DISPLAY_NAME, jd.getDisplayName());
+            job.putProperty(JOB_BUILDABLE, jd.isBuildable());
+            job.putProperty(JOB_IN_QUEUE, jd.isInQueue());
+            job.putProperty(JOB_LAST_BUILD, jd.getLastBuild());
+            job.putProperty(JOB_LAST_FAILED_BUILD, jd.getLastFailedBuild());
+            job.putProperty(JOB_LAST_STABLE_BUILD, jd.getLastStableBuild());
+            job.putProperty(JOB_LAST_SUCCESSFUL_BUILD, jd.getLastSuccessfulBuild());
+            job.putProperty(JOB_LAST_COMPLETED_BUILD, jd.getLastCompletedBuild());
+
+            for (BuilderConnector.ModuleData md : jd.getModules()) {
+                job.addModule(md.getName(), md.getDisplayName(), md.getColor(), md.getUrl());
+            }
+            for (HudsonView v : this.getViews()) {
+                /* https://github.com/hudson/hudson/commit/105f2b09cf1376f9fe4dbf80c5bdb7a0d30ba1c1#commitcomment-447142 */
+                if (jd.isSecured() || jd.getViews().contains(v.getName())) {
+                    job.addView(v);
+                }
+            }
+            jobList.add(job);
+        }
+        return jobList;
+    }
+
+    private void configureViews(Collection<BuilderConnector.ViewData> viewsData) {
+
+        Collection<HudsonView> viewList = new ArrayList<HudsonView>();
+        HudsonView foundPrimaryView = null;
+
+        for (BuilderConnector.ViewData viewData: viewsData) {
+            HudsonViewImpl view = new HudsonViewImpl(this, viewData.getName(),
+                    viewData.getUrl());
+            viewList.add(view);
+            if (viewData.isPrimary()) {
+                foundPrimaryView = view;
+            }
+        }
+        this.setViews(viewList, foundPrimaryView);
+    }
+
+    public String getInfo() {
+        return info;
+    }
 }
