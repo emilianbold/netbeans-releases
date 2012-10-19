@@ -446,6 +446,21 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings("4:31-4:39:verifier:DN");
     }
     
+    public void testOr217589() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void testMethod() {\n" +
+                       "        String id=\"\";\n" +
+                       "        if (id != null ) {\n" +
+                       "            boolean isFoo= true || id.equalsIgnoreCase(\"text\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectManager;
@@ -348,6 +349,11 @@ public final class ClientSideProjectProperties {
         this.jsLibFolder = jsLibFolder;
     }
 
+    @CheckForNull
+    public File getResolvedSiteRootFolder() {
+        return resolveFile(getSiteRootFolder());
+    }
+
     private static void errorOccured(String message) {
         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
@@ -388,6 +394,14 @@ public final class ClientSideProjectProperties {
         }
         File file = project.getProjectHelper().resolveFile(filePath);
         return project.getReferenceHelper().createForeignFileReference(file, null);
+    }
+
+    @CheckForNull
+    private File resolveFile(String path) {
+        if (path == null || path.isEmpty()) {
+            return null;
+        }
+        return project.getProjectHelper().resolveFile(path);
     }
 
     private static String joinStrings(Collection<String> strings, String glue) {
