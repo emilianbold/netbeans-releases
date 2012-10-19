@@ -282,7 +282,6 @@ public final class ClientSideProjectProperties {
     }
 
     public void setStartFile(String startFile) {
-
         this.startFile = startFile;
     }
 
