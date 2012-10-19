@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
+import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -366,10 +368,28 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
             if (!inheritablePropertiesOnly) {
                 set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
             }
-            set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
+            set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories")){ // NOI18N
+                @Override
+                protected List<String> convertToList(String text) {
+                    return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
+                }
+                @Override
+                protected String convertToString(List<String> list) {
+                    return TokenizerFactory.DEFAULT_CONVERTER.convertToString(list);
+                }
+            });
         }
         if (linker != null && linker.getDynamicLibrarySearchFlag() != null && linker.getDynamicLibrarySearchFlag().length() > 0) {
-            set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
+            set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories")){ // NOI18N
+                @Override
+                protected List<String> convertToList(String text) {
+                    return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
+                }
+                @Override
+                protected String convertToString(List<String> list) {
+                    return TokenizerFactory.DEFAULT_CONVERTER.convertToString(list);
+                }
+            });
         }
         sheet.put(set1);
         if (!isQtMode) {
