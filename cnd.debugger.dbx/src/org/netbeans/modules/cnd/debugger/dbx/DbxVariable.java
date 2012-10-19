@@ -240,8 +240,8 @@ class DbxVariable extends Variable {
 	// CR 7094157
 	// LATER should fix this in VariableModel
 	if (!value.equals(assign_value)) {
-            if ( (assign_value.indexOf(" ") >= 0) && (assign_value.indexOf(" ") <= assign_value.indexOf("\"")) ) {
-                assign_value = assign_value.substring(assign_value.indexOf("\""));
+            if ( (assign_value.indexOf(" ") >= 0) && (assign_value.indexOf(" ") <= assign_value.indexOf("\"")) ) { // NOI18N
+                assign_value = assign_value.substring(assign_value.indexOf("\"")); // NOI18N
             }
             debugger.execute(this.assign_str + assign_value);
         }
