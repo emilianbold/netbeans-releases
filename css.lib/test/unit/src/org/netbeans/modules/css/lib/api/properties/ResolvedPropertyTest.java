@@ -55,7 +55,7 @@ public class ResolvedPropertyTest extends CssTestBase {
     }
 
     public void testBorderColor() {
-        PropertyModel pm = Properties.getPropertyModel("border-color");
+        PropertyDefinition pm = Properties.getPropertyDefinition(null, "border-color");
         assertNotNull(pm);
 
         ResolvedProperty rp = new ResolvedProperty(pm, "red green #ffaabb");
@@ -67,7 +67,7 @@ public class ResolvedPropertyTest extends CssTestBase {
     }
     
     public void testBorder() {
-        PropertyModel pm = Properties.getPropertyModel("border");
+        PropertyDefinition pm = Properties.getPropertyDefinition(null, "border");
         assertNotNull(pm);
 
         GrammarParseTreeBuilder.DEBUG = true;
@@ -80,7 +80,7 @@ public class ResolvedPropertyTest extends CssTestBase {
     }
     
     public void testBackgroundPosition() {
-        PropertyModel pm = Properties.getPropertyModel("background-position");
+        PropertyDefinition pm = Properties.getPropertyDefinition(null, "background-position");
         assertNotNull(pm);
 
         ResolvedProperty rp = new ResolvedProperty(pm, "left      top");
@@ -92,7 +92,7 @@ public class ResolvedPropertyTest extends CssTestBase {
     }
     
     public void testNegativeZIndex() {
-        PropertyModel pm = Properties.getPropertyModel("z-index");
+        PropertyDefinition pm = Properties.getPropertyDefinition(null, "z-index");
         assertNotNull(pm);
 
         ResolvedProperty rp = new ResolvedProperty(pm, "-1 ");
@@ -105,7 +105,7 @@ public class ResolvedPropertyTest extends CssTestBase {
     }
     
     public void testNegativeLeftValue() {
-        PropertyModel pm = Properties.getPropertyModel("left");
+        PropertyDefinition pm = Properties.getPropertyDefinition(null, "left");
         assertNotNull(pm);
 
         ResolvedProperty rp = new ResolvedProperty(pm, "-10% ");

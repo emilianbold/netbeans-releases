@@ -43,10 +43,11 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
 import java.util.List;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
+import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
 
 public class StringListNodePropTest {    
   
@@ -55,7 +56,18 @@ public class StringListNodePropTest {
     
     @Before
     public void setUp() throws Exception {
-        instance = new StringListNodeProp(fakeConfiguration, null, new String[]{"preprocessor-definitions", "Macroses", "Macroses", "Macroses", ""}, true, null);
+        instance = new StringListNodeProp(fakeConfiguration, null, new String[]{"preprocessor-definitions", "Macroses", "Macroses", "Macroses", ""}, true, null) {
+            @Override
+            protected List<String> convertToList(String text) {
+                return TokenizerFactory.MACRO_CONVERTER.convertToList(text);
+            }
+
+            @Override
+            protected String convertToString(List<String> list) {
+                return TokenizerFactory.MACRO_CONVERTER.convertToString(list);
+            }
+            
+        };
     }
 
     private void testEditor(String initial, String converted, String[] tokens) {
@@ -69,7 +81,7 @@ public class StringListNodePropTest {
     
     @Test
     public void testGetPropertyEditor() {
-        testEditor(" 111   222  333=444       555", 
+        testEditor(" 111   222  333=444       555 -g", 
                    "111 222 333=444 555", 
                    new String[] {"111", "222", "333=444", "555"});
         testEditor("111 \"222 333\" \"44 4=555\" \"666=777 888\" 999=000 \"a\"", 

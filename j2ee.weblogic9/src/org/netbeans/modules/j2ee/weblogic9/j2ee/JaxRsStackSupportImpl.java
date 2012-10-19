@@ -61,6 +61,8 @@ import java.util.prefs.Preferences;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -75,9 +77,11 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
@@ -86,6 +90,9 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
+import org.netbeans.spi.project.libraries.LibraryFactory;
+import org.netbeans.spi.project.libraries.LibraryImplementation3;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -98,8 +105,10 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
@@ -118,6 +127,8 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
     private final WLJ2eePlatformFactory.J2eePlatformImplImpl platformImpl;
 
     private final Version serverVersion;
+    
+    private Library jerseyLibrary;
 
     JaxRsStackSupportImpl(WLJ2eePlatformFactory.J2eePlatformImplImpl platformImpl,
             Version serverVersion) {
@@ -152,10 +163,28 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
     public boolean extendsJerseyProjectClasspath(Project project) {
         if ( hasJee6Profile() ){
             try {
-                List<URL> urls = getJerseyJars();
-                return addJars(project,  urls );
+                Library lib = getJerseyLibrary();
+                if ( lib==null){
+                    List<URL> urls = getJerseyJars();
+                    return addJars(project,  urls );
+                }
+                else {
+                    FileObject sourceRoot = getSourceRoot(project);
+                    if ( sourceRoot == null ){
+                        return false;
+                    }
+                    ProjectClassPathModifier.addLibraries(new Library[]{lib},
+                            sourceRoot , JavaClassPathConstants.COMPILE_ONLY);
+                    return true;
+                }
             }
             catch( FileStateInvalidException e ){
+                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).
+                log(Level.WARNING, 
+                        "Exception during extending a project classpath", e); //NOI18N
+                return false;
+            }
+            catch(IOException e ){
                 Logger.getLogger(JaxRsStackSupportImpl.class.getName()).
                 log(Level.WARNING, 
                         "Exception during extending a project classpath", e); //NOI18N
@@ -168,18 +197,35 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
     @Override
     public void removeJaxRsLibraries(Project project) {
         if ( hasJee6Profile() ){
+            Library lib = getJerseyLibrary();
             try {
-                List<URL> urls = getJerseyJars();
-                FileObject core = getJarFile("com.sun.jersey.core_");   // NOI18N
-                if ( core!= null ){
-                    urls.add( core.getURL() );
+                if (lib != null) {
+                    FileObject sourceRoot = getSourceRoot(project);
+                    if (sourceRoot == null) {
+                        return;
+                    }
+                    ProjectClassPathModifier.removeLibraries(
+                            new Library[] { lib }, sourceRoot,
+                            JavaClassPathConstants.COMPILE_ONLY);
                 }
-                removeLibraries(project,  urls );
+                else {
+                    List<URL> urls = getJerseyJars();
+                    FileObject core = getJarFile("com.sun.jersey.core_"); // NOI18N
+                    if (core != null) {
+                        urls.add(core.getURL());
+                    }
+                    removeLibraries(project, urls);
+                }
             }
-            catch( FileStateInvalidException e ){
-                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).
-                log(Level.WARNING, 
-                        "Exception during extending a project classpath", e); //NOI18N
+            catch (FileStateInvalidException e) {
+                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(
+                        Level.WARNING,
+                        "Exception during extending a project classpath", e); // NOI18N
+            }
+            catch (IOException e) {
+                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(
+                        Level.WARNING,
+                        "Exception during extending a project classpath", e); // NOI18N
             }
             
             J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
@@ -446,6 +492,18 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
                 profiles.contains(Profile.JAVA_EE_6_WEB) ;
     }
     
+    private Library getJerseyLibrary() {
+        if (jerseyLibrary == null) {
+            LibraryImplementation3 impl = JerseyLibraryHelper
+                    .getJerseyInMemoryLibrary(serverVersion, getModulesFolder());
+            if (impl == null) {
+                return null;
+            }
+            jerseyLibrary = LibraryFactory.createLibrary(impl);
+        }
+        return jerseyLibrary;
+    }
+    
     private List<URL> getJerseyJars() throws FileStateInvalidException {
         FileObject client = getJarFile("com.sun.jersey.client_");   // NOI18N
         List<URL> urls = new LinkedList<URL>();
@@ -579,12 +637,10 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
                 urls.add(FileUtil.getArchiveRoot(url));
             }
         }
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
-            JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sourceGroups == null || sourceGroups.length < 1) {
-           return false;
+        FileObject sourceRoot = getSourceRoot(project);
+        if ( sourceRoot == null ){
+            return false;
         }
-        FileObject sourceRoot = sourceGroups[0].getRootFolder();
         String classPathType;
         if ( hasJee6Profile() ){
             classPathType = JavaClassPathConstants.COMPILE_ONLY;
@@ -603,6 +659,15 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
             return false;
         }
         return true;
+    }
+    
+    private FileObject getSourceRoot(Project project){
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups == null || sourceGroups.length < 1) {
+            return null;
+        }
+        return sourceGroups[0].getRootFolder();
     }
     
     private void removeLibraries(Project project, Collection<URL> urls) {

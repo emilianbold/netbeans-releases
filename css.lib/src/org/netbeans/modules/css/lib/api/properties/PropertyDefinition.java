@@ -41,49 +41,60 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.lib.properties.GrammarParser;
-
+import org.openide.filesystems.FileObject;
 
 /**
  * Describes a CSS property.
- * 
- * Description of the grammar defining the property values:
- * (the grammar is *almost* the same as used for the property values definitions in the w3c.org specifications)
- * 
- * [ ]              denotes a group of elements
- * <ref>            represents a reference to another element named ref or -ref
- * *,+,?,{min,max}  multiplicity of elements or groups
- * e1 | e2          e1 or e2
- * e1 || e2         e1 or e2 or both
- * e1 e2            e1 followed by e2
- * !unit            represents a unit recognized by a CssPropertyValueAcceptor
- * 
- * Example: 
- * <uri> [ , <uri>]*            list of URIs separated by comma
- * [ right | left ] || center   
- * [ !length | !percentage ] !identifier
- * !identifier{1,4}
- * 
- * element name starting with at-sign (@) denotes an artificial property which can be referred 
- * by other elements but will not be exposed to the editor (completion, error checks etc..)
- * 
- * One may use Utilities.parsePropertyDefinitionFile(pathToTheProperiesFile) to obtain the list of 
- * PropertyDescriptor-s from a properties file.
- * 
+ *
+ * Description of the grammar defining the property values: (the grammar is
+ * *almost* the same as used for the property values definitions in the w3c.org
+ * specifications)
+ *
+ * [ ] denotes a group of elements <ref> represents a reference to another
+ * element named ref or -ref *,+,?,{min,max} multiplicity of elements or groups
+ * e1 | e2 e1 or e2 e1 || e2 e1 or e2 or both e1 e2 e1 followed by e2 !unit
+ * represents a unit recognized by a CssPropertyValueAcceptor
+ *
+ * Example: <uri> [ , <uri>]* list of URIs separated by comma [ right | left ]
+ * || center [ !length | !percentage ] !identifier !identifier{1,4}
+ *
+ * element name starting with at-sign (
+ *
+ * @) denotes an artificial property which can be referred by other elements but
+ * will not be exposed to the editor (completion, error checks etc..)
+ *
+ * One may use Utilities.parsePropertyDefinitionFile(pathToTheProperiesFile) to
+ * obtain the list of PropertyDescriptor-s from a properties file.
+ *
  * @author mfukala@netbeans.org
  */
 public class PropertyDefinition {
-    
-    private String name, valueGrammar;
+
+    private String name, grammar;
     private CssModule cssModule;
     private PropertyCategory propertyCategory;
+    private GroupGrammarElement resolved;
+    private Map<FileObject, GroupGrammarElement> CACHE = new WeakHashMap<FileObject, GroupGrammarElement>();
 
     /**
-     * Creates an instance of PropertyDefinition with the PropertyCategory.OTHER property category.
-     * 
+     * Creates an instance of PropertyDefinition with the PropertyCategory.OTHER
+     * property category.
+     *
+     * @param name name of the property
+     * @param valueGrammar grammar of the property value
+     */
+    public PropertyDefinition(String name, String valueGrammar) {
+        this(name, valueGrammar, null);
+    }
+
+    /**
+     * Creates an instance of PropertyDefinition with the PropertyCategory.OTHER
+     * property category.
+     *
      * @param name name of the property
      * @param valueGrammar grammar of the property value
      * @param module CssModule serving this property definition
@@ -91,10 +102,10 @@ public class PropertyDefinition {
     public PropertyDefinition(String name, String valueGrammar, CssModule module) {
         this(name, valueGrammar, PropertyCategory.DEFAULT, module);
     }
-    
+
     /**
      * Creates an instance of PropertyDefinition.
-     * 
+     *
      * @param name name of the property
      * @param valueGrammar grammar of the property value
      * @param module CssModule serving this property definition
@@ -102,28 +113,50 @@ public class PropertyDefinition {
      */
     public PropertyDefinition(String name, String valueGrammar, PropertyCategory propertyCategory, CssModule module) {
         this.name = name;
-        this.valueGrammar = valueGrammar;
+        this.grammar = valueGrammar;
         this.propertyCategory = propertyCategory;
         this.cssModule = module;
     }
 
     /**
+     * Gets the property value grammar.
+     */
+    public String getGrammar() {
+        return grammar;
+    }
+
+    /**
+     * Returns the root element of the property grammar.
+     *
+     * @param file context file
+     * @return a non null value.
+     */
+    public synchronized GroupGrammarElement getGrammarElement(FileObject context) {
+        GroupGrammarElement element = CACHE.get(context);
+        if (element == null) {
+            element = GrammarParser.parse(context, getGrammar(), getName());
+            CACHE.put(context, element);
+        }
+        return element;
+    }
+
+    /**
      * Gets the {@link CssModule} serving this property definition.
-     * 
-     * @return instance of {@link CssModule}
+     *
+     * @return instance of {@link CssModule}. May be null.
      */
     public CssModule getCssModule() {
         return cssModule;
     }
-    
+
     /**
      * Gets the property category this property definition belongs to
-     * 
+     *
      */
     public PropertyCategory getPropertyCategory() {
         return propertyCategory;
     }
-    
+
     /**
      * @return The property name.
      */
@@ -131,45 +164,6 @@ public class PropertyDefinition {
         return name;
     }
 
-    /**
-     * Gets the property value grammar.
-     * 
-     * See the {@link PropertyDefinition} class documentation for more info about the grammar form.
-     * 
-     * @return definition of the value in a form of the semi-grammar. 
-     * 
-     */
-    public String getValueGrammar() {
-        return valueGrammar;
-    }
-    
-    /**
-     * experimental
-     * 
-     * @return list of properties set by this (aggregated) property
-     */
-    public Collection<PropertyDefinition> getSubProperties() {
-        GroupGrammarElement root = GrammarParser.parse(getValueGrammar(), getName());
-        
-        final Collection<PropertyDefinition> subs = new ArrayList<PropertyDefinition>();
-        root.accept(new GrammarElementVisitor() {
-
-            @Override
-            public void visit(GroupGrammarElement element) {
-                if(element.isVisible()) {
-                    Collection<PropertyDefinition> props = Properties.getProperties(element.getName());
-                    if(props != null) {
-                        subs.addAll(props);
-                    }
-                }
-                
-            }
-            
-        });
-        return subs;
-    }
-    
-    
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -191,5 +185,4 @@ public class PropertyDefinition {
         hash = 79 * hash + (this.name != null ? this.name.hashCode() : 0);
         return hash;
     }
-
 }

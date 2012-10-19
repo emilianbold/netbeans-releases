@@ -58,26 +58,24 @@ public class CssModuleSupportTest extends NbTestCase {
 
     
     public void testGetProperty() {
-        Collection<PropertyDefinition> p = Properties.getProperties("perspective");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "perspective");
         assertNotNull(p);
-        assertFalse(p.isEmpty());
-        assertEquals("perspective", p.iterator().next().getName());
+        assertEquals("perspective", p.getName());
         
         //get refered(invisible) property of the same name
-        p = Properties.getProperties("perspective", true);
+        p = Properties.getPropertyDefinition(null, "perspective", true);
         assertNotNull(p);
-        assertFalse(p.isEmpty());
-        assertEquals("@perspective", p.iterator().next().getName());
+        assertEquals("@perspective", p.getName());
     }
     
     public void testAllPropertiesHaveSomeGrammar() {
-        for (PropertyDefinition property : Properties.getProperties()) {
+        for (PropertyDefinition property : Properties.getPropertyDefinitions(null)) {
             assertNotNull(property);
             assertNotNull(property.getName());
-            assertNotNull(property.getValueGrammar());
-            assertTrue(String.format("Property %s have empty grammar", property.getName()), !property.getValueGrammar().isEmpty());
+            assertNotNull(property.getGrammar());
+            assertTrue(String.format("Property %s have empty grammar", property.getName()), !property.getGrammar().isEmpty());
+            }
         }
-    }
 
     
 }

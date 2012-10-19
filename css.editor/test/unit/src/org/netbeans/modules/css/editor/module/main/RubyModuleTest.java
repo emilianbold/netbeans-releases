@@ -42,9 +42,8 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 
 /**
@@ -60,7 +59,7 @@ public class RubyModuleTest extends CslTestBase {
     }
     
     public void testProperties() {
-        PropertyModel p = Properties.getPropertyModel("ruby-span");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "ruby-span");
         
         assertNotNull(p);
         

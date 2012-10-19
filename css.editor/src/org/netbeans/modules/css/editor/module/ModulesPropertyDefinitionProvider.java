@@ -46,6 +46,7 @@ import java.util.Collection;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinitionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -56,12 +57,23 @@ import org.openide.util.lookup.ServiceProvider;
 public class ModulesPropertyDefinitionProvider implements PropertyDefinitionProvider {
 
     @Override
-    public Collection<PropertyDefinition> getProperties() {
-        Collection<PropertyDefinition> all = new ArrayList<PropertyDefinition>();
+    public Collection<String> getPropertyNames(FileObject context) {
+        Collection<String> all = new ArrayList<String>();
         for (CssEditorModule module : CssModuleSupport.getModules()) {
-            all.addAll(module.getProperties());
+            all.addAll(module.getPropertyNames(context));
         }
         return all;
+    }
+
+    @Override
+    public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+        for (CssEditorModule module : CssModuleSupport.getModules()) {
+            PropertyDefinition def = module.getPropertyDefinition(context, propertyName);
+            if(def != null) {
+                return def;
+            }
+        }
+        return null;
     }
     
 }
