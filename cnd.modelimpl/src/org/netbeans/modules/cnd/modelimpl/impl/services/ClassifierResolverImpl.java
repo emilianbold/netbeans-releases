@@ -140,7 +140,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
             return null;
         }
         AtomicBoolean visible = new AtomicBoolean(false);
-        CsmClassifier result = findVisibleDeclaration(project, qualifiedName, file, visible, classesOnly);
+        CsmClassifier result = findVisibleDeclaration(project, qualifiedName, file, visible, classesOnly, false);
         // we prefer to skip even visible class forward based classes
         if (!ForwardClass.isForwardClass(result) && visible.get()) {
             assert result != null : "how can visible be true without a result?";
@@ -151,7 +151,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
         for (Iterator<CsmProject> iter = libraries.iterator(); iter.hasNext();) {
             visible.set(false);
             CsmProject lib = iter.next();
-            CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, file, visible, classesOnly);
+            CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, file, visible, classesOnly, false);
             // we prefer to skip even visible class forward based classes
             if (!ForwardClass.isForwardClass(visibleDecl) && visible.get()) {
                 return visibleDecl;
@@ -164,7 +164,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
     }
 
     private CsmClassifier findVisibleDeclaration(CsmProject project, CharSequence uniqueName,
-            CsmFile file, AtomicBoolean visible, boolean classesOnly) {
+            CsmFile file, AtomicBoolean visible, boolean classesOnly, boolean stop) {
         Collection<CsmClassifier> decls = project.findClassifiers(uniqueName);
         List<CsmClassifier> visibles = new ArrayList<CsmClassifier>();
         CsmClassifier first = null;
@@ -180,14 +180,21 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
                 }
                 if (ir.isObjectVisible(file, decl)) {
                     if (CsmKindUtilities.isTypedef(decl)) {
-                        CharSequence classifierText = ((CsmTypedef)decl).getType().getClassifierText();
-                        if (decl.getName().equals(classifierText)) {
-                            if (!hasClassifier.get()) {
+                        if (!hasClassifier.get()) {
+                            // if no any visible classifiers found so far
+                            // check if same typedef is not yet added
+                            CharSequence typeTxt = ((CsmTypedef)decl).getType().getClassifierText();
+                            boolean foundSameTD = false;
+                            for (CsmClassifier cls : visibles) {
+                                if (CsmKindUtilities.isTypedef(cls) && typeTxt.equals(((CsmTypedef)cls).getType().getClassifierText())) {
+                                    foundSameTD = true;
+                                    break;
+                                }
+                            }
+                            if (!foundSameTD) {
                                 visibles.add(decl);
                                 td.add((CsmTypedef) decl);
                             }
-                        } else {
-                            visibles.add(decl);
                         }
                     } else if (CsmKindUtilities.isClassForwardDeclaration(decl) || ForwardClass.isForwardClass(decl)) {
                         if (!hasClassifier.get()) {
@@ -195,7 +202,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
                             td.add(decl);
                         }
                     } else {
-                        if (td != null) {
+                        if (!td.isEmpty()) {
                             // remove typedef
                             visibles.removeAll(td);
                             td.clear();
