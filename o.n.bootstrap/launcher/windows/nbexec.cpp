@@ -67,6 +67,11 @@ extern "C" BOOL APIENTRY DllMain(HANDLE hModule,
     return TRUE;
 }
 
+void exitHook(int status) {
+    logMsg("Exit hook called with status %d", status);
+    launcher.onExit();
+}
+
 #define NBEXEC_EXPORT extern "C" __declspec(dllexport)
 
 NBEXEC_EXPORT int startPlatform(int argc, char *argv[], const char *helpMsg) {
