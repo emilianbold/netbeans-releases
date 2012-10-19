@@ -281,7 +281,7 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
                             if (doc instanceof BaseDocument) {
                                 ((BaseDocument)doc).runAtomic(runnable);
                             } else {
-                                doc.render(runnable);
+                                runnable.run();
                             }
                         } finally {
                             reformat.unlock();

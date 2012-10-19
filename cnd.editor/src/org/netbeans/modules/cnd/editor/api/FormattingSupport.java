@@ -120,7 +120,7 @@ public final class FormattingSupport {
                     if (fmtDoc instanceof BaseDocument) {
                         ((BaseDocument)fmtDoc).runAtomic(runnable);
                     } else {
-                        fmtDoc.render(runnable);
+                        runnable.run();
                     }
                 } finally {
                     fmt.unlock();

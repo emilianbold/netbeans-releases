@@ -173,7 +173,7 @@ public class EditorBase extends BaseDocumentUnitTestCase {
         if (getDocument() instanceof BaseDocument) {
             getDocument().runAtomic(runnable);
         } else {
-            getDocument().render(runnable);
+            runnable.run();
         }
     }
 

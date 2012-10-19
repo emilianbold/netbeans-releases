@@ -145,12 +145,17 @@ public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
                                         EventQueue.getMostRecentEventTime(),
                                         0, KeyEvent.VK_UNDEFINED, ch);
                         }
-                        ((BaseDocument)document()).runAtomic(new Runnable() {
+                        final Runnable runnable = new Runnable() {
                             @Override
                             public void run() {
                                 SwingUtilities.processKeyBindings(keyEvent);
                             }
-                        });
+                        };
+                        if (document() instanceof BaseDocument) {
+                            ((BaseDocument)document()).runAtomic(runnable);
+                        } else {
+                            runnable.run();
+                        }
                     }
                 });
             } catch (Exception e) {
