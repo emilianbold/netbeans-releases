@@ -67,9 +67,9 @@ public interface ClientProjectExtender {
      * in wizard.
      * @param projectRoot
      * @param siteRoot
-     * @param libsFolder 
+     * @param libsPath 
      */
-    public void apply(FileObject projectRoot, FileObject siteRoot, FileObject libsFolder);
+    public void apply(FileObject projectRoot, FileObject siteRoot, String libsPath);
     
     /**
      * Tests if given template requires modifications by this extender.
