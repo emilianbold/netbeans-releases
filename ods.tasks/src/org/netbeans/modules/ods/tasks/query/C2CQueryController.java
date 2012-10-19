@@ -42,11 +42,8 @@
 
 package org.netbeans.modules.ods.tasks.query;
 
-import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
-import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
-import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
@@ -64,12 +61,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -123,6 +117,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private QueryTask refreshTask;
 
     private final Object REFRESH_LOCK = new Object();
+    private final Object CRITERIA_LOCK = new Object();
+    
     private final IssueTable<C2CQuery> issueTable;
     private boolean modifiable;
     private Criteria criteria;
@@ -541,12 +537,19 @@ public class C2CQueryController extends QueryController implements ItemListener,
      */
     private void save(String name) {
         C2C.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
-        if(query.save(name)) {
-            setAsSaved();
-            if (!query.wasRun()) {
-                C2C.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
-                onRefresh();
+        try {
+            panel.setRemoteInvocationRunning(true);
+            enableFields(false);
+            if(query.save(name)) {
+                setAsSaved();
+                if (!query.wasRun()) {
+                    C2C.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
+                    onRefresh();
+                }
             }
+        } finally {
+            panel.setRemoteInvocationRunning(false);
+            enableFields(true);
         }
         C2C.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
     }
@@ -570,8 +573,10 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private void onCancelChanges() {
         assert EventQueue.isDispatchThread();
         
-        criteria = originalCriteria;
-        originalCriteria = null;
+        synchronized(CRITERIA_LOCK) {
+            criteria = originalCriteria;
+            originalCriteria = null;
+        }
         
         setAsSaved();
     }
@@ -737,19 +742,20 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private void onModify() {
         assert EventQueue.isDispatchThread();
         
-        if(criteria instanceof ColumnCriteria) {
-            ColumnCriteria cc = (ColumnCriteria) criteria;
-//            Parameter p = parameters.get(cc.getColumnName());
-//            p.setValues(cc.getColumnValue());
+        synchronized(CRITERIA_LOCK) {
+            if(criteria != null) {
+                parameters.setCriteriaValues(criteria);
+            }
+
+    //      XXX anything interesting here?         
+    //      changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
+    //      peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
+    //      panel.changedToTextField.setText(CHANGED_NOW);
+        
+            originalCriteria = criteria;
+            criteria = null;
         }
         
-//      XXX anything interesting here?         
-//      changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-//      peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-//      panel.changedToTextField.setText(CHANGED_NOW);
-
-        originalCriteria = criteria;
-        criteria = null;
         panel.setModifyVisible(true);
     }
 
@@ -847,36 +853,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
         parameters.getListParameter(QueryParameters.Column.RELEASE).populate(newMilestones);
     }
 
-    private String toParameterValues(Collection values) {
-        List<String> l = new ArrayList<String>(values.size());
-        for (Object o : values) {
-            if(o instanceof Product) {
-                l.add(((Product) o).getName());
-            } else if(o instanceof com.tasktop.c2c.server.tasks.domain.Component) {
-                l.add(((com.tasktop.c2c.server.tasks.domain.Component) o).getName());
-            } else if(o instanceof Keyword) {
-                l.add(((Keyword) o).getName());
-            } else if(o instanceof AbstractReferenceValue) {
-                l.add(((AbstractReferenceValue) o).getValue());
-            } else if(o instanceof String) {
-                l.add(o.toString());
-            } else {
-                throw new IllegalStateException("Unknown parameter type " + o.getClass()); // NOI18N
-            }
-        }
-        
-        Collections.sort(l); // XXX e.g. Milestone has a sortkey
-        
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < l.size(); i++) {
-            sb.append(l.get(i));
-            if(i < values.size() - 1) {
-                sb.append(",");
-            }
-        }    
-        return sb.toString();
-    }
-    
     private void setIssueCount(final int count) {
         EventQueue.invokeLater(new Runnable() {
             @Override
@@ -921,20 +897,26 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     String getQueryString() {
-        CriteriaBuilder cb = new CriteriaBuilder();
-        for(Parameter p : parameters.getAll()) {
-            Criteria c = p.getCriteria();
-            if(c == null) {
-                continue;
+        String queryString = null;
+        synchronized(CRITERIA_LOCK) {
+            if(criteria != null) {
+                return criteria.toQueryString();
             }
-            if(cb.result == null) {
-                cb.result = c;
-            } else {
-                cb.and(p.getCriteria());
+            CriteriaBuilder cb = new CriteriaBuilder();
+            for(Parameter p : parameters.getAll()) {
+                Criteria c = p.getCriteria();
+                if(c == null) {
+                    continue;
+                }
+                if(cb.result == null) {
+                    cb.result = c;
+                } else {
+                    cb.and(p.getCriteria());
+                }
             }
+            criteria = cb.toCriteria();
+            queryString = criteria == null ? null : criteria.toQueryString();
         }
-        Criteria crit = cb.toCriteria();
-        String queryString = crit == null ? null : crit.toQueryString();
         C2C.LOG.log(Level.FINE, "returning queryString [{0}]", queryString); // NOI18N        
         return queryString;
     }
@@ -980,7 +962,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    panel.setQueryRunning(false);
+                    panel.setRemoteInvocationRunning(false);
                     panel.setLastRefresh(getLastRefresh());
                     panel.showNoContentPanel(false);
                     enableFields(true);
@@ -1024,7 +1006,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    panel.setQueryRunning(running);
+                    panel.setRemoteInvocationRunning(running);
                 }
             });
         }

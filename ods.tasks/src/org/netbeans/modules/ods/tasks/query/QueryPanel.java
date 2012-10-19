@@ -140,13 +140,18 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         repaint();
     }
 
-    void setQueryRunning(boolean running) {
+    void setRemoteInvocationRunning(boolean running) {
         modifyButton.setEnabled(!running);
         seenButton.setEnabled(!running);
         removeButton.setEnabled(!running);
         refreshButton.setEnabled(!running);
+        cloneQueryButton.setEnabled(!running);
+        findIssuesButton.setEnabled(!running);
         filterLabel.setEnabled(!running);
         filterComboBox.setEnabled(!running);
+        
+        saveChangesButton.setEnabled(!running);
+        cancelChangesButton.setEnabled(!running);        
     }
 
     /** This method is called from within the constructor to

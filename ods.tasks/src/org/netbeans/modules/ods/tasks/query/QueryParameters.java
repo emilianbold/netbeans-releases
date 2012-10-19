@@ -44,8 +44,9 @@ package org.netbeans.modules.ods.tasks.query;
 
 import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
-import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
+import com.tasktop.c2c.server.common.service.domain.criteria.Criteria.Operator;
 import com.tasktop.c2c.server.common.service.domain.criteria.NaryCriteria;
+import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
@@ -78,7 +79,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public class QueryParameters {
-    
+
     @NbBundle.Messages({"LBL_Created=Created", "LBL_Updated=Updated"})
     public enum Column {
         ASSIGNEE("assignee"), // NOI18N
@@ -127,12 +128,28 @@ public class QueryParameters {
             return displayName != null ? displayName : columnName;
         }
         
+        static Column forColumnName(String name) {
+            for (Column c : Column.values()) {
+                if(c.getColumnName().equals(name)) {
+                    return c;
+                }
+            }
+            return null;
+        }
     }
     
     private final EnumMap<Column, Parameter> map = new EnumMap<Column, Parameter>(Column.class);
 
     QueryParameters() { }
-        
+
+    TextFieldParameter getTextFieldParameter(Column c) {
+        return (TextFieldParameter) map.get(c);
+    }
+    
+    ComboParameter getComboParameter(Column c) {
+        return (ComboParameter) map.get(c);
+    }
+    
     ListParameter getListParameter(Column c) {
         return (ListParameter) map.get(c);
     }
@@ -149,33 +166,82 @@ public class QueryParameters {
         return map.values();
     }
     
-    void createParameter(Column c, JList list) {
-        map.put(c, new ListParameter(list, c));
+    ListParameter createParameter(Column c, JList list) {
+        ListParameter listParameter = new ListParameter(list, c);
+        map.put(c, listParameter);
+        return listParameter;
     }
     
-     void createParameter(Column c, JComboBox combo) {
-        map.put(c, new ComboParameter(c, combo));
+     ComboParameter createParameter(Column c, JComboBox combo) {
+        ComboParameter comboParameter = new ComboParameter(c, combo);
+        map.put(c, comboParameter);
+        return comboParameter;
     }
     
-    void createParameter(Column c, JTextField txt) {
-        map.put(c, new TextFieldParameter(c, txt));
+    TextFieldParameter createParameter(Column c, JTextField txt) {
+        TextFieldParameter textFieldParameter = new TextFieldParameter(c, txt);
+        map.put(c, textFieldParameter);
+        return textFieldParameter;
     }
     
-    void createByTextParameter(JTextField txt, JCheckBox chkSummary, JCheckBox chkDescription) {
-        map.put(Column.SUMMARY, new ByTextParameter(txt, chkSummary, chkDescription));
+    ByTextParameter createByTextParameter(JTextField txt, JCheckBox chkSummary, JCheckBox chkDescription) {
+        ByTextParameter byTextParameter = new ByTextParameter(txt, chkSummary, chkDescription);
+        map.put(Column.SUMMARY, byTextParameter);
+        map.put(Column.DESCRIPTION, byTextParameter);
+        map.put(Column.COMMENT, byTextParameter);
+        return byTextParameter;
     }
             
-    void createByPeopleParameter(JList list, JCheckBox creatorCheckField, JCheckBox ownerCheckField, JCheckBox commenterCheckField, JCheckBox ccCheckField) {
-        map.put(Column.CREATOR, new ByPeopleParameter(list, creatorCheckField, ownerCheckField, commenterCheckField, ccCheckField));
+    ByPeopleParameter createByPeopleParameter(JList list, JCheckBox creatorCheckField, JCheckBox ownerCheckField, JCheckBox commenterCheckField, JCheckBox ccCheckField) {
+        ByPeopleParameter byPeopleParameter = new ByPeopleParameter(list, creatorCheckField, ownerCheckField, commenterCheckField, ccCheckField);
+        map.put(Column.CREATOR, byPeopleParameter);
+        map.put(Column.ASSIGNEE, byPeopleParameter);
+        map.put(Column.COMMENTER, byPeopleParameter);
+        map.put(Column.WATCHER, byPeopleParameter);
+        return byPeopleParameter;
     }
     
-    void createByDateParameter(JComboBox cbo, JTextField fromField, JTextField toField) {
-        map.put(Column.CREATION, new ByDateParameter(cbo, fromField, toField));
+    ByDateParameter createByDateParameter(JComboBox cbo, JTextField fromField, JTextField toField) {
+        ByDateParameter byDateParameter = new ByDateParameter(cbo, fromField, toField);
+        map.put(Column.CREATION, byDateParameter);
+        map.put(Column.MODIFICATION, byDateParameter);
+        return byDateParameter;
+    }
+
+    void setCriteriaValues(Criteria crit) {
+        for (Parameter p : getAll()) {
+            p.clearValues();
+        }
+        setCriteriaValues(crit, null);
     }
     
+    private void setCriteriaValues(Criteria crit, Operator op) {
+        if(crit instanceof ColumnCriteria) {
+            ColumnCriteria cc = (ColumnCriteria) crit;
+            Parameter p = map.get(Column.forColumnName(cc.getColumnName()));
+            assert p != null : "Missing parameter for ColumnCriteria [" + cc + "]"; // NOI18N
+            if(p != null) {
+                p.addCriteriaValue(op, cc);
+            } else {
+                C2C.LOG.log(Level.WARNING, "Missing parameter for ColumnCriteria [{0}]", cc); // NOI18N
+            }
+        } else if(crit instanceof NaryCriteria) {
+            NaryCriteria nc = (NaryCriteria)crit;
+            List<Criteria> subCrit = (nc).getSubCriteria();
+            for (Criteria c : subCrit) {
+                setCriteriaValues(c, nc.getOperator());
+            }
+        } else {
+            assert false : "Unexpected Criteria type : " + crit.getClass().getName(); // NOI18N
+            C2C.LOG.log(Level.WARNING, "Unexpected Criteria type : {0}", crit.getClass().getName()); // NOI18N
+        }
+    }
+
     static interface Parameter {
         void setEnabled(boolean b);
         Criteria getCriteria();
+        void clearValues();
+        void addCriteriaValue(Operator op, ColumnCriteria cc);
     }
     
     static abstract class AbstractParameter implements Parameter {
@@ -193,15 +259,11 @@ public class QueryParameters {
             if(values == null) {
                 return null;
             }
-            CriteriaBuilder cb = new CriteriaBuilder();
+            List<Criteria> criteria = new LinkedList<Criteria>();
             for (Object v : values) {
-                if(cb.result == null) {
-                    cb.column(getColumn().getColumnName(), Criteria.Operator.EQUALS, valueToString(v));
-                } else {
-                    cb.or(getColumn().getColumnName(), Criteria.Operator.EQUALS, valueToString(v));
-                }
+                criteria.add(new ColumnCriteria(getColumn().getColumnName(), Criteria.Operator.EQUALS, valueToString(v)));
             }
-            return cb.toCriteria();
+            return toCriteria(criteria, Operator.OR);
         }
 
         // XXX perhaps parameters should be encoded
@@ -255,6 +317,16 @@ public class QueryParameters {
                 combo.setSelectedIndex(idx);
             } 
         }
+
+        @Override
+        public void clearValues() {
+            combo.setSelectedIndex(-1);
+        }
+        
+        @Override
+        public void addCriteriaValue(Operator op, ColumnCriteria cc) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
         
         @Override
         public void setEnabled(boolean b) {
@@ -299,6 +371,20 @@ public class QueryParameters {
             }
             list.setModel(m);
         }
+
+        @Override
+        public void clearValues() {
+            list.clearSelection();
+        }
+        
+        @Override
+        public void addCriteriaValue(Operator op, ColumnCriteria cc) {
+            Object value = cc.getColumnValue();
+            if(value == null) {
+                return;
+            }
+            addSelectionInterval(list, value);
+        }        
         
         public void setValues(Collection values) {
             list.clearSelection();
@@ -307,13 +393,9 @@ public class QueryParameters {
             }                                        
             List<Integer> selectionList = new LinkedList<Integer>();
             for (Object o : values) {
-                ListModel model = list.getModel();
-                // need case sensitive compare
-                for(int j = 0; j < model.getSize(); j++) {
-                    if(o.equals(model.getElementAt(j))) {
-                        selectionList.add(j);
-                        break;
-                    }
+                int idx = getItemIndex(list, o);
+                if(idx > -1) {
+                    selectionList.add(idx);
                 }
             }
             int[] selection = new int[selectionList.size()];
@@ -359,6 +441,16 @@ public class QueryParameters {
         void setValue(String s) {
             txt.setText(s); 
         }
+
+        @Override
+        public void clearValues() {
+            txt.setText(""); // NOI18N
+        }
+        
+        @Override
+        public void addCriteriaValue(Operator op, ColumnCriteria cc) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
         
         @Override
         public void setEnabled(boolean  b) {
@@ -379,24 +471,50 @@ public class QueryParameters {
         
         private final JTextField txt;
         private final JCheckBox chkSummary;
-        private final JCheckBox chkDescription;
+        private final JCheckBox chkDescriptionOrComment;
         
         public ByTextParameter(JTextField txt, JCheckBox chkSummary, JCheckBox chkDescription) {
             this.txt = txt;
             this.chkSummary = chkSummary;
-            this.chkDescription = chkDescription;
+            this.chkDescriptionOrComment = chkDescription;
+        }
+
+        @Override
+        public void clearValues() {
+            chkSummary.setSelected(false);
+            chkDescriptionOrComment.setSelected(false);
+            txt.setText(""); // NOI18N
         }
         
+        @Override
+        public void addCriteriaValue(Operator op, ColumnCriteria cc) {
+            if(cc.getColumnName().equals(Column.SUMMARY.getColumnName())) {
+                setValue(txt, chkSummary, cc);
+            } else if(cc.getColumnName().equals(Column.DESCRIPTION.getColumnName()) ||
+                      cc.getColumnName().equals(Column.COMMENT.getColumnName())) 
+            {
+                setValue(txt, chkDescriptionOrComment, cc);
+            } else {
+                assert false : "Not support column name [" + cc.getColumnName() + "] for ByTextParameter ";
+            }
+        }
+        
+        private void setValue(JTextField txt, JCheckBox chk, ColumnCriteria cc) {
+            Object value = cc.getColumnValue();
+            txt.setText(value != null ? (String) value : ""); // NOI18N
+            chk.setSelected(true);
+        }
+
         public void setValues(String text, boolean summary, boolean description) {
             txt.setText(text != null ? text : ""); // NOI18N
             chkSummary.setSelected(summary);
-            chkDescription.setSelected(description);
+            chkDescriptionOrComment.setSelected(description);
         }
         
         @Override
         public void setEnabled(boolean  b) {
             chkSummary.setEnabled(b);
-            chkDescription.setEnabled(b);
+            chkDescriptionOrComment.setEnabled(b);
             txt.setEnabled(b);
         }
 
@@ -408,16 +526,18 @@ public class QueryParameters {
                 if (s == null || s.trim().isEmpty()) {
                     return ret;
                 }
-                if (chkSummary.isSelected() && chkDescription.isSelected()) {
-                    ret = new NaryCriteria(
-                            Criteria.Operator.OR,
-                            new ColumnCriteria(Column.SUMMARY.columnName, Criteria.Operator.STRING_CONTAINS, s),
-                            new ColumnCriteria(Column.DESCRIPTION.columnName, Criteria.Operator.STRING_CONTAINS, s));
+                List<Criteria> criteria = new LinkedList<Criteria>();
+                if (chkSummary.isSelected() && chkDescriptionOrComment.isSelected()) {
+                    criteria.add(new ColumnCriteria(Column.SUMMARY.columnName, Criteria.Operator.STRING_CONTAINS, s));
+                    criteria.add(new ColumnCriteria(Column.DESCRIPTION.columnName, Criteria.Operator.STRING_CONTAINS, s));
+                    criteria.add(new ColumnCriteria(Column.COMMENT.columnName, Criteria.Operator.STRING_CONTAINS, s));
                 } else if (chkSummary.isSelected()) {
-                    ret = new ColumnCriteria(Column.SUMMARY.columnName, Criteria.Operator.STRING_CONTAINS, s);
-                } else if (chkDescription.isSelected()) {
-                    ret = new ColumnCriteria(Column.DESCRIPTION.columnName, Criteria.Operator.STRING_CONTAINS, s);
+                    criteria.add(new ColumnCriteria(Column.SUMMARY.columnName, Criteria.Operator.STRING_CONTAINS, s));
+                } else if (chkDescriptionOrComment.isSelected()) {
+                    criteria.add(new ColumnCriteria(Column.DESCRIPTION.columnName, Criteria.Operator.STRING_CONTAINS, s));
+                    criteria.add(new ColumnCriteria(Column.COMMENT.columnName, Criteria.Operator.STRING_CONTAINS, s));
                 }
+                ret = toCriteria(criteria, Criteria.Operator.OR);
                 return ret;
             } finally {
                 if(C2C.LOG.isLoggable(Level.FINER)) {
@@ -510,7 +630,7 @@ public class QueryParameters {
                 addUserCriteria(ownerCheckField, Column.ASSIGNEE, values, criteria);
                 addUserCriteria(commenterCheckField, Column.COMMENTER, values, criteria);
                 addUserCriteria(ccCheckField, Column.WATCHER, values, criteria);
-                ret = criteria.isEmpty() ? null : new NaryCriteria(Criteria.Operator.OR, criteria.toArray(new Criteria[criteria.size()]));
+                ret = toCriteria(criteria, Criteria.Operator.OR);
                 return ret;
             } finally {
                 if(C2C.LOG.isLoggable(Level.FINER)) {
@@ -519,16 +639,45 @@ public class QueryParameters {
             }
         }
 
-        private void addUserCriteria(JCheckBox chk, Column c, Object[] values, List<Criteria> l) {
+        private void addUserCriteria(JCheckBox chk, Column c, Object[] values, List<Criteria> criteria) {
             if(chk.isSelected()) {
-                List<Criteria> criteria = new LinkedList<Criteria>();
+                List<Criteria> l = new LinkedList<Criteria>();
                 for (Object value : values) {
                     if(value instanceof TaskUserProfile) {
-                        criteria.add(new ColumnCriteria(c.getColumnName(), Criteria.Operator.EQUALS, ((TaskUserProfile)value).getLoginName()));
+                        l.add(new ColumnCriteria(c.getColumnName(), Criteria.Operator.EQUALS, ((TaskUserProfile)value).getLoginName()));
                     }
                 }
-                l.addAll(criteria);
+                criteria.add(toCriteria(l, Operator.OR));
             }
+        }
+
+        @Override
+        public void clearValues() {
+            list.clearSelection();
+            creatorCheckField.setSelected(false);
+            ownerCheckField.setSelected(false);
+            commenterCheckField.setSelected(false);
+            ccCheckField.setSelected(false);
+        }
+        
+        @Override
+        public void addCriteriaValue(Operator op, ColumnCriteria cc) {
+            if(cc.getColumnName().equals(Column.CREATOR.getColumnName())) {
+                setValue(list, creatorCheckField, cc);
+            } else if(cc.getColumnName().equals(Column.ASSIGNEE.getColumnName())) {
+                setValue(list, ownerCheckField, cc);
+            } else if(cc.getColumnName().equals(Column.COMMENTER.getColumnName())) {
+                setValue(list, commenterCheckField, cc);
+            } else if(cc.getColumnName().equals(Column.WATCHER.getColumnName())) {
+                setValue(list, ccCheckField, cc);
+            } else {
+                assert false : "Not supported column name [" + cc.getColumnName() + "] for ByPeopleParameter";
+            }
+        }
+
+        private void setValue(JList list, JCheckBox chk, ColumnCriteria cc) {
+            addSelectionInterval(list, cc.getColumnValue());
+            chk.setSelected(true);
         }
     }
     
@@ -589,17 +738,17 @@ public class QueryParameters {
                     C2C.LOG.log(Level.WARNING, toField.getText(), ex);
                 }
 
+                List<Criteria> criteria = new LinkedList<Criteria>();
                 if(dateFrom != null && dateTo != null) {
-                    ret = new NaryCriteria(
-                            Criteria.Operator.AND, 
-                            new ColumnCriteria(c.getColumnName(), Criteria.Operator.GREATER_THAN, dateFrom), 
-                            new ColumnCriteria(c.getColumnName(), Criteria.Operator.LESS_THAN, dateTo));
+                    criteria.add(new ColumnCriteria(c.getColumnName(), Criteria.Operator.GREATER_THAN, dateFrom)); 
+                    criteria.add(new ColumnCriteria(c.getColumnName(), Criteria.Operator.LESS_THAN, dateTo));
 
                 } else if (dateFrom != null) {
-                    ret = new ColumnCriteria(c.getColumnName(), Criteria.Operator.GREATER_THAN, dateFrom);
+                    criteria.add(new ColumnCriteria(c.getColumnName(), Criteria.Operator.GREATER_THAN, dateFrom));
                 } else if (dateTo != null) { 
-                    ret = new ColumnCriteria(c.getColumnName(), Criteria.Operator.LESS_THAN, dateTo);
+                    criteria.add(new ColumnCriteria(c.getColumnName(), Criteria.Operator.LESS_THAN, dateTo));
                 }
+                ret = toCriteria(criteria, Criteria.Operator.AND);
                 return ret;
             } finally {
                 if(C2C.LOG.isLoggable(Level.FINER)) {
@@ -622,6 +771,37 @@ public class QueryParameters {
                 return df.parse(to);
             } else {
                 return null;
+            }
+        }
+
+        @Override
+        public void clearValues() {
+            cbo.setSelectedIndex(-1);
+            fromField.setText(""); // NOI18N
+            toField.setText(Bundle.LBL_Now());
+        }
+
+        @Override
+        public void addCriteriaValue(Operator op, ColumnCriteria cc) {
+            if(cc.getColumnName().equals(Column.CREATION.getColumnName())) {
+                cbo.setSelectedItem(Column.CREATION);
+                setValue(cc);
+            } else if(cc.getColumnName().equals(Column.MODIFICATION.getColumnName())) {
+                cbo.setSelectedItem(Column.MODIFICATION);
+                setValue(cc);
+            } else {
+                assert false : "Not supported column name [" + cc.getColumnName() + "] for ByPeopleParameter";
+            }
+        }
+
+        private void setValue(ColumnCriteria cc) {
+            if(Operator.GREATER_THAN.equals(cc.getOperator())) {
+                fromField.setText(df.format((Date)cc.getColumnValue()));
+            } else if (Operator.LESS_THAN.equals(cc.getOperator())) {
+                toField.setText(df.format((Date)cc.getColumnValue()));
+            } else {
+                assert false : "unexpected operator [" + cc.getOperator() + "] in ByDateParameter. ColumnCriteria [" + cc + "]"; // NOI18N
+                C2C.LOG.log(Level.WARNING, "unexpected operator [{0}] in ByDateParameter. ColumnCriteria [{1}]", new Object[] {cc.getOperator(), cc}); // NOI18N
             }
         }
     }
@@ -654,6 +834,16 @@ public class QueryParameters {
         public Criteria getCriteria() {
             return null;
         }
+
+        @Override
+        public void clearValues() {
+            chk.setSelected(false);
+        }
+        
+        @Override
+        public void addCriteriaValue(Operator op, ColumnCriteria cc) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private static class ParameterRenderer extends DefaultListCellRenderer {
@@ -684,17 +874,77 @@ public class QueryParameters {
                 return ((Product)o1).getName().compareTo(((Product)o2).getName());
             } else if(o1 instanceof Keyword) { 
                 return ((Keyword)o1).getName().compareTo(((Keyword)o2).getName());
+            } else if(o1 instanceof com.tasktop.c2c.server.tasks.domain.Component) { 
+                return ((com.tasktop.c2c.server.tasks.domain.Component)o1).getName().compareTo(((com.tasktop.c2c.server.tasks.domain.Component)o2).getName());
             }
             return 0;
         }
     }
                 
+    private static void addSelectionInterval(JList list, Object value) {
+        int valueIdx = getItemIndex(list, value);
+        if(valueIdx > -1) {
+            list.addSelectionInterval(valueIdx, valueIdx);
+        }
+    }
+
+    private static int getItemIndex(JList list, Object value) {
+        int valueIdx = -1;
+        ListModel model = list.getModel();
+        for(int i = 0; i < model.getSize(); i++) {
+            Object o = model.getElementAt(i);
+            o = toString(o); 
+            if(value.equals(o)) {
+                valueIdx = i;
+                break;
+            }
+        }
+        return valueIdx;
+    }    
+    
+    private static Criteria toCriteria(List<Criteria> criteria, Operator op) {
+        if(criteria == null || criteria.isEmpty()) {
+            return null;
+        } else if(criteria.size() == 1) {
+            return criteria.get(0);
+        } else {
+            return new NaryCriteria(op, criteria.toArray(new Criteria[criteria.size()]));
+        }
+    }    
+    
+    // XXX similar to valueToString
+    public static String toString(Object o) {
+        if(o == null) {
+            return null;
+        }
+        if(o instanceof TaskUserProfile) {
+            return ((TaskUserProfile)o).getLoginName();
+        } else if(o instanceof  AbstractReferenceValue) {
+            return ((AbstractReferenceValue)o).getValue();
+        } else if(o instanceof Product) {
+            return ((Product)o).getName();
+        } else if(o instanceof Keyword) {
+            return ((Keyword)o).getName();
+        } else if(o instanceof com.tasktop.c2c.server.tasks.domain.Component) {
+            return ((com.tasktop.c2c.server.tasks.domain.Component)o).getName();
+        }
+        return o.toString();
+    }    
+    
     private static String valueToString(Object value) {
         if(value == null) {
             return ""; // NOI18N
         }
-        if(value instanceof Keyword) {
-            return ((Keyword) value).getName(); 
+        if(value instanceof  TaskUserProfile) {
+            return ((TaskUserProfile)value).getLoginName();
+        } else if(value instanceof  AbstractReferenceValue) {
+            return ((AbstractReferenceValue)value).getValue();
+        } else if(value instanceof Product) {
+            return ((Product)value).getName();
+        } else if(value instanceof Keyword) {
+            return ((Keyword)value).getName();
+        } else if(value instanceof com.tasktop.c2c.server.tasks.domain.Component) {
+            return ((com.tasktop.c2c.server.tasks.domain.Component)value).getName();
         } else if(value instanceof Column) {
             return ((Column) value).getDisplayName(); 
         }
