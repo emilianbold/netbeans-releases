@@ -523,7 +523,7 @@ public class NPECheck {
             Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
 
             if (isVariableElement(e) && (variable2State.get(e) == null || !variable2State.get(e).isNotNull()) && !not) {
-                testedTo.put((VariableElement) e, State.NOT_NULL_TEST_ONLY);
+                testedTo.put((VariableElement) e, State.NOT_NULL);
             }
             
             return null;
@@ -676,7 +676,6 @@ public class NPECheck {
         POSSIBLE_NULL,
         POSSIBLE_NULL_REPORT,
         NOT_NULL,
-        NOT_NULL_TEST_ONLY,
         NOT_NULL_BE_NPE;
         
         public @CheckForNull State reverse() {
@@ -689,14 +688,12 @@ public class NPECheck {
                 case NOT_NULL:
                 case NOT_NULL_BE_NPE:
                     return NULL;
-                case NOT_NULL_TEST_ONLY:
-                    return null;
                 default: throw new IllegalStateException();
             }
         }
         
         public boolean isNotNull() {
-            return this == NOT_NULL || this == NOT_NULL_BE_NPE || this == NOT_NULL_TEST_ONLY;
+            return this == NOT_NULL || this == NOT_NULL_BE_NPE;
         }
         
         public static State collect(State s1, State s2) {
