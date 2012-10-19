@@ -45,9 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
@@ -57,7 +55,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.xml.sax.Attributes;
@@ -71,8 +68,6 @@ import org.xml.sax.helpers.DefaultHandler;
 public class JerseyLibraryHelper {
 
     private static final String LIBRARY_TYPE = "wl_jersey"; // NOI18N
-
-    private static final String VOLUME_TYPE_CLASSPATH = "classpath"; //NOI18N
 
     @CheckForNull
     static LibraryImplementation3 getJerseyInMemoryLibrary(
