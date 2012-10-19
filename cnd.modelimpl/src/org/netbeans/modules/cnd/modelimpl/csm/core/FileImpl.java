@@ -206,6 +206,10 @@ public final class FileImpl implements CsmFile,
         return FileContentSignature.create(this);
     }
 
+    /*tests-only*/void debugInvalidate() {
+        this.state = State.INITIAL;
+    }
+
     public static enum State {
 
         /** The file has never been parsed */
