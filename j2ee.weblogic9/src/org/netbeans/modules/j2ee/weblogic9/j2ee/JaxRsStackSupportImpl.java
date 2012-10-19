@@ -61,8 +61,6 @@ import java.util.prefs.Preferences;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -88,8 +86,6 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
-import org.netbeans.spi.project.libraries.LibraryImplementation3;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -102,10 +98,8 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
@@ -453,8 +447,6 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
     }
     
     private List<URL> getJerseyJars() throws FileStateInvalidException {
-        JerseyLibraryHelper.getJerseyInMemoryLibrary(serverVersion, getModulesFolder());
-
         FileObject client = getJarFile("com.sun.jersey.client_");   // NOI18N
         List<URL> urls = new LinkedList<URL>();
         if ( client != null){

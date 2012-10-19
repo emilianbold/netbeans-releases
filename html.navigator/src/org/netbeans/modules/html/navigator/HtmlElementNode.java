@@ -89,7 +89,7 @@ public class HtmlElementNode extends AbstractNode {
     
     private static final Image SOURCE_ICON = ImageUtilities.loadImage("org/netbeans/modules/html/navigator/resources/html_element_bw.png"); //NOI18N
     private static final Image SOURCE_AND_DOM_ICON = ImageUtilities.loadImage("org/netbeans/modules/html/navigator/resources/html_element.png"); //NOI18N
-    private static final Image DOM_ICON = ImageUtilities.loadImage("org/netbeans/modules/html/navigator/resources/extbrowser.gif"); //NOI18N
+    private static final Image DOM_ICON = ImageUtilities.loadImage("org/netbeans/modules/html/navigator/resources/html_element_live.png"); //NOI18N
     /** Lookup path with context actions. */
     private static final String DOM_ACTIONS_PATH = "Navigation/DOM/Actions"; // NOI18N
     
