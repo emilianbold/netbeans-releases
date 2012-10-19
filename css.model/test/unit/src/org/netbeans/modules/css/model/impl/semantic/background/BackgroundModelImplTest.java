@@ -47,20 +47,18 @@ import org.netbeans.modules.css.lib.CssTestBase;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeUtil;
 import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.model.api.semantic.Attachment;
 import org.netbeans.modules.css.model.api.semantic.Box;
 import org.netbeans.modules.css.model.api.semantic.Color;
 import org.netbeans.modules.css.model.api.semantic.Edge;
-import org.netbeans.modules.css.model.api.semantic.Length;
 import org.netbeans.modules.css.model.api.semantic.ModelFactory;
-import org.netbeans.modules.css.model.api.semantic.Percentage;
 import org.netbeans.modules.css.model.api.semantic.RepeatStyle;
 import org.netbeans.modules.css.model.api.semantic.Size;
-import org.netbeans.modules.css.model.api.semantic.background.BackgroundPosition;
 import org.netbeans.modules.css.model.api.semantic.background.Background;
 import org.netbeans.modules.css.model.api.semantic.background.BackgroundModel;
+import org.netbeans.modules.css.model.api.semantic.background.BackgroundPosition;
 import org.netbeans.modules.css.model.api.semantic.background.BackgroundPosition.Position;
 
 /**
@@ -75,10 +73,10 @@ public class BackgroundModelImplTest extends CssTestBase {
     }
 
     public void testBackground_Color() {
-        PropertyModel background = Properties.getPropertyModel("background-color");
+        PropertyDefinition background = Properties.getPropertyDefinition(null, "background-color");
         assertNotNull(background);
         
-        ResolvedProperty resolved = ResolvedProperty.resolve(background, "red");
+        ResolvedProperty resolved = ResolvedProperty.resolve(null, background, "red");
         
 //        NodeUtil.dumpTree(resolved.getParseTree());
         
@@ -101,13 +99,13 @@ public class BackgroundModelImplTest extends CssTestBase {
     }
     
     public void testBackgroundImageInBackgroundProperty() {
-        PropertyModel background = Properties.getPropertyModel("background");
+        PropertyDefinition background = Properties.getPropertyDefinition(null, "background");
         assertNotNull(background);
         
 //        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
 //        GrammarParseTreeBuilder.DEBUG = true;
         
-        ResolvedProperty resolved = ResolvedProperty.resolve(background, "url(flower.png), url(ball.png)");
+        ResolvedProperty resolved = ResolvedProperty.resolve(null, background, "url(flower.png), url(ball.png)");
         
 //        NodeUtil.dumpTree(resolved.getParseTree());
         
@@ -155,13 +153,13 @@ public class BackgroundModelImplTest extends CssTestBase {
     }
     
     public void testBackgroundImageInBackgroundImageProperty() {
-        PropertyModel background = Properties.getPropertyModel("background-image");
+        PropertyDefinition background = Properties.getPropertyDefinition(null, "background-image");
         assertNotNull(background);
         
 //        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
 //        GrammarParseTreeBuilder.DEBUG = true;
         
-        ResolvedProperty resolved = ResolvedProperty.resolve(background, "url(flower.png), url(ball.png)");
+        ResolvedProperty resolved = ResolvedProperty.resolve(null, background, "url(flower.png), url(ball.png)");
         
 //        NodeUtil.dumpTree(resolved.getParseTree());
         
@@ -210,52 +208,52 @@ public class BackgroundModelImplTest extends CssTestBase {
     
     public void testBackgroundPositionInBackgroundPositionProperty() {
         
-        PropertyModel background = Properties.getPropertyModel("background-position");
+        PropertyDefinition background = Properties.getPropertyDefinition(null, "background-position");
         assertNotNull(background);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "20px"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "20px"), 
                 Edge.LEFT, false, null, "20px", Edge.TOP, true, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "20%"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "20%"), 
                 Edge.LEFT, false, "20%", null, Edge.TOP, true, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "left"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "left"), 
                 Edge.LEFT, false, null, null, Edge.TOP, true, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "bottom"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "bottom"), 
                 Edge.LEFT, true, null, null, Edge.BOTTOM, false, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "top"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "top"), 
                 Edge.LEFT, true, null, null, Edge.TOP, false, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "right bottom"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "right bottom"), 
                 Edge.RIGHT, false, null, null, Edge.BOTTOM, false, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "20% bottom"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "20% bottom"), 
                 Edge.LEFT, false, "20%", null, Edge.BOTTOM, false, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "right 100px"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "right 100px"), 
                 Edge.RIGHT, false, null, null, Edge.TOP, false, null, "100px");
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "20% 100px"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "20% 100px"), 
                 Edge.LEFT, false, "20%", null, Edge.TOP, false, null, "100px");
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "right 20% top 10%"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "right 20% top 10%"), 
                 Edge.RIGHT, false, "20%", null, Edge.TOP, false, "10%", null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "left 20% bottom 10%"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "left 20% bottom 10%"), 
                 Edge.LEFT, false, "20%", null, Edge.BOTTOM, false, "10%", null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "right top 10%"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "right top 10%"), 
                 Edge.RIGHT, false, null, null, Edge.TOP, false, "10%", null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "right 20px center"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "right 20px center"), 
                 Edge.RIGHT, false, null, "20px", Edge.TOP, true, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "right top 10%"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "right top 10%"), 
                 Edge.RIGHT, false, null, null, Edge.TOP, false, "10%", null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "center top 20px"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "center top 20px"), 
                 Edge.LEFT, true, null, null, Edge.TOP, false, null, "20px");
         
 //        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
@@ -281,66 +279,66 @@ public class BackgroundModelImplTest extends CssTestBase {
     
     public void testRepeatStyle() {
 
-        PropertyModel property = Properties.getPropertyModel("background-repeat");
+        PropertyDefinition property = Properties.getPropertyDefinition(null, "background-repeat");
         assertNotNull(property);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "repeat-x"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "repeat-x"), 
                 RepeatStyle.Repeat.REPEAT, RepeatStyle.Repeat.NO_REPEAT);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "repeat-y"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "repeat-y"), 
                 RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.REPEAT);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "repeat"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "repeat"), 
                 RepeatStyle.Repeat.REPEAT, RepeatStyle.Repeat.REPEAT);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "space"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "space"), 
                 RepeatStyle.Repeat.SPACE, RepeatStyle.Repeat.SPACE);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "round"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "round"), 
                 RepeatStyle.Repeat.ROUND, RepeatStyle.Repeat.ROUND);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "no-repeat"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "no-repeat"), 
                 RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.NO_REPEAT);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "no-repeat repeat"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "no-repeat repeat"), 
                 RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.REPEAT);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "round repeat"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "round repeat"), 
                 RepeatStyle.Repeat.ROUND, RepeatStyle.Repeat.REPEAT);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "no-repeat space"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "no-repeat space"), 
                 RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.SPACE);
         
         //in background aggregated property
         
-        property = Properties.getPropertyModel("background");
+        property = Properties.getPropertyDefinition(null, "background");
         assertNotNull(property);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "repeat-x"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "repeat-x"), 
                 RepeatStyle.Repeat.REPEAT, RepeatStyle.Repeat.NO_REPEAT);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "repeat-y"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "repeat-y"), 
                 RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.REPEAT);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "repeat"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "repeat"), 
                 RepeatStyle.Repeat.REPEAT, RepeatStyle.Repeat.REPEAT);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "space"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "space"), 
                 RepeatStyle.Repeat.SPACE, RepeatStyle.Repeat.SPACE);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "round"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "round"), 
                 RepeatStyle.Repeat.ROUND, RepeatStyle.Repeat.ROUND);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "no-repeat"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "no-repeat"), 
                 RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.NO_REPEAT);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "no-repeat repeat"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "no-repeat repeat"), 
                 RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.REPEAT);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "round repeat"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "round repeat"), 
                 RepeatStyle.Repeat.ROUND, RepeatStyle.Repeat.REPEAT);
         
-        assertRepeatStyle(ResolvedProperty.resolve(property, "no-repeat space"), 
+        assertRepeatStyle(ResolvedProperty.resolve(null, property, "no-repeat space"), 
                 RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.SPACE);
         
         
@@ -376,52 +374,52 @@ public class BackgroundModelImplTest extends CssTestBase {
     
     public void testBackgroundPositionInBackgroundProperty() {
         
-        PropertyModel background = Properties.getPropertyModel("background");
+        PropertyDefinition background = Properties.getPropertyDefinition(null, "background");
         assertNotNull(background);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "20px"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "20px"), 
                 Edge.LEFT, false, null, "20px", Edge.TOP, true, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "20%"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "20%"), 
                 Edge.LEFT, false, "20%", null, Edge.TOP, true, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "left"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "left"), 
                 Edge.LEFT, false, null, null, Edge.TOP, true, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "bottom"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "bottom"), 
                 Edge.LEFT, true, null, null, Edge.BOTTOM, false, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "top"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "top"), 
                 Edge.LEFT, true, null, null, Edge.TOP, false, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "right bottom"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "right bottom"), 
                 Edge.RIGHT, false, null, null, Edge.BOTTOM, false, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "20% bottom"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "20% bottom"), 
                 Edge.LEFT, false, "20%", null, Edge.BOTTOM, false, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "right 100px"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "right 100px"), 
                 Edge.RIGHT, false, null, null, Edge.TOP, false, null, "100px");
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "20% 100px"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "20% 100px"), 
                 Edge.LEFT, false, "20%", null, Edge.TOP, false, null, "100px");
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "right 20% top 10%"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "right 20% top 10%"), 
                 Edge.RIGHT, false, "20%", null, Edge.TOP, false, "10%", null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "left 20% bottom 10%"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "left 20% bottom 10%"), 
                 Edge.LEFT, false, "20%", null, Edge.BOTTOM, false, "10%", null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "right top 10%"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "right top 10%"), 
                 Edge.RIGHT, false, null, null, Edge.TOP, false, "10%", null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "right 20px center"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "right 20px center"), 
                 Edge.RIGHT, false, null, "20px", Edge.TOP, true, null, null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "right top 10%"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "right top 10%"), 
                 Edge.RIGHT, false, null, null, Edge.TOP, false, "10%", null);
         
-        assertBackgroundPosition(ResolvedProperty.resolve(background, "center top 20px"), 
+        assertBackgroundPosition(ResolvedProperty.resolve(null, background, "center top 20px"), 
                 Edge.LEFT, true, null, null, Edge.TOP, false, null, "20px");
     }
     
@@ -475,24 +473,24 @@ public class BackgroundModelImplTest extends CssTestBase {
     
       public void testBackgroundAttachment() {
 
-        PropertyModel property = Properties.getPropertyModel("background-attachment");
+        PropertyDefinition property = Properties.getPropertyDefinition(null, "background-attachment");
         assertNotNull(property);
         
-        assertAttachment(ResolvedProperty.resolve(property, "fixed"), 
+        assertAttachment(ResolvedProperty.resolve(null, property, "fixed"), 
                 Attachment.FIXED);
-        assertAttachment(ResolvedProperty.resolve(property, "local"), 
+        assertAttachment(ResolvedProperty.resolve(null, property, "local"), 
                 Attachment.LOCAL);
-        assertAttachment(ResolvedProperty.resolve(property, "scroll"), 
+        assertAttachment(ResolvedProperty.resolve(null, property, "scroll"), 
                 Attachment.SCROLL);
        
-        property = Properties.getPropertyModel("background");
+        property = Properties.getPropertyDefinition(null, "background");
         assertNotNull(property);
         
-        assertAttachment(ResolvedProperty.resolve(property, "fixed"), 
+        assertAttachment(ResolvedProperty.resolve(null, property, "fixed"), 
                 Attachment.FIXED);
-        assertAttachment(ResolvedProperty.resolve(property, "local"), 
+        assertAttachment(ResolvedProperty.resolve(null, property, "local"), 
                 Attachment.LOCAL);
-        assertAttachment(ResolvedProperty.resolve(property, "scroll"), 
+        assertAttachment(ResolvedProperty.resolve(null, property, "scroll"), 
                 Attachment.SCROLL);
         
        
@@ -518,24 +516,24 @@ public class BackgroundModelImplTest extends CssTestBase {
     
       public void testBackgroundClip() {
 
-        PropertyModel property = Properties.getPropertyModel("background-clip");
+        PropertyDefinition property = Properties.getPropertyDefinition(null, "background-clip");
         assertNotNull(property);
         
-        assertClip(ResolvedProperty.resolve(property, "border-box"), 
+        assertClip(ResolvedProperty.resolve(null, property, "border-box"), 
                 Box.BORDER_BOX);
-        assertClip(ResolvedProperty.resolve(property, "padding-box"), 
+        assertClip(ResolvedProperty.resolve(null, property, "padding-box"), 
                 Box.PADDING_BOX);
-        assertClip(ResolvedProperty.resolve(property, "content-box"), 
+        assertClip(ResolvedProperty.resolve(null, property, "content-box"), 
                 Box.CONTENT_BOX);
 
-        property = Properties.getPropertyModel("background");
+        property = Properties.getPropertyDefinition(null, "background");
         assertNotNull(property);
         
-        assertClip(ResolvedProperty.resolve(property, "border-box"), 
+        assertClip(ResolvedProperty.resolve(null, property, "border-box"), 
                 Box.BORDER_BOX);
-        assertClip(ResolvedProperty.resolve(property, "padding-box"), 
+        assertClip(ResolvedProperty.resolve(null, property, "padding-box"), 
                 Box.PADDING_BOX);
-        assertClip(ResolvedProperty.resolve(property, "content-box"), 
+        assertClip(ResolvedProperty.resolve(null, property, "content-box"), 
                 Box.CONTENT_BOX);
         
        
@@ -561,24 +559,24 @@ public class BackgroundModelImplTest extends CssTestBase {
      
     public void testBackgroundOrigin() {
 
-        PropertyModel property = Properties.getPropertyModel("background-origin");
+        PropertyDefinition property = Properties.getPropertyDefinition(null, "background-origin");
         assertNotNull(property);
         
-        assertOrigin(ResolvedProperty.resolve(property, "border-box"), 
+        assertOrigin(ResolvedProperty.resolve(null, property, "border-box"), 
                 Box.BORDER_BOX);
-        assertOrigin(ResolvedProperty.resolve(property, "padding-box"), 
+        assertOrigin(ResolvedProperty.resolve(null, property, "padding-box"), 
                 Box.PADDING_BOX);
-        assertOrigin(ResolvedProperty.resolve(property, "content-box"), 
+        assertOrigin(ResolvedProperty.resolve(null, property, "content-box"), 
                 Box.CONTENT_BOX);
 
-        property = Properties.getPropertyModel("background");
+        property = Properties.getPropertyDefinition(null, "background");
         assertNotNull(property);
         
-        assertOrigin(ResolvedProperty.resolve(property, "border-box"), 
+        assertOrigin(ResolvedProperty.resolve(null, property, "border-box"), 
                 Box.BORDER_BOX);
-        assertOrigin(ResolvedProperty.resolve(property, "padding-box"), 
+        assertOrigin(ResolvedProperty.resolve(null, property, "padding-box"), 
                 Box.PADDING_BOX);
-        assertOrigin(ResolvedProperty.resolve(property, "content-box"), 
+        assertOrigin(ResolvedProperty.resolve(null, property, "content-box"), 
                 Box.CONTENT_BOX);
         
        
@@ -586,13 +584,13 @@ public class BackgroundModelImplTest extends CssTestBase {
     
     public void testBackgroundOriginVsClip() {
 
-        PropertyModel property = Properties.getPropertyModel("background");
+        PropertyDefinition property = Properties.getPropertyDefinition(null, "background");
         assertNotNull(property);
         
-        assertClip(ResolvedProperty.resolve(property, "border-box padding-box"), 
+        assertClip(ResolvedProperty.resolve(null, property, "border-box padding-box"), 
                 Box.PADDING_BOX);
 
-        assertOrigin(ResolvedProperty.resolve(property, "border-box padding-box"), 
+        assertOrigin(ResolvedProperty.resolve(null, property, "border-box padding-box"), 
                 Box.BORDER_BOX);
         
        
@@ -622,55 +620,55 @@ public class BackgroundModelImplTest extends CssTestBase {
      
       public void testBackgroundSizeInBackgroundSizeProperty() {
 
-        PropertyModel property = Properties.getPropertyModel("background-size");
+        PropertyDefinition property = Properties.getPropertyDefinition(null, "background-size");
         assertNotNull(property);
         
-        assertSize(ResolvedProperty.resolve(property, "cover"), 
+        assertSize(ResolvedProperty.resolve(null, property, "cover"), 
                 true, false,
                 false, null, null,
                 false, null, null);
         
-        assertSize(ResolvedProperty.resolve(property, "contain"), 
+        assertSize(ResolvedProperty.resolve(null, property, "contain"), 
                 false, true,
                 false, null, null,
                 false, null, null);
         
-        assertSize(ResolvedProperty.resolve(property, "auto"), 
+        assertSize(ResolvedProperty.resolve(null, property, "auto"), 
                 false, false,
                 true, null, null,
                 true, null, null);
         
-        assertSize(ResolvedProperty.resolve(property, "auto auto"), 
+        assertSize(ResolvedProperty.resolve(null, property, "auto auto"), 
                 false, false,
                 true, null, null,
                 true, null, null);
         
-        assertSize(ResolvedProperty.resolve(property, "10px"), 
+        assertSize(ResolvedProperty.resolve(null, property, "10px"), 
                 false, false,
                 false, null, "10px",
                 true, null, null);
         
-        assertSize(ResolvedProperty.resolve(property, "10px auto"), 
+        assertSize(ResolvedProperty.resolve(null, property, "10px auto"), 
                 false, false,
                 false, null, "10px",
                 true, null, null);
         
-        assertSize(ResolvedProperty.resolve(property, "10% auto"), 
+        assertSize(ResolvedProperty.resolve(null, property, "10% auto"), 
                 false, false,
                 false, "10%", null,
                 true, null, null);
         
-        assertSize(ResolvedProperty.resolve(property, "10% 20px"), 
+        assertSize(ResolvedProperty.resolve(null, property, "10% 20px"), 
                 false, false,
                 false, "10%", null,
                 false, null, "20px");
         
-        assertSize(ResolvedProperty.resolve(property, "10px 20%"), 
+        assertSize(ResolvedProperty.resolve(null, property, "10px 20%"), 
                 false, false,
                 false, null, "10px",
                 false, "20%", null);
         
-        assertSize(ResolvedProperty.resolve(property, "auto 20%"), 
+        assertSize(ResolvedProperty.resolve(null, property, "auto 20%"), 
                 false, false,
                 true, null, null,
                 false, "20%", null);
@@ -679,20 +677,20 @@ public class BackgroundModelImplTest extends CssTestBase {
       
       public void testBackgroundSizeInBackgroundProperty() {
           
-        PropertyModel property = Properties.getPropertyModel("background");
+        PropertyDefinition property = Properties.getPropertyDefinition(null, "background");
         assertNotNull(property);
         
-        assertSize(ResolvedProperty.resolve(property, "center / cover"), 
+        assertSize(ResolvedProperty.resolve(null, property, "center / cover"), 
                 true, false,
                 false, null, null,
                 false, null, null);
         
-        assertSize(ResolvedProperty.resolve(property, "center / auto auto"), 
+        assertSize(ResolvedProperty.resolve(null, property, "center / auto auto"), 
                 false, false,
                 true, null, null,
                 true, null, null);
         
-        assertSize(ResolvedProperty.resolve(property, "center / 10px 20%"), 
+        assertSize(ResolvedProperty.resolve(null, property, "center / 10px 20%"), 
                 false, false,
                 false, null, "10px",
                 false, "20%", null);
