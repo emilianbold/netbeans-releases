@@ -43,11 +43,14 @@ package org.netbeans.modules.css.editor.module.main;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.css.lib.api.CssColor;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -58,19 +61,14 @@ import org.openide.util.lookup.ServiceProvider;
  * @author mfukala@netbeans.org
  */
 @ServiceProvider(service = CssEditorModule.class)
-public class ColorsModule extends CssEditorModule implements CssModule {
+public class ColorsModule extends ExtCssEditorModule implements CssModule {
 
     private static final String PROPERTY_DEFINITIONS_PATH = "org/netbeans/modules/css/editor/module/main/properties/colors"; //NOI18N    
+    
+    private static final String COLOR_LIST_PROPERTY_NAME = "@colors-list"; //NOI18N
     private final PropertyDefinition colorsListPropertyDescriptor = new PropertyDefinition(
-            "@colors-list", //NOI18N
+            COLOR_LIST_PROPERTY_NAME,
             generateColorsList(), this);
-    private final Collection<PropertyDefinition> propertyDescriptors;
-
-    public ColorsModule() {
-        propertyDescriptors = new ArrayList<PropertyDefinition>();
-        propertyDescriptors.add(colorsListPropertyDescriptor);
-        propertyDescriptors.addAll(Utilities.parsePropertyDefinitionFile(PROPERTY_DEFINITIONS_PATH, this));
-    }
 
     private String generateColorsList() {
         StringBuilder sb = new StringBuilder();
@@ -83,11 +81,6 @@ public class ColorsModule extends CssEditorModule implements CssModule {
             }
         }
         return sb.toString();
-    }
-
-    @Override
-    public Collection<PropertyDefinition> getProperties() {
-        return propertyDescriptors;
     }
 
     @Override
@@ -104,4 +97,32 @@ public class ColorsModule extends CssEditorModule implements CssModule {
     public String getSpecificationURL() {
         return "http://www.w3.org/TR/css3-color"; //NOI18N
     }
+
+    @Override
+    protected String getPropertyDefinitionsResourcePath() {
+        return PROPERTY_DEFINITIONS_PATH;
+    }
+
+    @Override
+    protected CssModule getCssModule() {
+        return this;
+    }
+
+    @Override
+    public Collection<String> getPropertyNames(FileObject file) {
+        Collection<String> names = new ArrayList<String>(super.getPropertyNames(file));
+        names.add(COLOR_LIST_PROPERTY_NAME);
+        return names;
+    }
+
+    @Override
+    public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+        if(COLOR_LIST_PROPERTY_NAME.equals(propertyName)) {
+            return colorsListPropertyDescriptor;
+        } else {
+            return super.getPropertyDefinition(context, propertyName);
+        }
+    }
+    
+    
 }

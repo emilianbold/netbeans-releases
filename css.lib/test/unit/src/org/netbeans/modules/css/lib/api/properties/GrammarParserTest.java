@@ -57,11 +57,10 @@ public class GrammarParserTest extends CssTestBase {
     }
     
     public void testCanParserGrammarOfAllProperties() {
-        for (PropertyDefinition property : PropertyDefinitionProvider.Query.getProperties()) {
-            PropertyModel model = new PropertyModel(property.getName(), Collections.singletonList(property));
-            String grammar = model.getGrammar();
+        for (PropertyDefinition property : Properties.getPropertyDefinitions(null)) {
+            String grammar = property.getGrammar();
             try {
-                assertNotNull(GrammarParser.parse(model.getGrammar()));
+                assertNotNull(GrammarParser.parse(grammar));
             } catch (RuntimeException e) {
                 System.err.println("Error parsing grammar: " + grammar);
                 Exceptions.printStackTrace(e);

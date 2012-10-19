@@ -41,22 +41,21 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.css.editor.Css3Utils;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -105,7 +104,7 @@ public class CssAnalyser {
                         }
 
                         //check for vendor specific properies - ignore them
-                        PropertyModel property = Properties.getPropertyModel(propertyName);
+                        PropertyDefinition property = Properties.getPropertyDefinition(file, propertyName);
                         if (!Css3Utils.containsGeneratedCode(propertyName) && !Css3Utils.isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
                             String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY_BUNDLE_KEY, propertyName);
@@ -130,7 +129,7 @@ public class CssAnalyser {
                             //we are no able to identify the templating semantic
                             if (!Css3Utils.containsGeneratedCode(valueImage) 
                                     //TODO add support for checking value of vendor specific properties, not it is disabled.
-                                    && !Css3Utils.isVendorSpecificPropertyValue(valueImage)) {
+                                    && !Css3Utils.isVendorSpecificPropertyValue(file, valueImage)) {
                                 ResolvedProperty pv = new ResolvedProperty(property, valueImage);
                                 if (!pv.isResolved()) {
                                     String errorMsg = null;

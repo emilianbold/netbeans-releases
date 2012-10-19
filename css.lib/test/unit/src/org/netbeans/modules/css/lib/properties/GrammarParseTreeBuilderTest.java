@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.css.lib.properties;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.css.lib.CssTestBase;
 import org.netbeans.modules.css.lib.api.properties.*;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -86,9 +86,16 @@ public class GrammarParseTreeBuilderTest extends CssTestBase {
     public static class TestPropertyDefinitionProvider implements PropertyDefinitionProvider {
 
         @Override
-        public Collection<PropertyDefinition> getProperties() {
-            PropertyDefinition ref = new PropertyDefinition("ref", "[ [ a | b ] | [ a | b ] ]", null);
-            return Arrays.asList(new PropertyDefinition[]{ref});
+        public Collection<String> getPropertyNames(FileObject context) {
+            return Arrays.asList(new String[]{"ref"});
+        }
+
+        @Override
+        public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+            if(propertyName.equals("ref")) {
+                return new PropertyDefinition("ref", "[ [ a | b ] | [ a | b ] ]", null);
+            }
+            return null;
         }
     }
 }
