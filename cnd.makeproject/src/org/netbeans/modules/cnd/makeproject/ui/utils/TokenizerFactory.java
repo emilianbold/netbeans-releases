@@ -172,7 +172,7 @@ public final class TokenizerFactory {
                 return;
             }
         }
-        if (value.startsWith("-")) {
+        if (value.startsWith("-")) { // NOI18N
             //ugnore other keys
         } else {
             if (!value.isEmpty()) {
