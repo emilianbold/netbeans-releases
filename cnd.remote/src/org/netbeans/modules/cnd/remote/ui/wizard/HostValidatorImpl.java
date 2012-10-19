@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -104,6 +105,8 @@ public class HostValidatorImpl implements HostValidator {
 //                PasswordManager.getInstance().storePassword(env, password, rememberPassword);
 //            }
             ConnectionManager.getInstance().connectTo(env);
+        } catch (InterruptedIOException ex) {
+            return false; // don't report InterruptedIOException
         } catch (IOException ex) {
             writer.print("\n" + RemoteCommandSupport.getMessage(ex)); //NOI18N
             return false;
