@@ -150,7 +150,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         }
 
         @Override
-        public void apply(FileObject projectRoot, FileObject siteRoot, FileObject librariesFolder) {
+        public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {
             try {
                 File examplesFolder = new File(CordovaPlatform.getDefault().getSdkLocation() + "/lib/android/example/assets/www");
                 FileObject examples = FileUtil.toFileObject(examplesFolder);
@@ -159,7 +159,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                 final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
                 File lib = new File(sdkLocation + "/lib/android/cordova-"+version +".js");
                 FileObject libFo = FileUtil.toFileObject(lib);
-                FileObject createFolder = FileUtil.createFolder(siteRoot, "js/libs/Cordova-" + version);
+                FileObject createFolder = FileUtil.createFolder(siteRoot, librariesPath + "/Cordova-" + version);
                 FileUtil.copyFile(libFo, createFolder, "cordova-" + version);
 
 

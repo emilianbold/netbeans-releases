@@ -120,10 +120,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
     }
     
     public void navigate(DataObject d) {
-        if(peerDO != null && peerDO != d) {
-            //release the original document (see closeDocument() javadoc)
-            closeDocument(peerDO);
-        }
+        closeDocument(d);
         
         EditorCookie ec = (EditorCookie)d.getCookie(EditorCookie.class);
         if(ec == null) {
@@ -137,10 +134,12 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                 if(bdoc != null) {
                     //there is something we can navigate in
                     navigate(d, bdoc);
-                    //remember the peer dataobject to be able the call EditorCookie.close() when closing navigator
-                    this.peerDO = d;
-                    //check if the editor for the DO has an opened pane
-                    editorOpened = ec.getOpenedPanes() != null && ec.getOpenedPanes().length > 0;
+                    synchronized (this) {
+                        //remember the peer dataobject to be able the call EditorCookie.close() when closing navigator
+                        this.peerDO = d;
+                        //check if the editor for the DO has an opened pane
+                        editorOpened = ec.getOpenedPanes() != null && ec.getOpenedPanes().length > 0;
+                    }
                 }
                 
             }catch(UserQuestionException uqe) {
@@ -247,29 +246,46 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
     public void release() {
         removeAll();
         repaint();
-        closeDocument(peerDO);
+        closeDocument(null);
     }
     
     /** A hacky fix for XMLSyncSupport - I need to call EditorCookie.close when the navigator
      * is deactivated and there is not view pane for the navigated document. Then a the synchronization
      * support releases a strong reference to NbEditorDocument. */
-    private void closeDocument(DataObject dobj) {
-        if(dobj != null) {
-            EditorCookie ec = (EditorCookie)peerDO.getCookie(EditorCookie.class);
-            if(ec != null) {
+    private void closeDocument(DataObject replaceObject) {
+        final DataObject dobj;
+        final EditorCookie ec;
+        
+        synchronized (this) {
+            if (peerDO == replaceObject) {
+                // no change
+                return;
+            }
+            dobj = peerDO;
+
+            boolean wasOpened = editorOpened;
+            editorOpened = false;
+            peerDO = null;
+            // maintains the original logic: if an editor pane was open at navigate() time, but was not open at
+            // closeDocument() time, close the document.
+            if (dobj == null || !wasOpened) {
+                return;
+            }
+            ec = dobj.getLookup().lookup(EditorCookie.class);
+            if (ec == null) {
+                return;
+            }
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
                 JEditorPane panes[] = ec.getOpenedPanes();
                 //call EC.close() if there isn't any pane and the editor was opened
                 if((panes == null || panes.length == 0)) {
-                    ((EditorCookie.Observable)ec).removePropertyChangeListener(this);
-                    
-                    if(editorOpened) {
-                        ec.close();
-                        if(DEBUG) System.out.println("document instance for dataobject " + dobj.hashCode() + " closed.");
-                    }
+                    ec.close();
+                    if(DEBUG) System.out.println("document instance for dataobject " + dobj.hashCode() + " closed.");
                 }
-                editorOpened = false;
             }
-        }
+        });
     }
         
     public void propertyChange(PropertyChangeEvent evt) {

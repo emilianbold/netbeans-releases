@@ -396,16 +396,8 @@ public class NPECheck {
 
         @Override
         public State visitBinary(BinaryTree node, Void p) {
-            boolean clearNot = node.getKind() != Kind.CONDITIONAL_AND && node.getKind() != Kind.CONDITIONAL_OR;
-            boolean oldNot = not;
-            
-            not &= !clearNot;
-            
-            State left = scan(node.getLeftOperand(), p);
-            
-            not = oldNot;
-            
-            boolean rightAlreadyProcessed = false;
+            State left = null;
+            boolean subnodesAlreadyProcessed = false;
             Kind kind = node.getKind();
             
             if (not) {
@@ -418,6 +410,8 @@ public class NPECheck {
             }
             
             if (kind == Kind.CONDITIONAL_AND) {
+                left = scan(node.getLeftOperand(), p);
+                
                 Map<VariableElement, State> oldVariable2State = variable2State;
                 Map<VariableElement, State> oldTestedTo = testedTo;
                 
@@ -435,20 +429,21 @@ public class NPECheck {
 
                 testedTo = o;
                 
-                rightAlreadyProcessed = true;
+                subnodesAlreadyProcessed = true;
             }
             
             if (kind == Kind.CONDITIONAL_OR) {
+                boolean oldNot = not;
+                
+                not ^= true;
+                left = scan(node.getLeftOperand(), p);
+                not = oldNot;
+                
                 Map<VariableElement, State> oldVariable2State = variable2State;
                 Map<VariableElement, State> oldTestedTo = testedTo;
                 
                 variable2State = new HashMap<VariableElement, NPECheck.State>(variable2State);
-                
-                for (Entry<VariableElement, State> e : testedTo.entrySet()) {
-                    State reversed = e.getValue().reverse();
-                    if (reversed != null)
-                        variable2State.put(e.getKey(), reversed);
-                }
+                variable2State.putAll(testedTo);
                 
                 testedTo = new HashMap<VariableElement, State>();
                 
@@ -461,13 +456,16 @@ public class NPECheck {
 
                 testedTo = o;
                 
-                rightAlreadyProcessed = true;
+                subnodesAlreadyProcessed = true;
             }
             
             State right = null;
             
-            if (!rightAlreadyProcessed) {
-                not &= !clearNot;
+            if (!subnodesAlreadyProcessed) {
+                boolean oldNot = not;
+
+                not = false;
+                left = scan(node.getLeftOperand(), p);
                 right = scan(node.getRightOperand(), p);
                 not = oldNot;
             }

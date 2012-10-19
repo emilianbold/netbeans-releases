@@ -146,10 +146,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
-        
-        for (ClientProjectExtender extender: enabledExtenders()) {
-            extender.apply(project.getProjectDirectory(), siteRoot, (FileObject) wizardDescriptor.getProperty(NewProjectWizard.LIBRARIES_FOLDER));
-        }
 
         handle.finish();
         return files;
@@ -217,7 +213,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public boolean hasNext() {
-        return index < panels.length + enabledExtenders().size() -1;
+        return index < panels.length + enabledExtenders(wizardDescriptor).size() -1;
     }
 
     @Override
@@ -260,7 +256,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         // noop
     }
     
-    private Collection<? extends ClientProjectExtender> enabledExtenders() {
+    private static Collection<? extends ClientProjectExtender> enabledExtenders(WizardDescriptor wizardDescriptor) {
         final Collection<? extends ClientProjectExtender> prop = (Collection<? extends ClientProjectExtender>)wizardDescriptor.getProperty(Wizard.EXTENDERS);
         return prop==null?(Collection<? extends ClientProjectExtender>)Collections.EMPTY_LIST:prop;
     }
@@ -283,6 +279,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         public static final String SITE_TEMPLATE = "SITE_TEMPLATE"; // NOI18N
         public static final String LIBRARIES_FOLDER = "LIBRARIES_FOLDER"; // NOI18N
+        public static final String LIBRARIES_PATH = "LIBRARIES_PATH";
 
 
         @Override
@@ -330,7 +327,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 // init standard project
                 initProject(project, projectProperties);
             }
-
+            
             // get application dir:
             FileObject siteRootDir = project.getSiteRootFolder();
             assert siteRootDir != null;
@@ -354,6 +351,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             if (htmlFiles != null && htmlFiles.length == 0) {
                 createIndexFile(siteRootDir);
             }
+
+            // apply extenders
+            for (ClientProjectExtender extender : enabledExtenders(wizardDescriptor)) {
+                extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
+            }
+
             return siteRootDir;
         }
 

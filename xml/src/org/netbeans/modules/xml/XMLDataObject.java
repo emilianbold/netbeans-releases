@@ -45,6 +45,8 @@ package org.netbeans.modules.xml;
 
 import java.beans.*;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.xml.transform.Source;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
@@ -103,7 +105,7 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
     private static final long serialVersionUID = 9153823984913876866L;
     
     /** Synchronization implementation delegate. */
-    private XMLSyncSupport sync;
+    private Reference<XMLSyncSupport> refSync;
     
     /** Cookie Manager */
     private final DataObjectCookieManager cookieManager;
@@ -123,7 +125,6 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         
         CookieSet set = getCookieSet();
         set.add (cookieManager = new DataObjectCookieManager (this, set));
-        sync = new XMLSyncSupport(this);
         editorSupportFactory =
             TextEditorSupport.findEditorSupportFactory (this, null);
         
@@ -264,7 +265,23 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
 
     }            
     
-    public Synchronizator getSyncInterface() {
+    private synchronized Synchronizator getSyncIfAvailable() {
+        if (refSync == null) {
+            return null;
+        }
+        return refSync.get();
+    }
+    
+    public synchronized Synchronizator getSyncInterface() {
+        Synchronizator sync = null;
+        if (refSync != null) {
+            sync = refSync.get();
+        }
+        if (sync != null) {
+            return sync;
+        }
+        sync = new XMLSyncSupport(this);
+        refSync = new WeakReference(sync);
         return sync;
     }
 
@@ -291,7 +308,10 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
             // filter out uninteresting events
             if (e.getOldValue() == e.getNewValue()) return;  //e.g. null == null
 
-            sync.representationChanged(FileObject.class);
+            Synchronizator s = getSyncIfAvailable();
+            if (s != null) {
+                s.representationChanged(FileObject.class);
+            }
         }
     }
 
