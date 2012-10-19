@@ -27,10 +27,10 @@
 
     // select mode
     "_StartSelectMode": {
-        "message": "Start Select Mode"
+        "message": "Start Inspect in NetBeans Mode"
     },
     "_StopSelectMode": {
-        "message": "Stop Select Mode"
+        "message": "Stop Inspect in NetBeans Mode"
     },
 
     // presets
@@ -127,10 +127,10 @@
         "message": "Customize..."
     },
     "_SwitchSelectionMode": {
-        "message": "Switch Selection Mode"
+        "message": "Switch NetBeans Mode"
     },
     "_SelectMode": {
-        "message": "Select Mode"
+        "message": "Inspect in NetBeans Mode"
     },
     "_PresetTitle": {
         "message": "$PRESET$ ($WIDTH$ x $HEIGHT$)",
