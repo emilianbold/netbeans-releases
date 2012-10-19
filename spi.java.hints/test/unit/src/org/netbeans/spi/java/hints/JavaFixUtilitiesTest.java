@@ -579,6 +579,32 @@ public class JavaFixUtilitiesTest extends TestBase {
 		           "}\n");
     }
     
+    public void testSingle2MultipleStatements2() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        while (true)\n" +
+                           "            if (true) {\n" +
+                           "                System.err.println();\n" +
+                           "            }\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if (true) $then; => if (true) $then; System.err.println();",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        while (true) {\n" +
+                           "            if (true) {\n" +
+                           "                System.err.println();\n" +
+                           "            }\n" +
+                           "            System.err.println();\n" +
+                           "        }\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
     public void testMultipleStatementsWrapComments1() throws Exception {
         performRewriteTest("package test;\n" +
                            "import java.io.InputStream;\n" +
@@ -824,6 +850,39 @@ public class JavaFixUtilitiesTest extends TestBase {
 		           "}\n");
     }
 
+    public void testFakeBlock2FakeBlock191283() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        System.err.println(1);\n" +
+                           "        lock();\n" +
+                           "        System.err.println(2);\n" +
+                           "        unlock();\n" +
+                           "        System.err.println(3);\n" +
+                           "    }\n" +
+                           "    private static void lock() {}\n" +
+                           "    private static void unlock() {}\n" +
+                           "}\n",
+                           "test.Test.lock(); $i$; test.Test.unlock(); => lock(); try { $i$; } finally { unlock(); }",
+                           "package test;\n" +
+                           "import java.io.InputStream;\n" +
+                           "public class Test {\n" +
+                           "    private void t() throws Exception {\n" +
+                           "        System.err.println(1);\n" +
+                           "        lock();\n" +
+                           "        try {\n" +
+                           "            System.err.println(2);\n" +
+                           "        } finally {\n" +
+                           "            unlock();\n" +
+                           "        }\n" +
+                           "        System.err.println(3);\n" +
+                           "    }\n" +
+                           "    private static void lock() {}\n" +
+                           "    private static void unlock() {}\n" +
+		           "}\n");
+    }
+    
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);
 
