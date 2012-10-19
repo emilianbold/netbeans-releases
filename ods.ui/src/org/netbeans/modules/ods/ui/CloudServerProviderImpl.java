@@ -158,6 +158,7 @@ public class CloudServerProviderImpl implements TeamServerProvider {
             return;
         }
         initialized = true;
+        PresenceIndicator.getDefault().init();
         Preferences prefs = NbPreferences.forModule(CloudServerProviderImpl.class);
         try {
             if (prefs.keys().length > 0) {

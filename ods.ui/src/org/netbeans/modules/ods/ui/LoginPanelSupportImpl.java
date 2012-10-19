@@ -44,8 +44,6 @@ package org.netbeans.modules.ods.ui;
 import java.awt.EventQueue;
 import java.net.PasswordAuthentication;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.modules.ods.api.CloudServer;
 import org.netbeans.modules.ods.client.api.ODSException;
@@ -79,6 +77,7 @@ public class LoginPanelSupportImpl implements LoginPanelSupport {
             public void run() {
                 try {
                     OdsUIUtil.logODSUsage("LOGIN"); //NOI18N
+                    PresenceIndicator.getDefault().init();
                     PasswordAuthentication current = server.getPasswordAuthentication();
                     if (current !=null && !(loginPanel.getUsername().equals(current.getUserName()) && Arrays.equals(loginPanel.getPassword(), current.getPassword()))) {
                         server.logout();
