@@ -239,8 +239,12 @@ class DbxVariable extends Variable {
     public void setVariableValue(String assign_value) {
 	// CR 7094157
 	// LATER should fix this in VariableModel
-	if (!value.equals(assign_value))
-	    debugger.execute(this.assign_str + assign_value);
+	if (!value.equals(assign_value)) {
+            if ( (assign_value.indexOf(" ") >= 0) && (assign_value.indexOf(" ") <= assign_value.indexOf("\"")) ) {
+                assign_value = assign_value.substring(assign_value.indexOf("\""));
+            }
+            debugger.execute(this.assign_str + assign_value);
+        }
     }
 
     private String getDerefExp() {
