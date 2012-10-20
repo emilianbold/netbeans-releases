@@ -88,6 +88,7 @@ import org.openide.util.lookup.Lookups;
     "CreateSiteTemplate_Label=Name template and select files",
     "CreateSiteTemplate_WizardTitle=Create Site Template from current project",
     "CreateSiteTemplate_Error1=Template name must be specified",
+    "CreateSiteTemplate_Error1_extension=Template name must be a ZIP file (*.zip).",
     "CreateSiteTemplate_Error2=Destination name must be specified",
     "CreateSiteTemplate_Error3=Destination is not a valid folder",
     "CreateSiteTemplate_Error4=Template file {0} already exists. Do you want to override it?",
@@ -232,8 +233,13 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
     // End of variables declaration//GEN-END:variables
 
     private String getErrorMessage() {
-        if (getTemplateName().trim().length() == 0) {
+        String tplName = getTemplateName().trim();
+        if (tplName.length() == 0) {
             return Bundle.CreateSiteTemplate_Error1();
+        }
+        if (tplName.indexOf('.') != -1 // NOI18N
+                && !tplName.endsWith(".zip")) { // NOI18N
+            return Bundle.CreateSiteTemplate_Error1_extension();
         }
         if (getTemplateFolder().trim().length() == 0) {
             return Bundle.CreateSiteTemplate_Error2();
