@@ -304,7 +304,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
 
         @Override
         public HelpCtx getHelp() {
-            return new HelpCtx(CreateSiteTemplate.class);
+            return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.CreateSiteTemplate"); // NOI18N
         }
 
         @Override
