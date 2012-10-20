@@ -47,6 +47,7 @@ package org.netbeans.modules.options.advanced;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -207,7 +208,12 @@ public final class AdvancedPanel extends JPanel {
             }
             model.update(category);
             if (searchText != null && matchedKeywords != null) {
-                model.getController(category).handleSuccessfulSearch(searchText, matchedKeywords);
+		OptionsPanelController controller = model.getController(model.getID(category));
+		if(controller == null) {
+		    LOGGER.log(Level.WARNING, "No controller found for category: {0}", category);  //NOI18N
+		} else {
+		    controller.handleSuccessfulSearch(searchText, matchedKeywords);
+		}
             }
             firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);        
         }

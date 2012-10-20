@@ -776,7 +776,14 @@ bool PlatformLauncher::restartRequested() {
 
 void PlatformLauncher::onExit() {
     logMsg("onExit()");
+    
+    if (exiting) {
+        logMsg("Already exiting, no need to schedule restart");
+        return;
+    }
+    
     exiting = true;
+
     if (separateProcess) {
         logMsg("JVM in separate process, no need to restart");
         return;
