@@ -1013,13 +1013,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             getProjectRoots().addSources(headers);
             getProjectRoots().addSources(excluded);
             checkConsistency(false);
-            for(NativeFileItem nativeFileItem : excluded) {
-                FileImpl file = getFile(nativeFileItem.getAbsolutePath(), true);
-                if (file != null) {
-                    removeFile(nativeFileItem.getAbsolutePath());
-                }
-            }
-            checkConsistency(false);
             CreateFilesWorker worker = new CreateFilesWorker(this, readOnlyRemovedFilesSet, validator);
             worker.createProjectFilesIfNeed(sources, true);
             if (status != Status.Validating  || RepositoryUtils.getRepositoryErrorCount(this) == 0){
@@ -1309,7 +1302,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             for (CsmFile csmFile : getGraph().getOutLinks(curLiveFile)) {
                 FileImpl includedFileImpl = (FileImpl) csmFile;
                 if (includedFileImpl.getProjectUID().equals(this.getUID())) {
-                    CndUtils.assertTrueInConsole(allFileImpls.containsKey(includedFileImpl), "no record for: ", includedFileImpl); // NOI18N
+                    if (CndUtils.isDebugMode() || CndUtils.isUnitTestMode()) {
+                        CndUtils.assertTrueInConsole(allFileImpls.containsKey(includedFileImpl), 
+                                "no record for: " + includedFileImpl, "\n\twhile checking out links for " + curLiveFile); // NOI18N
+                    } 
                     // check if file was already handled
                     Boolean result = allFileImpls.get(includedFileImpl);
                     if (result == null) {
