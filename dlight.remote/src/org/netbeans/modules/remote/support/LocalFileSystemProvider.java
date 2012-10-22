@@ -250,7 +250,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     @Override
     public FileObject urlToFileObject(String absoluteURL) {
-        DLightLibsCommonLogger.assertNonUiThread();
+        DLightLibsCommonLogger.assertNonUiThread(Level.INFO);
         
         String path = absoluteURL;
         File file;
