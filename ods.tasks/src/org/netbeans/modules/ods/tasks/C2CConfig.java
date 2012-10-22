@@ -42,15 +42,7 @@
 
 package org.netbeans.modules.ods.tasks;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.Icon;
-import org.netbeans.modules.ods.tasks.query.C2CQuery;
-import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.openide.util.NbPreferences;
 
 /**
