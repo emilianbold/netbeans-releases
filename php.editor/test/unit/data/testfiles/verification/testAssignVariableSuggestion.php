@@ -2,4 +2,8 @@
 
 myFnc();
 
+die('message');
+
+exit('message');
+
 ?>
