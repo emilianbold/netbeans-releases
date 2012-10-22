@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,50 +34,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.web.jsf.wizards;
-
-import java.io.IOException;
-import java.util.Set;
-import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.wizards.FileType;
-import org.netbeans.modules.web.wizards.PageIterator;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
-
-/** A template wizard iterator for new JSF JSP page
  *
- * @author Po-Ting Wu
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.wizards;
 
-public class JSFPageIterator extends PageIterator {
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.util.NbBundle;
 
-    private static final long serialVersionUID = 1L;
+/**
+ * Validator for PageIterator panels.
+ * @author Martin Fousek <marfous@netbeans.org>
+ */
+public final class PageIteratorValidation {
 
-    public JSFPageIterator(FileType fileType) {
-        super(fileType);
-    }
+    /**
+     * Validates JSF/JSP file wizard.
+     */
+    public static class JsfJspValidatorPanel extends DelegatingWizardDescriptorPanel {
 
-    public static JSFPageIterator createJspIterator() {
-        return new JSFPageIterator(FileType.JSP);
-    }
-
-    public static JSFPageIterator createJsfIterator() {
-        return new JSFPageIterator(FileType.JSF);
-    }
-
-    @Override
-    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
-        Set<DataObject> dobj = super.instantiate(wiz);
-
-        // Add JSF framework here
-        FileObject fileObject = ((DataObject) dobj.toArray()[0]).getPrimaryFile();
-        if (!JSFConfigUtilities.hasJsfFramework(fileObject)) {
-            JSFConfigUtilities.extendJsfFramework(fileObject, false);
+        public JsfJspValidatorPanel(Panel delegate) {
+            super(delegate);
         }
 
-        return dobj;
+        @NbBundle.Messages({
+            "JsfJspValidatorPanel.warn.document.root=Project has no valid DocumentRoot"
+        })
+        @Override
+        public boolean isValid() {
+            Project project = getProject();
+            if (super.isValid()) {
+                // check that that project has valid document root
+                WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+                if (webModule != null && webModule.getDocumentBase() == null) {
+                    getWizardDescriptor().putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, Bundle.JsfJspValidatorPanel_warn_document_root());
+                }
+                return true;
+            }
+            return false;
+        }
+
     }
 }
