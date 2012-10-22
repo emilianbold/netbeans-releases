@@ -89,6 +89,19 @@ public class RestSamplesTest extends RestTestBase {
      * @throws org.xml.sax.SAXException
      */
     public void testHelloWorldSample() throws IOException, MalformedURLException, SAXException {
+        String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro/HelloWorldSampleProject");
+        createProject(sampleName, getProjectType(), null);
+        OutputOperator.invoke();
+        deployProject(getProjectName());
+        undeployProject(getProjectName());
+    }
+
+    /**
+     * Test Customer Database Sample
+     *
+     * @throws java.io.IOException
+     */
+    public void testCustomerDBSample() throws IOException {
         new Thread("Close REST Resources Configuration dialog") {
 
             private boolean found = false;
@@ -110,19 +123,6 @@ public class RestSamplesTest extends RestTestBase {
                 }
             }
         }.start();
-        String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro/HelloWorldSampleProject");
-        createProject(sampleName, getProjectType(), null);
-        OutputOperator.invoke();
-        deployProject(getProjectName());
-        undeployProject(getProjectName());
-    }
-
-    /**
-     * Test Customer Database Sample
-     *
-     * @throws java.io.IOException
-     */
-    public void testCustomerDBSample() throws IOException {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro/CustomerDBSampleProject");
         createProject(sampleName, getProjectType(), null);
         deployProject(getProjectName());
