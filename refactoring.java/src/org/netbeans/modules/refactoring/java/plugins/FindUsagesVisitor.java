@@ -77,12 +77,12 @@ import org.openide.util.Exceptions;
 public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
 
     private Collection<TreePath> usages = new ArrayList<TreePath>();
-    private Collection<WhereUsedElement> elements = new ArrayList<WhereUsedElement>();
+    private List<WhereUsedElement> elements = new ArrayList<WhereUsedElement>();
     protected CompilationController workingCopy;
-    private Collection<UsageInComment> usagesInComments = Collections.<UsageInComment>emptyList();
     private boolean findInComments = false;
     private final boolean fromTestRoot;
     private final AtomicBoolean inImport;
+    private Boolean usagesInComments;
 
     public FindUsagesVisitor(CompilationController workingCopy) {
         this(workingCopy, false);
@@ -99,9 +99,6 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
             Exceptions.printStackTrace(ex);
         }
         this.findInComments = findInComments;
-        if (findInComments) {
-            usagesInComments = new ArrayList<UsageInComment>();
-        }
         this.fromTestRoot = fromTestRoot;
         this.inImport = inImport;
     }
@@ -123,7 +120,10 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
                     while (tokenizer.hasNext()) {
                         String current = tokenizer.next();
                         if (current.equals(originalName)) {
-                            usagesInComments.add(new UsageInComment(ts.offset() + tokenizer.match().start(), ts.offset() + tokenizer.match().end()));
+                            WhereUsedElement comment = WhereUsedElement.create(ts.offset() + tokenizer.match().start(),
+                                                                               ts.offset() + tokenizer.match().end(), workingCopy, fromTestRoot);
+                            elements.add(comment);
+                            usagesInComments = true;
                         }
                     }
                 }
@@ -255,10 +255,6 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
             ErrorManager.getDefault().notify(ioe);
         }
     }
-
-    public Collection<UsageInComment> getUsagesInComments() {
-        return usagesInComments;
-    }
     
     protected void addUsage(TreePath tp, JavaWhereUsedFilters.ReadWrite access) {
         assert tp != null;
@@ -277,6 +273,15 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
     }
     
     public Collection<WhereUsedElement> getElements() {
+        if(findInComments) { // the elements need to be sorted. Comments are searched for the whole file at once.
+            Collections.sort(elements, new Comparator<WhereUsedElement>() {
+
+                @Override
+                public int compare(WhereUsedElement o1, WhereUsedElement o2) {
+                    return o1.getPosition().getBegin().getOffset() - o2.getPosition().getBegin().getOffset();
+                }
+            });
+        }
         return elements;
     }
     
@@ -320,14 +325,7 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
         return super.visitNewClass(node, p);
     }
 
-    public static class UsageInComment {
-
-        int from;
-        int to;
-
-        public UsageInComment(int from, int to) {
-            this.from = from;
-            this.to = to;
-        }
+    public boolean usagesInComments() {
+        return Boolean.TRUE == usagesInComments;
     }
 }
