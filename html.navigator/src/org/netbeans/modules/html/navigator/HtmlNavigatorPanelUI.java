@@ -125,9 +125,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private Action[] panelActions;
     //UI stuff
     private WaitNode waitNode = new WaitNode();
-    private JLabel statusLabel;
-    private JLabel stateLabel;
-    private JPanel statusPanel;
     private final PropertyChangeListener pageInspectorListener = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
@@ -184,17 +181,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         setLayout(new BorderLayout());
         add(view, BorderLayout.CENTER);
 
-        statusLabel = new JLabel();
-        stateLabel = new JLabel(NOT_CONNECTED);
-        stateLabel.setEnabled(false);
-        statusPanel = new JPanel();
-        statusPanel.setBorder(new EmptyBorder(4, 4, 4, 4));
-        statusPanel.setLayout(new BorderLayout());
-        statusPanel.add(statusLabel, BorderLayout.WEST);
-        statusPanel.add(stateLabel, BorderLayout.EAST);
-
-        add(statusPanel, BorderLayout.SOUTH);
-
         manager.setRootContext(waitNode);
 
         panelActions = new Action[]{};
@@ -220,8 +206,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 old.removePropertyChangeListener(pageModelListener);
             }
 
-            stateLabel.setEnabled(false);
-            stateLabel.setText(NOT_CONNECTED);
             //setStatusText("Disconnected");
 
             //we need to explicitly call pageModelDocumentChanged() since
@@ -239,8 +223,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             //add new listener to the pagemodel
             model.addPropertyChangeListener(pageModelListener);
 
-            stateLabel.setEnabled(true);
-            stateLabel.setText(CONNECTED);
             //setStatusText("Connected");
 
             //no need to explicitly call pageModelDocumentChanged() as the
@@ -260,8 +242,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
 
     private void pageModelDocumentChanged() {
-        setStatusText("DOM has changed.");
-
         //try to find corresponding FileObject for the inspected document
         FileObject current = getInspectedFileFromPageModel();
         if (inspectedFileObject == null) {
@@ -285,8 +265,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
     
     private void inspectedFileChanged(FileObject old, FileObject neww) {
-        updateInspectedFileUI();
-        
         HtmlElementNode root = getRootNode();
         if(root != null) {
             if(!root.getFileObject().equals(neww)) {
@@ -297,18 +275,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 //=> reset the dom 
                 refreshNodeDOMStatus();
             }
-        }
-    }
-
-    private void updateInspectedFileUI() {
-        if (inspectedFileObject == null) {
-            LOGGER.log(Level.FINE, "inspectedFileObject set to null");
-            //setStatusText("No Inspected File");
-            //stateLabel.setText("No Inspected File");
-        } else {
-            LOGGER.log(Level.FINE, "inspectedFileObject set to {0}", inspectedFileObject.getPath());
-            //setStatusText("Inspecting " + inspectedFileObject.getNameExt());
-            //stateLabel.setText(String.format("Inspecting %s", inspectedFileObject.getNameExt()));
         }
     }
 
@@ -401,8 +367,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 refresh = sourceDescription.getFileObject().equals(inspectedFileObject);
                 root.setDescription(sourceDescription);
                 sourceDescription = null;
-                setSynchronizationState(true);
-                updateInspectedFileUI(); //set the status text back to the inspected file
             }
             setPageModel(PageInspectorImpl.getDefault().getPage());
             //now apply to dom descriptions
@@ -434,24 +398,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     public FileObject getInspectedFileObject() {
         return inspectedFileObject;
-    }
-
-    private void setStatusText(String text) {
-        LOGGER.log(Level.FINE, "HtmlNavigator: {0}", text);
-
-        statusLabel.setText(text);
-
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        statusLabel.setText(null);
-                    }
-                });
-            }
-        }, MESSAGE_SHOW_TIME);
     }
 
     public Action[] getActions() {
@@ -590,17 +536,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         refresh(sourceDescription);
     }
     
-    private void setSynchronizationState(boolean insynch) {
-        if(!insynch) {
-            //setStatusText("Source changed");
-            stateLabel.setForeground(Color.red.darker());
-            //stateLabel.setText("Unsynchronized");
-        } else {
-            stateLabel.setForeground(Color.black); //todo fix the hardcoded color
-            updateInspectedFileUI();
-        }
-    }
-
     private void refresh(final HtmlElementDescription description) {
         final FileObject fileObject = description.getFileObject();
         final HtmlElementNode rootNode = getRootNode();
