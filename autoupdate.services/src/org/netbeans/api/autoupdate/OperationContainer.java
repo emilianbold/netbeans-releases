@@ -238,9 +238,6 @@ public final class OperationContainer<Support> {
                 upToDate = true;
                 return support;
             } else {
-                if (upToDate != null) {
-                    OperationContainerImpl.LOGGER.log(Level.INFO, "Support is null, either listAll[" + listAll() + "] empty, or there are invalid[" + listInvalid() + "]", new Throwable());
-                }
                 return null;
             }
         }

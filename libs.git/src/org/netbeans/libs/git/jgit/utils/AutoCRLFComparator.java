@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -41,47 +35,59 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Author: Tomas Holy
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.libs.git.jgit.utils;
 
-#include "platformlauncher.h"
-#include "utilsfuncs.h"
+import org.eclipse.jgit.diff.RawText;
+import org.eclipse.jgit.diff.RawTextComparator;
 
-PlatformLauncher launcher;
+/**
+ *
+ * @author Ondrej Vrabec
+ */
+public class AutoCRLFComparator extends RawTextComparator {
 
-extern "C" BOOL APIENTRY DllMain(HANDLE hModule,
-        DWORD ul_reason_for_call,
-        LPVOID lpReserved
-        ) {
-    switch (ul_reason_for_call) {
-        case DLL_PROCESS_ATTACH:
-            break;
-        case DLL_THREAD_ATTACH:
-            break;
-        case DLL_THREAD_DETACH:
-            break;
-        case DLL_PROCESS_DETACH:
-            launcher.onExit();
-            break;
+    @Override
+    public boolean equals (RawText a, int ai, RawText b, int bi) {
+        String line1 = a.getString(ai);
+        String line2 = b.getString(bi);
+        line1 = trimTrailingEoL(line1);
+        line2 = trimTrailingEoL(line2);
+
+        return line1.equals(line2);
     }
-    return TRUE;
-}
 
-void exitHook(int status) {
-    logMsg("Exit hook called with status %d", status);
-    launcher.onExit();
-}
-
-#define NBEXEC_EXPORT extern "C" __declspec(dllexport)
-
-NBEXEC_EXPORT int startPlatform(int argc, char *argv[], const char *helpMsg) {
-    DWORD retCode = 0;
-    launcher.appendToHelp(helpMsg);
-    launcher.setSuppressConsole(!isConsoleAttached());
-    if (!launcher.start(argv, argc, &retCode)) {
-        return -1;
+    @Override
+    protected int hashRegion (final byte[] raw, int ptr, int end) {
+        int hash = 5381;
+        end = trimTrailingEoL(raw, ptr, end);
+        for (; ptr < end; ptr++) {
+            hash = ((hash << 5) + hash) + (raw[ptr] & 0xff);
+        }
+        return hash;
     }
-    return retCode;
+
+    private static String trimTrailingEoL (String line) {
+        int end = line.length() - 1;
+        while (end >= 0 && isNewLine(line.charAt(end))) {
+            --end;
+        }
+        return line.substring(0, end + 1);
+    }
+
+    private static int trimTrailingEoL(byte[] raw, int start, int end) {
+        int ptr = end - 1;
+        while (start <= ptr && (raw[ptr] == '\r' || raw[ptr] == '\n')) {
+            ptr--;
+        }
+
+        return ptr + 1;
+    }
+
+    private static boolean isNewLine (char ch) {
+        return ch == '\n' || ch == '\r';
+    }
 }
-
-
