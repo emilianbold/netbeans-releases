@@ -52,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -417,7 +418,12 @@ public class ClientSideProject implements Project {
 
         @Override
         protected void projectClosed() {
-            FileUtil.removeRecursiveListener(projectFileChangesListener, FileUtil.toFile(p.getProjectDirectory()));
+            try {
+                FileUtil.removeRecursiveListener(projectFileChangesListener, FileUtil.toFile(p.getProjectDirectory()));
+            } catch (IllegalArgumentException ex) {
+                // #216349
+                LOGGER.log(Level.INFO, null, ex);
+            }
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{p.getSourceClassPath()});
         }
 

@@ -183,10 +183,12 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         URI dir = FileUtilities.getDirURI(project.getProjectDirectory(), appsrcloc);
         FileObject root = FileUtilities.convertURItoFileObject(dir);
         if (root == null) {
-            File fil = new File(dir);
-            fil.mkdirs();
-            project.getProjectDirectory().refresh();
-            root = FileUtil.toFileObject(fil);
+            final File fil = new File(dir);
+            final boolean rootCreated = fil.mkdirs();
+            if (rootCreated) {
+                project.getProjectDirectory().refresh();
+                root = FileUtil.toFileObject(fil);
+            }
         }
         if (root != null) {
             FileObject metainf = root.getFileObject("META-INF");//NOI18N
@@ -495,7 +497,6 @@ public class EarImpl implements EarImplementation, EarImplementation2,
 
 
     File getDDFile(String path) {
-//        System.out.println("getDD file=" + path);
         //TODO what is the actual path.. sometimes don't have any sources for deployment descriptors..
         URI dir = mavenproject().getEarAppDirectory();
         File fil = new File(new File(dir), path);

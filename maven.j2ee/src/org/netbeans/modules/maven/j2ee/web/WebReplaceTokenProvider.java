@@ -196,26 +196,26 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
     }
 
     public static String[] getServletMappings(WebModule webModule, FileObject javaClass) {
-        if (webModule == null)
+        if (webModule == null) {
             return null;
+        }
 
+        final ClassPath classPath = ClassPath.getClassPath (javaClass, ClassPath.SOURCE);
+        if (classPath == null) {
+            return null;
+        }
 
-        ClassPath classPath = ClassPath.getClassPath (javaClass, ClassPath.SOURCE);
-        String className = classPath.getResourceName(javaClass,'.',false);
+        final String className = classPath.getResourceName(javaClass,'.',false);
         try {
-            List<ServletInfo> servlets =
-                    WebAppMetadataHelper.getServlets(webModule.getMetadataModel());
-            List<String> mappingList = new ArrayList<String>();
+            final List<ServletInfo> servlets = WebAppMetadataHelper.getServlets(webModule.getMetadataModel());
+            final List<String> mappingList = new ArrayList<String>();
             for (ServletInfo si : servlets) {
                 if (className.equals(si.getServletClass())) {
                     mappingList.addAll(si.getUrlPatterns());
                 }
             }
-            String[] mappings = new String[mappingList.size()];
-            mappingList.toArray(mappings);
-            return mappings;
+            return mappingList.toArray(new String[mappingList.size()]);
         } catch (java.io.IOException ex) {
-            ex.printStackTrace();
             return null;
         }
     }

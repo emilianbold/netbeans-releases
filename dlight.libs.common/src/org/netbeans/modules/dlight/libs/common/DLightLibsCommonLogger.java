@@ -110,14 +110,18 @@ public class DLightLibsCommonLogger {
         }
     }
 
-    public static void assertNonUiThread(String message) {
+    public static void assertNonUiThread(String message, Level level) {
         if (assertionsEnabled && SwingUtilities.isEventDispatchThread()) {
-            instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
+            instance.log(level, message, lastAssertion = new Exception(message));
         }
     }
-
+    
     public static void assertNonUiThread() {
-        assertNonUiThread("Should not be called from UI thread"); //NOI18N
+        assertNonUiThread("Should not be called from UI thread", Level.SEVERE); //NOI18N
+    }
+
+    public static void assertNonUiThread(Level level) {
+        assertNonUiThread("Should not be called from UI thread", level); //NOI18N
     }
 
     public static void finest(Exception exception) {

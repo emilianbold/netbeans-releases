@@ -193,14 +193,25 @@ NetBeans.insertGlassPane = function() {
         }
     });
 
+    var clearHighlight = function() {
+        self.lastHighlighted = null;
+        // HACK notify NetBeans
+        canvas.setAttribute(self.ATTR_HIGHLIGHTED, 'clear');
+        canvas.removeAttribute(self.ATTR_HIGHLIGHTED);        
+    };
+
     // Clear highlight when the mouse leaves the window
     window.addEventListener('mouseout', function(e) {
         if (e.toElement === null) {
-            self.lastHighlighted = null;
-            // HACK notify NetBeans
-            canvas.setAttribute(self.ATTR_HIGHLIGHTED, 'clear');
-            canvas.removeAttribute(self.ATTR_HIGHLIGHTED);
+            clearHighlight();
         }
+    });
+
+    // Clear highlight when a context menu is shown
+    window.addEventListener('contextmenu', function() {
+        // Some mouse move events are fired shortly after
+        // this event => postpone processing of this event a bit
+        setTimeout(clearHighlight, 100);
     });
 
     document.body.appendChild(canvas);
