@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -173,7 +172,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         public JPopupMenu getPopupMenu() {
             if (!initialized) {
                 initialized = true;
-                Set/*<TargetLister.Target>*/ allTargets;
+                Set<TargetLister.Target> allTargets;
                 try {
                     allTargets = TargetLister.getTargets(project);
                 } catch (IOException e) {
@@ -182,11 +181,9 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                     allTargets = Collections.EMPTY_SET;
                 }
                 String defaultTarget = null;
-                SortedSet/*<String>*/ describedTargets = new TreeSet(Collator.getInstance());
-                SortedSet/*<String>*/ otherTargets = new TreeSet(Collator.getInstance());
-                Iterator it = allTargets.iterator();
-                while (it.hasNext()) {
-                    TargetLister.Target t = (TargetLister.Target) it.next();
+                SortedSet<String> describedTargets = new TreeSet(Collator.getInstance());
+                SortedSet<String> otherTargets = new TreeSet(Collator.getInstance());
+                for (TargetLister.Target t : allTargets) {
                     if (t.isOverridden()) {
                         // Cannot be called.
                         continue;
@@ -217,9 +214,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                 }
                 if (!describedTargets.isEmpty()) {
                     needsep = true;
-                    it = describedTargets.iterator();
-                    while (it.hasNext()) {
-                        String target = (String) it.next();
+                    for (String target : describedTargets) {
                         JMenuItem menuitem = new JMenuItem(target);
                         menuitem.addActionListener(new TargetMenuItemHandler(project, target));
                         add(menuitem);
@@ -232,9 +227,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                 if (!otherTargets.isEmpty()) {
                     needsep = true;
                     JMenu submenu = new JMenu(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_other_targets"));
-                    it = otherTargets.iterator();
-                    while (it.hasNext()) {
-                        String target = (String) it.next();
+                    for (String target : otherTargets) {
                         JMenuItem menuitem = new JMenuItem(target);
                         menuitem.addActionListener(new TargetMenuItemHandler(project, target));
                         submenu.add(menuitem);
