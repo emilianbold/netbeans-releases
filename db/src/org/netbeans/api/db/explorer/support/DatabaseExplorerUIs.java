@@ -48,17 +48,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.util.DataComboBoxModel;
 import org.netbeans.modules.db.util.DataComboBoxSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * This class contains utility methods for working with and/or displaying
@@ -102,36 +103,26 @@ public final class DatabaseExplorerUIs {
             this.comboBoxModel = new ConnectionComboBoxModel(connectionManager);
         }
 
+        @Override
         public String getItemTooltipText(Object item) {
             return ((DatabaseConnection)item).toString();
         }
 
+        @Override
         public String getItemDisplayName(Object item) {
             return ((DatabaseConnection)item).getDisplayName();
         }
 
+        @Override
         public void newItemActionPerformed() {
-            Set oldConnections = new HashSet(Arrays.asList(connectionManager.getConnections()));
-            connectionManager.showAddConnectionDialog(null);
-
-            // try to find the new connection
-            DatabaseConnection[] newConnections = connectionManager.getConnections();
-            if (newConnections.length == oldConnections.size()) {
-                // no new connection, so...
-                return;
-            }
-            for (int i = 0; i < newConnections.length; i++) {
-                if (!oldConnections.contains(newConnections[i])) {
-                    comboBoxModel.addSelectedConnection(newConnections[i]);
-                    break;
-                }
-            }
         }
 
+        @Override
         public String getNewItemDisplayName() {
             return NbBundle.getMessage(DatabaseExplorerUIs.class, "LBL_NewDbConnection");
         }
 
+        @Override
         public ComboBoxModel getListModel() {
             return comboBoxModel;
         }
@@ -140,48 +131,71 @@ public final class DatabaseExplorerUIs {
     private static final class ConnectionComboBoxModel extends AbstractListModel implements ComboBoxModel {
 
         private final ConnectionManager connectionManager;
-        private final List connectionList; // must be ArrayList
-
+        private final List connectionList = new ArrayList();
         private Object selectedItem; // can be anything, not just a database connection
+        private ConnectionListener cl = new ConnectionListener() {
+            @Override
+            public void connectionsChanged() {
+                updateConnectionList();
+            }
+        };
 
         public ConnectionComboBoxModel(ConnectionManager connectionManager) {
             this.connectionManager = connectionManager;
-
-            connectionList = new ArrayList();
-            connectionList.addAll(Arrays.asList(connectionManager.getConnections()));
-            Collections.sort(connectionList, new ConnectionComparator());
+            connectionManager.addConnectionListener(WeakListeners.create(
+                    ConnectionListener.class, cl, connectionManager));
+            updateConnectionList();
         }
 
+        private void updateConnectionList() {
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    int oldLength = connectionList.size();
+                    connectionList.clear();
+                    connectionList.addAll(
+                            Arrays.asList(connectionManager.getConnections()));
+                    Collections.sort(connectionList, new ConnectionComparator());
+                    fireContentsChanged(this, 0,
+                            Math.max(connectionList.size(), oldLength));
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                r.run();
+            } else {
+                SwingUtilities.invokeLater(r);
+            }
+        }
+
+        @Override
         public void setSelectedItem(Object anItem) {
             selectedItem = anItem;
         }
 
+        @Override
         public Object getElementAt(int index) {
             return connectionList.get(index);
         }
 
+        @Override
         public int getSize() {
             return connectionList.size();
         }
 
+        @Override
         public Object getSelectedItem() {
             return selectedItem;
-        }
-
-        public void addSelectedConnection(DatabaseConnection dbconn) {
-            selectedItem = dbconn;
-            connectionList.add(dbconn);
-            Collections.sort(connectionList, new ConnectionComparator());
-            fireContentsChanged(this, 0, connectionList.size());
         }
     }
 
     private static final class ConnectionComparator implements Comparator {
 
+        @Override
         public boolean equals(Object that) {
             return that instanceof ConnectionComparator;
         }
 
+        @Override
         public int compare(Object dbconn1, Object dbconn2) {
             if (dbconn1 == null) {
                 return dbconn2 == null ? 0 : -1;
