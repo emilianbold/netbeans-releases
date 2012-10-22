@@ -207,7 +207,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public FileObject urlToFileObject(String path) {
-        DLightLibsCommonLogger.assertNonUiThread();
+        DLightLibsCommonLogger.assertNonUiThread(Level.INFO);
         
         if (path.startsWith(RemoteFileURLStreamHandler.PROTOCOL_PREFIX)) {
             // path is like "rfs:hostname:22/tmp/filename.ext"
