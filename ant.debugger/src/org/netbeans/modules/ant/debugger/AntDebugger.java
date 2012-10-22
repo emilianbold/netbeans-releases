@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.AntProjectCookie;
@@ -107,6 +108,8 @@ public class AntDebugger extends ActionsProviderSupport {
     private String                      currentTargetName;
     private String                      currentTaskName;
     private int                         originatingIndex = -1; // Current index of the virtual originating target in the call stack
+    private volatile boolean            suspended = false;
+    private final List<StateListener>   stateListeners = new CopyOnWriteArrayList<StateListener>();
     
     private VariablesModel              variablesModel;
     private WatchesModel                watchesModel;
@@ -222,6 +225,35 @@ public class AntDebugger extends ActionsProviderSupport {
     
     // other methods ...........................................................
     
+    public boolean isSuspended() {
+        return suspended;
+    }
+    
+    private void setSuspended(boolean suspended) {
+        this.suspended = suspended;
+        fireStateChanged(suspended);
+    }
+    
+    private void fireStateChanged(boolean suspended) {
+        for (StateListener sl : stateListeners) {
+            sl.suspended(suspended);
+        }
+    }
+    
+    private void fireFinished() {
+        for (StateListener sl : stateListeners) {
+            sl.finished();
+        }
+    }
+    
+    void addStateListener(StateListener sl) {
+        stateListeners.add(sl);
+    }
+    
+    void removeStateListener(StateListener sl) {
+        stateListeners.remove(sl);
+    }
+    
     private AntEvent lastEvent;
     
     /**
@@ -287,6 +319,7 @@ public class AntDebugger extends ActionsProviderSupport {
         }
         
         // wait for next stepping orders
+        setSuspended(true);
         synchronized (LOCK) {
             try {
                 if (logger.isLoggable(Level.FINE)) {
@@ -300,6 +333,9 @@ public class AntDebugger extends ActionsProviderSupport {
                 logger.fine("AntDebugger.stopHere() was interrupted.");
                 Thread.currentThread().interrupt();
             }
+        }
+        if (!finished) {
+            setSuspended(false);
         }
         synchronized (this) {
             lastEvent = null;
@@ -341,6 +377,7 @@ public class AntDebugger extends ActionsProviderSupport {
         engineProvider.getDestructor ().killEngine ();
         ioManager.closeStream ();
         Utils.unmarkCurrent ();
+        fireFinished();
         // finish actions
         synchronized (LOCK_ACTIONS) {
             actionRunning = false;
@@ -641,6 +678,10 @@ public class AntDebugger extends ActionsProviderSupport {
     private volatile boolean doStop = true; // stop on the next task/target
     private volatile boolean finished = false; // When the debugger has finished.
     
+    public boolean isFinished() {
+        return finished;
+    }
+    
     private void doContinue () {
         Utils.unmarkCurrent ();
         //lastAction = ActionsManager.ACTION_CONTINUE;
@@ -742,6 +783,7 @@ public class AntDebugger extends ActionsProviderSupport {
         taskEndToStopAt = null;
         targetEndToStopAt = null;
         fileToStopAt = null;
+        fireFinished();
         synchronized (LOCK) {
             LOCK.notify ();
         }
@@ -981,6 +1023,14 @@ public class AntDebugger extends ActionsProviderSupport {
             return dependent;
         }
 
+    }
+    
+    interface StateListener {
+        
+        void suspended(boolean suspended);
+        
+        void finished();
+        
     }
 
 }
