@@ -119,6 +119,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         placeholder.add(tree, BorderLayout.CENTER);
         nameTextField.getDocument().addDocumentListener(this);
         fileTextField.getDocument().addDocumentListener(this);
+        fileTextField.setText(new File(System.getProperty("user.home")).getAbsolutePath()); // NOI18N
     }
 
     public String getName() {
