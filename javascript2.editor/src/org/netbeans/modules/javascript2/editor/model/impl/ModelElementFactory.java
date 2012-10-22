@@ -161,7 +161,9 @@ class ModelElementFactory {
             }
         }
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
-        newObject.setDocumentation(docHolder.getDocumentation(objectNode));
+        if (docHolder != null) {
+            newObject.setDocumentation(docHolder.getDocumentation(objectNode));
+        }
         parent.addProperty(name.getName(), newObject);
         return (JsObjectImpl)newObject;
     }
