@@ -834,17 +834,20 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     final void _setClassifier(final CsmClassifier classifier) {
         // remove old cached value
-        FileImpl file = (FileImpl) getContainingFile();
-        file.removeResolvedReference(new CsmTypeReferenceImpl(this));
-        CsmUID<CsmClassifier> cUID = UIDCsmConverter.declarationToUID(classifier);
-        this.classifierUID = cUID;
-        // register new cached value
-        if (cUID != null && classifier != null && !CsmKindUtilities.isBuiltIn(classifier) && CsmBaseUtilities.isValid(classifier) && !CsmKindUtilities.isTypedef(classifier)
-            //&& !CsmKindUtilities.isTemplate(classifier) && !isInstantiation()
-           ) {
-           file.addResolvedReference(new CsmTypeReferenceImpl(this), classifier);
+        CsmFile csmFile = getContainingFile();
+        if(csmFile instanceof FileImpl) {
+            FileImpl fileImpl = (FileImpl) csmFile;
+            fileImpl.removeResolvedReference(new CsmTypeReferenceImpl(this));
+            CsmUID<CsmClassifier> cUID = UIDCsmConverter.declarationToUID(classifier);
+            this.classifierUID = cUID;
+            // register new cached value
+            if (cUID != null && classifier != null && !CsmKindUtilities.isBuiltIn(classifier) && CsmBaseUtilities.isValid(classifier) && !CsmKindUtilities.isTypedef(classifier)
+                //&& !CsmKindUtilities.isTemplate(classifier) && !isInstantiation()
+               ) {
+               fileImpl.addResolvedReference(new CsmTypeReferenceImpl(this), classifier);
+            }
+            assert (cUID != null || classifier == null);
         }
-        assert (cUID != null || classifier == null);
     }
 
     @Override
