@@ -407,6 +407,7 @@ public class TopSecurityManager extends SecurityManager {
 
     private final Set<Class> warnedSunMisc = new WeakSet<Class>();
     private final Set<String> callerWhiteList = createCallerWhiteList();
+    private final Set<String> callerBlackList = createCallerBlackList();
     @Override
     public void checkMemberAccess(Class<?> clazz, int which) {
         final String n = clazz.getName();
@@ -423,6 +424,9 @@ public class TopSecurityManager extends SecurityManager {
                 }
             }
             final String msg = "Dangerous reflection access to " + n + " by " + caller + " detected!";
+            if (caller != null && callerBlackList.contains(caller.getName())) {
+                throw new SecurityException(msg);
+            }
             Level l;
             if (caller != null && callerWhiteList.contains(caller.getName())) {
                 l = Level.FINEST;
@@ -443,7 +447,7 @@ public class TopSecurityManager extends SecurityManager {
     /**
      * Create list of safe callers for {@link #checkMemberAccess(Class, int)}.
      */
-    private Set<String> createCallerWhiteList() {
+    private static Set<String> createCallerWhiteList() {
         Set<String> wl = new HashSet<String>();
         wl.add("org.netbeans.core.output2.FileMapStorage");             //NOI18N
         wl.add("com.sun.tools.javac.util.CloseableURLClassLoader");     //NOI18N
@@ -451,6 +455,11 @@ public class TopSecurityManager extends SecurityManager {
         wl.add("org.apache.lucene.store.MMapDirectory$1");              //NOI18N
         wl.add("org.apache.lucene.util.Constants"); //#217037
         wl.add("org.apache.lucene.util.RamUsageEstimator");//#217037
+        return wl;
+    }
+    private static Set<String> createCallerBlackList() {
+        Set<String> wl = new HashSet<String>();
+        wl.add("com.sun.istack.tools.ProtectedTask");             //NOI18N
         return wl;
     }
     
