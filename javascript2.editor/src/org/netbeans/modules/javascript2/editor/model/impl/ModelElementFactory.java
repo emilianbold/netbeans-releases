@@ -96,6 +96,9 @@ class ModelElementFactory {
                     inObject, fqName.get(fqName.size() - 1), parameters, ModelUtils.documentOffsetRange(parserResult, start, end));
         }
         String propertyName = result.getDeclarationName().getName();
+        if (parentObject == null) {
+            parentObject = globalObject;
+        }
         JsObject property = parentObject.getProperty(propertyName); // the already existing property
         
         parentObject.addProperty(result.getDeclarationName().getName(), result);

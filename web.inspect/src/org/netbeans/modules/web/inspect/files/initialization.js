@@ -77,6 +77,9 @@ NetBeans.highlight = [];
 // Next highlight (under construction)
 NetBeans.nextHighlight = [];
 
+// Determines whether the enclosing browser window is active
+NetBeans.windowActive = true;
+
 // Initializes/clears the next selection
 NetBeans.initNextSelection = function() {
     this.nextSelection = [];
@@ -184,23 +187,29 @@ NetBeans.insertGlassPane = function() {
 
     // Mouse-over highlight
     canvas.addEventListener('mousemove', function(event) {
-        var element = getElementForEvent(event);
-        if (self.lastHighlighted !== element) {
-            self.lastHighlighted = element;
-            // HACK: notify NetBeans
-            element.setAttribute(self.ATTR_HIGHLIGHTED, 'set');
-            element.removeAttribute(self.ATTR_HIGHLIGHTED);
+        if (self.windowActive) {
+            var element = getElementForEvent(event);
+            if (self.lastHighlighted !== element) {
+                self.lastHighlighted = element;
+                // HACK: notify NetBeans
+                element.setAttribute(self.ATTR_HIGHLIGHTED, 'set');
+                element.removeAttribute(self.ATTR_HIGHLIGHTED);
+            }
         }
     });
 
     // Clear highlight when the mouse leaves the window
     window.addEventListener('mouseout', function(e) {
         if (e.toElement === null) {
-            self.lastHighlighted = null;
-            // HACK notify NetBeans
-            canvas.setAttribute(self.ATTR_HIGHLIGHTED, 'clear');
-            canvas.removeAttribute(self.ATTR_HIGHLIGHTED);
+            NetBeans.clearHighlight();
         }
+    });
+
+    // Clear highlight when a context menu is shown
+    window.addEventListener('contextmenu', function() {
+        // Some mouse move events are fired shortly after
+        // this event => postpone processing of this event a bit
+        setTimeout(NetBeans.clearHighlight, 100);
     });
 
     document.body.appendChild(canvas);
@@ -228,6 +237,14 @@ NetBeans.insertGlassPane = function() {
         window.setInterval(this.repaintGlassPane, 500);
     }
     this.repaintGlassPane();
+};
+
+NetBeans.clearHighlight = function() {
+    NetBeans.lastHighlighted = null;
+    // Notify NetBeans
+    var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
+    canvas.setAttribute(NetBeans.ATTR_HIGHLIGHTED, 'clear');
+    canvas.removeAttribute(NetBeans.ATTR_HIGHLIGHTED);
 };
 
 NetBeans.setSelectionMode = function(selectionMode) {
@@ -318,6 +335,13 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
             ctx.stroke();
         }
+    }
+};
+
+NetBeans.setWindowActive = function(active) {
+    this.windowActive = active;
+    if (!active) {
+        this.clearHighlight();
     }
 };
 

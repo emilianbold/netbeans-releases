@@ -95,6 +95,14 @@ public class PHPHintsTest extends PHPHintsTestBase {
         checkSuggestion(new AssignVariableSuggestion(), "testAssignVariableSuggestion.php", "myFnc();^");
     }
 
+    public void testAssignVariableSuggestion_02() throws Exception {
+        checkSuggestion(new AssignVariableSuggestion(), "testAssignVariableSuggestion.php", "die('message');^");
+    }
+
+    public void testAssignVariableSuggestion_03() throws Exception {
+        checkSuggestion(new AssignVariableSuggestion(), "testAssignVariableSuggestion.php", "exit('message');^");
+    }
+
     public void testIdenticalComparisonSuggestion() throws Exception {
         checkSuggestion(new IdenticalComparisonSuggestion(), "testIdenticalComparisonSuggestion.php", "if ($a == true)^ {}");
     }
