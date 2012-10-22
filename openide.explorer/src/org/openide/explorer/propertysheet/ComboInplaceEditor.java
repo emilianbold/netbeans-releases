@@ -131,6 +131,10 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         } else {
             isAutoComplete = false;
         }
+        if ("Aqua".equals(UIManager.getLookAndFeel().getID())) {
+            //#220163
+            UIManager.put("PopupMenu.consumeEventOnClose", Boolean.TRUE); //NOI18N
+        }
     }
 
     /** Overridden to add a listener to the editor if necessary, since the
@@ -590,6 +594,12 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                 getEditor().getEditorComponent().requestFocus();
             }
         }
+        Thread.dumpStack();
+    }
+    
+    public void firePopupMenuWillBecomeInvisible() {
+        super.firePopupMenuWillBecomeInvisible();
+        Thread.dumpStack();
     }
 
     /** Overridden to fire COMMAND_FAILURE on Escape */
