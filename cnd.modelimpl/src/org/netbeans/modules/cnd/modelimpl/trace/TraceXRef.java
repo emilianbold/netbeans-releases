@@ -440,11 +440,7 @@ public class TraceXRef extends TraceModel {
                 return;
             }
             XRefResultSet.ContextEntry entry = createLightWeightEntry(context, printErr, reportUnresolved);
-            if (!reportUnresolved) {
-                // if perf test => count all for statistics
-                bag.incrementScopeCounter(XRefResultSet.ContextScope.CHECK_POINT);
-            }
-            if (entry != XRefResultSet.ContextEntry.RESOLVED) {
+            if (reportUnresolved) {
                 bag.addEntry(XRefResultSet.ContextScope.UNRESOLVED, entry);
                 // in perf test no need to spend extra memory
                 if (reportUnresolved) {
@@ -458,6 +454,9 @@ public class TraceXRef extends TraceModel {
                         unres.increment();
                     }
                 }
+            } else {
+                // if perf test => count all for statistics
+                bag.incrementScopeCounter(XRefResultSet.ContextScope.CHECK_POINT);
             }
         }
     }
