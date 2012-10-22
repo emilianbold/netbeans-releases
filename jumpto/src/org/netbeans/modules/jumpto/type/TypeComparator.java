@@ -57,6 +57,16 @@ import org.netbeans.spi.jumpto.type.TypeDescriptor;
  */
 public class TypeComparator extends EntityComparator<TypeDescriptor> {
 
+    private final boolean caseSensitive;
+
+    public TypeComparator(final boolean caseSensitive) {
+        this.caseSensitive = caseSensitive;
+    }
+
+    public TypeComparator() {
+        this(true);
+    }
+
     /**
      * Compares its two {@code TypeDescriptor}s for order.
      * <p>
@@ -91,7 +101,7 @@ public class TypeComparator extends EntityComparator<TypeDescriptor> {
             return result; // e1projectName NOT equals to e2projectName
         }
         // here: e1projectName equals to e2projectName
-        result = compare(e1.getTypeName(), e2.getTypeName());
+        result = compare(e1.getTypeName(), e2.getTypeName(), caseSensitive);
         if ( result != 0 ) {
            return result;
         }
