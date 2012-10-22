@@ -169,7 +169,7 @@ public class AntDebugger extends ActionsProviderSupport {
         synchronized (LOCK_ACTIONS) {
             actionRunning = true;
         }
-        logger.fine("AntDebugger.doAction("+action+"), is kill = "+(action == ActionsManager.ACTION_KILL));
+        logger.log(Level.FINE, "AntDebugger.doAction({0}), is kill = {1}", new Object[]{action, action == ActionsManager.ACTION_KILL});
         if (action == ActionsManager.ACTION_KILL) {
             finish ();
         } else
@@ -228,8 +228,12 @@ public class AntDebugger extends ActionsProviderSupport {
      * Called from DebuggerAntLogger.
      */
     void taskStarted (AntEvent event) {
-        if (finished) return ;
-        if (logger.isLoggable(Level.FINE)) logger.fine("AntDebugger.taskStarted("+event+")");
+        if (finished) {
+            return ;
+        }
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "AntDebugger.taskStarted({0})", event);
+        }
         Object taskLine = Utils.getLine (event);
         callStackList.addFirst(
                 new Task (event.getTaskStructure (), 
@@ -243,13 +247,19 @@ public class AntDebugger extends ActionsProviderSupport {
     }
     
     private void elementStarted(AntEvent event) {
-        if (logger.isLoggable(Level.FINE)) logger.fine("AntDebugger.elementStarted("+event+"), doStop = "+doStop);
-        if (finished) return ;
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "AntDebugger.elementStarted({0}), doStop = {1}", new Object[]{event, doStop});
+        }
+        if (finished) {
+            return ;
+        }
         if (!doStop) {
             if (!onBreakpoint ()) {
                 logger.fine(" Not on breakpoint, continuing...");
                 return ; // continue
-            } else logger.fine(" Is on breakpoint.");
+            } else {
+                logger.fine(" Is on breakpoint.");
+            }
         }
         logger.fine("AntDebugger.elementStarted() stopping...");
         stopHere(event);
@@ -279,9 +289,13 @@ public class AntDebugger extends ActionsProviderSupport {
         // wait for next stepping orders
         synchronized (LOCK) {
             try {
-                if (logger.isLoggable(Level.FINE)) logger.fine("stopHere(): waiting in thread '"+Thread.currentThread()+"' ...");
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "stopHere(): waiting in thread ''{0}'' ...", Thread.currentThread());
+                }
                 LOCK.wait ();
-                if (logger.isLoggable(Level.FINE)) logger.fine("stopHere(): wait in thread '"+Thread.currentThread()+"' notified.");
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "stopHere(): wait in thread ''{0}'' notified.", Thread.currentThread());
+                }
             } catch (InterruptedException ex) {
                 logger.fine("AntDebugger.stopHere() was interrupted.");
                 Thread.currentThread().interrupt();
@@ -293,11 +307,13 @@ public class AntDebugger extends ActionsProviderSupport {
     }
     
     void taskFinished (AntEvent event) {
-        if (finished) return ;
+        if (finished) {
+            return ;
+        }
         if (callStackList.size() > 0) {
             callStackList.remove(0);
         } else {
-            logger.log(Level.CONFIG, "Empty call stack when task "+event.getTaskStructure().getName()+" finished.");
+            logger.log(Level.CONFIG, "Empty call stack when task {0} finished.", event.getTaskStructure().getName());
         }
         if (taskEndToStopAt != null &&
             taskEndToStopAt.equals(event.getTaskStructure().getName()) &&
@@ -333,7 +349,9 @@ public class AntDebugger extends ActionsProviderSupport {
     }
     
     void targetStarted(AntEvent event) {
-        if (finished) return ;
+        if (finished) {
+            return ;
+        }
         String targetName = event.getTargetName();
         //updateTargetsByName(event.getScriptLocation());
         TargetLister.Target target = findTarget(targetName, event.getScriptLocation());
@@ -372,7 +390,9 @@ public class AntDebugger extends ActionsProviderSupport {
             int l = sessionOriginatingTargets.length;
             for (int i = 0; i < l; i++) {
                 String start = sessionOriginatingTargets [i];
-                if (start.equals(targetName)) continue;
+                if (start.equals(targetName)) {
+                    continue;
+                }
                 List path = findPath (event.getScriptLocation(), start, targetName);
                 if (path != null) {
                     originatingTargets = path;
@@ -407,11 +427,13 @@ public class AntDebugger extends ActionsProviderSupport {
     }
     
     void targetFinished(AntEvent event) {
-        if (finished) return ;
+        if (finished) {
+            return ;
+        }
         if (callStackList.size() > 0) {
             callStackList.remove(0);
         } else {
-            logger.log(Level.CONFIG, "Empty call stack when target "+event.getTargetName()+" finished.");
+            logger.log(Level.CONFIG, "Empty call stack when target {0} finished.", event.getTargetName());
         }
         if (targetEndToStopAt != null && targetEndToStopAt.equals(event.getTargetName()) &&
             fileToStopAt.equals(event.getScriptLocation())) {
@@ -495,8 +517,9 @@ public class AntDebugger extends ActionsProviderSupport {
         int i = callStackList.size() - 1;
         sb.append (getFrameName (callStackList.get(i--)));
         int end = Math.max(0, originatingIndex);
-        while (i >= end)
+        while (i >= end) {
             sb.append ('.').append (getFrameName (callStackList.get(i--)));
+        }
         return new String (sb);
     }
     
@@ -535,7 +558,9 @@ public class AntDebugger extends ActionsProviderSupport {
         int j, jj = ws.length;
         for (j = 0; j < jj; j++) {
             Object value = getVariableValue (ws [j].getExpression ());
-            if (value == null) value = new Integer (0);
+            if (value == null) {
+                value = new Integer (0);
+            }
             if ( watches.containsKey (ws [j].getExpression ()) &&
                  !watches.get (ws [j].getExpression ()).equals (value)
             ) {
@@ -549,11 +574,12 @@ public class AntDebugger extends ActionsProviderSupport {
                     value
                 );
                 return true;
-            } else
+            } else {
                 watches.put (
                     ws [j].getExpression (), 
                     value
                 );
+            }
         }
         
         // 2) check line breakpoints
@@ -580,7 +606,7 @@ public class AntDebugger extends ActionsProviderSupport {
                 line = new Annotatable[] { ((Annotatable[]) line)[0] };
             }
             int i, k = breakpoints.length;
-            for (i = 0; i < k; i++)
+            for (i = 0; i < k; i++) {
                 if ( breakpoints [i] instanceof AntBreakpoint &&
                      breakpoints [i].isEnabled() &&
                      Utils.contains (
@@ -595,6 +621,7 @@ public class AntDebugger extends ActionsProviderSupport {
                     //    (callStackInternal, j, callStack, 0, jj - j);
                     return true;
                 }
+            }
         }
         return false;
     }
@@ -729,9 +756,10 @@ public class AntDebugger extends ActionsProviderSupport {
     private CallStackModel              callStackModel;
 
     private CallStackModel getCallStackModel () {
-        if (callStackModel == null)
+        if (callStackModel == null) {
             callStackModel = (CallStackModel) contextProvider.lookupFirst 
                 ("CallStackView", TreeModel.class);
+        }
         return callStackModel;
     }
     
@@ -776,7 +804,9 @@ public class AntDebugger extends ActionsProviderSupport {
                 newStart,
                 end
             );
-            if (ll == null) continue;
+            if (ll == null) {
+                continue;
+            }
             TargetOriginating to = (TargetOriginating) ll.getLast();
             if (to.getOriginatingTarget() == null) {
                 to.setOriginatingTarget(t);
@@ -828,7 +858,7 @@ public class AntDebugger extends ActionsProviderSupport {
                     // Ignore - we'll have an empty map
                 }
             } else {
-                logger.warning("No ant cookie from "+dob+", fo = "+fo);
+                logger.log(Level.WARNING, "No ant cookie from {0}, fo = {1}", new Object[]{dob, fo});
             }
             nameToTargetByFiles.put(file, nameToTarget);
         }
@@ -875,10 +905,8 @@ public class AntDebugger extends ActionsProviderSupport {
     private void fireBreakpoints () {
         synchronized(this) {
             if (breakpointModel == null) {
-                Iterator it = DebuggerManager.getDebuggerManager ().lookup 
-                        ("BreakpointsView", NodeModel.class).iterator ();
-                while (it.hasNext ()) {
-                    NodeModel model = (NodeModel) it.next ();
+                List<? extends NodeModel> bpNodeModels = DebuggerManager.getDebuggerManager().lookup("BreakpointsView", NodeModel.class);
+                for (NodeModel model : bpNodeModels) {
                     if (model instanceof BreakpointModel) {
                         breakpointModel = (BreakpointModel) model;
                         break;
@@ -891,9 +919,13 @@ public class AntDebugger extends ActionsProviderSupport {
     
     String evaluate (String expression) {
         String value = getVariableValue (expression);
-        if (value != null) return value;
+        if (value != null) {
+            return value;
+        }
         synchronized (this) {
-            if (lastEvent == null) return null;
+            if (lastEvent == null) {
+                return null;
+            }
             return lastEvent.evaluate (expression);
         }
     }
@@ -906,7 +938,9 @@ public class AntDebugger extends ActionsProviderSupport {
     
     String getVariableValue (String variableName) {
         synchronized (this) {
-            if (lastEvent == null) return null;
+            if (lastEvent == null) {
+                return null;
+            }
             return lastEvent.getProperty (variableName);
         }
     }
