@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved. 
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>HTML5 Project Properties Dialog Box: Sources</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+        <h2>HTML5 Project Properties Dialog Box: Sources</h2>
+
+        <p><small><a href="#seealso">See Also</a></small>
+
+        <p>You open the HTML5 Project Properties dialog box by right-clicking
+            any HTML5 project node in the Projects window and choosing Properties.</p>
+
+        <p>The Sources page lets you set the locations for commonly-used directories within
+            the project folder of a Java web project, such as the <code>WEB-INF</code> and Web Pages
+            folders. It also allows you to specify the project's source package and test package
+            folders, set the JDK version that corresponds to the project's source/binary
+            format, include or exclude classes to be compiled with the project, and set the
+            default project character encoding.</p>
+
+
+        <p>You can modify the following properties in the Sources page of the 
+            dialog box.</p>
+
+        <ul>
+            <li><strong>Project Folder.</strong> (<em>read-only</em>) Lists the directory on your
+                computer where the project sources are located.</li>
+
+            <li><strong>Site Root Folder.</strong> Lists the top level folder of the application. 
+                This folder typically contains the <tt>index.html</tt> file.</li>
+
+            <li><strong>Unit Tests Folder.</strong> </li>
+
+
+<!--
+        <p>A pane is provided for both source and test package folders, listing the location of
+            package folders, and the label used for them in the Project Properties window. You
+            can use the Test Package Folders pane to specify the folder that the IDE uses when
+            creating JUnit tests. By default, when you create a project the IDE creates a test
+            packages folder called <code>test</code> with the label Test Packages. Use the buttons
+            to the right of the panes to add, remove, and change the order of the package folders.</p>
+
+        <p>To create JUnit tests with the IDE, a project must include a test package folder. If
+            the test packages folder for your project is missing or unavailable, you can create
+            a new folder in your project and then use this pane to designate the new folder as
+            the Test Package folder.</p>
+
+        <ul>
+            <li><strong>Add Folder:</strong> Click to add a new package folder to the adjacent pane.
+                In the Add Source/Test Folder dialog that displays, navigate to and select the folder
+                containing the resources you want to add, then click Open. The resources are then
+                added to the corresponding Package Folders pane.
+
+                <ul class="note">
+                    <li>To edit the name of a package folder listed in either of the Package Folder
+                        panes, double-click the listed entry and type directly into the field.</li>
+                </ul></li>
+
+            <li><strong>Remove:</strong> Select an entry in a Package Folders pane, then click the
+                Remove button to delete it.</li>
+
+            <li><strong>Move Up:</strong> Select an entry in a Package Folders pane, then click
+                Move Up to have it listed higher in the pane. The order in which packages are listed
+                corresponds to the order in which they display in the Projects window.</li>
+
+            <li><strong>Move Down:</strong>  Select an entry in a Package Folders pane, then click
+                Move Down to have it listed lower in the pane. The order in which packages are listed
+                corresponds to the order in which they display in the Projects window.</li>
+        </ul>
+
+        <p>You can have multiple source roots in a standard project, with the following exceptions:</p>
+
+        <ul>
+            <li>The source root cannot already exist in another IDE project.</li>
+
+            <li>The source root cannot already be added to another compilation unit of the
+                same project. For example, a source root that is registered under Test Packages
+                cannot be added to the list of Source Packages.</li>
+
+            <li>All of the source roots are packaged into the same WAR file and share the
+                same classpath.</li>
+        </ul>
+
+        <ul class="note">
+            <li>If you have a source root that needs to be used by several projects, you
+                should create a separate project for the source root and <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_dependencies.html">set
+                up compilation dependencies</a> between the projects.</li>
+        </ul>
+
+
+        <h4>Source/Binary Format</h4>
+
+        <p>You can use the Source/Binary Format combo box to set the lowest Java platform
+            version with which the generated Java code should be compatible. This setting
+            corresponds to the javac <code>-source</code> option. Setting the source/binary
+            format helps prevent you from using Java language constructs that are not available
+            in the platform version to which you want to deploy. However, setting the source/binary
+            format does not ensure that the platform APIs are used compatibly with that platform
+            version. To make sure that your application is fully compatible with an earlier Java
+            platform version, you need to switch to the <a href="WebCustomizerLibraries.html">Libraries
+            tab</a> and set the Java Platform setting to the minimum version on which you plan
+            to deploy.</p>
+
+        <ul>
+            <li><strong>Source/Binary Format:</strong> Choose the JDK version that applies
+                to the lowest Java platform version with which the Java code in your project
+                is compatible. Default options range from JDK 1.2 to 6.</li>
+
+            <li><strong>Includes/Excludes:</strong> Click the Includes/Excludes button if you
+                want to include or exclude specific classes in or from compilation. In the
+                Configure Includes and Excludes dialog, use regex patterns in the Includes
+                and Excludes fields to specify which classes on the project classpath you
+                want to have compiled. The Included Files and Excluded Files panes list the
+                resources that will be compiled based on the supplied patterns.</li>
+        </ul>
+
+        <ul class="note">
+            <li>Specifying the source/binary format does not change the Java platform whose libraries
+                and executables are used to compile and run your project. To set the Java platform
+                that is used for compiling and running your project, click Libraries and set the
+                Java Platform setting accordingly. You cannot set the source/binary format of a
+                project to a higher release than the project's Java platform.</li>
+        </ul>-->
+
+
+
+            <li><strong>Encoding:</strong> Choose the character encoding that you want the IDE
+                to apply when it saves and displays project source files.
+            <p>The project character encoding determines how the IDE interprets characters in your
+                source files. The IDE displays and saves any new files you create using the encoding
+                set by the project in which they reside. The default character encoding used with
+                projects is UTF-8. Use the Encoding drop-down to change the character encoding used
+                with the project.</p>
+            </li>
+        </ul>
+
+        <p>For more information on Project encoding, see
+            <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/proj_encoding.html">About
+            Project Encodings</a>.</p>
+
+
+    <dl>
+
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="../html5/html5-about.html">About HTML5 Applications</a></dd>
+        <dd>HTML5 Project Properties Dialog Box:</dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="csh-html5-prop-js.html">JavaScript Files</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="csh-html5-prop-run.html">Run</a></dd>
+    </dl>
+
+    <hr><small><a href="../credits.html">Legal Notices</a></small>
+
+    <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>
