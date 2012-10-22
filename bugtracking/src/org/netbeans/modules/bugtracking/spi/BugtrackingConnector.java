@@ -118,5 +118,15 @@ public abstract class BugtrackingConnector {
          */
         public String tooltip();    
         
+        /**
+         * Determines if this connector provides the possibility for a user 
+         * to create, edit or removal of repositories.<br/>
+         * Typically the expected value for a connector is to return <code>true</code>. 
+         * 
+         * @return <code>true</code> if this connector provides the possibility 
+         *         to create, edit or removal of repositories. Otherwise <code>false</code>.
+         */
+        public boolean providesRepositoryManagement() default true;
+        
     }    
 }
