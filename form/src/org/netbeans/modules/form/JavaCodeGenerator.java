@@ -3495,6 +3495,9 @@ class JavaCodeGenerator extends CodeGenerator {
         if (handleInitComponents) {
             SimpleSection initComponentsSection = formEditor.getInitComponentSection();
             int[] span = formEditor.getFormJavaSource().getMethodSpan("initComponents"); // NOI18N
+            if (span == null) {
+                return;
+            }
             list.add(new int[] { span[0], initComponentsSection.getEndPosition().getOffset() });
             // also includes the listener class if generated
         }

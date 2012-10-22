@@ -475,7 +475,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                     Exceptions.printStackTrace(ex);
                 }
                 //skip all annotations between the CC offset and the completed member
-                if (el.getKind() == ElementKind.ANNOTATION_TYPE) {
+                if (el!=null && el.getKind() == ElementKind.ANNOTATION_TYPE) {
                     //parse to find NN end
                     CCParser.CC parsed = nnp.parseAnnotation(ts.offset() + 1);
                     if (parsed != null) {

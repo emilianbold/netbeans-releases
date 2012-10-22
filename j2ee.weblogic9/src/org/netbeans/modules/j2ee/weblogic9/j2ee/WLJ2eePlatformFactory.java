@@ -363,7 +363,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 } else {
                     serverVersion = WLPluginProperties.getServerVersion(serverRoot);
                 }
-                if (JAX_RS_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+                if (serverVersion != null && JAX_RS_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
                     FilenameFilter filter = new FilenameFilter() {
                         @Override
                         public boolean accept(File dir, String name) {
@@ -760,7 +760,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     new WebLogicJaxWsStack(platformRoot), WSStack.Source.SERVER);
             Collections.addAll(content, platformRoot, 
                     new JpaSupportImpl(this),new JsxWsPoliciesSupportImpl(this), 
-                    new JaxRsStackSupportImpl(this), wsStack );
+                    new JaxRsStackSupportImpl(this, dm.getServerVersion()), wsStack );
            
             Lookup baseLookup = Lookups.fixed(content.toArray());
             return LookupProviderSupport.createCompositeLookup(baseLookup, 

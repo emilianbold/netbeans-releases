@@ -5563,4 +5563,18 @@ public class FormatterTestCase extends EditorBase {
                 "}\n"
                 );
     }
+
+    public void test220196() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "template<typename N, typename TAG = struct asdfghjk>\n"
+              + "              void copy(){\n"
+              + "}\n");
+        reformat();
+        assertDocumentText("Incorrect template formatting",
+                "template<typename N, typename TAG = struct asdfghjk>\n"
+              + "void copy()\n"
+              + "{\n"
+              + "}\n");
+    }
 }

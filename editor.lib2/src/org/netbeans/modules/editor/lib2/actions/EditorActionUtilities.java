@@ -142,17 +142,16 @@ public final class EditorActionUtilities {
         return null;
     }
 
-    static void updateButtonIcons(Action a, AbstractButton button, Icon icon, boolean useLargeIcon) {
+    static void updateButtonIcons(AbstractButton button, Icon icon, boolean useLargeIcon, String iconResource) {
         button.setIcon(icon);
 
-        String iconBase = (String) a.getValue(AbstractEditorAction.ICON_RESOURCE_KEY);
-        if (iconBase != null) {
-            String base = iconBase;
+        if (iconResource != null) {
+            String base = iconResource;
             String suffix = "";
             int dotIndex;
-            if ((dotIndex = iconBase.lastIndexOf('.')) >= 0) {
-                suffix = iconBase.substring(dotIndex, iconBase.length());
-                base = iconBase.substring(0, dotIndex);
+            if ((dotIndex = iconResource.lastIndexOf('.')) >= 0) {
+                suffix = iconResource.substring(dotIndex, iconResource.length());
+                base = iconResource.substring(0, dotIndex);
             }
             if (useLargeIcon) {
                 base += LARGE_ICON_SIZE_STRING;

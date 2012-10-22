@@ -55,6 +55,13 @@ made subject to such option by the copyright holder.
         </xsl:element>
     </xsl:template>
 
+    <xsl:template match="filesystem/folder[@name='OptionsDialog']">
+        <xsl:element name="folder">
+            <xsl:attribute name="name">OptionsDialog</xsl:attribute>
+            <xsl:apply-templates mode="options"/>
+        </xsl:element>
+    </xsl:template>
+    
     <xsl:template match="filesystem/folder[@name='org-netbeans-api-project-libraries']/folder[@name='Libraries']">
         <xsl:element name="folder">
             <xsl:attribute name="name">org-netbeans-api-project-libraries</xsl:attribute>
@@ -274,6 +281,50 @@ made subject to such option by the copyright holder.
         </xsl:element>
     </xsl:template>
     <xsl:template match="attr" mode="libraries">
+        <xsl:copy-of select="."/>
+    </xsl:template>
+    
+    <!-- options -->
+    <xsl:template match="file" mode="options">
+        <xsl:element name="file">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:apply-templates mode="options"/>
+        </xsl:element>
+    </xsl:template>
+    <xsl:template match="folder" mode="options">
+        <xsl:element name="folder">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:apply-templates mode="options-adv"/>
+        </xsl:element>
+    </xsl:template>
+    <xsl:template match="attr[@name='controller']" mode="options">
+        <xsl:element name="attr">
+            <xsl:attribute name="name">controller</xsl:attribute>
+            <xsl:attribute name="methodvalue">org.netbeans.modules.ide.ergonomics.fod.OptionCntrl.basic</xsl:attribute>
+        </xsl:element>
+    </xsl:template>
+    <xsl:template match="attr" mode="options">
+        <xsl:copy-of select="."/>
+    </xsl:template>
+    <xsl:template match="file" mode="options-adv">
+        <xsl:element name="file">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:apply-templates mode="options-adv"/>
+        </xsl:element>
+    </xsl:template>
+    <xsl:template match="folder" mode="options-adv">
+        <xsl:element name="folder">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:apply-templates mode="options-adv"/>
+        </xsl:element>
+    </xsl:template>
+    <xsl:template match="attr[@name='controller']" mode="options-adv">
+        <xsl:element name="attr">
+            <xsl:attribute name="name">controller</xsl:attribute>
+            <xsl:attribute name="methodvalue">org.netbeans.modules.ide.ergonomics.fod.OptionCntrl.advanced</xsl:attribute>
+        </xsl:element>
+    </xsl:template>
+    <xsl:template match="attr" mode="options-adv">
         <xsl:copy-of select="."/>
     </xsl:template>
 

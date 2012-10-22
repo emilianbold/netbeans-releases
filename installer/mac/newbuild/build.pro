@@ -64,9 +64,6 @@
     <property name="javame_sdk30_bits_update_location" value="${binary_cache_host}/wtk/javame_sdk_30/mac/java-me-sdk-mac-update.zip"/>
     <property name="javame_sdk30_xml_location"  value="${binary_cache_host}/wtk/javame_sdk_30/mac/Java_TM__Platform_Micro_Edition_SDK_3_0.xml"/>
 
-    <!-- Java FX Runtime -->
-    <property name="javafx_runtime_location" value="${jdk_builds_host}/java/re/javafx/2.2.4/promoted/all/b10/bundles/macosx-x86_64/javafx-runtime-for-cobundle.zip"/>
-
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 
     <!-- JDK Properties-->    

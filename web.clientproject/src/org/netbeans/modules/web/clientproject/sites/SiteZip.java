@@ -44,17 +44,24 @@ package org.netbeans.modules.web.clientproject.sites;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.util.FileUtilities;
+import org.netbeans.modules.web.clientproject.util.FileUtilities.ZipEntryFilter;
+import org.netbeans.modules.web.clientproject.util.FileUtilities.ZipEntryTask;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -64,9 +71,17 @@ import org.openide.util.NbPreferences;
  */
 public class SiteZip implements SiteTemplateImplementation {
 
-    private static final Logger LOGGER = Logger.getLogger(SiteZip.class.getName());
+    static final Logger LOGGER = Logger.getLogger(SiteZip.class.getName());
+
     private static final String USED_TEMPLATES = "last.templates"; //NOI18N
     private static final String SEPARATOR = "=s e p="; //NOI18N
+    private static final ZipEntryFilter NB_TEMPLATE_FILTER = new ZipEntryFilter() {
+        @Override
+        public boolean accept(ZipEntry zipEntry) {
+            return !zipEntry.isDirectory()
+                    && zipEntry.getName().equals(ClientSideProjectConstants.TEMPLATE_DESCRIPTOR);
+        }
+    };
 
     private Customizer cust;
 
@@ -101,20 +116,59 @@ public class SiteZip implements SiteTemplateImplementation {
     }
 
     @Override
-    public void apply(AntProjectHelper helper, ProgressHandle handle) throws IOException {
+    public void configure(final ProjectProperties projectProperties) {
+        assert !EventQueue.isDispatchThread();
+        assert isPrepared();
+        try {
+            FileUtilities.runOnZipEntries(getArchiveFile(), new ZipEntryTask() {
+                @Override
+                public void run(ZipEntry zipEntry) {
+                    // noop
+                }
+                @Override
+                public void run(InputStream zipEntryInputStream) {
+                    EditableProperties templateProperties = new EditableProperties(false);
+                    try {
+                        templateProperties.load(zipEntryInputStream);
+                        projectProperties.setSiteRootFolder(templateProperties.getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER))
+                                .setTestFolder(templateProperties.getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER))
+                                .setConfigFolder(templateProperties.getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER));
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.WARNING, "Error while reading file", ex);
+                    }
+                }
+            }, NB_TEMPLATE_FILTER);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Error while reading zip file", ex);
+        }
+    }
+
+    @Override
+    public void apply(FileObject projectDir, ProjectProperties projectProperties, ProgressHandle handle) throws IOException {
         assert !EventQueue.isDispatchThread();
         if (!isPrepared()) {
             // not correctly prepared, user has to know about it already
             LOGGER.info("Template not correctly prepared, nothing to be applied"); //NOI18N
             return;
         }
-        SiteHelper.unzipProjectTemplate(helper, getArchiveFile(), handle);
+        SiteHelper.unzipProjectTemplate(getTargetDir(projectDir, projectProperties), getArchiveFile(), handle, ClientSideProjectConstants.TEMPLATE_DESCRIPTOR);
         registerTemplate(cust.panel.getTemplate());
+    }
+
+    /**
+     * Return project dir for NB template, site root otherwise.
+     */
+    private FileObject getTargetDir(FileObject projectDir, ProjectProperties projectProperties) throws IOException {
+        if (FileUtilities.listZipFiles(getArchiveFile(), NB_TEMPLATE_FILTER).isEmpty()) {
+            // not nb template
+            return projectDir.getFileObject(projectProperties.getSiteRootFolder());
+        }
+        return projectDir;
     }
 
     @Override
     public Collection<String> supportedLibraries() {
-        return SiteHelper.listJsFilenamesFromZipFile(getArchiveFile());
+        return FileUtilities.listJsFilenamesFromZipFile(getArchiveFile());
     }
 
     private File getArchiveFile() {

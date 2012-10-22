@@ -86,7 +86,7 @@ import org.openide.util.NbBundle;
     "HudsonOptionsPanel.keywords.build=Build"
 })
 @OptionsPanelController.Keywords(
-        location = UiUtils.OPTIONS_PATH, tabTitle= "#LBL_OptionsName",
+        location = UiUtils.OPTIONS_PATH, tabTitle= "#LBL_HudsonPHPOptionsName",
         keywords = {"php", "hudson", "jenkins", "ppw", "job", "build", "#HudsonOptionsPanel.keywords.job", "#HudsonOptionsPanel.keywords.build"})
 public class HudsonOptionsPanel extends JPanel {
 

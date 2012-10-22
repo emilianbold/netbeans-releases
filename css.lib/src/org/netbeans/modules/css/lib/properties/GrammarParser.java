@@ -41,18 +41,17 @@
  */
 package org.netbeans.modules.css.lib.properties;
 
-import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.GrammarElement;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
-import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  * Parser of the semi-grammar expressions taken from the w3c.org css specifications.
@@ -61,18 +60,26 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  */
 public class GrammarParser {
     
+    /**
+     * For tests only.
+     * 
+     * @param expresssion
+     * @return 
+     */
     public static GroupGrammarElement parse(String expresssion) {
-        return parse(expresssion, null);
+        return parse(null, expresssion, null);
     }
 
-    public static GroupGrammarElement parse(String expression, String propertyName) {
-        return new GrammarParser(expression, propertyName).parse();
+    public static GroupGrammarElement parse(FileObject context, String expression, String propertyName) {
+        return new GrammarParser(context, expression, propertyName).parse();
     }
     
+    private FileObject context;
     private String propertyName;
     private String expression;
 
-    public GrammarParser(String expression, String propertyName) {
+    public GrammarParser(FileObject context, String expression, String propertyName) {
+        this.context = context;
         this.expression = expression;
         this.propertyName = propertyName;
     }
@@ -153,17 +160,15 @@ public class GrammarParser {
 
                     //resolve reference
                     String referredElementName = buf.toString();
-                    Collection<PropertyDefinition> properties = Properties.getProperties(referredElementName, true);
-//                    Collection<PropertyDefinition> properties = PropertyDefinitionProvider.Query.getProperties(referredElementName);
-                    if (properties == null) {
+                    PropertyDefinition property = Properties.getPropertyDefinition(context, referredElementName, true);
+                    if (property == null) {
                         throw new IllegalStateException(
                                 String.format("Property '%s' parsing error: No referred element '%s' found. "
                                 + "Read input: %s", propertyName, referredElementName, input.readText())); //NOI18N
                     }
 
-                    PropertyModel model = new PropertyModel(referredElementName, properties);
-                    ParserInput pinput = new ParserInput(model.getGrammar());
-                    String propName = model.getProperty().getName();
+                    ParserInput pinput = new ParserInput(property.getGrammar());
+                    String propName = property.getName();
                     last = new GroupGrammarElement(parent, group_index.getAndIncrement(), propName);
 
 

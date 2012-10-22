@@ -47,6 +47,7 @@ import com.oracle.nashorn.parser.TokenType;
 import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.ActionFactory;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -70,7 +71,7 @@ public class ModelUtils {
         JsObject tmpObject = null;
         String firstName = fqName.get(0).getName();
         
-        while (tmpObject == null && result.getParent() != null) {
+        while (tmpObject == null && result != null && result.getParent() != null) {
             if (result instanceof JsFunctionImpl) {
                 tmpObject = ((JsFunctionImpl)result).getParameter(firstName);
             }
@@ -84,7 +85,16 @@ public class ModelUtils {
             }
         }
         if (tmpObject == null) {
-            tmpObject = builder.getGlobal();
+            DeclarationScope scope = builder.getCurrentDeclarationScope();
+            while (tmpObject == null && scope.getInScope() != null) {
+                tmpObject = ((JsFunction)scope).getParameter(firstName);
+                scope = scope.getInScope();
+            }
+            if (tmpObject == null) {
+                tmpObject = builder.getGlobal();
+            } else {
+                result = tmpObject;
+            }
         }
         for (int index = (tmpObject instanceof ParameterObject ? 1 : 0); index < fqName.size() ; index++) {
             Identifier name = fqName.get(index);
@@ -409,6 +419,22 @@ public class ModelUtils {
             for (int i = exp.size() - 1; i > -1; i--) {
                 String kind = exp.get(i);
                 String name = exp.get(--i);
+                if ("this".equals(name)) {
+                    JsObject thisObject = ModelUtils.findJsObject(model, offset);
+                    JsObject first = thisObject;
+                    while (thisObject != null && thisObject.getParent() != null
+                            && thisObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
+                            && thisObject.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
+                            && thisObject.getJSKind() != JsElement.Kind.OBJECT_LITERAL) {
+                        thisObject = thisObject.getParent();
+                    }
+                    if ((thisObject == null || thisObject.getParent() == null) && first != null) {
+                        thisObject = first;
+                    }
+                    if (thisObject != null) {
+                        name = thisObject.getName();
+                    }
+                }
                 if (i == (exp.size() - 2)) {
                     JsObject localObject = null;
                     // resolving the first part of expression

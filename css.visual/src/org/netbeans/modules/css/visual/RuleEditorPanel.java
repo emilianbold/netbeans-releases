@@ -84,13 +84,13 @@ import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
-import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.RuleNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
 import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
+import org.netbeans.modules.css.visual.actions.GoToSourceAction;
 import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
@@ -105,7 +105,6 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.filesystems.FileObject;
@@ -181,7 +180,8 @@ public class RuleEditorPanel extends JPanel {
     public RuleNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
-    private Declaration createdDeclaration;
+   
+    Declaration createdDeclaration;
     
     private AddPropertyComboBoxModel ADD_PROPERTY_CB_MODEL = new AddPropertyComboBoxModel();
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
@@ -258,7 +258,7 @@ public class RuleEditorPanel extends JPanel {
 
         node = new RuleNode(this);
 
-        sortMode = SortMode.NATURAL;
+        sortMode = SortMode.ALPHABETICAL;
 
         filters = new RuleEditorFilters(this, filtersSettings);
         filters.getInstance().hookChangeListener(new FiltersManager.FilterChangeListener() {
@@ -427,7 +427,7 @@ public class RuleEditorPanel extends JPanel {
 
         if (propertyName != null) {
             //1.verify whether there's such property
-            if(Properties.getProperty(propertyName) != null) {
+            if(Properties.getPropertyDefinition(model.getLookup().lookup(FileObject.class), propertyName) != null) {
                 //2.create the property
                 //3.select the corresponding row in the PS
 
@@ -469,7 +469,7 @@ public class RuleEditorPanel extends JPanel {
         sheet.requestFocus();
 //        sheet.select(descriptor, true);
         try {
-            call_PropertySheet_select(sheet, descriptor, showCategories);
+            call_PropertySheet_select(sheet, descriptor, true);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -838,7 +838,7 @@ public class RuleEditorPanel extends JPanel {
     private static Object INITIAL_TEXT_OBJECT = new Object();
     private static String ADD_PROPERTY_CB_TEXT = Bundle.addPropertyCB_initial_text();
 
-    private static class AddPropertyComboBoxModel extends DefaultComboBoxModel {
+    private class AddPropertyComboBoxModel extends DefaultComboBoxModel {
 
         private boolean containsInitialText;
 
@@ -846,9 +846,9 @@ public class RuleEditorPanel extends JPanel {
             addInitialText();
         }
 
-        private static Collection<PropertyDefinition> getProperties() {
+        private Collection<PropertyDefinition> getProperties() {
             Collection<PropertyDefinition> properties = new TreeSet<PropertyDefinition>(PropertyUtils.PROPERTY_DEFINITIONS_COMPARATOR);
-            properties.addAll(Properties.getProperties(true));
+            properties.addAll(Properties.getPropertyDefinitions(getModel().getLookup().lookup(FileObject.class)));
             return properties;
         }
 
@@ -874,9 +874,10 @@ public class RuleEditorPanel extends JPanel {
             
             addInitialText();
             
+            FileObject file = model.getLookup().lookup(FileObject.class);
             Collection<PropertyDefinition> existingDefs = new ArrayList<PropertyDefinition>();
             for(Declaration d : existing) {
-                PropertyDefinition definition = Properties.getProperty(d.getProperty().getContent().toString());
+                PropertyDefinition definition = Properties.getPropertyDefinition(file, d.getProperty().getContent().toString());
                 if(definition != null) {
                     existingDefs.add(definition);
                 }
@@ -951,6 +952,8 @@ public class RuleEditorPanel extends JPanel {
                     //custom popop for the whole panel
                     JPopupMenu pm = new JPopupMenu();
                     
+                    pm.add(new GoToSourceAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
+                    pm.addSeparator();
                     pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
 
                     return pm;

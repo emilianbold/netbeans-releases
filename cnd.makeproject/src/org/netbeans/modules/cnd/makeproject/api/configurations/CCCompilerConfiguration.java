@@ -324,7 +324,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
                 }
          
         };
-        Sheet.Set set0 = getSet();
+        Sheet.Set set0 = getSet(null, folder, item);
         sheet.put(set0);
         if (conf.isCompileConfiguration()) {
             if (folder == null) {

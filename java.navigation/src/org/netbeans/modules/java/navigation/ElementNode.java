@@ -77,6 +77,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
@@ -306,7 +307,9 @@ public class ElementNode extends AbstractNode {
     
     private static final Convertor<Description, TreePathHandle> ConvertDescription2TreePathHandle = new InstanceContent.Convertor<Description, TreePathHandle>() {
         @Override public TreePathHandle convert(Description obj) {
-            return TreePathHandle.from(obj.elementHandle, obj.cpInfo);
+            return obj.elementHandle == null ?
+                null :
+                TreePathHandle.from(obj.elementHandle, obj.cpInfo);
         }
         @Override public Class<? extends TreePathHandle> type(Description obj) {
             return TreePathHandle.class;
@@ -411,10 +414,10 @@ public class ElementNode extends AbstractNode {
                     @NonNull ElementKind kind,
                     boolean inherited,
                     boolean topLevel) {
-            assert ui != null;
-            assert name != null;
-            assert elementHandle != null;
-            assert kind != null;
+            Parameters.notNull("ui", ui);   //NOI18N
+            Parameters.notNull("name", name);   //NOI18N
+            Parameters.notNull("elementHandle", elementHandle); //NOI18N
+            Parameters.notNull("kind", kind);   //NOI18N
             this.ui = ui;
             this.name = name;
             this.elementHandle = elementHandle;

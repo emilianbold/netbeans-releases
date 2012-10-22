@@ -103,7 +103,7 @@ public class TabbedController extends OptionsPanelController {
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final ChangeListener tabbedPaneChangeListener = new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
-            handleTabSwitched();
+            handleTabSwitched(null, null);
         }
     };
 
@@ -170,6 +170,11 @@ public class TabbedController extends OptionsPanelController {
         return pane;
     }
 
+    @Override
+    public void handleSuccessfulSearch(String searchText, List<String> matchedKeywords) {
+        handleTabSwitched(searchText, matchedKeywords);
+    }
+
     private void initTabbedPane() {
         if (pane != null) {
             pane.removeChangeListener(tabbedPaneChangeListener);
@@ -178,13 +183,13 @@ public class TabbedController extends OptionsPanelController {
                 pane.addTab(tabTitle, new JLabel(tabTitle));
             }
             pane.addChangeListener(tabbedPaneChangeListener);
-            handleTabSwitched();
+            handleTabSwitched(null, null);
         }
     }
 
 
     /** Replace placeholder with real panel and change help context. */
-    private void handleTabSwitched() {
+    private void handleTabSwitched(String searchText, List<String> matchedKeywords) {
         final int selectedIndex = pane.getSelectedIndex();
         if (selectedIndex != -1) {
             String tabTitle = pane.getTitleAt(selectedIndex);
@@ -218,6 +223,10 @@ public class TabbedController extends OptionsPanelController {
                 scroll.getViewport().setOpaque(false);
                 pane.setComponentAt(selectedIndex, scroll);
                 controller.update();
+		controller.isValid();
+            }
+	    if (searchText != null && matchedKeywords != null) {
+		controller.handleSuccessfulSearch(searchText, matchedKeywords);
             }
             pcs.firePropertyChange(OptionsPanelController.PROP_HELP_CTX, null, null);
         }

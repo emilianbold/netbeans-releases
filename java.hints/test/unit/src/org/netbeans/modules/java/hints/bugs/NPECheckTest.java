@@ -416,6 +416,116 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testNeg220162a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public static void processThrowable(@NullAllowed Object obj) {\n" +
+                       "            if (!(obj == null)) {\n" +
+                       "                String s = obj.toString();\n" +
+                       "            }\n" +
+                       "    }\n" +
+                       "@interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testNeg220162b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public static void processThrowable(@NullAllowed Object obj) {\n" +
+                       "            if (!(obj != null)) {\n" +
+                       "                String s = obj.toString();\n" +
+                       "            }\n" +
+                       "    }\n" +
+                       "@interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("4:31-4:39:verifier:DN");
+    }
+    
+    public void testOr217589() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void testMethod() {\n" +
+                       "        String id=\"\";\n" +
+                       "        if (id != null ) {\n" +
+                       "            boolean isFoo= true || id.equalsIgnoreCase(\"text\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testSimpleMethodBoundaryCheck219006() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public Object obj = null;\n" +
+                       "    public String toString() {\n" +
+                       "        return obj.toString();\n" +
+                       "    }\n" +
+                       "    public void t() {\n" +
+                       "        if (obj != null) {\n" +
+                       "            System.err.println(obj.toString());\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testIfWithMultipartCondition() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void t(Object obj) {\n" +
+                       "        if (obj == null || obj.hashCode() == 0) {\n" +
+                       "            return ;\n" +
+                       "        }\n" +
+                       "        System.err.println(obj.toString());\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testForLoop() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import javax.swing.tree.TreePath;\n" +
+                       "class Test {\n" +
+                       "    public void t(TreePath tp) {\n" +
+                       "        tp.toString();\n" +
+                       "        for (TreePath p = tp; p != null; p = p.getParentPath()) {\n" +
+                       "            System.err.println(p.getLastPathComponent());\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testWhile() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import javax.swing.tree.TreePath;\n" +
+                       "class Test {\n" +
+                       "    public void t(TreePath tp) {\n" +
+                       "        tp.toString();\n" +
+                       "        while (tp != null) {\n" +
+                       "            tp = tp.getParentPath();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

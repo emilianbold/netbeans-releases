@@ -1060,91 +1060,103 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
-        // save the document as a reader
-        class SaveAsReader implements Runnable {
-            private boolean doMarkAsUnmodified;
-            private IOException ex;
+        class MemoryOutputStream extends ByteArrayOutputStream {
 
+            public MemoryOutputStream(int size) {
+                super(size);
+            }
+
+            public void writeTo(OutputStream os) throws IOException {
+                os.write(buf, 0, count);
+            }
+
+        }
+
+        // Perform the save and possibly run on-save actions first.
+        // Due to consistency of UndoRedoManager both save actions and actual save
+        // (reading doc's contents) should be done under single runAtomic().
+        final MemoryOutputStream[] memoryOutputStream = new MemoryOutputStream[1];
+        final IOException[] ioException = new IOException[1];
+        Runnable saveToMemory = new Runnable() {
+            @Override
             public void run() {
                 try {
-                    OutputStream os = null;
-
-                    // write the document
-                    long oldSaveTime = lastSaveTime;
-
-                    try {
-                        setLastSaveTime(-1);
-                        os = new BufferedOutputStream(cesEnv().outputStream());
-                        saveFromKitToStream(myDoc, kit, os);
-
-                        os.close(); // performs firing
-                        os = null;
-
-                        // remember time of last save
-                        ERR.fine("Save ok, assign new time, while old was: " + oldSaveTime); // NOI18N
-                        // #149069 - Cannot use System.currentTimeMillis()
-                        // because there can be a delay between closing stream
-                        // and setting file modification time by OS.
-                        setLastSaveTime(cesEnv().getTime().getTime());
-                        doMarkAsUnmodified = true;
-                        ERR.fine("doMarkAsUnmodified"); // NOI18N
-                    } catch (BadLocationException blex) {
-                        Exceptions.printStackTrace(blex);
-                    } finally {
-                        if (lastSaveTime == -1) { // restore for unsuccessful save
-                            ERR.fine("restoring old save time"); // NOI18N
-                            setLastSaveTime(oldSaveTime);
-                        }
-
-                        if (os != null) { // try to close if not yet done
-                            os.close();
-                        }
-                    }
+                    // Alloc 10% for non-single byte chars
+                    int byteArrayAllocSize = myDoc.getLength() * 11 / 10;
+                    memoryOutputStream[0] = new MemoryOutputStream(byteArrayAllocSize);
+                    saveFromKitToStream(myDoc, kit, memoryOutputStream[0]);
 
                     UndoRedo.Manager urm = getUndoRedo();
                     if (urm instanceof UndoRedoManager) {
-                        ((UndoRedoManager)urm).markSavepoint();
+                        ((UndoRedoManager) urm).markSavepoint();
                     }
 
                     // update cached info about lines
                     updateLineSet(true);
                     // updateTitles(); radim #58266
-                    if (doMarkAsUnmodified) {
-                        callNotifyUnmodified();
-                    }
-
-                } catch (IOException e) {
-                    this.ex = e;
+                    callNotifyUnmodified();
+                } catch (BadLocationException blex) {
+                    Exceptions.printStackTrace(blex);
+                } catch (IOException ex) {
+                    ioException[0] = ex;
                 }
             }
-
-            public void after() throws IOException {
-                if (ex != null) {
-                    throw ex;
-                }
-            }
-        }
-
-        // Run before-save actions
+        };
         Runnable beforeSaveRunnable = (Runnable) myDoc.getProperty("beforeSaveRunnable");
         if (beforeSaveRunnable != null) {
-            UndoRedo.Manager urm = getUndoRedo();
-            if (urm instanceof UndoRedoManager) {
-                ((UndoRedoManager)undoRedo).setPerformingSaveActions(true);
-            }
-            try {
-                beforeSaveRunnable.run();
-            } finally {
-                if (urm instanceof UndoRedoManager) {
-                    ((UndoRedoManager)undoRedo).setPerformingSaveActions(false);
+            // Create runnable that marks next edit fired from document as save actions.
+            // This assumes that before save tasks will run in a single atomic edit.
+            // At the end of the edit an actual save task will be done.
+            Runnable beforeSaveStart = new Runnable() {
+                @Override
+                public void run() {
+                    UndoRedo.Manager urm = getUndoRedo();
+                    if (urm instanceof UndoRedoManager) {
+                        ((UndoRedoManager) undoRedo).markNextEditAsSaveActions();
+                    }
                 }
+            };
+            // Property to be run by beforeSaveRunnable before actual save actions
+            myDoc.putProperty("beforeSaveStart", beforeSaveStart);
+            // Property to be run by beforeSaveRunnable after actual save actions
+            myDoc.putProperty("beforeSaveEnd", saveToMemory);
+            // Perform beforeSaveStart then before-save-tasks then beforeSaveEnd under atomic lock
+            beforeSaveRunnable.run();
+
+        } else { // No on-save tasks
+            myDoc.render(saveToMemory); // Run under doc's readlock
+        }
+        if (ioException[0] != null) {
+            throw ioException[0];
+        }
+
+        OutputStream os = null;
+        long oldSaveTime = lastSaveTime;
+        try {
+            setLastSaveTime(-1);
+            os = cesEnv().outputStream();
+            memoryOutputStream[0].writeTo(os);
+            os.close(); // performs firing
+            os = null;
+
+            // remember time of last save
+            ERR.fine("Save ok, assign new time, while old was: " + oldSaveTime); // NOI18N
+            // #149069 - Cannot use System.currentTimeMillis()
+            // because there can be a delay between closing stream
+            // and setting file modification time by OS.
+            setLastSaveTime(cesEnv().getTime().getTime());
+            ERR.fine("doMarkAsUnmodified"); // NOI18N
+        } finally {
+            if (lastSaveTime == -1) { // restore for unsuccessful save
+                ERR.fine("restoring old save time"); // NOI18N
+                setLastSaveTime(oldSaveTime);
+                callNotifyModified(); // Another save attempt needed
+            }
+
+            if (os != null) { // try to close if not yet done
+                os.close();
             }
         }
-        // undoRedo.markSavepoint() will be done in SaveAsReader runnable
-
-        SaveAsReader saveAsReader = new SaveAsReader();
-        myDoc.render(saveAsReader);
-        saveAsReader.after();
     }
 
     /**

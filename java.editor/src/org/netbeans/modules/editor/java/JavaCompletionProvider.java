@@ -339,31 +339,37 @@ public class JavaCompletionProvider implements CompletionProvider {
         @Override
         protected boolean canFilter(JTextComponent component) {
             filterPrefix = null;
-            int newOffset = component.getSelectionStart();
+            final int newOffset = component.getSelectionStart();
+            final Document doc = component.getDocument();
             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
-                int offset = Math.min(anchorOffset, caretOffset);
+                final int offset = Math.min(anchorOffset, caretOffset);
                 if (offset > -1) {
                     if (newOffset < offset)
                         return true;
                     if (newOffset >= caretOffset) {
                         try {
-                            int len = newOffset - offset;
+                            final int len = newOffset - offset;
                             if (len == 0) {
                                 filterPrefix = EMPTY;
                             } else if (len > 0) {
-                                TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(component.getDocument()), offset);
-                                if (ts != null && ts.move(offset) == 0 && ts.moveNext()) {
-                                    if ((ts.token().id() == JavaTokenId.IDENTIFIER ||
-                                            ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
-                                            ts.token().id().primaryCategory().startsWith("string") || //NOI18N
-                                            ts.token().id().primaryCategory().equals("literal")) //NOI18N
-                                            && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
-                                        filterPrefix = ts.token().text().toString().substring(0, len);
+                                doc.render(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
+                                        if (ts != null && ts.move(offset) == 0 && ts.moveNext()) {
+                                            if ((ts.token().id() == JavaTokenId.IDENTIFIER ||
+                                                    ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
+                                                    ts.token().id().primaryCategory().startsWith("string") || //NOI18N
+                                                    ts.token().id().primaryCategory().equals("literal")) //NOI18N
+                                                    && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
+                                                filterPrefix = ts.token().text().toString().substring(0, len);
+                                            }
+                                        }
                                     }
-                                }
+                                });
                             }
                             if (filterPrefix == null) {
-                                String prefix = component.getDocument().getText(offset, newOffset - offset);
+                                String prefix = doc.getText(offset, newOffset - offset);
                                 if (prefix.length() > 0 && Utilities.getJavaCompletionAutoPopupTriggers().indexOf(prefix.charAt(prefix.length() - 1)) >= 0)
                                     return false;
                             } else if (filterPrefix.length() == 0) {
@@ -379,9 +385,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (newOffset == caretOffset)
                         filterPrefix = EMPTY;
                     else if (newOffset - caretOffset > 0)
-                        filterPrefix = component.getDocument().getText(caretOffset, newOffset - caretOffset);
+                        filterPrefix = doc.getText(caretOffset, newOffset - caretOffset);
                     else if (newOffset - caretOffset < 0)
-                        filterPrefix = newOffset > toolTipOffset ? component.getDocument().getText(newOffset, caretOffset - newOffset) : null;
+                        filterPrefix = newOffset > toolTipOffset ? doc.getText(newOffset, caretOffset - newOffset) : null;
                 } catch (BadLocationException ex) {}
                 return (filterPrefix != null && filterPrefix.indexOf(',') == -1 && filterPrefix.indexOf('(') == -1 && filterPrefix.indexOf(')') == -1); // NOI18N
             }
@@ -2075,6 +2081,26 @@ public class JavaCompletionProvider implements CompletionProvider {
                     lastCase = t;
                 }
                 if (lastCase != null) {
+                    StatementTree last = null;
+                    for(StatementTree stat : lastCase.getStatements()) {
+                        int pos = (int)sourcePositions.getStartPosition(root, stat);
+                        if (pos == Diagnostic.NOPOS || offset <= pos)
+                            break;
+                        last = stat;
+                    }
+                    if (last != null) {
+                        if (last.getKind() == Tree.Kind.TRY) {
+                            if (((TryTree)last).getFinallyBlock() == null) {
+                                addKeyword(env, CATCH_KEYWORD, null, false);
+                                addKeyword(env, FINALLY_KEYWORD, null, false);
+                                if (((TryTree)last).getCatches().size() == 0)
+                                    return;
+                            }
+                        } else if (last.getKind() == Tree.Kind.IF) {
+                            if (((IfTree)last).getElseStatement() == null)
+                                addKeyword(env, ELSE_KEYWORD, null, false);
+                        }
+                    }
                     localResult(env);
                     addKeywordsForBlock(env);
                 } else {
@@ -2741,13 +2767,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (st.getKind() == TypeKind.DECLARED) {
                             final DeclaredType type = (DeclaredType)st;
                             final TypeElement element = (TypeElement)type.asElement();
-                            if (withinScope(env, element))
+                            final boolean withinScope = withinScope(env, element);
+                            if (withinScope && scope.getEnclosingClass() == element)
                                 continue;
                             final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
                             final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
                             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                 public boolean accept(Element e, TypeMirror t) {
-                                    return (!isStatic || e.getModifiers().contains(STATIC)) &&
+                                    return ((!withinScope && (!isStatic || e.getModifiers().contains(STATIC))) || withinScope && e.getSimpleName().contentEquals(THIS_KEYWORD)) &&
                                             startsWith(env, e.getSimpleName().toString()) &&
                                             tu.isAccessible(scope, e, t) &&
                                             (e.getKind().isField() && isOfSmartType(env, ((VariableElement)e).asType(), finalSmartTypes) || e.getKind() == METHOD && isOfSmartType(env, ((ExecutableElement)e).getReturnType(), finalSmartTypes));
@@ -2813,7 +2840,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case FIELD:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
-                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, false));
+                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
                         } else {
                             TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
                             results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
@@ -3045,7 +3072,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case PARAMETER:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || CLASS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
-                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, false));
+                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
                         } else {
                             TypeMirror tm = type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType();
                             results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));

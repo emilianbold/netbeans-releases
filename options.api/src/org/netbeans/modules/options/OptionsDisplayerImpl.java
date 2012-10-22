@@ -101,7 +101,8 @@ public class OptionsDisplayerImpl {
     /** weak link to options dialog DialogDescriptor. */
     private static WeakReference<DialogDescriptor>    descriptorRef = new WeakReference<DialogDescriptor> (null);
     private static String title = loc("CTL_Options_Dialog_Title");    
-    private static Logger log = Logger.getLogger(OptionsDisplayerImpl.class.getName ());    
+    private static Logger log = Logger.getLogger(OptionsDisplayerImpl.class.getName ());
+    private FileChangeListener fcl;
     private boolean modal;
     static final LookupListener lookupListener = new LookupListenerImpl();
     /** OK button. */
@@ -115,9 +116,10 @@ public class OptionsDisplayerImpl {
     
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
+	fcl = new DefaultFSListener();
         try {
             // 91106 - listen to default FS changes to update Advanced Options, Export and Import buttons
-            FileUtil.getConfigRoot().getFileSystem().addFileChangeListener(new DefaultFSListener());
+            FileUtil.getConfigRoot().getFileSystem().addFileChangeListener(fcl);
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -442,6 +444,11 @@ public class OptionsDisplayerImpl {
             // store location of dialog
             NbPreferences.forModule(OptionsDisplayerImpl.class).putInt("OptionsX", originalDialog.getX());//NOI18N
             NbPreferences.forModule(OptionsDisplayerImpl.class).putInt("OptionsY", originalDialog.getY());//NOI18N
+	    try {
+		FileUtil.getConfigRoot().getFileSystem().removeFileChangeListener(fcl);
+	    } catch (FileStateInvalidException ex) {
+		Exceptions.printStackTrace(ex);
+	    }
             if (optionsPanel.needsReinit()) {
                 synchronized (lookupListener) {
                     descriptorRef = new WeakReference<DialogDescriptor>(null);

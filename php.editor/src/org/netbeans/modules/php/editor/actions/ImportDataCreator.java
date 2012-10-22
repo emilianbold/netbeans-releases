@@ -43,8 +43,9 @@ package org.netbeans.modules.php.editor.actions;
 
 import java.io.Serializable;
 import java.util.*;
-import javax.swing.Icon;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
+import org.netbeans.modules.php.editor.actions.ImportData.DataItem;
+import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -63,10 +64,9 @@ public class ImportDataCreator {
     private final Map<String, List<UsedNamespaceName>> usedNames;
     private final Index phpIndex;
     private final QualifiedName currentNamespace;
-    private ImportData data;
     private boolean shouldShowUsesPanel = false;
     private final Options options;
-    private final List<PossibleItem> possibleItems = new LinkedList<PossibleItem>();
+    private final List<PossibleItem> possibleItems = new ArrayList<PossibleItem>();
 
     private static Collection<TypeElement> sortTypeElements(final Collection<TypeElement> filteredTypeElements) {
         final List<TypeElement> sortedTypeElements = new ArrayList<TypeElement>(filteredTypeElements);
@@ -85,11 +85,9 @@ public class ImportDataCreator {
         for (String typeName : usedNames.keySet()) {
             processTypeName(typeName);
         }
-        data = new ImportData(possibleItems.size());
-        int index = 0;
+        ImportData data = new ImportData();
         for (PossibleItem possibleItem : possibleItems) {
-            possibleItem.insertData(data, index);
-            index++;
+            possibleItem.insertData(data);
         }
         data.shouldShowUsesPanel = shouldShowUsesPanel;
         return data;
@@ -195,7 +193,7 @@ public class ImportDataCreator {
 
     private interface PossibleItem {
 
-        public void insertData(ImportData data, int index);
+        public void insertData(ImportData data);
 
     }
 
@@ -208,13 +206,9 @@ public class ImportDataCreator {
 
         @Override
         @NbBundle.Messages("CanNotBeResolved=<html><font color='#FF0000'>&lt;cannot be resolved&gt;")
-        public void insertData(ImportData data, int index) {
-            data.names[index] = typeName;
-            data.variants[index] = new String[1];
-            data.variants[index][0] = Bundle.CanNotBeResolved();
-            data.defaults[index] = data.variants[index][0];
-            data.icons[index] = new Icon[1];
-            data.icons[index][0] = IconsUtils.getErrorGlyphIcon();
+        public void insertData(ImportData data) {
+            ItemVariant itemVariant = new ItemVariant(Bundle.CanNotBeResolved(), ItemVariant.UsagePolicy.CAN_NOT_BE_USED, IconsUtils.getErrorGlyphIcon());
+            data.add(new DataItem(typeName, Arrays.asList(new ItemVariant[] {itemVariant}), itemVariant));
         }
 
     }
@@ -229,44 +223,44 @@ public class ImportDataCreator {
         }
 
         @Override
-        public void insertData(ImportData data, int index) {
-            data.names[index] = typeName;
+        public void insertData(ImportData data) {
             Collection<TypeElement> sortedTypeElements = sortTypeElements(filteredTypeElements);
-            data.variants[index] = new String[sortedTypeElements.size() + 1];
-            data.icons[index] = new Icon[data.variants[index].length];
-            data.usedNamespaceNames.put(index, usedNames.get(typeName));
-            int i = -1;
+            List<ItemVariant> variants = new ArrayList<ItemVariant>();
+            ItemVariant defaultValue = null;
+            boolean isFirst = true;
             for (TypeElement typeElement : sortedTypeElements) {
-                data.variants[index][++i] = typeElement.getFullyQualifiedName().toString();
-                data.icons[index][i] = IconsUtils.getElementIcon(typeElement.getPhpElementKind());
-                if (i == 0) {
-                    data.defaults[index] = data.variants[index][i];
+                ItemVariant itemVariant = new ItemVariant(typeElement.getFullyQualifiedName().toString(), ItemVariant.UsagePolicy.CAN_BE_USED, IconsUtils.getElementIcon(typeElement.getPhpElementKind()));
+                variants.add(itemVariant);
+                if (isFirst) {
+                    defaultValue = itemVariant;
+                    isFirst = false;
                 }
                 shouldShowUsesPanel = true;
             }
-            data.variants[index][++i] = Bundle.DoNotUseType();
-            data.icons[index][i] = null;
+            ItemVariant dontUseItemVariant = new ItemVariant(Bundle.DoNotUseType(), ItemVariant.UsagePolicy.CAN_NOT_BE_USED);
+            variants.add(dontUseItemVariant);
             QualifiedName qualifiedTypeName = QualifiedName.create(typeName);
             if (qualifiedTypeName.getKind().isFullyQualified()) {
                 if (options.preferFullyQualifiedNames()) {
-                    data.defaults[index] = data.variants[index][i];
+                    defaultValue = dontUseItemVariant;
                 }
             } else {
                 QualifiedName exactMatchName = createExactMatchName(qualifiedTypeName);
                 if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(sortedTypeElements)) || hasExactName(sortedTypeElements, exactMatchName)) {
-                    data.defaults[index] = data.variants[index][i];
+                    defaultValue = dontUseItemVariant;
                 }
             }
-            Arrays.sort(data.variants[index], new VariantsComparator());
+            Collections.sort(variants, new VariantsComparator());
+            data.add(new DataItem(typeName, variants, defaultValue, usedNames.get(typeName)));
         }
 
     }
 
-    private static class VariantsComparator implements Comparator<String>, Serializable {
+    private static class VariantsComparator implements Comparator<ItemVariant>, Serializable {
 
         @Override
-        public int compare(String o1, String o2) {
-            return o1.compareToIgnoreCase(o2);
+        public int compare(ItemVariant o1, ItemVariant o2) {
+            return o1.getName().compareToIgnoreCase(o2.getName());
         }
     }
 

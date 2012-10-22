@@ -900,7 +900,7 @@ public final class Utilities {
     /**
      * @since 2.12
      */
-    public static ExecutableElement fuzzyResolveMethodInvocation(CompilationInfo info, TreePath path, TypeMirror[] proposed, int[] index) {
+    public static List<ExecutableElement> fuzzyResolveMethodInvocation(CompilationInfo info, TreePath path, List<TypeMirror> proposed, int[] index) {
         assert path.getLeaf().getKind() == Kind.METHOD_INVOCATION || path.getLeaf().getKind() == Kind.NEW_CLASS;
         
         if (path.getLeaf().getKind() == Kind.METHOD_INVOCATION) {
@@ -931,7 +931,7 @@ public final class Utilities {
             }
 
             if (on == null || on.getKind() != TypeKind.DECLARED) {
-                return null;
+                return Collections.emptyList();
             }
             
             return resolveMethod(info, actualTypes, (DeclaredType) on, false, false, methodName, proposed, index);
@@ -974,8 +974,8 @@ public final class Utilities {
         return result;
     }
     
-    private static ExecutableElement resolveMethod(CompilationInfo info, List<TypeMirror> foundTypes, DeclaredType on, boolean statik, boolean constr, String name, TypeMirror[] candidateType, int[] index) {
-        ExecutableElement found = null;
+    private static List<ExecutableElement> resolveMethod(CompilationInfo info, List<TypeMirror> foundTypes, DeclaredType on, boolean statik, boolean constr, String name, List<TypeMirror> candidateTypes, int[] index) {
+        List<ExecutableElement> found = new LinkedList<ExecutableElement>();
         
         OUTER:
         for (ExecutableElement ee : execsIn(info, (TypeElement) on.asElement(), constr, name)) {
@@ -1009,14 +1009,24 @@ public final class Utilities {
                 }
 
                 if (mismatchFound) {
-                    if (candidateType[0] == null) {
-                        candidateType[0] = innerCandidate;
+                    if (candidateTypes.isEmpty()) {
                         index[0] = innerIndex;
-                        found = ee;
+                        candidateTypes.add(innerCandidate);
+                        found.add(ee);
                     } else {
                         //see testFuzzyResolveConstructor2:
-                        if (index[0] != innerIndex || !info.getTypes().isSameType(candidateType[0], innerCandidate)) {
-                            return null;
+                        if (index[0] == innerIndex) {
+                            boolean add = true;
+                            for (TypeMirror tm : candidateTypes) {
+                                if (info.getTypes().isSameType(tm, innerCandidate)) {
+                                    add = false;
+                                    break;
+                                }
+                            }
+                            if (add) {
+                                candidateTypes.add(innerCandidate);
+                                found.add(ee);
+                            }
                         }
                     }
                 }

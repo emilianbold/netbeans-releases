@@ -139,7 +139,7 @@ public class JellyTestCase extends NbTestCase {
             public void run() {
                 try {
                     PropertyEditor pe = PropertyEditorManager.findEditor(String.class);
-                    if (pe != null && !pe.getClass().getName().equals("sun.beans.editors.StringEditor")) {
+                    if (pe != null && !pe.getClass().getName().endsWith("sun.beans.editors.StringEditor")) {
                         // OK
                         return;
                     }

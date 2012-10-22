@@ -43,6 +43,7 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -65,6 +66,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.CheckableNode;
 import org.openide.explorer.view.OutlineView;
@@ -86,6 +88,7 @@ import org.openide.util.lookup.Lookups;
     "CreateSiteTemplate_Label=Name template and select files",
     "CreateSiteTemplate_WizardTitle=Create Site Template from current project",
     "CreateSiteTemplate_Error1=Template name must be specified",
+    "CreateSiteTemplate_Error1_extension=Template name must be a ZIP file (*.zip).",
     "CreateSiteTemplate_Error2=Destination name must be specified",
     "CreateSiteTemplate_Error3=Destination is not a valid folder",
     "CreateSiteTemplate_Error4=Template file {0} already exists. Do you want to override it?",
@@ -230,8 +233,13 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
     // End of variables declaration//GEN-END:variables
 
     private String getErrorMessage() {
-        if (getTemplateName().trim().length() == 0) {
+        String tplName = getTemplateName().trim();
+        if (tplName.length() == 0) {
             return Bundle.CreateSiteTemplate_Error1();
+        }
+        if (tplName.indexOf('.') != -1 // NOI18N
+                && !tplName.endsWith(".zip")) { // NOI18N
+            return Bundle.CreateSiteTemplate_Error1_extension();
         }
         if (getTemplateFolder().trim().length() == 0) {
             return Bundle.CreateSiteTemplate_Error2();
@@ -296,7 +304,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
 
         @Override
         public HelpCtx getHelp() {
-            return new HelpCtx(CreateSiteTemplate.class);
+            return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.CreateSiteTemplate"); // NOI18N
         }
 
         @Override
@@ -341,11 +349,11 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         }
     }
     
-    private static class WizardIterator implements WizardDescriptor.InstantiatingIterator {
+    private static class WizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator {
 
-        private WizardPanel panel;
-        private ClientSideProject p;
-        private ChangeSupport sup = new ChangeSupport(this);
+        private final WizardPanel panel;
+        private final ClientSideProject p;
+        private final ChangeSupport sup = new ChangeSupport(this);
 
         public WizardIterator(ClientSideProject p) {
             this.p = p;
@@ -358,9 +366,15 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 }
             });
         }
-        
+
+        @NbBundle.Messages({
+            "# {0} - template name",
+            "CreateSiteTemplate.info.templateCreated=Template {0} successfully created."
+        })
         @Override
         public Set instantiate() throws IOException {
+            assert !EventQueue.isDispatchThread();
+            // threading model of WizardPanel is broken and cannot be properly used
             String name = panel.comp.getTemplateName();
             if (!name.endsWith(".zip")) { //NOI18N
                 name += ".zip"; //NOI18N
@@ -373,6 +387,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 }
             }
             createZipFile(f, p, panel.comp.manager.getRootContext());
+            StatusDisplayer.getDefault().setStatusText(Bundle.CreateSiteTemplate_info_templateCreated(name));
             return null;
         }
 

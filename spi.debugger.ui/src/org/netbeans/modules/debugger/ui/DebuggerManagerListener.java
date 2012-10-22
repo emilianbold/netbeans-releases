@@ -413,6 +413,10 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 final List<ComponentInfo> retainOpened = new ArrayList<ComponentInfo>();
                 for (Map<EngineComponentsProvider, List<? extends ComponentInfo>> meci : openedComponents.values()) {
                     for (List<? extends ComponentInfo> lci : meci.values()){
+                        if (lci == null) {
+                            // The components are not set up yet for this engine.
+                            continue;
+                        }
                         retainOpened.addAll(lci);
                     }
                 }

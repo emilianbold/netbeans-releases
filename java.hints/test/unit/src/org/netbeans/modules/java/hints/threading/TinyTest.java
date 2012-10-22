@@ -431,6 +431,40 @@ public class TinyTest extends NbTestCase {
                 .assertWarnings();
     }
 
+    public void test191283() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     private void n(java.util.concurrent.locks.Lock l) {\n" +
+                       "         System.err.println(2);\n" +
+                       "         l.lock();\n" +
+                       "         System.err.println(1);\n" +
+                       "         System.err.println(1);\n" +
+                       "         l.unlock();\n" +
+                       "         System.err.println(3);\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .findWarning("4:9-4:18:verifier:ERR_UnlockOutsideTryFinally")
+                .applyFix("FIX_UnlockOutsideTryFinally")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "     private void n(java.util.concurrent.locks.Lock l) {\n" +
+                              "         System.err.println(2);\n" +
+                              "         l.lock();\n" +
+                              "         try {\n" +
+                              "             System.err.println(1);\n" +
+                              "             System.err.println(1);\n" +
+                              "         } finally {\n" +
+                              "              l.unlock();\n" +
+                              "         }\n" +
+                              "         System.err.println(3);\n" +
+                              "     }\n" +
+                              "}\n");
+    }
+    
     public void testUnsyncedWait1() throws Exception {
         HintTest
                 .create()

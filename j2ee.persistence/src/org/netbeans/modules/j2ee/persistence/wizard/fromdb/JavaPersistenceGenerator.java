@@ -1157,7 +1157,6 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                         properties.remove(pkProperty);
                                     }
                                 } else if (nm.contentEquals("JoinTable")) {//NOI18N
-                                    TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
                                     ArrayList<String> columns = new ArrayList<String>();
                                     String tableName = null;
                                     for (ExpressionTree exTree : annTree.getArguments()) {
@@ -1165,9 +1164,16 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                         Name nm2 = ((IdentifierTree) (aTree).getVariable()).getName();
                                         ExpressionTree value = aTree.getExpression();
                                         if (nm2.contentEquals("joinColumns")) {//NOI18N
-                                            NewArrayTree columnsArrayTree = (NewArrayTree) value;
-                                            //---TODO: this code is duplicated in this class.
-                                            List<? extends ExpressionTree> inis = columnsArrayTree.getInitializers();
+                                            List<? extends ExpressionTree> inis;
+                                            if(value instanceof NewArrayTree){
+                                                NewArrayTree columnsArrayTree = (NewArrayTree) value;
+                                                //---TODO: this code is duplicated in this class.
+                                                inis = columnsArrayTree.getInitializers();
+                                            }  else {
+                                                ArrayList<ExpressionTree> one = new ArrayList<ExpressionTree>();
+                                                one.add(value);
+                                                inis = one;
+                                            }
                                             for (ExpressionTree eT : inis) {
                                                 if (eT instanceof AnnotationTree) {
                                                     AnnotationTree aT = (AnnotationTree) eT;
@@ -1249,6 +1255,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     }
                 }
 
+            }
+            
+            private <T> void wildcardListAdd(List<T> l, T add){
+                l.add(add);
             }
 
             @Override

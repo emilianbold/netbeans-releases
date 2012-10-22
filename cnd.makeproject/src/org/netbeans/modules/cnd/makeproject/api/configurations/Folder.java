@@ -638,7 +638,8 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (map != null) {
                         old = map.get(configurations[i]);
                     }
-                    ItemConfiguration ic = new ItemConfiguration(configurations[i], item, excludedByDefault);
+                    ItemConfiguration ic = new ItemConfiguration(configurations[i], item);
+                    ic.getExcluded().setValue(excludedByDefault);
                     if (old != null && old.ic != null && old.aux != null) {
                         ic.setTool(old.ic.getTool());
                         ic.assignValues(old.aux);

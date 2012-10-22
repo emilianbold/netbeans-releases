@@ -59,61 +59,68 @@
     <!-- ============================================================================
       Default
     ============================================================================= -->
+    <!--
     <target name="clean-all">
-        <for-each list="windows,linux,solaris-x86 solaris-sparc" separator="," property="platform.single">
-	    <antcall target="clean-platform">
-                <param name="product.platforms" value="${platform.single}"/>
-            </antcall>
-        </for-each>
+        <antcall target="clean-platform">
+            <param name="product.platforms" value="windows"/>
+        </antcall>
+        <antcall target="clean-platform">
+            <param name="product.platforms" value="linux"/>
+        </antcall>
+        <antcall target="clean-platform">
+            <param name="product.platforms" value="solaris-x86"/>
+        </antcall>
+        <antcall target="clean-platform">
+            <param name="product.platforms" value="solaris-sparc"/>
+        </antcall>        
+        <antcall target="clean-platform">
+            <param name="product.platforms" value="macosx-x86 macosx-ppc"/>
+        </antcall>
+
     </target>
 
     <target name="build-all">
-        <for-each list="windows,linux,solaris-x86 solaris-sparc" separator="," property="platform.single">
-	    <antcall target="build-platform">
-                <param name="product.platforms" value="${platform.single}"/>
-            </antcall>
-        </for-each>
+        <antcall target="build-platform">
+            <param name="product.platforms" value="windows"/>
+        </antcall>
+        <antcall target="build-platform">
+            <param name="product.platforms" value="linux"/>
+        </antcall>
+        <antcall target="build-platform">
+            <param name="product.platforms" value="solaris-x86"/>
+        </antcall>
+        <antcall target="build-platform">
+            <param name="product.platforms" value="solaris-sparc"/>
+        </antcall>        
+        <antcall target="build-platform">
+            <param name="product.platforms" value="macosx-x86 macosx-ppc"/>
+        </antcall>
+
     </target>
 
     <target name="release-all">
-        <for-each list="windows,linux,solaris-x86 solaris-sparc" separator="," property="platform.single">
-	    <antcall target="release-platform">
-                <param name="product.platforms" value="${platform.single}"/>
-            </antcall>
-        </for-each>
+        <antcall target="release-platform">
+            <param name="product.platforms" value="windows"/>
+        </antcall>
+        <antcall target="release-platform">
+            <param name="product.platforms" value="linux"/>
+        </antcall>
+        <antcall target="release-platform">
+            <param name="product.platforms" value="solaris-x86"/>
+        </antcall>
+        <antcall target="release-platform">
+            <param name="product.platforms" value="solaris-sparc"/>
+        </antcall>        
+        <antcall target="release-platform">
+            <param name="product.platforms" value="macosx-x86 macosx-ppc"/>
+        </antcall>
     </target>
 
     <target name="clean-platform" depends="clean"/>
     <target name="build-platform" depends="clean-platform,checkout,build"/>
     <target name="release-platform" depends="build-platform,release"/>
-
-    <!--
-      Corrects the layout of the incoming installation data files. 
-      
-      Overrides the '-pre-package' target in product.xml.
     -->
-    <target name="-pre-package">        
-        <set property="ide.cluster"    value="ide"/>
-        <set property="is.javafx" value="false"/>
-        <if property="i" value="4">
-            <set property="javafx.directory" value="${javafx.directory.4}"/>
-            <set property="is.javafx" value="true"/>
-        </if>
-        <if property="i" value="5">
-            <set property="javafx.directory" value="${javafx.directory.5}"/>
-            <set property="is.javafx" value="true"/>
-        </if>
-        <if property="is.javafx" value="true">
-            <mkdir dir="${data.directory}/${ide.cluster}/"/>
-            <move todir="${data.directory}/${ide.cluster}/javafxrt/${javafx.directory}">
-                <fileset dir="${data.directory}">
-                    <exclude name="${ide.cluster}"/>
-                    <exclude name="${ide.cluster}/${javafx.directory}"/>
-                </fileset>
-            </move>
-        </if>
-    </target>
-    
+
     <!--
       The default target. 
       

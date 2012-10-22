@@ -68,7 +68,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.CssColor;
 import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
 import org.netbeans.modules.css.model.api.Model;
@@ -97,12 +97,12 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     private Map<String, FixedTextGrammarElement> tags2fixedElement = new HashMap<String, FixedTextGrammarElement>();
     private boolean containsColor;
     private FileObject file;
-    private PropertyModel pmodel;
+    private PropertyDefinition pmodel;
     
     private static final String CHOOSE_COLOR_ITEM = new StringBuilder().append("<html><b>").append(Bundle.choose_color_item()).append("</b></html>").toString();  //NOI18N
     private static final JColorChooser COLOR_CHOOSER = new JColorChooser();
 
-    public PropertyValuesEditor(PropertyModel pmodel, Model model, Collection<FixedTextGrammarElement> fixedElements, Collection<UnitGrammarElement> unitElements, boolean addNoneProperty) {
+    public PropertyValuesEditor(PropertyDefinition pmodel, Model model, Collection<FixedTextGrammarElement> fixedElements, Collection<UnitGrammarElement> unitElements, boolean addNoneProperty) {
         this.fixedElements = fixedElements;
         this.unitElements = unitElements;
         this.addNoneProperty = addNoneProperty;
@@ -189,7 +189,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         if(CHOOSE_COLOR_ITEM.equals(str)) {
             //color chooser
             final AtomicReference<Color> color_ref = new AtomicReference<Color>();
-            JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), CHOOSE_COLOR_ITEM, true, COLOR_CHOOSER,
+            JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), Bundle.choose_color_item(), true, COLOR_CHOOSER,
                     new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -226,7 +226,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "; property: " + pmodel.getPropertyName();
+        return getClass().getSimpleName() + "; property: " + pmodel.getName();
     }
 
     

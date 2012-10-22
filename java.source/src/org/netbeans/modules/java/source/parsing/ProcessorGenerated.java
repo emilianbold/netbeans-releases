@@ -53,13 +53,16 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
@@ -84,7 +87,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
         RESOURCE
     }
     
-    private final boolean writeable;
+    private final URL root;
     private final Map<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>> generated =
             new HashMap<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>>();
     private ClasspathInfo owner;
@@ -97,8 +100,8 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     
     
     
-    private ProcessorGenerated(final boolean writable) {
-        this.writeable = writable;
+    private ProcessorGenerated(@NullAllowed final URL root) {
+        this.root = root;
     }
     
     public Set<javax.tools.FileObject> getGeneratedSources(final URL forSource) {
@@ -108,7 +111,19 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     }
     
     public boolean canWrite() {
-        return writeable;
+        return root != null;
+    }
+
+    @CheckForNull
+    public URL findSibling(@NonNull final Collection<? extends URL> candidates) {
+        URL res = null;
+        for (URL candiate : candidates) {
+            if (root == null || FileObjects.isParentOf(root, candiate)) {
+                res = candiate;
+                break;
+            }
+        }
+        return res;
     }
     
     public void bind(
@@ -117,7 +132,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
          @NonNull final ClassPath aptSources) {
         Parameters.notNull("owner", owner);             //NOI18N
         Parameters.notNull("userSources", userSources); //NOI18N
-        if (!writeable) {
+        if (!canWrite()) {
             return;
         }
         if (this.owner != null) {
@@ -140,7 +155,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
         @NonNull final URL forSource,
         @NonNull final javax.tools.FileObject file,
         @NonNull final Type type) {
-        if (!writeable) {
+        if (!canWrite()) {
             return;
         }
         LOG.log(
@@ -173,7 +188,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
 
     @Override
     protected void commit() throws IOException {
-        if (!writeable) {
+        if (!canWrite()) {
             assert generated.isEmpty();
             return;
         }
@@ -196,7 +211,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
 
     @Override
     protected void rollBack() throws IOException {
-        if (!writeable) {
+        if (!canWrite()) {
             assert generated.isEmpty();
             return;
         }
@@ -343,12 +358,14 @@ public final class ProcessorGenerated extends TransactionContext.Service {
         }
         return null;
     }
-    
-    public static ProcessorGenerated create() {
-        return new ProcessorGenerated(true);
+
+    @NonNull
+    public static ProcessorGenerated create(@NonNull final URL root) {
+        return new ProcessorGenerated(root);
     }
-    
+
+    @NonNull
     public static ProcessorGenerated nullWrite() {
-        return new ProcessorGenerated(false);
+        return new ProcessorGenerated(null);
     }
 }

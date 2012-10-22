@@ -430,23 +430,25 @@ public abstract class JavaCompletionItem implements CompletionItem {
         int i = 0;
         int j = caretOffset;
         int length = j - substitutionOffset;
-        boolean partialMatch = false;
-        while (true) {
-            char taChar = '\0';
-            while (i < toAdd.length() && (taChar = toAdd.charAt(i++)) <= ' ');
-            char docChar = '\0';
-            while (j < docText.length() && (docChar = docText.charAt(j++)) <= ' ' && docChar != '\n');
-            if (taChar <= ' ' || docChar == '\n') {
-                length = j - substitutionOffset - (j <= docText.length() ? 1 : 0);
-                break;
-            } else if (taChar != docChar) {
-                if (partialMatch) {
-                    toAdd.delete(i - 1, toAdd.length());
+        if (toAdd.length() > 0) {
+            boolean partialMatch = false;
+            while (true) {
+                char taChar = '\0';
+                while (i < toAdd.length() && (taChar = toAdd.charAt(i++)) <= ' ');
+                char docChar = '\0';
+                while (j < docText.length() && (docChar = docText.charAt(j++)) <= ' ' && docChar != '\n');
+                if (taChar <= ' ' || docChar == '\n') {
                     length = j - substitutionOffset - (j <= docText.length() ? 1 : 0);
+                    break;
+                } else if (taChar != docChar) {
+                    if (partialMatch) {
+                        toAdd.delete(i - 1, toAdd.length());
+                        length = j - substitutionOffset - (j <= docText.length() ? 1 : 0);
+                    }
+                    break;
+                } else {
+                    partialMatch = true;
                 }
-                break;
-            } else {
-                partialMatch = true;
             }
         }
         CharSequence template = substituteText(c, substitutionOffset, length, getInsertPrefix(), toAdd);
@@ -1667,6 +1669,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 }
                             }
                             sb.append(')');//NOI18N
+                            if (addSemicolon) {
+                                sb.append(';');
+                            }
                             if (toAddLen > postfixLen) {
                                 sb.append(toAdd.subSequence(postfixLen, toAdd.length()));
                             }
@@ -2182,16 +2187,19 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
             BaseDocument doc = (BaseDocument) c.getDocument();
-            Position startPos = null;
-            Position endPos = null;
+            Position startPos;
+            Position endPos;
             try {
-                startPos = doc.createPosition(offset, Bias.Backward);
+                startPos = doc.createPosition(offset + (insertName ? 0 : length), Bias.Backward);
                 endPos = doc.createPosition(offset + length);
             } catch (BadLocationException ex) {
+                return null; // Invalid offset -> do nothing
             }
-            CharSequence cs = super.substituteText(c, offset, length, insertName ? text : null, toAdd);
+            CharSequence cs = insertName
+                    ? super.substituteText(c, startPos.getOffset(), length, text, toAdd)
+                    : super.substituteText(c, startPos.getOffset(), 0, null, toAdd);
             StringBuilder sb = new StringBuilder();
-            if (startPos != null && endPos != null && toAdd != null) {
+            if (toAdd != null) {
                 CharSequence postfix = getInsertPostfix(c);
                 if (postfix != null) {
                     int postfixLen = postfix.length();
@@ -2344,13 +2352,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
             BaseDocument doc = (BaseDocument) c.getDocument();
-            Position startPos = null;
+            Position startPos;
             try {
-                startPos = doc.createPosition(offset, Bias.Backward);
+                startPos = doc.createPosition(offset + length, Bias.Backward);
             } catch (BadLocationException ex) {
+                return null; // Invalid offset -> do nothing
             }
-            CharSequence cs = super.substituteText(c, offset, length, text, toAdd);
-            if (startPos != null && toAdd != null) {
+            CharSequence cs = super.substituteText(c, offset, 0, null, toAdd);
+            if (toAdd != null) {
                 CharSequence postfix = getInsertPostfix(c);
                 if (postfix != null) {
                     int postfixLen = postfix.length();
@@ -2359,7 +2368,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         String toAddText = toAdd.toString();
                         if (isAbstract) {
                             try {
-                                final int off = startPos.getOffset() + text.length() + toAddText.indexOf('{') + 1;
+                                final int off = startPos.getOffset() + toAddText.indexOf('{') + 1;
                                 ModificationResult mr = ModificationResult.runModificationTask(Collections.singletonList(Source.create(c.getDocument())), new UserTask() {
                                     @Override
                                     public void run(ResultIterator resultIterator) throws Exception {
