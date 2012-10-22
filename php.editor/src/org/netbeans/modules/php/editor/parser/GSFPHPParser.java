@@ -566,7 +566,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         OffsetRange offsetRange = classSanitizedPart.getOffsetRange();
         int start = offsetRange.getStart();
         int end = offsetRange.getEnd();
-        if (index <= index) {
+        if (index <= start) {
             start = index;
         }
         if (index + 1 >= end) {
