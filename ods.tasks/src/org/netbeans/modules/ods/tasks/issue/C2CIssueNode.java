@@ -68,7 +68,7 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         return new Property<?>[] {
             // XXX is this complete?
             new IDProperty(),
-            new C2CFieldProperty(C2CIssue.LABEL_NAME_TASK_TYPE, IssueField.TASK_TYPE, "CTL_Issue_Task_Type_Title", "CTL_Issue_Task_Type_Desc"),
+            new C2CFieldProperty(C2CIssue.LABEL_NAME_TASK_TYPE, IssueField.TASK_TYPE, "CTL_Issue_Task_Type_Title", "CTL_Issue_Task_Type_Desc"), // NOI18N
             new SeverityProperty(),
             new PriorityProperty(),
             new C2CFieldProperty(C2CIssue.LABEL_NAME_STATUS, IssueField.STATUS, "CTL_Issue_Status_Title", "CTL_Issue_Status_Desc"), // NOI18N
@@ -197,7 +197,6 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
     }
 
-    // XXX isn't this same like in bugzilla and jira?
     private class C2CFieldProperty extends IssueProperty<String> {
         private final IssueField field;
         public C2CFieldProperty(String fieldLabel, IssueField f, String titleProp, String descProp) {

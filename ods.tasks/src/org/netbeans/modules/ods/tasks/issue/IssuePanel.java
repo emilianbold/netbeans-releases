@@ -349,7 +349,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
     
     private void selectProduct() {
-        // XXX
 //        if (ownerInfo != null) {
 //            String owner = findInModel(productCombo, ownerInfo.getOwner());
 //            selectInCombo(productCombo, owner, true);
@@ -379,17 +378,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     
     private void initCombos() {
         C2CData cd = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository());
-        // XXX check if valid
         
         productCombo.setModel(toComboModel(cd.getProducts()));
         productCombo.setRenderer(new ClientDataRenderer());
         
         // componentCombo, versionCombo, targetMilestoneCombo are filled
         // automatically when productCombo is set/changed
-        // Do not support MOVED resolution (yet?)
 
         // List<String> resolutions = new LinkedList<String>(cd.getResolutions());
-        // resolutions.remove("MOVED"); // NOI18N XXX
         resolutionCombo.setModel(toComboModel(cd.getResolutions()));
         resolutionCombo.setRenderer(new ClientDataRenderer());
         

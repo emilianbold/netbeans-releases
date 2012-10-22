@@ -101,7 +101,7 @@ public class C2CRepositoryController implements RepositoryController, DocumentLi
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null; // XXX
+        return new HelpCtx("org.netbeans.modules.ods.tasks.repository.C2CRepositoryController"); // NOI18N
     }
 
     @Override

@@ -132,7 +132,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         this.criteria = criteria;
         
         issueTable = new IssueTable<C2CQuery>(C2CUtil.getRepository(repository), query, query.getColumnDescriptors());
-//      XXX  setupRenderer(issueTable);
+//      setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
         panel.productList.addListSelectionListener(this);
@@ -198,7 +198,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         }
     }
 
-    // XXX probably will need a redenderer like in jira to show parent - subtask relation
+    // probably will need a redenderer like in jira to show parent - subtask relation
 //    private void setupRenderer(IssueTable issueTable) {
 //        C2CQueryCellRenderer renderer = new C2CQueryCellRenderer((QueryTableCellRenderer)issueTable.getRenderer());
 //        issueTable.setRenderer(renderer);

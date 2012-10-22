@@ -650,7 +650,7 @@ public class C2CIssue {
     }
 
     public String[] getSubtasks() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return new String[0]; // XXX implement me
     }
     
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {

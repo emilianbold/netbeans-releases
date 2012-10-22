@@ -149,7 +149,7 @@ public class C2CUtil {
      
     public static RepositoryResponse postTaskData(AbstractRepositoryConnector cfcrc, TaskRepository repository, TaskData data) throws CoreException {
         C2C.LOG.log(Level.FINE, " dataRoot before post {0}", data.getRoot().toString());
-        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
+        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); 
         return postTaskData(cfcrc, repository, data, attrs);
     }
 
@@ -231,7 +231,7 @@ public class C2CUtil {
 
         try {
             C2CData cd = getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
-            if(cd == null /* XXX */) {
+            if(cd == null) {
                 return keywordString;
             }
             Collection<Keyword> keywords = cd.getKeywords(); 
@@ -259,7 +259,7 @@ public class C2CUtil {
 
         try {
             C2CData cd = getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
-            if(cd == null /* XXX */) {
+            if(cd == null) {
                 return usersString;
             }
             List<TaskUserProfile> userProfiles = cd.getUsers();

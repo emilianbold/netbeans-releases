@@ -295,7 +295,6 @@ public class CommentsPanel extends JPanel {
 
         // attachments
         if (!attachmentIds.isEmpty()) {
-            // XXX
 //            AttachmentHyperlinkSupport.Attachement a = AttachmentHyperlinkSupport.findAttachment(comment, attachmentIds);
 //            if (a != null) {
 //                String attachmentId = a.id;
