@@ -124,6 +124,10 @@ public class MavenPersistenceProviderSupplier implements PersistenceProviderSupp
     
     @Override
     public boolean supportsDefaultProvider() {
-        return J2eeProjectCapabilities.forProject(project).hasDefaultPersistenceProvider();
+        final J2eeProjectCapabilities capabilities = J2eeProjectCapabilities.forProject(project);
+        if (capabilities != null) {
+            return capabilities.hasDefaultPersistenceProvider();
+        }
+        return false;
     }
 }

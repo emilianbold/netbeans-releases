@@ -58,6 +58,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
@@ -101,7 +102,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
     private OutlineView tree;
     private ExplorerManager manager;
     private WizardPanel wp;
-    
+
     public CreateSiteTemplate(FileObject root, WizardPanel wp) {
         this.root = root;
         this.manager = new ExplorerManager();
@@ -118,12 +119,13 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         placeholder.add(tree, BorderLayout.CENTER);
         nameTextField.getDocument().addDocumentListener(this);
         fileTextField.getDocument().addDocumentListener(this);
+        fileTextField.setText(new File(System.getProperty("user.home")).getAbsolutePath()); // NOI18N
     }
 
     public String getName() {
         return Bundle.CreateSiteTemplate_Label();
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -249,7 +251,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         }
         return ""; //NOI18N
     }
-    
+
     public String getTemplateName() {
         return nameTextField.getText();
     }
@@ -278,10 +280,10 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         wp.fireChange();
     }
 
-    private static class WizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+    private static class WizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-        private CreateSiteTemplate comp;
-        private ChangeSupport sup = new ChangeSupport(this);
+        private final CreateSiteTemplate comp;
+        private final ChangeSupport sup = new ChangeSupport(this);
         private WizardDescriptor wd;
 
         public WizardPanel(ClientSideProject p) {
@@ -296,7 +298,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
             // Turn on numbering of all steps
             comp.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); //NOI18N
         }
-        
+
         @Override
         public Component getComponent() {
             return comp;
@@ -319,7 +321,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 wd.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             }
         }
-        
+
         @Override
         public void addChangeListener(ChangeListener l) {
             sup.addChangeListener(l);
@@ -333,23 +335,23 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         void fireChange() {
             sup.fireChange();
         }
-        
+
         @Override
         public boolean isFinishPanel() {
             return true;
         }
 
         @Override
-        public void readSettings(Object settings) {
-            this.wd = (WizardDescriptor)settings;
+        public void readSettings(WizardDescriptor settings) {
+            this.wd = settings;
         }
 
         @Override
-        public void storeSettings(Object settings) {
+        public void storeSettings(WizardDescriptor settings) {
         }
     }
-    
-    private static class WizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator {
+
+    private static class WizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator<WizardDescriptor> {
 
         private final WizardPanel panel;
         private final ClientSideProject p;
@@ -372,7 +374,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
             "CreateSiteTemplate.info.templateCreated=Template {0} successfully created."
         })
         @Override
-        public Set instantiate() throws IOException {
+        public Set<FileObject> instantiate() throws IOException {
             assert !EventQueue.isDispatchThread();
             // threading model of WizardPanel is broken and cannot be properly used
             String name = panel.comp.getTemplateName();
@@ -400,7 +402,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         }
 
         @Override
-        public Panel current() {
+        public Panel<WizardDescriptor> current() {
             return panel;
         }
 
@@ -436,9 +438,9 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         public void removeChangeListener(ChangeListener l) {
             sup.removeChangeListener(l);
         }
-        
+
     }
-    
+
     public static void showWizard(ClientSideProject p) {
         WizardDescriptor wd = new WizardDescriptor(new WizardIterator(p));
         wd.setTitleFormat(new MessageFormat("{0}")); //NOI18N
@@ -449,26 +451,26 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
     private class FNode extends FilterNode {
 
         public FNode(Node original, boolean hasChildren) {
-            super(original, hasChildren ? new FChildren(original) : Children.LEAF, 
+            super(original, hasChildren ? new FChildren(original) : Children.LEAF,
                     Lookups.fixed(new Checkable(), original.getLookup().lookup(FileObject.class)));
             Checkable ch = getLookup().lookup(Checkable.class);
             ch.setOwner(this);
             ch.setComponent(tree);
         }
-        
+
         public void refresh() {
             fireIconChange();
         }
-        
-        
+
+
     }
-    
+
     private class FChildren extends FilterNode.Children {
-        
+
         public FChildren(Node owner) {
             super(owner);
         }
- 
+
         @Override
         protected Node copyNode(Node node) {
             FileObject fo = node.getLookup().lookup(FileObject.class);
@@ -485,15 +487,18 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
             if ("nbproject".equals(fo.getName())) { //NOI18N
                 return new Node[0];
             }
+            if (!VisibilityQuery.getDefault().isVisible(fo)) {
+                return new Node[0];
+            }
             return super.createNodes(key);
         }
     }
-    
-    
+
+
     private static class Checkable implements CheckableNode {
 
         private static boolean internalUpdate = false;
-        
+
         private Boolean checked = Boolean.TRUE;
         private FNode node;
         private JComponent comp;
@@ -529,7 +534,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 }
             }
         }
-        
+
         private static void propagateChanges(FNode node, boolean checked) {
             if (checked) {
                 tick(node.getChildren(), true);
@@ -543,7 +548,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 tick(node.getChildren(), false);
             }
         }
-        
+
         private static void tick(Children ch, boolean tick) {
             if (ch == null) {
                 return;
@@ -562,9 +567,9 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         public void setComponent(JComponent comp) {
             this.comp = comp;
         }
-        
+
     }
-    
+
     private static void createZipFile(File templateFile, ClientSideProject project, Node rootNode) throws IOException {
         if (!templateFile.exists()) {
             templateFile.createNewFile();

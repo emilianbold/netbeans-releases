@@ -208,4 +208,9 @@ public abstract class AbstractFileBuffer implements FileBuffer {
             return -1; // Adler never returns negative values
         }
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ' ' + fileSystem.getDisplayName() + ' ' + absPath; //NOI18N
+    }
 }

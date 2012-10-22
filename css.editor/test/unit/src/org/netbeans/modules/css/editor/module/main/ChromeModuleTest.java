@@ -39,39 +39,22 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-{
-  "name": "__MSG__pluginName__",
-  "manifest_version": 2,
+package org.netbeans.modules.css.editor.module.main;
 
-  "version": "0.5.1",
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 
-  "background": {
-    "page": "html/main.html"
-  },
+/**
+ *
+ * @author mfukala@netbeans.org
+ */
+public class ChromeModuleTest extends CssModuleTestBase {
 
-  "options_page": "html/options.html",
+    public ChromeModuleTest(String name) {
+        super(name);
+    }
 
-  "page_action": {
-    "default_icon": "img/netbeans16.png",
-    "default_title": "Open NetBeans actions",
-    "default_popup": "html/popup.html"
-  },
-
-  "permissions": [
-    "contextMenus",
-    "tabs",
-    "debugger",
-    "<all_urls>" // content scripts (for window resizing)
-  ],
-
-  "content_security_policy": "default-src 'self'; connect-src ws://127.0.0.1:8008/",
-
-  "icons": {
-    "16": "img/netbeans16.png",
-    "48": "img/netbeans48.png",
-    "128": "img/netbeans128.png"
-  },
-
-  "default_locale": "en"
-
+    public void testModule() {
+        CssEditorModule chromeModule = getCssModuleByClass(ChromeModule.class);
+        assertNotNull(chromeModule);
+    }
 }

@@ -106,11 +106,19 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
         
         if (module != null) {
-            Profile prof = module.getJ2eeProfile();
-            String version = prof.equals(Profile.JAVA_EE_6_WEB) ? Profile.JAVA_EE_6_FULL.getDisplayName() : prof.getDisplayName();
-            
-            loadServerModel(comServer, J2eeModule.Type.WAR, prof);
+            final Profile j2eeProfile = module.getJ2eeProfile();
+            final String version;
+            if (j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+                version = Profile.JAVA_EE_6_FULL.getDisplayName();
+                initServerComboForJavaEE6();
+            } else {
+                version = j2eeProfile.getDisplayName();
+                initServerComboForNonJavaEE6();
+            }
+
+            loadServerModel(comServer, J2eeModule.Type.WAR, j2eeProfile);
             txtJ2EEVersion.setText(version);
+            txtContextPath.setText(module.getContextPath());
         }
         comProfile.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -124,32 +132,37 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
             }
         });
 
-        if (Profile.JAVA_EE_6_WEB.equals(module.getJ2eeProfile())) {
-            lblProfile.setVisible(true);
-            comProfile.setVisible(true);
-            comProfile.setEnabled(true);
-            comProfile.setModel(new DefaultComboBoxModel(new Object[] { Profile.JAVA_EE_6_WEB, Profile.JAVA_EE_6_FULL}));
-            Profile prop = module.getJ2eeProfile();
-            if (prop != null) {
-                comProfile.setSelectedItem(prop);
-            } else {
-                comProfile.setSelectedItem(Profile.JAVA_EE_6_WEB);
-            }
-            comProfile.addActionListener(new ActionListener() {
-                private Profile modified;
-                private ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+        initValues();
+        initDeployOnSaveComponent(jCheckBoxDeployOnSave, dosDescription);
+        initServerComponent(comServer, lblServer);
+    }
 
-                    @Override
-                    public void performOperation(POMModel model) {
-                    org.netbeans.modules.maven.model.pom.Project root = model.getProject();
-                        if (Profile.JAVA_EE_6_FULL.equals(modified)) {
+    private void initServerComboForJavaEE6() {
+        lblProfile.setVisible(true);
+        comProfile.setVisible(true);
+        comProfile.setEnabled(true);
+        comProfile.setModel(new DefaultComboBoxModel(new Object[] { Profile.JAVA_EE_6_WEB, Profile.JAVA_EE_6_FULL}));
+        Profile prop = module.getJ2eeProfile();
+        if (prop != null) {
+            comProfile.setSelectedItem(prop);
+        } else {
+            comProfile.setSelectedItem(Profile.JAVA_EE_6_WEB);
+        }
+        comProfile.addActionListener(new ActionListener() {
+            private Profile modified;
+            private ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+
+                @Override
+                public void performOperation(POMModel model) {
+                org.netbeans.modules.maven.model.pom.Project root = model.getProject();
+                    if (Profile.JAVA_EE_6_FULL.equals(modified)) {
                         Properties props = root.getProperties();
                         if (props == null) {
-                                props = model.getFactory().createProperties();
+                            props = model.getFactory().createProperties();
                             root.setProperties(props);
                         }
-                            props.setProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, modified.toPropertiesString());
-                            replaceDependency(model, "javaee-web-api", "javaee-api");
+                        props.setProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, modified.toPropertiesString());
+                        replaceDependency(model, "javaee-web-api", "javaee-api");
                     } else {
                         Properties props = root.getProperties();
                         if (props != null && props.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION) != null) {
@@ -157,53 +170,48 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                             if (props.getProperties().size() == 0) {
                                 ((AbstractDocumentComponent)root).removeChild("properties", props);
                             }
-                                replaceDependency(model, "javaee-api", "javaee-web-api");
+                            replaceDependency(model, "javaee-api", "javaee-web-api");
                         }
                     }
                 }
-                };
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Profile p = (Profile) comProfile.getSelectedItem();
-                    modified = p;
-                    handle.removePOMModification(operation);
-                    handle.addPOMModification(operation);
+            };
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Profile p = (Profile) comProfile.getSelectedItem();
+                modified = p;
+                handle.removePOMModification(operation);
+                handle.addPOMModification(operation);
+            }
+        });
+    }
 
-                }
-
-            });
-        } else {
-            lblProfile.setVisible(false);
-            comProfile.setVisible(false);
-            comProfile.setEnabled(false);
-        }
-
-        txtContextPath.setText(module.getContextPath());
-        initValues();
-        initDeployOnSaveComponent(jCheckBoxDeployOnSave, dosDescription);
-        initServerComponent(comServer, lblServer);
+    private void initServerComboForNonJavaEE6() {
+        lblProfile.setVisible(false);
+        comProfile.setVisible(false);
+        comProfile.setEnabled(false);
     }
     
     private void initValues() {
         List<NetbeansActionMapping> actionMappings = handle.getActionMappings(handle.getActiveConfiguration()).getActions();
-        for (NetbeansActionMapping actionMapping : actionMappings) {
-            String actionName = actionMapping.getActionName();
-            
-            if (ActionProvider.COMMAND_RUN.equals(actionName)) {
-                run = actionMapping;
-            }
-            if (ActionProvider.COMMAND_DEBUG.equals(actionName)) {
-                debug = actionMapping;
-            }
-            if (ActionProvider.COMMAND_PROFILE.equals(actionName)) { // NOI18N
-                profile = actionMapping;
-            }
-        }
-        
+
         if (actionMappings == null || actionMappings.isEmpty()) {
             run = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
             debug = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
             profile = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_PROFILE, project);
+        } else {
+            for (NetbeansActionMapping actionMapping : actionMappings) {
+                String actionName = actionMapping.getActionName();
+
+                if (ActionProvider.COMMAND_RUN.equals(actionName)) {
+                    run = actionMapping;
+                }
+                if (ActionProvider.COMMAND_DEBUG.equals(actionName)) {
+                    debug = actionMapping;
+                }
+                if (ActionProvider.COMMAND_PROFILE.equals(actionName)) { // NOI18N
+                    profile = actionMapping;
+                }
+            }
         }
 
         isRunCompatible = checkMapping(run);

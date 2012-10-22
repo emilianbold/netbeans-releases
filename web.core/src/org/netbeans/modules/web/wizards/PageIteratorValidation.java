@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-{
-  "name": "__MSG__pluginName__",
-  "manifest_version": 2,
+package org.netbeans.modules.web.wizards;
 
-  "version": "0.5.1",
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.util.NbBundle;
 
-  "background": {
-    "page": "html/main.html"
-  },
+/**
+ * Validator for PageIterator panels.
+ * @author Martin Fousek <marfous@netbeans.org>
+ */
+public final class PageIteratorValidation {
 
-  "options_page": "html/options.html",
+    /**
+     * Validates JSF/JSP file wizard.
+     */
+    public static class JsfJspValidatorPanel extends DelegatingWizardDescriptorPanel {
 
-  "page_action": {
-    "default_icon": "img/netbeans16.png",
-    "default_title": "Open NetBeans actions",
-    "default_popup": "html/popup.html"
-  },
+        public JsfJspValidatorPanel(Panel delegate) {
+            super(delegate);
+        }
 
-  "permissions": [
-    "contextMenus",
-    "tabs",
-    "debugger",
-    "<all_urls>" // content scripts (for window resizing)
-  ],
+        @NbBundle.Messages({
+            "JsfJspValidatorPanel.warn.document.root=Project has no valid DocumentRoot"
+        })
+        @Override
+        public boolean isValid() {
+            Project project = getProject();
+            if (super.isValid()) {
+                // check that that project has valid document root
+                WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+                if (webModule != null && webModule.getDocumentBase() == null) {
+                    getWizardDescriptor().putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, Bundle.JsfJspValidatorPanel_warn_document_root());
+                }
+                return true;
+            }
+            return false;
+        }
 
-  "content_security_policy": "default-src 'self'; connect-src ws://127.0.0.1:8008/",
-
-  "icons": {
-    "16": "img/netbeans16.png",
-    "48": "img/netbeans48.png",
-    "128": "img/netbeans128.png"
-  },
-
-  "default_locale": "en"
-
+    }
 }
