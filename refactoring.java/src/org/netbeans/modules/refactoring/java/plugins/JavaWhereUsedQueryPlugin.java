@@ -63,7 +63,6 @@ import org.netbeans.modules.refactoring.java.SourceUtilsEx;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
-import org.netbeans.modules.refactoring.java.plugins.FindUsagesVisitor.UsageInComment;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters;
 import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters.ReadWrite;
@@ -71,7 +70,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ImageUtilities;
@@ -478,13 +476,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             if (isFindUsages()) {
                 FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS), fromTestRoot, inImport);
                 findVisitor.scan(compiler.getCompilationUnit(), element);
-                final Collection<UsageInComment> usagesInComments = findVisitor.getUsagesInComments();
-                for (FindUsagesVisitor.UsageInComment usageInComment : usagesInComments) {
-                    elements.add(refactoring, WhereUsedElement.create(usageInComment.from, usageInComment.to, compiler, fromTestRoot));
-                }
-                if(!usagesInComments.isEmpty()) {
-                    usedFilters.add(JavaWhereUsedFilters.COMMENT.getKey());
-                }
                 Collection<WhereUsedElement> foundElements = findVisitor.getElements();
                 for (WhereUsedElement el : foundElements) {
                     final ReadWrite access = el.getAccess();
@@ -495,6 +486,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 }
                 if(fromTestRoot && !foundElements.isEmpty()) {
                     usedFilters.add(JavaWhereUsedFilters.TESTFILE.getKey());
+                }
+                if(!foundElements.isEmpty() && findVisitor.usagesInComments()) {
+                    usedFilters.add(JavaWhereUsedFilters.COMMENT.getKey());
                 }
             }
             Collection<TreePath> result = new ArrayList<TreePath>();
