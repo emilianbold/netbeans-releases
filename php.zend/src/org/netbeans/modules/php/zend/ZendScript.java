@@ -87,7 +87,7 @@ public final class ZendScript {
     public static final String SCRIPT_NAME = "zf"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
-    public static final String OPTIONS_SUB_PATH = "Zend"; // NOI18N
+    public static final String OPTIONS_SUB_PATH = "org-netbeans-modules-php-zend-ui-options-ZendOptionsPanelController"; // NOI18N
 
     static final String COMMANDS_SEPARATOR = ":NB:"; // NOI18N
 

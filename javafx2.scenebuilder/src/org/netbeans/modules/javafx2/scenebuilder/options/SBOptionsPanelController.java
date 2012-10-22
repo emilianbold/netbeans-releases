@@ -55,12 +55,11 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(location = JavaOptions.JAVA,
 displayName = "#AdvancedOption_DisplayName_SB",
 keywords = "#AdvancedOption_Keywords_SB",
-keywordsCategory = JavaOptions.JAVA + "/JavaFX",
-id=SBOptionsPanelController.SUBREG_ID)
+keywordsCategory = JavaOptions.JAVA + "/JavaFX")
 @org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_SB=JavaFX", "AdvancedOption_Keywords_SB=javafx"})
 public final class SBOptionsPanelController extends OptionsPanelController {
     final public static String SUBREG_CAT = JavaOptions.JAVA;
-    final public static String SUBREG_ID = "SceneBuilder"; // NOI18N
+    final public static String SUBREG_ID = "org-netbeans-modules-javafx2-scenebuilder-options-SBOptionsPanelController"; // NOI18N
     private SBOptionsPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;

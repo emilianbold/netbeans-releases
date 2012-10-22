@@ -128,28 +128,14 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
             file.write();
         }
         
-        ArrayList<Keywords> advanced = new ArrayList<Keywords>();
         for (Element e : roundEnv.getElementsAnnotatedWith(Keywords.class)) {
-            Keywords annotation = e.getAnnotation(Keywords.class);
-            if (annotation != null) {
-                originatingElement = e;
-                String location = annotation.location();
-                if(!location.equals(OptionsDisplayer.GENERAL) && !location.equals(OptionsDisplayer.KEYMAPS)) {
-                    if(getBundleValue(annotation.tabTitle(), annotation, "tabTitle").trim().isEmpty()) {
-                        throw new LayerGenerationException("Must specify tabTitle", e, processingEnv, annotation, "tabTitle");
-                    }
-                }
-            }
-        }
-
-        for (Element e : roundEnv.getElementsAnnotatedWith(Keywords.class)) {
-            handleElement(e, e.getAnnotation(Keywords.class), advanced, "");
+            handleElement(e, e.getAnnotation(Keywords.class), "");
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(KeywordsRegistration.class)) {
             KeywordsRegistration r = e.getAnnotation(KeywordsRegistration.class);
             Keywords[] panels = r.value();
             for (int i = 0; i < panels.length; i++) {
-                handleElement(e, panels[i], advanced, Integer.toString(-(i + 1)));
+                handleElement(e, panels[i], Integer.toString(-(i + 1)));
             }
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(ContainerRegistration.class)) {
@@ -168,20 +154,21 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
         return true;
     }
 
-    private void handleElement(Element e, Keywords annotation, ArrayList<Keywords> advanced, String name) throws LayerGenerationException {
-        originatingElement = e;
+    private void handleElement(Element e, Keywords annotation, String name) throws LayerGenerationException {
+	originatingElement = e;
+	if (!annotation.location().equals(OptionsDisplayer.GENERAL) && !annotation.location().equals(OptionsDisplayer.KEYMAPS)) {
+	    if (annotation.tabTitle().trim().isEmpty()) {
+		throw new LayerGenerationException("Must specify tabTitle", e, processingEnv, annotation, "tabTitle");
+	    }
+	}
         File file = layer(e).
                 file("OptionsDialog/Keywords/".concat(e.asType().toString()).concat(name)).
-                stringvalue("instanceOf", JPanel.class.getName()).
                 stringvalue("location", annotation.location()).
-                stringvalue("tabTitle", getBundleValue(annotation.tabTitle(), annotation, "tabTitle"));
-        StringBuilder keywordsSB = new StringBuilder();
+		bundlevalue("tabTitle", annotation.tabTitle(), annotation, "tabTitle");
         String[] keywords = annotation.keywords();
-        keywordsSB.append(getBundleValue(keywords[0], annotation, "keywords").toUpperCase());
-        for (int j = 1; j < keywords.length; j++) {
-            keywordsSB.append(",").append(getBundleValue(keywords[j], annotation, "keywords").toUpperCase());
+        for (int j = 0; j < keywords.length; j++) {
+            file = file.bundlevalue("keywords-".concat(Integer.toString(j+1)), keywords[j], annotation, "keywords");
         }
-        file.stringvalue("keywords", keywordsSB.toString());
         file.write();
     }
 
@@ -216,7 +203,7 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
                 if (m != null) {
                     for (String kv : m.value()) {
                         if (kv.startsWith(key + "=")) {
-                            return kv.substring(kv.indexOf("=") + 1);
+                            return bundle.concat("#").concat(key);
                         }
                     }
                 }
@@ -230,7 +217,7 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
                 if (p.getProperty(key) == null) {
                     throw new LayerGenerationException("No key '" + key + "' found in " + bundle, originatingElement, processingEnv, annotation, annotationMethod);
                 }
-                return p.getProperty(key);
+                return bundle.concat("#").concat(key);
             } finally {
                 is.close();
             }

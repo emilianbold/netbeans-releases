@@ -58,7 +58,6 @@ import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
     location=JavaOptions.JAVA,
-    id="JavaME",
     displayName="#JavaME_Option_DisplayName_Componentssupport_TITLE",
     keywords="#KW_JavaMEOptions",
     keywordsCategory=JavaOptions.JAVA + "/JavaME"

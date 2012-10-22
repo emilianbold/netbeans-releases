@@ -52,7 +52,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    id=CndUIConstants.TOOLS_OPTIONS_CND_CODE_ASSISTANCE_ID,
     location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
     displayName="#TAB_CodeAssistanceTab", // NOI18N
     position=300
