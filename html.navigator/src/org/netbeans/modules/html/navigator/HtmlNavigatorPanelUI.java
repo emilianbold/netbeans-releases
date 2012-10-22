@@ -587,12 +587,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     public void setParserResult(HtmlParserResult result) {
         FileObject file = result.getSnapshot().getSource().getFileObject();
         sourceDescription = new HtmlElementDescription(null, result.root(), file);
-        if(!file.equals(getInspectedFileObject())) {
-            //the file is not inspected, apply changes
-            refresh(sourceDescription);
-        } else {
-            setSynchronizationState(false);
-        }
+        refresh(sourceDescription);
     }
     
     private void setSynchronizationState(boolean insynch) {
