@@ -271,7 +271,7 @@ public class FoldView extends EditorView {
                     tooltipPane.setEditorKit(kit);
                     tooltipPane.setDocument(doc);
                     tooltipPane.setEditable(false);
-                    return new FoldToolTip(editorPane, tooltipPane);
+                    return new FoldToolTip(editorPane, tooltipPane, getForegroundColor());
                 } catch (BadLocationException e) {
                     // => return null
                 }
