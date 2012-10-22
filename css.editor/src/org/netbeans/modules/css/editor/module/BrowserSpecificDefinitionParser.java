@@ -149,6 +149,9 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
     }
 
     private String createVendorSpecificPropertyName(String prefix, String standardPropertyName) {
+        assert prefix != null;
+        assert !prefix.trim().isEmpty();
+        
         return new StringBuilder().append(prefix).append(standardPropertyName).toString();
     }
 
@@ -194,7 +197,11 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
             //the property have empty grammar as the getGrammarElement is overridden
             return EMPTY_GRAMMAR;
         }
-        
+
+        @Override
+        public String toString() {
+            return "ProxyProperty(name=" + getName() + ", delegate=" + delegateToPropertyName + ")";
+        }
         
     }
 }
