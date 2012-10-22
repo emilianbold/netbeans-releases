@@ -114,7 +114,6 @@ public class KeymapViewModelTest extends NbTestCase {
         });
     }
 
-    /* XXX failing: #137748
     public void testChangeShortcutsOk () {
         KeymapViewModel model = new KeymapViewModel ();
         Map<Set<String>,ShortcutAction> shortcuts = setRandomShortcuts (model);
@@ -125,8 +124,7 @@ public class KeymapViewModelTest extends NbTestCase {
         System.gc ();
         checkShortcuts (model, shortcuts, true);
     }
-     */
-    
+
     public void testChangeShortcutsCancel () {
         KeymapViewModel model = new KeymapViewModel ();
         Map<Set<String>,ShortcutAction> shortcuts = getShortcuts (model);
