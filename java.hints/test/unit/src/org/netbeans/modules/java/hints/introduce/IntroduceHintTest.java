@@ -349,6 +349,32 @@ public class IntroduceHintTest extends NbTestCase {
                        4, 0);
     }
 
+    public void testSwitchCase219714() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public String method(String... args) {\n" +
+                       "        switch (args.length) {\n" +
+                       "            case 1:\n" +
+                       "                return |args[0]|;\n" +
+                       "        }\n" +
+                       "        return null;\n" +
+                       "    }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public String method(String... args) {\n" +
+                        "        switch (args.length) {\n" +
+                        "            case 1:\n" +
+                        "                String name = args[0];\n" +
+                        "                return name;\n" +
+                        "        }\n" +
+                        "        return null;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl("name", true, false, true),
+                       4, 0);
+    }
+    
 //    public void testFix121420() throws Exception {
 //        performFixTest("package test; public class Test {public void test1() {|System.getProperty(\"\")|;} }",
 //                       "package test; public class Test {public void test1() { String name = System.getProperty(\"\");} }",
