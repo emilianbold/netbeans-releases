@@ -278,10 +278,10 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         wp.fireChange();
     }
 
-    private static class WizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+    private static class WizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-        private CreateSiteTemplate comp;
-        private ChangeSupport sup = new ChangeSupport(this);
+        private final CreateSiteTemplate comp;
+        private final ChangeSupport sup = new ChangeSupport(this);
         private WizardDescriptor wd;
 
         public WizardPanel(ClientSideProject p) {
@@ -340,16 +340,16 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         }
 
         @Override
-        public void readSettings(Object settings) {
-            this.wd = (WizardDescriptor)settings;
+        public void readSettings(WizardDescriptor settings) {
+            this.wd = settings;
         }
 
         @Override
-        public void storeSettings(Object settings) {
+        public void storeSettings(WizardDescriptor settings) {
         }
     }
     
-    private static class WizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator {
+    private static class WizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator<WizardDescriptor> {
 
         private final WizardPanel panel;
         private final ClientSideProject p;
@@ -372,7 +372,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
             "CreateSiteTemplate.info.templateCreated=Template {0} successfully created."
         })
         @Override
-        public Set instantiate() throws IOException {
+        public Set<FileObject> instantiate() throws IOException {
             assert !EventQueue.isDispatchThread();
             // threading model of WizardPanel is broken and cannot be properly used
             String name = panel.comp.getTemplateName();
@@ -400,7 +400,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         }
 
         @Override
-        public Panel current() {
+        public Panel<WizardDescriptor> current() {
             return panel;
         }
 
