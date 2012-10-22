@@ -145,8 +145,8 @@ public class PageIterator implements TemplateWizard.Iterator {
                 sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             }
             //folderPanel = new TargetChooserPanel(project, sourceGroups, fileType);
-            folderPanel = new org.netbeans.modules.target.iterator.api.
-                    TargetChooserPanel<FileType>(project, sourceGroups, fileType);
+            folderPanel = new PageIteratorValidation.JsfJspValidatorPanel(
+                    new TargetChooserPanel<FileType>(project, sourceGroups, fileType));
 
             return new WizardDescriptor.Panel[]{
                         folderPanel
