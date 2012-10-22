@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -59,10 +61,14 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -74,6 +80,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMeta
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper.State;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 
@@ -82,7 +89,8 @@ import org.openide.util.Exceptions;
  * @author Pavel Buzek
  */
 public class EntityClosure {
-    
+    private static final Logger LOG = Logger.getLogger(EntityClosure.class.getName());
+
     // XXX this class needs a complete rewrite: the computing of the available 
     // entity classes and of the referenced classes need to be moved away.
     
@@ -96,6 +104,7 @@ public class EntityClosure {
     private HashMap<String,Entity> fqnEntityMap = new HashMap<String,Entity>();
     private HashMap<String,Boolean> fqnIdExistMap = new HashMap<String,Boolean>();
     private boolean modelReady;
+    private boolean ejbModuleInvolved = false;
     private boolean closureEnabled = true;
     private Project project;
     
@@ -169,6 +178,8 @@ public class EntityClosure {
 
         if( source!=null ) {
             try {
+                ClassPath classPath = source.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+                final Set<Project> ejbProjects = getEjbModulesOfClasspath(classPath);
                 source.runUserActionTask(new Task<CompilationController>() {
 
                     @Override
@@ -180,6 +191,13 @@ public class EntityClosure {
                             ElementHandle<TypeElement> teh = po.getTypeElementHandle();
                             TypeElement te = teh.resolve(parameter);
                             fqnIdExistMap.put(en.getClass2(), JpaControllerUtil.haveId(te));
+
+                            // issue #219565 - troubles of EJB's enities CP visibility
+                            FileObject file = SourceUtils.getFile(teh, parameter.getClasspathInfo());
+                            if (isEjbProjectEntity(ejbProjects, file)) {
+                                ejbModuleInvolved = true;
+                                LOG.log(Level.INFO, "Entity came from EJB module and mustn''t be visible on CP, entity={0}", en.getClass2());
+                            }
                         }
                     }
                 }, true);
@@ -189,6 +207,15 @@ public class EntityClosure {
         }
         availableEntities.removeAll(selectedEntities);
         changeSupport.fireChange();
+    }
+
+    private boolean isEjbProjectEntity(Set<Project> ejbProjects, FileObject fo) {
+        for (Project relatedProject : ejbProjects) {
+            if (fo.getPath().startsWith(relatedProject.getProjectDirectory().getPath())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public void addChangeListener(ChangeListener listener) {
@@ -209,6 +236,10 @@ public class EntityClosure {
     
     public Set<String> getSelectedEntities() {
         return selectedEntities;
+    }
+
+    public boolean isEjbModuleInvolved() {
+        return ejbModuleInvolved;
     }
     
     public void addEntities(Set<String> entities) {
@@ -464,6 +495,19 @@ public class EntityClosure {
 
     Entity getEntity(String entityFqn){
         return fqnEntityMap.get(entityFqn);
+    }
+
+    private Set<Project> getEjbModulesOfClasspath(ClassPath classPath) {
+        Set<Project> ejbProjects = new HashSet<Project>();
+        for (FileObject fileObject : classPath.getRoots()) {
+            Project rootOwner = FileOwnerQuery.getOwner(fileObject);
+            if (rootOwner != null) {
+                if (Util.isEjbModule(rootOwner)) {
+                    ejbProjects.add(rootOwner);
+                }
+            }
+        }
+        return ejbProjects;
     }
     
     /**
