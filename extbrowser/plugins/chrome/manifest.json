@@ -41,9 +41,13 @@
  */
 {
   "name": "__MSG__pluginName__",
-  "version": "0.4.32",
+  "manifest_version": 2,
 
-  "background_page": "html/main.html",
+  "version": "0.5.0",
+
+  "background": {
+    "page": "html/main.html"
+  },
 
   "options_page": "html/options.html",
 
@@ -59,6 +63,8 @@
     "debugger",
     "<all_urls>" // content scripts (for window resizing)
   ],
+
+  "content_security_policy": "default-src 'self'; connect-src ws://127.0.0.1:8008/",
 
   "icons": {
     "16": "img/netbeans16.png",
