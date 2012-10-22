@@ -55,7 +55,7 @@ import org.netbeans.modules.php.api.util.FileUtils;
  */
 public class PHPTestBase extends CslTestBase {
 
-    private static final int TEST_TIMEOUT = Integer.getInteger("nb.php.test.timeout", 10000); //NOI18N
+    private static final int TEST_TIMEOUT = Integer.getInteger("nb.php.test.timeout", 1000000); //NOI18N
 
     static {
         System.setProperty("nb.php.test.run", "true"); //NOI18N
