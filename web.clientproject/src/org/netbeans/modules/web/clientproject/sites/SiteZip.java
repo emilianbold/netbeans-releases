@@ -226,7 +226,8 @@ public class SiteZip implements SiteTemplateImplementation {
 
         @NbBundle.Messages({
             "SiteZip.error.template.missing=Template file must be specified.",
-            "SiteZip.error.template.invalid=Template file is invalid (http://... or local file expected)."
+            "SiteZip.error.template.invalid=Template file is invalid (http://... or local file expected).",
+            "SiteZip.error.template.notZip=Template file must be ZIP archive (*.zip)."
         })
         public boolean isValid() {
             String tpl = panel.getTemplate();
@@ -234,8 +235,14 @@ public class SiteZip implements SiteTemplateImplementation {
                 error = Bundle.SiteZip_error_template_missing();
                 return false;
             }
-            if (!tpl.startsWith("http")  && !new File(tpl).exists()) { //NOI18N
+            File localTpl = new File(tpl);
+            if (!tpl.startsWith("http")  && !localTpl.isFile()) { //NOI18N
                 error = Bundle.SiteZip_error_template_invalid();
+                return false;
+            }
+            if (localTpl.isFile()
+                    && !localTpl.getName().endsWith(".zip")) { // NOI18N
+                error = Bundle.SiteZip_error_template_notZip();
                 return false;
             }
             error = null;
