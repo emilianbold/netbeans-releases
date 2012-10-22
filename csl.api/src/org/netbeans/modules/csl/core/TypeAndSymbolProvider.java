@@ -258,6 +258,8 @@ public class TypeAndSymbolProvider {
         switch(searchType) {
             case EXACT_NAME:
                 return new Object [] { QuerySupport.Kind.EXACT, text };
+            case CASE_INSENSITIVE_EXACT_NAME:
+                return new Object [] { QuerySupport.Kind.CASE_INSENSITIVE_REGEXP, NameMatcherFactory.wildcardsToRegexp(text,false) };
             case PREFIX:
                 return new Object [] { QuerySupport.Kind.PREFIX, text };
             case CASE_INSENSITIVE_PREFIX:
