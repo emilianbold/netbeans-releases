@@ -59,6 +59,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.indentation.ProxyPreferences;
@@ -71,8 +72,7 @@ import org.openide.util.WeakListeners;
  * @author Dusan Balek
  */
 @OptionsPanelController.SubRegistration(
-    location="Editor",
-    id="CodeCompletion",
+    location=OptionsDisplayer.EDITOR,
     displayName="#CTL_CodeCompletion_DisplayName",
     keywords="#KW_CodeCompletion",
     keywordsCategory="Editor/CodeCompletion",

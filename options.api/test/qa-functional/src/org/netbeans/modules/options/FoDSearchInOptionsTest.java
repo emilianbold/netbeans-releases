@@ -95,91 +95,91 @@ public class FoDSearchInOptionsTest extends JellyTestCase {
         jTextFieldOperator = new JTextFieldOperator(optionsOperator);
         stringComparator = Operator.getDefaultStringComparator();
 
-        int[] tabIndexes = {0};
+        String[] tabIndexes = {"General"};
         String[] selectedCategories = {"Editor"};
         ArrayList<String> enabledCategories = new ArrayList<String>();
         enabledCategories.add("Editor");
         searchFor("general editor", tabIndexes, selectedCategories, enabledCategories, null);
 
-        tabIndexes[0] = 6;
+        tabIndexes[0] = "Macros";
         searchFor("macros", tabIndexes, selectedCategories, enabledCategories, null);
 
-        tabIndexes[0] = 2;
+        tabIndexes[0] = "Code Completion";
         searchFor("completion", tabIndexes, selectedCategories, enabledCategories, null);
 
         enabledCategories.clear();
         enabledCategories.add("General");
-        tabIndexes[0] = -1;
+        tabIndexes[0] = null;
         selectedCategories[0] = "General";
         searchFor("proxy", tabIndexes, selectedCategories, enabledCategories, null);
 
         enabledCategories.clear();
         enabledCategories.add("Fonts & Colors");
-        tabIndexes[0] = 0;
+        tabIndexes[0] = "Syntax";
         selectedCategories[0] = "FontsAndColors";
         searchFor("syntax", tabIndexes, selectedCategories, enabledCategories, null);
 
-        tabIndexes[0] = 4;
+        tabIndexes[0] = "Versioning";
         searchFor("versioning", tabIndexes, selectedCategories, enabledCategories, null);
 
         enabledCategories.clear();
         enabledCategories.add("Java");
-        tabIndexes[0] = 4;
+        tabIndexes[0] = "Maven";
         selectedCategories[0] = "Java";
         searchFor("maven", tabIndexes, selectedCategories, enabledCategories, "java");
 
-        tabIndexes[0] = 0;
+        tabIndexes[0] = "Ant";
         selectedCategories[0] = "Java";
         searchFor("ant", tabIndexes, selectedCategories, enabledCategories, null);
 
-        tabIndexes[0] = 6;
+        tabIndexes[0] = "JavaFX";
         selectedCategories[0] = "Java";
         searchFor("fx", tabIndexes, selectedCategories, enabledCategories, "javafx");
 
-        tabIndexes[0] = 2;
+        tabIndexes[0] = "Java Card";
         selectedCategories[0] = "Java";
         searchFor("java card", tabIndexes, selectedCategories, enabledCategories, "javacard");
 
         enabledCategories.clear();
         enabledCategories.add("Miscellaneous");
-        tabIndexes[0] = 3;
+        tabIndexes[0] = "Groovy";
         selectedCategories[0] = "Miscellaneous";
         searchFor("groovy", tabIndexes, selectedCategories, enabledCategories, "groovy");
 
-        tabIndexes[0] = 6;
+        tabIndexes[0] = "Terminal";
         selectedCategories[0] = "Miscellaneous";
         searchFor("terminal", tabIndexes, selectedCategories, enabledCategories, null);
 
         enabledCategories.add("Fonts & Colors");
-        tabIndexes = new int[2];
+        tabIndexes = new String[2];
         selectedCategories = new String[2];
-        tabIndexes[0] = 3;
-        tabIndexes[1] = 1;
+        tabIndexes[0] = "Diff";
+        tabIndexes[1] = "Diff";
         selectedCategories[0] = "FontsAndColors";
         selectedCategories[1] = "Miscellaneous";
         searchFor("diff", tabIndexes, selectedCategories, enabledCategories, null);
 
         enabledCategories.clear();
         enabledCategories.add("PHP");
-        tabIndexes = new int[1];
+        tabIndexes = new String[1];
         selectedCategories = new String[1];
-        tabIndexes[0] = 5;
+        tabIndexes[0] = "ApiGen";
         selectedCategories[0] = "PHP";
         searchFor("apigen", tabIndexes, selectedCategories, enabledCategories, null);
 
-        tabIndexes[0] = 8;
+        tabIndexes[0] = "Symfony2";
         searchFor("symfony2", tabIndexes, selectedCategories, enabledCategories, "php");
 
-        tabIndexes[0] = 11;
+        tabIndexes[0] = "Smarty";
         searchFor("smarty", tabIndexes, selectedCategories, enabledCategories, "php");
 
         enabledCategories.clear();
         enabledCategories.add("C/C++");
-        tabIndexes[0] = 0;
+        tabIndexes[0] = "Build Tools";
         selectedCategories[0] = "C/C++";
         searchFor("build tools", tabIndexes, selectedCategories, enabledCategories, null);
 
-        tabIndexes[0] = 2;
+        tabIndexes[0] = "Code Assistance";
         searchFor("code assistance", tabIndexes, selectedCategories, enabledCategories, null);
 
         enabledCategories.clear();
@@ -187,7 +187,7 @@ public class FoDSearchInOptionsTest extends JellyTestCase {
         searchFor("", tabIndexes, selectedCategories, enabledCategories, null);
     }
 
-    private void searchFor(String searchTxt, int[] selectedTabIndexes, String[] selectedCategories, ArrayList<String> enabledCategories, String clusterName) {
+    private void searchFor(String searchTxt, String[] selectedTabIndexes, String[] selectedCategories, ArrayList<String> enabledCategories, String clusterName) {
         jTextFieldOperator.setText(searchTxt);
         new EventTool().waitNoEvent(500);
         jTextFieldOperator.pushKey(KeyEvent.VK_ENTER);
@@ -210,10 +210,10 @@ public class FoDSearchInOptionsTest extends JellyTestCase {
                 optionsOperator.selectCategory(selectedCategory);
             }
             new EventTool().waitNoEvent(1000);
-            int selectedTabIndex = selectedTabIndexes[i];
-            if (selectedTabIndex != -1) {
+            String selectedTabTitle = selectedTabIndexes[i];
+            if (selectedTabTitle != null) {
                 jTabbedPaneOperator = new JTabbedPaneOperator(optionsOperator);
-                assertEquals(selectedTabIndex, jTabbedPaneOperator.getSelectedIndex());
+                assertEquals(selectedTabTitle, jTabbedPaneOperator.getTitleAt(jTabbedPaneOperator.getSelectedIndex()));
 		if(clusterName != null) {
 		    JLabelOperator jLabelOperator = new JLabelOperator(jTabbedPaneOperator);
 		    assertEquals("In order to use this functionality, support for "+clusterName+" must be activated.", jLabelOperator.getText()); // NOI18N

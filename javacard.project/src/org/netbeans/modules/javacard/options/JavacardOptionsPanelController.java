@@ -54,7 +54,6 @@ import org.netbeans.modules.options.java.api.JavaOptions;
 
 @OptionsPanelController.SubRegistration(
     location=JavaOptions.JAVA,
-    id="JavaCard",
     displayName="#JavaCardOptionsCategory_Title",
     keywords="#KW_JavaCardOptions",
     keywordsCategory=JavaOptions.JAVA + "/JavaCard")

@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -267,7 +268,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
             
             Set<String> concatregs = new TreeSet<String>();
             Set<String> copyregs = new TreeSet<String>();
-            Set<String> keys = new TreeSet<String>();
+            Map<String,String> keys = new TreeMap<String,String>();
             parse(new ByteArrayInputStream(uberArr), concatregs, copyregs, keys);
 
             log("Concats: " + concatregs, Project.MSG_VERBOSE);
@@ -293,7 +294,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
 
             sb = new StringBuilder();
             sep = "";
-            for (String s : keys) {
+            for (String s : keys.keySet()) {
                 sb.append(sep);
                 sb.append(s);
                 sep = "|";
@@ -428,7 +429,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
     private void parse(
         final InputStream is,
         final Set<String> concat, final Set<String> copy,
-        final Set<String> additionalKeys
+        final Map<String,String> additionalKeys
     ) throws Exception {
         SAXParserFactory f = SAXParserFactory.newInstance();
         f.setValidating(false);
@@ -449,11 +450,13 @@ implements FileNameMapper, URIResolver, EntityResolver {
                     if (name.equals("SystemFileSystem.localizingBundle")) {
                         String bundlepath = attributes.getValue("stringvalue").replace('.', '/') + ".*properties";
                         concat.add(bundlepath);
+			String key;
                         if (prefix.endsWith("/")) {
-                            additionalKeys.add(prefix.substring(0, prefix.length() - 1));
+			    key = prefix.substring(0, prefix.length() - 1);
                         } else {
-                            additionalKeys.add(prefix);
+                            key = prefix;
                         }
+			additionalKeys.put(key, bundlepath);
                     } else if (name.equals("iconResource") || name.equals("iconBase")) {
                         String s = attributes.getValue("stringvalue");
                         if (s == null) {
@@ -466,8 +469,11 @@ implements FileNameMapper, URIResolver, EntityResolver {
                         String bundle = bundlevalue.substring(0, idx);
                         String key = bundlevalue.substring(idx + 1);
                         String bundlepath = bundle.replace('.', '/') + ".*properties";
-                        if (!additionalKeys.add(key)) {
-                            throw new IllegalStateException("key " + key + " from " + bundlepath + " was already defined among " + concat);
+
+			String prev = additionalKeys.put(key, bundle);
+
+                        if (prev != null && !bundle.equals(prev)) {
+                            throw new IllegalStateException("key " + key + " from " + bundlepath + " was already defined among " + prev);
                         }
                         concat.add(bundlepath);
                     } else {

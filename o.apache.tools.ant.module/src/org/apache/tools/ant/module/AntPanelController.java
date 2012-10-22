@@ -58,7 +58,6 @@ import org.openide.util.Lookup;
  */
 @OptionsPanelController.SubRegistration(
     location=JavaOptions.JAVA,
-    id=AntPanelController.OPTIONS_SUBPATH,
     displayName="#Ant",
     keywords="#KW_AntOptions",
     keywordsCategory=JavaOptions.JAVA + "/Ant"
@@ -66,7 +65,7 @@ import org.openide.util.Lookup;
 )
 public final class AntPanelController extends OptionsPanelController {
 
-    public static final String OPTIONS_SUBPATH = "Ant"; // NOI18N
+    public static final String OPTIONS_SUBPATH = "org-apache-tools-ant-module-AntPanelController"; // NOI18N
 
     @Override
     public void update () {
