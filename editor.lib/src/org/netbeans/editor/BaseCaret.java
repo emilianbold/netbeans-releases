@@ -792,6 +792,7 @@ AtomicLockListener, FoldHierarchyListener {
                     // relative caret's visual position gets retained
                     // (the absolute position will change because of collapsed/expanded folds).
                     boolean doScroll = scrollViewToCaret;
+                    boolean explicit = false;
                     if (oldCaretBounds != null && (!scrollViewToCaret || updateAfterFoldHierarchyChange)) {
                         int oldRelY = oldCaretBounds.y - visibleBounds.y;
                         // Only fix if the caret is within visible bounds and the new x or y coord differs from the old one
@@ -799,6 +800,7 @@ AtomicLockListener, FoldHierarchyListener {
                                 (oldCaretBounds.y != caretBounds.y || oldCaretBounds.x != caretBounds.x))
                         {
                             doScroll = true; // Perform explicit scrolling
+                            explicit = true;
                             int oldRelX = oldCaretBounds.x - visibleBounds.x;
                             // Do not retain the horizontal caret bounds by scrolling
                             // since many modifications do not explicitly say that they are typing modifications
@@ -819,7 +821,9 @@ AtomicLockListener, FoldHierarchyListener {
                     // of the visible window to see the context around the caret.
                     // This should work fine with PgUp/Down because these
                     // scroll the view explicitly.
-                    if (scrollViewToCaret && /* # 70915 !updateAfterFoldHierarchyChange && */
+                    if (scrollViewToCaret && 
+                        !explicit && // #219580: if the preceding if-block computed new scrollBounds, it cannot be offset yet more
+                        /* # 70915 !updateAfterFoldHierarchyChange && */
                         (caretBounds.y > visibleBounds.y + visibleBounds.height + caretBounds.height
                             || caretBounds.y + caretBounds.height < visibleBounds.y - caretBounds.height)
                     ) {
@@ -839,8 +843,11 @@ AtomicLockListener, FoldHierarchyListener {
                             LOG.finest("Scrolling to: " + scrollBounds);
                         }
                         c.scrollRectToVisible(scrollBounds);
+                        if (!c.getVisibleRect().intersects(scrollBounds)) {
+                            // HACK: see #219580: for some reason, the scrollRectToVisible may fail.
+                            c.scrollRectToVisible(scrollBounds);
+                        }
                     }
-
                     resetBlink();
                     c.repaint(caretBounds);
                 }
@@ -2109,19 +2116,18 @@ AtomicLockListener, FoldHierarchyListener {
         final boolean scrollToView;
         LOG.finest("Received fold hierarchy change");
         if (addedFoldCnt > 0) {
-            FoldHierarchy hierarchy = (FoldHierarchy)evt.getSource();
+            FoldHierarchy hierarchy = (FoldHierarchy) evt.getSource();
             Fold collapsed = null;
             boolean wasExpanded = false;
             while ((collapsed = FoldUtilities.findCollapsedFold(hierarchy, caretOffset, caretOffset)) != null && collapsed.getStartOffset() < caretOffset &&
                     collapsed.getEndOffset() > caretOffset) {
-                hierarchy.expand(collapsed);                
-                wasExpanded = true;
-            }
-            saveFoldCaretBounds = caretBounds;
-            // prevent unneeded scrolling; the user may have scrolled out using mouse already
-            // so scroll only if the added fold may affect Y axis. Actually it's unclear why
-            // we should reveal the current position on fold events except when caret is positioned in now-collapsed fold
-            scrollToView = wasExpanded;
+                        hierarchy.expand(collapsed);
+                        wasExpanded = true;
+                    }
+                    // prevent unneeded scrolling; the user may have scrolled out using mouse already
+                    // so scroll only if the added fold may affect Y axis. Actually it's unclear why
+                    // we should reveal the current position on fold events except when caret is positioned in now-collapsed fold
+                    scrollToView = wasExpanded;
         } else {
             int startOffset = Integer.MAX_VALUE;
             // Set the caret's offset to the end of just collapsed fold if necessary
@@ -2141,35 +2147,29 @@ AtomicLockListener, FoldHierarchyListener {
                     setDot(startOffset, false);
                 }
             }
-            saveFoldCaretBounds = null;
             scrollToView = false;
-        }        
+        }
         // Update caret's visual position
         // Post the caret update asynchronously since the fold hierarchy is updated before
         // the view hierarchy and the views so the dispatchUpdate() could be picking obsolete
         // view information.
         SwingUtilities.invokeLater(new Runnable() {
             public @Override void run() {
-               LOG.finest("Updating after fold hierarchy change");
-               if (component == null) {
-                   return;
-               }
-               // see #217867
-               updateAfterFoldHierarchyChange = caretBounds != null;
-               Rectangle b = saveFoldCaretBounds;
-               boolean wasInView = b != null && component.getVisibleRect().intersects(b);
-               // scroll if:
-               // a/ a fold was added and the caret was originally in the view
-               // b/ scrollToView is true (= caret was positioned within a new now collapsed fold)
-               dispatchUpdate((addedFoldCnt > 1 && wasInView) || scrollToView);
+                LOG.finest("Updating after fold hierarchy change");
+                if (component == null) {
+                    return;
+                }
+                // see #217867
+                Rectangle b = caretBounds;
+                updateAfterFoldHierarchyChange = b != null;
+                boolean wasInView = b != null && component.getVisibleRect().intersects(b);
+                // scroll if:
+                // a/ a fold was added and the caret was originally in the view
+                // b/ scrollToView is true (= caret was positioned within a new now collapsed fold)
+                dispatchUpdate((addedFoldCnt > 1 && wasInView) || scrollToView);
             }
         });
     }
-    
-    /**
-     * Cursor bounds effective at the time the fold hierarchy event arrives.
-     */
-    private volatile Rectangle saveFoldCaretBounds;
     
     void scheduleCaretUpdate() {
         if (!caretUpdatePending) {
