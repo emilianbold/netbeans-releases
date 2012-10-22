@@ -1033,8 +1033,7 @@ public class C2CIssue {
     }
 
     private C2CData getConfiguration () {
-        return C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(),
-repository.getTaskRepository());
+        return C2C.getInstance().getClientData(repository);
     }
 
     class Comment {

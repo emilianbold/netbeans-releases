@@ -392,7 +392,7 @@ public class C2CRepository implements PropertyChangeListener {
     protected void requestRemoteSavedQueries () {
         List<C2CQuery> queries = new ArrayList<C2CQuery>();
         ensureCredentials();
-        RepositoryConfiguration conf = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), taskRepository).getRepositoryConfiguration();
+        RepositoryConfiguration conf = C2C.getInstance().getClientData(this).getRepositoryConfiguration();
         if (conf != null) {
             List<SavedTaskQuery> savedQueries = conf.getSavedTaskQueries();
             for (SavedTaskQuery sq : savedQueries) {

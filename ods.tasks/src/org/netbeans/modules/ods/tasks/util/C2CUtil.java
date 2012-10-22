@@ -109,8 +109,6 @@ public class C2CUtil {
         
         // XXX is this all we need and how we need it?
 
-        C2CData clientData = getClientData(C2C.getInstance().getRepositoryConnector(), taskRepository);
-        
         AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
         TaskAttributeMapper attributeMapper = rc.getTaskDataHandler().getAttributeMapper(taskRepository);
         TaskData data = new TaskData(attributeMapper, rc.getConnectorKind(), taskRepository.getRepositoryUrl(), "");
@@ -230,7 +228,7 @@ public class C2CUtil {
         }
 
         try {
-            C2CData cd = getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
+            C2CData cd = C2C.getInstance().getClientData(repository);
             if(cd == null) {
                 return keywordString;
             }
@@ -258,7 +256,7 @@ public class C2CUtil {
         }
 
         try {
-            C2CData cd = getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
+            C2CData cd = C2C.getInstance().getClientData(repository);
             if(cd == null) {
                 return usersString;
             }
@@ -311,8 +309,4 @@ public class C2CUtil {
         return date;
     }
 
-    // XXX remove this - is the same as C2C.getclientData();
-    public static C2CData getClientData (AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository) {
-        return C2CExtender.getData(repositoryConnector, taskRepository, false);
-    }
 }

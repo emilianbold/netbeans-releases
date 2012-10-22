@@ -88,7 +88,7 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
     }
 
     private Integer getSortKey(String severity, Class clazz) {
-        C2CData cd = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), getC2CIssue().getRepository().getTaskRepository());
+        C2CData cd = C2C.getInstance().getClientData(getC2CIssue().getRepository());
         TaskSeverity ts = cd.getValue(severity, TaskSeverity.class);
         return ts.getSortkey().intValue();
     }

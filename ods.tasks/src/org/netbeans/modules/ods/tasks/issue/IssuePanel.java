@@ -257,7 +257,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void initWikiPanels(){
         GroupLayout layout = (GroupLayout) getLayout();
-        C2CData clientData = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository());
+        C2CData clientData = C2C.getInstance().getClientData(issue.getRepository());
         wikiLanguage = clientData.getRepositoryConfiguration().getMarkupLanguage();
         addCommentPanel = WikiUtils.getWikiPanel(wikiLanguage, true, true);
         layout.replace(dummyAddCommentPanel, addCommentPanel);
@@ -315,7 +315,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         initWikiPanels();
 //        initCustomFields(); XXX
         
-        Collection<Keyword> kws = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository()).getKeywords();
+        Collection<Keyword> kws = C2C.getInstance().getClientData(issue.getRepository()).getKeywords();
         keywords.clear();
         for (Keyword keyword : kws) {
             keywords.add(keyword.getName());
@@ -377,7 +377,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }    
     
     private void initCombos() {
-        C2CData cd = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository());
+        C2CData cd = C2C.getInstance().getClientData(issue.getRepository());
         
         productCombo.setModel(toComboModel(cd.getProducts()));
         productCombo.setRenderer(new ClientDataRenderer());
@@ -774,7 +774,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         // Open -> Open-Unconfirmed-Reopened+Resolved
         // Resolved -> Reopened+Close
         // Close-Resolved -> Reopened+Resolved+(Close with higher index)
-        C2CData cd = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository());
+        C2CData cd = C2C.getInstance().getClientData(issue.getRepository());
         
         List<TaskStatus> statuses = cd.computeValidStatuses(initialValue == null ? null : cd.getStatusByValue(initialValue));
         
@@ -2177,7 +2177,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         resolutionCombo.setVisible(false);
         resolutionLabel.setVisible(false);
         // Hide/show resolution combo
-        C2CData cd = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository());
+        C2CData cd = C2C.getInstance().getClientData(issue.getRepository());
         String initialStatus = initialValues.get(IssueField.STATUS.getKey());
         boolean resolvedInitial = RESOLUTION_RESOLVED.equals(initialStatus); // NOI18N
         if (!resolvedInitial) {
@@ -2448,7 +2448,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (resolutionCombo.getParent() == null) {
             return;
         }
-        TaskResolution duplicate = C2CUtil.getResolutionByValue(C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), issue.getRepository().getTaskRepository()), RESOLUTION_DUPLICATE);
+        TaskResolution duplicate = C2CUtil.getResolutionByValue(C2C.getInstance().getClientData(issue.getRepository()), RESOLUTION_DUPLICATE);
         boolean shown = duplicate.equals(resolutionCombo.getSelectedItem()); // NOI18N
         duplicateField.setVisible(shown);
         duplicateButton.setVisible(shown && duplicateField.isEditable());
