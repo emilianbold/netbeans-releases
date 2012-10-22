@@ -42,18 +42,19 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = CssEditorModule.class)
-public class ChromeModule extends BrowserSupportModule {
+public class ChromeModuleTest extends CssModuleTestBase {
 
-    public ChromeModule() {
-        super(new DefaultBrowser("Chrome", "Google", "webkit", "webkit", "chrome20", PropertyCategory.CHROME), "webkit"); //NOI18N
+    public ChromeModuleTest(String name) {
+        super(name);
     }
-    
+
+    public void testModule() {
+        CssEditorModule chromeModule = getCssModuleByClass(ChromeModule.class);
+        assertNotNull(chromeModule);
+    }
 }
