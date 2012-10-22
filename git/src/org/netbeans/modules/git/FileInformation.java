@@ -354,6 +354,11 @@ public class FileInformation extends VCSFileInformation {
         return ((Annotator) Git.getInstance().getVCSAnnotator()).annotateNameHtml(name, this, null);
     }
 
+    @Override
+    public String toString () {
+        return status.toString();
+    }
+
     public static enum Mode {
         HEAD_VS_WORKING_TREE,
         HEAD_VS_INDEX,
