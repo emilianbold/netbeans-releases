@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -206,6 +207,8 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public FileObject urlToFileObject(String path) {
+        DLightLibsCommonLogger.assertNonUiThread();
+        
         if (path.startsWith(RemoteFileURLStreamHandler.PROTOCOL_PREFIX)) {
             // path is like "rfs:hostname:22/tmp/filename.ext"
             // or           "rfs:username@hostname:22/tmp/filename.ext"
