@@ -61,6 +61,7 @@ const char *JvmLauncher::JAVA_SERVER_DLL_FILE = "\\bin\\server\\jvm.dll";
 const char *JvmLauncher::JAVA_JRE_PREFIX = "\\jre";
 const char *JvmLauncher::JNI_CREATEVM_FUNC = "JNI_CreateJavaVM";
 
+extern void exitHook(int status);
 
 JvmLauncher::JvmLauncher()
     : suppressConsole(false) {
@@ -204,7 +205,6 @@ bool JvmLauncher::isVersionString(const char *str) {
 }
 
 bool JvmLauncher::startInProcJvm(const char *mainClassName, const std::list<std::string> &args, const std::list<std::string> &options) {
-
     class Jvm {
     public:
 
@@ -266,7 +266,7 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, const std::list<std:
             }
 
             logMsg("JVM options:");
-            jvmOptions = new JavaVMOption[options.size()];
+            jvmOptions = new JavaVMOption[options.size() + 1];
             int i = 0;
             for (list<string>::const_iterator it = options.begin(); it != options.end(); ++it, ++i) {
                 const string &option = *it;
@@ -287,10 +287,12 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, const std::list<std:
                 jvmOptions[i].optionString = (char *) option.c_str();
                 jvmOptions[i].extraInfo = 0;
             }
-
             JavaVMInitArgs jvmArgs;
+            jvmOptions[options.size()].optionString = "exit";
+            jvmOptions[options.size()].extraInfo    = (void *) &exitHook;
+            
             jvmArgs.options = jvmOptions;
-            jvmArgs.nOptions = options.size();
+            jvmArgs.nOptions = options.size() + 1;
             jvmArgs.version = JNI_VERSION_1_4;
             jvmArgs.ignoreUnrecognized = JNI_TRUE;
 
