@@ -192,6 +192,7 @@ public class C2CUtil {
     public static Repository getRepository(C2CRepository c2cRepository) {
         //TODO review this, team projects were always initialized again and again
         //this caused problems with listeners
+        assert c2cRepository.getKenaiProject() != null : "looks like repository " + c2cRepository.getDisplayName() + " wasn't porperly inititalized via team support."; // NOI18N
         Repository repository = KenaiUtil.getRepository(c2cRepository.getKenaiProject());
         if (repository == null) {
             repository = createRepository(c2cRepository);
