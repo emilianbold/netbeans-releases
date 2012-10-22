@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.classview.model.ProjectNode;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -298,28 +299,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
         resetKeys();
     }
     
-    private static class CharSequenceIgnoreCaseComparator implements Comparator<CharSequence> {
-        @Override
-        public int compare(CharSequence o1, CharSequence o2) {
-            int len1 = o1.length();
-            int len2 = o2.length();
-            int n = Math.min(len1, len2);
-            int k = 0;
-            while (k < n) {
-                char c1 = o1.charAt(k);
-                char c2 = o2.charAt(k);
-                if (c1 != c2) {
-                    return  Character.toUpperCase(c1) - Character.toUpperCase(c2);
-                }
-                k++;
-            }
-            return len1 - len2;
-        }
-    }
-
     private static class IgnoreCaseSortedName extends SortedName {
-
-        CharSequenceIgnoreCaseComparator COMPARATOR = new CharSequenceIgnoreCaseComparator();
         
         public IgnoreCaseSortedName(int prefix, CharSequence name, int suffix) {
             super(prefix, name, suffix);
@@ -327,7 +307,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
 
         @Override
         protected Comparator<CharSequence> getCharSequenceComparator() {
-            return COMPARATOR;
+            return CharSequenceUtils.ComparatorIgnoreCase;
         }
     }
     
