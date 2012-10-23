@@ -44,7 +44,8 @@
     schema="../resources/handler-config.dtd",
     schemaType=SchemaType.DTD,
     mddFile="../resources/handler-config.mdd",
-    outputType=OutputType.TRADITIONAL_BASEBEAN
+    outputType=OutputType.TRADITIONAL_BASEBEAN,
+    java5=true
 )
 package org.netbeans.modules.websvc.jaxwsmodel.handler_config1_0;
 

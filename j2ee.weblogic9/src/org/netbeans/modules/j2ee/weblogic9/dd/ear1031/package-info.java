@@ -49,7 +49,8 @@
     attrProp=true,
     removeUnreferencedNodes=true,
     docRoot="weblogic-application",
-    mddFile="../../resources/weblogic-application_10_3_1.mdd"
+    mddFile="../../resources/weblogic-application_10_3_1.mdd",
+    java5=true
 )
 package org.netbeans.modules.j2ee.weblogic9.dd.ear1031;
 
