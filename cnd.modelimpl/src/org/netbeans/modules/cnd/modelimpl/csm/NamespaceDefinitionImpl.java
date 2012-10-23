@@ -206,7 +206,8 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
 
     @Override
     public CharSequence getQualifiedName() {
-        return getNamespace().getQualifiedName();
+        CsmNamespace ns = getNamespace();
+        return ns != null ? ns.getQualifiedName() : getName();
     }
 
     @Override

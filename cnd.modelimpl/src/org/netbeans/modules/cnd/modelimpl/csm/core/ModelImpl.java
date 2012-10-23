@@ -378,6 +378,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return enqueue(modelProcessor, task, modelTaskPrefix + ": " + name); // NOI18N
     }
     
+    public static boolean isModelRequestProcessorThread() {
+        return ModelImpl.instance().modelProcessor.isRequestProcessorThread();
+    }
+    
     public void waitModelTasks() {
         RequestProcessor.Task task = enqueueModelTask(new Runnable() {
             @Override

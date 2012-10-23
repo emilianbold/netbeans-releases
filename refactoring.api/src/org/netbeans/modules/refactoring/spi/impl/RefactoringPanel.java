@@ -800,9 +800,11 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                                         SwingUtilities.invokeLater(new Runnable() {
                                             @Override
                                             public void run() {
-                                                root.setNodeLabel(description + getErrorDesc(0, occurrences, hiddenOccurrences, isQuery && sizeIsApproximate.get()));
-                                                if (last) {
-                                                    tree.repaint();
+                                                if (tree!=null) {
+                                                    root.setNodeLabel(description + getErrorDesc(0, occurrences, hiddenOccurrences, isQuery && sizeIsApproximate.get()));
+                                                    if (last) {
+                                                        tree.repaint();
+                                                    }
                                                 }
                                             }
                                         });
