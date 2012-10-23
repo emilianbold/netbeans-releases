@@ -53,7 +53,6 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     location=JavaOptions.JAVA,
     displayName="#LBL_JavaDebugger",
-    id="JavaDebugger",
     //toolTip="#HINT_JavaDebugger",
     keywords="#KW_JavaDebugger",
     keywordsCategory=JavaOptions.JAVA + "/JavaDebugger")

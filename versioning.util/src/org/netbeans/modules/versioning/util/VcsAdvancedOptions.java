@@ -66,7 +66,6 @@ import org.openide.util.lookup.Lookups;
  * @author Pavel Buzek
  */
 @OptionsPanelController.SubRegistration(
-    id="Versioning",
     displayName="#LBL_OptionsPanelName",
     keywords="#KW_VersioningOptions",
     keywordsCategory="Advanced/Versioning")

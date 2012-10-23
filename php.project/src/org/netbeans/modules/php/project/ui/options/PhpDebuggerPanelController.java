@@ -55,13 +55,12 @@ import org.openide.util.NbBundle;
 @OptionsPanelController.SubRegistration(
     displayName="#LBL_DebuggerOptions",
 //    toolTip="#LBL_DebuggerOptionsTooltip",
-    id=PhpDebuggerPanelController.ID,
     location=UiUtils.OPTIONS_PATH,
     position=130
 )
 public class PhpDebuggerPanelController extends BaseOptionsPanelController {
 
-    public static final String ID = "Debugger";
+    public static final String ID = "org-netbeans-modules-php-project-ui-options-PhpDebuggerPanelController"; // NOI18N
 
     private PhpDebuggerPanel debuggerPanel = null;
 

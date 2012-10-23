@@ -130,7 +130,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             final GroovyParserResult parserResult = ASTUtils.getParseResult(resultIterator.getParserResult());
             final ASTNode root = ASTUtils.getRoot(parserResult);
             if (root == null) {
-                return;
+                throw new IllegalStateException("Not possible to get correct AST!"); // NOI18N
             }
 
             final int caret = textC.getCaretPosition();
@@ -145,6 +145,8 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             final RefactoringElement element = createRefactoringElement(path, findingNode, kind);
             if (element != null && element.getName() != null && element.getFileObject() != null) {
                 ui = createRefactoringUI(element, start, end, parserResult);
+            } else {
+                throw new IllegalStateException("RefactoringElement isn't initiated correctly!"); // NOI18N
             }
         }
 

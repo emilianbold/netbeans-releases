@@ -64,6 +64,10 @@ public class DatabaseExplorerUIsTest extends TestBase {
 
     private void initConnections() throws Exception {
         JDBCDriver driver = Util.createDummyDriver();
+        DatabaseConnection[] connections = ConnectionManager.getDefault().getConnections();
+        for (DatabaseConnection dc : connections) {
+            ConnectionManager.getDefault().removeConnection(dc);
+        }
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
         dbconn1 = DatabaseConnection.create(driver, "db", "dbuser", "dbschema", "dbpassword", true);
         dbconn2 = DatabaseConnection.create(driver, "database", "user", "schema", "password", true);
@@ -87,6 +91,30 @@ public class DatabaseExplorerUIsTest extends TestBase {
     public void testComboboxWithConnections() throws Exception {
         initConnections();
         JComboBox combo = connect();
+
+        assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 3);
+
+        assertSame(dbconn2, combo.getItemAt(0));
+        assertSame(dbconn1, combo.getItemAt(1));
+    }
+
+    public void testComboboxChangingConnections() throws Exception {
+        initConnections();
+        JComboBox combo = connect();
+
+        assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 3);
+
+        assertSame(dbconn2, combo.getItemAt(0));
+        assertSame(dbconn1, combo.getItemAt(1));
+
+        DatabaseConnection dc = DatabaseConnection.create(Util.createDummyDriver(), "dc1", "user", "schema", "password", true);
+        ConnectionManager.getDefault().addConnection(dc);
+
+        assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 4);
+
+        assertSame(dc, combo.getItemAt(2));
+
+        ConnectionManager.getDefault().removeConnection(dc);
 
         assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 3);
 

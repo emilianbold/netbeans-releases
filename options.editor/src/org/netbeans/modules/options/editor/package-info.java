@@ -41,7 +41,7 @@
  */
 
 @OptionsPanelController.ContainerRegistration(
-    id="Editor",
+    id=OptionsDisplayer.EDITOR,
     position=200,
     categoryName="#CTL_Editor",
     iconBase="org/netbeans/modules/options/editor/editor.png",
@@ -52,4 +52,5 @@
 )
 package org.netbeans.modules.options.editor;
 
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;

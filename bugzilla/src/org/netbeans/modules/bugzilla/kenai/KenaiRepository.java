@@ -225,7 +225,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         String user = pa.getUserName();
         char[] password = pa.getPassword();
 
-        setInfoValues(user, password, null, null);
+        setTaskRepository(user, password);
 
         return true;
     }
@@ -313,7 +313,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
                 psswd = new char[0];                                            // NOI18N
             }
 
-            setInfoValues(user, psswd, null, null);
+            setTaskRepository(user, psswd);
 
             synchronized(KenaiRepository.this) {
                 if(evt.getNewValue() != null) {

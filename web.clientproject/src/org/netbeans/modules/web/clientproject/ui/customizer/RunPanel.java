@@ -48,6 +48,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
@@ -204,12 +206,31 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         return null;
     }
 
-    @NbBundle.Messages("RunPanel.error.projectUrl.invalid=External server root URL of this project is missing.")
+    @NbBundle.Messages({
+        "RunPanel.error.projectUrl.missing=Project URL is missing.",
+        "RunPanel.error.projectUrl.invalidProtocol=Project URL must start with http(s):// or file://.",
+        "RunPanel.error.projectUrl.invalid=Project URL is invalid."
+    })
     private String validateProjectUrl() {
         if (!jProjectURLTextField.isVisible()) {
             return null;
         }
-        if (getProjectUrl().isEmpty()) {
+        String projectUrl = getProjectUrl();
+        if (projectUrl.isEmpty()) {
+            return Bundle.RunPanel_error_projectUrl_missing();
+        }
+        if (!projectUrl.startsWith("http://") // NOI18N
+                && !projectUrl.startsWith("https://") // NOI18N
+                && !projectUrl.startsWith("file://")) { // NOI18N
+            return Bundle.RunPanel_error_projectUrl_invalidProtocol();
+        }
+        try {
+            URL url = new URL(projectUrl);
+            String host = url.getHost();
+            if (host == null || host.isEmpty()) {
+                return Bundle.RunPanel_error_projectUrl_invalid();
+            }
+        } catch (MalformedURLException ex) {
             return Bundle.RunPanel_error_projectUrl_invalid();
         }
         return null;

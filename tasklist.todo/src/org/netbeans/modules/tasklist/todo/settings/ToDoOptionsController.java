@@ -55,7 +55,6 @@ import org.openide.util.Lookup;
  * @author S. Aubrecht
  */
 @OptionsPanelController.SubRegistration(
-    id=ToDoOptionsController.OPTIONS_PATH,
     displayName="#LBL_Options",
 //    toolTip="#HINT_Options"
     keywords="#KW_ToDo",
@@ -63,7 +62,7 @@ import org.openide.util.Lookup;
 )
 public class ToDoOptionsController extends OptionsPanelController {
 
-    public static final String OPTIONS_PATH = "ToDo"; // NOI18N
+    public static final String OPTIONS_PATH = "org-netbeans-modules-tasklist-todo-settings-ToDoOptionsController"; // NOI18N
     
     public void update() {
         getCustomizer().update();

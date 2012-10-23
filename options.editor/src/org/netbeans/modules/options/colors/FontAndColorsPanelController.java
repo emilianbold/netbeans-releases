@@ -48,6 +48,7 @@ import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -63,7 +64,7 @@ import org.openide.util.lookup.Lookups;
  * @author Jan Jancura
  */
 @OptionsPanelController.TopLevelRegistration(
-    id="FontsAndColors",
+    id=OptionsDisplayer.FONTSANDCOLORS,
     categoryName="#CTL_Font_And_Color_Options",
     iconBase="org/netbeans/modules/options/colors/colors.png",
     keywords="#KW_FontsAndColorsOptions",

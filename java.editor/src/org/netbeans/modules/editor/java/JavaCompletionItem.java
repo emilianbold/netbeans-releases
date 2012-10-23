@@ -2358,7 +2358,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             } catch (BadLocationException ex) {
                 return null; // Invalid offset -> do nothing
             }
-            CharSequence cs = super.substituteText(c, offset, 0, null, toAdd);
+            CharSequence cs = super.substituteText(c, startPos.getOffset(), 0, null, toAdd);
             if (toAdd != null) {
                 CharSequence postfix = getInsertPostfix(c);
                 if (postfix != null) {

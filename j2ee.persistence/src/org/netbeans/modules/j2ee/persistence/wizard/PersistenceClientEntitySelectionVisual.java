@@ -463,6 +463,13 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MSG_NoEntityClassesSelected"));
             return false;
         }
+
+        if (entityClosure.isEjbModuleInvolved()) {
+            wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "WARN_DetectedEntitiesFromEjbModule"));
+            return true;
+        }
+
+        wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, " "); //NOI18N
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); //NOI18N
         return true;
     }

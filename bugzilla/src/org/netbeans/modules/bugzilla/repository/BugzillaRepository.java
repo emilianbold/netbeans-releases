@@ -437,13 +437,12 @@ public class BugzillaRepository {
         return queries;
     }
 
-    public synchronized void setInfoValues(String user, char[] password, String httpUser, char[] httpPassword) {
-        setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, httpUser, httpPassword, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
+    public synchronized void setInfoValues(String user, char[] password) {
+        setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, null, null, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
         info = new RepositoryInfo(
                         info.getId(), info.getConnectorId(), 
                         info.getUrl(), info.getDisplayName(), info.getTooltip(), 
-                        user, httpUser, 
-                        password, httpPassword);
+                        user, null, password, null);
     }
     
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean localUserEnabled) {
@@ -465,7 +464,11 @@ public class BugzillaRepository {
         resetRepository(keepConfiguration);
     }
 
-    protected void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean shortLoginEnabled) {
+    protected synchronized void setTaskRepository(String user, char[] password) {
+        setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, null, null, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
+    }
+    
+    private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean shortLoginEnabled) {
 
         String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
         AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;
