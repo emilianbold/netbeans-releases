@@ -77,10 +77,12 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
     protected static final RequestProcessor RP = new RequestProcessor(LookupSensitiveAction.class);
 
     private Lookup lookup;
-    private Class<?>[] watch;
-    private Lookup.Result results[];
+    private Class<?>[] watch;    
     private boolean needsRefresh = true;
+    
+    private final Object RESULTS_LOCK = new Object();
     private boolean initialized = false;
+    private Lookup.Result results[];
 
     private boolean refreshing = false;
 
@@ -101,7 +103,8 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
      *
      * @return true if subclasses shall initialize themselves
      */
-    protected boolean init () {
+    protected boolean init () { 
+        synchronized (RESULTS_LOCK) {//synchronized == issue 215335
         if (initialized) {
             return false;
         }
@@ -115,6 +118,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
         }
         initialized = true;
         return true;
+        }
     }
 
     /** Needs to override getValue in order to force refresh
