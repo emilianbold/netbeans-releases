@@ -77,6 +77,7 @@ import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
 
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -88,14 +89,10 @@ import org.openide.util.RequestProcessor;
  *
  * @author mkuchtiak
  */
-@ProjectServiceProvider(projectType={
-        "org-netbeans-modules-maven/"+NbMavenProject.TYPE_WAR,
-        "org-netbeans-modules-maven/"+NbMavenProject.TYPE_EJB,
-        "org-netbeans-modules-maven/"+NbMavenProject.TYPE_EAR,
-        "org-netbeans-modules-maven/"+NbMavenProject.TYPE_APPCLIENT}, 
-        service={JAXWSLightSupportProvider.class, WebServiceDataProvider.class})
-public class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, 
-    WebServiceDataProvider, PropertyChangeListener 
+@ProjectServiceProvider(projectType="org-netbeans-modules-maven", 
+        service={JAXWSLightSupportProvider.class, WebServiceDataProvider.class, ProjectOpenedHook.class})
+public class MavenJaxWsSupportProvider extends ProjectOpenedHook 
+    implements JAXWSLightSupportProvider, WebServiceDataProvider, PropertyChangeListener
 {
 
     private static final RequestProcessor MAVEN_WS_RP =
@@ -130,66 +127,38 @@ public class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider,
         this.jaxWsSupport = JAXWSLightSupportFactory.createJAXWSSupport(spiJAXWSSupport);
         
         jaxWsSupport.addPropertyChangeListener(this);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.spi.project.ui.ProjectOpenedHook#projectClosed()
+     */
+    @Override
+    protected void projectClosed() {
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.spi.project.ui.ProjectOpenedHook#projectOpened()
+     */
+    @Override
+    protected void projectOpened() {
         
-        final Lookup lookup = prj.getLookup();
-        final Result<J2eeModuleProvider> result = lookup.lookupResult(J2eeModuleProvider.class);
-        final LookupListener listener = new LookupListener(){
+        MAVEN_WS_RP.post(new Runnable() {
 
-            @Override
-            public void resultChanged( LookupEvent event ) {
-                synchronized (result) {
-                    LOG.log(Level.INFO, "Maven project lookup is changed"); // NOI18N
-                    result.notifyAll();
-                }
-            }
-            
-        };
-        result.addLookupListener( listener );
-        LOG.log(Level.INFO, "Lookup listener is added into the Maven project");// NOI18N
-
-        Runnable runnable = new Runnable() {
-
-            @Override
             public void run() {
                 registerPCL();
-                LOG.log(Level.INFO, "Inside Maven WS request processor");   // NOI18N
-                
-                synchronized (result) {
-                    boolean wait = true;
-                    while (lookup.lookup(J2eeModuleProvider.class) == null ) {
-                        if ( !wait ){
-                            MAVEN_WS_RP.post(this);
-                            return;
-                        }
-                        try {
-                            LOG.log(Level.INFO, 
-                                    "Wait in cycle for J2eeModuleProvider instance in Maven lookup");// NOI18N
-                            result.wait(1000);
-                            wait = false;
-                        }
-                        catch( InterruptedException e ){
-                            LOG.log(Level.INFO, "Lookup change wait is interrupted", e); //NOI18N
-                        }
-                    }
-                    result.removeLookupListener(listener);
-                }
-                LOG.log(Level.INFO, "Get out of waiting J2eeModuleProvider instance cycle, listener is removed");// NOI18N
-                J2eeModuleProvider provider = lookup.lookup(J2eeModuleProvider.class);
-                LOG.log(Level.INFO, "J2eeModuleProvider instance :"+provider);// NOI18N
-                
-                MetadataModel<WebservicesMetadata> model = 
-                        jaxWsSupport.getWebservicesMetadataModel();
-                LOG.log(Level.INFO, "WS metadata model : "+model);       // NOI18N
+                J2eeModuleProvider provider = prj.getLookup().lookup(
+                        J2eeModuleProvider.class);
+
+                MetadataModel<WebservicesMetadata> model = jaxWsSupport
+                        .getWebservicesMetadataModel();
                 if (model != null) {
                     registerAnnotationListener(model);
                 }
-                serverInstance = provider== null ? null : 
-                    provider.getServerInstanceID();
-                //wsModel = model;
+                serverInstance = provider == null ? null : provider
+                        .getServerInstanceID();
+                // wsModel = model;
             }
-
-        };
-        MAVEN_WS_RP.post(runnable);
+        });
         rp.post(new Runnable() {
 
             @Override
@@ -225,11 +194,7 @@ public class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider,
         jaxWsSupport.removePropertyChangeListener(pcl);
     }
     
-    @LookupMerger.Registration(projectType={
-            "org-netbeans-modules-maven/"+NbMavenProject.TYPE_WAR,
-            "org-netbeans-modules-maven/"+NbMavenProject.TYPE_EJB,
-            "org-netbeans-modules-maven/"+NbMavenProject.TYPE_EAR,
-            "org-netbeans-modules-maven/"+NbMavenProject.TYPE_APPCLIENT})
+    @LookupMerger.Registration(projectType="org-netbeans-modules-maven")
     public static LookupMerger<WebServiceDataProvider> getLookupMerger(){
         return LookupMergerSupport.createWebServiceDataProviderMerger();
     }
