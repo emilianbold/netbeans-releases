@@ -179,6 +179,30 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                        "package test; public class Test { private void fff(Paddle test) { throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. } enum Paddle{UP, DOWN} public void foo(Paddle test) {fff(test);}}");
     }
     
+    public void test220582() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void foo() {\n" +
+                       "        String name = null, description = null;\n" +
+                       "        if(!is|New(name) && isNew(description)){ // 1\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       "CreateMethodFix:isNew(java.lang.String name)boolean:test.Test",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void foo() {\n" +
+                        "        String name = null, description = null;\n" +
+                        "        if(!isNew(name) && isNew(description)){ // 1\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "    private boolean isNew(String name) {\n" +
+                        "        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \n\t\r]+", " "));
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();

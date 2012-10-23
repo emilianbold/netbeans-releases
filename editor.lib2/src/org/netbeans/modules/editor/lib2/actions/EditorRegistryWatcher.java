@@ -41,12 +41,19 @@
  */
 package org.netbeans.modules.editor.lib2.actions;
 
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.lib2.WeakReferenceStableList;
-import org.netbeans.spi.editor.AbstractEditorAction;
 
 /**
  *
@@ -56,25 +63,29 @@ public class EditorRegistryWatcher implements PropertyChangeListener {
     
     private static final EditorRegistryWatcher INSTANCE = new EditorRegistryWatcher();
     
+    // -J-Dorg.netbeans.modules.editor.lib2.actions.EditorRegistryWatcher.level=FINE
+    private static final Logger LOG = Logger.getLogger(EditorRegistryWatcher.class.getName());
+    
     public static EditorRegistryWatcher get() {
         return INSTANCE;
     }
     
-    private static final WeakReferenceStableList<AbstractEditorAction> actions =
-            new WeakReferenceStableList<AbstractEditorAction>();
-
     private WeakReferenceStableList<PresenterUpdater> presenterUpdaters =
             new WeakReferenceStableList<PresenterUpdater>();
+    
+    private Reference<JTextComponent> activeTextComponentRef;
 
     private EditorRegistryWatcher() {
         EditorRegistry.addPropertyChangeListener(this);
+        activeTextComponentRef = new WeakReference<JTextComponent>(EditorRegistry.focusedComponent());
     }
 
     public void registerPresenterUpdater(PresenterUpdater updater) {
         presenterUpdaters.add(updater);
-        JTextComponent c = EditorRegistry.lastFocusedComponent();
-        if (c != null) {
-            updater.setActiveComponent(c);
+        JTextComponent activeTextComponent = activeTextComponentRef.get();
+        if (activeTextComponent != null) {
+            EditorKit kit = activeTextComponent.getUI().getEditorKit((activeTextComponent));
+            updater.setActiveAction(EditorActionUtilities.getAction(kit, updater.getActionName()));
         }
     }
 
@@ -88,11 +99,40 @@ public class EditorRegistryWatcher implements PropertyChangeListener {
 //                updater.setActiveComponent(null);
 //            }
         } else if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(propName)) {
-            JTextComponent c = (JTextComponent) evt.getNewValue();
-            for (PresenterUpdater updater : presenterUpdaters.getList()) {
-                updater.setActiveComponent(c);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("EditorRegistryWatcher: EditorRegistry.FOCUS_GAINED\n");
             }
+            updateActiveActionInPresenters((JTextComponent) evt.getNewValue());
         }
     }
     
+    private void updateActiveActionInPresenters(JTextComponent c) {
+        if (c == activeTextComponentRef.get()) {
+            return;
+        }
+        activeTextComponentRef = new WeakReference(c);
+        EditorKit kit = (c != null) ? c.getUI().getEditorKit(c) : null;
+        SearchableEditorKit searchableKit = (kit != null) ? EditorActionUtilities.getSearchableKit(kit) : null;
+        for (PresenterUpdater updater : presenterUpdaters.getList()) {
+            Action a = (searchableKit != null) ? searchableKit.getAction(updater.getActionName()) : null;
+            updater.setActiveAction(a);
+        }
+    }
+
+    public void notifyActiveTopComponentChanged(Component activeTopComponent) {
+        if (activeTopComponent != null) {
+            JTextComponent activeTextComponent = activeTextComponentRef.get();
+            if (activeTextComponent != null) {
+                if (!SwingUtilities.isDescendingFrom(activeTextComponent, activeTopComponent)) {
+                    // A top component was focused that does not contain focused text component
+                    // so notify that there's in fact no active text component
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("EditorRegistryWatcher: TopComponent without active JTextComponent\n");
+                    }
+                    updateActiveActionInPresenters(null);
+                }
+            }
+        }
+    }
+
 }
