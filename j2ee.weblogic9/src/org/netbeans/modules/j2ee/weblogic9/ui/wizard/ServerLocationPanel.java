@@ -55,7 +55,7 @@ import org.openide.util.HelpCtx;
  */
 public class ServerLocationPanel  implements WizardDescriptor.Panel, ChangeListener {
 
-     private ServerLocationVisual component;
+    private ServerLocationVisual component;
     private WizardDescriptor wizard;
     private transient WLInstantiatingIterator instantiatingIterator;
     private Vector listeners = new Vector();
@@ -105,11 +105,6 @@ public class ServerLocationPanel  implements WizardDescriptor.Panel, ChangeListe
         synchronized (listeners) {
             listeners.add(listener);
         }
-    }
-
-    private void fireChangeEvent() {
-        ChangeEvent event = new ChangeEvent(this);
-        fireChangeEvent(event);
     }
 
     private void fireChangeEvent(ChangeEvent event) {
