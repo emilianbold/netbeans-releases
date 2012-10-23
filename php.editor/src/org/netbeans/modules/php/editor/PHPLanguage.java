@@ -75,7 +75,7 @@ import org.netbeans.modules.php.editor.nav.OccurrencesFinderImpl;
 import org.netbeans.modules.php.editor.nav.OverridingMethodsImpl;
 import org.netbeans.modules.php.editor.nav.PHPTypeSearcher;
 import org.netbeans.modules.php.editor.parser.GSFPHPParser;
-import org.netbeans.modules.php.editor.parser.PhpStructureScanner;
+import org.netbeans.modules.php.editor.nav.PhpStructureScanner;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
