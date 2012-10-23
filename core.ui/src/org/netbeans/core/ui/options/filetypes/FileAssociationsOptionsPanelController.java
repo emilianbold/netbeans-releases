@@ -55,7 +55,6 @@ import org.openide.util.Lookup;
  * @author Jiri Skrivanek
  */
 @OptionsPanelController.SubRegistration(
-    id="Files",
     displayName="#AdvancedOption.displayName",
     keywords="#KW_FilesOptions",
     keywordsCategory="Advanced/Files"

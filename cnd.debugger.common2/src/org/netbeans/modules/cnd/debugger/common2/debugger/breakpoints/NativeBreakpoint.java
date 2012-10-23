@@ -96,6 +96,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 import org.netbeans.spi.debugger.ContextAwareSupport;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -1803,15 +1804,29 @@ public abstract class NativeBreakpoint
     /**
      * Register a new bpt glyph with this Handler
      */
+    
+    private static final RequestProcessor RP = new RequestProcessor("Getting Line", 10); //NOI18N
 
-    public void addAnnotation(String filename, int line, long addr) {
-	Line l = null;
-
-	if (line != 0) {
-	    l = EditorBridge.getLine(filename, line, currentDebugger());
+    public void addAnnotation(final String filename, final int line, final long addr) {
+        RP.submit(new Runnable() {
+            @Override
+            public void run() {
+                final Line l = getLine(filename, line);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        addAnnotation(l, addr);
+                    }
+                });
+            }
+        });
+    }
+    
+    protected Line getLine(String filename, int line) {
+        if (line != 0) {
+            return EditorBridge.getLine(filename, line, currentDebugger());
         }
-	//if (l != null)
-	addAnnotation(l, addr);
+        return null;
     }
 
     /**

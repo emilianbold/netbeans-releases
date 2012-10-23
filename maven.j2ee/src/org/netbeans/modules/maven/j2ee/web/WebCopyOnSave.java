@@ -50,6 +50,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -78,8 +79,9 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     }
 
     private WebModule getWebModule() {
-        if (getJ2eeModuleProvider() instanceof WebModuleProviderImpl) {
-            return ((WebModuleProviderImpl) getJ2eeModuleProvider()).findWebModule(getProject().getProjectDirectory());
+        final J2eeModuleProvider moduleProvider = getJ2eeModuleProvider();
+        if (moduleProvider != null && moduleProvider instanceof WebModuleProviderImpl) {
+            return ((WebModuleProviderImpl) moduleProvider).findWebModule(getProject().getProjectDirectory());
         }
         return null;
     }
@@ -271,15 +273,20 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     }
 
     private void handleDeleteFileInDestDir(FileObject fo, String path) throws IOException {
-        FileObject root = findWebDocRoot(fo);
+        final FileObject root = findWebDocRoot(fo);
         if (root != null) {
             // inside docbase
             path = path != null ? path : FileUtil.getRelativePath(root, fo);
             if (!isSynchronizationAppropriate(path)) {
                 return;
             }
+            
+            final J2eeModule j2eeModule = getJ2eeModule();
+            if (j2eeModule == null) {
+                return;
+            }
 
-            FileObject webBuildBase = getJ2eeModule().getContentDirectory();
+            final FileObject webBuildBase = j2eeModule.getContentDirectory();
             if (webBuildBase != null) {
                 // project was built
                 FileObject toDelete = webBuildBase.getFileObject(path);
@@ -297,15 +304,20 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
      */
     private void handleCopyFileToDestDir(FileObject fo) throws IOException {
         if (!fo.isVirtual()) {
-            FileObject documentBase = findWebDocRoot(fo);
+            final FileObject documentBase = findWebDocRoot(fo);
             if (documentBase != null) {
                 // inside docbase
-                String path = FileUtil.getRelativePath(documentBase, fo);
+                final String path = FileUtil.getRelativePath(documentBase, fo);
                 if (!isSynchronizationAppropriate(path)) {
                     return;
                 }
-                FileObject webBuildBase = getJ2eeModule().getContentDirectory();
 
+                final J2eeModule j2eeModule = getJ2eeModule();
+                if (j2eeModule == null) {
+                    return;
+                }
+                
+                final FileObject webBuildBase = j2eeModule.getContentDirectory();
                 if (webBuildBase != null) {
                     // project was built
                     if (FileUtil.isParentOf(documentBase, webBuildBase) || FileUtil.isParentOf(webBuildBase, documentBase)) {

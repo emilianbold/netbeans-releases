@@ -146,20 +146,14 @@ public final class LineBreakpoint extends NativeBreakpoint {
 	    lineNumber.setFromObjectInitial(newLineNumber);
 	}
     }
-    
-    @Override
-    public void addAnnotation(String filename, int line, long addr) {
-	Line l = null;
 
-	if (line != 0) {
-            if (fs != null) {
-                l = EditorBridge.getLine(filename, line, fs);
-            } else {
-                l = EditorBridge.getLine(filename, line, currentDebugger());
-            }
+    @Override
+    protected Line getLine(String filename, int line) {
+        if (line != 0 && fs != null) {
+            return EditorBridge.getLine(filename, line, fs);
+        } else {
+            return super.getLine(filename, line);
         }
-	//if (l != null)
-	addAnnotation(l, addr);
     }
     
     @Override

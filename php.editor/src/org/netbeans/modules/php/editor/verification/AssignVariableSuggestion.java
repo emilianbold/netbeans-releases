@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
@@ -72,6 +73,8 @@ import org.openide.util.NbBundle.Messages;
  * @author Radek Matous
  */
 public class AssignVariableSuggestion extends AbstractSuggestion {
+
+    private static final List<String> LANGUAGE_CUNSTRUCTS = new ArrayList<String>(Arrays.asList(new String[] {"die", "exit"})); //NOI18N
 
     @Override
     public String getId() {
@@ -148,7 +151,10 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
                     guessName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 } else if (expression instanceof FunctionInvocation) {
                     FunctionInvocation functionInvocation = (FunctionInvocation) expression;
-                    guessName = CodeUtils.extractFunctionName(functionInvocation);
+                    String functionName = CodeUtils.extractFunctionName(functionInvocation);
+                    if (hasReturnValue(functionName)) {
+                        guessName = functionName;
+                    }
                 } else if (expression instanceof StaticMethodInvocation) {
                     StaticMethodInvocation methodInvocation = (StaticMethodInvocation) expression;
                     guessName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
@@ -159,6 +165,10 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
                 }
             }
             super.visit(node);
+        }
+
+        private boolean hasReturnValue(String functionName) {
+            return !LANGUAGE_CUNSTRUCTS.contains(functionName);
         }
 
         @Override

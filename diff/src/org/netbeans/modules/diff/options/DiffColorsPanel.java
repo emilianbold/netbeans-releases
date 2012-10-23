@@ -59,8 +59,6 @@ import javax.swing.event.ListSelectionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.util.*;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -72,7 +70,7 @@ import org.netbeans.spi.options.OptionsPanelController;
  * @author Maros Sandor
  */
 @OptionsPanelController.Keywords(keywords={"diff colors", "#KW_DiffOptions"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "#LBL_DiffOptions")
-public class DiffColorsPanel extends javax.swing.JPanel implements ActionListener, FontsColorsController, PropertyChangeListener {
+public class DiffColorsPanel extends javax.swing.JPanel implements ActionListener, FontsColorsController {
     
     private static final String ATTR_NAME_ADDED = "added";
     private static final String ATTR_NAME_DELETED = "deleted";
@@ -93,7 +91,6 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
 
         setName(loc("LBL_DiffOptions_Tab")); //NOI18N
         
-        org.netbeans.modules.diff.options.ColorComboBox.init (cbBackground);
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (6);
         lCategories.addListSelectionListener (new ListSelectionListener() {
@@ -104,7 +101,6 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         });
         lCategories.setCellRenderer (new CategoryRenderer());
         cbBackground.addActionListener (this);
-        ((JComponent)cbBackground.getEditor()).addPropertyChangeListener (this);
     }
 
     
@@ -112,14 +108,6 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         if (!listen) return;
         updateData ();
         changed = true;
-    }
-    
-    public void propertyChange (PropertyChangeEvent evt) {
-        if (!listen) return;
-        if (evt.getPropertyName() == ColorComboBox.PROP_COLOR) {
-            updateData ();
-            changed = true;
-        }
     }
     
     public void update(ColorModel colorModel) {
@@ -182,7 +170,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         AttributeSet category = categories.get(lCategories.getSelectedIndex());
         SimpleAttributeSet c = new SimpleAttributeSet(category);
         
-        Color color = ColorComboBox.getColor(cbBackground);
+        Color color = cbBackground.getSelectedColor();
         if (color != null) {
             c.addAttribute(StyleConstants.Background, color);
         } else {
@@ -205,7 +193,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         
         listen = false;
         // set values
-        org.netbeans.modules.diff.options.ColorComboBox.setColor(cbBackground, (Color) category.getAttribute(StyleConstants.Background));
+        cbBackground.setSelectedColor((Color) category.getAttribute(StyleConstants.Background));
         listen = true;
     }
     
@@ -284,7 +272,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         jScrollPane1 = new javax.swing.JScrollPane();
         lCategories = new javax.swing.JList();
         jLabel3 = new javax.swing.JLabel();
-        cbBackground = new javax.swing.JComboBox();
+        cbBackground = new org.openide.awt.ColorComboBox();
 
         jLabel1.setLabelFor(lCategories);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DiffColorsPanel.class, "DiffColorsPanel.jLabel1.text")); // NOI18N
@@ -295,8 +283,6 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         jLabel3.setLabelFor(cbBackground);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(DiffColorsPanel.class, "DiffColorsPanel.jLabel3.text")); // NOI18N
 
-        cbBackground.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -305,13 +291,13 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(20, 20, 20)
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel1))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -321,8 +307,8 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel3))
+                        .addComponent(jLabel3)
+                        .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -330,7 +316,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox cbBackground;
+    private org.openide.awt.ColorComboBox cbBackground;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;

@@ -187,6 +187,8 @@ public final class LibraryManager {
      * Find project for resolved file.
      * Search for project in project, dependencies, artificial libraries.
      * If search is false then method creates artificial library or returns base project.
+     * 
+     * Can return NULL !
      */
     public ProjectBase resolveFileProjectOnInclude(ProjectBase baseProject, FileImpl curFile, ResolvedPath resolvedPath) {
         String absPath = resolvedPath.getPath().toString();
@@ -227,19 +229,21 @@ public final class LibraryManager {
                     if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                         trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject);//NOI18N
                     }
+                    // if (res != null && res.isArtificial()) { // TODO: update lib source roots here }
                 } else if (!baseProject.isArtificial()) {
                     res = getLibrary((ProjectImpl) baseProject, resolvedPath.getFileSystem(), folder);
-                    if (res == null) {
-                        if (CndUtils.isDebugMode()) {
-                            trace("Not created library for folder " + folder, curFile, resolvedPath, res, baseProject); //NOI18N
-                        }
-                        res = baseProject;
+                    if (res == null && CndUtils.isDebugMode()) {
+                        CndUtils.assertTrue(false, "Can not create library; folder=" + folder + " curFile=" + //NOI18N
+                                curFile + " path=" + resolvedPath + " baseProject=" + baseProject); //NOI18N
                     }
                     if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                         trace("Library for folder " + folder, curFile, resolvedPath, res, baseProject); //NOI18N
                     }
                 } else {
-                    res = baseProject;
+                    if (CndUtils.isDebugMode()) {
+                        CndUtils.assertTrue(false, "Can not get library for artificial project; folder=" + folder + " curFile=" + //NOI18N
+                                curFile + " path=" + resolvedPath + " baseProject=" + baseProject); //NOI18N
+                    }                    
                     if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                         trace("Base Project", curFile, resolvedPath, res, baseProject);//NOI18N
                     }

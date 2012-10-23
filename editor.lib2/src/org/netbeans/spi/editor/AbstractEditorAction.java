@@ -389,9 +389,23 @@ public abstract class AbstractEditorAction extends TextAction implements
         Action dAction = delegateAction;
         // Delegate whole getValue() if delegateAction already exists
         if (dAction != null && dAction != UNITIALIZED_ACTION) {
-            return dAction.getValue(key);
+            Object value = dAction.getValue(key);
+            if (value == null) {
+                value = getValueLocal(key);
+                if (value != null) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Transfer wrapper action property: key=" + key + ", value=" + value + '\n'); // NOI18N
+                    }
+                    dAction.putValue(key, value);
+                }
+            }
+            return value;
         }
 
+        return getValueLocal(key);
+    }
+
+    private Object getValueLocal(String key) {
         if ("enabled" == key) { // Same == in AbstractAction
             return enabled;
         }
@@ -483,7 +497,7 @@ public abstract class AbstractEditorAction extends TextAction implements
                     new DelegateActionPropertyChangeListener(this), dAction));
             delegateAction = dAction;
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Delegate action created: " + dAction);
+                LOG.fine("Delegate action created: " + dAction + '\n');
             }
         }
         return dAction;
@@ -492,7 +506,7 @@ public abstract class AbstractEditorAction extends TextAction implements
     private void transferProperties(Action dAction) {
         boolean log = LOG.isLoggable(Level.FINE);
         if (log) {
-            LOG.fine("Transfer properties into " + dAction); // NOI18N
+            LOG.fine("Transfer properties into " + dAction + '\n'); // NOI18N
         }
         synchronized (properties) {
             for (Map.Entry<String,Object> entry : properties.entrySet()) {
@@ -500,7 +514,7 @@ public abstract class AbstractEditorAction extends TextAction implements
                 Object value = entry.getValue();
                 if (value != MASK_NULL_VALUE) { // Allow to call createValue() for the property
                     if (log) {
-                        LOG.fine("    key=" + key + ", value=" + value); // NOI18N
+                        LOG.fine("    key=" + key + ", value=" + value + '\n'); // NOI18N
                     }
                     dAction.putValue(key, value);
                 }
@@ -526,7 +540,9 @@ public abstract class AbstractEditorAction extends TextAction implements
     @Override
     public String toString() {
         String clsName = getClass().getSimpleName();
-        return clsName + '@' + System.identityHashCode(this) + " name=\"" + actionName() + "\""; // NOI18N
+        return clsName + '@' + System.identityHashCode(this) +
+                " mime=\"" + getValue(MIME_TYPE_KEY) +  // NOI18N
+                "\" name=\"" + actionName() + "\""; // NOI18N
     }
     
     private static final class DelegateActionPropertyChangeListener implements PropertyChangeListener {

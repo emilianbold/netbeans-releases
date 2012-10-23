@@ -410,7 +410,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                             res.addAll(getManagedBeanPropertyNames(project, className, entityClass, beanName, collection));
                         }
                     }
-                    return Void.TYPE.newInstance();
+                    return null;
                 }
             });
         } catch (MetadataModelException ex) {

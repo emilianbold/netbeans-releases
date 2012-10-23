@@ -64,7 +64,6 @@ import org.openide.util.lookup.Lookups;
  * @author Tomas Stupka
  */
 @OptionsPanelController.SubRegistration(
-    id="IssueTracking",
     displayName="#LBL_IssueTracking",
     keywords="#KW_IssueTracking",
     keywordsCategory="Advanced/IssueTracking")

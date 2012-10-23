@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -58,8 +59,7 @@ import org.openide.util.Lookup;
  * @author Jan Jancura
  */
 @OptionsPanelController.SubRegistration(
-    location="Editor",
-    id="Macros",
+    location=OptionsDisplayer.EDITOR,
     displayName="#CTL_Macros_DisplayName",
     keywords="#KW_Macros",
     keywordsCategory="Editor/Macros",

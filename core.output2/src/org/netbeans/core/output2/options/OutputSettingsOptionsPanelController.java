@@ -49,11 +49,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    location = "Advanced",
 displayName = "#AdvancedOption_DisplayName_OutputSettings",
 keywords = "#AdvancedOption_Keywords_OutputSettings",
-keywordsCategory = "Advanced/OutputSettings",
-id="OutputSettings")
+keywordsCategory = "Advanced/OutputSettings")
 @org.openide.util.NbBundle.Messages({
     "AdvancedOption_DisplayName_OutputSettings=Output",
     "AdvancedOption_Keywords_OutputSettings=Output Window Font Color"})
@@ -92,7 +90,7 @@ public final class OutputSettingsOptionsPanelController extends OptionsPanelCont
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return new HelpCtx("netbeans.optionsDialog.advanced.output");   //NOI18N
     }
 
     @Override

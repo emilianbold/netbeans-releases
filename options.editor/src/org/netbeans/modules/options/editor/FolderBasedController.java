@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -91,9 +92,8 @@ public final class FolderBasedController extends OptionsPanelController implemen
     private final Document filterDocument = new PlainDocument();
 
     @OptionsPanelController.SubRegistration(
-        id="Hints",
         displayName="#CTL_Hints_DisplayName",
-        location="Editor",
+        location=OptionsDisplayer.EDITOR,
         keywords="#KW_Hints",
         keywordsCategory="Editor/Hints",
         position=400
@@ -104,9 +104,8 @@ public final class FolderBasedController extends OptionsPanelController implemen
     }
 
     @OptionsPanelController.SubRegistration(
-        id="MarkOccurrences",
         displayName="#CTL_MarkOccurences_DisplayName",
-        location="Editor",
+        location=OptionsDisplayer.EDITOR,
         keywords="#KW_Mark",
         keywordsCategory="Editor/MarkOccurrences",
         position=500

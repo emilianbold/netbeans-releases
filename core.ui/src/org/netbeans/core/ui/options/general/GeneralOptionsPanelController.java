@@ -46,6 +46,7 @@ package org.netbeans.core.ui.options.general;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -61,7 +62,7 @@ import org.openide.util.Lookup;
     iconBase="org/netbeans/core/ui/options/general/generalOptions.png",
     keywords="#KW_General",
     keywordsCategory="General",
-    id="General", // #172844; XXX effectively an undocumented API
+    id=OptionsDisplayer.GENERAL, // #172844; XXX effectively an undocumented API
 //    title="#CTL_General_Options_Title",
 //    description="#CTL_General_Options_Description",
     position=100
