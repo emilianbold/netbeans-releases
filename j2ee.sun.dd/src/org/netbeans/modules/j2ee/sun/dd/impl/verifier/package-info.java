@@ -47,7 +47,8 @@
     docRoot="static-verification",
     useInterfaces=false,
     validate=false,
-    attrProp=true
+    attrProp=true,
+    java5=true
 )
 package org.netbeans.modules.j2ee.sun.dd.impl.verifier;
 

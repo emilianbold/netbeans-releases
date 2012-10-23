@@ -376,7 +376,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     }
                     jw.write(attr, ".add(",
                              JavaUtil.toObject(a.instanceOf()+"[i]", baseType,
-                                               config.isForME()));
+                                               config.isForME(), config.isJava5()));
                     jw.writeEol(")");
                     jw.end();
                     jw.end();
@@ -662,7 +662,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     jw.beginFor("", "srcPos < value.length", "++srcPos");
                     jw.writeEol("insertElementByPosition(destPos++, ",
                                 JavaUtil.toObject("value[srcPos]", baseType,
-                                                  config.isForME()),
+                                                  config.isForME(), config.isJava5()),
                                 ", "+i+")");
                     jw.end();
                 }
@@ -680,7 +680,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                         genWhiteSpaceRestriction(ws, "value[i]", baseType);
                     jw.write(attr, ".add(");
                     String objectValue = JavaUtil.toObject("value[i]", baseType,
-                                                           config.isForME());
+                                                           config.isForME(), config.isJava5());
                     jw.writeEol(objectValue, ")");
                     jw.end();
                 }
@@ -703,7 +703,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     jw.end();
                     jw.writeEol("elementsByPosition[pos] = ",
                                 JavaUtil.toObject("value", type,
-                                                  config.isForME()));
+                                                  config.isForME(), config.isJava5()));
                     if (!isScalar) {
                         jw.endElseBegin();
                         jw.beginIf("pos < elementCount");
@@ -796,14 +796,14 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                         jw.end();
                     }
                     jw.write(attr, ".set(index, ");
-                    jw.write(JavaUtil.toObject("value", baseType, config.isForME()));
+                    jw.write(JavaUtil.toObject("value", baseType, config.isForME(), config.isJava5()));
                     jw.writeEol(")");
                 }
                 if (config.isKeepElementPositions()) {
                     jw.writeEol("int pos = findElementType("+i+", index)");
                     jw.writeEol("elementsByPosition[pos] = ",
                                 JavaUtil.toObject("value", baseType,
-                                                  config.isForME()));
+                                                  config.isForME(), config.isJava5()));
                 }
                 genMadeChange();
                 end();
@@ -892,7 +892,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     }
                     jw.writeEol(attr, ".add(",
                                 JavaUtil.toObject("value", baseType,
-                                                  config.isForME()),
+                                                  config.isForME(), config.isJava5()),
                                 ")");
                     if (config.isKeepElementPositions()) {
                         GraphLink gl = a.getGraphLink();
@@ -919,7 +919,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                         jw.writeEol("int pos = findLastOfElementType("+lastPropNum+")+1");
                         jw.writeEol("insertElementByPosition(pos, ",
                                     JavaUtil.toObject("value", baseType,
-                                                      config.isForME()),
+                                                      config.isForME(), config.isJava5()),
                                     ", "+i+")");
                     }
                     if (config.isGeneratePropertyEvents()) {
@@ -968,7 +968,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     }
                     jw.writeEol("int pos = ", attr, ".indexOf(",
                                 JavaUtil.toObject("value", baseType,
-                                                  config.isForME())+")");
+                                                  config.isForME(), config.isJava5())+")");
                     gen("if (pos >= 0) ");
                     begin();
                     geneol(attr+".remove(pos)");
@@ -2179,7 +2179,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                 if (indexed && generatedSet)
                     jw.writeEol(attr, ".add(",
                                 JavaUtil.toObject(var, baseType,
-                                                  config.isForME()),
+                                                  config.isForME(), config.isJava5()),
                                 ")");
                 if (a.isNillable()) {
                     jw.endElseBegin();
@@ -2192,7 +2192,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                 if (hasDuplicateDtdNames)
                     jw.writeEol("readState.lastElementType = "+i);
                 if (config.isKeepElementPositions()) {
-                    jw.writeEol("elementsByPosition[readState.elementPosition] = "+JavaUtil.toObject(var, type, config.isForME()));
+                    jw.writeEol("elementsByPosition[readState.elementPosition] = "+JavaUtil.toObject(var, type, config.isForME(), config.isJava5()));
                     jw.writeEol("elementTypesByPosition[readState.elementPosition++] = "+i);
                 }
                 end();
@@ -3953,7 +3953,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                 jw.writeEol(a.getReadMethod(false)+"()");
             else
                 jw.writeEol(JavaUtil.toObject(a.getReadMethod(false)+"()", type,
-                                              config.isForME()));
+                                              config.isForME(), config.isJava5()));
         }
         if (config.isRespectExtension() && beanElement.getExtension() != null) {
             jw.writeEol("return super.fetchPropertyByName(name)");
@@ -4804,7 +4804,8 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     else
                         jw.writeEol(JavaUtil.toObject(curProp.getReadMethod(false)+"()",
                                                       curProp.getType(),
-                                                      config.isForME()));
+                                                      config.isForME(),
+                                                      config.isJava5()));
                 }
             }.generate();
         jw.endMethod();
@@ -4819,7 +4820,8 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     jw.write("return ");
                     jw.writeEol(JavaUtil.toObject(curProp.getReadMethod(true)+"(index)",
                                                   curProp.getType(),
-                                                  config.isForME()));
+                                                  config.isForME(),
+                                                  config.isJava5()));
                 }
 
                 public void postGenerate() throws IOException {}
@@ -4838,7 +4840,8 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     jw.write("return ");
                     jw.writeEol(JavaUtil.toObject(curProp.getReadMethod(false)+"()",
                                                   curProp.getType(),
-                                                  config.isForME()));
+                                                  config.isForME(),
+                                                  config.isJava5()));
                 }
             }.generate();
         jw.endMethod();
@@ -5101,12 +5104,12 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         if ("null".equals(oldValue))
             jw.write("null");
         else
-            jw.write(JavaUtil.toObject(oldValue, type, config.isForME()));
+            jw.write(JavaUtil.toObject(oldValue, type, config.isForME(), config.isJava5()));
         jw.write(", ");
         if ("null".equals(newValue))
             jw.write("null");
         else
-            jw.write(JavaUtil.toObject(newValue, type, config.isForME()));
+            jw.write(JavaUtil.toObject(newValue, type, config.isForME(), config.isJava5()));
         jw.write(")");
     }
 

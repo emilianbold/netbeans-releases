@@ -45,7 +45,8 @@
     schemaType=SchemaType.DTD,
     outputType=OutputType.JAVABEANS,
     // XXX commonInterface="...",
-    extendBaseBean=true
+    extendBaseBean=true,
+    java5=true
 )
 package org.netbeans.modules.j2ee.deployment.impl.gen.nbd;
 

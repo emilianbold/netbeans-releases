@@ -48,7 +48,8 @@
     useInterfaces=true,
     validate=true,
     attrProp=true,
-    removeUnreferencedNodes=true
+    removeUnreferencedNodes=true,
+    java5=true
 )
 package org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0;
 

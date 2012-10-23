@@ -46,14 +46,16 @@
         schemaType=SchemaType.DTD,
         mddFile="../../resources/tomcat5.mdd",
         outputType=OutputType.TRADITIONAL_BASEBEAN,
-        attrProp=true
+        attrProp=true,
+        java5=true
     ),
     @Schema2Beans(
         schema="../../resources/tomcat5_server.dtd",
         schemaType=SchemaType.DTD,
         mddFile="../../resources/tomcat5_server.mdd",
         outputType=OutputType.TRADITIONAL_BASEBEAN,
-        attrProp=true
+        attrProp=true,
+        java5=true
     )
 })
 package org.netbeans.modules.tomcat5.config.gen;
