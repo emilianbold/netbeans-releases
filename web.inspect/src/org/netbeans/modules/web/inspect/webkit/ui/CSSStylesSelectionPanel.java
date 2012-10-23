@@ -212,11 +212,14 @@ public class CSSStylesSelectionPanel extends JPanel {
                 RuleId id = rule.getId();
                 Lookup lookup = root.getLookup();
                 Rule otherRule = lookup.lookup(Rule.class);
-                if (otherRule != null && otherRule.getId().equals(id)) {
-                    try {
-                        rulePaneManager.setSelectedNodes(new Node[] { root });
-                    } catch (PropertyVetoException ex) {}
-                    return true;
+                if (otherRule != null) {
+                    RuleId otherId = otherRule.getId();
+                    if (otherId != null && otherId.equals(id)) {
+                        try {
+                            rulePaneManager.setSelectedNodes(new Node[] { root });
+                        } catch (PropertyVetoException ex) {}
+                        return true;
+                    }
                 }
                 for (Node subNode : root.getChildren().getNodes()) {
                     if (selectRule(rule, subNode)) {

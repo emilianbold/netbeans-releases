@@ -74,6 +74,8 @@ public class Rule {
     private List<Media> media;
     /** Parent stylesheet of the rule. */
     private StyleSheetBody parentStyleSheet;
+    /** JSON object this rule is based on. */
+    private JSONObject json;
 
     /**
      * Creates a new {@code Rule} that corresponds to the given JSONObject.
@@ -81,6 +83,7 @@ public class Rule {
      * @param rule JSONObject describing the rule.
      */
     Rule(JSONObject rule) {
+        this.json = rule;
         if (rule.containsKey("ruleId")) { // NOI18N
             id = new RuleId((JSONObject)rule.get("ruleId")); // NOI18N
         }
@@ -206,6 +209,11 @@ public class Rule {
      */
     void setParentStyleSheet(StyleSheetBody parentStyleSheet) {
         this.parentStyleSheet = parentStyleSheet;
+    }
+
+    @Override
+    public String toString() {
+        return json.toString();
     }
 
 }
