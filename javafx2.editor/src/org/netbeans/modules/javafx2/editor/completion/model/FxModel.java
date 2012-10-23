@@ -140,12 +140,28 @@ public final class FxModel extends FxNode {
         this.imports = Collections.unmodifiableList(decls);
     }
     
-    void setDefinitions(List<FxNewInstance> defs) {
-        Map<String, FxNewInstance> instances = new LinkedHashMap<String, FxNewInstance>();
-        for (FxNewInstance i : defs) {
-            instances.put(i.getId(), i);
+    void addDefinitions(Collection<FxNewInstance> defs) {
+        if (defs.isEmpty()) {
+            return;
         }
-        this.definitions = Collections.unmodifiableMap(instances);
+        Map<String, FxNewInstance> newInstances = new LinkedHashMap<String, FxNewInstance>(this.definitions.size() + defs.size());
+        newInstances.putAll(definitions);
+        addDefinitions(defs, newInstances);
+        this.definitions = Collections.unmodifiableMap(newInstances);
+    }
+    
+    private void addDefinitions(Collection<FxNewInstance> defs, Map<String, FxNewInstance> instances) {
+        for (FxNewInstance i : defs) {
+            if (i.getId() != null) {
+                instances.put(i.getId(), i);
+            }
+        }
+    }
+    
+    void setDefinitions(List<FxNewInstance> defs) {
+        Map<String, FxNewInstance> newInstances = new LinkedHashMap<String, FxNewInstance>(defs.size());
+        addDefinitions(defs, newInstances);
+        this.definitions = Collections.unmodifiableMap(newInstances);
     }
     
     void setRootComponent(FxObjectBase root) {
@@ -343,6 +359,11 @@ public final class FxModel extends FxNode {
         @Override
         public void setNamedInstances(FxModel model, Map<String, FxInstance> instances) {
             model.setNamedInstances(instances);
+        }
+        
+        @Override
+        public void addDefinitions(FxModel model, Collection<FxNewInstance> definitions) {
+            model.addDefinitions(definitions);
         }
 
         @Override
