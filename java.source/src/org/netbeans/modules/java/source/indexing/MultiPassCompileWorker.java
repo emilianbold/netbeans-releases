@@ -141,167 +141,190 @@ final class MultiPassCompileWorker extends CompileWorker {
                 //NOP - safe to ignore
             }
             try {
-                if (mem.isLowMemory()) {
-                    dumpSymFiles(fileManager, jt, previous.createdFiles);
-                    mem.isLowMemory();
-                    jt = null;
-                    diagnosticListener.cleanDiagnostics();
-                    if ((state & MEMORY_LOW) != 0) {
-                        break;
-                    } else {
-                        state |= MEMORY_LOW;
-                    }
-                    mem.free();
-                    continue;
-                }
-                if (active == null) {
-                    if (!toProcess.isEmpty()) {
-                        active = toProcess.removeFirst();
-                        if (active == null || previous.finishedFiles.contains(active.indexable))
-                            continue;
-                        isBigFile = false;
-                    } else {
-                        active = bigFiles.removeFirst();
-                        isBigFile = true;
-                    }
-                }
-                if (jt == null) {
-                    jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), diagnosticListener, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
-                        public @Override boolean isCanceled() {
-                            return context.isCancelled();
-                        }
-                    }, active.aptGenerated ? null : APTUtils.get(context.getRoot()));
-                    Iterable<? extends Processor> processors = jt.getProcessors();
-                    aptEnabled = processors != null && processors.iterator().hasNext();
-                    if (JavaIndex.LOG.isLoggable(Level.FINER)) {
-                        JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.getClasspathInfo().toString()); //NOI18N
-                    }
-                }
-                Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[]{active.jfo});
-                if (mem.isLowMemory()) {
-                    dumpSymFiles(fileManager, jt, previous.createdFiles);
-                    mem.isLowMemory();
-                    jt = null;
-                    diagnosticListener.cleanDiagnostics();
-                    trees = null;
-                    if ((state & MEMORY_LOW) != 0) {
-                        if (isBigFile) {
+                try {
+                    if (mem.isLowMemory()) {
+                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        mem.isLowMemory();
+                        jt = null;
+                        diagnosticListener.cleanDiagnostics();
+                        if ((state & MEMORY_LOW) != 0) {
                             break;
                         } else {
-                            bigFiles.add(active);
-                            active = null;
-                            state &= ~MEMORY_LOW;
+                            state |= MEMORY_LOW;
                         }
-                    } else {
-                        state |= MEMORY_LOW;
-                    }
-                    mem.free();
-                    continue;
-                }
-                Iterable<? extends TypeElement> types;
-                types = jt.enterTrees(trees);
-                if (jfo2tuples.remove(active.jfo) != null) {
-                    final Types ts = Types.instance(jt.getContext());
-                    final Indexable activeIndexable = active.indexable;
-                    class ScanNested extends TreeScanner {
-                        Set<CompileTuple> dependencies = new LinkedHashSet<CompileTuple>();
-                        @Override
-                        public void visitClassDef(JCClassDecl node) {
-                            if (node.sym != null) {
-                                Type st = ts.supertype(node.sym.type);
-                                if (st.tag == TypeTags.CLASS) {
-                                    ClassSymbol c = st.tsym.outermostClass();
-                                    CompileTuple u = jfo2tuples.get(c.sourcefile);
-                                    if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(activeIndexable)) {
-                                        dependencies.add(u);
-                                    }
-                                }
-                            }
-                            super.visitClassDef(node);
-                        }
-                    }
-                    ScanNested scanner = new ScanNested();
-                    for (CompilationUnitTree cut : trees) {
-                        scanner.scan((JCCompilationUnit)cut);
-                    }
-                    if (!scanner.dependencies.isEmpty()) {
-                        toProcess.addFirst(active);
-                        for (CompileTuple tuple : scanner.dependencies) {
-                            toProcess.addFirst(tuple);
-                        }
-                        active = null;
+                        mem.free();
                         continue;
                     }
-                }
-                if (mem.isLowMemory()) {
-                    dumpSymFiles(fileManager, jt, previous.createdFiles);
-                    mem.isLowMemory();
-                    jt = null;
-                    diagnosticListener.cleanDiagnostics();
-                    trees = null;
-                    types = null;
-                    if ((state & MEMORY_LOW) != 0) {
-                        if (isBigFile) {
-                            break;
+                    if (active == null) {
+                        if (!toProcess.isEmpty()) {
+                            active = toProcess.removeFirst();
+                            if (active == null || previous.finishedFiles.contains(active.indexable))
+                                continue;
+                            isBigFile = false;
                         } else {
-                            bigFiles.add(active);
-                            active = null;
-                            state &= ~MEMORY_LOW;
+                            active = bigFiles.removeFirst();
+                            isBigFile = true;
                         }
-                    } else {
-                        state |= MEMORY_LOW;
                     }
-                    mem.free();
-                    continue;
-                }
-                jt.analyze(types);
-                if (aptEnabled) {
-                    JavaCustomIndexer.addAptGenerated(context, javaContext, active, previous.aptGenerated);
-                }
-                if (mem.isLowMemory()) {
-                    dumpSymFiles(fileManager, jt, previous.createdFiles);
-                    mem.isLowMemory();
-                    jt = null;
-                    diagnosticListener.cleanDiagnostics();
-                    trees = null;
-                    types = null;
-                    if ((state & MEMORY_LOW) != 0) {
-                        if (isBigFile) {
-                            break;
+                    if (jt == null) {
+                        jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), diagnosticListener, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
+                            public @Override boolean isCanceled() {
+                                return context.isCancelled() || mem.isLowMemory();
+                            }
+                        }, active.aptGenerated ? null : APTUtils.get(context.getRoot()));
+                        Iterable<? extends Processor> processors = jt.getProcessors();
+                        aptEnabled = processors != null && processors.iterator().hasNext();
+                        if (JavaIndex.LOG.isLoggable(Level.FINER)) {
+                            JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.getClasspathInfo().toString()); //NOI18N
+                        }
+                    }
+                    Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[]{active.jfo});
+                    if (mem.isLowMemory()) {
+                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        mem.isLowMemory();
+                        jt = null;
+                        diagnosticListener.cleanDiagnostics();
+                        trees = null;
+                        if ((state & MEMORY_LOW) != 0) {
+                            if (isBigFile) {
+                                break;
+                            } else {
+                                bigFiles.add(active);
+                                active = null;
+                                state &= ~MEMORY_LOW;
+                            }
                         } else {
-                            bigFiles.add(active);
-                            active = null;
-                            state &= ~MEMORY_LOW;
+                            state |= MEMORY_LOW;
                         }
-                    } else {
-                        state |= MEMORY_LOW;
+                        mem.free();
+                        continue;
                     }
-                    mem.free();
-                    continue;
-                }
-                javaContext.getFQNs().set(types, active.indexable.getURL());
-                boolean[] main = new boolean[1];
-                if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                    javaContext.analyze(trees, jt, fileManager, active, previous.addedTypes, main);
-                } else {
-                    final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                    javaContext.analyze(trees, jt, fileManager, active, aTypes, main);
-                    previous.addedTypes.addAll(aTypes);
-                    previous.modifiedTypes.addAll(aTypes);
-                }
-                ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
-                for (JavaFileObject generated : jt.generate(types)) {
-                    if (generated instanceof FileObjects.FileBase) {
-                        previous.createdFiles.add(((FileObjects.FileBase) generated).getFile());
+                    Iterable<? extends TypeElement> types;
+                    types = jt.enterTrees(trees);
+                    if (jfo2tuples.remove(active.jfo) != null) {
+                        final Types ts = Types.instance(jt.getContext());
+                        final Indexable activeIndexable = active.indexable;
+                        class ScanNested extends TreeScanner {
+                            Set<CompileTuple> dependencies = new LinkedHashSet<CompileTuple>();
+                            @Override
+                            public void visitClassDef(JCClassDecl node) {
+                                if (node.sym != null) {
+                                    Type st = ts.supertype(node.sym.type);
+                                    if (st.tag == TypeTags.CLASS) {
+                                        ClassSymbol c = st.tsym.outermostClass();
+                                        CompileTuple u = jfo2tuples.get(c.sourcefile);
+                                        if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(activeIndexable)) {
+                                            dependencies.add(u);
+                                        }
+                                    }
+                                }
+                                super.visitClassDef(node);
+                            }
+                        }
+                        ScanNested scanner = new ScanNested();
+                        for (CompilationUnitTree cut : trees) {
+                            scanner.scan((JCCompilationUnit)cut);
+                        }
+                        if (!scanner.dependencies.isEmpty()) {
+                            toProcess.addFirst(active);
+                            for (CompileTuple tuple : scanner.dependencies) {
+                                toProcess.addFirst(tuple);
+                            }
+                            active = null;
+                            continue;
+                        }
+                    }
+                    if (mem.isLowMemory()) {
+                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        mem.isLowMemory();
+                        jt = null;
+                        diagnosticListener.cleanDiagnostics();
+                        trees = null;
+                        types = null;
+                        if ((state & MEMORY_LOW) != 0) {
+                            if (isBigFile) {
+                                break;
+                            } else {
+                                bigFiles.add(active);
+                                active = null;
+                                state &= ~MEMORY_LOW;
+                            }
+                        } else {
+                            state |= MEMORY_LOW;
+                        }
+                        mem.free();
+                        continue;
+                    }
+                    jt.analyze(types);
+                    if (aptEnabled) {
+                        JavaCustomIndexer.addAptGenerated(context, javaContext, active, previous.aptGenerated);
+                    }
+                    if (mem.isLowMemory()) {
+                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        mem.isLowMemory();
+                        jt = null;
+                        diagnosticListener.cleanDiagnostics();
+                        trees = null;
+                        types = null;
+                        if ((state & MEMORY_LOW) != 0) {
+                            if (isBigFile) {
+                                break;
+                            } else {
+                                bigFiles.add(active);
+                                active = null;
+                                state &= ~MEMORY_LOW;
+                            }
+                        } else {
+                            state |= MEMORY_LOW;
+                        }
+                        mem.free();
+                        continue;
+                    }
+                    javaContext.getFQNs().set(types, active.indexable.getURL());
+                    boolean[] main = new boolean[1];
+                    if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
+                        javaContext.analyze(trees, jt, fileManager, active, previous.addedTypes, main);
                     } else {
-                        // presumably should not happen
+                        final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
+                        javaContext.analyze(trees, jt, fileManager, active, aTypes, main);
+                        previous.addedTypes.addAll(aTypes);
+                        previous.modifiedTypes.addAll(aTypes);
+                    }
+                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
+                    for (JavaFileObject generated : jt.generate(types)) {
+                        if (generated instanceof FileObjects.FileBase) {
+                            previous.createdFiles.add(((FileObjects.FileBase) generated).getFile());
+                        } else {
+                            // presumably should not happen
+                        }
+                    }
+                    JavaCustomIndexer.setErrors(context, active, diagnosticListener);
+                    Log.instance(jt.getContext()).nerrors = 0;
+                    previous.finishedFiles.add(active.indexable);
+                    active = null;
+                    state  = 0;
+                } catch (CancelAbort ca) {
+                    if (mem.isLowMemory()) {
+                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        mem.isLowMemory();
+                        jt = null;
+                        diagnosticListener.cleanDiagnostics();
+                        if ((state & MEMORY_LOW) != 0) {
+                            if (isBigFile) {
+                                break;
+                            } else {
+                                bigFiles.add(active);
+                                active = null;
+                                state &= ~MEMORY_LOW;
+                            }
+                        } else {
+                            state |= MEMORY_LOW;
+                        }
+                        mem.free();
+                    } else if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                        JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
                     }
                 }
-                JavaCustomIndexer.setErrors(context, active, diagnosticListener);
-                Log.instance(jt.getContext()).nerrors = 0;
-                previous.finishedFiles.add(active.indexable);
-                active = null;
-                state  = 0;
             } catch (CouplingAbort ca) {
                 //Coupling error
                 TreeLoader.dumpCouplingAbort(ca, null);
@@ -350,10 +373,6 @@ final class MultiPassCompileWorker extends CompileWorker {
                 }
                 JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
                 return ParsingOutput.failure(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
-            } catch (CancelAbort ca) {
-                if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
-                    JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
-                }
             } catch (Throwable t) {
                 if (t instanceof ThreadDeath) {
                     throw (ThreadDeath) t;
