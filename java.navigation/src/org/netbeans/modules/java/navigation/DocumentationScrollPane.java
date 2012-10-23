@@ -144,7 +144,7 @@ public class DocumentationScrollPane extends JScrollPane {
 
     void clearContent(final FileObject owner) {
         assert SwingUtilities.isEventDispatchThread();
-        if (owner != null && owner.equals(currentFile.get())) {
+        if (owner != null && currentFile != null && owner.equals(currentFile.get())) {
             setData(null, true);
         }
     }
