@@ -58,6 +58,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -99,6 +100,7 @@ import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
 import org.openide.filesystems.FileObject;
@@ -602,9 +604,21 @@ public final class JPQLEditorTopComponent extends TopComponent {
             for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
                 String methodName = m.getName();
                 if (methodName.startsWith("get")) { //NOI18N
-                    if (!tableHeaders.contains(methodName)) {
-                        tableHeaders.add(m.getName().substring(3));
+                    String head = JpaControllerUtil.getPropNameFromMethod(methodName);
+                    try {
+                        oneObject.getClass().getDeclaredField(head);
+                        tableHeaders.add(head);
+                    } catch (Exception ex) {
+                        String head2 = null;
+                        for(Field f:oneObject.getClass().getDeclaredFields()){
+                            if(head.equalsIgnoreCase(f.getName())){
+                                head2 = head;
+                            }
+                        }
+                        head2 = head2 == null ? methodName.substring(3) : head2;
+                        tableHeaders.add(head2);
                     }
+                    
                 }
             }
         }
