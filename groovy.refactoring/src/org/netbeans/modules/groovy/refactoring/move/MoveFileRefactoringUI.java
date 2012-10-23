@@ -50,6 +50,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import static org.netbeans.modules.groovy.refactoring.move.Bundle.*;
 import org.netbeans.modules.groovy.refactoring.ui.MoveClassPanel;
+import org.netbeans.modules.groovy.refactoring.utils.IdentifiersUtil;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -65,14 +66,14 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Martin Janicek
  */
-public class MoveRefactoringUI  implements RefactoringUI, RefactoringUIBypass {
+public class MoveFileRefactoringUI  implements RefactoringUI, RefactoringUIBypass {
 
     private final AbstractRefactoring refactoring;
     private final FileObject fo;
     private MoveClassPanel panel;
 
 
-    public MoveRefactoringUI(RefactoringElement element) {
+    public MoveFileRefactoringUI(RefactoringElement element) {
         fo = element.getFileObject();
         Collection<Object> lookupContent = new ArrayList<Object>();
         lookupContent.add(element);
@@ -100,22 +101,12 @@ public class MoveRefactoringUI  implements RefactoringUI, RefactoringUIBypass {
     @Messages("LBL_MoveClassNamed=Move class {0}")
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            final String packageName = getPackageName(fo);
+            final String packageName = IdentifiersUtil.getPackageName(fo);
             final String sourceName = fo.getName();
 
             panel = new MoveClassPanel(packageName, LBL_MoveClassNamed(sourceName), fo);
         }
         return panel;
-    }
-
-    private static String getPackageName(final FileObject fo) {
-        final ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        if (cp == null) {
-            return ""; //NOI18N
-        }
-
-        final String fileName = cp.getResourceName(fo, '.', false); //NOI18N
-        return fileName.substring(0, fileName.lastIndexOf(".")); //NOI18N
     }
 
     @Override

@@ -53,9 +53,9 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Janicek
  */
-public class MoveRefactoringPlugin extends GroovyRefactoringPlugin {
+public class MoveFileRefactoringPlugin extends GroovyRefactoringPlugin {
 
-    public MoveRefactoringPlugin(FileObject fileObject, RefactoringElement element, AbstractRefactoring refactoring) {
+    public MoveFileRefactoringPlugin(FileObject fileObject, RefactoringElement element, AbstractRefactoring refactoring) {
         super(element, fileObject, refactoring);
     }
 
