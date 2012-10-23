@@ -48,7 +48,8 @@
         validate=true,
         attrProp=true,
         removeUnreferencedNodes=true,
-        docRoot="deployment-plan"
+        docRoot="deployment-plan",
+        java5=true
     ),
     @Schema2Beans(
         schema="../../resources/jdbc-data-source.xsd",
@@ -57,7 +58,8 @@
         validate=true,
         attrProp=true,
         removeUnreferencedNodes=true,
-        docRoot="jdbc-data-source"
+        docRoot="jdbc-data-source",
+        java5=true
     )
 })
 package org.netbeans.modules.j2ee.weblogic9.config.gen;

@@ -48,7 +48,8 @@
     docRoot="dummy",
 	useInterfaces=true,
 	validate=true,
-	attrProp=true
+	attrProp=true,
+        java5=true
 )
 package org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1;
 

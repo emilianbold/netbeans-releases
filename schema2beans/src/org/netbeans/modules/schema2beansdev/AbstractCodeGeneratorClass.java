@@ -968,7 +968,7 @@ public abstract class AbstractCodeGeneratorClass {
     protected void gentab(int n) {for(int i=0; i<n; i++) tabIn();}
     
     protected void genSetValue(boolean isScalar, String classType) {
-        gen(JavaUtil.toObject("value", classType, config.isForME()));
+        gen(JavaUtil.toObject("value", classType, config.isForME(), config.isJava5()));
         gen(")");
     }
 
@@ -2049,7 +2049,7 @@ public abstract class AbstractCodeGeneratorClass {
                         // So for the actual validation we need to convert the string to the
                         // restriction's type so that we can compare
                         jw.beginTry();
-                        typeAttr = "("+JavaUtil.genParseText(type, attr)+")";
+                        typeAttr = "("+JavaUtil.genParseText(type, attr, config.isJava5())+")";
                     }
                     dtr.genRestriction(jw, typeAttr, type, "restrictionFailure", false);
                     if (isUnion) {
