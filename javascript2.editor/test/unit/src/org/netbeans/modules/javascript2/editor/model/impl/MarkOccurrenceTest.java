@@ -407,6 +407,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue220102.js", "        role: da^ta.role,", true);
     }
 
+    public void testIssue218525_01() throws Exception {
+        checkOccurrences("testfiles/completion/general/issue218525.html", "<li style=\"cursor: pointer\" onclick=\"operator.r^emoveMe(this);\">Remove me (breakpoint on node removal + breakpoint on nonDOM line)</li>", true);
+    }
+
+    public void testIssue218525_02() throws Exception {
+        checkOccurrences("testfiles/completion/general/issue218525.html", "<li style=\"cursor: pointer\" onclick=\"ope^rator.removeMe(this);\">Remove me (breakpoint on node removal + breakpoint on nonDOM line)</li>", true);
+    }
+
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
