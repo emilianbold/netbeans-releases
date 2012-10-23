@@ -260,4 +260,15 @@ public final class ClientSideProjectUtilities {
         return Charset.defaultCharset();
     }
 
+    /**
+     * Splits paths like 'index.html#/path' into  'index.html' and '#/path'
+     */
+    public static String[] splitPathAndFragment(String url) {
+        int index = url.lastIndexOf('#');
+        if (index != -1) {
+            return new String[]{url.substring(0, index), url.substring(index)};
+        } else {
+            return new String[]{url,""};
+        }
+    }
 }
