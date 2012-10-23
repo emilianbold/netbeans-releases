@@ -61,6 +61,7 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties.ProjectServer;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -235,6 +236,8 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         if (startFile == null) {
             return null;
         }
+        // drop fragment from the path:
+        startFile = ClientSideProjectUtilities.splitPathAndFragment(startFile)[0];
         File directFile = new File(startFile);
         if (directFile.isAbsolute()) {
             return directFile;
