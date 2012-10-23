@@ -48,7 +48,8 @@
     docRoot="sun-ejb-jar",
     useInterfaces=true,
     validate=false,
-    attrProp=true
+    attrProp=true,
+    java5=true
 )
 package org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_1;
 

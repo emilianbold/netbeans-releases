@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -249,6 +250,8 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     @Override
     public FileObject urlToFileObject(String absoluteURL) {
+        DLightLibsCommonLogger.assertNonUiThread(Level.INFO);
+        
         String path = absoluteURL;
         File file;
         if (path.startsWith(FILE_PROTOCOL_PREFIX)) {

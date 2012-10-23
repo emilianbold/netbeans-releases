@@ -171,6 +171,45 @@ public class NPECheck {
         return null;
     }
     
+    @TriggerPattern("return $expression;")
+    public static ErrorDescription returnNull(HintContext ctx) {
+        TreePath expression = ctx.getVariables().get("$expression");
+        State returnState = computeExpressionsState(ctx.getInfo()).get(expression.getLeaf());
+
+        if (returnState == null) return null;
+
+        TreePath method = ctx.getPath();
+
+        while (method != null && method.getLeaf().getKind() != Kind.METHOD && method.getLeaf().getKind() != Kind.CLASS) {
+            method = method.getParentPath();
+        }
+
+        if (method == null || method.getLeaf().getKind() != Kind.METHOD) return null;
+
+        Element el = ctx.getInfo().getTrees().getElement(method);
+
+        if (el == null || el.getKind() != ElementKind.METHOD) return null;
+
+        State expected = getStateFromAnnotations(el);
+        String key = null;
+
+        switch (returnState) {
+            case NULL:
+                if (expected.isNotNull()) key = "ERR_ReturningNullFromNonNull";
+                break;
+            case POSSIBLE_NULL_REPORT:
+                if (expected.isNotNull()) key = "ERR_ReturningPossibleNullFromNonNull";
+                break;
+        }
+
+        if (key != null) {
+            String displayName = NbBundle.getMessage(NPECheck.class, key);
+            return ErrorDescriptionFactory.forName(ctx, expression, displayName);
+        }
+        
+        return null;
+    }
+    
     private static final Object KEY_EXPRESSION_STATE = new Object();
     //Cancelling:
     private static Map<Tree, State> computeExpressionsState(CompilationInfo info) {

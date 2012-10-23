@@ -48,7 +48,8 @@
     docRoot="glassfish-ejb-jar",
     useInterfaces=true,
     validate=false,
-    attrProp=true
+    attrProp=true,
+    java5=true
 )
 package org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_1;
 

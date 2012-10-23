@@ -444,7 +444,7 @@ public class TraceXRef extends TraceModel {
                 // if perf test => count all for statistics
                 bag.incrementScopeCounter(XRefResultSet.ContextScope.CHECK_POINT);
             }
-            if (entry != XRefResultSet.ContextEntry.RESOLVED) {
+            if (reportUnresolved || entry != XRefResultSet.ContextEntry.RESOLVED) {
                 bag.addEntry(XRefResultSet.ContextScope.UNRESOLVED, entry);
                 // in perf test no need to spend extra memory
                 if (reportUnresolved) {

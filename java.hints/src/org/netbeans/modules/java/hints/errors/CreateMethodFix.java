@@ -192,7 +192,7 @@ public final class CreateMethodFix implements Fix {
                     argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), nameIt.next(), make.Type(tm), null));
                 }
                 
-                BlockTree body = targetType.getKind().isClass() ? createDefaultMethodBody(working, targetTree, returnType) : null;
+                BlockTree body = targetType.getKind().isClass() ? createDefaultMethodBody(working, targetTree, returnType, name) : null;
                 
                 if(body != null && !body.getStatements().isEmpty()) {
                     working.tag(body.getStatements().get(0), methodBodyTag);
@@ -251,9 +251,9 @@ public final class CreateMethodFix implements Fix {
     }
     
     //XXX should be moved into the GeneratorUtils:
-    private static BlockTree createDefaultMethodBody(WorkingCopy wc, TreePath targetTree, TypeMirror returnType) {
+    private static BlockTree createDefaultMethodBody(WorkingCopy wc, TreePath targetTree, TypeMirror returnType, String name) {
         TreeUtilities tu = wc.getTreeUtilities();
-        StatementTree st = tu.parseStatement("{class ${abstract " + (returnType != null ? returnType.toString() : "void") + " $();}}", new SourcePositions[1]); //NOI18N
+        StatementTree st = tu.parseStatement("{class ${abstract " + (returnType != null ? returnType.toString() : "void") + " " + name + "();}}", new SourcePositions[1]); //NOI18N
         Trees trees = wc.getTrees();
         tu.attributeTree(st, trees.getScope(targetTree));
         ExecutableElement ee = (ExecutableElement) wc.getTrees().getElement(new TreePath(targetTree, ((ClassTree)((BlockTree)st).getStatements().get(0)).getMembers().get(1)));

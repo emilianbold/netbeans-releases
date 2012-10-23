@@ -57,7 +57,16 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
  * 
  * @author Martin Janicek
  */
-@ProjectServiceProvider(service = {RecommendedTemplates.class, PrivilegedTemplates.class}, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
+@org.netbeans.api.annotations.common.SuppressWarnings("EI_EXPOSE_REP")
+@ProjectServiceProvider(
+    service = {
+        RecommendedTemplates.class,
+        PrivilegedTemplates.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR
+    }
+)
 public class WebRecoPrivTemplates implements RecommendedTemplates, PrivilegedTemplates {
     
     private Project project;

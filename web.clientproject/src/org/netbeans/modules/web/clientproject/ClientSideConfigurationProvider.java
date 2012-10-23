@@ -59,6 +59,7 @@ import org.netbeans.modules.web.clientproject.browser.ClientProjectConfiguration
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformProvider;
+import org.netbeans.modules.web.clientproject.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -169,7 +170,7 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
 
     @Override
     public void customize() {
-        p.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer();
+        p.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
     }
 
     @Override

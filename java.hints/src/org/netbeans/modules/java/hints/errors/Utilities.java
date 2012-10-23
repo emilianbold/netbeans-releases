@@ -519,14 +519,15 @@ public class Utilities {
         TypeMirror orig = SourceUtils.resolveCapturedType(tm);
 
         if (orig != null) {
-            if (orig.getKind() == TypeKind.WILDCARD) {
-                TypeMirror extendsBound = ((WildcardType) orig).getExtendsBound();
-                TypeMirror rct = SourceUtils.resolveCapturedType(extendsBound != null ? extendsBound : ((WildcardType) orig).getSuperBound());
-                if (rct != null) {
-                    return rct;
-                }
+            tm = orig;
+        }
+        
+        if (tm.getKind() == TypeKind.WILDCARD) {
+            TypeMirror extendsBound = ((WildcardType) tm).getExtendsBound();
+            TypeMirror rct = resolveCapturedTypeInt(info, extendsBound != null ? extendsBound : ((WildcardType) tm).getSuperBound());
+            if (rct != null) {
+                return rct.getKind() == TypeKind.WILDCARD ? rct : info.getTypes().getWildcardType(extendsBound != null ? rct : null, extendsBound == null ? rct : null);
             }
-            return orig;
         }
         
         if (tm.getKind() == TypeKind.DECLARED) {

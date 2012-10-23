@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.maven.j2ee;
 
-import org.codehaus.plexus.util.StringUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.j2ee.core.Profile;
@@ -59,7 +59,6 @@ import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -121,19 +120,20 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
                         dep.setVersion(item.version);
                         dep.setScope(Artifact.SCOPE_PROVIDED); 
                         added[0] = Boolean.TRUE;
+
                         //TODO repository insertion once we define a non-central repo content
-                        if (item.repositoryurl != null) {
-                            String[] repo = StringUtils.split(item.repositoryurl, "|"); //NOI18N
-                            assert repo.length == 3;
-                            NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
-                            Repository repository = ModelUtils.addModelRepository(prj.getMavenProject(), model, repo[2]);
-                            if (repository != null) {
-                                repository.setId(repo[0]);
-                                repository.setLayout(repo[1]);
-                            }
-                        }
+//                        if (item.repositoryurl != null) {
+//                            String[] repo = StringUtils.split(item.repositoryurl, "|"); //NOI18N
+//                            assert repo.length == 3;
+//                            NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+//                            Repository repository = ModelUtils.addModelRepository(prj.getMavenProject(), model, repo[2]);
+//                            if (repository != null) {
+//                                repository.setId(repo[0]);
+//                                repository.setLayout(repo[1]);
+//                            }
+//                        }
                     } else {
-                        Logger.getLogger(ContainerCPModifierImpl.class.getName()).warning("Cannot process api with symbolic name: " + name + ". Nothing will be added to project's classpath.");
+                        Logger.getLogger(ContainerCPModifierImpl.class.getName()).log(Level.WARNING, "Cannot process api with symbolic name: {0}. Nothing will be added to project''s classpath.", name);
                     }
                 }
             }
@@ -311,7 +311,7 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         String groupId;
         String artifactId;
         String version;
-        String repositoryurl;
+//        String repositoryurl;
     }
 
 }

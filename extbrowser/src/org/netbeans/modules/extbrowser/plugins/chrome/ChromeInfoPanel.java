@@ -109,18 +109,26 @@ class ChromeInfoPanel extends javax.swing.JPanel {
                     URL url = e.getURL();
                     if (url.getProtocol().equals("file")) { // NOI18N
                         // first, try java api
-                        Desktop desktop = Desktop.getDesktop();
-                        if (desktop.isSupported(Desktop.Action.OPEN)) {
-                            try {
+                        try {
+                            Desktop desktop = Desktop.getDesktop();
+                            if (desktop.isSupported(Desktop.Action.OPEN)) {
                                 desktop.open(Utilities.toFile(url.toURI()));
-                            } catch (IOException ex) {
-                                LOGGER.log(Level.FINE, null, ex);
-                                openNativeFileManager(url);
-                            } catch (URISyntaxException ex) {
-                                LOGGER.log(Level.WARNING, null, ex);
+                            }
+                            else {
                                 openNativeFileManager(url);
                             }
-                        } else {
+                        }
+                        catch (IOException ex) {
+                            LOGGER.log(Level.FINE, null, ex);
+                            openNativeFileManager(url);
+                        }
+                        // Fix for BZ#218782 - UnsupportedOperationException: Desktop API is not supported on the current platform
+                        catch (UnsupportedOperationException ex) {
+                            LOGGER.log(Level.FINE, null, ex);
+                            openNativeFileManager(url);
+                        }
+                        catch (URISyntaxException ex) {
+                            LOGGER.log(Level.WARNING, null, ex);
                             openNativeFileManager(url);
                         }
                     } else {

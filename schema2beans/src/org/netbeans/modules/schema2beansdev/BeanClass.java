@@ -1173,10 +1173,15 @@ public class BeanClass extends AbstractCodeGeneratorClass implements CodeGenerat
                 if (isScalar || isCharArray) gen(")");
                 eol();
 		    
-                if (isWrapper && !isCharArray)
+                if (isWrapper && !isCharArray) {
                     gen("str.append((o==null?\"null\":o.toString()");
-                else
-                    gen("str.append((s==null?\"null\":s");
+                } else {
+                    if (isScalar && !isCharArray) {
+                        gen("str.append((s");
+                    } else {
+                        gen("str.append((s==null?\"null\":s");
+                    }
+                }
 		    
                 gen(".trim()))");
                 eolNoI18N();
