@@ -458,10 +458,12 @@ public final class CndFileUtils {
                 }
             }        
         } else {
-            FileObject file = fs.findResource(path);
+            FileObject file = fs.findResource(path);            
             if (file != null && file.isFolder() && file.canRead()) {
+                final char fileSeparatorChar = getFileSeparatorChar(fs);            
                 for (FileObject child : file.getChildren()) {
-                    String absPath = child.getPath();
+                    //we do concat as we need to index relative path not absolute ones
+                    String absPath = path + fileSeparatorChar + child.getNameExt();
                     if (child.isFolder()) {
                         files.putIfAbsent(absPath, Flags.DIRECTORY);
                     } else if (child.isData()) {
