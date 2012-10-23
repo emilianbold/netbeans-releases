@@ -355,11 +355,6 @@ made subject to such option by the copyright holder.
     </api>
    </li>
    <li>
-    <api name="schema2beans" type="import" group="java" category="stable">
-    Schema2beans infrastructure
-    </api>
-   </li>
-   <li>
     <api group="java" name="JavaSupportAPIs" type="import" category="official">
      <p>
       Definition of classpaths and various queries implemented by the project type.

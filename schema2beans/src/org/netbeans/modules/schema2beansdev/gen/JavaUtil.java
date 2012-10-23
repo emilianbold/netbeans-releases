@@ -62,7 +62,7 @@ public class JavaUtil {
      *   ('age', 'int') -> 'new java.lang.Integer(age)'
      *   ('age', 'Integer') -> 'age'
      */
-    static public String toObject(String expr, String classType) {
+    private static String toObject(String expr, String classType, boolean java5) {
         classType = classType.intern();
         if ("boolean" == classType)
             return "("+expr+" ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE)";
@@ -71,15 +71,19 @@ public class JavaUtil {
             if (objClass == null) {
                 return expr;
             }
-            return "new "+objClass+"("+expr+")";
+            if (java5) {
+                return objClass+".valueOf("+expr+")";
+            } else {
+                return "new "+objClass+"("+expr+")";
+            }
         }
     }
-    static public String toObject(String expr, String classType, boolean j2me) {
+    static public String toObject(String expr, String classType, boolean j2me, boolean java5) {
         if (j2me) {
             if ("boolean".equals(classType))
                 return "new java.lang.Boolean("+expr+")";
         }
-        return toObject(expr, classType);
+        return toObject(expr, classType, !j2me && java5);
     }
     
     static private Map toObjectType;
@@ -308,7 +312,8 @@ public class JavaUtil {
      */
     public static String compareTo(String value1, String type1, String value2) {
         type1 = type1.intern();
-        String value2Instance = genParseText(type1, value2);
+        // FIXME this should be fixed (Java5) as well
+        String value2Instance = genParseText(type1, value2, false);
         if (isPrimitiveType(type1)) {
             if ("\"0\"".equals(value2))
                 return value1;
@@ -334,11 +339,12 @@ public class JavaUtil {
         return compareTo(value1, type1, instanceFrom("java.lang.String", value2Text));
     }
 
-    public static String genParseText(String type, String expr, boolean j2me) {
-        if (j2me)
+    public static String genParseText(String type, String expr, boolean j2me, boolean java5) {
+        if (j2me) {
             return genParseTextME(type, expr);
-        else
-            return genParseText(type, expr);
+        } else {
+            return genParseText(type, expr, java5);
+        }
     }
 
     /**
@@ -348,7 +354,7 @@ public class JavaUtil {
      *   eg: ('java.lang.Integer', 'node.getNodeValue()')
      *        ->  'new java.lang.Integer(node.getNodeValue())'
      */
-    public static String genParseText(String type, String expr) {
+    public static String genParseText(String type, String expr, boolean java5) {
         if (type == null)
             return expr;
         type = type.intern();
@@ -360,13 +366,39 @@ public class JavaUtil {
             return "(\"true\".equalsIgnoreCase("+expr+") || \"1\".equals("+expr+"))";
             //return "java.lang.Boolean.valueOf("+expr+").booleanValue()";
         }
-        if (type == "java.lang.Boolean" || type == "Boolean")
-            return genParseText("boolean", expr)+"? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE";
-        if (type == "java.lang.Integer" || type == "Integer" || type == "java.lang.Long" || type == "Long" || type == "java.lang.Short" || type == "Short" || type == "java.lang.Float" || type == "Float" || type == "java.lang.Double" || type == "Double" || type == "java.lang.Byte" || type == "Byte" || type == "java.math.BigDecimal" || type == "BigDecimal" || type == "java.math.BigInteger" || type == "BigInteger" || type == "java.lang.StringBuffer" || type == "StringBuffer" || type == "java.text.MessageFormat" || type == "java.text.AttributedString" || type == "java.util.StringTokenizer" || type == "java.net.URI" || type == "javax.xml.namespace.QName" || type == "org.netbeans.modules.schema2beans.QName" || type == "java.io.File") {	// NOI18N
-            return "new "+type+"("+expr+")";	// NOI18N
+        if (type == "java.lang.Boolean" || type == "Boolean") // NOI18N
+            return genParseText("boolean", expr, java5)+"? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE"; // NOI18N
+        if (type == "java.lang.Integer" || type == "Integer" // NOI18N
+                || type == "java.lang.Long" || type == "Long" // NOI18N
+                || type == "java.lang.Short" || type == "Short" // NOI18N
+                || type == "java.lang.Float" || type == "Float" // NOI18N
+                || type == "java.lang.Double" || type == "Double" // NOI18N
+                || type == "java.lang.Byte" || type == "Byte") { // NOI18N
+            if (java5) {
+                return type+".valueOf("+expr+")";	// NOI18N
+            } else {
+                return "new "+type+"("+expr+")";	// NOI18N
+            }
         }
-        if (type == "java.lang.Character")
-            return "new java.lang.Character(("+expr+").charAt(0))";
+        if (type == "java.math.BigDecimal" || type == "BigDecimal" // NOI18N
+                || type == "java.math.BigInteger" || type == "BigInteger" // NOI18N
+                || type == "java.lang.StringBuffer" || type == "StringBuffer" // NOI18N
+                || type == "java.text.MessageFormat" // NOI18N
+                || type == "java.text.AttributedString" // NOI18N
+                || type == "java.util.StringTokenizer" // NOI18N
+                || type == "java.net.URI" // NOI18N
+                || type == "javax.xml.namespace.QName" // NOI18N
+                || type == "org.netbeans.modules.schema2beans.QName" // NOI18N
+                || type == "java.io.File") { // NOI18N
+            return "new "+type+"("+expr+")"; // NOI18N
+        }
+        if (type == "java.lang.Character") { // NOI18N
+            if (java5) {
+                return "java.lang.Character.valueOf(("+expr+").charAt(0))"; // NOI18N
+            } else {
+                return "new java.lang.Character(("+expr+").charAt(0))"; // NOI18N
+            }
+        }
         if (type == "char[]" || type == "char []")
             return "("+expr+").toCharArray()";
         if (type == "long")
@@ -455,12 +487,12 @@ public class JavaUtil {
      * and storing the value into @param var.
      * The value of @param expr should be a String.
      */
-    public static String genParseText(String type, String expr, String var) {
-        return genParseText(type, expr, var, false);
+    public static String genParseText(String type, String expr, String var, boolean java5) {
+        return genParseText(type, expr, var, false, java5);
     }
     
     public static String genParseText(String type, String expr, String var,
-                                      boolean j2me) {
+                                      boolean j2me, boolean java5) {
         if (type == null)
             return expr;
         type = type.intern();
@@ -477,7 +509,7 @@ public class JavaUtil {
         } else {
             out.append(var);
             out.append(" = ");
-            out.append(genParseText(type, expr, j2me));
+            out.append(genParseText(type, expr, j2me, java5));
             out.append(";");
         }
         return out.toString();

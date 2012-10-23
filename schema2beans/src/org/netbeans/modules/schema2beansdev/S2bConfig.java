@@ -106,6 +106,7 @@
  * 		readBeanGraphs <readBeanGraphs> : org.netbeans.modules.schema2beansdev.beangraph.BeanGraph[0,n]
  * 		minFeatures <minFeatures> : boolean[0,1] 	[Switch]
  * 		forME <forME> : boolean[0,1] 	[Switch]
+ * 		java5 <java5> : boolean[0,1] 	[Switch]
  * 		generateTagsFile <generateTagsFile> : boolean[0,1] 	[Switch]
  * 		codeGeneratorFactory <codeGeneratorFactory> : org.netbeans.modules.schema2beansdev.CodeGeneratorFactory[0,1]
  * 		generateTimeStamp <generateTimeStamp> : boolean 	[Switch]
@@ -188,6 +189,7 @@ public class S2bConfig {
 	public static final String READBEANGRAPHS = "ReadBeanGraphs";	// NOI18N
 	public static final String MINFEATURES = "MinFeatures";	// NOI18N
 	public static final String FORME = "ForME";	// NOI18N
+	public static final String JAVA5 = "Java5";	// NOI18N
 	public static final String GENERATETAGSFILE = "GenerateTagsFile";	// NOI18N
 	public static final String CODEGENERATORFACTORY = "CodeGeneratorFactory";	// NOI18N
 	public static final String GENERATETIMESTAMP = "GenerateTimeStamp";	// NOI18N
@@ -298,6 +300,8 @@ public class S2bConfig {
 	private boolean _isSet_MinFeatures = false;
 	private boolean _ForME;
 	private boolean _isSet_ForME = false;
+	private boolean _Java5;
+	private boolean _isSet_Java5 = false;
 	private boolean _GenerateTagsFile;
 	private boolean _isSet_GenerateTagsFile = false;
 	private org.netbeans.modules.schema2beansdev.CodeGeneratorFactory _CodeGeneratorFactory;
@@ -331,6 +335,7 @@ public class S2bConfig {
 	private boolean _LogSuspicious;
 	private boolean _isSet_LogSuspicious = false;
 	private java.lang.String schemaLocation;
+	private static final java.util.logging.Logger _logger = java.util.logging.Logger.getLogger("org.netbeans.modules.schema2beansdev.S2bConfig");
 
 	/**
 	 * Normal starting point constructor.
@@ -470,6 +475,8 @@ public class S2bConfig {
 		_isSet_MinFeatures = source._isSet_MinFeatures;
 		_ForME = source._ForME;
 		_isSet_ForME = source._isSet_ForME;
+		_Java5 = source._Java5;
+		_isSet_Java5 = source._isSet_Java5;
 		_GenerateTagsFile = source._GenerateTagsFile;
 		_isSet_GenerateTagsFile = source._isSet_GenerateTagsFile;
 		_CodeGeneratorFactory = source._CodeGeneratorFactory;
@@ -1131,6 +1138,16 @@ public class S2bConfig {
 
 	public boolean isForME() {
 		return _ForME;
+	}
+
+	// This attribute is optional
+	public void setJava5(boolean value) {
+		_Java5 = value;
+		_isSet_Java5 = true;
+	}
+
+	public boolean isJava5() {
+		return _Java5;
 	}
 
 	// This attribute is optional
@@ -1887,6 +1904,13 @@ public class S2bConfig {
 			out.write(_ForME ? "true" : "false");
 			out.write("</forME>\n");	// NOI18N
 		}
+		if (_isSet_Java5) {
+			out.write(nextIndent);
+			out.write("<java5");	// NOI18N
+			out.write(">");	// NOI18N
+			out.write(_Java5 ? "true" : "false");
+			out.write("</java5>\n");	// NOI18N
+		}
 		if (_isSet_GenerateTagsFile) {
 			out.write(nextIndent);
 			out.write("<generateTagsFile");	// NOI18N
@@ -2080,6 +2104,11 @@ public class S2bConfig {
 		readNode(document.getDocumentElement());
 	}
 
+	protected static class ReadState {
+		int lastElementType;
+		int elementPosition;
+	}
+
 	public void readNode(org.w3c.dom.Node node) {
 		readNode(node, new java.util.HashMap());
 	}
@@ -2132,429 +2161,450 @@ public class S2bConfig {
 		org.w3c.dom.NodeList children = node.getChildNodes();
 		for (int i = 0, size = children.getLength(); i < size; ++i) {
 			org.w3c.dom.Node childNode = children.item(i);
+			if (!(childNode instanceof org.w3c.dom.Element)) {
+				continue;
+			}
 			String childNodeName = (childNode.getLocalName() == null ? childNode.getNodeName().intern() : childNode.getLocalName().intern());
 			String childNodeValue = "";
 			if (childNode.getFirstChild() != null) {
 				childNodeValue = childNode.getFirstChild().getNodeValue();
 			}
-			if (childNodeName == "schemaType") {
-				_SchemaType = childNodeValue;
-			}
-			else if (childNodeName == "traceParse") {
-				if (childNode.getFirstChild() == null)
-					_TraceParse = true;
-				else
-					_TraceParse = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_TraceParse = true;
-			}
-			else if (childNodeName == "traceGen") {
-				if (childNode.getFirstChild() == null)
-					_TraceGen = true;
-				else
-					_TraceGen = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_TraceGen = true;
-			}
-			else if (childNodeName == "traceMisc") {
-				if (childNode.getFirstChild() == null)
-					_TraceMisc = true;
-				else
-					_TraceMisc = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_TraceMisc = true;
-			}
-			else if (childNodeName == "traceDot") {
-				if (childNode.getFirstChild() == null)
-					_TraceDot = true;
-				else
-					_TraceDot = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_TraceDot = true;
-			}
-			else if (childNodeName == "filename") {
-				_Filename = new java.io.File(childNodeValue);
-			}
-			else if (childNodeName == "fileIn") {
-				// Don't know how to create a java.io.InputStream
-			}
-			else if (childNodeName == "docRoot") {
-				_DocRoot = childNodeValue;
-			}
-			else if (childNodeName == "rootDir") {
-				_RootDir = new java.io.File(childNodeValue);
-			}
-			else if (childNodeName == "packagePath") {
-				_PackagePath = childNodeValue;
-			}
-			else if (childNodeName == "indent") {
-				_Indent = childNodeValue;
-			}
-			else if (childNodeName == "indentAmount") {
-				_IndentAmount = Integer.parseInt(childNodeValue);
-				_isSet_IndentAmount = true;
-			}
-			else if (childNodeName == "mddFile") {
-				_MddFile = new java.io.File(childNodeValue);
-			}
-			else if (childNodeName == "mddIn") {
-				// Don't know how to create a java.io.InputStream
-			}
-			else if (childNodeName == "metaDD") {
-				// Don't know how to create a org.netbeans.modules.schema2beansdev.metadd.MetaDD
-			}
-			else if (childNodeName == "doGeneration") {
-				if (childNode.getFirstChild() == null)
-					_DoGeneration = true;
-				else
-					_DoGeneration = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_DoGeneration = true;
-			}
-			else if (childNodeName == "scalarException") {
-				if (childNode.getFirstChild() == null)
-					_ScalarException = true;
-				else
-					_ScalarException = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_ScalarException = true;
-			}
-			else if (childNodeName == "dumpToString") {
-				if (childNode.getFirstChild() == null)
-					_DumpToString = true;
-				else
-					_DumpToString = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_DumpToString = true;
-			}
-			else if (childNodeName == "vetoable") {
-				if (childNode.getFirstChild() == null)
-					_Vetoable = true;
-				else
-					_Vetoable = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_Vetoable = true;
-			}
-			else if (childNodeName == "standalone") {
-				if (childNode.getFirstChild() == null)
-					_Standalone = true;
-				else
-					_Standalone = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_Standalone = true;
-			}
-			else if (childNodeName == "auto") {
-				if (childNode.getFirstChild() == null)
-					_Auto = true;
-				else
-					_Auto = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_Auto = true;
-			}
-			else if (childNodeName == "messageOut") {
-				// Don't know how to create a java.io.PrintStream
-			}
-			else if (childNodeName == "outputStreamProvider") {
-				// Don't know how to create a org.netbeans.modules.schema2beansdev.GenBeans.OutputStreamProvider
-			}
-			else if (childNodeName == "throwErrors") {
-				if (childNode.getFirstChild() == null)
-					_ThrowErrors = true;
-				else
-					_ThrowErrors = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_ThrowErrors = true;
-			}
-			else if (childNodeName == "generateXMLIO") {
-				if (childNode.getFirstChild() == null)
-					_GenerateXMLIO = true;
-				else
-					_GenerateXMLIO = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_GenerateXMLIO = true;
-			}
-			else if (childNodeName == "generateValidate") {
-				if (childNode.getFirstChild() == null)
-					_GenerateValidate = true;
-				else
-					_GenerateValidate = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_GenerateValidate = true;
-			}
-			else if (childNodeName == "generatePropertyEvents") {
-				if (childNode.getFirstChild() == null)
-					_GeneratePropertyEvents = true;
-				else
-					_GeneratePropertyEvents = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_GeneratePropertyEvents = true;
-			}
-			else if (childNodeName == "generateStoreEvents") {
-				if (childNode.getFirstChild() == null)
-					_GenerateStoreEvents = true;
-				else
-					_GenerateStoreEvents = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_GenerateStoreEvents = true;
-			}
-			else if (childNodeName == "generateTransactions") {
-				if (childNode.getFirstChild() == null)
-					_GenerateTransactions = true;
-				else
-					_GenerateTransactions = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_GenerateTransactions = true;
-			}
-			else if (childNodeName == "attributesAsProperties") {
-				if (childNode.getFirstChild() == null)
-					_AttributesAsProperties = true;
-				else
-					_AttributesAsProperties = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_AttributesAsProperties = true;
-			}
-			else if (childNodeName == "generateDelegator") {
-				if (childNode.getFirstChild() == null)
-					_GenerateDelegator = true;
-				else
-					_GenerateDelegator = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_GenerateDelegator = true;
-			}
-			else if (childNodeName == "delegateDir") {
-				_DelegateDir = new java.io.File(childNodeValue);
-			}
-			else if (childNodeName == "delegatePackage") {
-				_DelegatePackage = childNodeValue;
-			}
-			else if (childNodeName == "generateCommonInterface") {
-				_GenerateCommonInterface = childNodeValue;
-			}
-			else if (childNodeName == "defaultsAccessable") {
-				if (childNode.getFirstChild() == null)
-					_DefaultsAccessable = true;
-				else
-					_DefaultsAccessable = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_DefaultsAccessable = true;
-			}
-			else if (childNodeName == "useInterfaces") {
-				if (childNode.getFirstChild() == null)
-					_UseInterfaces = true;
-				else
-					_UseInterfaces = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_UseInterfaces = true;
-			}
-			else if (childNodeName == "generateInterfaces") {
-				if (childNode.getFirstChild() == null)
-					_GenerateInterfaces = true;
-				else
-					_GenerateInterfaces = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_GenerateInterfaces = true;
-			}
-			else if (childNodeName == "keepElementPositions") {
-				if (childNode.getFirstChild() == null)
-					_KeepElementPositions = true;
-				else
-					_KeepElementPositions = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_KeepElementPositions = true;
-			}
-			else if (childNodeName == "removeUnreferencedNodes") {
-				if (childNode.getFirstChild() == null)
-					_RemoveUnreferencedNodes = true;
-				else
-					_RemoveUnreferencedNodes = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_RemoveUnreferencedNodes = true;
-			}
-			else if (childNodeName == "inputURI") {
-				_InputURI = childNodeValue;
-			}
-			else if (childNodeName == "indexedPropertyType") {
-				_IndexedPropertyType = childNodeValue;
-			}
-			else if (childNodeName == "doCompile") {
-				if (childNode.getFirstChild() == null)
-					_DoCompile = true;
-				else
-					_DoCompile = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_DoCompile = true;
-			}
-			else if (childNodeName == "generateSwitches") {
-				if (childNode.getFirstChild() == null)
-					_GenerateSwitches = true;
-				else
-					_GenerateSwitches = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_GenerateSwitches = true;
-			}
-			else if (childNodeName == "dumpBeanTree") {
-				_DumpBeanTree = new java.io.File(childNodeValue);
-			}
-			else if (childNodeName == "generateDotGraph") {
-				_GenerateDotGraph = new java.io.File(childNodeValue);
-			}
-			else if (childNodeName == "processComments") {
-				if (childNode.getFirstChild() == null)
-					_ProcessComments = true;
-				else
-					_ProcessComments = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_ProcessComments = true;
-			}
-			else if (childNodeName == "processDocType") {
-				if (childNode.getFirstChild() == null)
-					_ProcessDocType = true;
-				else
-					_ProcessDocType = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_ProcessDocType = true;
-			}
-			else if (childNodeName == "checkUpToDate") {
-				if (childNode.getFirstChild() == null)
-					_CheckUpToDate = true;
-				else
-					_CheckUpToDate = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_CheckUpToDate = true;
-			}
-			else if (childNodeName == "generateParentRefs") {
-				if (childNode.getFirstChild() == null)
-					_GenerateParentRefs = true;
-				else
-					_GenerateParentRefs = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_GenerateParentRefs = true;
-			}
-			else if (childNodeName == "generateHasChanged") {
-				if (childNode.getFirstChild() == null)
-					_GenerateHasChanged = true;
-				else
-					_GenerateHasChanged = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_GenerateHasChanged = true;
-			}
-			else if (childNodeName == "newestSourceTime") {
-				_NewestSourceTime = Long.parseLong(childNodeValue);
-				_isSet_NewestSourceTime = true;
-			}
-			else if (childNodeName == "writeBeanGraphFile") {
-				_WriteBeanGraphFile = new java.io.File(childNodeValue);
-			}
-			else if (childNodeName == "readBeanGraphFiles") {
-				java.io.File aReadBeanGraphFiles;
-				aReadBeanGraphFiles = new java.io.File(childNodeValue);
-				_ReadBeanGraphFiles.add(aReadBeanGraphFiles);
-			}
-			else if (childNodeName == "readBeanGraphs") {
-				org.netbeans.modules.schema2beansdev.beangraph.BeanGraph aReadBeanGraphs;
-				// Don't know how to create a org.netbeans.modules.schema2beansdev.beangraph.BeanGraph
-			}
-			else if (childNodeName == "minFeatures") {
-				if (childNode.getFirstChild() == null)
-					_MinFeatures = true;
-				else
-					_MinFeatures = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_MinFeatures = true;
-			}
-			else if (childNodeName == "forME") {
-				if (childNode.getFirstChild() == null)
-					_ForME = true;
-				else
-					_ForME = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_ForME = true;
-			}
-			else if (childNodeName == "generateTagsFile") {
-				if (childNode.getFirstChild() == null)
-					_GenerateTagsFile = true;
-				else
-					_GenerateTagsFile = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_GenerateTagsFile = true;
-			}
-			else if (childNodeName == "codeGeneratorFactory") {
-				// Don't know how to create a org.netbeans.modules.schema2beansdev.CodeGeneratorFactory
-			}
-			else if (childNodeName == "generateTimeStamp") {
-				if (childNode.getFirstChild() == null)
-					_GenerateTimeStamp = true;
-				else
-					_GenerateTimeStamp = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_GenerateTimeStamp = true;
-			}
-			else if (childNodeName == "quiet") {
-				if (childNode.getFirstChild() == null)
-					_Quiet = true;
-				else
-					_Quiet = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_Quiet = true;
-			}
-			else if (childNodeName == "writeConfig") {
-				_WriteConfig = new java.io.File(childNodeValue);
-			}
-			else if (childNodeName == "readConfig") {
-				java.io.File aReadConfig;
-				aReadConfig = new java.io.File(childNodeValue);
-				_ReadConfig.add(aReadConfig);
-			}
-			else if (childNodeName == "makeDefaults") {
-				if (childNode.getFirstChild() == null)
-					_MakeDefaults = true;
-				else
-					_MakeDefaults = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_MakeDefaults = true;
-			}
-			else if (childNodeName == "setDefaults") {
-				if (childNode.getFirstChild() == null)
-					_SetDefaults = true;
-				else
-					_SetDefaults = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_SetDefaults = true;
-			}
-			else if (childNodeName == "trimNonStrings") {
-				if (childNode.getFirstChild() == null)
-					_TrimNonStrings = true;
-				else
-					_TrimNonStrings = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_TrimNonStrings = true;
-			}
-			else if (childNodeName == "useRuntime") {
-				if (childNode.getFirstChild() == null)
-					_UseRuntime = true;
-				else
-					_UseRuntime = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_UseRuntime = true;
-			}
-			else if (childNodeName == "extendBaseBean") {
-				if (childNode.getFirstChild() == null)
-					_ExtendBaseBean = true;
-				else
-					_ExtendBaseBean = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_ExtendBaseBean = true;
-			}
-			else if (childNodeName == "finder") {
-				java.lang.String aFinder;
-				aFinder = childNodeValue;
-				_Finder.add(aFinder);
-			}
-			else if (childNodeName == "target") {
-				_Target = childNodeValue;
-			}
-			else if (childNodeName == "staxProduceXMLEventReader") {
-				if (childNode.getFirstChild() == null)
-					_StaxProduceXMLEventReader = true;
-				else
-					_StaxProduceXMLEventReader = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_StaxProduceXMLEventReader = true;
-			}
-			else if (childNodeName == "staxUseXMLEventReader") {
-				if (childNode.getFirstChild() == null)
-					_StaxUseXMLEventReader = true;
-				else
-					_StaxUseXMLEventReader = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_StaxUseXMLEventReader = true;
-			}
-			else if (childNodeName == "optionalScalars") {
-				if (childNode.getFirstChild() == null)
-					_OptionalScalars = true;
-				else
-					_OptionalScalars = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_OptionalScalars = true;
-			}
-			else if (childNodeName == "defaultElementType") {
-				_DefaultElementType = childNodeValue;
-			}
-			else if (childNodeName == "respectExtension") {
-				if (childNode.getFirstChild() == null)
-					_RespectExtension = true;
-				else
-					_RespectExtension = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_RespectExtension = true;
-			}
-			else if (childNodeName == "logSuspicious") {
-				if (childNode.getFirstChild() == null)
-					_LogSuspicious = true;
-				else
-					_LogSuspicious = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_LogSuspicious = true;
-			}
-			else {
-				// Found extra unrecognized childNode
+			boolean recognized = readNodeChild(childNode, childNodeName, childNodeValue, namespacePrefixes);
+			if (!recognized) {
+				if (childNode instanceof org.w3c.dom.Element) {
+					_logger.info("Found extra unrecognized childNode '"+childNodeName+"'");
+				}
 			}
 		}
+	}
+
+	protected boolean readNodeChild(org.w3c.dom.Node childNode, String childNodeName, String childNodeValue, java.util.Map namespacePrefixes) {
+		// assert childNodeName == childNodeName.intern()
+		if (childNodeName == "schemaType") {
+			_SchemaType = childNodeValue;
+		}
+		else if (childNodeName == "traceParse") {
+			if (childNode.getFirstChild() == null)
+				_TraceParse = true;
+			else
+				_TraceParse = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_TraceParse = true;
+		}
+		else if (childNodeName == "traceGen") {
+			if (childNode.getFirstChild() == null)
+				_TraceGen = true;
+			else
+				_TraceGen = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_TraceGen = true;
+		}
+		else if (childNodeName == "traceMisc") {
+			if (childNode.getFirstChild() == null)
+				_TraceMisc = true;
+			else
+				_TraceMisc = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_TraceMisc = true;
+		}
+		else if (childNodeName == "traceDot") {
+			if (childNode.getFirstChild() == null)
+				_TraceDot = true;
+			else
+				_TraceDot = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_TraceDot = true;
+		}
+		else if (childNodeName == "filename") {
+			_Filename = new java.io.File(childNodeValue);
+		}
+		else if (childNodeName == "fileIn") {
+			// Don't know how to create a java.io.InputStream
+		}
+		else if (childNodeName == "docRoot") {
+			_DocRoot = childNodeValue;
+		}
+		else if (childNodeName == "rootDir") {
+			_RootDir = new java.io.File(childNodeValue);
+		}
+		else if (childNodeName == "packagePath") {
+			_PackagePath = childNodeValue;
+		}
+		else if (childNodeName == "indent") {
+			_Indent = childNodeValue;
+		}
+		else if (childNodeName == "indentAmount") {
+			_IndentAmount = Integer.parseInt(childNodeValue);
+			_isSet_IndentAmount = true;
+		}
+		else if (childNodeName == "mddFile") {
+			_MddFile = new java.io.File(childNodeValue);
+		}
+		else if (childNodeName == "mddIn") {
+			// Don't know how to create a java.io.InputStream
+		}
+		else if (childNodeName == "metaDD") {
+			// Don't know how to create a org.netbeans.modules.schema2beansdev.metadd.MetaDD
+		}
+		else if (childNodeName == "doGeneration") {
+			if (childNode.getFirstChild() == null)
+				_DoGeneration = true;
+			else
+				_DoGeneration = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_DoGeneration = true;
+		}
+		else if (childNodeName == "scalarException") {
+			if (childNode.getFirstChild() == null)
+				_ScalarException = true;
+			else
+				_ScalarException = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_ScalarException = true;
+		}
+		else if (childNodeName == "dumpToString") {
+			if (childNode.getFirstChild() == null)
+				_DumpToString = true;
+			else
+				_DumpToString = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_DumpToString = true;
+		}
+		else if (childNodeName == "vetoable") {
+			if (childNode.getFirstChild() == null)
+				_Vetoable = true;
+			else
+				_Vetoable = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_Vetoable = true;
+		}
+		else if (childNodeName == "standalone") {
+			if (childNode.getFirstChild() == null)
+				_Standalone = true;
+			else
+				_Standalone = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_Standalone = true;
+		}
+		else if (childNodeName == "auto") {
+			if (childNode.getFirstChild() == null)
+				_Auto = true;
+			else
+				_Auto = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_Auto = true;
+		}
+		else if (childNodeName == "messageOut") {
+			// Don't know how to create a java.io.PrintStream
+		}
+		else if (childNodeName == "outputStreamProvider") {
+			// Don't know how to create a org.netbeans.modules.schema2beansdev.GenBeans.OutputStreamProvider
+		}
+		else if (childNodeName == "throwErrors") {
+			if (childNode.getFirstChild() == null)
+				_ThrowErrors = true;
+			else
+				_ThrowErrors = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_ThrowErrors = true;
+		}
+		else if (childNodeName == "generateXMLIO") {
+			if (childNode.getFirstChild() == null)
+				_GenerateXMLIO = true;
+			else
+				_GenerateXMLIO = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_GenerateXMLIO = true;
+		}
+		else if (childNodeName == "generateValidate") {
+			if (childNode.getFirstChild() == null)
+				_GenerateValidate = true;
+			else
+				_GenerateValidate = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_GenerateValidate = true;
+		}
+		else if (childNodeName == "generatePropertyEvents") {
+			if (childNode.getFirstChild() == null)
+				_GeneratePropertyEvents = true;
+			else
+				_GeneratePropertyEvents = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_GeneratePropertyEvents = true;
+		}
+		else if (childNodeName == "generateStoreEvents") {
+			if (childNode.getFirstChild() == null)
+				_GenerateStoreEvents = true;
+			else
+				_GenerateStoreEvents = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_GenerateStoreEvents = true;
+		}
+		else if (childNodeName == "generateTransactions") {
+			if (childNode.getFirstChild() == null)
+				_GenerateTransactions = true;
+			else
+				_GenerateTransactions = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_GenerateTransactions = true;
+		}
+		else if (childNodeName == "attributesAsProperties") {
+			if (childNode.getFirstChild() == null)
+				_AttributesAsProperties = true;
+			else
+				_AttributesAsProperties = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_AttributesAsProperties = true;
+		}
+		else if (childNodeName == "generateDelegator") {
+			if (childNode.getFirstChild() == null)
+				_GenerateDelegator = true;
+			else
+				_GenerateDelegator = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_GenerateDelegator = true;
+		}
+		else if (childNodeName == "delegateDir") {
+			_DelegateDir = new java.io.File(childNodeValue);
+		}
+		else if (childNodeName == "delegatePackage") {
+			_DelegatePackage = childNodeValue;
+		}
+		else if (childNodeName == "generateCommonInterface") {
+			_GenerateCommonInterface = childNodeValue;
+		}
+		else if (childNodeName == "defaultsAccessable") {
+			if (childNode.getFirstChild() == null)
+				_DefaultsAccessable = true;
+			else
+				_DefaultsAccessable = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_DefaultsAccessable = true;
+		}
+		else if (childNodeName == "useInterfaces") {
+			if (childNode.getFirstChild() == null)
+				_UseInterfaces = true;
+			else
+				_UseInterfaces = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_UseInterfaces = true;
+		}
+		else if (childNodeName == "generateInterfaces") {
+			if (childNode.getFirstChild() == null)
+				_GenerateInterfaces = true;
+			else
+				_GenerateInterfaces = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_GenerateInterfaces = true;
+		}
+		else if (childNodeName == "keepElementPositions") {
+			if (childNode.getFirstChild() == null)
+				_KeepElementPositions = true;
+			else
+				_KeepElementPositions = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_KeepElementPositions = true;
+		}
+		else if (childNodeName == "removeUnreferencedNodes") {
+			if (childNode.getFirstChild() == null)
+				_RemoveUnreferencedNodes = true;
+			else
+				_RemoveUnreferencedNodes = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_RemoveUnreferencedNodes = true;
+		}
+		else if (childNodeName == "inputURI") {
+			_InputURI = childNodeValue;
+		}
+		else if (childNodeName == "indexedPropertyType") {
+			_IndexedPropertyType = childNodeValue;
+		}
+		else if (childNodeName == "doCompile") {
+			if (childNode.getFirstChild() == null)
+				_DoCompile = true;
+			else
+				_DoCompile = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_DoCompile = true;
+		}
+		else if (childNodeName == "generateSwitches") {
+			if (childNode.getFirstChild() == null)
+				_GenerateSwitches = true;
+			else
+				_GenerateSwitches = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_GenerateSwitches = true;
+		}
+		else if (childNodeName == "dumpBeanTree") {
+			_DumpBeanTree = new java.io.File(childNodeValue);
+		}
+		else if (childNodeName == "generateDotGraph") {
+			_GenerateDotGraph = new java.io.File(childNodeValue);
+		}
+		else if (childNodeName == "processComments") {
+			if (childNode.getFirstChild() == null)
+				_ProcessComments = true;
+			else
+				_ProcessComments = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_ProcessComments = true;
+		}
+		else if (childNodeName == "processDocType") {
+			if (childNode.getFirstChild() == null)
+				_ProcessDocType = true;
+			else
+				_ProcessDocType = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_ProcessDocType = true;
+		}
+		else if (childNodeName == "checkUpToDate") {
+			if (childNode.getFirstChild() == null)
+				_CheckUpToDate = true;
+			else
+				_CheckUpToDate = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_CheckUpToDate = true;
+		}
+		else if (childNodeName == "generateParentRefs") {
+			if (childNode.getFirstChild() == null)
+				_GenerateParentRefs = true;
+			else
+				_GenerateParentRefs = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_GenerateParentRefs = true;
+		}
+		else if (childNodeName == "generateHasChanged") {
+			if (childNode.getFirstChild() == null)
+				_GenerateHasChanged = true;
+			else
+				_GenerateHasChanged = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_GenerateHasChanged = true;
+		}
+		else if (childNodeName == "newestSourceTime") {
+			_NewestSourceTime = Long.parseLong(childNodeValue);
+			_isSet_NewestSourceTime = true;
+		}
+		else if (childNodeName == "writeBeanGraphFile") {
+			_WriteBeanGraphFile = new java.io.File(childNodeValue);
+		}
+		else if (childNodeName == "readBeanGraphFiles") {
+			java.io.File aReadBeanGraphFiles;
+			aReadBeanGraphFiles = new java.io.File(childNodeValue);
+			_ReadBeanGraphFiles.add(aReadBeanGraphFiles);
+		}
+		else if (childNodeName == "readBeanGraphs") {
+			org.netbeans.modules.schema2beansdev.beangraph.BeanGraph aReadBeanGraphs;
+			// Don't know how to create a org.netbeans.modules.schema2beansdev.beangraph.BeanGraph
+		}
+		else if (childNodeName == "minFeatures") {
+			if (childNode.getFirstChild() == null)
+				_MinFeatures = true;
+			else
+				_MinFeatures = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_MinFeatures = true;
+		}
+		else if (childNodeName == "forME") {
+			if (childNode.getFirstChild() == null)
+				_ForME = true;
+			else
+				_ForME = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_ForME = true;
+		}
+		else if (childNodeName == "java5") {
+			if (childNode.getFirstChild() == null)
+				_Java5 = true;
+			else
+				_Java5 = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_Java5 = true;
+		}
+		else if (childNodeName == "generateTagsFile") {
+			if (childNode.getFirstChild() == null)
+				_GenerateTagsFile = true;
+			else
+				_GenerateTagsFile = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_GenerateTagsFile = true;
+		}
+		else if (childNodeName == "codeGeneratorFactory") {
+			// Don't know how to create a org.netbeans.modules.schema2beansdev.CodeGeneratorFactory
+		}
+		else if (childNodeName == "generateTimeStamp") {
+			if (childNode.getFirstChild() == null)
+				_GenerateTimeStamp = true;
+			else
+				_GenerateTimeStamp = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_GenerateTimeStamp = true;
+		}
+		else if (childNodeName == "quiet") {
+			if (childNode.getFirstChild() == null)
+				_Quiet = true;
+			else
+				_Quiet = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_Quiet = true;
+		}
+		else if (childNodeName == "writeConfig") {
+			_WriteConfig = new java.io.File(childNodeValue);
+		}
+		else if (childNodeName == "readConfig") {
+			java.io.File aReadConfig;
+			aReadConfig = new java.io.File(childNodeValue);
+			_ReadConfig.add(aReadConfig);
+		}
+		else if (childNodeName == "makeDefaults") {
+			if (childNode.getFirstChild() == null)
+				_MakeDefaults = true;
+			else
+				_MakeDefaults = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_MakeDefaults = true;
+		}
+		else if (childNodeName == "setDefaults") {
+			if (childNode.getFirstChild() == null)
+				_SetDefaults = true;
+			else
+				_SetDefaults = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_SetDefaults = true;
+		}
+		else if (childNodeName == "trimNonStrings") {
+			if (childNode.getFirstChild() == null)
+				_TrimNonStrings = true;
+			else
+				_TrimNonStrings = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_TrimNonStrings = true;
+		}
+		else if (childNodeName == "useRuntime") {
+			if (childNode.getFirstChild() == null)
+				_UseRuntime = true;
+			else
+				_UseRuntime = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_UseRuntime = true;
+		}
+		else if (childNodeName == "extendBaseBean") {
+			if (childNode.getFirstChild() == null)
+				_ExtendBaseBean = true;
+			else
+				_ExtendBaseBean = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_ExtendBaseBean = true;
+		}
+		else if (childNodeName == "finder") {
+			java.lang.String aFinder;
+			aFinder = childNodeValue;
+			_Finder.add(aFinder);
+		}
+		else if (childNodeName == "target") {
+			_Target = childNodeValue;
+		}
+		else if (childNodeName == "staxProduceXMLEventReader") {
+			if (childNode.getFirstChild() == null)
+				_StaxProduceXMLEventReader = true;
+			else
+				_StaxProduceXMLEventReader = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_StaxProduceXMLEventReader = true;
+		}
+		else if (childNodeName == "staxUseXMLEventReader") {
+			if (childNode.getFirstChild() == null)
+				_StaxUseXMLEventReader = true;
+			else
+				_StaxUseXMLEventReader = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_StaxUseXMLEventReader = true;
+		}
+		else if (childNodeName == "optionalScalars") {
+			if (childNode.getFirstChild() == null)
+				_OptionalScalars = true;
+			else
+				_OptionalScalars = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_OptionalScalars = true;
+		}
+		else if (childNodeName == "defaultElementType") {
+			_DefaultElementType = childNodeValue;
+		}
+		else if (childNodeName == "respectExtension") {
+			if (childNode.getFirstChild() == null)
+				_RespectExtension = true;
+			else
+				_RespectExtension = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_RespectExtension = true;
+		}
+		else if (childNodeName == "logSuspicious") {
+			if (childNode.getFirstChild() == null)
+				_LogSuspicious = true;
+			else
+				_LogSuspicious = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_LogSuspicious = true;
+		}
+		else {
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -2699,6 +2749,7 @@ public class S2bConfig {
 		// Validating property readBeanGraphs
 		// Validating property minFeatures
 		// Validating property forME
+		// Validating property java5
 		// Validating property generateTagsFile
 		// Validating property codeGeneratorFactory
 		// Validating property generateTimeStamp
@@ -3030,6 +3081,14 @@ public class S2bConfig {
 				setForME(false);
 				continue;
 			}
+			if (arg == "-java5") {
+				setJava5(true);
+				continue;
+			}
+			if (arg == "-nojava5") {
+				setJava5(false);
+				continue;
+			}
 			if (arg == "-tagsfile") {
 				setGenerateTagsFile(true);
 				continue;
@@ -3195,8 +3254,8 @@ public class S2bConfig {
 	}
 
 	public void showHelp(java.io.PrintStream out) {
-		out.println(" [-f filename] [-d docRoot] [-r filename] [-p packagePath] [-sp indentAmount]\n [-mdd filename] [-noe] [-nonoe] [-ts] [-nots] [-veto] [-noveto]\n [-st] [-nost] [-auto] [-noauto] [-throw] [-nothrow] [-validate] [-novalidate]\n [-propertyEvents] [-nopropertyEvents] [-transactions] [-notransactions]\n [-attrProp] [-noattrProp] [-delegator] [-nodelegator] [-delegateDir filename]\n [-delegatePackage delegatePackage] [-commonInterfaceName generateCommonInterface]\n [-defaultsAccessable] [-nodefaultsAccessable] [-useInterfaces] [-nouseInterfaces]\n [-genInterfaces] [-nogenInterfaces] [-keepElementPositions] [-nokeepElementPositions]\n [-removeUnreferencedNodes] [-noremoveUnreferencedNodes] [-indexedPropertyType indexedPropertyType]\n [-compile] [-nocompile] [-generateSwitches] [-nogenerateSwitches]\n [-dumpBeanTree filename] [-genDotGraph filename] [-comments] [-nocomments]\n [-docType] [-nodocType] [-checkUpToDate] [-nocheckUpToDate] [-hasChanged] [-nohasChanged]\n [-writeBeanGraph filename] [-readBeanGraph filename] [-min] [-nomin]\n [-forME] [-noforME] [-tagsFile] [-notagsFile] [-generateTimeStamp] [-nogenerateTimeStamp]\n [-quiet] [-noquiet] [-writeConfig filename] [-readConfig filename]\n [-makeDefaults] [-nomakeDefaults] [-setDefaults] [-nosetDefaults]\n [-trimNonStrings] [-notrimNonStrings] [-useRuntime] [-nouseRuntime]\n [-extendBaseBean] [-noextendBaseBean] [-finder finder] [-target target]\n [-staxProduceXMLEventReader] [-nostaxProduceXMLEventReader] [-staxUseXMLEventReader] [-nostaxUseXMLEventReader]\n [-optionalScalars] [-nooptionalScalars] [-defaultElementType defaultElementType]\n [-respectExtension] [-norespectExtension] [-logSuspicious] [-nologSuspicious]\n");
-		out.print(" -f\tfile name of the schema\n -d\tDTD root element name (for example webapp or ejb-jar)\n -r\tbase root directory (root of the package path)\n -p\tpackage name\n -sp\tset the indentation to use 'number' spaces instead of the default tab (\\t) value\n -mdd\tprovides extra information that the schema cannot provide. If the file doesn't exist, a skeleton file is created and no bean generation happens.\n -noe\tdo not throw the NoSuchElement exception when a scalar property has no value, return a default '0' value instead (BaseBean only).\n -ts\tthe toString() of the bean returns the full content\\n  of the bean sub-tree instead of its simple name.\n -veto\tgenerate vetoable properties (only for non-bean properties).\n -st\tstandalone mode - do not generate NetBeans dependencies\n -auto\tDon't ask the user any questions.\n -throw\tgenerate code that prefers to pass exceptions\\n  through instead of converting them to RuntimeException (recommended).\n -validate\tGenerate a validate method for doing validation.\n -propertyEvents\tGenerate methods for dealing with property events (always on for BaseBean type).\n -transactions\texperimental feature\n -attrProp\tAttributes become like any other property\n -delegator\tGenerate a delegator class for every bean generated.\n -delegateDir\tThe base directory to write every delegate into.\n -delegatePackage\tThe package to use for the delegates.\n -commonInterfaceName\tName the common interface between all beans.\n -defaultsAccessable\tGenerate methods to be able to get at default values.\n -useInterfaces\tGetters and setters signatures would use the first defined interface on the bean.\n -genInterfaces\tFor every bean generated, generate an interfaces for it's accessors.\n -keepElementPositions\tKeep track of the positions of elements (no BaseBean support).\n -removeUnreferencedNodes\tDo not generate unreferenced nodes from the bean graph.\n -indexedPropertyType\tThe name of the class to use for indexed properties.\n -compile\tCompile all generated classes using javac.\n -generateSwitches\tGenerate parseArguments()\n -dumpBeanTree\tWrite out the bean tree to filename.\n -genDotGraph\tGenerate a .dot style file for use with GraphViz (http://www.graphviz.org/).\n -comments\tProcess and keep comments (always on for BaseBean type).\n -docType\tProcess and keep Document Types (always on for BaseBean type).\"\n -checkUpToDate\tOnly do generation if the source files are newer than the to be generated files.\n -hasChanged\tKeep track of whether or not the beans have changed.\n -writeBeanGraph\tWrite out a beangraph XML file.  Useful for connecting separate bean graphs.\n -readBeanGraph\tRead in and use the results of another bean graph.\n -min\tGenerate the minimum Java Beans.  Reduce features in favor of reduced class file size.\n -forME\tGenerate code for use on J2ME.\n -tagsFile\tGenerate a class that has all schema element and attribute names\n -generateTimeStamp\tOutput a born on date into generated files.\n -quiet\tDon't be as verbose.\n -writeConfig\tWrite out Config as a file; this includes all command line switches.  Useful for seeing what switches are set, and for reloading a bunch of switches with -readConfig.\n -readConfig\tRead in Config file.  See -writeConfig.\n -makeDefaults\tMake properties that require a value have a default value even if the schema didn't say it had a default (defaults to true).\n -setDefaults\tFill in defaults.\n -trimNonStrings\tTrim non strings while reading XML.\n -useRuntime\tMake use of the schema2beans runtime (always on for BaseBean type).\n -extendBaseBean\tMake every bean extend BaseBean (always on for BaseBean type).  For those who like -javabean's better performance, but can't seem to get away from BaseBean.\n -finder\tAdd a finder method.  Format: \"on {start} find {selector} by {key}\".  Example: \"on /ejb-jar/enterprise-beans find session by ejb-name\".\n -target\tTarget JDK to generate for.\n -staxProduceXMLEventReader\tProduce a StAX XMLEventReader to read the beans as if they were XML.\n -staxUseXMLEventReader\tUse an StAX XMLEventReader for reading the beans.\n -optionalScalars\tWhether or not scalars can be optional.  Default: false.  Recommended: true.\n -defaultElementType\tWhen a type cannot be figured out, use this type.  Default: \"{http://www.w3.org/2001/XMLSchema}boolean\".\n -respectExtension\tTake advantage of when an extension is defined in the schema.\n -logSuspicious\tLog suspicious things.\n");
+		out.println(" [-f filename] [-d docRoot] [-r filename] [-p packagePath] [-sp indentAmount]\n [-mdd filename] [-noe] [-nonoe] [-ts] [-nots] [-veto] [-noveto]\n [-st] [-nost] [-auto] [-noauto] [-throw] [-nothrow] [-validate] [-novalidate]\n [-propertyEvents] [-nopropertyEvents] [-transactions] [-notransactions]\n [-attrProp] [-noattrProp] [-delegator] [-nodelegator] [-delegateDir filename]\n [-delegatePackage delegatePackage] [-commonInterfaceName generateCommonInterface]\n [-defaultsAccessable] [-nodefaultsAccessable] [-useInterfaces] [-nouseInterfaces]\n [-genInterfaces] [-nogenInterfaces] [-keepElementPositions] [-nokeepElementPositions]\n [-removeUnreferencedNodes] [-noremoveUnreferencedNodes] [-indexedPropertyType indexedPropertyType]\n [-compile] [-nocompile] [-generateSwitches] [-nogenerateSwitches]\n [-dumpBeanTree filename] [-genDotGraph filename] [-comments] [-nocomments]\n [-docType] [-nodocType] [-checkUpToDate] [-nocheckUpToDate] [-hasChanged] [-nohasChanged]\n [-writeBeanGraph filename] [-readBeanGraph filename] [-min] [-nomin]\n [-forME] [-noforME] [-java5] [-nojava5] [-tagsFile] [-notagsFile]\n [-generateTimeStamp] [-nogenerateTimeStamp] [-quiet] [-noquiet]\n [-writeConfig filename] [-readConfig filename] [-makeDefaults] [-nomakeDefaults]\n [-setDefaults] [-nosetDefaults] [-trimNonStrings] [-notrimNonStrings]\n [-useRuntime] [-nouseRuntime] [-extendBaseBean] [-noextendBaseBean]\n [-finder finder] [-target target] [-staxProduceXMLEventReader] [-nostaxProduceXMLEventReader]\n [-staxUseXMLEventReader] [-nostaxUseXMLEventReader] [-optionalScalars] [-nooptionalScalars]\n [-defaultElementType defaultElementType] [-respectExtension] [-norespectExtension]\n [-logSuspicious] [-nologSuspicious]\n");
+		out.print(" -f\tfile name of the schema\n -d\tDTD root element name (for example webapp or ejb-jar)\n -r\tbase root directory (root of the package path)\n -p\tpackage name\n -sp\tset the indentation to use 'number' spaces instead of the default tab (\\t) value\n -mdd\tprovides extra information that the schema cannot provide. If the file doesn't exist, a skeleton file is created and no bean generation happens.\n -noe\tdo not throw the NoSuchElement exception when a scalar property has no value, return a default '0' value instead (BaseBean only).\n -ts\tthe toString() of the bean returns the full content\\n  of the bean sub-tree instead of its simple name.\n -veto\tgenerate vetoable properties (only for non-bean properties).\n -st\tstandalone mode - do not generate NetBeans dependencies\n -auto\tDon't ask the user any questions.\n -throw\tgenerate code that prefers to pass exceptions\\n  through instead of converting them to RuntimeException (recommended).\n -validate\tGenerate a validate method for doing validation.\n -propertyEvents\tGenerate methods for dealing with property events (always on for BaseBean type).\n -transactions\texperimental feature\n -attrProp\tAttributes become like any other property\n -delegator\tGenerate a delegator class for every bean generated.\n -delegateDir\tThe base directory to write every delegate into.\n -delegatePackage\tThe package to use for the delegates.\n -commonInterfaceName\tName the common interface between all beans.\n -defaultsAccessable\tGenerate methods to be able to get at default values.\n -useInterfaces\tGetters and setters signatures would use the first defined interface on the bean.\n -genInterfaces\tFor every bean generated, generate an interfaces for it's accessors.\n -keepElementPositions\tKeep track of the positions of elements (no BaseBean support).\n -removeUnreferencedNodes\tDo not generate unreferenced nodes from the bean graph.\n -indexedPropertyType\tThe name of the class to use for indexed properties.\n -compile\tCompile all generated classes using javac.\n -generateSwitches\tGenerate parseArguments()\n -dumpBeanTree\tWrite out the bean tree to filename.\n -genDotGraph\tGenerate a .dot style file for use with GraphViz (http://www.graphviz.org/).\n -comments\tProcess and keep comments (always on for BaseBean type).\n -docType\tProcess and keep Document Types (always on for BaseBean type).\"\n -checkUpToDate\tOnly do generation if the source files are newer than the to be generated files.\n -hasChanged\tKeep track of whether or not the beans have changed.\n -writeBeanGraph\tWrite out a beangraph XML file.  Useful for connecting separate bean graphs.\n -readBeanGraph\tRead in and use the results of another bean graph.\n -min\tGenerate the minimum Java Beans.  Reduce features in favor of reduced class file size.\n -forME\tGenerate code for use on J2ME.\n -java5\tGenerate code for use on Java 5 and newer.\n -tagsFile\tGenerate a class that has all schema element and attribute names\n -generateTimeStamp\tOutput a born on date into generated files.\n -quiet\tDon't be as verbose.\n -writeConfig\tWrite out Config as a file; this includes all command line switches.  Useful for seeing what switches are set, and for reloading a bunch of switches with -readConfig.\n -readConfig\tRead in Config file.  See -writeConfig.\n -makeDefaults\tMake properties that require a value have a default value even if the schema didn't say it had a default (defaults to true).\n -setDefaults\tFill in defaults.\n -trimNonStrings\tTrim non strings while reading XML.\n -useRuntime\tMake use of the schema2beans runtime (always on for BaseBean type).\n -extendBaseBean\tMake every bean extend BaseBean (always on for BaseBean type).  For those who like -javabean's better performance, but can't seem to get away from BaseBean.\n -finder\tAdd a finder method.  Format: \"on {start} find {selector} by {key}\".  Example: \"on /ejb-jar/enterprise-beans find session by ejb-name\".\n -target\tTarget JDK to generate for.\n -staxProduceXMLEventReader\tProduce a StAX XMLEventReader to read the beans as if they were XML.\n -staxUseXMLEventReader\tUse an StAX XMLEventReader for reading the beans.\n -optionalScalars\tWhether or not scalars can be optional.  Default: false.  Recommended: true.\n -defaultElementType\tWhen a type cannot be figured out, use this type.  Default: \"{http://www.w3.org/2001/XMLSchema}boolean\".\n -respectExtension\tTake advantage of when an extension is defined in the schema.\n -logSuspicious\tLog suspicious things.\n");
 	}
 
 	public void changePropertyByName(String name, Object value) {
@@ -3318,6 +3377,8 @@ public class S2bConfig {
 			setMinFeatures(((java.lang.Boolean)value).booleanValue());
 		else if (name == "forME")
 			setForME(((java.lang.Boolean)value).booleanValue());
+		else if (name == "java5")
+			setJava5(((java.lang.Boolean)value).booleanValue());
 		else if (name == "generateTagsFile")
 			setGenerateTagsFile(((java.lang.Boolean)value).booleanValue());
 		else if (name == "codeGeneratorFactory")
@@ -3477,6 +3538,8 @@ public class S2bConfig {
 			return (isMinFeatures() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
 		if (name == "forME")
 			return (isForME() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
+		if (name == "java5")
+			return (isJava5() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
 		if (name == "generateTagsFile")
 			return (isGenerateTagsFile() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
 		if (name == "codeGeneratorFactory")
@@ -3541,136 +3604,6 @@ public class S2bConfig {
 	 * @return null if not found
 	 */
 	public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName) {
-		if (childObj instanceof java.lang.String) {
-			java.lang.String child = (java.lang.String) childObj;
-			if (child == _SchemaType) {
-				if (returnConstName) {
-					return SCHEMATYPE;
-				} else if (returnSchemaName) {
-					return "schemaType";
-				} else if (returnXPathName) {
-					return "schemaType";
-				} else {
-					return "SchemaType";
-				}
-			}
-			if (child == _DocRoot) {
-				if (returnConstName) {
-					return DOCROOT;
-				} else if (returnSchemaName) {
-					return "docRoot";
-				} else if (returnXPathName) {
-					return "docRoot";
-				} else {
-					return "DocRoot";
-				}
-			}
-			if (child == _PackagePath) {
-				if (returnConstName) {
-					return PACKAGEPATH;
-				} else if (returnSchemaName) {
-					return "packagePath";
-				} else if (returnXPathName) {
-					return "packagePath";
-				} else {
-					return "PackagePath";
-				}
-			}
-			if (child == _Indent) {
-				if (returnConstName) {
-					return INDENT;
-				} else if (returnSchemaName) {
-					return "indent";
-				} else if (returnXPathName) {
-					return "indent";
-				} else {
-					return "Indent";
-				}
-			}
-			if (child == _DelegatePackage) {
-				if (returnConstName) {
-					return DELEGATEPACKAGE;
-				} else if (returnSchemaName) {
-					return "delegatePackage";
-				} else if (returnXPathName) {
-					return "delegatePackage";
-				} else {
-					return "DelegatePackage";
-				}
-			}
-			if (child == _GenerateCommonInterface) {
-				if (returnConstName) {
-					return GENERATECOMMONINTERFACE;
-				} else if (returnSchemaName) {
-					return "generateCommonInterface";
-				} else if (returnXPathName) {
-					return "generateCommonInterface";
-				} else {
-					return "GenerateCommonInterface";
-				}
-			}
-			if (child == _InputURI) {
-				if (returnConstName) {
-					return INPUTURI;
-				} else if (returnSchemaName) {
-					return "inputURI";
-				} else if (returnXPathName) {
-					return "inputURI";
-				} else {
-					return "InputURI";
-				}
-			}
-			if (child == _IndexedPropertyType) {
-				if (returnConstName) {
-					return INDEXEDPROPERTYTYPE;
-				} else if (returnSchemaName) {
-					return "indexedPropertyType";
-				} else if (returnXPathName) {
-					return "indexedPropertyType";
-				} else {
-					return "IndexedPropertyType";
-				}
-			}
-			int index = 0;
-			for (java.util.Iterator it = _Finder.iterator(); it.hasNext(); 
-				) {
-				java.lang.String element = (java.lang.String)it.next();
-				if (child == element) {
-					if (returnConstName) {
-						return FINDER;
-					} else if (returnSchemaName) {
-						return "finder";
-					} else if (returnXPathName) {
-						return "finder[position()="+index+"]";
-					} else {
-						return "Finder."+Integer.toHexString(index);
-					}
-				}
-				++index;
-			}
-			if (child == _Target) {
-				if (returnConstName) {
-					return TARGET;
-				} else if (returnSchemaName) {
-					return "target";
-				} else if (returnXPathName) {
-					return "target";
-				} else {
-					return "Target";
-				}
-			}
-			if (child == _DefaultElementType) {
-				if (returnConstName) {
-					return DEFAULTELEMENTTYPE;
-				} else if (returnSchemaName) {
-					return "defaultElementType";
-				} else if (returnXPathName) {
-					return "defaultElementType";
-				} else {
-					return "DefaultElementType";
-				}
-			}
-		}
 		if (childObj instanceof java.io.InputStream) {
 			java.io.InputStream child = (java.io.InputStream) childObj;
 			if (child == _FileIn) {
@@ -3696,213 +3629,24 @@ public class S2bConfig {
 				}
 			}
 		}
-		if (childObj instanceof org.netbeans.modules.schema2beansdev.GenBeans.OutputStreamProvider) {
-			org.netbeans.modules.schema2beansdev.GenBeans.OutputStreamProvider child = (org.netbeans.modules.schema2beansdev.GenBeans.OutputStreamProvider) childObj;
-			if (child == _OutputStreamProvider) {
-				if (returnConstName) {
-					return OUTPUTSTREAMPROVIDER;
-				} else if (returnSchemaName) {
-					return "outputStreamProvider";
-				} else if (returnXPathName) {
-					return "outputStreamProvider";
-				} else {
-					return "OutputStreamProvider";
-				}
-			}
-		}
-		if (childObj instanceof java.lang.Integer) {
-			java.lang.Integer child = (java.lang.Integer) childObj;
-			if (((java.lang.Integer)child).intValue() == _IndentAmount) {
-				if (returnConstName) {
-					return INDENTAMOUNT;
-				} else if (returnSchemaName) {
-					return "indentAmount";
-				} else if (returnXPathName) {
-					return "indentAmount";
-				} else {
-					return "IndentAmount";
-				}
-			}
-		}
-		if (childObj instanceof org.netbeans.modules.schema2beansdev.metadd.MetaDD) {
-			org.netbeans.modules.schema2beansdev.metadd.MetaDD child = (org.netbeans.modules.schema2beansdev.metadd.MetaDD) childObj;
-			if (child == _MetaDD) {
-				if (returnConstName) {
-					return METADD;
-				} else if (returnSchemaName) {
-					return "metaDD";
-				} else if (returnXPathName) {
-					return "metaDD";
-				} else {
-					return "MetaDD";
-				}
-			}
-		}
-		if (childObj instanceof java.io.PrintStream) {
-			java.io.PrintStream child = (java.io.PrintStream) childObj;
-			if (child == _MessageOut) {
-				if (returnConstName) {
-					return MESSAGEOUT;
-				} else if (returnSchemaName) {
-					return "messageOut";
-				} else if (returnXPathName) {
-					return "messageOut";
-				} else {
-					return "MessageOut";
-				}
-			}
-		}
-		if (childObj instanceof org.netbeans.modules.schema2beansdev.CodeGeneratorFactory) {
-			org.netbeans.modules.schema2beansdev.CodeGeneratorFactory child = (org.netbeans.modules.schema2beansdev.CodeGeneratorFactory) childObj;
-			if (child == _CodeGeneratorFactory) {
-				if (returnConstName) {
-					return CODEGENERATORFACTORY;
-				} else if (returnSchemaName) {
-					return "codeGeneratorFactory";
-				} else if (returnXPathName) {
-					return "codeGeneratorFactory";
-				} else {
-					return "CodeGeneratorFactory";
-				}
-			}
-		}
-		if (childObj instanceof java.io.File) {
-			java.io.File child = (java.io.File) childObj;
-			if (child == _Filename) {
-				if (returnConstName) {
-					return FILENAME;
-				} else if (returnSchemaName) {
-					return "filename";
-				} else if (returnXPathName) {
-					return "filename";
-				} else {
-					return "Filename";
-				}
-			}
-			if (child == _RootDir) {
-				if (returnConstName) {
-					return ROOTDIR;
-				} else if (returnSchemaName) {
-					return "rootDir";
-				} else if (returnXPathName) {
-					return "rootDir";
-				} else {
-					return "RootDir";
-				}
-			}
-			if (child == _MddFile) {
-				if (returnConstName) {
-					return MDDFILE;
-				} else if (returnSchemaName) {
-					return "mddFile";
-				} else if (returnXPathName) {
-					return "mddFile";
-				} else {
-					return "MddFile";
-				}
-			}
-			if (child == _DelegateDir) {
-				if (returnConstName) {
-					return DELEGATEDIR;
-				} else if (returnSchemaName) {
-					return "delegateDir";
-				} else if (returnXPathName) {
-					return "delegateDir";
-				} else {
-					return "DelegateDir";
-				}
-			}
-			if (child == _DumpBeanTree) {
-				if (returnConstName) {
-					return DUMPBEANTREE;
-				} else if (returnSchemaName) {
-					return "dumpBeanTree";
-				} else if (returnXPathName) {
-					return "dumpBeanTree";
-				} else {
-					return "DumpBeanTree";
-				}
-			}
-			if (child == _GenerateDotGraph) {
-				if (returnConstName) {
-					return GENERATEDOTGRAPH;
-				} else if (returnSchemaName) {
-					return "generateDotGraph";
-				} else if (returnXPathName) {
-					return "generateDotGraph";
-				} else {
-					return "GenerateDotGraph";
-				}
-			}
-			if (child == _WriteBeanGraphFile) {
-				if (returnConstName) {
-					return WRITEBEANGRAPHFILE;
-				} else if (returnSchemaName) {
-					return "writeBeanGraphFile";
-				} else if (returnXPathName) {
-					return "writeBeanGraphFile";
-				} else {
-					return "WriteBeanGraphFile";
-				}
-			}
+		if (childObj instanceof org.netbeans.modules.schema2beansdev.beangraph.BeanGraph) {
+			org.netbeans.modules.schema2beansdev.beangraph.BeanGraph child = (org.netbeans.modules.schema2beansdev.beangraph.BeanGraph) childObj;
 			int index = 0;
-			for (java.util.Iterator it = _ReadBeanGraphFiles.iterator(); 
+			for (java.util.Iterator it = _ReadBeanGraphs.iterator(); 
 				it.hasNext(); ) {
-				java.io.File element = (java.io.File)it.next();
+				org.netbeans.modules.schema2beansdev.beangraph.BeanGraph element = (org.netbeans.modules.schema2beansdev.beangraph.BeanGraph)it.next();
 				if (child == element) {
 					if (returnConstName) {
-						return READBEANGRAPHFILES;
+						return READBEANGRAPHS;
 					} else if (returnSchemaName) {
-						return "readBeanGraphFiles";
+						return "readBeanGraphs";
 					} else if (returnXPathName) {
-						return "readBeanGraphFiles[position()="+index+"]";
+						return "readBeanGraphs[position()="+index+"]";
 					} else {
-						return "ReadBeanGraphFiles."+Integer.toHexString(index);
+						return "ReadBeanGraphs."+Integer.toHexString(index);
 					}
 				}
 				++index;
-			}
-			if (child == _WriteConfig) {
-				if (returnConstName) {
-					return WRITECONFIG;
-				} else if (returnSchemaName) {
-					return "writeConfig";
-				} else if (returnXPathName) {
-					return "writeConfig";
-				} else {
-					return "WriteConfig";
-				}
-			}
-			index = 0;
-			for (java.util.Iterator it = _ReadConfig.iterator(); 
-				it.hasNext(); ) {
-				java.io.File element = (java.io.File)it.next();
-				if (child == element) {
-					if (returnConstName) {
-						return READCONFIG;
-					} else if (returnSchemaName) {
-						return "readConfig";
-					} else if (returnXPathName) {
-						return "readConfig[position()="+index+"]";
-					} else {
-						return "ReadConfig."+Integer.toHexString(index);
-					}
-				}
-				++index;
-			}
-		}
-		if (childObj instanceof java.lang.Long) {
-			java.lang.Long child = (java.lang.Long) childObj;
-			if (((java.lang.Long)child).longValue() == _NewestSourceTime) {
-				if (returnConstName) {
-					return NEWESTSOURCETIME;
-				} else if (returnSchemaName) {
-					return "newestSourceTime";
-				} else if (returnXPathName) {
-					return "newestSourceTime";
-				} else {
-					return "NewestSourceTime";
-				}
 			}
 		}
 		if (childObj instanceof java.lang.Boolean) {
@@ -4259,6 +4003,17 @@ public class S2bConfig {
 					return "ForME";
 				}
 			}
+			if (((java.lang.Boolean)child).booleanValue() == _Java5) {
+				if (returnConstName) {
+					return JAVA5;
+				} else if (returnSchemaName) {
+					return "java5";
+				} else if (returnXPathName) {
+					return "java5";
+				} else {
+					return "Java5";
+				}
+			}
 			if (((java.lang.Boolean)child).booleanValue() == _GenerateTagsFile) {
 				if (returnConstName) {
 					return GENERATETAGSFILE;
@@ -4403,24 +4158,343 @@ public class S2bConfig {
 				}
 			}
 		}
-		if (childObj instanceof org.netbeans.modules.schema2beansdev.beangraph.BeanGraph) {
-			org.netbeans.modules.schema2beansdev.beangraph.BeanGraph child = (org.netbeans.modules.schema2beansdev.beangraph.BeanGraph) childObj;
+		if (childObj instanceof java.lang.Long) {
+			java.lang.Long child = (java.lang.Long) childObj;
+			if (((java.lang.Long)child).longValue() == _NewestSourceTime) {
+				if (returnConstName) {
+					return NEWESTSOURCETIME;
+				} else if (returnSchemaName) {
+					return "newestSourceTime";
+				} else if (returnXPathName) {
+					return "newestSourceTime";
+				} else {
+					return "NewestSourceTime";
+				}
+			}
+		}
+		if (childObj instanceof org.netbeans.modules.schema2beansdev.metadd.MetaDD) {
+			org.netbeans.modules.schema2beansdev.metadd.MetaDD child = (org.netbeans.modules.schema2beansdev.metadd.MetaDD) childObj;
+			if (child == _MetaDD) {
+				if (returnConstName) {
+					return METADD;
+				} else if (returnSchemaName) {
+					return "metaDD";
+				} else if (returnXPathName) {
+					return "metaDD";
+				} else {
+					return "MetaDD";
+				}
+			}
+		}
+		if (childObj instanceof java.lang.Integer) {
+			java.lang.Integer child = (java.lang.Integer) childObj;
+			if (((java.lang.Integer)child).intValue() == _IndentAmount) {
+				if (returnConstName) {
+					return INDENTAMOUNT;
+				} else if (returnSchemaName) {
+					return "indentAmount";
+				} else if (returnXPathName) {
+					return "indentAmount";
+				} else {
+					return "IndentAmount";
+				}
+			}
+		}
+		if (childObj instanceof java.io.File) {
+			java.io.File child = (java.io.File) childObj;
+			if (child == _Filename) {
+				if (returnConstName) {
+					return FILENAME;
+				} else if (returnSchemaName) {
+					return "filename";
+				} else if (returnXPathName) {
+					return "filename";
+				} else {
+					return "Filename";
+				}
+			}
+			if (child == _RootDir) {
+				if (returnConstName) {
+					return ROOTDIR;
+				} else if (returnSchemaName) {
+					return "rootDir";
+				} else if (returnXPathName) {
+					return "rootDir";
+				} else {
+					return "RootDir";
+				}
+			}
+			if (child == _MddFile) {
+				if (returnConstName) {
+					return MDDFILE;
+				} else if (returnSchemaName) {
+					return "mddFile";
+				} else if (returnXPathName) {
+					return "mddFile";
+				} else {
+					return "MddFile";
+				}
+			}
+			if (child == _DelegateDir) {
+				if (returnConstName) {
+					return DELEGATEDIR;
+				} else if (returnSchemaName) {
+					return "delegateDir";
+				} else if (returnXPathName) {
+					return "delegateDir";
+				} else {
+					return "DelegateDir";
+				}
+			}
+			if (child == _DumpBeanTree) {
+				if (returnConstName) {
+					return DUMPBEANTREE;
+				} else if (returnSchemaName) {
+					return "dumpBeanTree";
+				} else if (returnXPathName) {
+					return "dumpBeanTree";
+				} else {
+					return "DumpBeanTree";
+				}
+			}
+			if (child == _GenerateDotGraph) {
+				if (returnConstName) {
+					return GENERATEDOTGRAPH;
+				} else if (returnSchemaName) {
+					return "generateDotGraph";
+				} else if (returnXPathName) {
+					return "generateDotGraph";
+				} else {
+					return "GenerateDotGraph";
+				}
+			}
+			if (child == _WriteBeanGraphFile) {
+				if (returnConstName) {
+					return WRITEBEANGRAPHFILE;
+				} else if (returnSchemaName) {
+					return "writeBeanGraphFile";
+				} else if (returnXPathName) {
+					return "writeBeanGraphFile";
+				} else {
+					return "WriteBeanGraphFile";
+				}
+			}
 			int index = 0;
-			for (java.util.Iterator it = _ReadBeanGraphs.iterator(); 
+			for (java.util.Iterator it = _ReadBeanGraphFiles.iterator(); 
 				it.hasNext(); ) {
-				org.netbeans.modules.schema2beansdev.beangraph.BeanGraph element = (org.netbeans.modules.schema2beansdev.beangraph.BeanGraph)it.next();
+				java.io.File element = (java.io.File)it.next();
 				if (child == element) {
 					if (returnConstName) {
-						return READBEANGRAPHS;
+						return READBEANGRAPHFILES;
 					} else if (returnSchemaName) {
-						return "readBeanGraphs";
+						return "readBeanGraphFiles";
 					} else if (returnXPathName) {
-						return "readBeanGraphs[position()="+index+"]";
+						return "readBeanGraphFiles[position()="+index+"]";
 					} else {
-						return "ReadBeanGraphs."+Integer.toHexString(index);
+						return "ReadBeanGraphFiles."+Integer.toHexString(index);
 					}
 				}
 				++index;
+			}
+			if (child == _WriteConfig) {
+				if (returnConstName) {
+					return WRITECONFIG;
+				} else if (returnSchemaName) {
+					return "writeConfig";
+				} else if (returnXPathName) {
+					return "writeConfig";
+				} else {
+					return "WriteConfig";
+				}
+			}
+			index = 0;
+			for (java.util.Iterator it = _ReadConfig.iterator(); 
+				it.hasNext(); ) {
+				java.io.File element = (java.io.File)it.next();
+				if (child == element) {
+					if (returnConstName) {
+						return READCONFIG;
+					} else if (returnSchemaName) {
+						return "readConfig";
+					} else if (returnXPathName) {
+						return "readConfig[position()="+index+"]";
+					} else {
+						return "ReadConfig."+Integer.toHexString(index);
+					}
+				}
+				++index;
+			}
+		}
+		if (childObj instanceof java.lang.String) {
+			java.lang.String child = (java.lang.String) childObj;
+			if (child == _SchemaType) {
+				if (returnConstName) {
+					return SCHEMATYPE;
+				} else if (returnSchemaName) {
+					return "schemaType";
+				} else if (returnXPathName) {
+					return "schemaType";
+				} else {
+					return "SchemaType";
+				}
+			}
+			if (child == _DocRoot) {
+				if (returnConstName) {
+					return DOCROOT;
+				} else if (returnSchemaName) {
+					return "docRoot";
+				} else if (returnXPathName) {
+					return "docRoot";
+				} else {
+					return "DocRoot";
+				}
+			}
+			if (child == _PackagePath) {
+				if (returnConstName) {
+					return PACKAGEPATH;
+				} else if (returnSchemaName) {
+					return "packagePath";
+				} else if (returnXPathName) {
+					return "packagePath";
+				} else {
+					return "PackagePath";
+				}
+			}
+			if (child == _Indent) {
+				if (returnConstName) {
+					return INDENT;
+				} else if (returnSchemaName) {
+					return "indent";
+				} else if (returnXPathName) {
+					return "indent";
+				} else {
+					return "Indent";
+				}
+			}
+			if (child == _DelegatePackage) {
+				if (returnConstName) {
+					return DELEGATEPACKAGE;
+				} else if (returnSchemaName) {
+					return "delegatePackage";
+				} else if (returnXPathName) {
+					return "delegatePackage";
+				} else {
+					return "DelegatePackage";
+				}
+			}
+			if (child == _GenerateCommonInterface) {
+				if (returnConstName) {
+					return GENERATECOMMONINTERFACE;
+				} else if (returnSchemaName) {
+					return "generateCommonInterface";
+				} else if (returnXPathName) {
+					return "generateCommonInterface";
+				} else {
+					return "GenerateCommonInterface";
+				}
+			}
+			if (child == _InputURI) {
+				if (returnConstName) {
+					return INPUTURI;
+				} else if (returnSchemaName) {
+					return "inputURI";
+				} else if (returnXPathName) {
+					return "inputURI";
+				} else {
+					return "InputURI";
+				}
+			}
+			if (child == _IndexedPropertyType) {
+				if (returnConstName) {
+					return INDEXEDPROPERTYTYPE;
+				} else if (returnSchemaName) {
+					return "indexedPropertyType";
+				} else if (returnXPathName) {
+					return "indexedPropertyType";
+				} else {
+					return "IndexedPropertyType";
+				}
+			}
+			int index = 0;
+			for (java.util.Iterator it = _Finder.iterator(); it.hasNext(); 
+				) {
+				java.lang.String element = (java.lang.String)it.next();
+				if (child == element) {
+					if (returnConstName) {
+						return FINDER;
+					} else if (returnSchemaName) {
+						return "finder";
+					} else if (returnXPathName) {
+						return "finder[position()="+index+"]";
+					} else {
+						return "Finder."+Integer.toHexString(index);
+					}
+				}
+				++index;
+			}
+			if (child == _Target) {
+				if (returnConstName) {
+					return TARGET;
+				} else if (returnSchemaName) {
+					return "target";
+				} else if (returnXPathName) {
+					return "target";
+				} else {
+					return "Target";
+				}
+			}
+			if (child == _DefaultElementType) {
+				if (returnConstName) {
+					return DEFAULTELEMENTTYPE;
+				} else if (returnSchemaName) {
+					return "defaultElementType";
+				} else if (returnXPathName) {
+					return "defaultElementType";
+				} else {
+					return "DefaultElementType";
+				}
+			}
+		}
+		if (childObj instanceof java.io.PrintStream) {
+			java.io.PrintStream child = (java.io.PrintStream) childObj;
+			if (child == _MessageOut) {
+				if (returnConstName) {
+					return MESSAGEOUT;
+				} else if (returnSchemaName) {
+					return "messageOut";
+				} else if (returnXPathName) {
+					return "messageOut";
+				} else {
+					return "MessageOut";
+				}
+			}
+		}
+		if (childObj instanceof org.netbeans.modules.schema2beansdev.CodeGeneratorFactory) {
+			org.netbeans.modules.schema2beansdev.CodeGeneratorFactory child = (org.netbeans.modules.schema2beansdev.CodeGeneratorFactory) childObj;
+			if (child == _CodeGeneratorFactory) {
+				if (returnConstName) {
+					return CODEGENERATORFACTORY;
+				} else if (returnSchemaName) {
+					return "codeGeneratorFactory";
+				} else if (returnXPathName) {
+					return "codeGeneratorFactory";
+				} else {
+					return "CodeGeneratorFactory";
+				}
+			}
+		}
+		if (childObj instanceof org.netbeans.modules.schema2beansdev.GenBeans.OutputStreamProvider) {
+			org.netbeans.modules.schema2beansdev.GenBeans.OutputStreamProvider child = (org.netbeans.modules.schema2beansdev.GenBeans.OutputStreamProvider) childObj;
+			if (child == _OutputStreamProvider) {
+				if (returnConstName) {
+					return OUTPUTSTREAMPROVIDER;
+				} else if (returnSchemaName) {
+					return "outputStreamProvider";
+				} else if (returnXPathName) {
+					return "outputStreamProvider";
+				} else {
+					return "OutputStreamProvider";
+				}
 			}
 		}
 		return null;
@@ -4807,6 +4881,14 @@ public class S2bConfig {
 				return false;
 			}
 		}
+		if (_isSet_Java5 != inst._isSet_Java5) {
+			return false;
+		}
+		if (_isSet_Java5) {
+			if (!(_Java5 == inst._Java5)) {
+				return false;
+			}
+		}
 		if (_isSet_GenerateTagsFile != inst._isSet_GenerateTagsFile) {
 			return false;
 		}
@@ -5006,6 +5088,7 @@ public class S2bConfig {
 		result = 37*result + (_ReadBeanGraphs == null ? 0 : _ReadBeanGraphs.hashCode());
 		result = 37*result + (_isSet_MinFeatures ? 0 : (_MinFeatures ? 0 : 1));
 		result = 37*result + (_isSet_ForME ? 0 : (_ForME ? 0 : 1));
+		result = 37*result + (_isSet_Java5 ? 0 : (_Java5 ? 0 : 1));
 		result = 37*result + (_isSet_GenerateTagsFile ? 0 : (_GenerateTagsFile ? 0 : 1));
 		result = 37*result + (_CodeGeneratorFactory == null ? 0 : _CodeGeneratorFactory.hashCode());
 		result = 37*result + (_isSet_GenerateTimeStamp ? 0 : (_GenerateTimeStamp ? 0 : 1));

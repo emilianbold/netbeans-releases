@@ -48,7 +48,8 @@
     docRoot="glassfish-application-client",
     useInterfaces=true,
     validate=false,
-    attrProp=true
+    attrProp=true,
+    java5=true
 )
 package org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1;
 

@@ -762,7 +762,7 @@ public class RuleNode extends AbstractNode {
                 return;
             }
 
-            String property = declaration.getProperty().getContent().toString();
+            String property = declaration.getProperty().getContent().toString().trim();
             PropertyDefinition model = Properties.getPropertyDefinition(getFileObject(), property);
             if (model != null) {
                 PropertyValue value = declaration.getPropertyValue();

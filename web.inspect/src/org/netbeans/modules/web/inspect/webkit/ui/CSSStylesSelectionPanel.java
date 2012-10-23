@@ -139,7 +139,7 @@ public class CSSStylesSelectionPanel extends JPanel {
      * @return Property Summary panel.
      */
     private JPanel initPropertyPane() {
-        propertyPane = new CustomTreeTableView();
+        propertyPane = new CustomTreeTableView(true);
         propertyPane.setProperties(new Node.Property[] {
             new PropertySupport.ReadOnly<String>(MatchedPropertyNode.PROPERTY_VALUE, String.class, "", null) { // NOI18N
                 @Override
@@ -161,7 +161,7 @@ public class CSSStylesSelectionPanel extends JPanel {
      * @return Style Cascade section.
      */
     private JPanel initRulePane() {
-        rulePane = new CustomTreeTableView();
+        rulePane = new CustomTreeTableView(false);
         rulePane.setProperties(new Node.Property[] {
             new PropertySupport.ReadOnly<String>(MatchedRuleNode.PROPERTY_NODE, String.class, "", null) { // NOI18N
                 @Override
@@ -459,8 +459,11 @@ public class CSSStylesSelectionPanel extends JPanel {
 
         /**
          * Creates a new {@code CustomTreeTableView}.
+         *
+         * @param propertyPane determines whether this view is used
+         * as a property pane or as a rule pane.
          */
-        CustomTreeTableView() {
+        CustomTreeTableView(final boolean propertyPane) {
             setRootVisible(false);
             setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
             final TreeCellRenderer renderer = tree.getCellRenderer();
@@ -497,6 +500,9 @@ public class CSSStylesSelectionPanel extends JPanel {
                     Component component = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (component instanceof JComponent) {
                         ((JComponent)component).setBorder(border);
+                        if (propertyPane && column == 1) {
+                            component.setEnabled(false);
+                        }
                     }
                     return component;
                 }

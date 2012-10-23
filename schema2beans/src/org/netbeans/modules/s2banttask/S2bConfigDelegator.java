@@ -41,10 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 /**
  * Delegate for S2bConfig
- *
+ * 
  * @Generated
  */
 
@@ -357,6 +356,10 @@ public class S2bConfigDelegator extends org.apache.tools.ant.Task {
 		return _S2bConfig.isGenerateXMLIO();
 	}
 
+	public boolean isJava5() {
+		return _S2bConfig.isJava5();
+	}
+
 	public boolean isKeepElementPositions() {
 		return _S2bConfig.isKeepElementPositions();
 	}
@@ -663,6 +666,10 @@ public class S2bConfigDelegator extends org.apache.tools.ant.Task {
 
 	public void setInputURI(java.lang.String value) {
 		_S2bConfig.setInputURI(value);
+	}
+
+	public void setJava5(boolean value) {
+		_S2bConfig.setJava5(value);
 	}
 
 	public void setKeepElementPositions(boolean value) {
