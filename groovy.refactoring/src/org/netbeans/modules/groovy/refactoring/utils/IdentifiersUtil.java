@@ -54,7 +54,7 @@ import org.openide.util.Utilities;
 
 /**
  * This class consists of static utility methods for working
- * with Java identifiers.
+ * with Groovy identifiers.
  *
  * @author Erno Mononen
  */
@@ -98,7 +98,14 @@ public final class IdentifiersUtil {
 
     }
 
-    private static boolean isPackageRename(RenameRefactoring rename){
+    /**
+     * Finds out whether the given <code>RenameRefactoring</code> is a package
+     * rename or any other rename refactoring.
+     *
+     * @param rename the rename refactoring
+     * @return true if it's package rename refactoring, false otherwise
+     */
+    public static boolean isPackageRename(RenameRefactoring rename){
         return rename.getRefactoringSource().lookup(NonRecursiveFolder.class) != null;
     }
 
@@ -197,5 +204,4 @@ public final class IdentifiersUtil {
             throw new IllegalArgumentException("The given fqn [" + fqn + "] does not represent a fully qualified class name"); //NOI18N
         }
     }
-
 }
