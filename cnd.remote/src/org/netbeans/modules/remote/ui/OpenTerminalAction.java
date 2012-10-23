@@ -242,18 +242,7 @@ public class OpenTerminalAction extends SingleHostAction {
         }
         return null;
     }
-
-    private static final class AddProjects extends AddPlace {
-
-        public AddProjects() {
-            super(PLACE.PROJECTS);
-        }
-
-        @Override
-        protected String getPath(ExecutionEnvironment env) {
-            return "/"; // NOI18N
-        }
-    }
+    
 
     private static final class AddMirror extends AddPlace {
 
@@ -267,57 +256,5 @@ public class OpenTerminalAction extends SingleHostAction {
             return remoteSyncRoot;
         }
     }
-    
-    private static final class AddOther extends AddPlace {
-        private final Frame mainWindow;
-        
-        public AddOther() {
-            super(PLACE.OTHER);
-            mainWindow = WindowManager.getDefault().getMainWindow();            
-        }
-
-        @Override
-        protected String getPath(ExecutionEnvironment env) {
-            String title = NbBundle.getMessage(OpenTerminalAction.class, "SelectFolder");
-            String btn = NbBundle.getMessage(OpenTerminalAction.class, "OpenText");
-            FileObject remoteFileObject = getRemoteFileObject(env, title, btn, mainWindow);
-            return remoteFileObject == null ? null : remoteFileObject.getPath();
-        }
-    }
-
-    /**/ static FileObject getRemoteFileObject(ExecutionEnvironment env, String title, String btn, Frame mainWindow) {
-        String curDir = RemoteFileUtil.getCurrentChooserFile(env);
-        if (curDir == null) {
-            curDir = getHomeDir(env);
-        }
-        JFileChooser fileChooser =  RemoteFileUtil.createFileChooser(
-                env,
-                title,
-                btn,
-                JFileChooser.DIRECTORIES_ONLY, null, curDir, true);
-        int ret = fileChooser.showOpenDialog(mainWindow);
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return null;
-        }
-        FileObject fo = null;
-        if (fileChooser instanceof JFileChooserEx) {
-            fo = ((JFileChooserEx)fileChooser).getSelectedFileObject();
-        } else {
-            File selectedFile = fileChooser.getSelectedFile();
-            if (selectedFile != null) {
-                fo = FileUtil.toFileObject(selectedFile);
-            }
-        }
-        if (fo == null || !fo.isFolder()) {
-            String msg = fileChooser.getSelectedFile() != null ? fileChooser.getSelectedFile().getPath() : null;
-            if (msg != null) {
-                JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
-                        NbBundle.getMessage(OpenRemoteProjectAction.class, "InvalidFolder", msg));
-            }            
-            return null;
-        }
-        String lastPath = fo.getParent() == null ? fo.getPath() : fo.getParent().getPath();
-        RemoteFileUtil.setCurrentChooserFile(lastPath, env);
-        return fo;
-    }    
+         
 }
