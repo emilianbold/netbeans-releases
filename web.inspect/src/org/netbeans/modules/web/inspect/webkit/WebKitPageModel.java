@@ -221,6 +221,16 @@ public class WebKitPageModel extends PageModel {
     }
 
     @Override
+    public void removeNode(org.openide.nodes.Node node) {
+        try {
+            Node webKitNode = node.getLookup().lookup(Node.class);
+            if (webKitNode != null) {
+                webKit.getDOM().removeNode(webKitNode);
+            }
+        } catch (TransportStateException tsex) {}
+    }
+
+    @Override
     public String getDocumentURL() {
         String documentURL = null;
         org.openide.nodes.Node node = getDocumentNode();
