@@ -79,6 +79,13 @@ public abstract class PageModel {
     public abstract Node getDocumentNode();
 
     /**
+     * Removes the specified node from the document.
+     *
+     * @param node node to remove.
+     */
+    public abstract void removeNode(Node node);
+
+    /**
      * Returns the document URL.
      * 
      * @return document URL.
