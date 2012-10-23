@@ -500,7 +500,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         return manager;
     }
     
-    protected ElementJavadoc getJavaDocFor(
+    private ElementJavadoc getJavaDocFor(
             @NonNull final ElementNode node,
             @NullAllowed final Callable<Boolean> cancel) {
         ElementNode root = getRootNode();
@@ -659,11 +659,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             Mutex.EVENT.readAccess( new Runnable() {
                 public void run() {
                     if( null != me ) {
-                        ElementJavadoc doc = getDocumentation( me.getPoint() );
+                        final ElementJavadoc doc = getDocumentation( me.getPoint() );
+                        final ElementNode root = getRootNode();
+                        final FileObject owner = root == null ? null : root.getDescritption().fileObject;
                         JavadocTopComponent tc = JavadocTopComponent.findInstance();
                         if( null != tc ) {
                             tc.open();
-                            tc.setJavadoc( doc );
+                            tc.setJavadoc(owner,  doc);
                             tc.requestActive();
                         }
                     }
