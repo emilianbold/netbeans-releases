@@ -46,7 +46,8 @@
     mddFile="../resources/web-jsptaglibrary_2_1.mdd",
     outputType=OutputType.TRADITIONAL_BASEBEAN,
     validate=true,
-    removeUnreferencedNodes=true
+    removeUnreferencedNodes=true,
+    java5=true
 )
 package org.netbeans.modules.web.taglib.model;
 

@@ -82,7 +82,7 @@ public class SelectJavadocTask implements Runnable, Callable<Boolean>, Cancellab
     public void run() {
         cancelled = false;
         if (JavadocTopComponent.shouldUpdate()) {
-            final ElementJavadoc documentation = getJavaDoc();
+            final Pair<FileObject,ElementJavadoc> documentation = getJavaDoc();
             if (documentation != null) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -90,7 +90,7 @@ public class SelectJavadocTask implements Runnable, Callable<Boolean>, Cancellab
                         final JavadocTopComponent tc = JavadocTopComponent.findInstance();
                         if (tc != null) {
                             tc.open();
-                            tc.setJavadoc(documentation);
+                            tc.setJavadoc(documentation.first,documentation.second);
                         }
                     }
                 });
@@ -125,7 +125,7 @@ public class SelectJavadocTask implements Runnable, Callable<Boolean>, Cancellab
     }
 
     @CheckForNull
-    private ElementJavadoc getJavaDoc() {
+    private Pair<FileObject,ElementJavadoc> getJavaDoc() {
         final Node node = lookupProvider.getLookup().lookup(Node.class);
         if (node == null) {
             return null;
@@ -149,7 +149,7 @@ public class SelectJavadocTask implements Runnable, Callable<Boolean>, Cancellab
             Exceptions.printStackTrace(ioE);
             return null;
         }
-        return doc;
+        return Pair.<FileObject,ElementJavadoc>of(fo, doc);
     }
 
     public static SelectJavadocTask create(@NonNull final Lookup.Provider lookupProvider) {

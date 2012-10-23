@@ -137,12 +137,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return true;
     }
 
-    /*package*/ CsmProject findProject(Object id) {
+    /*package*/ ProjectBase findProject(Object id) {
         ProjectBase prj = null;
         if (id != null) {
-            synchronized (lock) {
+//            synchronized (lock) {
                 prj = obj2Project(id);
-            }
+//            }
         }
         return prj;
     }
@@ -155,7 +155,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     @Override
-    public CsmProject getProject(Object id) {
+    public ProjectBase getProject(Object id) {
         if (id instanceof Project) {
             NativeProject prj = ((Project) id).getLookup().lookup(NativeProject.class);
             if (prj != null) {
@@ -376,6 +376,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     public RequestProcessor.Task enqueueModelTask(Runnable task, String name) {
         return enqueue(modelProcessor, task, modelTaskPrefix + ": " + name); // NOI18N
+    }
+    
+    public static boolean isModelRequestProcessorThread() {
+        return ModelImpl.instance().modelProcessor.isRequestProcessorThread();
     }
     
     public void waitModelTasks() {
@@ -748,15 +752,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         if (projectsBeingCreated.contains(nativeProject)) {
             return null;
         }
-        ProjectBase project = getProjectFast(nativeProject); // no sync here: just get what we have
+        ProjectBase project = getProject/*getProjectFast*/(nativeProject); // no sync here: just get what we have
         return (project != null) && (!project.isDisposing());
-    }
-    
-    /**
-     * Gets project without synchronization
-     */
-    public ProjectBase getProjectFast(NativeProject nativeProject) {
-        return obj2Project(nativeProject);
     }
 
     public boolean isProjectDisabled(NativeProject id) {

@@ -516,6 +516,8 @@ public class Utilities {
     }
     
     private static TypeMirror resolveCapturedTypeInt(CompilationInfo info, TypeMirror tm) {
+        if (tm == null) return tm;
+        
         TypeMirror orig = SourceUtils.resolveCapturedType(tm);
 
         if (orig != null) {

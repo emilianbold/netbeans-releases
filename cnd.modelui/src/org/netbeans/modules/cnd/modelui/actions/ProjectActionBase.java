@@ -180,7 +180,7 @@ public abstract class ProjectActionBase extends NodeAction {
                 }
                 if (nativeProject != null) {
                     CsmModel model = CsmModelAccessor.getModel();
-                    csm = (model instanceof ModelImpl) ? ((ModelImpl) model).getProjectFast(nativeProject) : model.getProject(nativeProject);
+                    csm = (model instanceof ModelImpl) ? ((ModelImpl) model).getProject/*getProjectFast*/(nativeProject) : model.getProject(nativeProject);
                 }
             }
             if (csm != null) {

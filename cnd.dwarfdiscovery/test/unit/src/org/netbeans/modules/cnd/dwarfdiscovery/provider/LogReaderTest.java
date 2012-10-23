@@ -59,8 +59,12 @@ import org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader.CommandLineSou
  */
 public class LogReaderTest extends TestCase {
 
+    public void testNotCompilerInvocation() {
+        testCompilerInvocation(ItemProperties.LanguageKind.Unknown, "CXX --mode=compile -I/export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc", 1);
+    }
+
     public void testWrongLibtoolCompilerInvocation() {
-        testCompilerInvocation(ItemProperties.LanguageKind.Unknown, "/bin/sh ./libtool --tag=CXX --mode=compile /export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc", 1);
+        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "/bin/sh ./libtool --tag=CXX --mode=compile /export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc", 1);
     }
 
     public void testLibtoolCCompilerInvocation() {
@@ -724,7 +728,8 @@ public class LogReaderTest extends TestCase {
                 "/ws/cheetah/jsr135/src/share/components/direct-player/native";
         String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
-        LogReader.LineInfo li = LogReader.testCompilerInvocation(line);
+        LogReader reader = new LogReader(line, "", null, null, null);
+        LogReader.LineInfo li = reader.testCompilerInvocation(line);
         assert li.compilerType == LogReader.CompilerType.CPP;
     }
 
@@ -755,8 +760,9 @@ public class LogReaderTest extends TestCase {
         String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertTrue(result.startsWith("Source:xsolmod.cpp"));
         //assertDocumentText(line, expResult, result);
-        LogReader.LineInfo li = LogReader.testCompilerInvocation(line);
-        assertEquals(li.compilerType, LogReader.CompilerType.CPP);
+        LogReader reader = new LogReader(line, "", null, null, null);
+        LogReader.LineInfo li = reader.testCompilerInvocation(line);
+        assertEquals(LogReader.CompilerType.CPP, li.compilerType);
     }
 
     private String processLine(String line, DiscoveryUtils.LogOrigin isScriptOutput) {
@@ -831,12 +837,15 @@ public class LogReaderTest extends TestCase {
         }
         assertFalse(sb.toString(), true);
     }
-
+    
     private void testCompilerInvocation(ItemProperties.LanguageKind ct, String line, int size) {
-        LogReader.LineInfo li = LogReader.testCompilerInvocation(line);
+        LogReader reader = new LogReader(line, "", null, null, null);
+        LogReader.LineInfo li = reader.testCompilerInvocation(line);
         if (ct == ItemProperties.LanguageKind.Unknown) {
-            assertEquals(li.getLanguage(), ct);
+            assertEquals(ct, li.getLanguage());
             return;
+        } else {
+            assertNotSame(ItemProperties.LanguageKind.Unknown, li.getLanguage());
         }
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
@@ -846,7 +855,7 @@ public class LogReaderTest extends TestCase {
         assertTrue(sourcesList.size() == size);
         for(String what :sourcesList) {
             CommandLineSource cs = new CommandLineSource(li, languageArtifacts, "/", what, userIncludes, userMacros, undefs, null);
-            assertEquals(cs.getLanguageKind(), ct);
+            assertEquals(ct, cs.getLanguageKind());
         }
     }
 
