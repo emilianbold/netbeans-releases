@@ -195,7 +195,7 @@ public class FeaturesOffDemandWithDepsTest extends NbTestCase implements Propert
         assertEquals("Integer", Integer.class, cnt.getClass());
         assertEquals("Set to zero", Integer.valueOf(0), cnt);
 
-        Long modified = sub.lastModified().getTime();
+        Long modified = findLastModified(sub);
         assertEquals("enabled attribute is same as modification day", when, modified);
         final String middleState = sub.asText("UTF-8");
         if (origContent.equals(middleState)) {
@@ -245,6 +245,17 @@ public class FeaturesOffDemandWithDepsTest extends NbTestCase implements Propert
         os.close();
 
         return f;
+    }
+
+    static long findLastModified(FileObject sub) {
+        long w = 0;
+        for (FileObject sblng : sub.getParent().getChildren()) {
+            long t = sblng.lastModified().getTime();
+            if (t > w) {
+                w = t;
+            }
+        }
+        return w;
     }
 
     public static final class DD extends DialogDisplayer {

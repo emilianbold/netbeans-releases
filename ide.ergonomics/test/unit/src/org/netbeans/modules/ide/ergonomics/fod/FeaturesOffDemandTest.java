@@ -191,7 +191,7 @@ public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeL
         assertEquals("Integer", Integer.class, cnt.getClass());
         assertEquals("Set to zero", Integer.valueOf(0), cnt);
 
-        Long modified = sub.lastModified().getTime();
+        Long modified = FeaturesOffDemandWithDepsTest.findLastModified(sub);
         assertEquals("enabled attribute is same as modification day", when, modified);
 
         if (origContent.equals(sub.asText("UTF-8"))) {
