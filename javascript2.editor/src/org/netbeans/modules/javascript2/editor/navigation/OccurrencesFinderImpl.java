@@ -112,6 +112,9 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                 JsObject parent = object.getParent();
                 if (parent != null && parent.getJSKind() != Kind.FILE && object.getJSKind() != Kind.PARAMETER) {
                     Collection<? extends Type> types = parent.getAssignmentForOffset(caretPosition);
+                    if (types.isEmpty()) {
+                        types = parent.getAssignments();
+                    }
                     for (Type type : types) {
                         JsObject declaration = ModelUtils.findJsObjectByName(model, type.getType());
                         if (declaration != null && !object.getName().equals(declaration.getName())) {
@@ -132,9 +135,9 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                             }
                         }
                     }
-                    if(types.isEmpty()) {
+                    if (types.isEmpty()) {
                         List<OffsetRange> usages = findMemberUsage(result.getModel().getGlobalObject(), ModelUtils.createFQN(parent), object.getName(), caretPosition);
-                        for(OffsetRange range: usages) {
+                        for (OffsetRange range : usages) {
                             range2Attribs.put(range, ColoringAttributes.MARK_OCCURRENCES);
                         }
                     }
