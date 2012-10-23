@@ -51,6 +51,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -85,10 +86,25 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void init() {
         jProjectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
-        jSiteRootFolderTextField.setText(uiProperties.getSiteRootFolder());
+        jSiteRootFolderTextField.setText(getSiteRootPath());
         jTestFolderTextField.setText(uiProperties.getTestFolder());
         jEncodingComboBox.setModel(ProjectCustomizer.encodingModel(uiProperties.getEncoding()));
         jEncodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
+    }
+
+    private String getSiteRootPath() {
+        String siteRootPath = null;
+        File siteRoot = uiProperties.getResolvedSiteRootFolder();
+        if (siteRoot != null) {
+            FileObject siteRootFO = FileUtil.toFileObject(siteRoot);
+            if (siteRootFO != null) {
+                siteRootPath = FileUtil.getRelativePath(project.getProjectDirectory(), siteRootFO);
+            }
+        }
+        if (siteRootPath == null) {
+            siteRootPath = uiProperties.getSiteRootFolder();
+        }
+        return siteRootPath;
     }
 
     private void initListeners() {
@@ -131,7 +147,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     @NbBundle.Messages("SourcesPanel.error.siteRoot.invalid=Site Root must be a valid directory.")
     private String validateSiteRoot() {
         File siteRootFolder = getSiteRootFolder();
-        if (siteRootFolder == null || !siteRootFolder.isDirectory()) {
+        if (siteRootFolder != null && !siteRootFolder.isDirectory()) {
             return Bundle.SourcesPanel_error_siteRoot_invalid();
         }
         return null;
@@ -223,9 +239,11 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         jLabel2 = new javax.swing.JLabel();
         jSiteRootFolderTextField = new javax.swing.JTextField();
         jBrowseSiteRootButton = new javax.swing.JButton();
+        siteRootInfoLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jTestFolderTextField = new javax.swing.JTextField();
         jBrowseTestButton = new javax.swing.JButton();
+        testFolderInfoLabel = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jEncodingComboBox = new javax.swing.JComboBox();
 
@@ -245,6 +263,8 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(siteRootInfoLabel, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.siteRootInfoLabel.text")); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jLabel3.text")); // NOI18N
 
         jTestFolderTextField.setText(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jTestFolderTextField.text")); // NOI18N
@@ -255,6 +275,8 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
                 jBrowseTestButtonActionPerformed(evt);
             }
         });
+
+        org.openide.awt.Mnemonics.setLocalizedText(testFolderInfoLabel, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testFolderInfoLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jLabel4.text")); // NOI18N
 
@@ -270,16 +292,21 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jProjectFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(jProjectFolderTextField)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jEncodingComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 195, Short.MAX_VALUE)
+                            .addComponent(jEncodingComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jTestFolderTextField)
                             .addComponent(jSiteRootFolderTextField))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jBrowseSiteRootButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jBrowseTestButton, javax.swing.GroupLayout.Alignment.TRAILING)))))
+                            .addComponent(jBrowseTestButton, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(testFolderInfoLabel)
+                            .addComponent(siteRootInfoLabel))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -293,15 +320,19 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
                     .addComponent(jSiteRootFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jBrowseSiteRootButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(siteRootInfoLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(jTestFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jBrowseTestButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(testFolderInfoLabel)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(jEncodingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 146, Short.MAX_VALUE))
+                .addGap(0, 104, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -332,6 +363,8 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     private javax.swing.JTextField jProjectFolderTextField;
     private javax.swing.JTextField jSiteRootFolderTextField;
     private javax.swing.JTextField jTestFolderTextField;
+    private javax.swing.JLabel siteRootInfoLabel;
+    private javax.swing.JLabel testFolderInfoLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
