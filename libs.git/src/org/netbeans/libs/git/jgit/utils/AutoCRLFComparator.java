@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,68 +34,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.libs.git.jgit.utils;
 
-package org.netbeans.modules.cnd.toolchain.ui.options;
+import org.eclipse.jgit.diff.RawText;
+import org.eclipse.jgit.diff.RawTextComparator;
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-
-@OptionsPanelController.SubRegistration(
-    location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
-    displayName="#TAB_ToolsTab", // NOI18N
-    position=100
-)
-public final class ToolsPanelController extends OptionsPanelController {
-
-    private ToolsPanel panel = new ToolsPanel("ConfiguringBuildTools"); // NOI18N
+/**
+ *
+ * @author Ondrej Vrabec
+ */
+public class AutoCRLFComparator extends RawTextComparator {
 
     @Override
-    public void update() {
-        panel.update();
-}
+    public boolean equals (RawText a, int ai, RawText b, int bi) {
+        String line1 = a.getString(ai);
+        String line2 = b.getString(bi);
+        line1 = trimTrailingEoL(line1);
+        line2 = trimTrailingEoL(line2);
 
-    @Override
-    public void applyChanges() {
-        panel.applyChanges();
-    }
-    
-    @Override
-    public void cancel() {
-        panel.cancel();
-    }
-    
-    @Override
-    public boolean isValid() {
-        return !panel.isChanged() || panel.dataValid();
-    }
-    
-    @Override
-    public boolean isChanged() {
-        return panel.isChanged();
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("cnd.optionsDialog"); // NOI18N
-    }
-    
-    @Override
-    public JComponent getComponent(Lookup masterLookup) {
-        return panel;
+        return line1.equals(line2);
     }
 
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        panel.addPropertyChangeListener(l);
+    protected int hashRegion (final byte[] raw, int ptr, int end) {
+        int hash = 5381;
+        end = trimTrailingEoL(raw, ptr, end);
+        for (; ptr < end; ptr++) {
+            hash = ((hash << 5) + hash) + (raw[ptr] & 0xff);
+        }
+        return hash;
     }
 
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        panel.removePropertyChangeListener(l);
+    private static String trimTrailingEoL (String line) {
+        int end = line.length() - 1;
+        while (end >= 0 && isNewLine(line.charAt(end))) {
+            --end;
+        }
+        return line.substring(0, end + 1);
+    }
+
+    private static int trimTrailingEoL(byte[] raw, int start, int end) {
+        int ptr = end - 1;
+        while (start <= ptr && (raw[ptr] == '\r' || raw[ptr] == '\n')) {
+            ptr--;
+        }
+
+        return ptr + 1;
+    }
+
+    private static boolean isNewLine (char ch) {
+        return ch == '\n' || ch == '\r';
     }
 }

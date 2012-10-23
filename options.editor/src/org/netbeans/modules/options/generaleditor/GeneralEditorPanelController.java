@@ -46,6 +46,7 @@ package org.netbeans.modules.options.generaleditor;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -60,8 +61,7 @@ import org.openide.util.Lookup;
     displayName="org.netbeans.modules.options.editor.Bundle#CTL_General_DisplayName",
     keywords="org.netbeans.modules.options.editor.Bundle#KW_General",
     keywordsCategory="Editor/General",
-    id="General", // XXX used anywhere?
-    location="Editor",
+    location=OptionsDisplayer.EDITOR,
     position=100
 //    toolTip="org.netbeans.modules.options.editor.Bundle#CTL_General_ToolTip"
 )

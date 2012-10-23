@@ -374,6 +374,7 @@ public class SearchPanel extends JPanel implements FocusListener,
         if (dialog != null) {
             dialog.requestFocus();
         }
+        this.requestFocusInWindow();
     }
 
     /**

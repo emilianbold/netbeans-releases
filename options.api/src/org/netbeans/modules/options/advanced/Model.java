@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
@@ -117,6 +118,19 @@ public final class Model extends TabbedPanelModel {
     public List<String> getIDs() {
         init();
         return new ArrayList<String>(idToCategory.keySet());
+    }
+
+    /** Returns ID in this model for given category.
+     * @return ID in this model for given category or null if the category is not present in this model
+     */
+    public String getID(String category) {
+        init();
+	for(Entry<String, String> entrySet : idToCategory.entrySet()) {
+	    if(entrySet.getValue().equals(category)) {
+		return entrySet.getKey();
+	    }
+	}
+        return null;
     }
 
     @Override

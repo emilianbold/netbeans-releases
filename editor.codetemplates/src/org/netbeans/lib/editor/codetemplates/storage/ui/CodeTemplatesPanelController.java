@@ -46,6 +46,7 @@ package org.netbeans.lib.editor.codetemplates.storage.ui;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -58,7 +59,6 @@ import org.openide.util.Lookup;
  */
 @OptionsPanelController.SubRegistration(
     location="Editor",
-    id="CodeTemplates",
     displayName="#CTL_CodeTemplates_DisplayName",
     keywords="#KW_CodeTemplates",
     keywordsCategory="Editor/CodeTemplates",
