@@ -156,6 +156,10 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
         updatePresenter(null); // Not active yet => mark updates pending
     }
     
+    public String getActionName() {
+        return actionName;
+    }
+
     private boolean isActionSelected() {
         return Boolean.TRUE.equals(activeAction().getValue(Action.SELECTED_KEY));
     }
@@ -383,18 +387,7 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
         activeAction().actionPerformed(evt);
     }
 
-    public void setActiveComponent(JTextComponent component) {
-        EditorKit kit;
-        Action a;
-        if (component != null && (kit = component.getUI().getEditorKit(component)) != null) {
-            a = EditorActionUtilities.getAction(kit, actionName);
-        } else {
-            a = null;
-        }
-        setActiveAction(a);
-    }
-
-    private void setActiveAction(Action a) {
+    public void setActiveAction(Action a) {
         if (a == action) { // In this case there is in fact no extra context
             a = null;
         }
