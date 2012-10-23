@@ -166,7 +166,7 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
      */
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName() == DataObject.PROP_MODIFIED &&
-                evt.getNewValue() == Boolean.FALSE) {
+                Boolean.FALSE.equals(evt.getNewValue())) {
             // dataobject has been modified, webLogicWebApp graph is out of sync
             synchronized (this) {
                 webLogicWebApp = null;
