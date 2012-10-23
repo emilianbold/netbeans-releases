@@ -62,12 +62,12 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.editor.PHPCompletionItem;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
-import org.netbeans.modules.php.editor.api.NameKind.Prefix;
-import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.NameKind.Prefix;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -82,6 +82,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class PHPTypeSearcher implements IndexSearcher {
     //TODO: no supported: came cases, regular expressions in queries (needs improve PHPIndex methods)
+    @Override
     public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind originalkind, Helper helper) {
         // XXX: use PHP specific path ids
         EnumSet<Kind> regexpKinds = EnumSet.of(Kind.CAMEL_CASE, Kind.CASE_INSENSITIVE_CAMEL_CASE,  Kind.CASE_INSENSITIVE_REGEXP);
@@ -143,6 +144,7 @@ public class PHPTypeSearcher implements IndexSearcher {
         return result;
     }
 
+    @Override
     public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind originalkind, Helper helper) {
         // XXX: use PHP specific path ids
         EnumSet<Kind> regexpKinds = EnumSet.of(Kind.CAMEL_CASE, Kind.CASE_INSENSITIVE_CAMEL_CASE,  Kind.CASE_INSENSITIVE_REGEXP);
@@ -206,6 +208,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             this.helper = helper;
         }
 
+        @Override
         public Icon getIcon() {
             if (projectName == null) {
                 initProjectInfo();
@@ -216,10 +219,12 @@ public class PHPTypeSearcher implements IndexSearcher {
             return helper.getIcon(element);
         }
 
+        @Override
         public String getTypeName() {
             return element.getName();
         }
 
+        @Override
         public String getProjectName() {
             if (projectName == null) {
                 initProjectInfo();
@@ -243,6 +248,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             }
         }
 
+        @Override
         public Icon getProjectIcon() {
             if (projectName == null) {
                 initProjectInfo();
@@ -250,10 +256,12 @@ public class PHPTypeSearcher implements IndexSearcher {
             return projectIcon;
         }
 
+        @Override
         public FileObject getFileObject() {
             return element.getFileObject();
         }
 
+        @Override
         public void open() {
             FileObject fileObject = element.getFileObject();
             if (fileObject != null) {
@@ -265,6 +273,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             }
         }
 
+        @Override
         public String getContextName() {
             StringBuilder sb = new StringBuilder();
             boolean s = false;
@@ -302,18 +311,22 @@ public class PHPTypeSearcher implements IndexSearcher {
             return null;
         }
 
+        @Override
         public ElementHandle getElement() {
             return element;
         }
 
+        @Override
         public int getOffset() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public String getSimpleName() {
             return element.getName();
         }
 
+        @Override
         public String getOuterName() {
             return null;
         }
