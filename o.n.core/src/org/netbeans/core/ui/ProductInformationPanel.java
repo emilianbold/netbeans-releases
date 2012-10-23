@@ -100,10 +100,12 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         "# {7} - cache dir",
         "# {8} - updates",
         "# {9} - font size",
+        "# {10} - Java runtime",
         "LBL_description=<div style=\"font-size: {9}pt; font-family: Verdana, 'Verdana CE',  Arial, 'Arial CE', 'Lucida Grande CE', lucida, 'Helvetica CE', sans-serif;\">"
             + "<p style=\"margin: 0\"><b>Product Version:</b> {0}</p>\n "
             + "{8}"
             + "<p style=\"margin: 0\"><b>Java:</b> {1}; {2}</p>\n "
+            + "<p style=\"margin: 0\"><b>Runtime:</b> {10}</p>\n "
             + "<p style=\"margin: 0\"><b>System:</b> {3}; {4}; {5}</p>\n "
             + "<p style=\"margin: 0\"><b>User directory:</b> {6}</p>\n "
             + "<p style=\"margin: 0\"><b>Cache directory:</b> {7}</p></div>",
@@ -117,7 +119,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
     public ProductInformationPanel() {
         initComponents();
         imageLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath(), "", FONT_SIZE));
+        description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath(), "", FONT_SIZE, getJavaRuntime()));
         description.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         RequestProcessor.getDefault().post(new Runnable() {
 
@@ -128,7 +130,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
 
                     @Override
                     public void run() {
-                        description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath(), updates, FONT_SIZE));
+                        description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath(), updates, FONT_SIZE, getJavaRuntime()));
                         description.setCursor(null);
                         description.revalidate();
                     }
@@ -309,6 +311,10 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 
     public static String getVMValue () {
         return System.getProperty("java.vm.name", "unknown") + " " + System.getProperty("java.vm.version", "");
+    }
+    
+    public static String getJavaRuntime () {
+        return System.getProperty("java.runtime.name", "unknown") + " " + System.getProperty("java.runtime.version", "");
     }
 
     public static String getSystemLocaleValue () {
