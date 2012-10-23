@@ -230,7 +230,9 @@ final class CreateFilesWorker {
             if (removedFiles.contains(nativeFileItem)) {
                 FileImpl file = project.getFile(nativeFileItem.getAbsolutePath(), true);
                 if (file != null) {
-                    project.removeFile(nativeFileItem.getAbsolutePath());
+                    // comment out due to #215672
+                    // will be removed using checkForRemoved later on
+                    // project.removeFile(nativeFileItem.getAbsolutePath());
                     this.handledFiles.add(UIDCsmConverter.fileToUID(file));
                 }
                 return true;

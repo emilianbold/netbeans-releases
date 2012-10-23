@@ -45,7 +45,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -101,13 +101,13 @@ public class SourceRootContainer {
         }
     }
     
-    public void addSources(List<NativeFileItem> items){
+    public void addSources(Collection<NativeFileItem> items){
         for( NativeFileItem nativeFileItem : items ) {
-            addFile(nativeFileItem);
+            addFileItemBasedPath(nativeFileItem);
         }
     }
     
-    private void addFile(NativeFileItem nativeFileItem) {
+    private void addFileItemBasedPath(NativeFileItem nativeFileItem) {
         FileObject fo = nativeFileItem.getFileObject();
         FileObject parent = fo.getParent();
         String path = CndFileUtils.normalizePath(parent);
