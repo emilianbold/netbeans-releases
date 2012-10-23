@@ -648,7 +648,7 @@ public class LogReader {
                 return pattern;
             }
             if (checkExe) {
-                find = find(line, pattern+".exe");
+                find = find(line, pattern+".exe"); //NOI18N
                 if (find != null) {
                     return pattern;
                 }
