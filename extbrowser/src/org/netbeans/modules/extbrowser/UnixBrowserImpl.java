@@ -76,6 +76,8 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     
     private static RequestProcessor RP = new RequestProcessor();
     
+    private RequestProcessor outOfSwingProcessor;
+    
     /** Creates modified NbProcessDescriptor that can be used to start
      * browser process when <CODE>-remote openURL()</CODE> options
      * cannot be used.
@@ -145,7 +147,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     protected void loadURLInBrowser(URL url) {
         if (SwingUtilities.isEventDispatchThread ()) {
             final URL newUrl = url;
-            RequestProcessor.getDefault ().post (
+            getOutOfSwingProcessor().post (
                 new Runnable () {
                     public void run () {
                         UnixBrowserImpl.this.loadURLInBrowser (newUrl);
@@ -190,6 +192,15 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         catch (java.lang.Exception ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+    
+    private RequestProcessor getOutOfSwingProcessor(){
+        // Method has to be called only in Swing thread 
+        assert SwingUtilities.isEventDispatchThread();
+        if ( outOfSwingProcessor == null){
+            outOfSwingProcessor = new RequestProcessor(UnixBrowserImpl.class);
+        }
+        return outOfSwingProcessor;
     }
    
     /** Object that checks execution result
