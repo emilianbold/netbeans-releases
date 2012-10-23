@@ -110,7 +110,7 @@ public class EditorRegistryWatcher implements PropertyChangeListener {
         if (c == activeTextComponentRef.get()) {
             return;
         }
-        activeTextComponentRef = new WeakReference(c);
+        activeTextComponentRef = new WeakReference<JTextComponent>(c);
         EditorKit kit = (c != null) ? c.getUI().getEditorKit(c) : null;
         SearchableEditorKit searchableKit = (kit != null) ? EditorActionUtilities.getSearchableKit(kit) : null;
         for (PresenterUpdater updater : presenterUpdaters.getList()) {
