@@ -481,15 +481,23 @@ public class JavaCustomIndexer extends CustomIndexer {
                 if (javaContext.getFQNs().remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second)) {
                     String fileName = file.getName();
                     fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-                    final String[] patterns = new String[]{fileName + '.', fileName + '$'}; //NOI18N
+                    final String[][] patterns = new String[][]{
+                        new String[]{fileName + '.', FileObjects.SIG, FileObjects.RS, FileObjects.RAPT, FileObjects.RX},    //NOI18N
+                        new String[]{fileName + '$', FileObjects.SIG}                                                       //NOI18N
+                    };
                     File parent = file.getParentFile();
                     FilenameFilter filter = new FilenameFilter() {
 
                         @Override
                         public boolean accept(File dir, String name) {
-                            for (int i = 0; i < patterns.length; i++) {
-                                if (name.startsWith(patterns[i])) {
-                                    return true;
+                            for (final String[] pattern : patterns) {
+                                if (name.startsWith(pattern[0])) {
+                                    final String ext = FileObjects.getExtension(name);
+                                    for (int i = 1; i< pattern.length; i++) {
+                                        if (pattern[i].equals(ext)) {
+                                            return true;
+                                        }
+                                    }
                                 }
                             }
                             return false;
