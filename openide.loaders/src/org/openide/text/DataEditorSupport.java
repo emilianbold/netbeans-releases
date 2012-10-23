@@ -1306,7 +1306,17 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 charsets.put(tmpObj, c);
                 incrementCacheCounter(tmpObj);
                 ERR.finest("SaveImpl - charset put");
-                des.superSaveDoc();
+                try {
+                    des.superSaveDoc();
+                } catch (UserQuestionException ex) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(ex.getLocalizedMessage(),
+                            NotifyDescriptor.YES_NO_OPTION);
+                    Object res = DialogDisplayer.getDefault().notify(nd);
+
+                    if (NotifyDescriptor.OK_OPTION.equals(res)) {
+                        ex.confirmed();
+                    }
+                }
             } catch (IOException e) {
                 UIException.annotateUser(e, null, 
                     org.openide.util.NbBundle.getMessage(

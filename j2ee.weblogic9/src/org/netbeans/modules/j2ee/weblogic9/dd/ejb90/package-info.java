@@ -49,7 +49,8 @@
     attrProp=true,
     removeUnreferencedNodes=true,
     docRoot="weblogic-ejb-jar",
-    mddFile="../../resources/weblogic-ejb-jar_9_0.mdd"
+    mddFile="../../resources/weblogic-ejb-jar_9_0.mdd",
+    java5=true
 )
 package org.netbeans.modules.j2ee.weblogic9.dd.ejb90;
 

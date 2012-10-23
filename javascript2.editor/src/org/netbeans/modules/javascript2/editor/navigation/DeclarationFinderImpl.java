@@ -86,6 +86,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             JsObject object = occurrence.getDeclarations().iterator().next();
             JsObject parent = object.getParent();
             Collection<? extends TypeUsage> assignments = (parent == null) ? null : parent.getAssignmentForOffset(caretOffset);
+            if (assignments != null && assignments.isEmpty()) {
+                assignments = parent.getAssignments();
+            }
             Snapshot snapshot = jsResult.getSnapshot();
             JsIndex jsIndex = JsIndex.get(snapshot.getSource().getFileObject());
             List<IndexResult> indexResults = new ArrayList<IndexResult>();

@@ -100,6 +100,8 @@ public class Customizer extends JTabbedPane {
                              break;
                     case 4 : helpID = "weblogic_customizer_javadoc";   // NOI18N
                              break;
+                    default:
+                        throw new IllegalStateException("Unknown tab");
                 }
                 putClientProperty("HelpID", helpID); // NOI18N
             }

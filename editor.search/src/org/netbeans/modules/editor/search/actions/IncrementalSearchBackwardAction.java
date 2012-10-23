@@ -46,12 +46,12 @@ import javax.swing.Action;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.modules.editor.search.SearchNbEditorKit;
 
-@EditorActionRegistration(name = SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD,
-        menuText="#" + SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD + "_menu_text") // NOI18N
 public class IncrementalSearchBackwardAction extends SearchAction {
 
     static final long serialVersionUID = -1;
 
+    @EditorActionRegistration(name = SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD,
+    menuText = "#" + SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD + "_menu_text") // NOI18N
     public static Action create(Map<String,?> attrs) {
         return new IncrementalSearchBackwardAction(attrs);
     }
