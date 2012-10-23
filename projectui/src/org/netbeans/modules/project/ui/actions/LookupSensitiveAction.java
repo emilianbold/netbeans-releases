@@ -47,7 +47,6 @@ package org.netbeans.modules.project.ui.actions;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -73,8 +72,8 @@ import org.openide.windows.TopComponent;
  * @author Petr Hrebejk
  */
 abstract class LookupSensitiveAction extends BasicAction implements Runnable, LookupListener, Presenter.Popup, Presenter.Menu {
-    static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
-    private static Logger LOG = Logger.getLogger(LookupSensitiveAction.class.getName());
+    static final Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
+    private static final Logger LOG = Logger.getLogger(LookupSensitiveAction.class.getName());
     protected static final RequestProcessor RP = new RequestProcessor(LookupSensitiveAction.class);
 
     private Lookup lookup;
