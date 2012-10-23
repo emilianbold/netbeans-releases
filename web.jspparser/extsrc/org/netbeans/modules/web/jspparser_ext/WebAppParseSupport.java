@@ -49,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.Reference;
@@ -1100,7 +1101,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             }
         }
 
-        private void updateTldScannerLogger() {
+        private static void updateTldScannerLogger() {
             Logger tldScannerLogger = Logger.getLogger(TldScanner.class.getName());
             if (tldScannerLogger.getFilter() != LOGGER_FILTER) {
                 tldScannerLogger.setFilter(LOGGER_FILTER);
@@ -1117,7 +1118,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 return true;
             }
             if (thrown instanceof ZipException) {
-                LOG.log(Level.INFO, "TldScanner's ZipException", thrown); //NOI18N
+                LOG.log(Level.INFO, "TldScanner's ZipException: ", thrown); //NOI18N
+                return false;
+            } else if (thrown instanceof FileNotFoundException) {
+                // see issues #214308, #205387
+                LOG.log(Level.INFO, "TldScanner's FileNotFoundException: ", thrown); //NOI18N
                 return false;
             }
             return true;
