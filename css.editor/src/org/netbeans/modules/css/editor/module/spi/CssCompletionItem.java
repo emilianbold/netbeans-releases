@@ -381,7 +381,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
     
       static class ColorChooserItem extends DefaultCompletionProposal {
 
-        private static final JColorChooser COLOR_CHOOSER = new JColorChooser();
+        private static JColorChooser COLOR_CHOOSER;
         private Color color;
         private boolean addSemicolon;
         private String origin;
@@ -392,15 +392,23 @@ public abstract class CssCompletionItem implements CompletionProposal {
             this.origin = origin;
         }
 
+        private static synchronized JColorChooser getColorChooser() {
+             if(COLOR_CHOOSER == null) {
+                 COLOR_CHOOSER = new JColorChooser();
+             }
+             return COLOR_CHOOSER;
+        }
+        
         @Override
         public boolean beforeDefaultAction() {
+            final JColorChooser colorChooser = getColorChooser();
             JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(),
                     NbBundle.getMessage(CssCompletion.class, "MSG_Choose_Color"), //NOI18N
-                    true, COLOR_CHOOSER, new ActionListener() {
+                    true, colorChooser, new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    color = COLOR_CHOOSER.getColor();
+                    color = colorChooser.getColor();
                 }
             }, new ActionListener() {
 
@@ -432,7 +440,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public ImageIcon getIcon() {
-            Color c = COLOR_CHOOSER.getColor();
+            Color c = getColorChooser().getColor();
             String colorCode = c == null ? "ffffff" : WebUtils.toHexCode(c).substring(1); //strip off the hash
             return WebUtils.createColorIcon(colorCode);
         }
