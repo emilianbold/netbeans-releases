@@ -272,11 +272,21 @@ public final class CreateElementUtilities {
             typeToResolve = new TreePath(parent, bt.getLeftOperand());
         }
         
-        types.add(ElementKind.PARAMETER);
-        types.add(ElementKind.LOCAL_VARIABLE);
-        types.add(ElementKind.FIELD);
+        if (typeToResolve != null) {
+            TypeMirror resolvedType = info.getTrees().getTypeMirror(typeToResolve);
+            
+            if (resolvedType != null) {
+                types.add(ElementKind.PARAMETER);
+                types.add(ElementKind.LOCAL_VARIABLE);
+                types.add(ElementKind.FIELD);
+                
+                if (resolvedType.getKind() == TypeKind.ERROR || resolvedType.getKind() == TypeKind.OTHER) {
+                    return resolveType(types, info, parent.getParentPath(), bt, offset, null, null);
+                }
+            }
+        }
         
-        return typeToResolve != null ? Collections.singletonList(info.getTrees().getTypeMirror(typeToResolve)) : null;
+        return null;
     }
     
     private static List<? extends TypeMirror> computeMethod(Set<ElementKind> types, CompilationInfo info, TreePath parent, TypeMirror[] typeParameterBound, Tree error, int offset) {
