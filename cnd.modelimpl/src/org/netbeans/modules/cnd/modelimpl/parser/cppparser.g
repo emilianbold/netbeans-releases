@@ -1883,6 +1883,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
         (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
         |   tq = cv_qualifier 
         |   literal_inline {ds = dsINLINE;}
+        |   LITERAL__Noreturn
         |   LITERAL_virtual {ds = dsVIRTUAL;}
         |   LITERAL_explicit {ds = dsEXPLICIT;}
         |   LITERAL_final

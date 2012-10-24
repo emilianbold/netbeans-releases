@@ -44,15 +44,11 @@ package org.netbeans.modules.css.visual.api;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.visual.CssStylesPanel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -67,7 +63,7 @@ import org.openide.windows.TopComponent;
  * @author mfukala@netbeans.org
  */
 @TopComponent.Description(
-        preferredID = RuleEditorTC.ID,
+        preferredID = CssStylesTC.ID,
 persistenceType = TopComponent.PERSISTENCE_ALWAYS,
 iconBase = "org/netbeans/modules/css/visual/resources/css_rule.png") // NOI18N
 @TopComponent.Registration(
@@ -75,33 +71,35 @@ iconBase = "org/netbeans/modules/css/visual/resources/css_rule.png") // NOI18N
 openAtStartup = false)
 @ActionID(
         category = "Window", // NOI18N
-id = "org.netbeans.modules.css.visual.api.RuleEditorTC.OpenAction") // NOI18N
+id = "org.netbeans.modules.css.visual.api.CssStylesTC.OpenAction") // NOI18N
 @ActionReference(
-        path = "Menu/Window/Navigator", // NOI18N
-position = 900)
+        path = "Menu/Window/Web", // NOI18N
+position = 180)
 @TopComponent.OpenActionRegistration(
-        displayName = "#CTL_RuleEditorAction", // NOI18N
-preferredID = RuleEditorTC.ID)
+        displayName = "#CTL_CssStylesAction", // NOI18N
+preferredID = CssStylesTC.ID)
 @NbBundle.Messages({
-    "CTL_RuleEditorAction=Rule Editor", // NOI18N
-    "CTL_RuleEditorTC=Rule Editor {0}", // NOI18N
-    "HINT_RuleEditorTC=This window is an editor of CSS rule properties" // NOI18N
+    "CTL_CssStylesAction=Css Styles", // NOI18N
+    "CTL_CssStylesTC=Css Styles", // NOI18N
+    "HINT_CssStylesTC=This window shows matched style rules of an element and allows to edit them." // NOI18N
 })
-public final class RuleEditorTC extends TopComponent {
+public final class CssStylesTC extends TopComponent {
 
     /**
      * TopComponent ID.
      */
-    public static final String ID = "RuleEditorTC"; // NOI18N
+    public static final String ID = "CssStylesTC"; // NOI18N
+
     /**
      * Panel shown in this {@code TopComponent}.
      */
-    private RuleEditorController controller;
+    private CssStylesPanel cssStylesPanel;
 
-    public RuleEditorTC() {
+    public CssStylesTC() {
         initComponents();
-        setFileNameInTitle(null);
-        setToolTipText(Bundle.HINT_RuleEditorTC());
+        setName(Bundle.CTL_CssStylesTC());
+//        setFileNameInTitle(null);
+        setToolTipText(Bundle.HINT_CssStylesTC());
     }
 
     /**
@@ -109,32 +107,34 @@ public final class RuleEditorTC extends TopComponent {
      * rule editor top component.
      */
     public RuleEditorController getRuleEditorController() {
-        return controller;
+        return cssStylesPanel.getRuleEditorController();
     }
 
-    private void setFileNameInTitle(FileObject file) {
-        String fileName = file == null ? "" : " - " + file.getNameExt();
-        setName(Bundle.CTL_RuleEditorTC(fileName));
-    }
-    
+//    private void setFileNameInTitle(FileObject file) {
+//        String fileName = file == null ? "" : " - " + file.getNameExt();
+//        setName(Bundle.CTL_CssStylesTC(fileName));
+//    }
+     
     /**
-     * Initializes the components in this {@code TopComponent}.
+     * Initializes the components in this {@link TopComponent}.
      */
     private void initComponents() {
         setLayout(new BorderLayout());
-        controller = RuleEditorController.createInstance();
-        controller.addRuleEditorListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().equals(RuleEditorController.PropertyNames.MODEL_SET.name())) {
-                    Model model = (Model)evt.getNewValue();
-                    FileObject file = model == null ? null : model.getLookup().lookup(FileObject.class);
-                    setFileNameInTitle(file);
-                }
-            }
-        });
+        cssStylesPanel = new CssStylesPanel();
         
-        add(controller.getRuleEditorComponent(), BorderLayout.CENTER);
+//        //listen on the controller and modify the TopComponent title if necessary
+//        cssStylesPanel.getRuleEditorController().addRuleEditorListener(new PropertyChangeListener() {
+//            @Override
+//            public void propertyChange(PropertyChangeEvent evt) {
+//                if(evt.getPropertyName().equals(RuleEditorController.PropertyNames.MODEL_SET.name())) {
+//                    Model model = (Model)evt.getNewValue();
+//                    FileObject file = model == null ? null : model.getLookup().lookup(FileObject.class);
+//                    setFileNameInTitle(file);
+//                }
+//            }
+//        });
+//        
+        add(cssStylesPanel, BorderLayout.CENTER);
     }
 
 }

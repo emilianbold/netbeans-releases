@@ -258,6 +258,9 @@ public class BrowserConsoleLogger implements Console.Listener {
         if (fileEnd == -1) {
             return null;
         }
+        if (start >= fileEnd) {
+            return null;
+        }
         int lineNumber = -1;
         int columnNumber = -1;
         try {

@@ -958,6 +958,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 220310 - Incorrect find usages results
         performTest("bug220310.cpp", 4, 39, "bug220310.cpp", 4, 21);
     }    
+
+    public void testBug220680() throws Exception {
+        // Bug 220680 - C11 parser error for _Noreturn
+        performTest("bug220680.c", 1, 17, "bug220680.c", 1, 1);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 
