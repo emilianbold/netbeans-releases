@@ -336,7 +336,6 @@ public class SiteTemplateWizard extends JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         templateButtonGroup = new javax.swing.ButtonGroup();
         infoLabel = new javax.swing.JLabel();
@@ -396,7 +395,7 @@ public class SiteTemplateWizard extends JPanel {
                     .addComponent(noTemplateRadioButton)
                     .addComponent(archiveTemplateRadioButton)
                     .addComponent(onlineTemplateRadioButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
             .addComponent(customCheckBoxPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
