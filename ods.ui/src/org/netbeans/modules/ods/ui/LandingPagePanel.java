@@ -97,7 +97,7 @@ public class LandingPagePanel extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(450, 300));
         setLayout(new java.awt.GridBagLayout());
 
-        iconLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/ods/ui/resources/kenai_logo.png"))); // NOI18N
+        iconLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/ods/ui/resources/ods_logo.png"))); // NOI18N
         iconLabel.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.iconLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
