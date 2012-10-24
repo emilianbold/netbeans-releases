@@ -1072,9 +1072,12 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     private void handleSelection(TreeListNode node) {
         ListSelectionModel selectionModel = treeList.getSelectionModel();
+        List<TreeListNode> children = node.getChildren();
+        int childrenSize = children.size();
+        removeChildrenSelection(children);
         if (!selectionModel.isSelectionEmpty()) {
             int indexOfNode = model.getAllNodes().indexOf(node);
-            if (selectionModel.isSelectedIndex(indexOfNode)) {
+            if (selectionModel.isSelectedIndex(indexOfNode) || selectionModel.isSelectedIndex(indexOfNode + childrenSize + 1)) {
                 int minSelectionIndex = selectionModel.getMinSelectionIndex();
                 int maxSelectionIndex = selectionModel.getMaxSelectionIndex();
                 if (minSelectionIndex == maxSelectionIndex) {
@@ -1093,6 +1096,16 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             }
         }
+    }
+
+    private void removeChildrenSelection(List<TreeListNode> children) {
+        if (children.isEmpty()) {
+            return;
+        }
+        final List<TreeListNode> allNodes = model.getAllNodes();
+        int firstIndex = allNodes.indexOf(children.get(0));
+        int lastIndex = allNodes.indexOf(children.get(children.size() - 1));
+        treeList.getSelectionModel().removeSelectionInterval(firstIndex, lastIndex);
     }
 
     private class ModelListener implements TreeListModelListener {
