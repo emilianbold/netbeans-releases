@@ -959,7 +959,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 final String formattedFileName = fileNameFormatter.formatName(
                     fd.getFileName(),
                     textToFind,
-                    caseSensitive);
+                    caseSensitive,
+                    isSelected? fgSelectionColor : fgColor);
                 jlName.setText(formattedFileName);
                 jlPath.setIcon(null);
                 jlPath.setHorizontalAlignment(SwingConstants.LEFT);
