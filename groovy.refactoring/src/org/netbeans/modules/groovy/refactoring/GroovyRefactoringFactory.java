@@ -97,7 +97,7 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
             final RenameRefactoring renameRefactoring = (RenameRefactoring) refactoring;
 
             if (IdentifiersUtil.isPackageRename(renameRefactoring)) {
-                return new RenamePackagePlugin(sourceFO, renameRefactoring);
+//                return new RenamePackagePlugin(sourceFO, renameRefactoring);
             } else {
                 return new RenameRefactoringPlugin(sourceFO, element, renameRefactoring);
             }
