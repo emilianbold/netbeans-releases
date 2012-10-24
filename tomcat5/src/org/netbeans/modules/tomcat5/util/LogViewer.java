@@ -283,7 +283,7 @@ public class LogViewer extends Thread {
         try {
             File logFile = getLogFile(timestamp);
             BufferedReader reader = null;
-            if (logFile != null) {
+            if (logFile != null && logFile.isFile()) {
                 reader = new BufferedReader(new FileReader(logFile));
             }
             try {
@@ -307,7 +307,7 @@ public class LogViewer extends Thread {
                             reader.close();
                         }
                         logFile = getLogFile(timestamp);
-                        if (logFile != null) {
+                        if (logFile != null && logFile.isFile()) {
                             reader = new BufferedReader(new FileReader(logFile));
                         }
                     }

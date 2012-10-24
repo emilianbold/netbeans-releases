@@ -42,6 +42,7 @@
 package org.netbeans.modules.javafx2.editor.parser;
 
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
@@ -136,6 +137,8 @@ public abstract class ModelAccessor {
     
     public abstract NodeInfo i(FxNode n);
     public abstract <T extends FxNode> T makeBroken(T n);
+    
+    public abstract void addDefinitions(FxModel model, Collection<FxNewInstance> definitions);
     
     public abstract void setNamedInstances(FxModel model, Map<String, FxInstance> instances);
     

@@ -127,7 +127,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                         if (jt == null) {
                             jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), dc, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
                                 public @Override boolean isCanceled() {
-                                    return context.isCancelled();
+                                    return context.isCancelled() || mem.isLowMemory();
                                 }
                             }, tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
                         }
@@ -141,7 +141,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                         }
                         Log.instance(jt.getContext()).nerrors = 0;
                     } catch (CancelAbort ca) {
-                        if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                        if (context.isCancelled() && JavaIndex.LOG.isLoggable(Level.FINEST)) {
                             JavaIndex.LOG.log(Level.FINEST, "SuperOnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
                         }
                     } catch (Throwable t) {
@@ -287,7 +287,11 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             }
             JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
         } catch (CancelAbort ca) {
-            if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+            if (mem.isLowMemory()) {
+                units = null;
+                mem.free();
+                return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            } else if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 JavaIndex.LOG.log(Level.FINEST, "SuperOnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
             }
         } catch (Throwable t) {

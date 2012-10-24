@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.javafx2.editor.parser;
 
+import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
+import org.netbeans.modules.javafx2.editor.completion.model.FxInstanceCopy;
 import org.netbeans.modules.javafx2.editor.completion.model.FxTreeUtilities;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNodeVisitor;
+import org.netbeans.modules.javafx2.editor.completion.model.FxReference;
 import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.LanguageDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.MapProperty;
@@ -82,6 +85,18 @@ public class PrintVisitor extends FxNodeVisitor.ModelTraversal {
             out.append(" ");
         }
         return out;
+    }
+
+    @Override
+    public void visitCopy(FxInstanceCopy decl) {
+        i().append(String.format("copy: source=%s, id=%s\n", decl.getBlueprintId(), decl.getId()));
+        super.visitCopy(decl); 
+    }
+
+    @Override
+    public void visitReference(FxReference decl) {
+        i().append(String.format("reference: source=%s\n", decl.getTargetId()));
+        super.visitReference(decl); 
     }
 
     @Override

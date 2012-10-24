@@ -157,6 +157,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         CallNode cNode = (CallNode)getPath().get(pathSize - 2);
                         if (!cNode.getArgs().contains(accessNode)) {
                             property = ModelElementFactory.createVirtualFunction(parserResult, fromAN, name, cNode.getArgs().size());
+                            //property.addOccurrence(name.getOffsetRange());
                         } else {
                             property = new JsObjectImpl(fromAN, name, name.getOffsetRange());
                         }
@@ -755,19 +756,25 @@ public class ModelVisitor extends PathNodeVisitor {
                 } else {
                     // the variable was probably created as temporary before, now we
                     // need to replace it with the real one
-
                     JsObjectImpl newVariable = new JsObjectImpl(parent, name, name.getOffsetRange(), true);
+                    for(String propertyName: variable.getProperties().keySet()) {
+                        JsObject property = variable.getProperty(propertyName);
+                        if (property instanceof JsObjectImpl) {
+                            ((JsObjectImpl)property).setParent(newVariable);
+                        }
+                        newVariable.addProperty(propertyName, property);
+                    }
                     if (parent.getJSKind() != JsElement.Kind.FILE) {
                         newVariable.getModifiers().remove(Modifier.PUBLIC);
                         newVariable.getModifiers().add(Modifier.PRIVATE);
                     }
-                    parent.addProperty(name.getName(), newVariable);
                     for(TypeUsage type : variable.getAssignments()) {
                         newVariable.addAssignment(type, type.getOffset());
                     }
                     for(Occurrence occurrence: variable.getOccurrences()){
                         newVariable.addOccurrence(occurrence.getOffsetRange());
                     }
+                    parent.addProperty(name.getName(), newVariable);
                     variable = newVariable;
                 }
                 JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();

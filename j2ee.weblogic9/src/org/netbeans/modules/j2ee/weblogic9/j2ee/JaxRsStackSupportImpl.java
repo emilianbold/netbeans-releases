@@ -249,7 +249,6 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
              *  instead of direct file read and DOM modification.  
              */
             Document document = readDocument( config );
-            Element root = document.getDocumentElement();
             
             NodeList nodeList = document.getElementsByTagName( 
                     "container-descriptor");     // NOI18N
