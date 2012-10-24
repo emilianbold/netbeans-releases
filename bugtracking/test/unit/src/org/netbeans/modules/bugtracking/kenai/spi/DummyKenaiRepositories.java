@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.kenai.spi;
 
+import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
@@ -55,6 +56,11 @@ public class DummyKenaiRepositories extends KenaiRepositories {
 
     @Override
     public Collection<RepositoryImpl> getRepositories(boolean allOpenProjects) {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public Collection<RepositoryImpl> getRepositories(boolean includeIDEProjects, boolean onlyDashboardOpenProjects) {
         return Collections.EMPTY_LIST;
     }
 

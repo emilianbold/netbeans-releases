@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.kenai.spi;
 
+import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
@@ -183,10 +184,31 @@ public class KenaiUtil {
      * @see KenaiRepositories#getRepositories()
      */
     public static Collection<Repository> getRepositories(boolean pingOpenProjects) {
-        Collection<RepositoryImpl> impls = KenaiRepositories.getInstance().getRepositories(pingOpenProjects);
+        return getRepositories(pingOpenProjects, false);
+    }
+    
+    /**
+     * @see KenaiRepositories#getRepositories()
+     */
+    public static Collection<Repository> getRepositories(boolean pingOpenProjects, boolean onlyDashboardOpenProjects) {
+        Collection<RepositoryImpl> impls = KenaiRepositories.getInstance().getRepositories(pingOpenProjects, onlyDashboardOpenProjects);
         List<Repository> ret = new ArrayList<Repository>(impls.size());
         for (RepositoryImpl impl : impls) {
             ret.add(impl.getRepository());
+        }
+        return ret;
+    }
+    
+    /**
+     * @see KenaiRepositories#getRepositories()
+     */
+    public static Collection<Repository> getRepositories(String connectorId, boolean pingOpenProjects, boolean onlyDashboardOpenProjects) {
+        Collection<RepositoryImpl> impls = KenaiRepositories.getInstance().getRepositories(pingOpenProjects, onlyDashboardOpenProjects);
+        List<Repository> ret = new ArrayList<Repository>(impls.size());
+        for (RepositoryImpl impl : impls) {
+            if(connectorId.equals(impl.getConnectorId())) {
+                ret.add(impl.getRepository());
+            }
         }
         return ret;
     }
@@ -309,10 +331,10 @@ public class KenaiUtil {
     /**
      * @see KenaiAccessor#getDashboardProjects() 
      */
-    public static KenaiProject[] getDashboardProjects() {
+    public static KenaiProject[] getDashboardProjects(boolean onlyOpened) {
         List<KenaiProject> projs = new LinkedList<KenaiProject>();
         for (KenaiAccessor ka : getKenaiAccessors()) {
-            projs.addAll(Arrays.asList(ka.getDashboardProjects()));
+            projs.addAll(Arrays.asList(ka.getDashboardProjects(onlyOpened)));
         }
         return projs.toArray(new KenaiProject[projs.size()]);
     }

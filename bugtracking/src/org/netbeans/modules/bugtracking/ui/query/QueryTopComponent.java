@@ -419,7 +419,7 @@ public final class QueryTopComponent extends TopComponent
                    cOld instanceof Collection)
                 {
                     RepositoryImpl thisRepo = query.getRepositoryImpl();
-                    if(contains((Collection) cOld, thisRepo) && !contains((Collection) cNew, thisRepo)) {
+                    if(contains((Collection) cOld, thisRepo)) {
                         // removed
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
