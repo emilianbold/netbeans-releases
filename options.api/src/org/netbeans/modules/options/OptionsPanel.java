@@ -78,6 +78,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -111,6 +112,7 @@ import org.openide.awt.QuickSearch;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -426,7 +428,14 @@ public class OptionsPanel extends JPanel {
         int tabIndex = pane == null ? -1 : pane.indexOfTab(tabTitle);
 
         Set<String> keywords = new HashSet<String>();
-        keywords.addAll(Arrays.asList(keywordsFO.getAttribute("keywords").toString().split(","))); //NOI18N
+	Enumeration<String> attributes = keywordsFO.getAttributes();
+	while(attributes.hasMoreElements()) {
+	    String attribute = attributes.nextElement();
+	    if(attribute.startsWith("keywords")) {
+		String word = keywordsFO.getAttribute(attribute).toString();
+		keywords.add(word.toUpperCase());
+	    }
+	}
 
         ArrayList<String> words = categoryid2words.get(location);
         if (words == null) {

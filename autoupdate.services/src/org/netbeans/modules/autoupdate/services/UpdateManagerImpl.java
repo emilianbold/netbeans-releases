@@ -123,7 +123,7 @@ public class UpdateManagerImpl extends Object {
         final Cache c = getCache ();
         if (token.startsWith("cnb.")) { // NOI18N
             UpdateUnit updateUnit = c.getUpdateUnit(token.substring(4));
-            if (updateUnit.getInstalled() != null) {
+            if (updateUnit != null && updateUnit.getInstalled() != null) {
                 return Trampoline.API.impl(updateUnit.getInstalled()).getModuleInfos();
             }
         }

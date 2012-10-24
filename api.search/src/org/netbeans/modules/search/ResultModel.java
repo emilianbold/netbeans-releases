@@ -150,7 +150,7 @@ public final class ResultModel {
      * Notifies ths result model of a newly found matching object.
      *
      * @param  object  matching object
-     * @return  {@code true} if this result model can accept more objects,
+     * @return  {@code true} if this result model accepted the found object,
      *          {@code false} if number of found objects reached the limit, or
      *          the specified {@code object} already exists in the result model.
      * @param  charset  charset used for full-text search of the object,
@@ -161,7 +161,8 @@ public final class ResultModel {
         assert limitReached == null;
         MatchingObject mo = new MatchingObject(this, object, charset,
                 textDetails);
-        if(add(mo)) {
+        boolean added = add(mo);
+        if(added) {
             totalDetailsCount += getDetailsCount(mo);
             int newSelectedMatches = 0;
             if (mo.getTextDetails() != null && !mo.getTextDetails().isEmpty()) {
@@ -178,7 +179,8 @@ public final class ResultModel {
         } else {
             mo.cleanup();
         }
-        return !checkLimits();
+        checkLimits();
+        return added;
     }
 
     private boolean add(MatchingObject matchingObject) {

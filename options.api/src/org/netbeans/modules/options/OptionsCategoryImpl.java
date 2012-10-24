@@ -128,11 +128,11 @@ public class OptionsCategoryImpl extends OptionsCategory {
         }
     }
 
-    final Map<String, Set<String>> getKeywordsByCategory() {
-        if (keywordsCategory != null && keywords != null) {
-            return Collections.<String,Set<String>>singletonMap(keywordsCategory, new HashSet<String>(Arrays.asList(keywords.split(",")))); // NOI18N
-        } else {
-            return Collections.emptyMap();
-        }
+    final Set<String> getKeywordsByCategory() {
+	if (keywordsCategory != null && keywords != null) {
+	    return Collections.singleton(keywords);
+	} else {
+	    return Collections.emptySet();
+	}
     }
 }

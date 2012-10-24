@@ -58,7 +58,6 @@ import org.openide.util.Lookup;
  */
 @OptionsPanelController.SubRegistration(
     location="Java",
-    id="FormEditor",
     displayName="#Form_Editor",
     keywords="#KW_FormOptions",
     keywordsCategory="Java/FormEditor")

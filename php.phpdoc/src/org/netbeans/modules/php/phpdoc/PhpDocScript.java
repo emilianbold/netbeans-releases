@@ -80,7 +80,7 @@ public final class PhpDocScript {
 
     public static final String SCRIPT_NAME = "phpdoc"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
-    public static final String OPTIONS_SUB_PATH = "PhpDoc"; // NOI18N
+    public static final String OPTIONS_SUB_PATH = "org-netbeans-modules-php-phpdoc-ui-options-PhpDocOptionsPanelController"; // NOI18N
 
     private static final boolean IS_WINDOWS = Utilities.isWindows();
 

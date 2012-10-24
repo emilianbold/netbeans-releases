@@ -1838,9 +1838,14 @@ public class OutlineView extends JScrollPane {
         }
 
         private void setPreferredTreeWidth(int row, int width) {
-            if (isHScrollingEnabled && rowWidths[row] != width) {
-                rowWidths[row] = width;
-                changeTask.schedule(100);
+            if (isHScrollingEnabled) {
+                if (row >= rowWidths.length) {
+                    rowWidths = Arrays.copyOf(rowWidths, row);
+                }
+                if (rowWidths[row] != width) {
+                    rowWidths[row] = width;
+                    changeTask.schedule(100);
+                }
             }
         }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.libs.git.jgit.utils;
 
-package org.apache.tools.ant.module.run;
+import org.eclipse.jgit.diff.RawText;
+import org.eclipse.jgit.diff.RawTextComparator;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import org.apache.tools.ant.module.AntModule;
-import org.apache.tools.ant.module.api.support.TargetLister;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle.Messages;
+/**
+ *
+ * @author Ondrej Vrabec
+ */
+public class AutoCRLFComparator extends RawTextComparator {
 
-@ActionID(category="Build", id="org.apache.tools.ant.module.run.RunTargetAction")
-@ActionRegistration(displayName="#LBL_execute_target")
-@ActionReference(path="org-apache-tools-ant-module/target-actions", position=300)
-@Messages("LBL_execute_target=Run Target")
-public final class RunTargetAction implements ActionListener {
+    @Override
+    public boolean equals (RawText a, int ai, RawText b, int bi) {
+        String line1 = a.getString(ai);
+        String line2 = b.getString(bi);
+        line1 = trimTrailingEoL(line1);
+        line2 = trimTrailingEoL(line2);
 
-    private final TargetLister.Target target;
-
-    public RunTargetAction(TargetLister.Target target) {
-        this.target = target;
+        return line1.equals(line2);
     }
 
-    @Override public void actionPerformed(ActionEvent e) {
-        try {
-            new TargetExecutor(target.getOriginatingScript(), new String[] {target.getName()}).execute();
-        } catch (IOException ioe) {
-            AntModule.err.notify(ioe);
+    @Override
+    protected int hashRegion (final byte[] raw, int ptr, int end) {
+        int hash = 5381;
+        end = trimTrailingEoL(raw, ptr, end);
+        for (; ptr < end; ptr++) {
+            hash = ((hash << 5) + hash) + (raw[ptr] & 0xff);
         }
+        return hash;
     }
 
+    private static String trimTrailingEoL (String line) {
+        int end = line.length() - 1;
+        while (end >= 0 && isNewLine(line.charAt(end))) {
+            --end;
+        }
+        return line.substring(0, end + 1);
+    }
+
+    private static int trimTrailingEoL(byte[] raw, int start, int end) {
+        int ptr = end - 1;
+        while (start <= ptr && (raw[ptr] == '\r' || raw[ptr] == '\n')) {
+            ptr--;
+        }
+
+        return ptr + 1;
+    }
+
+    private static boolean isNewLine (char ch) {
+        return ch == '\n' || ch == '\r';
+    }
 }
