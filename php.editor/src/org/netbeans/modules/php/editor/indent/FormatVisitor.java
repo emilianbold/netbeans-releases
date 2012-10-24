@@ -68,22 +68,21 @@ import org.openide.util.Exceptions;
 public class FormatVisitor extends DefaultVisitor {
 
     private static final Logger LOGGER = Logger.getLogger(FormatVisitor.class.getName());
-    private BaseDocument document;
+    private final BaseDocument document;
     private final List<FormatToken> formatTokens;
-    TokenSequence<PHPTokenId> ts;
-    private LinkedList<ASTNode> path;
-    private int indentLevel;
-    private final int tsTokenCount;
-    private DocumentOptions options;
+    private final TokenSequence<PHPTokenId> ts;
+    private final LinkedList<ASTNode> path;
+    private final DocumentOptions options;
+    private final Stack<GroupAlignmentTokenHolder> groupAlignmentTokenHolders;
+    private final int indentLevel;
+    private final int caretOffset;
+    private final int startOffset;
+    private final int endOffset;
     private boolean includeWSBeforePHPDoc;
     private boolean isCurly; // whether the last visited block is curly or standard syntax.
     private boolean isMethodInvocationShifted; // is continual indentation already included ?
     private boolean isFirstUseStatementPart;
     private boolean isFirstUseTraitStatementPart;
-    private Stack<GroupAlignmentTokenHolder> groupAlignmentTokenHolders = new Stack<GroupAlignmentTokenHolder>();
-    private final int caretOffset;
-    private final int startOffset;
-    private final int endOffset;
 
     public FormatVisitor(BaseDocument document, final int caretOffset, final int startOffset, final int endOffset) {
         this.document = document;
@@ -92,13 +91,13 @@ public class FormatVisitor extends DefaultVisitor {
         indentLevel = 0;
         options = new DocumentOptions(document);
         includeWSBeforePHPDoc = true;
-        tsTokenCount = ts == null ? 1 : ts.tokenCount();
-        formatTokens = new ArrayList<FormatToken>(tsTokenCount * 2);
+        formatTokens = new ArrayList<FormatToken>(ts == null ? 1 : ts.tokenCount() * 2);
         this.caretOffset = caretOffset;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
+        groupAlignmentTokenHolders = new Stack<GroupAlignmentTokenHolder>();
     }
 
     public List<FormatToken> getFormatTokens() {
