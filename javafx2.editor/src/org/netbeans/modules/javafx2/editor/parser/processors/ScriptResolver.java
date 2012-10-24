@@ -46,55 +46,65 @@ import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.javafx2.editor.ErrorMark;
-import org.netbeans.modules.javafx2.editor.completion.model.FxInclude;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNodeVisitor;
+import org.netbeans.modules.javafx2.editor.completion.model.FxScriptFragment;
 import org.netbeans.modules.javafx2.editor.completion.model.TextPositions;
 import org.netbeans.modules.javafx2.editor.parser.BuildEnvironment;
 import org.netbeans.modules.javafx2.editor.parser.ModelBuilderStep;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.javafx2.editor.parser.processors.Bundle.*;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
+
+
 /**
- *
+ * PENDING - merge the include resolver and script resolver into one code; just messages differ,
+ * factor out reference resolution.
+ * 
  * @author sdedic
  */
-public class IncludeResolver extends FxNodeVisitor.ModelTreeTraversal implements ModelBuilderStep {
+public class ScriptResolver  extends FxNodeVisitor.ModelTreeTraversal implements ModelBuilderStep {
     
     private BuildEnvironment env;
 
-    public IncludeResolver() {
+    public ScriptResolver() {
     }
 
-    IncludeResolver(BuildEnvironment env) {
+    ScriptResolver(BuildEnvironment env) {
         this.env = env;
     }
 
     @NbBundle.Messages({
-        "ERR_emptyIncludePath=Include source cannot be empty.",
         "# {0} - source path",
-        "# {1} - processing exception",
-        "ERR_invalidSourcePath=Include path {0} is invalid: {1}",
-        "# {0} - source path",
-        "ERR_unresolvedIncludePath=Included file cannot be found: {0}"
+        "# {1} - original exception message",
+        "ERR_invalidScriptPath=Invalid script source path: {0} ({1})",
+        "ERR_emptySourcePath=Script source path is empty",
+        "# {0} - script path",
+        "ERR_unresolvedScriptPath=Script source not found: {0}"
     })
     @Override
-    public void visitInclude(FxInclude decl) {
-        String srcPath = decl.getSourcePath();
-        FileObject targetFo = null;
+    public void visitScript(FxScriptFragment script) {
+        String srcPath = script.getSourcePath();
         
-        if ("".equals(srcPath)) {
-            TextPositions pos = env.getTreeUtilities().positions(decl);
-            env.addError(new ErrorMark(
-                    pos.getStart(), pos.getEnd() - pos.getStart(),
-                    "empty-include-source-path",
-                    ERR_emptyIncludePath(),
-                    decl
-            ));
-            env.getAccessor().makeBroken(decl);
+        if (srcPath == null) {
             return;
         }
+        
+        if ("".equals(srcPath)) {
+            TextPositions pos = env.getTreeUtilities().positions(script);
+            env.addError(new ErrorMark(
+                    pos.getStart(), pos.getEnd() - pos.getStart(),
+                    "empty-script-source-path",
+                    ERR_emptySourcePath(),
+                    script
+            ));
+            env.getAccessor().makeBroken(script);
+            return;
+        }
+
+        FileObject targetFo = null;
+        
         if (srcPath.startsWith("/")) {
             // guide: relative to classpath; try to find a resource which match the path
             ClassPath cp = env.getCompilationInfo().getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
@@ -108,42 +118,43 @@ public class IncludeResolver extends FxNodeVisitor.ModelTreeTraversal implements
                 }
             }
         } else {
+
+            URL u;
             try {
-                URL u = new URL(env.getModel().getBaseURL(), srcPath);
+                u = new URL(env.getModel().getBaseURL(), srcPath);
                 targetFo = URLMapper.findFileObject(u);
             } catch (MalformedURLException ex) {
-                TextPositions pos = env.getTreeUtilities().positions(decl);
+                TextPositions pos = env.getTreeUtilities().positions(script);
                 env.addError(new ErrorMark(
                         pos.getStart(), pos.getEnd() - pos.getStart(),
-                        "invalid-source-path",
-                        ERR_invalidSourcePath(srcPath, ex.getLocalizedMessage()),
-                        decl
+                        "invalid-script-path",
+                        ERR_invalidScriptPath(srcPath, ex.getLocalizedMessage()),
+                        script
                 ));
-                env.getAccessor().makeBroken(decl);
+                env.getAccessor().makeBroken(script);
                 return;
             }
-            
         }
-        
         if (targetFo == null) {
-            TextPositions pos = env.getTreeUtilities().positions(decl);
+            TextPositions pos = env.getTreeUtilities().positions(script);
             env.addError(new ErrorMark(
                     pos.getStart(), pos.getEnd() - pos.getStart(),
-                    "unresolved-include-path",
-                    ERR_unresolvedIncludePath(srcPath),
-                    decl
+                    "unresolved-script-path",
+                    ERR_unresolvedScriptPath(srcPath),
+                    script
             ));
-            env.getAccessor().makeBroken(decl);
+            env.getAccessor().makeBroken(script);
         } else {
             URL resolvedUrl = targetFo.toURL();
-            env.getAccessor().resolveResource(decl, resolvedUrl);
+            env.getAccessor().resolveResource(script, resolvedUrl);
         }
+        
+        super.visitScript(script); 
     }
-    
 
     @Override
     public FxNodeVisitor createVisitor(BuildEnvironment env) {
-        return new IncludeResolver(env);
+        return new ScriptResolver(env);
     }
     
 }

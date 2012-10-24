@@ -42,59 +42,86 @@
 package org.netbeans.modules.javafx2.editor.completion.model;
 
 import java.net.URL;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
 
 /**
- * Represents fx:include instruction. Initially, the fx:include may be unresolved,
- * does not contain the included java type etc. Only filename is resolved (or an error
- * is reported).
  *
  * @author sdedic
  */
-public class FxInclude extends FxObjectBase implements HasResource {
-    private String  sourcePath;
-    private URL  resolvedURL;
-    private FxNewInstance target;
+public class FxScriptFragment extends FxNode  implements HasContent, HasResource {
+    
+    /**
+     * Source as written in the attribute
+     */
+    private String  source;
+    
+    /**
+     * Source location resolved against the original location
+     */
+    @NullAllowed
+    private URL     sourceURL;
+    
+    /**
+     * Content of the fragment, null for fragments with source reference
+     */
+    @NullAllowed
+    private Object  content;
 
-    public FxInclude(String sourcePath) {
-        this.sourcePath = sourcePath;
+    public FxScriptFragment(String source) {
+        this.source = source;
+    }
+    
+    void addContent(CharSequence content) {
+        this.content = PropertySetter.addCharContent(this.content, content);
+    }
+    
+    void resolveSource(URL resolved) {
+        this.sourceURL = resolved;
+    }
+    
+    public CharSequence getContent() {
+        CharSequence s = PropertySetter.getValContent(this.content);
+        if (s != content) {
+            content = s;
+        }
+        return s;
+    }
+    
+    public boolean hasContent() {
+        return content != null;
     }
 
     @Override
-    public Kind getKind() {
-        return Kind.Include;
-    }
-
     public String getSourcePath() {
-        return sourcePath;
+        return source;
+    }
+    
+    @Override
+    public URL getResolvedURL() {
+        return sourceURL;
+    }
+    
+    @Override
+    public Kind getKind() {
+        return Kind.Script;
     }
 
-    public URL getResolvedURL() {
-        return resolvedURL;
+    @Override
+    public void accept(FxNodeVisitor v) {
+        v.visitScript(this);
     }
 
     @Override
     public String getSourceName() {
-        return FxXmlSymbols.FX_INCLUDE;
+        return FxXmlSymbols.FX_SCRIPT;
     }
-    
+
     @Override
-    public void accept(FxNodeVisitor v) {
-        v.visitInclude(this);
-    }
-    
-    void resolveFile(URL targetFile) {
-        this.resolvedURL = targetFile;
-    }
-    
-    public FxNewInstance resolve(FxmlParserResult result) {
-        if (target != null) {
-            return target;
-        }
-        return target = result.resolveInstance(this);
-    }
-    
-    void resolveTarget(FxNewInstance target) {
-        this.target = target;
-        resolve(target.getJavaType(), null, null, target.getDefinition());
+    void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
+        // no op
     }
 }

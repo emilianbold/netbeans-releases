@@ -42,59 +42,25 @@
 package org.netbeans.modules.javafx2.editor.completion.model;
 
 import java.net.URL;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
- * Represents fx:include instruction. Initially, the fx:include may be unresolved,
- * does not contain the included java type etc. Only filename is resolved (or an error
- * is reported).
- *
+ * Common interface for model elements, which point to an external resource.
+ * 
  * @author sdedic
  */
-public class FxInclude extends FxObjectBase implements HasResource {
-    private String  sourcePath;
-    private URL  resolvedURL;
-    private FxNewInstance target;
-
-    public FxInclude(String sourcePath) {
-        this.sourcePath = sourcePath;
-    }
-
-    @Override
-    public Kind getKind() {
-        return Kind.Include;
-    }
-
-    public String getSourcePath() {
-        return sourcePath;
-    }
-
-    public URL getResolvedURL() {
-        return resolvedURL;
-    }
-
-    @Override
-    public String getSourceName() {
-        return FxXmlSymbols.FX_INCLUDE;
-    }
+public interface HasResource {
+    /**
+     * Path to the resource, as given in the soruce text
+     * @return 
+     */
+    @CheckForNull
+    public String getSourcePath();
     
-    @Override
-    public void accept(FxNodeVisitor v) {
-        v.visitInclude(this);
-    }
-    
-    void resolveFile(URL targetFile) {
-        this.resolvedURL = targetFile;
-    }
-    
-    public FxNewInstance resolve(FxmlParserResult result) {
-        if (target != null) {
-            return target;
-        }
-        return target = result.resolveInstance(this);
-    }
-    
-    void resolveTarget(FxNewInstance target) {
-        this.target = target;
-        resolve(target.getJavaType(), null, null, target.getDefinition());
-    }
+    /**
+     * Resolved reference to the resource.
+     * @return 
+     */
+    @CheckForNull
+    public URL  getResolvedURL();
 }
