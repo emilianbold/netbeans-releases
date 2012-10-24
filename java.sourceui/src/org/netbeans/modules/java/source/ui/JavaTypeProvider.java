@@ -47,6 +47,7 @@
 package org.netbeans.modules.java.source.ui;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
@@ -57,6 +58,8 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
+import org.apache.lucene.document.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -76,9 +79,12 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
+import org.netbeans.modules.java.source.usages.DocumentUtil;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -102,7 +108,7 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.type.TypeProvider.class)
 public class JavaTypeProvider implements TypeProvider {
     private static final Logger LOGGER = Logger.getLogger(JavaTypeProvider.class.getName());
-    private Set<CacheItem> cache;
+    private Map<URI,CacheItem> rootCache;
     private volatile boolean isCanceled = false;
     private final TypeElementFinder.Customizer customizer;
     private ClasspathInfo cpInfo;
@@ -123,7 +129,7 @@ public class JavaTypeProvider implements TypeProvider {
     public void cleanup() {
         isCanceled = false;
 //        cache = null;
-        setCache(null);
+        setRootCache(null);
     }
 
     @Override
@@ -168,11 +174,11 @@ public class JavaTypeProvider implements TypeProvider {
             LOGGER.fine(ex.getMessage());
         }
 
-        if (getCache() == null) {
-            Set<CacheItem> sources = null;
+        if (getRootCache() == null) {
+            Map<URI,CacheItem> sources = null;
 
             if (cpInfo == null) {
-                sources = new HashSet<CacheItem>();
+                sources = new HashMap<URI,CacheItem>();
 
                 // Sources - ClassPath.SOURCE and translated ClassPath.COMPILE & ClassPath.BOOT
                 Collection<FileObject> srcRoots = QuerySupport.findRoots(
@@ -185,17 +191,15 @@ public class JavaTypeProvider implements TypeProvider {
                     if ( isCanceled ) {
                         return;
                     }
-                    URL rootUrl;
-                    try {
-                        rootUrl = root.getURL();
-                    } catch (FileStateInvalidException fsie) {
-                        continue;
-                    }
+                    final URL rootUrl = root.toURL();
                     if ( isCanceled ) {
                         return;
-                    }
-                    else {
-                        sources.add(new CacheItem( rootUrl, ClassPath.SOURCE));
+                    } else {
+                        try {
+                            sources.put(rootUrl.toURI(), new CacheItem( rootUrl, ClassPath.SOURCE));
+                        } catch (URISyntaxException ex) {
+                            LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", rootUrl);  //NOI18N
+                        }
                     }
                 }
 
@@ -210,12 +214,7 @@ public class JavaTypeProvider implements TypeProvider {
                     if ( isCanceled ) {
                         return;
                     }
-                    URL rootUrl;
-                    try {
-                        rootUrl = root.getURL();
-                    } catch (FileStateInvalidException fsie) {
-                        continue;
-                    }
+                    URL rootUrl = root.toURL();
                     if (!hasBinaryOpen) {
                         SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(rootUrl);
                         if ( result.getRoots().length == 0 ) {
@@ -226,7 +225,11 @@ public class JavaTypeProvider implements TypeProvider {
                         return;
                     }
                     else {
-                        sources.add(new CacheItem( rootUrl, ClassPath.BOOT));
+                        try {
+                            sources.put(rootUrl.toURI(), new CacheItem( rootUrl, ClassPath.BOOT));
+                        } catch (URISyntaxException ex) {
+                            LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", rootUrl);  //NOI18N
+                        }
                     }
                 }
             } else { // user provided classpath
@@ -234,7 +237,7 @@ public class JavaTypeProvider implements TypeProvider {
                 final List<ClassPath.Entry> bootRoots = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT).entries();
                 final List<ClassPath.Entry> compileRoots = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE).entries();
                 final List<ClassPath.Entry> sourceRoots = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE).entries();
-                sources = new HashSet<CacheItem>(bootRoots.size() + compileRoots.size() + sourceRoots.size());
+                sources = new HashMap<URI,CacheItem>(bootRoots.size() + compileRoots.size() + sourceRoots.size());
 
                 // bootPath
                 for (ClassPath.Entry entry : bootRoots) {
@@ -242,7 +245,11 @@ public class JavaTypeProvider implements TypeProvider {
                         return;
                     }
                     else {
-                        sources.add(new CacheItem( entry.getURL(),ClassPath.BOOT));
+                        try {
+                            sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.BOOT));
+                        } catch (URISyntaxException ex) {
+                            LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", entry.getURL());  //NOI18N
+                        }
                     }
                 }
 
@@ -252,7 +259,11 @@ public class JavaTypeProvider implements TypeProvider {
                         return;
                     }
                     else {
-                        sources.add( new CacheItem(entry.getURL(),ClassPath.COMPILE));
+                        try {
+                            sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.COMPILE));
+                        } catch (URISyntaxException ex) {
+                            LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", entry.getURL());  //NOI18N
+                        }
                     }
                 }
 
@@ -262,7 +273,11 @@ public class JavaTypeProvider implements TypeProvider {
                         return;
                     }
                     else {
-                        sources.add(new CacheItem(entry.getURL(),ClassPath.SOURCE));
+                        try {
+                            sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.SOURCE));
+                        } catch (URISyntaxException ex) {
+                            LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", entry.getURL());  //NOI18N
+                        }
                     }
                 }
             }
@@ -271,16 +286,12 @@ public class JavaTypeProvider implements TypeProvider {
 //                cache = sources;
                 if (LOGGER.isLoggable(LEVEL)) {
                     LOGGER.log(LEVEL, "Querying following roots:"); //NOI18N
-                    for(CacheItem ci : sources) {
-                        try {
-                            LOGGER.log(LEVEL, "  {0}; binary={1}", new Object[]{ci.getRoot().getURL(), ci.isBinary()}); //NOI18N
-                        } catch (FileStateInvalidException ex) {
-                            // ignore
-                        }
+                    for(CacheItem ci : sources.values()) {
+                        LOGGER.log(LEVEL, "  {0}; binary={1}", new Object[]{ci.getRoot().toURI(), ci.isBinary()}); //NOI18N
                     }
                     LOGGER.log(LEVEL, "-------------------------"); //NOI18N
                 }
-                setCache(sources);
+                setRootCache(sources);
             }
             else {
                 return;
@@ -288,12 +299,12 @@ public class JavaTypeProvider implements TypeProvider {
 
         }
 
-        Set<CacheItem> c = getCache();
+        final Map<URI,CacheItem> c = getRootCache();
         if (c == null) return;
         final ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(c.size() * 20);
 
         // is scan in progress? If so, provide a message to user.
-        boolean scanInProgress = SourceUtils.isScanInProgress();
+        final boolean scanInProgress = SourceUtils.isScanInProgress();
         if (scanInProgress) {
             // ui message
             String message = NbBundle.getMessage(JavaTypeProvider.class, "LBL_ScanInProgress_warning");
@@ -311,90 +322,69 @@ public class JavaTypeProvider implements TypeProvider {
 
         LOGGER.log(Level.FINE, "Text For Query ''{0}''.", originalText);
         if (customizer != null) {
-            c = getCache();
-            if (c != null) {
-                for (final CacheItem ci : c) {
-                    final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (customizer.query(
-                            ci.getClasspathInfo(), textForQuery, nameKind,  //Needs to pass slow cpinfo to keep compatibility
-                            EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
+            for (final CacheItem ci : c.values()) {
+                final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (customizer.query(
+                        ci.getClasspathInfo(), textForQuery, nameKind,  //Needs to pass slow cpinfo to keep compatibility
+                        EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
+                ));
+                if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
+                    names.addAll(customizer.query(
+                        ci.getClasspathInfo(), textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, //Needs to pass slow cpinfo to keep compatibility
+                        EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
                     ));
-                    if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
-                        names.addAll(customizer.query(
-                            ci.getClasspathInfo(), textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, //Needs to pass slow cpinfo to keep compatibility
-                            EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
-                        ));
-                    }
-                    for (ElementHandle<TypeElement> name : names) {
-                        JavaTypeDescription td = new JavaTypeDescription(ci, name);
-                        types.add(td);
-                        if (isCanceled) {
-                            return;
-                        }
+                }
+                for (ElementHandle<TypeElement> name : names) {
+                    JavaTypeDescription td = new JavaTypeDescription(ci, name);
+                    types.add(td);
+                    if (isCanceled) {
+                        return;
                     }
                 }
             }
-
-        } else {
-            ClassIndexManager.getDefault().addClassIndexManagerListener(new ClassIndexManagerListener() {
-                @Override
-                public void classIndexAdded(ClassIndexManagerEvent event) {
-                    synchronized (JavaTypeProvider.this) {
-                        JavaTypeProvider.this.notify();
-                    }
-                }
-                @Override
-                public void classIndexRemoved(ClassIndexManagerEvent event) {
-                }
-            });
-            do {
-                c = getCache();
-                if (c == null) return;
-                try {
-                    //Perform queries in single readAccess to suspend RU for all queries.
-                    IndexManager.priorityAccess(new Action<Void>() {
-                        @Override
-                        public Void run() throws IOException, InterruptedException {
-                            for (final CacheItem ci : getCache()) {
-                                if (isCanceled) {
-                                    return null;
-                                }
-                                final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (
-                                        ci.getDeclaredTypes(packageName, textForQuery,nameKind));
-                                if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
-                                    names.addAll(ci.getDeclaredTypes(packageName, textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX));
-                                }
-                                for (ElementHandle<TypeElement> name : names) {
-                                    JavaTypeDescription td = new JavaTypeDescription(ci, name);
-                                    types.add(td);
-                                    if (isCanceled) {
-                                        return null;
-                                    }
-                                }
+        } else {            
+            try {
+                //Perform queries in single readAccess to suspend RU for all queries.
+                IndexManager.priorityAccess(new Action<Void>() {
+                    @Override
+                    public Void run() throws IOException, InterruptedException {
+                        for (final CacheItem ci : c.values()) {
+                            if (isCanceled) {
+                                return null;
                             }
-                            return null;
+                            try {
+                                ci.collectDeclaredTypes(packageName, textForQuery,nameKind, types);
+                                if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
+                                    ci.collectDeclaredTypes(packageName, textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, types);
+                                }
+                            } catch (IOException ioe) {
+                                Exceptions.printStackTrace(ioe);
+                            } catch (InterruptedException ie) {
+                                //Never happens
+                                throw new AssertionError(ie);
+                            }
                         }
-                    });
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                if ( isCanceled ) {
-                    return;
-                }
-                if (types.isEmpty() && scanInProgress) {
-                    res.pendingResult();
-                    return;
-                }
-                scanInProgress = SourceUtils.isScanInProgress();
-            } while (scanInProgress && types.isEmpty());
+                        return null;
+                    }
+                });
+            } catch (IOException ex) {
+                //Never happens
+                throw new AssertionError(ex);
+            } catch (InterruptedException ex) {
+                //Never happens
+                throw new AssertionError(ex);
+            }
+            if ( isCanceled ) {
+                return;
+            }
+            if (scanInProgress) {
+                res.pendingResult();
+            }
         }
         if ( !isCanceled ) {
             // Sorting is now done on the Go To Tpe dialog side
             // Collections.sort(types);
             res.addResult(types);
         }
-
     }
 
     static String removeNonJavaChars(String text) {
@@ -409,18 +399,19 @@ public class JavaTypeProvider implements TypeProvider {
        return sb.toString();
     }
 
-    private Set<CacheItem> getCache() {
-        if (cache == null && LOGGER.isLoggable(LEVEL)) {
+    @CheckForNull
+    private Map<URI, CacheItem> getRootCache() {
+        if (LOGGER.isLoggable(LEVEL) && rootCache == null) {
             LOGGER.log(LEVEL, "Returning null cache entries.", new Exception());
         }
-        return cache;
+        return rootCache;
     }
 
-    private void setCache(Set<CacheItem> cache) {
+    private void setRootCache(@NullAllowed final Map<URI,CacheItem> cache) {
         if (LOGGER.isLoggable(LEVEL)) {
-            LOGGER.log(LEVEL, "Setting cache entries from " + this.cache + " to " + cache + ".", new Exception());
+            LOGGER.log(LEVEL, "Setting cache entries from " + this.rootCache + " to " + cache + ".", new Exception());
         }
-        this.cache = cache;
+        this.rootCache = cache;
     }
 
     private static String getTextForQuery(String text, final NameKind nameKind, SearchType searchType) {
@@ -515,7 +506,7 @@ public class JavaTypeProvider implements TypeProvider {
         public Icon projectIcon;
         private final boolean isBinary;
         private ClasspathInfo cpInfo;
-        private ClassIndex index;
+        private ClassIndexImpl index;
         private final String cpType;
         private FileObject cachedRoot;
 
@@ -585,38 +576,36 @@ public class JavaTypeProvider implements TypeProvider {
         }
 
         @NonNull
-        public  Set<ElementHandle<TypeElement>> getDeclaredTypes(
+        public  void collectDeclaredTypes(
             @NullAllowed final Pattern packageName,
             @NonNull final String typeName,
-            @NonNull NameKind kind) {
+            @NonNull NameKind kind,
+            @NonNull Collection<? super JavaTypeDescription> collector) throws IOException, InterruptedException {
+            if (index == null) {                
+                index = ClassIndexManager.getDefault().getUsagesQuery(root, true);
+            }
             if (index == null) {
-                final ClassPath cp = ClassPathSupport.createClassPath(root);
-                index = isBinary ? 
-                    ClassPath.BOOT.equals(cpType) ?
-                        JavaSourceAccessor.getINSTANCE().createClassIndex(cp,ClassPath.EMPTY,ClassPath.EMPTY,false):
-                        JavaSourceAccessor.getINSTANCE().createClassIndex(ClassPath.EMPTY,cp,ClassPath.EMPTY,false):
-                    JavaSourceAccessor.getINSTANCE().createClassIndex(ClassPath.EMPTY,ClassPath.EMPTY,cp,false);
+                return;
             }
             final SearchScope baseSearchScope = isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE;
             SearchScopeType searchScope;
             if (packageName != null) {
                 //FQN
-                Set<? extends String> packages = filterPackages(
-                        packageName,
-                        index.getPackageNames(
-                            "",
-                            false,
-                            Collections.<SearchScopeType>singleton(baseSearchScope)));
+                final Set<String> allPackages = new HashSet<String>();
+                index.getPackageNames("", false, allPackages);  //NOI18N
+                final Set<? extends String> packages = filterPackages(packageName, allPackages);
                 searchScope = ClassIndex.createPackageSearchScope(baseSearchScope, packages.toArray(new String[packages.size()]));
                 kind = translateSearchType(typeName, kind);
             } else {
                 //simple name
                 searchScope = baseSearchScope;
             }
-
-
-            Set<SearchScopeType> searchScopeSet = Collections.<SearchScopeType>singleton(searchScope);
-            return index.getDeclaredTypes(typeName, kind, Collections.unmodifiableSet(searchScopeSet));
+            index.getDeclaredTypes(
+                typeName,
+                kind,
+                Collections.unmodifiableSet(Collections.<SearchScopeType>singleton(searchScope)),
+                new JavaTypeDescriptionConvertor(this),
+                collector);
         }
 
         private void initProjectInfo() {
@@ -643,6 +632,24 @@ public class JavaTypeProvider implements TypeProvider {
                 }
             }
             return result;
+        }
+
+        private static class JavaTypeDescriptionConvertor implements Convertor<Document, JavaTypeDescription> {
+
+            private final CacheItem ci;
+            private final Convertor<Document,ElementHandle<TypeElement>> delegate;
+
+            JavaTypeDescriptionConvertor(@NonNull final CacheItem ci) {
+                this.ci = ci;
+                this.delegate = DocumentUtil.elementHandleConvertor();
+            }
+
+            @Override
+            public JavaTypeDescription convert(Document p) {
+                final ElementHandle<TypeElement> eh = delegate.convert(p);
+                return eh == null ? null : new JavaTypeDescription(ci, eh);
+            }
+
         }
 
     }

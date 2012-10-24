@@ -453,9 +453,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private volatile boolean isCanceled = false;
         private volatile TypeProvider current;
         private final String text;
-        private final boolean caseSensitive;
-        
+        private final boolean caseSensitive;        
         private final long createTime;
+
+        private int lastSize = -1;
         
         public Worker( String text, final boolean caseSensitive) {
             this.text = text;
@@ -490,35 +491,41 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                                 });
                         return;
                     }
-                    ListModel model = Models.fromList(types);
-                    if (typeFilter != null) {
-                        model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");  
-                    }
-                    final ListModel fmodel = model;
-                    if ( isCanceled ) {
-                        LOGGER.log( Level.FINE, "Worker for {0} exited after cancel {1} ms.",   //NOI18N
-                                new Object[]{
-                                    text,
-                                    System.currentTimeMillis() - createTime
-                                });
-                        return;
-                    }
+                    final int newSize = types.size();
+                    //Optimistic the types just added, but safer is compare the collections.
+                    //Unfortunatelly no TypeDescriptor impl provides equals.
+                    if (lastSize != newSize) {
+                        lastSize = newSize;
+                        ListModel model = Models.fromList(types);
+                        if (typeFilter != null) {
+                            model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
+                        }
+                        final ListModel fmodel = model;
+                        if ( isCanceled ) {
+                            LOGGER.log( Level.FINE, "Worker for {0} exited after cancel {1} ms.",   //NOI18N
+                                    new Object[]{
+                                        text,
+                                        System.currentTimeMillis() - createTime
+                                    });
+                            return;
+                        }
 
-                    if ( !isCanceled && fmodel != null ) {
-                        LOGGER.log( Level.FINE, "Worker for text {0} finished after {1} ms.",   //NOI18N
-                                new Object[]{
-                                    text,
-                                    System.currentTimeMillis() - createTime
-                                });
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                panel.setModel(fmodel);
-                                if (okButton != null && !types.isEmpty()) {
-                                    okButton.setEnabled (true);
+                        if ( !isCanceled && fmodel != null ) {
+                            LOGGER.log( Level.FINE, "Worker for text {0} finished after {1} ms.",   //NOI18N
+                                    new Object[]{
+                                        text,
+                                        System.currentTimeMillis() - createTime
+                                    });
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    panel.setModel(fmodel);
+                                    if (okButton != null && !types.isEmpty()) {
+                                        okButton.setEnabled (true);
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 } finally {
                     if (profile != null) {
