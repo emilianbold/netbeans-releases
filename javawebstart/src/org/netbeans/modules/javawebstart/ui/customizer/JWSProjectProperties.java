@@ -1025,24 +1025,23 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         final File prjDir = FileUtil.toFile(prj.getProjectDirectory());
         final File bcDir = bc == null ? null : PropertyUtils.resolveFile(prjDir, bc);
         final List<File> lazyFileList = new ArrayList<File>();
-        String[] paths;
         if (lz != null) {
-            paths = PropertyUtils.tokenizePath(lz);            
-            for (String p : paths) {
+            for (String p : PropertyUtils.tokenizePath(lz)) {
                 lazyFileList.add(PropertyUtils.resolveFile(prjDir, p));
             }
         }
-        paths = PropertyUtils.tokenizePath(rcp);
-        final List<File> resFileList = new ArrayList<File>(paths.length);
-        for (String p : paths) {
-            if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
-                continue;
-            }
-            final File f = PropertyUtils.resolveFile(prjDir, p);
-            if (bc == null || !bcDir.equals(f)) {
-                resFileList.add(f);
-                if (isTrue(eval.getProperty(String.format(JNLP_LAZY_FORMAT, f.getName())))) {
-                    lazyFileList.add(f);
+        final List<File> resFileList = new ArrayList<File>();
+        if(rcp != null) {
+            for (String p : PropertyUtils.tokenizePath(rcp)) {
+                if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
+                    continue;
+                }
+                final File f = PropertyUtils.resolveFile(prjDir, p);
+                if (bc == null || !bcDir.equals(f)) {
+                    resFileList.add(f);
+                    if (isTrue(eval.getProperty(String.format(JNLP_LAZY_FORMAT, f.getName())))) {
+                        lazyFileList.add(f);
+                    }
                 }
             }
         }
