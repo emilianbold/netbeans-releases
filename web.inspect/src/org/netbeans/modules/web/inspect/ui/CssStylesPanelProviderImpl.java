@@ -138,7 +138,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     @NbBundle.Messages({
         "CTL_CssStylesProviderImpl.document.view.title=Document"
     })
-    @ServiceProvider(service = CssStylesPanelProvider.class)
+    @ServiceProvider(service = CssStylesPanelProvider.class, position=2000)
     public static class DocumentView extends CssStylesPanelProviderImpl {
 
         private static String DOCUMENT_PANEL_ID = "document"; //NOI18N
@@ -168,7 +168,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     @NbBundle.Messages({
         "CTL_CssStylesProviderImpl.selection.view.title=Selection"
     })
-    @ServiceProvider(service = CssStylesPanelProvider.class)
+    @ServiceProvider(service = CssStylesPanelProvider.class, position=1000)
     public static class SelectionView extends CssStylesPanelProviderImpl {
 
         private static String SELECTION_PANEL_ID = "selection"; //NOI18N
