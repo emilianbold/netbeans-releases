@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.parser;
+package org.netbeans.modules.php.editor.nav;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,6 +52,9 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.ParserTestBase;
+import org.netbeans.modules.php.editor.parser.TestHtmlFormatter;
 import org.openide.filesystems.FileObject;
 
 /**
