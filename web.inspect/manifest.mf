@@ -1,6 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.web.inspect
-OpenIDE-Module-Layer: org/netbeans/modules/web/inspect/layer.xml
 OpenIDE-Module-Requires: org.openide.windows.WindowManager
 OpenIDE-Module-Specification-Version: 0.3
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/inspect/Bundle.properties
