@@ -77,6 +77,8 @@ public final class FxXmlSymbols {
     
     public static final String FX_ATTR_REFERENCE_SOURCE = "source";
     
+    public static final String FX_SCRIPT = "script";
+    
     /**
      * The fx:value attribute
      */

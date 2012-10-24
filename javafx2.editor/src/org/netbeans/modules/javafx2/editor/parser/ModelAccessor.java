@@ -56,7 +56,9 @@ import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.FxObjectBase;
+import org.netbeans.modules.javafx2.editor.completion.model.FxScriptFragment;
 import org.netbeans.modules.javafx2.editor.completion.model.HasContent;
+import org.netbeans.modules.javafx2.editor.completion.model.HasResource;
 import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.LanguageDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.MapProperty;
@@ -109,6 +111,7 @@ public abstract class ModelAccessor {
     
     public abstract FxNode createElement(String localName);
     public abstract FxNode createErrorElement(String localName);
+    public abstract FxScriptFragment createScript(String sourceRef);
     
     public abstract EventHandler asMethodRef(EventHandler h);
     
@@ -133,7 +136,7 @@ public abstract class ModelAccessor {
      */
     public abstract void addChild(FxNode parent, FxNode child) throws IllegalArgumentException;
     
-    public abstract void resolveResource(FxInclude decl, URL resolved);
+    public abstract void resolveResource(HasResource decl, URL resolved);
     
     public abstract NodeInfo i(FxNode n);
     public abstract <T extends FxNode> T makeBroken(T n);

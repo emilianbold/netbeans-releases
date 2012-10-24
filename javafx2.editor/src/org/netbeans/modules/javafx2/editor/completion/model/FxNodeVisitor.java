@@ -42,11 +42,8 @@
 package org.netbeans.modules.javafx2.editor.completion.model;
 
 import org.netbeans.modules.javafx2.editor.parser.NodeInfo;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 /**
  *
@@ -101,6 +98,10 @@ public abstract class FxNodeVisitor {
     
     public void visitEvent(EventHandler eh) {
         visitNode(eh);
+    }
+    
+    public void visitScript(FxScriptFragment script) {
+        
     }
     
     public void visitElement(XmlNode n) {
@@ -184,6 +185,7 @@ public abstract class FxNodeVisitor {
             scan(decl.getProperties());
             scan(decl.getStaticProperties());
             scan(decl.getEvents());
+            scan(decl.getScripts());
         }
 
         @Override
