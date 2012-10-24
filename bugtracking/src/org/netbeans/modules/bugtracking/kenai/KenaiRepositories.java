@@ -40,16 +40,23 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.kenai.spi;
+package org.netbeans.modules.bugtracking.kenai;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -57,19 +64,27 @@ import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Tomas Stupka
  * @author Marian Petras
  */
-abstract class KenaiRepositories {
+public abstract class KenaiRepositories implements PropertyChangeListener {
 
     private static KenaiRepositories instance;
 
@@ -78,10 +93,12 @@ abstract class KenaiRepositories {
     /**
      * Holds already created kenai repositories
      */
-    private Map<String, RepositoryImpl> repositoriesMap = Collections.synchronizedMap(new HashMap<String, RepositoryImpl>());
+    private Map<String, RepositoryImpl> repositoriesCache = Collections.synchronizedMap(new HashMap<String, RepositoryImpl>());
 
     protected KenaiRepositories() { }
 
+    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    
     public synchronized static KenaiRepositories getInstance() {
         if(instance == null) {
             instance = Lookup.getDefault().lookup(KenaiRepositories.class);
@@ -94,7 +111,26 @@ abstract class KenaiRepositories {
 
     //--------------------------------------------------------------------------
 
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+        KenaiAccessor[] kenaiAccessors = KenaiUtil.getKenaiAccessors();
+        for (KenaiAccessor kenaiAccessor : kenaiAccessors) {
+            kenaiAccessor.addPropertyChangeListener(this);
+        }        
+    }
 
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+        KenaiAccessor[] kenaiAccessors = KenaiUtil.getKenaiAccessors();
+        for (KenaiAccessor kenaiAccessor : kenaiAccessors) {
+            kenaiAccessor.removePropertyChangeListener(this);
+        }        
+    }
+
+    private void fireProjectsChanged(Collection<RepositoryImpl> removed, Collection<RepositoryImpl> added) {
+        support.firePropertyChange(RepositoryManager.EVENT_REPOSITORIES_CHANGED, removed, added);
+    }
+    
     /**
      * Returns a {@link Repository} representing the given {@link KenaiProject}
      *
@@ -119,12 +155,12 @@ abstract class KenaiRepositories {
 
         Object lock = getKenaiLock(kp);
         synchronized(lock) { // synchronize for a kenai instance and bugtracking type
-            RepositoryImpl repository = repositoriesMap.get(repositoryKey);
+            RepositoryImpl repository = repositoriesCache.get(repositoryKey);
             if(repository == null && forceCreate) {
                 repository = createRepository(kp);
                 if(repository != null) {
                     // XXX what if more repos?!
-                    repositoriesMap.put(repositoryKey, repository);
+                    repositoriesCache.put(repositoryKey, repository);
                 } else {
                     BugtrackingManager.LOG.log(Level.FINER, "no repository available for {0}", repositoryKey);  // NOI18N
                     return null;
@@ -187,17 +223,41 @@ abstract class KenaiRepositories {
         }
     }   
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(KenaiAccessor.PROP_PROJETCS_CHANGED) || 
+           evt.getPropertyName().equals(KenaiAccessor.PROP_LOGIN)) 
+        {
+            fireProjectsChanged(null, null);
+        }
+    }
+    
     /**
      * Returns bugtracking repositories of all Kenai projects.
      *
-     * @param  allOpenProjects  if {@code false}, search only Kenai projects
+     * @param  includeIDEProjects  if {@code false}, search only Kenai projects
      *                          that are currently open in the Kenai dashboard;
      *                          if {@code true}, search also all Kenai projects
      *                          currently opened in the IDE
      * @return  array of repositories collected from the projects
      *          (never {@code null})
      */
-    public abstract Collection<RepositoryImpl> getRepositories(boolean allOpenProjects);
+    public abstract Collection<RepositoryImpl> getRepositories(boolean includeIDEProjects);
+
+    /**
+     * Returns bugtracking repositories of all Kenai projects.
+     *
+     * @param  includeIDEProjects  if {@code false}, search only Kenai projects
+     *                          that are currently open in the Kenai dashboard;
+     *                          if {@code true}, search also all Kenai projects
+     *                          currently opened in the IDE
+     * @param onlyDashboardOpenProjects if {@code true}, return only projcts from dashboard which
+     *                                  are opened, otherwise return all projects from dashboard - 
+     *                                  opened and member projects
+     * @return  array of repositories collected from the projects
+     *          (never {@code null})
+     */    
+    public abstract Collection<RepositoryImpl> getRepositories(boolean includeIDEProjects, boolean onlyDashboardOpenProjects);
 
     //--------------------------------------------------------------------------
 
@@ -209,19 +269,27 @@ abstract class KenaiRepositories {
     private static class DefaultImpl extends KenaiRepositories {
 
         @Override
-        public Collection<RepositoryImpl> getRepositories(boolean allOpenProjects) {
+        public Collection<RepositoryImpl> getRepositories(boolean includeIDEProjects) {
+            return getRepositories(includeIDEProjects, false);
+        }
+        
+        @Override
+        public Collection<RepositoryImpl> getRepositories(boolean includeIDEProjects, boolean onlyDashboardOpenProjects) {
             if("true".equals(System.getProperty("netbeans.bugtracking.noOpenProjects", "false"))) {
-                allOpenProjects = false; 
+                includeIDEProjects = false; 
             }
-            KenaiProject[] kenaiProjects = allOpenProjects
-                                           ? union(getDashboardProjects(),
+            KenaiProject[] kenaiProjects = includeIDEProjects
+                                           ? union(getDashboardProjects(onlyDashboardOpenProjects),
                                                    getProjectsViewProjects())
-                                           : getDashboardProjects();
+                                           : getDashboardProjects(onlyDashboardOpenProjects);
 
             List<RepositoryImpl> result = new ArrayList<RepositoryImpl>(kenaiProjects.length);
 
             EnumSet<BugtrackingType> reluctantSupports = EnumSet.noneOf(BugtrackingType.class);
             for (KenaiProject kp : kenaiProjects) {
+                if(onlyDashboardOpenProjects && !KenaiUtil.isLoggedIn(kp.getWebLocation())) {
+                    continue;
+                }
                 if(kp.getType() == null) {
                     // no bugtracking feature
                     continue;
@@ -254,8 +322,8 @@ abstract class KenaiRepositories {
             return result;
         }
 
-        private KenaiProject[] getDashboardProjects() {
-            return KenaiUtil.getDashboardProjects();
+        private KenaiProject[] getDashboardProjects(boolean onlyOpenProjects) {
+            return KenaiUtil.getDashboardProjects(onlyOpenProjects);
         }
 
         private KenaiProject[] getProjectsViewProjects() {
