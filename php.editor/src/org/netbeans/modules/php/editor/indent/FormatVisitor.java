@@ -219,7 +219,7 @@ public class FormatVisitor extends DefaultVisitor {
             }
         }
         formatTokens.add(new FormatToken.IndentToken(ts.offset(), delta));
-        previousGroupToken = null;
+        resetGroupAlignment();
         List<ArrayElement> arrayElements = node.getElements();
         if (arrayElements != null && arrayElements.size() > 0) {
             ArrayElement arrayElement = arrayElements.get(0);
@@ -278,7 +278,7 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Block node) {
-        previousGroupToken = null; // for every block reset group of alignment
+        resetGroupAlignment(); // for every block reset group of alignment
         if (path.size() > 1 && (path.get(1) instanceof NamespaceDeclaration
                 && !((NamespaceDeclaration) path.get(1)).isBracketed())) {
             // dont process blok for namespace
@@ -1315,7 +1315,7 @@ public class FormatVisitor extends DefaultVisitor {
                         if (ts.token().id() == PHPTokenId.WHITESPACE) {
                             if (countOfNewLines(ts.token().text()) > 0) {
                                 // reset group alignment, if there is an empty line
-                                previousGroupToken = null;
+                                resetGroupAlignment();
                             }
                             tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, newOffset, "\n" + ts.token().text().toString()));
                             if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
@@ -1593,7 +1593,7 @@ public class FormatVisitor extends DefaultVisitor {
         int countNewLines = countOfNewLines(ts.token().text());
         if (countNewLines > 1) {
             // reset group alignment, if there is an empty line
-            previousGroupToken = null;
+            resetGroupAlignment();
         }
         String tokenText = ts.token().text().toString();
         int tokenStartOffset = ts.offset();
@@ -1818,7 +1818,6 @@ public class FormatVisitor extends DefaultVisitor {
      * the group
      */
     private void handleGroupAlignment(ASTNode node) {
-
         int length = node.getEndOffset() - node.getStartOffset();
         if (previousGroupToken == null) {
             // it's the first line in the group
@@ -1848,6 +1847,10 @@ public class FormatVisitor extends DefaultVisitor {
             }
         }
         formatTokens.add(previousGroupToken);
+    }
+
+    private void resetGroupAlignment() {
+        previousGroupToken = null;
     }
 
     protected static boolean isWhitespace(final CharSequence text) {
