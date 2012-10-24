@@ -86,24 +86,24 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
             }
         }
 
-        boolean supportedFile = GroovyProjectUtil.isInGroovyProject(sourceFO) && GroovyProjectUtil.isGroovyFile(sourceFO);
+        if (sourceFO == null || !GroovyProjectUtil.isInGroovyProject(sourceFO)) {
+            return null;
+        }
 
-        if (supportedFile && sourceFO != null) {
-            if (refactoring instanceof WhereUsedQuery){
-                return new FindUsagesPlugin(sourceFO, element, refactoring);
-            }
-            if (refactoring instanceof RenameRefactoring) {
-                final RenameRefactoring renameRefactoring = (RenameRefactoring) refactoring;
+        if (refactoring instanceof WhereUsedQuery){
+            return new FindUsagesPlugin(sourceFO, element, refactoring);
+        }
+        if (refactoring instanceof RenameRefactoring) {
+            final RenameRefactoring renameRefactoring = (RenameRefactoring) refactoring;
 
-                if (IdentifiersUtil.isPackageRename(renameRefactoring)) {
-                    return new RenamePackagePlugin(sourceFO, renameRefactoring);
-                } else {
-                    return new RenameRefactoringPlugin(sourceFO, element, renameRefactoring);
-                }
+            if (IdentifiersUtil.isPackageRename(renameRefactoring)) {
+                return new RenamePackagePlugin(sourceFO, renameRefactoring);
+            } else {
+                return new RenameRefactoringPlugin(sourceFO, element, renameRefactoring);
             }
-            if (refactoring instanceof MoveRefactoring) {
-                return new MoveFileRefactoringPlugin(sourceFO, element, refactoring);
-            }
+        }
+        if (refactoring instanceof MoveRefactoring) {
+            return new MoveFileRefactoringPlugin(sourceFO, element, refactoring);
         }
         return null;
     }
