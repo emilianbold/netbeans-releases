@@ -107,6 +107,7 @@ public final class NbProxySelector extends ProxySelector {
                     assert protocol != null : "Invalid scheme of uri " + uri + ". Scheme cannot be null!";
                     if (dontUseProxy (ProxySettings.SystemProxySettings.getNonProxyHosts (), uri.getHost ())) {
                         res.add (Proxy.NO_PROXY);
+                        break;
                     }
                     if (protocol.toLowerCase (Locale.US).startsWith("http")) {
                         String ports = ProxySettings.SystemProxySettings.getHttpPort ();
@@ -136,6 +137,7 @@ public final class NbProxySelector extends ProxySelector {
                 // handling nonProxyHosts first
                 if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
                     res.add (Proxy.NO_PROXY);
+                    break;
                 }
                 if (protocol.toLowerCase (Locale.US).startsWith("http")) {
                     String hosts = ProxySettings.getHttpHost ();
@@ -177,6 +179,7 @@ public final class NbProxySelector extends ProxySelector {
                     // handling nonProxyHosts first
                     if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
                         res.add (Proxy.NO_PROXY);
+                        break;
                     }
                     ProxyAutoConfig pac = ProxyAutoConfig.get(getPacFile());
                     assert pac != null : "Instance of ProxyAutoConfig found for " + getPacFile();
@@ -202,6 +205,7 @@ public final class NbProxySelector extends ProxySelector {
                 // handling nonProxyHosts first
                 if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
                     res.add (Proxy.NO_PROXY);
+                    break;
                 }
                 ProxyAutoConfig pac = ProxyAutoConfig.get(getPacFile());
                 assert pac != null : "Instance of ProxyAutoConfig found for " + getPacFile();
