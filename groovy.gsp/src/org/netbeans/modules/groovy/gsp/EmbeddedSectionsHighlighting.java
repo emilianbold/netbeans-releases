@@ -180,6 +180,15 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                 if (checkVersion()) {
                     if (sequence == null) {
                         sequence = scanner.tokenSequence();
+
+                        if (sequence == null) {
+                            sectionStart = -1;
+                            sectionEnd = -1;
+                            finished = true;
+
+                            return false;
+                        }
+
                         sequence.move(startOffset);
                     }
 
