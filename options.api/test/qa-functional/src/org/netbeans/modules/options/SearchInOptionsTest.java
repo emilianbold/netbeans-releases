@@ -95,109 +95,109 @@ public class SearchInOptionsTest extends JellyTestCase {
         jTextFieldOperator = new JTextFieldOperator(optionsOperator);
         stringComparator = Operator.getDefaultStringComparator();
 
-        int[] tabIndexes = {0};
+        String[] tabIndexes = {"General"};
         String[] selectedCategories = {"Editor"};
         ArrayList<String> enabledCategories = new ArrayList<String>();
         enabledCategories.add("Editor");
         searchFor("general editor", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 6;
+        tabIndexes[0] = "Macros";
         searchFor("macros", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 2;
+        tabIndexes[0] = "Code Completion";
         searchFor("completion", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 3;
+        tabIndexes[0] = "Code Templates";
         searchFor("templates", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 8;
+        tabIndexes[0] = "Spellchecker";
         searchFor("dictionary", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 7;
+        tabIndexes[0] = "On Save";
         searchFor("save", tabIndexes, selectedCategories, enabledCategories);
 
         enabledCategories.clear();
         enabledCategories.add("General");
-        tabIndexes[0] = -1;
+        tabIndexes[0] = null;
         selectedCategories[0] = "General";
         searchFor("proxy", tabIndexes, selectedCategories, enabledCategories);
 
         enabledCategories.clear();
         enabledCategories.add("Fonts & Colors");
-        tabIndexes[0] = 0;
+        tabIndexes[0] = "Syntax";
         selectedCategories[0] = "FontsAndColors";
         searchFor("syntax", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 1;
+        tabIndexes[0] = "Highlighting";
         searchFor("highlighting", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 4;
+        tabIndexes[0] = "Versioning";
         searchFor("versioning", tabIndexes, selectedCategories, enabledCategories);
 
         enabledCategories.clear();
         enabledCategories.add("Keymap");
-        tabIndexes[0] = -1;
+        tabIndexes[0] = null;
         selectedCategories[0] = "Keymaps";
         searchFor("keymap", tabIndexes, selectedCategories, enabledCategories);
 
         enabledCategories.clear();
         enabledCategories.add("Java");
-        tabIndexes[0] = 4;
+        tabIndexes[0] = "Maven";
         selectedCategories[0] = "Java";
         searchFor("maven", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 0;
+        tabIndexes[0] = "Ant";
         selectedCategories[0] = "Java";
         searchFor("ant", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 6;
+        tabIndexes[0] = "JavaFX";
         selectedCategories[0] = "Java";
         searchFor("fx", tabIndexes, selectedCategories, enabledCategories);
 
         enabledCategories.clear();
         enabledCategories.add("Miscellaneous");
-        tabIndexes[0] = 3;
+        tabIndexes[0] = "Groovy";
         selectedCategories[0] = "Miscellaneous";
         searchFor("groovy", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 6;
+        tabIndexes[0] = "SVG";
         selectedCategories[0] = "Miscellaneous";
         searchFor("svg", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 7;
+        tabIndexes[0] = "Terminal";
         selectedCategories[0] = "Miscellaneous";
         searchFor("terminal", tabIndexes, selectedCategories, enabledCategories);
 
         enabledCategories.add("Fonts & Colors");
-        tabIndexes = new int[2];
+        tabIndexes = new String[2];
         selectedCategories = new String[2];
-        tabIndexes[0] = 3;
-        tabIndexes[1] = 1;
+        tabIndexes[0] = "Diff";
+        tabIndexes[1] = "Diff";
         selectedCategories[0] = "FontsAndColors";
         selectedCategories[1] = "Miscellaneous";
         searchFor("diff", tabIndexes, selectedCategories, enabledCategories);
 
         enabledCategories.clear();
         enabledCategories.add("PHP");
-        tabIndexes = new int[1];
+        tabIndexes = new String[1];
         selectedCategories = new String[1];
-        tabIndexes[0] = 5;
+        tabIndexes[0] = "ApiGen";
         selectedCategories[0] = "PHP";
         searchFor("apigen", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 8;
+        tabIndexes[0] = "Symfony2";
         searchFor("symfony2", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 11;
+        tabIndexes[0] = "Smarty";
         searchFor("smarty", tabIndexes, selectedCategories, enabledCategories);
 
         enabledCategories.clear();
         enabledCategories.add("C/C++");
-        tabIndexes[0] = 0;
+        tabIndexes[0] = "Build Tools";
         selectedCategories[0] = "C/C++";
         searchFor("build tools", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 2;
+        tabIndexes[0] = "Code Assistance";
         searchFor("code assistance", tabIndexes, selectedCategories, enabledCategories);
 
         enabledCategories.clear();
@@ -205,7 +205,7 @@ public class SearchInOptionsTest extends JellyTestCase {
         searchFor("", tabIndexes, selectedCategories, enabledCategories);
     }
 
-    private void searchFor(String searchTxt, int[] selectedTabIndexes, String[] selectedCategories, ArrayList<String> enabledCategories) {
+    private void searchFor(String searchTxt, String[] selectedTabTitles, String[] selectedCategories, ArrayList<String> enabledCategories) {
         jTextFieldOperator.setText(searchTxt);
         new EventTool().waitNoEvent(500);
         jTextFieldOperator.pushKey(KeyEvent.VK_ENTER);
@@ -228,10 +228,10 @@ public class SearchInOptionsTest extends JellyTestCase {
                 optionsOperator.selectCategory(selectedCategory);
             }
             new EventTool().waitNoEvent(1000);
-            int selectedTabIndex = selectedTabIndexes[i];
-            if (selectedTabIndex != -1) {
+            String selectedTabTitle = selectedTabTitles[i];
+            if (selectedTabTitle != null) {
                 jTabbedPaneOperator = new JTabbedPaneOperator(optionsOperator);
-                assertEquals(selectedTabIndex, jTabbedPaneOperator.getSelectedIndex());
+                assertEquals(selectedTabTitle, jTabbedPaneOperator.getTitleAt(jTabbedPaneOperator.getSelectedIndex()));
             }
         }
         for (String category : enabledCategories) {

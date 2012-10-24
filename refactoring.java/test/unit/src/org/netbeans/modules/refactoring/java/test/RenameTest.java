@@ -135,7 +135,7 @@ public class RenameTest extends RefactoringTestBase {
     }
 
     
-    public void testRenamePropUndoRedo() throws Exception {
+    public void DISABLEDtestRenamePropUndoRedo() throws Exception { // #220547
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"

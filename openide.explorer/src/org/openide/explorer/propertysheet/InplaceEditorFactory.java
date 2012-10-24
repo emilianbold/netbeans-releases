@@ -59,6 +59,7 @@ import java.beans.PropertyEditor;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.UIManager;
 import org.openide.util.WeakListeners;
 
 /** Factory providing inplace editor implementations.  Provides appropriate
@@ -137,7 +138,8 @@ final class InplaceEditorFactory implements PropertyChangeListener {
 
     /**Lazily create (or create a new instance of) the combo box editor */
     private InplaceEditor getComboBoxEditor(boolean newInstance) {
-        if (newInstance) {
+        if (newInstance 
+                || "Aqua".equals(UIManager.getLookAndFeel().getID())) { //#220163
             return new ComboInplaceEditor(tableUI);
         }
 

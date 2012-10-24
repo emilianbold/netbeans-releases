@@ -61,6 +61,7 @@ import javax.swing.JPopupMenu;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
+import org.apache.tools.ant.module.api.support.TargetLister.Target;
 import org.apache.tools.ant.module.loader.AntProjectDataObject;
 import org.openide.ErrorManager;
 import org.openide.awt.ActionID;
@@ -85,6 +86,7 @@ import org.openide.util.actions.SystemAction;
 @ActionRegistration(displayName = "#LBL_run_targets_action", lazy=false)
 @ActionReferences(value = {
     @ActionReference(position = 900, path = "Editors/text/x-ant+xml/Popup"),
+    @ActionReference(path="org-apache-tools-ant-module/target-actions", position=300),
     @ActionReference(position = 200, path = AntProjectDataObject.ACTIONS)})
 public final class RunTargetsAction extends SystemAction implements ContextAwareAction {
 
@@ -100,11 +102,30 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        assert false : "Action should never be called without a context";
+        //well, since someone can assign a shortcut ti the action, the invokation is unvaiodable, make it noop        
+        //assert false : "Action should never be called without a context";
     }
 
-    public Action createContextAwareInstance(Lookup actionContext) {
-        return new ContextAction(actionContext);
+    @Override
+    public Action createContextAwareInstance(final Lookup actionContext) {
+        if (actionContext.lookup(TargetLister.Target.class) != null) { //#220590
+            final Target target = actionContext.lookup(TargetLister.Target.class);
+            AbstractAction a = new AbstractAction(getName()) {
+                              @Override
+                              public void actionPerformed(ActionEvent e) {
+                                  try {
+                                      new TargetExecutor(target.getOriginatingScript(), new String[]{target.getName()}).execute();
+                                  } catch (IOException ioe) {
+                                      AntModule.err.notify(ioe);
+                                  }
+                              }
+                          };
+            
+            a.putValue(ACCELERATOR_KEY, this.getValue(ACCELERATOR_KEY));            
+            return a;
+        } else {
+            return new ContextAction(actionContext);
+        }
     }
     
     /**
@@ -128,10 +149,13 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             super.setEnabled(project != null);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
-            assert false : "Action should not be called directly";
+        //well, since someone can assign a shortcut ti the action, the invokation is unvaiodable, make it noop        
+        //assert false : "Action should never be called without a context";
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
             if (project != null) {
                 return createMenu(project);
@@ -254,11 +278,13 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             this.target = target;
         }
         
+        @Override
         public void actionPerformed(ActionEvent ev) {
             // #16720 part 2: don't do this in the event thread...
             RequestProcessor.getDefault().post(this);
         }
         
+        @Override
         public void run() {
             try {
                 TargetExecutor te = new TargetExecutor(project, new String[] {target});
@@ -284,6 +310,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             this.allTargets = allTargets;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             new AdvancedActionPanel(project, allTargets).display();
         }

@@ -394,11 +394,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
         if (postfix != null) {
             toAdd.append(postfix);
         }
-        if (selector != '\0' && (toAdd.length() == 0 || (selector != toAdd.charAt(0) && selector != toAdd.charAt(toAdd.length() - 1)))) {
+        if (selector != '\0' && (toAdd.length() == 0 || (selector != toAdd.charAt(0) && selector != toAdd.charAt(toAdd.length() - 1) && ';' != toAdd.charAt(toAdd.length() - 1)))) {
             toAdd.append(selector);
-        }
-        if ('[' == selector && TypingCompletion.isCompletionSettingEnabled()) {
-            toAdd.append(']');
+            if ('[' == selector && TypingCompletion.isCompletionSettingEnabled()) {
+                toAdd.append(']');
+            }
         }
         int caretOffset = c.getSelectionEnd();
         Position assignToVarStartPos = null;
@@ -1644,37 +1644,31 @@ public abstract class JavaCompletionItem implements CompletionItem {
             final BaseDocument doc = (BaseDocument)c.getDocument();
             StringBuilder sb = new StringBuilder();
             if (toAdd != null) {
-                CharSequence cs = getInsertPostfix(c);
-                if (cs != null) {
-                    int postfixLen = cs.length();
-                    int toAddLen = toAdd.length();
-                    if (toAddLen >= postfixLen) {
-                        if (!inImport && !params.isEmpty()) {
-                            if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen()) {
-                                sb.append(' '); //NOI18N
+                String toAddText = toAdd.toString();
+                int idx = toAddText.indexOf(')');
+                if (idx > 0) {
+                    if (!params.isEmpty()) {
+                        if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen()) {
+                            sb.append(' '); //NOI18N
+                        }
+                        sb.append('('); //NOI18N
+                        boolean guessArgs = Utilities.guessMethodArguments();
+                        for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                            ParamDesc paramDesc = it.next();
+                            sb.append("${"); //NOI18N
+                            sb.append(paramDesc.name);
+                            if (guessArgs) {
+                                sb.append(" named instanceof="); //NOI18N
+                                sb.append(paramDesc.fullTypeName);
                             }
-                            sb.append('('); //NOI18N
-                            boolean guessArgs = Utilities.guessMethodArguments();
-                            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                                ParamDesc paramDesc = it.next();
-                                sb.append("${"); //NOI18N
-                                sb.append(paramDesc.name);
-                                if (guessArgs) {
-                                    sb.append(" named instanceof="); //NOI18N
-                                    sb.append(paramDesc.fullTypeName);
-                                }
-                                sb.append('}'); //NOI18N
-                                if (it.hasNext()) {
-                                    sb.append(", "); //NOI18N
-                                }
+                            sb.append('}'); //NOI18N
+                            if (it.hasNext()) {
+                                sb.append(", "); //NOI18N
                             }
-                            sb.append(')');//NOI18N
-                            if (addSemicolon) {
-                                sb.append(';');
-                            }
-                            if (toAddLen > postfixLen) {
-                                sb.append(toAdd.subSequence(postfixLen, toAdd.length()));
-                            }
+                        }
+                        sb.append(')');//NOI18N
+                        if (toAddText.length() > idx + 1) {
+                            sb.append(toAddText.substring(idx + 1));
                         }
                     }
                 }
@@ -2177,8 +2171,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             sb.append(CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " ()" : "()"); //NOI18N
             if ("this".equals(simpleName) || "super".equals(simpleName)) { //NOI18N
                 sb.append(';');
-            }
-            if (isAbstract) {
+            } else if (isAbstract) {
                 sb.append(" {}"); //NOI18N
             }
             return sb;
@@ -2358,7 +2351,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             } catch (BadLocationException ex) {
                 return null; // Invalid offset -> do nothing
             }
-            CharSequence cs = super.substituteText(c, offset, 0, null, toAdd);
+            CharSequence cs = super.substituteText(c, startPos.getOffset(), 0, null, toAdd);
             if (toAdd != null) {
                 CharSequence postfix = getInsertPostfix(c);
                 if (postfix != null) {
@@ -3402,18 +3395,25 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
                             Tree t = null;
                             TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
-                            while (t == null && tp != null) {
+                            boolean cont = true;
+                            while (cont && tp != null) {
                                 switch(tp.getLeaf().getKind()) {
                                     case EXPRESSION_STATEMENT:
                                     case VARIABLE:
                                     case IMPORT:
                                         t = tp.getLeaf();
+                                        cont = false;
                                         break;
                                     case RETURN:
                                         t = ((ReturnTree)tp.getLeaf()).getExpression();
+                                        cont = false;
                                         break;
                                     case THROW:
                                         t = ((ThrowTree)tp.getLeaf()).getExpression();
+                                        cont = false;
+                                        break;
+                                    case MEMBER_SELECT:
+                                        cont = false;
                                         break;
                                 }
                                 tp = tp.getParentPath();

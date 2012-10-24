@@ -61,7 +61,6 @@ import org.netbeans.modules.html.editor.api.actions.ModifyElementRulesAction;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
-import org.netbeans.modules.html.navigator.actions.HighlightInBrowserAction;
 import org.netbeans.modules.html.navigator.actions.OpenAction;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
@@ -98,7 +97,6 @@ public class HtmlElementNode extends AbstractNode {
     
     //actions
     private OpenAction openAction;
-    private HighlightInBrowserAction highlightInBrowserAction;
     private ModifyElementRulesAction editRulesAction;
     private DeleteElementAction deleteElementAction;
     
@@ -149,7 +147,6 @@ public class HtmlElementNode extends AbstractNode {
         
         
         openAction = new OpenAction(this);
-        highlightInBrowserAction = new HighlightInBrowserAction(this, ui);
     }
     
     private static NodeLookupProvider createLookupProvider() {
@@ -418,8 +415,6 @@ public class HtmlElementNode extends AbstractNode {
             actions.add(null);
             actions.add(editRulesAction);
             actions.add(deleteElementAction);
-            actions.add(null);
-            actions.add(highlightInBrowserAction);
             actions.add(null);
             actions.addAll(Arrays.asList(ui.getActions()));
         }

@@ -206,7 +206,7 @@ public class DBReadWriteHelper {
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
             case Types.BLOB: {
-                // Try to get a blob object (delay loading till the data is used!)
+                // Try to get a blob object
                 try {
                     Blob blob = rs.getBlob(index);
                     
@@ -231,10 +231,11 @@ public class DBReadWriteHelper {
                     }
                     
                     return result;
-                } catch (SQLException ex) {
                     // Ok - can happen - the jdbc driver might not support
                     // blob data or can for example not provide a longvarbinary
                     // as blob - so fall back to our implementation of blob
+                } catch (SQLException ex) {
+                } catch (java.lang.UnsupportedOperationException ex) {
                 }
                 try {
                     InputStream is = rs.getBinaryStream(index);
@@ -262,7 +263,7 @@ public class DBReadWriteHelper {
             case -16:
             case Types.CLOB:
             case 2011: /*NCLOB */ {
-                // Try to get a blob object (delay loading till the data is used!)
+                // Try to get a clob object
                 try {
                     Clob clob = rs.getClob(index);
 
@@ -287,11 +288,11 @@ public class DBReadWriteHelper {
                     }
                     
                     return result;
-                    
-                } catch (SQLException ex) {
                     // Ok - can happen - the jdbc driver might not support
                     // clob data or can for example not provide a longvarchar
                     // as clob - so fall back to our implementation of clob
+                } catch (SQLException ex) {
+                } catch (java.lang.UnsupportedOperationException ex) {
                 }
                 String sdata = rs.getString(index);
                 if (rs.wasNull()) {

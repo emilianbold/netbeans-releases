@@ -1055,7 +1055,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             ModelElement parentElem = mElem.getInScope();
             FileObject fileObject = mElem.getFileObject();
             String fName = fileObject == null ? "?" : fileObject.getNameExt(); //NOI18N
-            String tooltip = null;
+            String tooltip;
             if (parentElem instanceof TypeScope) {
                 tooltip = mElem.getPhpElementKind() + ": " + parentElem.getName() + "<b> " + mElem.getName() + " </b>" + "(" + fName + ")";//NOI18N
             } else {

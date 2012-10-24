@@ -92,7 +92,7 @@ public class SymfonyScript {
     public static final String SCRIPT_NAME = "symfony"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
-    public static final String OPTIONS_SUB_PATH = "Symfony"; // NOI18N
+    public static final String OPTIONS_SUB_PATH = "org-netbeans-modules-php-symfony-ui-options-SymfonyOptionsPanelController"; // NOI18N
 
     private static final String DEFAULT_PARAM = "--color"; // NOI18N
 

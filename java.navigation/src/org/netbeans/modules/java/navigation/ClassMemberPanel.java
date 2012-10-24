@@ -100,8 +100,12 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo, NavigatorPanelW
 
     @Override
     public void panelDeactivated() {
+        final FileObject luf = getLastUsedFile();
         compareAndSetLastUsedFile(null);
         getClassMemberPanelUI().clearNodes();
+        if (JavadocTopComponent.exists()) {
+            JavadocTopComponent.getDefault().clearContent(luf);
+        }
         INSTANCE = null;
         //Even the setLookup(EMPTY) is fast, has to be called in RP to keep ordering
         RP.post( new Runnable () {
@@ -158,6 +162,10 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo, NavigatorPanelW
     @Override
     public synchronized JComponent getToolbarComponent() {
         return getClassMemberPanelUI().getToolbar();
+    }
+
+    static synchronized FileObject getLastUsedFile() {
+        return lastFileRef == null ? null : lastFileRef.get();
     }
 
     static synchronized boolean compareAndSetLastUsedFile(@NullAllowed final FileObject file) {

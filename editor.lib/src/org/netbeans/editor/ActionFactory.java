@@ -2386,7 +2386,8 @@ public class ActionFactory {
     }
     
     /** Collapse a fold. Depends on the current caret position. */
-    @EditorActionRegistration(name = BaseKit.collapseFoldAction)
+    @EditorActionRegistration(name = BaseKit.collapseFoldAction,
+            menuText = "#" + BaseKit.collapseFoldAction + "_menu_text")
     public static class CollapseFold extends LocalBaseAction {
         public CollapseFold(){
         }
@@ -2434,7 +2435,8 @@ public class ActionFactory {
     }
     
     /** Expand a fold. Depends on the current caret position. */
-    @EditorActionRegistration(name = BaseKit.expandFoldAction)
+    @EditorActionRegistration(name = BaseKit.expandFoldAction,
+            menuText = "#" + BaseKit.expandFoldAction + "_menu_text")
     public static class ExpandFold extends LocalBaseAction {
         public ExpandFold(){
         }
@@ -2467,7 +2469,8 @@ public class ActionFactory {
     }
     
     /** Collapse all existing folds in the document. */
-    @EditorActionRegistration(name = BaseKit.collapseAllFoldsAction)
+    @EditorActionRegistration(name = BaseKit.collapseAllFoldsAction,
+            menuText = "#" + BaseKit.collapseAllFoldsAction + "_menu_text")
     public static class CollapseAllFolds extends LocalBaseAction {
         public CollapseAllFolds(){
         }
@@ -2480,7 +2483,8 @@ public class ActionFactory {
     }
 
     /** Expand all existing folds in the document. */
-    @EditorActionRegistration(name = BaseKit.expandAllFoldsAction)
+    @EditorActionRegistration(name = BaseKit.expandAllFoldsAction,
+            menuText = "#" + BaseKit.expandAllFoldsAction + "_menu_text")
     public static class ExpandAllFolds extends LocalBaseAction {
         public ExpandAllFolds(){
         }

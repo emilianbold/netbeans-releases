@@ -287,8 +287,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         int wildcard = containsWildCard(text);
                 
         if (exact) {
-            //nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
-            nameKind = SearchType.EXACT_NAME;
+            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
         }
         else if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
             nameKind = SearchType.CAMEL_CASE;
@@ -301,7 +300,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
         
         // Compute in other thread        
-        running = new Worker( text );
+        running = new Worker( text , panel.isCaseSensitive());
         task = rp.post( running, 220);
         if ( panel.time != -1 ) {
             LOGGER.log( Level.FINE, "Worker posted after {0} ms.", System.currentTimeMillis() - panel.time ); //NOI18N
@@ -454,11 +453,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private volatile boolean isCanceled = false;
         private volatile TypeProvider current;
         private final String text;
+        private final boolean caseSensitive;
         
         private final long createTime;
         
-        public Worker( String text ) {
+        public Worker( String text, final boolean caseSensitive) {
             this.text = text;
+            this.caseSensitive = caseSensitive;
             this.createTime = System.currentTimeMillis();
             LOGGER.log( Level.FINE, "Worker for {0} - created after {1} ms.",   //NOI18N
                     new Object[]{
@@ -594,7 +595,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             retry[0] = TypeProviderAccessor.DEFAULT.getRetry(result);
             if ( !isCanceled ) {   
                 //time = System.currentTimeMillis();
-                Collections.sort(items, new TypeComparator());
+                Collections.sort(items, new TypeComparator(caseSensitive));
                 panel.setWarning(message[0]);
                 //sort += System.currentTimeMillis() - time;
                 //LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );

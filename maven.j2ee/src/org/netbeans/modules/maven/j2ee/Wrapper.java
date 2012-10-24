@@ -203,7 +203,6 @@ public class Wrapper {
                 modified = wr;
                 handle.removePOMModification(operation);
                 handle.addPOMModification(operation);
-                String sID = wr.getServerID();
                 String iID = wr.getServerInstanceID();
                 //remove old deprecated data.
                 handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, null, true);

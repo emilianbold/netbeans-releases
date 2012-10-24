@@ -172,6 +172,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
     public void endDocument() throws SAXException {
         addElementErrors();
         accessor.initModel(fxModel, controllerName, rootComponent, language);
+        accessor.addDefinitions(fxModel, instanceDefinitions);
         int end = contentLocator.getElementOffset();
         i(fxModel).endContent(end).endsAt(end, true);
         // attempt to fix up unclosed elements
@@ -1081,7 +1082,9 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         i(top).addChild(node);
 //        if (!node.isBroken() && (node.getKind() != FxNode.Kind.Element)) {
         accessor.attach(node, fxModel);
-        if (!node.isBroken()) {
+        if (!node.isBroken() &&
+            // special case, see #220424
+            i(node) != definitionsNode) {
             accessor.addChild(top, node);
         }
         if (i(node).isElement()) {

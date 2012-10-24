@@ -263,7 +263,7 @@ final class UndoRedoManager extends UndoRedo.Manager {
     }
 
     void beforeUndoAtSavepoint(WrapUndoEdit edit) {
-        checkLogOp("beforeUndoAtSavepoint", edit); // NOI18N
+        checkLogOp("beforeUndoAtSavepoint: undoSaveActions()", edit); // NOI18N
         undoSaveActions();
     }
         
@@ -580,7 +580,12 @@ final class UndoRedoManager extends UndoRedo.Manager {
     
     void checkLogOp(String op, UndoableEdit edit) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine(thisToString() + "->" + op + ": " + editToString(edit) + '\n'); // NOI18N
+            String msg = thisToString() + "->" + op + ": " + editToString(edit) + '\n'; // NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, msg.substring(0, msg.length() - 1), new Exception());
+            } else {
+                LOG.fine(msg);
+            }
         }
     }
     

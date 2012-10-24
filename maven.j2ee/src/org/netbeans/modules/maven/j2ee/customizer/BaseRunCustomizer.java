@@ -109,7 +109,7 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
                 if (s != null) {
                     return Boolean.valueOf(s);
                 } else {
-                    return null;
+                    return Boolean.FALSE;
                 }
             }
 

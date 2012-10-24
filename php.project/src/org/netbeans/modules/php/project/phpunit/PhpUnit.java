@@ -96,7 +96,7 @@ public final class PhpUnit extends PhpProgram {
     // for keeping log files to able to evaluate and fix issues
     public static final boolean KEEP_LOGS = Boolean.getBoolean("nb.php.phpunit.keeplogs"); // NOI18N
     // options
-    public static final String OPTIONS_SUB_PATH = "PhpUnit"; // NOI18N
+    public static final String OPTIONS_SUB_PATH = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; // NOI18N
     public static final String OPTIONS_PATH = UiUtils.OPTIONS_PATH + "/" + PhpUnit.OPTIONS_SUB_PATH; // NOI18N
     // test files suffix
     public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N

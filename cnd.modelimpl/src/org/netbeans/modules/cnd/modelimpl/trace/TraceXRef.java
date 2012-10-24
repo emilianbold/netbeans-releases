@@ -440,16 +440,23 @@ public class TraceXRef extends TraceModel {
                 return;
             }
             XRefResultSet.ContextEntry entry = createLightWeightEntry(context, printErr, reportUnresolved);
-            if (entry != null) {
+            if (!reportUnresolved) {
+                // if perf test => count all for statistics
+                bag.incrementScopeCounter(XRefResultSet.ContextScope.CHECK_POINT);
+            }
+            if (reportUnresolved || entry != XRefResultSet.ContextEntry.RESOLVED) {
                 bag.addEntry(XRefResultSet.ContextScope.UNRESOLVED, entry);
-                if (entry == XRefResultSet.ContextEntry.UNRESOLVED || entry == XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED || entry == XRefResultSet.ContextEntry.UNRESOLVED_BUILTIN_BASED) {
-                    CharSequence text = ref.getText();
-                    UnresolvedEntry unres = (UnresolvedEntry)bag.getUnresolvedEntry(text);
-                    if (unres == null) {
-                        unres = new UnresolvedEntry(text, new RefLink(ref));
-                        unres = (UnresolvedEntry)bag.addUnresolvedEntry(text, unres);
+                // in perf test no need to spend extra memory
+                if (reportUnresolved) {
+                    if (entry == XRefResultSet.ContextEntry.UNRESOLVED || entry == XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED || entry == XRefResultSet.ContextEntry.UNRESOLVED_BUILTIN_BASED) {
+                        CharSequence text = ref.getText();
+                        UnresolvedEntry unres = (UnresolvedEntry)bag.getUnresolvedEntry(text);
+                        if (unres == null) {
+                            unres = new UnresolvedEntry(text, new RefLink(ref));
+                            unres = (UnresolvedEntry)bag.addUnresolvedEntry(text, unres);
+                        }
+                        unres.increment();
                     }
-                    unres.increment();
                 }
             }
         }
@@ -917,6 +924,10 @@ public class TraceXRef extends TraceModel {
                     numBuiltinBasedUnresolvedPoints++;
                 }
             }
+        }
+        if (bag.getNumberOfContexts(XRefResultSet.ContextScope.CHECK_POINT, false) > 0) {
+            // in perf run all is counted separately
+            numProjectProints = bag.getNumberOfContexts(XRefResultSet.ContextScope.CHECK_POINT, false);
         }
         int allUnresolvedPoints = numUnresolvedPoints + numMacroBasedUnresolvedPoints + numBuiltinBasedUnresolvedPoints;
         double unresolvedRatio = numProjectProints == 0 ? 0 : (100.0 * allUnresolvedPoints) / ((double) numProjectProints);

@@ -1062,7 +1062,11 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 }
             }
             
-            super.visitNewClass(tree, null);
+            scan(tree.getEnclosingExpression(), null);
+            scan(tree.getIdentifier(), null);
+            scan(tree.getTypeArguments(), null);
+            scan(tree.getArguments(), EnumSet.of(UseTypes.READ));
+            scan(tree.getClassBody(), null);
             
             return null;
         }

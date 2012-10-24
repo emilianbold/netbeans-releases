@@ -156,8 +156,13 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
      */
     @Override
     public void copy(FileObject fo, String path) {
+        final J2eeModule j2eeModule = getJ2eeModule();
+        if (j2eeModule == null) {
+            return;
+        }
+
         try {
-            FileObject contentDir = getJ2eeModule().getContentDirectory();
+            final FileObject contentDir = j2eeModule.getContentDirectory();
             if (contentDir != null) {
                 // project was built
                 FileObject destFile = ensureDestinationFileExists(contentDir,
@@ -180,8 +185,13 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
      */
     @Override
     public void delete(FileObject fo, String path) {
+        final J2eeModule j2eeModule = getJ2eeModule();
+        if (j2eeModule == null) {
+            return;
+        }
+
         try {
-            FileObject contentDir = getJ2eeModule().getContentDirectory();
+            FileObject contentDir = j2eeModule.getContentDirectory();
             if (contentDir != null) {
                 // project was built
                 FileObject classes = getDestinationSubFolderName().length() > 0 ?

@@ -48,7 +48,8 @@
     docRoot="sun-web-app",
     useInterfaces=true,
     validate=false,
-    attrProp=true
+    attrProp=true,
+    java5=true
 )
 package org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0;
 

@@ -295,17 +295,6 @@ It uses various kinds of API's:
 </li>
 <li>
     <api 
-        name="schema2beans"
-        type="import"
-        category="friend"
-        group="java"
-        url="http://schema2beans.netbeans.org/"
-    >
-    The schema2beans module
-    </api>
-</li>
-<li>
-    <api 
         name="EjbJarAPI"
         type="import"
         category="friend"

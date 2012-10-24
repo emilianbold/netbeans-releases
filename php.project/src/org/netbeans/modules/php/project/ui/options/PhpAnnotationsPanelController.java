@@ -52,13 +52,12 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     displayName="#LBL_AnnotationsOptions", // NOI18N
 //    toolTip="#LBL_AnnotationsOptionsTooltip",
-    id=PhpAnnotationsPanelController.ID,
     location=UiUtils.OPTIONS_PATH,
     position=155
 )
 public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
 
-    public static final String ID = "Annotations"; // NOI18N
+    public static final String ID = "org-netbeans-modules-php-project-ui-options-PhpAnnotationsPanelController"; // NOI18N
 
     // @GuardedBy(EDT)
     private PhpAnnotationsPanel panel = null;

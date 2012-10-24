@@ -47,7 +47,8 @@
     docRoot="sun-cmp-mappings",
     generateInterfaces=true,
     validate=false,
-    attrProp=true
+    attrProp=true,
+    java5=true
 )
  */
 package org.netbeans.modules.j2ee.sun.dd.api.cmp;

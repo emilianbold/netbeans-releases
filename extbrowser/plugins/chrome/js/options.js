@@ -274,7 +274,7 @@ NetBeans_PresetCustomizer._movePreset = function(preset, shift) {
     this._presets[index] = this._presets[index + shift];
     this._presets[index + shift] = tmp;
 };
-// save presets to the centrak storage and redraw them
+// save presets to the central storage and redraw them
 NetBeans_PresetCustomizer._save = function() {
     for (i in this._presets) {
         var preset = this._presets[i];
@@ -301,7 +301,7 @@ NetBeans_PresetCustomizer._rowSelected = function(row) {
     }
     // select
     var that = this;
-    for (i in this._presets) {
+    for (var i in this._presets) {
         var preset = this._presets[i];
         if (preset['_row'] === row) {
             that._activePreset = preset;

@@ -926,11 +926,20 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             public void filesRemoved(List<NativeFileItem> fileItems) {
                 removedFileItems.addAll(fileItems);
             }
+
+            @Override
+            public void filesPropertiesChanged(List<NativeFileItem> fileItems) {
+                for (NativeFileItem item : fileItems) {
+                    if (item.isExcluded()) {
+                        removedFileItems.add(item);
+                    }
+                }
+            }
+                        
         };
         nativeProject.addProjectItemsListener(projectItemListener);
         List<NativeFileItem> sources = new ArrayList<NativeFileItem>();
         List<NativeFileItem> headers = new ArrayList<NativeFileItem>();
-        List<NativeFileItem> excluded = new ArrayList<NativeFileItem>();
         for (NativeFileItem item : nativeProject.getAllFiles()) {
             if (!item.isExcluded()) {
                 switch (item.getLanguage()) {
@@ -950,7 +959,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     case C:
                     case CPP:
                     case FORTRAN:
-                        excluded.add(item);
+                        removedFileItems.add(item);
                         break;
                     default:
                         break;
@@ -1011,14 +1020,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             getProjectRoots().addSources(sources);
             getProjectRoots().addSources(headers);
-            getProjectRoots().addSources(excluded);
-            checkConsistency(false);
-            for(NativeFileItem nativeFileItem : excluded) {
-                FileImpl file = getFile(nativeFileItem.getAbsolutePath(), true);
-                if (file != null) {
-                    removeFile(nativeFileItem.getAbsolutePath());
-                }
-            }
+            getProjectRoots().addSources(removedFileItems);
             checkConsistency(false);
             CreateFilesWorker worker = new CreateFilesWorker(this, readOnlyRemovedFilesSet, validator);
             worker.createProjectFilesIfNeed(sources, true);
@@ -1232,7 +1234,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * Checks whether there are files in code model, that are removed from the project system
      */
     public final void checkForRemoved() {
-
+        CndUtils.assertTrueInConsole(ModelImpl.isModelRequestProcessorThread(), "should be called from model RP"); // NOI18N
         NativeProject nativeProject = (platformProject instanceof NativeProject) ? (NativeProject) platformProject : null;
 
         // we might just ask NativeProject to find file,
@@ -1309,7 +1311,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             for (CsmFile csmFile : getGraph().getOutLinks(curLiveFile)) {
                 FileImpl includedFileImpl = (FileImpl) csmFile;
                 if (includedFileImpl.getProjectUID().equals(this.getUID())) {
-                    CndUtils.assertTrueInConsole(allFileImpls.containsKey(includedFileImpl), "no record for: ", includedFileImpl); // NOI18N
+                    if (CndUtils.isDebugMode() || CndUtils.isUnitTestMode()) {
+                        CndUtils.assertTrueInConsole(allFileImpls.containsKey(includedFileImpl), 
+                                "no record for: " + includedFileImpl, "\n\twhile checking out links for " + curLiveFile); // NOI18N
+                    } 
                     // check if file was already handled
                     Boolean result = allFileImpls.get(includedFileImpl);
                     if (result == null) {

@@ -39,37 +39,22 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.editor.module.main;
 
-package org.apache.tools.ant.module.run;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import org.apache.tools.ant.module.AntModule;
-import org.apache.tools.ant.module.api.support.TargetLister;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle.Messages;
+/**
+ *
+ * @author mfukala@netbeans.org
+ */
+public class ChromeModuleTest extends CssModuleTestBase {
 
-@ActionID(category="Build", id="org.apache.tools.ant.module.run.RunTargetAction")
-@ActionRegistration(displayName="#LBL_execute_target")
-@ActionReference(path="org-apache-tools-ant-module/target-actions", position=300)
-@Messages("LBL_execute_target=Run Target")
-public final class RunTargetAction implements ActionListener {
-
-    private final TargetLister.Target target;
-
-    public RunTargetAction(TargetLister.Target target) {
-        this.target = target;
+    public ChromeModuleTest(String name) {
+        super(name);
     }
 
-    @Override public void actionPerformed(ActionEvent e) {
-        try {
-            new TargetExecutor(target.getOriginatingScript(), new String[] {target.getName()}).execute();
-        } catch (IOException ioe) {
-            AntModule.err.notify(ioe);
-        }
+    public void testModule() {
+        CssEditorModule chromeModule = getCssModuleByClass(ChromeModule.class);
+        assertNotNull(chromeModule);
     }
-
 }

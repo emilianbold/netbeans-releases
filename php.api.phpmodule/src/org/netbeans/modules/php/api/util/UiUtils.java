@@ -72,7 +72,7 @@ public final class UiUtils {
     /**
      * The General Options category ID.
      */
-    public static final String GENERAL_OPTIONS_SUBCATEGORY = "General"; // NOI18N
+    public static final String GENERAL_OPTIONS_SUBCATEGORY = "org-netbeans-modules-php-project-ui-options-PhpOptionsPanelController"; // NOI18N
 
     private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; // NOI18N
     private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon"; // NOI18N

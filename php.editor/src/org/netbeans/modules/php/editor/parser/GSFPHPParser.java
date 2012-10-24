@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java_cup.runtime.Symbol;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -112,16 +113,14 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
         shortTags = languageProperties.areShortTagsEnabled();
         aspTags = languageProperties.areAspTagsEnabled();
-        int end = 0;
         try {
-            String source = snapshot.getText().toString();
-            end = source.length();
             int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
             LOGGER.log(Level.FINE, "caretOffset: {0}", caretOffset); //NOI18N
-            Context context = new Context(snapshot, source, caretOffset);
+            Context context = new Context(snapshot, caretOffset);
             result = parseBuffer(context, Sanitize.NONE, null);
         } catch (Exception exception) {
             LOGGER.log(Level.FINE, "Exception during parsing: {0}", exception);
+            int end = snapshot.getText().toString().length();
             ASTError error = new ASTError(0, end);
             List<Statement> statements = new ArrayList<Statement>();
             statements.add(error);
@@ -142,7 +141,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             boolean ok = sanitizeSource(context, sanitizing, errorHandler);
 
             if (ok) {
-                assert context.getSanitizedSource() != null;
+                assert context.getSanitizedPart() != null;
                 sanitizedSource = true;
                 source = context.getSanitizedSource();
             } else {
@@ -161,8 +160,8 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         java_cup.runtime.Symbol rootSymbol = parser.parse();
         if (scanner.getCurlyBalance() != 0 && !sanitizedSource) {
             sanitizeSource(context, Sanitize.MISSING_CURLY, null);
-            if (context.getSanitizedSource() != null) {
-                context.setSource(context.getSanitizedSource());
+            if (context.getSanitizedPart() != null) {
+                context.setSourceHolder(new StringSourceHolder(context.getSanitizedSource()));
                 source = context.getSource();
                 scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
                 parser = new ASTPHP5Parser(scanner);
@@ -244,7 +243,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 if ("}".equals(replace)) {
                     return false;
                 }
-                context.setSanitizedSource(source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end));
+                context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(start, end), Utils.getSpaces(end - start)));
                 return true;
             }
         }
@@ -258,7 +257,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 if (source.substring(start, end).equals("}")) {
                     return false;
                 }
-                context.setSanitizedSource(source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end));
+                context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(start, end), Utils.getSpaces(end - start)));
                 return true;
             }
         }
@@ -281,7 +280,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                     }
                 }
 
-                context.setSanitizedSource(source.substring(0, start) + sb.toString() + source.substring(end));
+                context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(start, end), sb.toString()));
                 return true;
             }
         }
@@ -302,7 +301,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                         c = source.charAt(end++);
                     }
                 }
-                context.setSanitizedSource(source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end));
+                context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(start, end), Utils.getSpaces(end - start)));
                 return true;
             }
         }
@@ -396,9 +395,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
                         if (canBeSanitized) {
                             int sanitizedChars = numberOfSanitizedChars(containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese);
-                            context.setSanitizedSource(source.substring(0, start + currentLeftOffset - 1)
-                                    + sanitizationString(delimiter, containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese)
-                                    + source.substring(start + currentLeftOffset + sanitizedChars - phpOpenDelimiter.length() + 1));
+                            context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(start + currentLeftOffset - 1, start + currentLeftOffset + sanitizedChars - phpOpenDelimiter.length() + 1), sanitizationString(delimiter, containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese)));
                             return true;
                         } else {
                             break;
@@ -465,7 +462,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
         int bracketCounter = 0;
         int bracketClassCounter = 0;
-
+        SanitizedPart classSanitizedPart = SanitizedPart.NONE;
         try {
             token = scanner.next_token();
             boolean inClass = false;
@@ -490,6 +487,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                                 }
                                 if (c != '}' && c != '{') {
                                     source = source.substring(0, index) + '}' + source.substring(index + 1);
+                                    classSanitizedPart = createNewClassSanitizedPart(classSanitizedPart, source, index);
                                     bracketClassCounter--;
                                 }
                             }
@@ -509,11 +507,12 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                                 while (index < source.length() && bracketClassCounter > 0
                                         && (c == '\n' || c == '\r' || c == '\t' || c == ' ')) {
                                     source = source.substring(0, index) + '}' + source.substring(index + 1);
+                                    classSanitizedPart = createNewClassSanitizedPart(classSanitizedPart, source, index);
                                     bracketClassCounter--;
                                     c = source.charAt(--index);
                                 }
                             }
-                            context.setSanitizedSource(source);
+                            context.setSanitizedPart(classSanitizedPart);
                         }
                         break;
                     case ASTPHP5Symbols.T_CURLY_OPEN:
@@ -551,16 +550,29 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             if (lastPHPToken != null) {
                 String lastTokenText = source.substring(lastPHPToken.left, lastPHPToken.right).trim();
                 if ("?>".equals(lastTokenText)) {   //NOI18N
-                    context.setSanitizedSource(source.substring(0, lastPHPToken.left) + Utils.getRepeatingChars('}', count) + source.substring(lastPHPToken.left));
+                    context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(lastPHPToken.left, lastPHPToken.left), Utils.getRepeatingChars('}', count)));
                     return true;
                 }
                 if (token.sym == ASTPHP5Symbols.EOF) {
-                    context.setSanitizedSource(source.substring(0, token.left) + Utils.getRepeatingChars('}', count) + source.substring(token.left));
+                    context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(token.left, token.left), Utils.getRepeatingChars('}', count)));
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private SanitizedPart createNewClassSanitizedPart(SanitizedPart classSanitizedPart, String source, int index) {
+        OffsetRange offsetRange = classSanitizedPart.getOffsetRange();
+        int start = offsetRange.getStart();
+        int end = offsetRange.getEnd();
+        if (index <= start) {
+            start = index;
+        }
+        if (index + 1 >= end) {
+            end = index + 1;
+        }
+        return new SanitizedPartImpl(new OffsetRange(start, end), source.substring(start, end));
     }
 
     private boolean sanitizeRemoveBlock(Context context, int index) {
@@ -584,7 +596,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             LOGGER.log(Level.INFO, "Exception during removing block", exception);   //NOI18N
         }
         if (start > -1 && start < end) {
-            context.setSanitizedSource(source.substring(0, start) + Utils.getSpaces(end - start) + source.substring(end));
+            context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(start, end), Utils.getSpaces(end - start)));
             return true;
         }
         return false;
@@ -698,14 +710,14 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     public static class Context {
 
         private final Snapshot snapshot;
-        private String source;
-        private String sanitizedSource;
-        private int caretOffset;
+        private final int caretOffset;
+        private SourceHolder sourceHolder;
+        private SanitizedPart sanitizedPart;
 
-        public Context(Snapshot snapshot, String source, int caretOffset) {
+        public Context(Snapshot snapshot, int caretOffset) {
             this.snapshot = snapshot;
-            this.source = source;
             this.caretOffset = caretOffset;
+            this.sourceHolder = new SnapshotSourceHolder(snapshot);
         }
 
         @Override
@@ -713,29 +725,117 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             return "PHPParser.Context(" + snapshot.getSource().getFileObject() + ")"; // NOI18N
         }
 
-        public void setSanitizedSource(String sanitizedSource) {
-            this.sanitizedSource = sanitizedSource;
-        }
-
-        public String getSanitizedSource() {
-            return sanitizedSource;
-        }
-
         public Snapshot getSnapshot() {
             return snapshot;
         }
 
-        private void setSource(String source) {
-            this.source = source;
+        private void setSourceHolder(SourceHolder sourceHolder) {
+            this.sourceHolder = sourceHolder;
         }
 
         public String getSource() {
-            return source;
+            return sourceHolder.getText();
         }
 
         public int getCaretOffset() {
             return caretOffset;
         }
 
+        public void setSanitizedPart(SanitizedPart sanitizedPart) {
+            this.sanitizedPart = sanitizedPart;
+        }
+
+        public SanitizedPart getSanitizedPart() {
+            return sanitizedPart;
+        }
+
+        public String getSanitizedSource() {
+            assert sanitizedPart != null;
+            StringBuilder sb = new StringBuilder();
+            OffsetRange offsetRange = sanitizedPart.getOffsetRange();
+            sb.append(getSource().substring(0, offsetRange.getStart())).append(sanitizedPart.getText()).append(getSource().substring(offsetRange.getEnd()));
+            return sb.toString();
+        }
+
     }
+
+    public static interface SanitizedPart {
+        public static final SanitizedPart NONE = new SanitizedPart(){
+
+            @Override
+            public OffsetRange getOffsetRange() {
+                return OffsetRange.NONE;
+            }
+
+            @Override
+            public String getText() {
+                return "";
+            }
+        };
+
+        public OffsetRange getOffsetRange();
+
+        public String getText();
+
+    }
+
+    public static class SanitizedPartImpl implements SanitizedPart {
+        private final OffsetRange offsetRange;
+        private final String text;
+
+        public SanitizedPartImpl(OffsetRange offsetRange, String text) {
+            assert offsetRange != null;
+            assert text != null;
+            this.offsetRange = offsetRange;
+            this.text = text;
+        }
+
+        @Override
+        public OffsetRange getOffsetRange() {
+            return offsetRange;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+    }
+
+    private static interface SourceHolder {
+
+        public String getText();
+
+    }
+
+    private static class StringSourceHolder implements SourceHolder {
+        private final String text;
+
+        public StringSourceHolder(String text) {
+            assert text != null;
+            this.text = text;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+    }
+
+    private static class SnapshotSourceHolder implements SourceHolder {
+        private final Snapshot snapshot;
+
+        public SnapshotSourceHolder(Snapshot snapshot) {
+            assert snapshot != null;
+            this.snapshot = snapshot;
+        }
+
+        @Override
+        public String getText() {
+            return snapshot.getText().toString();
+        }
+
+    }
+
 }
