@@ -93,7 +93,7 @@ public class RepositoryImpl<R, Q, I> {
         });
     }
     
-    public Repository getRepository() {
+    public synchronized Repository getRepository() {
         if(repository == null) {
             repository = APIAccessor.IMPL.createRepository(this);
         }
