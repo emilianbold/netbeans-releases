@@ -218,6 +218,15 @@ public final class ExternalBrowserPlugin {
             }
         }
     }
+    
+    private void closeOtherDebuggingSessionsWithPageInspector(int tabId) {
+        for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
+            BrowserTabDescriptor browserTab = iterator.next();
+            if ( tabId != browserTab.tabID && browserTab.isPageInspectorActive()) {
+                close(browserTab, false);
+            }
+        }
+    }
 
     class BrowserPluginHandler implements WebSocketReadHandler {
 
@@ -692,6 +701,11 @@ public final class ExternalBrowserPlugin {
 
             PageInspector inspector = PageInspector.getDefault();
             if (inspector != null && !browserImpl.isDisablePageInspector()) {
+                
+                // #219241 - "Web inspection is broken when switching 2 projects with different configuration"
+                // a solution is to close previous debugging sessions:
+                ExternalBrowserPlugin.getInstance().closeOtherDebuggingSessionsWithPageInspector(tabID);
+                
                 inspector.inspectPage(new ProxyLookup(browserImpl.getLookup(), browserImpl.getProjectContext()));
             }
         }
@@ -721,6 +735,11 @@ public final class ExternalBrowserPlugin {
             if (dispatcher != null) {
                 dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
             }
+        }
+        
+        public boolean isPageInspectorActive() {
+            return PageInspector.getDefault() != null && 
+                !browserImpl.isDisablePageInspector();
         }
 
     }
