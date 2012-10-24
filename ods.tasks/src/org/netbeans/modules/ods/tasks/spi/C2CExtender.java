@@ -74,6 +74,13 @@ public abstract class C2CExtender<Data> {
     protected C2CExtender() {
     }
 
+    /**
+     * Creates the C2CRepositoryConnector. 
+     * BEWARE - it seems to cause problems to have more than one instance alive, 
+     * so never call this more than once in an IDE/test session.
+     * 
+     * @return 
+     */
     public static AbstractRepositoryConnector create() {
         return getDefault().spiCreate();
     }
