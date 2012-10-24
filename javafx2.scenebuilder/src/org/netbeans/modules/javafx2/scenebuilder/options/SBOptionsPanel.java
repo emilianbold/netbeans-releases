@@ -55,7 +55,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-@OptionsPanelController.Keywords(keywords={"javafx"}, location=JavaOptions.JAVA, tabTitle= "JavaFX")
+@OptionsPanelController.Keywords(keywords={"#KW_JavaFXOptions"}, location=JavaOptions.JAVA, tabTitle= "JavaFX")
+@NbBundle.Messages("KW_JavaFXOptions=JavaFX,Scene Builder")
 final class SBOptionsPanel extends javax.swing.JPanel {    
     private final SBOptionsPanelController controller;
     
