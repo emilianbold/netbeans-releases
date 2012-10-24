@@ -90,6 +90,14 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
         synchronized( LOCK ) {
             if( null == browser ) {
                 browser = WebBrowserImplProvider.createBrowser();
+                try {
+                    browser.getComponent(); //#219304 - try to create the WebView component to check if binaries load fine
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable ex) {
+                    Logger.getLogger( HtmlBrowserImpl.class.getName() ).log(Level.INFO, ex.getMessage(), ex);
+                    browser = new NoWebBrowserImpl( ex.getMessage() );
+                }
             }
             return browser;
         }
