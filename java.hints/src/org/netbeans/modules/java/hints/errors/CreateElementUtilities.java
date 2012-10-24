@@ -283,6 +283,8 @@ public final class CreateElementUtilities {
                 if (resolvedType.getKind() == TypeKind.ERROR || resolvedType.getKind() == TypeKind.OTHER) {
                     return resolveType(types, info, parent.getParentPath(), bt, offset, null, null);
                 }
+                
+                return Collections.singletonList(resolvedType);
             }
         }
         
