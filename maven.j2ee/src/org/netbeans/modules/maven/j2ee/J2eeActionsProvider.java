@@ -63,7 +63,6 @@ import org.openide.util.Lookup;
         "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
         "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
         "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-        // XXX TYPE_APPCLIENT listed here, but webActionMappings.xml has no bindings for it
         "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
     }
 )
@@ -81,6 +80,11 @@ public class J2eeActionsProvider extends AbstractMavenActionsProvider {
 
     @Override
     public boolean isActionEnable(String action, Project project, Lookup lookup) {
+        final String packagingType = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
+        if ("app-client".equals(packagingType)) {
+            return false;
+        }
+
         if (ACT_DEBUG.equals(action) ||
             ACT_RUN.equals(action) ||
             ACT_PROFILE.equals(action)) {
