@@ -154,14 +154,14 @@ public final class KenaiServer implements TeamServer {
         return server.getDashboard();
     }
     
-    public static ProjectHandle<KenaiProject>[] getOpenProjects() {
+    public static ProjectHandle<KenaiProject>[] getDashboardProjects(boolean onlyOpened) {
         ArrayList<KenaiServer> servers;
         synchronized (serverMap) {
             servers = new ArrayList<KenaiServer>(serverMap.values());
         }
         LinkedList<ProjectHandle<KenaiProject>> ret = new LinkedList<ProjectHandle<KenaiProject>>();
         for (KenaiServer s : servers) {
-            ProjectHandle<KenaiProject>[] projects = s.getDashboard().getOpenProjects();
+            ProjectHandle<KenaiProject>[] projects = s.getDashboard().getProjects(onlyOpened);
             if(projects != null) {
                 ret.addAll(Arrays.asList(projects));
             }

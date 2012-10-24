@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
@@ -58,7 +57,7 @@ import org.openide.modules.ModuleInfo;
  */
 public class DependencyAggregator extends Object {
     private final static Map<DependencyDecoratorKey, DependencyAggregator> key2dependency = new HashMap<DependencyDecoratorKey, DependencyAggregator> (11, 11);
-    private Collection<ModuleInfo> depending = new CopyOnWriteArraySet<ModuleInfo> ();
+    private Collection<ModuleInfo> depending = new HashSet<ModuleInfo>();
     private final DependencyDecoratorKey key;
     
     private DependencyAggregator (DependencyDecoratorKey key) {
@@ -85,11 +84,11 @@ public class DependencyAggregator extends Object {
         return key.name;
     }
     
-    public boolean addDependee (ModuleInfo dependee) {
+    synchronized public boolean addDependee(ModuleInfo dependee) {
         return depending.add (dependee);
     }
     
-    public Collection<ModuleInfo> getDependening () {
+    synchronized public Collection<ModuleInfo> getDependening() {
         return depending;
     }
     

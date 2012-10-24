@@ -66,6 +66,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyEditor;
 import java.io.IOException;
@@ -727,31 +728,47 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
      * to the table, but will not initiate the custom editor dialog */
     @Override
     public void processMouseEvent(MouseEvent me) {
-        if (me.getID() == me.MOUSE_PRESSED && SwingUtilities.isLeftMouseButton(me) &&
-                onCustomEditorButton(me) && !hasFocus()) {
-            if (PropUtils.psCommitOnFocusLoss && isEditing()) {
-                getEditor().stopCellEditing();
-                
-                // #54211: it can happen that PropertySheet window is closed
-                // when previous property editing is finished (e.g. Form
-                // event properties) If this is the case don't try to edit
-                // newly selected property.
-                if (isGoingToBeClosed()) {
-                    return;
+        if (me.getID() == me.MOUSE_PRESSED && SwingUtilities.isLeftMouseButton(me) ) {
+            if( me.getClickCount() > 1 ) {
+                //#220256 - some properties want to handle double-click on their property name cell
+                int row = rowAtPoint(me.getPoint());
+                int col = columnAtPoint(me.getPoint());
+                if( col == 0 ) {
+                    FeatureDescriptor fd = getPropertySetModel().getFeatureDescriptor( row );
+                    if( null != fd ) {
+                        Object mouseListener = fd.getValue( "nb.propertysheet.mouse.doubleclick.listener" ); //NOI18N
+                        if( mouseListener instanceof MouseListener ) {
+                            ((MouseListener)mouseListener).mouseClicked( me );
+                            return;
+                        }
+                    }
                 }
             }
-            
-            int row = rowAtPoint(me.getPoint());
-            int col = columnAtPoint(me.getPoint());
-            
-            if ((row != -1) && (col != -1)) {
-                changeSelection(row, col, false, false);
-                getCustomEditorAction().actionPerformed(
-                        new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ACTION_CUSTOM_EDITOR)
-                        );
-                me.consume();
-                
-                return;
+            if( onCustomEditorButton(me) && !hasFocus()) {
+                if (PropUtils.psCommitOnFocusLoss && isEditing()) {
+                    getEditor().stopCellEditing();
+
+                    // #54211: it can happen that PropertySheet window is closed
+                    // when previous property editing is finished (e.g. Form
+                    // event properties) If this is the case don't try to edit
+                    // newly selected property.
+                    if (isGoingToBeClosed()) {
+                        return;
+                    }
+                }
+
+                int row = rowAtPoint(me.getPoint());
+                int col = columnAtPoint(me.getPoint());
+
+                if ((row != -1) && (col != -1)) {
+                    changeSelection(row, col, false, false);
+                    getCustomEditorAction().actionPerformed(
+                            new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ACTION_CUSTOM_EDITOR)
+                            );
+                    me.consume();
+
+                    return;
+                }
             }
         }
         

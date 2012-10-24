@@ -230,10 +230,12 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         return server;
     }
 
-    public ProjectHandle<P>[] getOpenProjects() {
+    public ProjectHandle<P>[] getProjects(boolean onlyOpened) {
         TreeSet<ProjectHandle> s = new TreeSet();
         s.addAll(openProjects);
-        s.addAll(memberProjects);
+        if(!onlyOpened) {
+            s.addAll(memberProjects);
+        }
         return s.toArray(new ProjectHandle[s.size()]);
     }
 

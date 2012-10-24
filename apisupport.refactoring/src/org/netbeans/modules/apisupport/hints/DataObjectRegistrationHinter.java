@@ -324,7 +324,7 @@ public class DataObjectRegistrationHinter implements Hinter {
         }
 
         private boolean isSeparator(FileObject fo) {
-            return ((fo != null) && (fo.hasExt("instance") && (fo.getAttribute("instanceClass").equals("javax.swing.JSeparator"))));
+            return (fo != null) && (fo.hasExt("instance") && ("javax.swing.JSeparator".equals(fo.getAttribute("instanceClass"))));
         }
 
         private boolean isSameLayer(FileObject fo) { // thanks to Jesse

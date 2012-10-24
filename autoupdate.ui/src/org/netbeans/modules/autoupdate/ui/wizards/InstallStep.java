@@ -772,12 +772,9 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 Logger.getLogger (InstallStep.class.getName ()).log (Level.INFO, x.getMessage (), x);
             }
         } else if (restarter != null) {
-            assert support != null : "OperationSupport cannot be null because OperationContainer " +
-                    "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
             if (support == null) {
-                log.log(Level.WARNING, "Installation failed: OperationSupport was null because OperationContainer "
-                        + "does not contain any elements: " + model.getBaseContainer().listAll()
-                        + " or contains invalid elements " + model.getBaseContainer().listInvalid());
+                assert model.getBaseContainer().listAll() == null : "OperationSupport is null because OperationContainer " +
+                        "contains no elements: " + model.getBaseContainer ().listAll ();
                 return ;
             }
             if (panel.restartNow ()) {

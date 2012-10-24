@@ -395,7 +395,7 @@ Other names may be trademarks of their respective owners.
   <mapID target="netbeans.optionsDialog.advanced.terminal" url="configure/csh/misc/options_terminal.html" />
 
 <!-- Options | Misc | Output -->
-  <mapID target="org.netbeans.core.io.ui.IOWindow" url="configure/csh/misc/options_output.html" />
+  <mapID target="netbeans.optionsDialog.advanced.output" url="configure/csh/misc/options_output.html" />
   
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
   <!--folder subnodes of Templates category; can be overridden in layer:-->

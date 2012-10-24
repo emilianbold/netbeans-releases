@@ -205,7 +205,13 @@ public final class DashboardViewer implements PropertyChangeListener {
                 public void run() {
                     //TODO needs to be optimalized
                     titleRepositoryNode.setProgressVisible(true);
-                    updateRepositories((List<Repository>) evt.getNewValue());
+                    Collection<Repository> addedRepositories = (Collection<Repository>) evt.getNewValue();
+                    Collection<Repository> removedRepositories = (Collection<Repository>) evt.getOldValue();
+                    if(addedRepositories == null && removedRepositories == null) {
+                        updateRepositories(RepositoryManager.getInstance().getRepositories());
+                    } else {
+                        updateRepositories(addedRepositories, removedRepositories);
+                    }
                     titleRepositoryNode.setProgressVisible(false);
                 }
             });
@@ -868,34 +874,59 @@ public final class DashboardViewer implements PropertyChangeListener {
         return null;
     }
 
-    private void updateRepositories(List<Repository> newValue) {
-        synchronized (LOCK_REPOSITORIES) {
-            List<Repository> toAdd = new ArrayList<Repository>();
-            List<RepositoryNode> toRemove = new ArrayList<RepositoryNode>();
+    private void updateRepositories(Collection<Repository> addedRepositories, Collection<Repository> removedRepositories) {
+        List<RepositoryNode> toAdd = new ArrayList<RepositoryNode>();
+        List<RepositoryNode> toRemove = new ArrayList<RepositoryNode>();
 
+        if(removedRepositories != null) {
             for (RepositoryNode oldRepository : repositoryNodes) {
-                if (!newValue.contains(oldRepository.getRepository())) {
+                if (removedRepositories.contains(oldRepository.getRepository())) {
                     toRemove.add(oldRepository);
                 }
             }
-
+        }
+        if(addedRepositories != null) {
             List<Repository> oldValue = getRepositories(false);
-            for (Repository newRepository : newValue) {
-                if (!oldValue.contains(newRepository)) {
-                    toAdd.add(newRepository);
+            for (Repository addedRepository : addedRepositories) {
+                if (!oldValue.contains(addedRepository)) {
+                    toAdd.add(new RepositoryNode(addedRepository, false));
                 }
             }
+        } 
+        updateRepositories(toRemove, toAdd);
+    }
+    
+    private void updateRepositories(Collection<Repository> repositories) {
+        List<RepositoryNode> toAdd = new ArrayList<RepositoryNode>();
+        List<RepositoryNode> toRemove = new ArrayList<RepositoryNode>();
+
+        for (RepositoryNode oldRepository : repositoryNodes) {
+            if (!repositories.contains(oldRepository.getRepository())) {
+                toRemove.add(oldRepository);
+            }
+        }
+
+        List<Repository> oldValue = getRepositories(false);
+        for (Repository newRepository : repositories) {
+            if (!oldValue.contains(newRepository)) {
+                toAdd.add(new RepositoryNode(newRepository, false));
+            }
+        }
+        updateRepositories(toRemove, toAdd);
+    }
+
+    private void updateRepositories(List<RepositoryNode> toRemove, List<RepositoryNode> toAdd) {
+        synchronized (LOCK_REPOSITORIES) {
             //remove unavailable repositories from model
             repositoryNodes.removeAll(toRemove);
             for (RepositoryNode repositoryNode : toRemove) {
                 model.removeRoot(repositoryNode);
             }
             //add new repositories to model
-            for (Repository newRepository : toAdd) {
-                RepositoryNode repositoryNode = new RepositoryNode(newRepository, false);
-                repositoryNodes.add(repositoryNode);
-                if (isRepositoryInFilter(repositoryNode)) {
-                    addRepositoryToModel(repositoryNode, repositoryNode.isOpened());
+            for (RepositoryNode newRepository : toAdd) {
+                repositoryNodes.add(newRepository);
+                if (isRepositoryInFilter(newRepository)) {
+                    addRepositoryToModel(newRepository, newRepository.isOpened());
                 }
             }
         }
@@ -1072,9 +1103,12 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     private void handleSelection(TreeListNode node) {
         ListSelectionModel selectionModel = treeList.getSelectionModel();
+        List<TreeListNode> children = node.getChildren();
+        int childrenSize = children.size();
+        removeChildrenSelection(children);
         if (!selectionModel.isSelectionEmpty()) {
             int indexOfNode = model.getAllNodes().indexOf(node);
-            if (selectionModel.isSelectedIndex(indexOfNode)) {
+            if (selectionModel.isSelectedIndex(indexOfNode) || selectionModel.isSelectedIndex(indexOfNode + childrenSize + 1)) {
                 int minSelectionIndex = selectionModel.getMinSelectionIndex();
                 int maxSelectionIndex = selectionModel.getMaxSelectionIndex();
                 if (minSelectionIndex == maxSelectionIndex) {
@@ -1093,6 +1127,16 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             }
         }
+    }
+
+    private void removeChildrenSelection(List<TreeListNode> children) {
+        if (children.isEmpty()) {
+            return;
+        }
+        final List<TreeListNode> allNodes = model.getAllNodes();
+        int firstIndex = allNodes.indexOf(children.get(0));
+        int lastIndex = allNodes.indexOf(children.get(children.size() - 1));
+        treeList.getSelectionModel().removeSelectionInterval(firstIndex, lastIndex);
     }
 
     private class ModelListener implements TreeListModelListener {
