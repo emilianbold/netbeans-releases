@@ -44,12 +44,15 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FontMetrics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JList;
@@ -90,6 +93,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
     private Task evalTask;
     private static final RequestProcessor RP = new RequestProcessor(QuickSearchPopup.class);
     private static final RequestProcessor evaluatorRP = new RequestProcessor(QuickSearchPopup.class + ".evaluator"); //NOI18N
+    private static final Logger LOG = Logger.getLogger(QuickSearchPopup.class.getName());
 
     public QuickSearchPopup (AbstractQuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
@@ -325,6 +329,10 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
      * Updates size and visibility of this panel according to model content
      */
     public void updatePopup (boolean isInProgress) {
+        updatePopup(isInProgress, true);
+    }
+
+    private void updatePopup (boolean isInProgress, boolean canRetry) {
         int modelSize = rModel.getSize();
         if (modelSize > 0 && jList1.getSelectedIndex()<0) {
             jList1.setSelectedIndex(0);
@@ -342,7 +350,13 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
         boolean statusVisible = updateStatusPanel(isInProgress);
 
-        computePopupBounds(popupBounds, lPane, modelSize);
+        try {
+            computePopupBounds(popupBounds, lPane, modelSize);
+        } catch (Exception e) { //sometimes the hack in computePopupBounds fails
+            LOG.log(canRetry ? Level.INFO : Level.SEVERE, null, e);
+            retryUpdatePopup(canRetry, isInProgress);
+            return;
+        }
         setBounds(popupBounds);
 
         // popup visibility constraints
@@ -364,6 +378,23 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         // needed on JDK 1.5.x to repaint correctly
         revalidate();
     }
+
+    /**
+     * Retry to update popup if something went wrong, but only if it is allowed.
+     * See bug 205356.
+     */
+    private void retryUpdatePopup(boolean canRetry,
+            final boolean isInProgress) {
+        if (canRetry) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updatePopup(isInProgress, false); // do not retry again
+                }
+            });
+        }
+    }
+
     private boolean explicitlyInvoked = false;
     /** User actually pressed Ctrl-I; display popup even just for Recent Searches. */
     void explicitlyInvoked() {

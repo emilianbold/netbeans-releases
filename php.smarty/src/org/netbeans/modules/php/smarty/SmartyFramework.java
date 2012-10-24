@@ -50,7 +50,7 @@ import org.openide.filesystems.FileObject;
  */
 public class SmartyFramework {
 
-    public static final String OPTIONS_SUB_PATH = "Smarty"; // NOI18N
+    public static final String OPTIONS_SUB_PATH = "org-netbeans-modules-php-smarty-ui-options-SmartyOptionsPanelController"; // NOI18N
     public static final String BASE_CLASS_NAME = "Smarty"; // NOI18N
 
     /**

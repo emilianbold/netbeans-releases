@@ -59,14 +59,13 @@ import org.openide.util.Lookup;
  */
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
-    id=HudsonOptionsPanelController.OPTIONS_SUBPATH,
     displayName="#LBL_HudsonPHPOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=160
 )
 public class HudsonOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    public static final String OPTIONS_SUBPATH = "Hudson"; // NOI18N
+    public static final String OPTIONS_SUBPATH = "org-netbeans-modules-hudson-php-ui-options-HudsonOptionsPanelController"; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 

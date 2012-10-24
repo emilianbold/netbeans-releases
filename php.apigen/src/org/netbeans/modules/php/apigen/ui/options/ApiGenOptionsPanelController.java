@@ -58,14 +58,13 @@ import org.openide.util.Lookup;
  */
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
-    id=ApiGenOptionsPanelController.OPTIONS_SUBPATH,
     displayName="#LBL_PHPGenOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=165
 )
 public class ApiGenOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    public static final String OPTIONS_SUBPATH = "ApiGen"; // NOI18N
+    public static final String OPTIONS_SUBPATH = "org-netbeans-modules-php-apigen-ui-options-ApiGenOptionsPanelController"; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 

@@ -72,15 +72,15 @@ class ExtPlainView extends PlainView {
     private static final boolean antialias = Boolean.getBoolean ("swing.aatext") || //NOI18N
                                              "Aqua".equals (UIManager.getLookAndFeel().getID()); // NOI18N
 
-    private static Map hintsMap = null;
+    private static Map<RenderingHints.Key, Object> hintsMap = null;
     
     @SuppressWarnings("unchecked")
-    static final Map getHints() {
+    static Map<RenderingHints.Key, Object> getHints() {
         if (hintsMap == null) {
             //Thanks to Phil Race for making this possible
             hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
             if (hintsMap == null) {
-                hintsMap = new HashMap();
+                hintsMap = new HashMap<RenderingHints.Key, Object>();
                 if (antialias) {
                     hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                 }
@@ -464,7 +464,7 @@ class ExtPlainView extends PlainView {
             OutputTab tab = (OutputTab) SwingUtilities.getAncestorOfClass(
                     OutputTab.class, pane);
             if (tab != null) {
-                OutputTab outputTab = (OutputTab) tab;
+                OutputTab outputTab = tab;
                 OutputOptions.LinkStyle linkStyle;
                 linkStyle = outputTab.getIO().getOptions().getLinkStyle();
                 if (linkStyle == OutputOptions.LinkStyle.NONE) {

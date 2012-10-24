@@ -42,11 +42,11 @@
 
 package org.netbeans.modules.options;
 
+import java.lang.String;
 import java.util.Arrays;
 import org.netbeans.spi.options.*;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import org.openide.util.Exceptions;
@@ -86,14 +86,14 @@ public class AdvancedOptionImpl extends AdvancedOption {
 
     /**
      * Provides list of options for this category
-     * @return map of path and keywords for each optioncategory sub-panel
+     * @return list of keywords for each optioncategory sub-panel
      */
-    public Map<String, Set<String>> getKeywordsByCategory() {
-        if (keywordsCategory != null && keywords != null) {
-            return Collections.<String,Set<String>>singletonMap(keywordsCategory, new HashSet<String>(Arrays.asList(keywords.split(",")))); // NOI18N
-        } else {
-            return Collections.emptyMap();
-        }
+    public Set<String> getKeywordsByCategory() {
+	if (keywordsCategory != null && keywords != null) {
+	    return Collections.singleton(keywords);
+	} else {
+	    return Collections.emptySet();
+	}
     }
 
     @Override

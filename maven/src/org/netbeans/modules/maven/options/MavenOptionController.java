@@ -59,14 +59,13 @@ import org.openide.util.Lookup;
  */
 @OptionsPanelController.SubRegistration(
     location=JavaOptions.JAVA,
-    id=MavenOptionController.OPTIONS_SUBPATH,
     displayName="#TIT_Maven_Category",
     keywords="#KW_MavenOptions",
     keywordsCategory=JavaOptions.JAVA + "/Maven"
 //    toolTip="#TIP_Maven_Category"
 )
 public class MavenOptionController extends OptionsPanelController {
-    public static final String OPTIONS_SUBPATH = "Maven"; // NOI18N
+    public static final String OPTIONS_SUBPATH = "org-netbeans-modules-maven-options-MavenOptionController"; // NOI18N
     public static final String TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + //NOI18N
             "<settings xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +//NOI18N
             "  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\">" +//NOI18N

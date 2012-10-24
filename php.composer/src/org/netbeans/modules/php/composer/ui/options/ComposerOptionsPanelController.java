@@ -55,14 +55,13 @@ import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
         location=UiUtils.OPTIONS_PATH,
-        id=ComposerOptionsPanelController.OPTIONS_SUBPATH,
         displayName="#Options.name",
         // toolTip="#LBL_OptionsTooltip"
         position=180
 )
 public class ComposerOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    public static final String OPTIONS_SUBPATH = "Composer"; // NOI18N
+    public static final String OPTIONS_SUBPATH = "org-netbeans-modules-php-composer-ui-options-ComposerOptionsPanelController"; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 

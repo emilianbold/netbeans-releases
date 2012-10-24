@@ -60,14 +60,13 @@ import org.openide.util.NbBundle;
  */
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
-    id=Symfony2OptionsPanelController.OPTIONS_SUBPATH,
     displayName="#LBL_Symfony2OptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=190
 )
 public class Symfony2OptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    public static final String OPTIONS_SUBPATH = "Symfony2"; // NOI18N
+    public static final String OPTIONS_SUBPATH = "org-netbeans-modules-php-symfony2-ui-options-Symfony2OptionsPanelController"; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 

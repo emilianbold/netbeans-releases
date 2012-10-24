@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit.index;
+package org.netbeans.libs.git.jgit.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
