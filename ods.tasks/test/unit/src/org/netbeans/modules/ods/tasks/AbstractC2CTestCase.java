@@ -130,7 +130,7 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
         super.setUp();
         
         trm = new TaskRepositoryManager();
-        rc = C2CExtender.create();
+        rc = C2C.getInstance().getRepositoryConnector(); // reuse the only one RC instance
         trlf = new TaskRepositoryLocationFactory();
         C2CExtender.assignTaskRepositoryLocationFactory(rc, trlf);
         

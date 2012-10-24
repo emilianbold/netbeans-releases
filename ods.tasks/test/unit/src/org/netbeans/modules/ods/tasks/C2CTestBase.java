@@ -68,7 +68,7 @@ public class C2CTestBase extends NbTestCase {
         infra = Lookup.getDefault().lookup(C2CTestInfrastructure.class);
         assertNotNull("An implementation of the C2CTestInfrastructure must be present", infra);
         url = infra.initializeRepository();
-        rc = C2CExtender.create();
+        rc = C2C.getInstance().getRepositoryConnector(); // reuse the only one RC instance
         repository = new TaskRepository(rc.getConnectorKind(), repositoryURL());
         C2CExtender.assignTaskRepositoryLocationFactory(rc, new TaskRepositoryLocationFactory());
     }
