@@ -127,4 +127,36 @@ public class TwigCompletionTest extends TwigCompletionTestBase {
         checkCompletion("testfiles/completion/testFilter.twig", "{% bar|^ %}", false);
     }
 
+    public void testIssue219569_01() throws Exception {
+        checkCompletion("testfiles/completion/issue219569.twig", "{% filter^  %}", false);
+    }
+
+    public void testIssue219569_02() throws Exception {
+        checkCompletion("testfiles/completion/issue219569.twig", "{% filter ^ %}", false);
+    }
+
+    public void testIssue219569_03() throws Exception {
+        checkCompletion("testfiles/completion/issue219569.twig", "{% filter  ^%}", false);
+    }
+
+    public void testIssue219569_04() throws Exception {
+        checkCompletion("testfiles/completion/issue219569.twig", "{% filter cap^ %}", false);
+    }
+
+    public void testIssue219569_05() throws Exception {
+        checkCompletion("testfiles/completion/issue219569.twig", "{{ foo.^bar }}", false);
+    }
+
+    public void testIssue219569_06() throws Exception {
+        checkCompletion("testfiles/completion/issue219569.twig", "{{ foo.bar^ }}", false);
+    }
+
+    public void testIssue219569_07() throws Exception {
+        checkCompletion("testfiles/completion/issue219569.twig", "{{ foo|^ }}", false);
+    }
+
+    public void testIssue219569_08() throws Exception {
+        checkCompletion("testfiles/completion/issue219569.twig", "{{ foo|cap^ }}", false);
+    }
+
 }

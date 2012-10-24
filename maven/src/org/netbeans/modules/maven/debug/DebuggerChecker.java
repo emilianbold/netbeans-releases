@@ -220,7 +220,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
                 String basename = fo2.getName();
                 for (FileObject classfile : fo2.getParent().getChildren()) {
                     String basename2 = classfile.getName();
-                    if (!basename2.equals(basename) && !basename2.startsWith(basename + '$')) {
+                    if (/*#220338*/!"class".equals(classfile.getExt()) || (!basename2.equals(basename) && !basename2.startsWith(basename + '$'))) {
                         continue;
                     }
                     String url = classToSourceURL(classfile, logger);

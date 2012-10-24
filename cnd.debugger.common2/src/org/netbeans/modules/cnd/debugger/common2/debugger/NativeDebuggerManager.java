@@ -1213,6 +1213,10 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
             }
             ndi.setTarget(execPath);
         }
+        
+        if (dt.getProjectMode() == DebugTarget.ProjectMode.NO_PROJECT) {
+            conf.getProfile().setRunDirectory(executor.readDirLink(dt.getPid()));
+        }
 
 	// CR 6997426, cause gdb problem IZ 193248
 	// ndi.setTarget("-"); // NOI18N

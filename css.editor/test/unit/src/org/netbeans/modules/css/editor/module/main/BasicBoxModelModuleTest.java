@@ -42,9 +42,8 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import java.util.List;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.api.properties.ResolvedToken;
 
@@ -76,7 +75,7 @@ public class BasicBoxModelModuleTest extends CssModuleTestBase {
     }
     
     public void testMargin_Model() {
-        PropertyModel margin = Properties.getPropertyModel("margin");
+        PropertyDefinition margin = Properties.getPropertyDefinition(null, "margin");
         ResolvedProperty eval = new ResolvedProperty(margin, "1px 2px 3px");
         List<ResolvedToken> resolved = eval.getResolvedTokens();
         for(ResolvedToken token : resolved) {

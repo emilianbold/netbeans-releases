@@ -4676,21 +4676,35 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     
     private static String quoteValue(String value) {
         int length = value.length();
-	if (length > 1 
-                && (value.charAt(0) == '"') &&
-                (value.charAt(length-1) == '"')) {
+	if (length > 1) {
             return value.replace("\"", "\\\""); //NOI18N
+	}
+        return value;
+    }
+    
+    private static String unquoteValue(String value) {
+        int length = value.length();
+	if (length > 1) {
+            return value.replace("\\\"", "\""); //NOI18N
 	}
         return value;
     }
     
     void assignVar(final GdbVariable var, final String value, final boolean miVar) {
         String cmdString;
+        String quotedValue = value;
+        
+        if ( (quotedValue.indexOf(" ") >= 0) && (quotedValue.indexOf(" ") < quotedValue.indexOf("\"")) ) { // NOI18N
+            quotedValue = quotedValue.substring(quotedValue.indexOf("\"")); // NOI18N
+        }
+        
+        quotedValue = quoteValue(quotedValue);
+        
         if (miVar) {
-            cmdString = "-var-assign " + var.getMIName() + " " + value; // NOI18N
+            cmdString = "-var-assign " + var.getMIName() + " " + quotedValue; // NOI18N
         } else {
             cmdString = "-data-evaluate-expression \"" +  //NOI18N
-                    var.getFullName() + '=' + quoteValue(value) + '"'; // NOI18N
+                    var.getFullName() + '=' + quotedValue + '"'; // NOI18N
         }
         MICommand cmd =
             new MiCommandImpl(cmdString) {
@@ -4806,7 +4820,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     // interface NativeDebugger
     public void exprEval(FormatOption format, final String expr) {
-        String cmdString = "-data-evaluate-expression " + "\"" + expr + "\""; // NOI18N
+        String cmdString = "-data-evaluate-expression " + "\"" + quoteValue(expr) + "\""; // NOI18N
         MICommand cmd = new MiCommandImpl(cmdString) {
             @Override
             protected void onDone(MIRecord record) {
@@ -4822,7 +4836,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         evalWindow.open();
                         evalWindow.requestActive();
                         evalWindow.componentShowing();
-                        evalWindow.evalResult(expr + " = " + res + "\n"); //NOI18N
+                        evalWindow.evalResult(expr + " = " + unquoteValue(res) + "\n"); //NOI18N
                     }
                 });
                 finish();

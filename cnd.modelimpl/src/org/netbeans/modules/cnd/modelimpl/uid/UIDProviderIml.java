@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -135,12 +136,17 @@ public final class UIDProviderIml implements UIDProvider {
             }
             out = uid;
         } else {
-            if (debugMode && nonIdentifiable.add(obj.getClass())) {
-                final Class<? extends Object> aClass = obj.getClass();
-                if (!aClass.equals(org.netbeans.modules.cnd.modelimpl.csm.deep.LabelImpl.class)) {
-                    System.err.println("Not implementing CsmIdentifiable: " + obj.getClass()); // NOI18N
-                    new Exception().printStackTrace(System.err);
+            final Class<? extends Object> aClass = obj.getClass();
+            if (debugMode && nonIdentifiable.add(aClass)) {
+                CharSequence fileName = "<unknown>"; // NOI18N
+                if (CsmKindUtilities.isOffsetable(obj)) {
+                    CsmFile aFile = ((CsmOffsetable)obj).getContainingFile();
+                    if (aFile != null) {
+                        fileName = aFile.getAbsolutePath();
+                    }
                 }
+                System.err.println("Not implementing CsmIdentifiable: " + aClass + obj + "\n\tfrom " + fileName); // NOI18N
+                new Exception().printStackTrace(System.err);
             }
             out = createSelfUID(obj);
         }

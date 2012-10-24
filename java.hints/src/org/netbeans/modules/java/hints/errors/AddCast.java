@@ -135,11 +135,11 @@ public final class AddCast implements ErrorRule<Void> {
             }
             
             if (scope.getKind() == Kind.METHOD_INVOCATION || scope.getKind() == Kind.NEW_CLASS) {
-                TypeMirror[] proposed = new TypeMirror[1];
+                List<TypeMirror> proposed = new ArrayList<TypeMirror>();
                 int[] index = new int[1];
                 
-                if (Utilities.fuzzyResolveMethodInvocation(info, path, proposed, index) != null) {
-                    expected = proposed[0];
+                if (!Utilities.fuzzyResolveMethodInvocation(info, path, proposed, index).isEmpty()) {
+                    expected = proposed.get(0);
                     found = scope.getKind() == Kind.METHOD_INVOCATION ? ((MethodInvocationTree) scope).getArguments().get(index[0]) : ((NewClassTree) scope).getArguments().get(index[0]);
                     resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
                 }

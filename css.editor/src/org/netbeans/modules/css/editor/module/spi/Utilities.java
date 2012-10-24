@@ -156,7 +156,7 @@ public class Utilities {
     }
     
     /**
-     * Utility method which creates a collection of PropertyDescriptor-s for 
+     * Utility method which creates a map of property name to PropertyDefinition for 
      * a properties file defining the css properties
      * 
      * the syntax of the file:
@@ -169,8 +169,8 @@ public class Utilities {
      * 
      * @param sourcePath - an absolute path to the resource properties file relative to the module base
      */
-    public static Collection<PropertyDefinition> parsePropertyDefinitionFile(String sourcePath, CssModule module) {
-        Collection<PropertyDefinition> properties = new ArrayList<PropertyDefinition>();
+    public static Map<String, PropertyDefinition> parsePropertyDefinitionFile(String sourcePath, CssModule module) {
+        Map<String, PropertyDefinition> properties = new HashMap<String, PropertyDefinition>();
         
         //why not use NbBundle.getBundle()? - we need the items in the natural source order
         Collection<Pair<String, String>> parseBundle = PropertiesReader.parseBundle(sourcePath);
@@ -203,7 +203,7 @@ public class Utilities {
                 while (nameTokenizer.hasMoreTokens()) {
                     String parsed_name = nameTokenizer.nextToken().trim();
                     PropertyDefinition prop = new PropertyDefinition(parsed_name, value, category, module);
-                    properties.add(prop);
+                    properties.put(parsed_name, prop);
                 }
             }
 

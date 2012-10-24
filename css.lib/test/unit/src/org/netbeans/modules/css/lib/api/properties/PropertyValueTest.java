@@ -143,7 +143,7 @@ public class PropertyValueTest extends CssTestBase {
     }
 
     public void testFontAlternatives() {
-        PropertyModel p = Properties.getPropertyModel("font");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "font");
         String text = "italic small-caps 30px";
 
         assertAlternatives(p.getGrammar(), text,
@@ -152,14 +152,14 @@ public class PropertyValueTest extends CssTestBase {
     }
 
 //    public void testVoiceFamily() {
-//        PropertyModel p = Properties.getPropertyModel("voice-family");
+//        PropertyDefinition p = Properties.getPropertyDefinition(null, "voice-family");
 //        assertAlternatives(p.getGrammar(), "male", ",", "!integer");
 //        assertAlternatives(p.getGrammar(), "male,", "old","!ident","!integer","!string","neutral","young","child","!ident","female","!integer","!string","male");
 //
 //        assertAlternatives(p.getGrammar(), "", "child","!ident","female","!integer","!string","male");
 //    }
     public void testPaddingAlternatives() {
-        PropertyModel p = Properties.getPropertyModel("padding");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "padding");
         assertAlternatives(p.getGrammar(), "", "auto", "!percentage", "!length", "-");
 
     }
@@ -180,7 +180,7 @@ public class PropertyValueTest extends CssTestBase {
     }
 
     public void testFontThoroughly() {
-        PropertyModel p = Properties.getPropertyModel("font");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "font");
         assertAlternatives(p.getGrammar(), "20px",
                 "fantasy", "serif", "!string", "sans-serif", "monospace", "/", "!identifier", "cursive");
         assertAlternatives(p.getGrammar(), "20px /",
@@ -192,7 +192,7 @@ public class PropertyValueTest extends CssTestBase {
     }
 
     public void testFontThoroughly2() {
-        PropertyModel p = Properties.getPropertyModel("font");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "font");
         assertAlternatives(p.getGrammar(), "italic",
                 "small-caps", "800", "normal", "lighter", "smaller", "600", "bold",
                 "700", "!length", "-", "xx-small", "bolder", "100", "300", "!percentage",
@@ -210,7 +210,7 @@ public class PropertyValueTest extends CssTestBase {
     }
 
     public void testBackgroundRGBAlternatives() {
-        PropertyModel p = Properties.getPropertyModel("background");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "background");
         assertAlternatives(p.getGrammar(), "rgb", "(");
         assertAlternatives(p.getGrammar(), "rgb(", "!percentage", "!number", "-");
         assertAlternatives(p.getGrammar(), "rgb(10%", ",");
@@ -237,7 +237,7 @@ public class PropertyValueTest extends CssTestBase {
     }
 
     public void testFontFamily2() {
-        PropertyModel p = Properties.getPropertyModel("font-family");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "font-family");
 
         assertAlternatives(p.getGrammar(), "",
                 "fantasy", "serif", "sans-serif", "inherit", "monospace", "cursive", "!string", "!identifier");
@@ -245,7 +245,7 @@ public class PropertyValueTest extends CssTestBase {
     }
 
     public void testFontFamilyInheritProblem() {
-        PropertyModel p = Properties.getPropertyModel("font-family");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "font-family");
         assertAlternatives(p.getGrammar(), "inherit");
 //        assertAlternatives(p.getGrammar(), "", "inherit");
     }
@@ -272,7 +272,7 @@ public class PropertyValueTest extends CssTestBase {
     }
 
     public void testTheBorderCase() {
-        PropertyModel p = Properties.getPropertyModel("border");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "border");
         assertAlternatives(p.getGrammar(), "red dashed",
                 "thick", "thin", "!length", "-", "medium");
 
@@ -280,7 +280,7 @@ public class PropertyValueTest extends CssTestBase {
     }
 
     public void testTheBackgroundCase() {
-        PropertyModel p = Properties.getPropertyModel("background");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "background");
         assertResolve(p.getGrammar(), "aliceblue");
         assertAlternatives(p.getGrammar(), "aliceblue",
                 "repeating-linear-gradient", "padding-box", "content-box", "round",
@@ -291,7 +291,7 @@ public class PropertyValueTest extends CssTestBase {
     }
 
     public void testTheBackgroundCase2() {
-        PropertyModel p = Properties.getPropertyModel("background");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "background");
         assertResolve(p.getGrammar(), "aliceblue bottom / auto");
         assertAlternatives(p.getGrammar(), "aliceblue bottom / auto",
                 "repeating-linear-gradient", "element", "padding-box", "scroll", ""
@@ -329,7 +329,7 @@ public class PropertyValueTest extends CssTestBase {
 
     //Bug 205893 - font-family completion issue
     public void testFontFamily() {
-        PropertyModel p = Properties.getPropertyModel("font-family");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "font-family");
 //        assertResolve(p.getGrammar(), "fantasy");
         assertAlternatives(p.getGrammar(), "fantasy", ",", "!identifier");
 
@@ -345,7 +345,7 @@ public class PropertyValueTest extends CssTestBase {
     }
 
     public void testAnimation() {
-        PropertyModel p = Properties.getPropertyModel("animation");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "animation");
 //        assertResolve(p.getGrammar(), "fantasy");
         assertAlternatives(p.getGrammar(), "cubic-bezier",
                 "alternate", "linear", "cubic-bezier", "normal", "ease", "(", "!time", "ease-in", ",", "ease-in-out", "ease-out", "infinite", "!number");
@@ -391,10 +391,10 @@ public class PropertyValueTest extends CssTestBase {
     }
     
     public void testGetSimpleParseTree2() {
-        PropertyModel p = Properties.getPropertyModel("font-family");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "font-family");
         ResolvedProperty pv = new ResolvedProperty(p, "fantasy, monospace");
         
-//        System.out.println(p.getGrammarElement().toString2(0));
+//        System.out.println(p.getGrammarElement(null).toString2(0));
         
         Node root = pv.getParseTree();
         dumpTree(root);
@@ -435,7 +435,7 @@ public class PropertyValueTest extends CssTestBase {
 //        Average time of 50 iterations is 327
 //        Average run of one resolve is 6 ms
 
-        PropertyModel p = Properties.getPropertyModel("background");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "background");
 
         //dry run
         assertResolve(p.getGrammar(), "aliceblue bottom / auto");
@@ -473,10 +473,10 @@ public class PropertyValueTest extends CssTestBase {
 //        Average run of one resolve is 2 ms
 
 
-        PropertyModel p = Properties.getPropertyModel("background");
+        PropertyDefinition p = Properties.getPropertyDefinition(null, "background");
 
         //dry run
-        assertResolve(p.getGrammarElement(), "aliceblue bottom / auto");
+        assertResolve(p.getGrammarElement(null), "aliceblue bottom / auto");
 
         System.out.println("Testing parsing a grammar and resolving an input by the grammar...");
 
@@ -487,7 +487,7 @@ public class PropertyValueTest extends CssTestBase {
         for (int l = 0; l < loops; l++) {
             long start = System.currentTimeMillis();
             for (int i = 0; i < iterations; i++) {
-                assertResolve(p.getGrammarElement(), "aliceblue bottom / auto");
+                assertResolve(p.getGrammarElement(null), "aliceblue bottom / auto");
             }
             long stop = System.currentTimeMillis();
 

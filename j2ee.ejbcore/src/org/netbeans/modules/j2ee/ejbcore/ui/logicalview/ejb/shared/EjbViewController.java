@@ -129,11 +129,13 @@ public final class EjbViewController {
     public void delete(boolean deleteClasses) throws IOException {
 
         Profile profile = ejbModule.getJ2eeProfile();
-        boolean isEE5orEE6 = Profile.JAVA_EE_5.equals(profile) ||
+        boolean isEE5orEE6or7 = Profile.JAVA_EE_5.equals(profile) ||
                              Profile.JAVA_EE_6_FULL.equals(profile) ||
-                             Profile.JAVA_EE_6_WEB.equals(profile);
+                             Profile.JAVA_EE_6_WEB.equals(profile) ||
+                             Profile.JAVA_EE_7_FULL.equals(profile) ||
+                             Profile.JAVA_EE_7_WEB.equals(profile);
 
-        if (!isEE5orEE6) {
+        if (!isEE5orEE6or7) {
             ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) throws Exception {
                     EjbJar ejbJar = metadata.getRoot();

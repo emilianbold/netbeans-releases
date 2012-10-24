@@ -732,7 +732,9 @@ public class NbEditorKit extends ExtKit implements Callable {
             Action a = kit.getActionByName(actionName);
             if (a != null) {
                 JMenuItem item = null;
-                if (a instanceof BaseAction) {
+                if (a instanceof Presenter.Menu) {
+                    item = ((Presenter.Menu)a).getMenuPresenter();
+                } else if (a instanceof BaseAction) {
                     item = ((BaseAction)a).getPopupMenuItem(target);
                 }
                 if (item == null) {

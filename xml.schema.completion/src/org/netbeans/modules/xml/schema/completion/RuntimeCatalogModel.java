@@ -88,7 +88,12 @@ public class RuntimeCatalogModel implements CatalogModel{
             ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
         InputStream inputStream = null;
         try {
-            EntityResolver resolver = UserCatalog.getDefault().getEntityResolver();
+            UserCatalog cat = UserCatalog.getDefault();
+            // mainly for unit tests
+            if (cat == null) {
+                return null;
+            }
+            EntityResolver resolver = cat.getEntityResolver();
             InputSource src = resolver.resolveEntity(null, locationURI.toString());
             if(src != null) {
                 inputStream = new URL(src.getSystemId()).openStream();

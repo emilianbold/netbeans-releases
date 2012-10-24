@@ -666,7 +666,8 @@ public class WebProjectUtilities {
             }
         }
         Profile j2eeProfile = data.getJavaEEProfile();
-        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
+                j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
             if (rh.getProjectLibraryManager().getLibrary(Util.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
                 rh.copyLibrary(LibraryManager.getDefault().getLibrary(Util.ENDORSED_LIBRARY_NAME)); // NOI18N
             }
@@ -842,7 +843,8 @@ public class WebProjectUtilities {
         Charset enc = FileEncodingQuery.getDefaultEncoding();
         ep.setProperty(WebProjectProperties.SOURCE_ENCODING, enc.name());
         
-        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
+                j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
             ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{Util.ENDORSED_LIBRARY_CLASSPATH});
         }
 
@@ -856,8 +858,9 @@ public class WebProjectUtilities {
     }
 
     public static void upgradeJ2EEProfile(WebProject project){
-        if (Profile.JAVA_EE_6_WEB.equals(project.getAPIEjbJar().getJ2eeProfile())){
-            //check the J2EE 6 Full profile specific functionality
+        if (Profile.JAVA_EE_6_WEB.equals(project.getAPIEjbJar().getJ2eeProfile()) ||
+                Profile.JAVA_EE_7_WEB.equals(project.getAPIEjbJar().getJ2eeProfile())){
+            //check the J2EE 6/7 Full profile specific functionality
             Boolean isFullRequired = Boolean.FALSE;
             try{
                 isFullRequired = project.getAPIEjbJar().getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, Boolean>() {
@@ -886,10 +889,16 @@ public class WebProjectUtilities {
 
             //change profile if required
             if (isFullRequired){
-                if (Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL)){
+                boolean ee7 = false;
+                if (Profile.JAVA_EE_7_WEB.equals(project.getAPIEjbJar().getJ2eeProfile())) {
+                    ee7 = true;
+                }
+                if ((ee7 && Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL)) ||
+                        (!ee7 && Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL))){
                     UpdateHelper helper = project.getUpdateHelper();
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    projectProps.setProperty(WebProjectProperties.J2EE_PLATFORM, Profile.JAVA_EE_6_FULL.toPropertiesString());
+                    projectProps.setProperty(WebProjectProperties.J2EE_PLATFORM, 
+                            ee7 ? Profile.JAVA_EE_7_FULL.toPropertiesString() : Profile.JAVA_EE_6_FULL.toPropertiesString());
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     try {
                         ProjectManager.getDefault().saveProject(project);

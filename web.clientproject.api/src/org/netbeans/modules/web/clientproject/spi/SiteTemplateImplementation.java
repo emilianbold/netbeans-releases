@@ -43,13 +43,20 @@ package org.netbeans.modules.web.clientproject.spi;
 
 import java.io.IOException;
 import java.util.Collection;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
- *
+ * Site template interface. The workflow is:
+ * <ol>
+ * <li>{@link #prepare() prepare} the template itself (only if {@link #isPrepared() needed})</li>
+ * <li>{@link #configure(ProjectProperties) configure} the given project properties</li>
+ * <li>{@link #apply(FileObject, ProjectProperties, ProgressHandle)  apply} this template to the given project</li>
+ * </ol>
  */
 public interface SiteTemplateImplementation {
 
@@ -68,7 +75,8 @@ public interface SiteTemplateImplementation {
 
     /**
      * Prepare site template, e.g. download it to a cache directory if it is not already downloaded.
-     * This method is always called before {@link #apply(AntProjectHelper, ProgressHandle) applying} this site template
+     * This method is always called before {@link #configure(ProjectProperties) configuring}
+     * and {@link #apply(FileObject, ProjectProperties, ProgressHandle)  applying} this site template
      * but only if the site template is not already {@link #isPrepared() prepared}.
      * <p>
      * This method is never called in the UI thread.
@@ -78,13 +86,105 @@ public interface SiteTemplateImplementation {
     void prepare() throws IOException;
 
     /**
-     * Apply site template (e.g. copy {@link #prepare() prepared} files) to the given directory.
+     * Configure project properties. These properties are later passed to the
+     * {@link #apply(FileObject, ProjectProperties, ProgressHandle) apply} method.
      * <p>
      * This method is never called in the UI thread.
+     * @param projectProperties current project properties
+     */
+    void configure(@NonNull ProjectProperties projectProperties);
+
+    /**
+     * Apply site template (e.g. copy {@link #prepare() prepared} files) to the given directory (typically project directory
+     * or {@link ProjectProperties#getSiteRootFolder() Site Root folder}).
+     * <p>
+     * This method is never called in the UI thread.
+     * @param projectDir project directory
+     * @param projectProperties {@link #configure(ProjectProperties) configured} project properties
      * @param handle progress handle, can be {@code null}
      * @throws IOException if any error occurs
      */
-    void apply(AntProjectHelper helper, @NullAllowed ProgressHandle handle) throws IOException;
+    void apply(@NonNull FileObject projectDir, @NonNull ProjectProperties projectProperties, @NullAllowed ProgressHandle handle) throws IOException;
 
     Collection<String> supportedLibraries();
+
+    //~ Inner classes
+
+    /**
+     * Project properties. It contains usually relative paths of:
+     * <ul>
+     * <li>Site Root folder</li>
+     * <li>Unit Tests folder</li>
+     * <li>Config folder</li>
+     * </ul>
+     * <p>
+     * This class is not thread-safe.
+     */
+    public final class ProjectProperties {
+
+        private String siteRootFolder;
+        private String testFolder;
+        private String configFolder;
+
+
+        /**
+         * Get Site Root folder, usually relative path.
+         * @return Site Root folder, usually relative path; never returns {@code null} or empty string
+         */
+        @NonNull
+        public String getSiteRootFolder() {
+            return siteRootFolder;
+        }
+
+        /**
+         * Set Site Root folder, never {@code null} or empty string.
+         * @param siteRootFolder Site Root folder, never {@code null} or empty string
+         * @return itself
+         */
+        public ProjectProperties setSiteRootFolder(@NonNull String siteRootFolder) {
+            Parameters.notEmpty("siteRootFolder", siteRootFolder);
+            this.siteRootFolder = siteRootFolder;
+            return this;
+        }
+
+        /**
+         * Get Test folder, usually relative path.
+         * @return Test folder, usually relative path; can be {@code null} if no Test folder is present
+         */
+        @CheckForNull
+        public String getTestFolder() {
+            return testFolder;
+        }
+
+        /**
+         * Set Test folder, can be {@code null} if there are no tests available.
+         * @param testFolder Test folder, can be {@code null} if there are no tests available
+         * @return itself
+         */
+        public ProjectProperties setTestFolder(String testFolder) {
+            this.testFolder = testFolder;
+            return this;
+        }
+
+        /**
+         * Get Config folder, usually relative path.
+         * @return Config folder, usually relative path; can be {@code null} if no Config folder is present
+         */
+        @CheckForNull
+        public String getConfigFolder() {
+            return configFolder;
+        }
+
+        /**
+         * Set Config folder, can be {@code null} if there is no config available.
+         * @param configFolder Config folder, can be {@code null} if there is no config available
+         * @return itself
+         */
+        public ProjectProperties setConfigFolder(String configFolder) {
+            this.configFolder = configFolder;
+            return this;
+        }
+
+    }
+
 }

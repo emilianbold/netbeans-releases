@@ -136,22 +136,4 @@ public enum PropertyCategory {
         return longDescription;
     }
     
-    /**
-     * Returns a list of *visible* properties with this category.
-     */
-    public Collection<PropertyDefinition> getProperties() {
-        Collection<PropertyDefinition> defs = Properties.getProperties();
-        Collection<PropertyDefinition> defsInCat = new ArrayList<PropertyDefinition>();
-        for(PropertyDefinition d : defs) {
-            //is the property visible?
-            //XXX fix the @ hack
-            if(d.getName().charAt(0) != '@') {
-                //yes it is visible
-                if(d.getPropertyCategory() == this) {
-                    defsInCat.add(d);
-                }
-            }
-        }
-        return defsInCat;
-    }
 }

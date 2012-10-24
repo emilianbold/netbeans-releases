@@ -42,15 +42,7 @@
 
 package org.netbeans.modules.ods.tasks;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.Icon;
-import org.netbeans.modules.ods.tasks.query.C2CQuery;
-import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.openide.util.NbPreferences;
 
 /**
@@ -60,7 +52,6 @@ import org.openide.util.NbPreferences;
 public class C2CConfig {
 
     private static C2CConfig instance = null;
-    private static final String LAST_CHANGE_FROM    = "c2c.last_change_from";      // NOI18N // XXX
     private static final String QUERY_REFRESH_INT   = "c2c.query_refresh";         // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "c2c.query_auto_refresh_";   // NOI18N
     private static final String ISSUE_REFRESH_INT   = "c2c.issue_refresh";         // NOI18N
@@ -99,14 +90,6 @@ public class C2CConfig {
 
     public boolean getQueryAutoRefresh(String queryName) {
         return getPreferences().getBoolean(QUERY_AUTO_REFRESH + queryName, false);
-    }
-
-    public void setLastChangeFrom(String value) {
-        getPreferences().put(LAST_CHANGE_FROM, value);
-    }
-
-    public String getLastChangeFrom() {
-        return getPreferences().get(LAST_CHANGE_FROM, "");                      // NOI18N
     }
 
 }

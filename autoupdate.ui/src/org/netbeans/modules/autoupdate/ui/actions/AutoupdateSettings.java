@@ -431,6 +431,7 @@ public class AutoupdateSettings {
         File superFile = getSuperFile ();
         if (superFile == null) {
             err.log (Level.FINE, "superFile was returns null.");
+            return null;
         }
         if (superFile.exists ()) {
             superId = readSuperFile(superFile);

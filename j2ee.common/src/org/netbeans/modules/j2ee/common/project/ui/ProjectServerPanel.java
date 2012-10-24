@@ -439,12 +439,12 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                     continue;
                 }
                 if (j2eeModuleType ==J2eeModule.Type.WAR) {
-                    if (Profile.JAVA_EE_6_FULL.equals(profile)) {
+                    if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_7_FULL.equals(profile)) {
                         // for web apps always offer only JAVA_EE_6_WEB profile and skip full one
                         continue;
                     }
                 } else {
-                    if (Profile.JAVA_EE_6_WEB.equals(profile)) {
+                    if (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_7_WEB.equals(profile)) {
                         // for EE apps always skip web profile
                         continue;
                     }
@@ -830,7 +830,8 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             cdiCheckbox.setVisible(false);
             return;
         }
-        cdiCheckbox.setVisible(!importScenario && (j2ee.equals(Profile.JAVA_EE_6_FULL) || j2ee.equals(Profile.JAVA_EE_6_WEB)));
+        cdiCheckbox.setVisible(!importScenario && (j2ee.equals(Profile.JAVA_EE_6_FULL) || j2ee.equals(Profile.JAVA_EE_6_WEB) ||
+                j2ee.equals(Profile.JAVA_EE_7_FULL) || j2ee.equals(Profile.JAVA_EE_7_WEB)));
         String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
         if (warningType == null && warningPanel == null) {
             warningPlaceHolderPanel.setVisible(false);

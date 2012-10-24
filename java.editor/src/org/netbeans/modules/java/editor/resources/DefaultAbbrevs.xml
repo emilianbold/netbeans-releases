@@ -76,11 +76,11 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="psfi"><code><![CDATA[${no-format}private static final int ]]></code></codetemplate> 
     <codetemplate abbreviation="psfs"><code><![CDATA[${no-format}private static final String ]]></code></codetemplate> 
     <codetemplate abbreviation="psfb"><code><![CDATA[${no-format}private static final boolean ]]></code></codetemplate> 
-    <codetemplate abbreviation="pst" contexts="BLOCK,CASE,LABELED_STATEMENT"><code><![CDATA[printStackTrace();]]></code></codetemplate> 
+    <codetemplate abbreviation="pst" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP"><code><![CDATA[printStackTrace();]]></code></codetemplate> 
     <codetemplate abbreviation="pu"><code><![CDATA[${no-indent}public ]]></code></codetemplate> 
     <codetemplate abbreviation="re"><code><![CDATA[${no-indent}return ]]></code></codetemplate>
-    <codetemplate abbreviation="serr" contexts="BLOCK,CASE,LABELED_STATEMENT"><code><![CDATA[System.err.println("${cursor}");]]></code></codetemplate> 
-    <codetemplate abbreviation="sout" contexts="BLOCK,CASE,LABELED_STATEMENT"><code><![CDATA[System.out.println("${cursor}");]]></code></codetemplate> 
+    <codetemplate abbreviation="serr" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP"><code><![CDATA[System.err.println("${cursor}");]]></code></codetemplate> 
+    <codetemplate abbreviation="sout" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP"><code><![CDATA[System.out.println("${cursor}");]]></code></codetemplate> 
     <codetemplate abbreviation="st"><code><![CDATA[${no-indent}static ]]></code></codetemplate> 
     <codetemplate abbreviation="sw"><code><![CDATA[switch (${var instanceof="java.lang.Enum"}) {
         case ${val completionInvoke}:
@@ -102,7 +102,7 @@ made subject to such option by the copyright holder.
         ${cursor}
     }
 ]]></code></codetemplate>
-    <codetemplate abbreviation="do" contexts="BLOCK,CASE,LABELED_STATEMENT"><code><![CDATA[do {
+    <codetemplate abbreviation="do" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP"><code><![CDATA[do {
             ${cursor}
         } while (${expr instanceof="boolean" default="true"});
     ]]></code></codetemplate>
@@ -119,7 +119,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="Psfb"><code><![CDATA[${no-format}public static final boolean ]]></code></codetemplate> 
     <codetemplate abbreviation="St"><code><![CDATA[${no-indent}String]]></code></codetemplate>
     <!-- #173655 partial fix -->
-    <codetemplate abbreviation="as" contexts="BLOCK,CASE,LABELED_STATEMENT"><code><![CDATA[assert ${exp default="true" instanceof="boolean"};]]></code></codetemplate>
+    <codetemplate abbreviation="as" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP"><code><![CDATA[assert ${exp default="true" instanceof="boolean"};]]></code></codetemplate>
     <codetemplate abbreviation="na"><code><![CDATA[${no-indent}native ]]></code></codetemplate>
     <codetemplate abbreviation="tr"><code><![CDATA[${no-indent}transient ]]></code></codetemplate>
     <!-- Some bug in template processing always appends 4 spaces after volatile, if there is a single space in the template -->
@@ -129,7 +129,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="su"><code><![CDATA[${no-indent}super]]></code></codetemplate>
     <codetemplate abbreviation="pvb"><code><![CDATA[${no-format}private volatile boolean ]]></code></codetemplate>
     <!-- #108167 -->
-    <codetemplate abbreviation="for" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="for" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[for (int ${IDX newVarName default="i"} = 0; ${IDX} < ${MAX default="10"}; ${IDX}++) {
     ${selection}${cursor}
@@ -138,7 +138,7 @@ made subject to such option by the copyright holder.
         </code>
     </codetemplate>
 
-    <codetemplate abbreviation="fori" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="fori" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${ARR array default="arr"}.length; ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${ARR}[${IDX}];
@@ -147,7 +147,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="forc" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="forc" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[for (${IT_TYPE rightSideType type="java.util.Iterator" default="Iterator" editable=false} ${IT newVarName default="it"} = ${COL instanceof="java.util.Collection" default="col"}.iterator(); ${IT}.hasNext();) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${IT}.next();
@@ -156,7 +156,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="forl" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="forl" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${LIST instanceof="java.util.List" default="lst"}.size(); ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${LIST}.get(${IDX});
@@ -165,7 +165,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="forv" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="forv" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${VECTOR instanceof="java.util.Vector" default="vct"}.size(); ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${VECTOR}.elementAt(${IDX});
@@ -174,7 +174,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="fore" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="fore" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[for (${TYPE iterableElementType default="Object" editable=false} ${ELEM newVarName default="elem"} : ${ITER iterable default="col"}) {
    ${selection}${cursor}
@@ -182,7 +182,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="forst" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="forst" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[for (${STR_TOK type="java.util.StringTokenizer" default="StringTokenizer" editable=false} ${TOKENIZER newVarName} = new ${STR_TOK}(${STRING instanceof="java.lang.String"}); ${TOKENIZER}.hasMoreTokens();) {
     String ${TOKEN default="token"} = ${TOKENIZER}.nextToken();
@@ -191,7 +191,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="inst" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="inst" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[if (${EXP instanceof="java.lang.Object" default="exp"} instanceof ${TYPE default="Object"}) {
    ${TYPE} ${VAR newVarName default="obj"} = (${TYPE})${EXP};
@@ -205,7 +205,7 @@ made subject to such option by the copyright holder.
         <![CDATA[System.out.println("${EXP instanceof="<any>" default="exp"} = " + ${EXP});]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="whilen" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="whilen" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[while(${ENUM instanceof="java.util.Enumeration" default="en"}.hasMoreElements()) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false} ${ENUM}.nextElement();
@@ -214,7 +214,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="whileit" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="whileit" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[while(${IT instanceof="java.util.Iterator" default="it"}.hasNext()) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false} ${IT}.next();
@@ -223,7 +223,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="iff" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_iff">
+    <codetemplate abbreviation="iff" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_iff">
         <code>
 <![CDATA[if (${EXP instanceof="boolean" default="exp"}) {
    ${selection}${cursor}
@@ -231,7 +231,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="ifelse" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_ifelse">
+    <codetemplate abbreviation="ifelse" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_ifelse">
         <code>
 <![CDATA[if (${EXP instanceof="boolean" default="exp"}) {
    ${selection}${cursor}
@@ -240,7 +240,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="whilexp" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="whilexp" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[while (${EXP instanceof="boolean" default="exp"}) { 
    ${selection}${cursor}
@@ -248,7 +248,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="dowhile" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="dowhile" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[do { 
    ${selection}${cursor}
@@ -266,7 +266,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="trycatch" contexts="BLOCK,CASE,LABELED_STATEMENT">
+    <codetemplate abbreviation="trycatch" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[try {
    ${selection}${cursor}
@@ -326,7 +326,7 @@ ${cursor}]]></code></codetemplate>
      ${cursor}]]></code></codetemplate>
      <codetemplate abbreviation="csort"><code><![CDATA[${collsType type="java.util.Collections" default="Collections" editable="false"}.sort(${var instanceof="java.util.List"});
          ${cursor}]]></code></codetemplate>
-     <codetemplate abbreviation="form" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_form"><code><![CDATA[for (${entryType iterableElementType default="Map.Entry<Object, Object>" editable=false} ${entry newVarName default="en"} : ${map instanceof="java.util.Map" default="m"}.entrySet()) {
+     <codetemplate abbreviation="form" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_form"><code><![CDATA[for (${entryType iterableElementType default="Map.Entry<Object, Object>" editable=false} ${entry newVarName default="en"} : ${map instanceof="java.util.Map" default="m"}.entrySet()) {
             ${KeyType rightSideType default="Object"} ${key newVarName default="key"} = ${entry}.getKey();
             ${ValType rightSideType default="Object"} ${val newVarName default="val"} = ${entry}.getValue();
             ${selection}${cursor}
@@ -458,7 +458,7 @@ ${cursor}]]></code></codetemplate>
         }
      }
      ]]></code></codetemplate>
-    <codetemplate abbreviation="if" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_iff">
+    <codetemplate abbreviation="if" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_iff">
         <code>
 <![CDATA[if (${EXP instanceof="boolean" default="true"}) {
    ${selection}${cursor}
@@ -466,7 +466,7 @@ ${cursor}]]></code></codetemplate>
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="ife" contexts="BLOCK,CASE,LABELED_STATEMENT" descriptionId="CT_ifelse">
+    <codetemplate abbreviation="ife" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_ifelse">
         <code>
 <![CDATA[if (${EXP instanceof="boolean" default="true"}) {
    ${selection}${cursor}

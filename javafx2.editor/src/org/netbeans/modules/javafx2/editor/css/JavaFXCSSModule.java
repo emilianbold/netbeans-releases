@@ -42,10 +42,13 @@
 package org.netbeans.modules.javafx2.editor.css;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.css.editor.module.spi.*;
 import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -60,16 +63,34 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
 
 //    private static final String NAMESPACE_KEYWORD = "@namespace"; // NOI18N
     static ElementKind JFX_CSS_ELEMENT_KIND = ElementKind.GLOBAL;
-
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/javafx2/editor/css/javafx2"; // NOI18N
-    private static Collection<PropertyDefinition> propertyDescriptors;
+    private static Map<String, PropertyDefinition> propertyDescriptors;
 
     @Override
-    public synchronized Collection<PropertyDefinition> getProperties() {
+    public Collection<String> getPropertyNames(FileObject file) {
+        return isJavaFXContext(file) ? getJavaFXProperties().keySet() : Collections.<String>emptyList();
+    }
+
+    @Override
+    public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+        return  isJavaFXContext(context) ? getJavaFXProperties().get(propertyName) : null;
+    }
+
+    private synchronized Map<String, PropertyDefinition> getJavaFXProperties() {
         if (propertyDescriptors == null) {
             propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH, this);
         }
         return propertyDescriptors;
+    }
+
+    /**
+     * TODO IMPLEMENT!!!
+     * 
+     * @param file file context - may be null!
+     * @return
+     */
+    private boolean isJavaFXContext(FileObject file) {
+        return true;
     }
 
 //    @Override
@@ -150,7 +171,6 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
 //
 //        return JavaFXEditorUtils.filterCompletionProposals(proposals, context.getPrefix(), true);
 //    }
-    
 //    private static List<CompletionProposal> getJavaFXCSSCompletionProposals(CompletionContext context) {
 //        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
 //        for (Namespace ns : context.getParserResult().getModel().getNamespaces()) {
@@ -158,7 +178,6 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
 //        }
 //        return proposals;
 //    }
-
     @Override
     public String getName() {
         return "javafx2_css"; //NOI18N
@@ -173,5 +192,4 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
     public String getSpecificationURL() {
         return "http://docs.oracle.com/javafx/2/api/javafx/scene/doc-files/cssref.html"; // NOI18N
     }
-    
 }

@@ -52,8 +52,12 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import static java.lang.Thread.NORM_PRIORITY;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -68,8 +72,11 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import javax.swing.tree.TreePath;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
@@ -92,6 +99,7 @@ public final class ContextView extends JPanel {
     private static final String FILE_VIEW = "file view";                //NOI18N
     /** */
     private static final String MESSAGE_VIEW = "message view";          //NOI18N
+    private static final int FILE_SIZE_LIMIT = 8 * 1024 * 1024; // 8 MB
     
     /** */
     private final CardLayout cardLayout;
@@ -128,6 +136,17 @@ public final class ContextView extends JPanel {
     private String editorMimeType = null;
     ExplorerManager explorerManager;
     
+    /** */
+    private Boolean allApproved = null;
+    /** Last selected option was to show big file. */
+    private static boolean approveApplyToAllSelected = false;
+    /** Apply to all big files was selected. */
+    private static boolean lastApproveOption = false;
+
+    /** Map of approved/rejected files. */
+    private final Map<FileObject, Boolean> APPROVED_FILES =
+            new WeakHashMap<FileObject, Boolean>();
+
     /**
      * 
      * @author  Tim Boudreau
@@ -280,6 +299,7 @@ public final class ContextView extends JPanel {
      * @author  Tim Boudreau
      * @author  Marian Petras
      */
+    @NbBundle.Messages({"MSG_ContextView_fileTooBig=File is too big"})
     private void displayFile(final MatchingObject matchingObj,
                              final int partIndex) {
         assert EventQueue.isDispatchThread();
@@ -290,6 +310,18 @@ public final class ContextView extends JPanel {
                 task = null;
             }
             
+            FileObject fo = matchingObj.getFileObject();
+            if (fo.getSize() > FILE_SIZE_LIMIT) {
+                Boolean fileApproved = APPROVED_FILES.get(fo);
+                if (allApproved == null && fileApproved == null) {
+                    approveFetchingOfBigFile(matchingObj, partIndex);
+                    return;
+                } else if (Boolean.FALSE.equals(fileApproved)
+                        || Boolean.FALSE.equals(allApproved)) {
+                    displayMessage(Bundle.MSG_ContextView_fileTooBig());
+                    return;
+                }
+            }
             final Item item = new Item(resultModel, matchingObj, partIndex);
             
             MatchingObject.InvalidityStatus invalidityStatus
@@ -371,6 +403,47 @@ public final class ContextView extends JPanel {
         } else {
             displayMultipleItemsSelected();
         }
+    }
+
+    @NbBundle.Messages({
+        "TTL_ContextView_showBigFile=Show Big File?",
+        "# {0} - file name",
+        "# {1} - file size in kilobytes",
+        "MSG_ContextView_showBigFile=File {0} is quite big ({1} kB).\n"
+        + "Showing it can cause memory and performance problems.\n"
+        + "Do you want to show content of this file?",
+        "LBL_ContextView_Show=Show",
+        "LBL_ContextView_Skip=Do Not Show",
+        "LBL_ContextView_ApplyAll=Apply to all big files"
+    })
+    private void approveFetchingOfBigFile(final MatchingObject mo,
+            final int partIndex) {
+        FileObject fo = mo.getFileObject();
+        long fileSize = fo.getSize() / 1024;
+        JButton showButton = new JButton(Bundle.LBL_ContextView_Show());
+        JButton skipButton = new JButton(Bundle.LBL_ContextView_Skip());
+        JCheckBox all = new JCheckBox(Bundle.LBL_ContextView_ApplyAll());
+        all.setSelected(approveApplyToAllSelected);
+        JPanel allPanel = new JPanel();
+        allPanel.add(all); //Add to panel not to be handled as standard button.
+        NotifyDescriptor nd = new NotifyDescriptor(
+                Bundle.MSG_ContextView_showBigFile(
+                fo.getNameExt(), fileSize),
+                Bundle.TTL_ContextView_showBigFile(),
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[]{skipButton, showButton},
+                lastApproveOption ? showButton : skipButton);
+        nd.setAdditionalOptions(new Object[]{allPanel});
+        DialogDisplayer.getDefault().notify(nd);
+        boolean app = nd.getValue() == showButton;
+        APPROVED_FILES.put(fo, app);
+        if (all.isSelected()) {
+            allApproved = app;
+        }
+        approveApplyToAllSelected = all.isSelected();
+        lastApproveOption = app;
+        displayFile(mo, partIndex);
     }
 
     /**

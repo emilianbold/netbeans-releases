@@ -62,6 +62,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.editor.AbstractEditorAction;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 
@@ -90,6 +91,8 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
     private static final int MENU = 0;
     private static final int POPUP = 1;
     private static final int TOOLBAR = 2;
+
+    private static final boolean ON_MAC = Utilities.isMac();
 
     private final int type;
 
@@ -189,7 +192,7 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
     private void updatePresenter(String propName) {
         // For menu items do lazy update (only when they become visible (measured)
         // since they are being updated by an active component's action properties.
-        if (type == MENU && !presenterActive) {
+        if (!ON_MAC && type == MENU && !presenterActive) {
             updatesPending = true;
 
             // Invalidate presenter

@@ -44,9 +44,8 @@ package org.netbeans.modules.css.editor.module.main;
 import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
+import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.lib.api.CssModule;
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -55,22 +54,13 @@ import org.openide.util.lookup.ServiceProvider;
  * @author mfukala@netbeans.org
  */
 @ServiceProvider(service = CssEditorModule.class)
-public class ListsAndCountersModule extends CssEditorModule implements CssModule {
+public class ListsAndCountersModule extends ExtCssEditorModule implements CssModule {
 
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/lists_and_counters"; //NOI18N
-    private static Collection<PropertyDefinition> propertyDescriptors;
     private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{"marker"}); //NOI18N
 
     @Override
-    public synchronized Collection<PropertyDefinition> getProperties() {
-        if (propertyDescriptors == null) {
-            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH, this);
-        }
-        return propertyDescriptors;
-    }
-
-    @Override
-    public Collection<String> getPseudoElements() {
+    public Collection<String> getPseudoElements(EditorFeatureContext context) {
         return PSEUDO_ELEMENTS;
     }
 
@@ -87,5 +77,15 @@ public class ListsAndCountersModule extends CssEditorModule implements CssModule
     @Override
     public String getSpecificationURL() {
         return "http://www.w3.org/TR/css3-lists"; //NOI18N
+    }
+
+    @Override
+    protected String getPropertyDefinitionsResourcePath() {
+        return PROPERTIES_DEFINITION_PATH;
+    }
+
+    @Override
+    protected CssModule getCssModule() {
+        return this;
     }
 }

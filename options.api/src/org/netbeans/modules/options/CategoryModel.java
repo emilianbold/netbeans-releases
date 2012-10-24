@@ -369,6 +369,10 @@ public final class CategoryModel implements LookupListener {
             return category.getCategoryName();
         }
 
+        public void handleSuccessfulSearchInController(String searchText, List<String> matchedKeywords) {
+	    create().handleSuccessfulSearch(searchText, matchedKeywords);
+        }
+
         private synchronized OptionsPanelController create() {
             if (controller == null) {
                 controller = category.create();

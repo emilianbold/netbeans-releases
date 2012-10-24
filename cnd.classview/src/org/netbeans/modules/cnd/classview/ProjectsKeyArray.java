@@ -77,7 +77,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
 
     private java.util.Map<CsmProject,SortedName> myProjects;
     private ChildrenUpdater childrenUpdater;
-    private static Comparator<java.util.Map.Entry<CsmProject, SortedName>> COMARATOR = new ProjectComparator();
+    private static Comparator<java.util.Map.Entry<CsmProject, SortedName>> COMARATOR = new ProjectComparator();    
     
     /** guards myProjects */
     private final Object myProjectsLock = new Object();
@@ -132,9 +132,9 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     
     private SortedName getSortedName(CsmProject project, boolean isLibrary){
         if (isLibrary){
-            return new SortedName(1,project.getName(), 0);
+            return new IgnoreCaseSortedName(1,project.getName(), 0);
         }
-        return new SortedName(0,project.getName(), 0);
+        return new IgnoreCaseSortedName(0,project.getName(), 0);
     }
     
     public boolean isEmpty(){
@@ -296,6 +296,39 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
             myProjects = null;
         }
         resetKeys();
+    }
+    
+    private static class CharSequenceIgnoreCaseComparator implements Comparator<CharSequence> {
+        @Override
+        public int compare(CharSequence o1, CharSequence o2) {
+            int len1 = o1.length();
+            int len2 = o2.length();
+            int n = Math.min(len1, len2);
+            int k = 0;
+            while (k < n) {
+                char c1 = o1.charAt(k);
+                char c2 = o2.charAt(k);
+                if (c1 != c2) {
+                    return  Character.toUpperCase(c1) - Character.toUpperCase(c2);
+                }
+                k++;
+            }
+            return len1 - len2;
+        }
+    }
+
+    private static class IgnoreCaseSortedName extends SortedName {
+
+        CharSequenceIgnoreCaseComparator COMPARATOR = new CharSequenceIgnoreCaseComparator();
+        
+        public IgnoreCaseSortedName(int prefix, CharSequence name, int suffix) {
+            super(prefix, name, suffix);
+        }
+
+        @Override
+        protected Comparator<CharSequence> getCharSequenceComparator() {
+            return COMPARATOR;
+        }
     }
     
     private static final class ProjectComparator implements Comparator<java.util.Map.Entry<CsmProject,SortedName>>, Serializable {

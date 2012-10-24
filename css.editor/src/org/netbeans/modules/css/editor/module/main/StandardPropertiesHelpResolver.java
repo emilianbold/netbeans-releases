@@ -51,12 +51,14 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.css.editor.URLRetriever;
-import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
+import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -88,7 +90,7 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
     private static final String NO_HELP_MSG = NbBundle.getMessage(StandardPropertiesHelpResolver.class, "completion-help-no-documentation-found");
 
     @Override
-    public String getHelp(PropertyDefinition property) {
+    public String getHelp(FileObject context, PropertyDefinition property) {
         CssModule cssModule = property.getCssModule();
         if (cssModule == null) {
             return null;
@@ -215,7 +217,7 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
     }
 
     @Override
-    public URL resolveLink(PropertyDefinition property, String link) {
+    public URL resolveLink(FileObject context, PropertyDefinition property, String link) {
         return null;
     }
 
@@ -235,7 +237,7 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
         File file = InstalledFileLocator.getDefault().locate(SPEC_ARCHIVE_NAME, "org.netbeans.modules.css.editor", false); //NoI18N
         if (file != null) {
             try {
-                URL urll = file.toURI().toURL(); //toURI should escape the illegal characters like spaces
+                URL urll = Utilities.toURI(file).toURL(); //toURI should escape the illegal characters like spaces
                 assert FileUtil.isArchiveFile(urll);
                 return FileUtil.getArchiveRoot(urll).toExternalForm();
             } catch (java.net.MalformedURLException e) {

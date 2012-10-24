@@ -44,10 +44,10 @@ package org.netbeans.modules.css.model.impl.semantic.box;
 import java.util.Collection;
 import org.netbeans.modules.css.lib.CssTestBase;
 import org.netbeans.modules.css.lib.api.properties.*;
+import org.netbeans.modules.css.model.api.semantic.Edge;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.Edge;
 import org.netbeans.modules.css.model.impl.semantic.ModelBuilderNodeVisitor;
 import org.netbeans.modules.css.model.impl.semantic.NodeModel;
 import org.netbeans.modules.css.model.impl.semantic.PropertyModelId;
@@ -93,7 +93,7 @@ public abstract class BoxTestBase extends CssTestBase {
     protected void assertBox(String propertyName, CharSequence value, BoxType boxType, 
             String top, String right, String bottom, String left) {
         
-        PropertyModel model = Properties.getPropertyModel(propertyName);
+        PropertyDefinition model = Properties.getPropertyDefinition(null, propertyName);
         ResolvedProperty val = new ResolvedProperty(model, value);
 
         Node root = val.getParseTree();

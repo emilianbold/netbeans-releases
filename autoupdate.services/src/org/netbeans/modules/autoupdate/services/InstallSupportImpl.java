@@ -1249,6 +1249,7 @@ public class InstallSupportImpl {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         URLConnection conn;
         crc.set(-1L);
+        String url = null;
         for (;;) {
             String line = br.readLine();
             if (line == null) {
@@ -1258,7 +1259,7 @@ public class InstallSupportImpl {
                 crc.set(Long.parseLong(line.substring(4).trim()));
             }
             if (line.startsWith("URL:")) {
-                String url = line.substring(4).trim();
+                url = line.substring(4).trim();
                 for (;;) {
                     int index = url.indexOf("${");
                     if (index == -1) {
@@ -1283,7 +1284,7 @@ public class InstallSupportImpl {
                 }
             }
         }
-        throw new FileNotFoundException("Cannot resolve external reference to " + pathTo);
+        throw new FileNotFoundException("Cannot resolve external reference to " + url == null ? pathTo : url);
     }
     
     private static class UpdaterInfo {

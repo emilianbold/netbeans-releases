@@ -175,18 +175,16 @@ public final class PaletteUtils {
                                                           FileObject context)
     {
         Project project = FileOwnerQuery.getOwner(context);
-        if (project != null) {
-            ProjectPaletteInfo pInfo = palettes.get(project);
-            if (pInfo != null && pInfo.paletteListeners != null) {
-                pInfo.paletteListeners.remove(listener);
-                pInfo.getPalette().removePropertyChangeListener(listener);
-            }
+        ProjectPaletteInfo pInfo = palettes.get(project);
+        if (pInfo != null && pInfo.paletteListeners != null) {
+            pInfo.paletteListeners.remove(listener);
+            pInfo.getPalette().removePropertyChangeListener(listener);
         }
     }
 
     public static Lookup getPaletteLookup(FileObject context) {
         ProjectPaletteInfo pInfo = preparePalette(context);
-        return pInfo != null ? pInfo.paletteLookup : Lookups.fixed(new Object[0]);
+        return pInfo != null ? pInfo.paletteLookup : Lookup.EMPTY;
     }
 
     private static PaletteController getPalette() {
@@ -215,16 +213,19 @@ public final class PaletteUtils {
             return null;
 
         final Project project = FileOwnerQuery.getOwner(context);
-        if (project == null)
-            return null;
 
         ProjectPaletteInfo pInfo = palettes.get(project);
         if (pInfo == null) {
-            ClassPath classPath = ClassPath.getClassPath(context, ClassPath.BOOT);
-            classPath.addPropertyChangeListener(new ClassPathListener(classPath, project));
+            final ClassPathFilter filter;
+            if (project != null) {
+                ClassPath classPath = ClassPath.getClassPath(context, ClassPath.BOOT);
+                classPath.addPropertyChangeListener(new ClassPathListener(classPath, project));
+                filter = new ClassPathFilter(classPath);
+            } else {
+                filter = null;
+            }
 
             PaletteLookup lookup = new PaletteLookup();
-            final ClassPathFilter filter = new ClassPathFilter(classPath);
             lookup.setPalette(EventQueue.isDispatchThread() ? createDummyPalette() : createPalette(filter));
             pInfo = new ProjectPaletteInfo();
             pInfo.paletteLookup = lookup;

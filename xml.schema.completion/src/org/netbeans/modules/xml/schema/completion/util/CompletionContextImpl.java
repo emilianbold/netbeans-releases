@@ -785,10 +785,6 @@ public class CompletionContextImpl extends CompletionContext {
             }
         }
         
-        //handle no namespace
-        if(defaultNamespace == null)
-            return false;
-        
         return !fromSameNamespace(thisTag, previousTag);
     }
     
@@ -812,7 +808,6 @@ public class CompletionContextImpl extends CompletionContext {
      * @return 
      */
     private QName createQName(Tag tag) {
-        QName qname = null;
         String tagName = tag.getTagName();
         String prefix = CompletionUtil.getPrefixFromTag(tagName);
         String lName = CompletionUtil.getLocalNameFromTag(tagName);     
@@ -835,7 +830,11 @@ public class CompletionContextImpl extends CompletionContext {
                 }
             }
         }
-        return qname;
+        if (prefix == null) {
+            return new QName(defaultNamespace, lName);
+        } else {
+            return new QName(null, lName, prefix);
+        }
     }
     
     /**

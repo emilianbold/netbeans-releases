@@ -292,7 +292,7 @@ public final class GsfUtilities {
             }
 
             // Simple text search if no known offset (e.g. broken/unparseable source)
-            if ((ec != null) && (search != null) && (offset == -1)) {
+            if ((search != null) && (offset == -1)) {
                 StyledDocument doc = NbDocument.getDocument(od);
 
                 try {

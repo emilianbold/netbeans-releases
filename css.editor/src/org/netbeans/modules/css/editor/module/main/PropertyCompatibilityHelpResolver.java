@@ -46,6 +46,7 @@ import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.Browser;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -54,14 +55,14 @@ import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 public class PropertyCompatibilityHelpResolver extends HelpResolver {
 
     @Override
-    public String getHelp(PropertyDefinition property) {
+    public String getHelp(FileObject context, PropertyDefinition property) {
         StringBuilder sb = new StringBuilder();
         //XXX using legacy html code instead of css styling due to the jdk swingbrowser
         sb.append("<table width=\"100%\" border=\"0\"><tr><td><div style=\"font-size: large; font-weight: bold\">"); //NOI18N
         sb.append(property.getName());
         sb.append("</div></td>"); //NOI18N
         sb.append("<td width=\"125\">"); //NOI18N
-        for (Browser browser : CssModuleSupport.getBrowsers()) {
+        for (Browser browser : CssModuleSupport.getBrowsers(context)) {
             URL browserIcon = CssModuleSupport.isPropertySupported(property.getName(), browser)
                     ? browser.getActiveIcon()
                     : browser.getInactiveIcon();
@@ -75,7 +76,7 @@ public class PropertyCompatibilityHelpResolver extends HelpResolver {
     }
 
     @Override
-    public URL resolveLink(PropertyDefinition property, String link) {
+    public URL resolveLink(FileObject context, PropertyDefinition property, String link) {
         return null;
     }
 

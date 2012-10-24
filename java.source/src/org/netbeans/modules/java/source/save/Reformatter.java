@@ -1851,9 +1851,7 @@ public class Reformatter implements ReformatTask {
             spaces(cs.spaceWithinForParens() ? 1 : 0);
             int alignIndent = cs.alignMultilineFor() ? col : -1;
             scan(node.getVariable(), p);
-            spaces(cs.spaceBeforeColon() ? 1 : 0);
-            accept(COLON);
-            wrapTree(cs.wrapFor(), alignIndent, cs.spaceAfterColon() ? 1 : 0, node.getExpression());
+            wrapOperatorAndTree(cs.wrapFor(), alignIndent, cs.spaceAfterColon() ? 1 : 0, node.getExpression());
             spaces(cs.spaceWithinForParens() ? 1 : 0);
             accept(RPAREN);
             indent = old;

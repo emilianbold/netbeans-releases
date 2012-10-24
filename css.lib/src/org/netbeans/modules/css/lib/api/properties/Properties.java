@@ -43,26 +43,100 @@ package org.netbeans.modules.css.lib.api.properties;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
+import org.openide.filesystems.FileObject;
 
 /**
- * An entry point for clients wishing to operate with the property api.
- *
  * @author marekfukala
  */
 public class Properties {
+    
+    private Properties() {
+    }
+   
+    /**
+     * Gets all property names available for the given context.
+     * @param context file context
+     * @return 
+     */
+    public static Collection<String> getPropertyNames(FileObject context) {
+        return PropertyDefinitionProvider.Query.getPropertyNames(context);
+    }
+    
+    /**
+     * Get instance of {@link PropertyDefinition} for the given property name and given context.
+     * 
+     * @param propertyName property name
+     * @return instance of {@link PropertyDefinition} or null if not found.
+     */
+    public static PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+        return PropertyDefinitionProvider.Query.getPropertyDefinition(context, propertyName);
+    }
+    
+//    /**
+//     * Get instance of {@link PropertyDefinition} for the given property name with no context.
+//     * 
+//     * @param propertyName property name
+//     * @return instance of {@link PropertyDefinition} or null if not found.
+//     */
+//    public static PropertyDefinition getPropertyDefinition(String propertyName) {
+//        return PropertyDefinitionProvider.Query.getPropertyDefinition(null, propertyName);
+//    }
+    
+    /**
+     * Get instance of {@link PropertyDefinition} for the given property name and given context
+     * 
+     * Basically does the same as {@link #getPropertyDefinition(java.lang.String) 
+     * but it tries to resolve the refered element name with the at-sign prefix first so
+     * the property appearance may contain link to appearance, which in fact
+     * will be resolved as the @appearance property:
+     * 
+     * appearance=<appearance> |normal
+     * @appearance=...
+     * 
+     * @param context file context
+     * @param propertyName property name
+     * @return instance of {@link PropertyDefinition} or null if not found.
+     */
+    public static PropertyDefinition getPropertyDefinition(FileObject context, String propertyName, boolean preferInvisibleProperties) {
+        StringBuilder sb = new StringBuilder().append(GrammarElement.INVISIBLE_PROPERTY_PREFIX).append(propertyName);
+        PropertyDefinition invisibleProperty = getPropertyDefinition(context, sb.toString());
+        return preferInvisibleProperties && invisibleProperty != null ? invisibleProperty : getPropertyDefinition(context, propertyName);
+    }
+    
+//    /**
+//     * Get instance of {@link PropertyDefinition} for the given property name with no context
+//     * 
+//     * @param propertyName
+//     * @param preferInvisibleProperties
+//     * @return 
+//     */
+//    public static PropertyDefinition getPropertyDefinition(String propertyName, boolean preferInvisibleProperties) {
+//        StringBuilder sb = new StringBuilder().append(GrammarElement.INVISIBLE_PROPERTY_PREFIX).append(propertyName);
+//        PropertyDefinition invisibleProperty = getPropertyDefinition(null, sb.toString());
+//        return preferInvisibleProperties && invisibleProperty != null ? invisibleProperty : getPropertyDefinition(null, propertyName);
+//    }
+    
+    /**
+     * Gets all available {@link PropertyDefinition}s for the given context
+     * @param context file context
+     */
+    public static Collection<PropertyDefinition> getPropertyDefinitions(FileObject context) {
+        return getPropertyDefinitions(context, false);
+    }
 
-    private static final Logger LOGGER = Logger.getLogger(Properties.class.getSimpleName());
+    public static Collection<PropertyDefinition> getPropertyDefinitions(FileObject context, boolean visibleOnly) {
+        Collection<PropertyDefinition> all = new ArrayList<PropertyDefinition>();
+        for(String propName : getPropertyNames(context)) {
+            PropertyDefinition propertyDefinition = getPropertyDefinition(context, propName);
+            if(!visibleOnly || isVisibleProperty(propertyDefinition)) {
+                all.add(propertyDefinition);
+            }
+        }
+        return all;
+    }
     
-    //TODO possibly add support for refreshing the cached data based on css module changes in the lookup    
-    private static final AtomicReference<Map<String, Collection<PropertyDefinition>>> PROPERTIES_MAP = new AtomicReference<Map<String, Collection<PropertyDefinition>>>();
-    private static final AtomicReference<Collection<PropertyDefinition>> PROPERTIES = new AtomicReference<Collection<PropertyDefinition>>();
-    private static final Map<String, PropertyModel> PROPERTY_MODELS = new HashMap<String, PropertyModel>();
     
+ 
     public static boolean isVisibleProperty(PropertyDefinition propertyDefinition) {
         char c = propertyDefinition.getName().charAt(0);
         return c != '@';
@@ -77,132 +151,5 @@ public class Properties {
         return c == '_' || c == '-';
     }
     
-    /**
-     * 
-     * @return collection of all available property definitions
-     */
-    public static Collection<PropertyDefinition> getProperties(boolean visibleOnly) {
-        Collection<PropertyDefinition> props = getProperties();
-        if(visibleOnly) {
-            //filter
-            Collection<PropertyDefinition> filtered = new ArrayList<PropertyDefinition>();
-            for(PropertyDefinition pd : props) {
-                if(isVisibleProperty(pd)) {
-                    filtered.add(pd);
-                }
-            }
-            return filtered;
-            
-        } else {
-            return props;
-        }
-    }
-    /**
-     * 
-     * @return collection of all available <b>VISIBLE</b> property definitions
-     */
-    public static Collection<PropertyDefinition> getProperties() {
-        synchronized (PROPERTIES) {
-            if (PROPERTIES.get() == null) {
-                PROPERTIES.set(createAllPropertiesCollection());
-            }
-            return PROPERTIES.get();
-        }
-    }
-
-    //return first found, to be changed!
-    public static PropertyDefinition getProperty(String propertyName) {
-        Collection<PropertyDefinition> found = getProperties(propertyName);
-        return found != null && !found.isEmpty() 
-                ? found.iterator().next()
-                : null;
-    }
     
-    /**
-     * Returns a collection of property definitions for the given property name.
-     */
-    public static Collection<PropertyDefinition> getProperties(String propertyName) {
-        return getProperties(propertyName, false);
-    }
-
-    /**
-     * Same as {@link #getProperties(java.lang.String) but first it tries to obtain 
-     * the invisible (@-prefixed) properties. 
-     */
-    public static Collection<PropertyDefinition> getProperties(String propertyName, boolean preferInvisibleProperties) {
-        //try to resolve the refered element name with the at-sign prefix so
-        //the property appearance may contain link to appearance, which in fact
-        //will be resolved as the @appearance property:
-        //
-        //appearance=<appearance> |normal
-        //@appearance=...
-        //
-        StringBuilder sb = new StringBuilder().append(GrammarElement.INVISIBLE_PROPERTY_PREFIX).append(propertyName);
-        Collection<PropertyDefinition> invisibleProperty = getPropertiesMap().get(sb.toString());
-
-        return preferInvisibleProperties && invisibleProperty != null ? invisibleProperty : PROPERTIES_MAP.get().get(propertyName);
-    }
-
-    /**
-     * Returns a cached PropertyModel for the given property name.
-     */
-    public static PropertyModel getPropertyModel(String name) {
-        synchronized (PROPERTY_MODELS) {
-            PropertyModel model = PROPERTY_MODELS.get(name);
-            if (model == null) {
-                Collection<PropertyDefinition> properties = getProperties(name);
-                model = properties != null ? new PropertyModel(name, properties) : null;
-                PROPERTY_MODELS.put(name, model);
-            }
-            return model;
-        }
-
-    }
-    
-    /**
-     * @return map of property name to collection of Property impls.
-     */
-    private static Map<String, Collection<PropertyDefinition>> getPropertiesMap() {
-        synchronized (PROPERTIES_MAP) {
-            if (PROPERTIES_MAP.get() == null) {
-                PROPERTIES_MAP.set(loadProperties());
-            }
-            return PROPERTIES_MAP.get();
-        }
-    }
-
-    private static Collection<PropertyDefinition> createAllPropertiesCollection() {
-        Collection<PropertyDefinition> all = new LinkedList<PropertyDefinition>();
-        for (Collection<PropertyDefinition> props : getPropertiesMap().values()) {
-            all.addAll(props);
-        }
-        return all;
-    }
-
-    //property name to set of Property impls - one name may be mapped to more properties
-    private static Map<String, Collection<PropertyDefinition>> loadProperties() {
-        Map<String, Collection<PropertyDefinition>> all = new HashMap<String, Collection<PropertyDefinition>>();
-        for (PropertyDefinition pd : PropertyDefinitionProvider.Query.getProperties()) {
-            String propertyName = pd.getName();
-            Collection<PropertyDefinition> props = all.get(propertyName);
-            if (props == null) {
-                props = new LinkedList<PropertyDefinition>();
-                all.put(propertyName, props);
-            }
-            if (!GrammarElement.isArtificialElementName(propertyName)) {
-                //standart (visible) properties cannot be duplicated
-                if (!props.isEmpty()) {
-                    LOGGER.warning(String.format("Duplicate property %s found, "
-                            + "offending css module: %s", pd.getName(), pd.getCssModule())); //NOI18N
-                    for (PropertyDefinition p : props) {
-                        LOGGER.warning(String.format("Existing property found"
-                                + " in css module: %s", p.getCssModule())); //NOI18N
-                    }
-                }
-            }
-            props.add(pd);
-
-        }
-        return all;
-    }
 }

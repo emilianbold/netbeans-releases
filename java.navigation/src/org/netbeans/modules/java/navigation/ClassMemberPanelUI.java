@@ -281,6 +281,33 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         return toolbar;
     }
 
+    void refresh() {
+        RP.execute(new Runnable() {
+            @Override
+            public void run() {
+                ElementNode rootNode = getRootNode();
+                if (rootNode != null) {
+                    final FileObject fo = rootNode.getDescritption().fileObject;
+                    if (fo != null) {
+                        final JavaSource js = JavaSource.forFileObject(fo);
+                        if (js != null) {
+                            try {
+                                js.runUserActionTask(new Task<CompilationController>() {
+                                    @Override
+                                    public void run(CompilationController parameter) throws Exception {
+                                        getTask().runImpl(parameter, true);
+                                    }
+                                }, true);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     void refresh(
             @NonNull final Description description,
             final boolean userAction) {

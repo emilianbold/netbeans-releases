@@ -84,17 +84,28 @@ public class ShellSessionTest extends NativeExecutionBaseTestCase {
      */
     @Test
     public void testExecute() throws Exception {
-        System.out.println("execute");
         ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+        System.out.println("execute unknown-command");
         ExitStatus result1 = ShellSession.execute(env, "unknown-command");
+        System.out.println("Result1 [expected]: rc != 0, error is not empty and output is empty");
+        System.out.println("Result1 [actual]  : ====== START =====");
+        System.out.println(result1.toString());
+        System.out.println("Result1 [actual]  : ======= END ======");
+
         String command = "echo out; echo error 1>&2; sh -c \"exit 100\"";
+        System.out.println();
+        System.out.println("execute '" + command + "'");
         ExitStatus result2 = ShellSession.execute(env, command);
+        System.out.println("Result2 [expected]: rc == 100, error is 'error' and output is 'out'");
+        System.out.println("Result2 [actual]  : ====== START =====");
+        System.out.println(result2.toString());
+        System.out.println("Result2 [actual]  : ======= END ======");
 
         assertNotSame(0, result1.exitCode);
-        assertFalse(result1.error.isEmpty());
+        assertNotSame("It is expected that error stream is empty", "", result1.error.isEmpty());
 
+        assertEquals(100, result2.exitCode);
         assertEquals("out\n", result2.output);
         assertEquals("error\n", result2.error);
-        assertEquals(100, result2.exitCode);
     }
 }

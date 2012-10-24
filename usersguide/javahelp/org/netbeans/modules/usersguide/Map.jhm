@@ -317,6 +317,7 @@ Other names may be trademarks of their respective owners.
    <!-- Diff: options window help ids -->
    <mapID target="org.netbeans.modules.diff.options.DiffOptionsController" url="configure/csh/misc/options_diffengine.html" />
    <mapID target="org.netbeans.modules.versioning.util.VcsAdvancedOptions" url="configure/csh/misc/options_versioning.html" />
+   <mapID target="org.netbeans.core.windows.options.WinSysOptionsPanelController" url="configure/csh/misc/options_windows.html" />
    <!-- No such target found in core.execution package -->
 <!--   <mapID target="org.netbeans.core.execution.ProcessNode" url="files/csh/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/csh/files_runtime.html" /> 

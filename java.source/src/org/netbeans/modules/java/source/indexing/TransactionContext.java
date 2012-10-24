@@ -224,7 +224,7 @@ public final class TransactionContext {
                     FileManagerTransaction.writeThrough()).
             register(
                 ProcessorGenerated.class,
-                ProcessorGenerated.create()).
+                ProcessorGenerated.create(root)).
             register(
                 PersistentIndexTransaction.class, 
                 PersistentIndexTransaction.create()).

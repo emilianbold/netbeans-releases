@@ -313,7 +313,8 @@ public final class EjbJarProvider extends J2eeModuleProvider
         if (platformVersion == null) {
             platformVersion = Profile.JAVA_EE_6_FULL;
         }
-        if (Profile.JAVA_EE_6_FULL.equals(platformVersion) || Profile.JAVA_EE_6_WEB.equals(platformVersion)) {
+        if (Profile.JAVA_EE_6_FULL.equals(platformVersion) || Profile.JAVA_EE_6_WEB.equals(platformVersion) ||
+                Profile.JAVA_EE_7_FULL.equals(platformVersion) || Profile.JAVA_EE_7_WEB.equals(platformVersion)) {
             return EjbJar.VERSION_3_1;
         } else if (Profile.JAVA_EE_5.equals(platformVersion)) {
             return EjbJar.VERSION_3_0;

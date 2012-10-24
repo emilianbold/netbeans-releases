@@ -144,24 +144,6 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/javametmpdir"/>
     </target>
 
-    <target name="prepare-javafx-runtime-zip">
-        <mkdir dir="build"/> 
-        <get src="${javafx_runtime_location}" dest="${common.name}-javafx-runtime.zip"/>
-        
-        <mkdir dir="${basedir}/javafxrttmpdir/ide/javafxrt/x64"/>
-        <exec executable="sh" failonerror="yes">
-            <arg value="-c"/>
-            <arg value="unzip -o -d ${basedir}/javafxrttmpdir/ide/javafxrt/x64 ${common.name}-javafx-runtime.zip"/>
-        </exec>
-        <delete file="${common.name}-javafx-runtime.zip"/>
-        
-        <exec executable="sh" failonerror="yes" dir="${basedir}/javafxrttmpdir">
-            <arg value="-c"/>
-            <arg value="zip -r -1 ${common.name}-javafx-runtime.zip *"/>
-        </exec>      
-        <delete dir="${basedir}/javafxrttmpdir"/>
-    </target>
-
     <target name="init-clusters">
         <property name="main.clusters" value="
                                          cnd(cpp), dlight(cpp),
@@ -172,11 +154,11 @@ Microsystems, Inc. All Rights Reserved.
                                          webcommon(webcommon),
                                          mobility(javame), mobility-mac(javame),
                                          ergonomics(ergonomics),
-                                         ide(baseide), javafx-runtime(baseide), nb-etc(baseide), platform(baseide)
+                                         ide(baseide), nb-etc(baseide), platform(baseide)
                                          "/>
         
         <property name="jdk-bundle.clusters" value="apisupport(javase), profiler(javase), java(javase), harness(javase),
-                                                   ide(baseide), javafx-runtime(baseide), nb-etc(baseide), platform(baseide)
+                                                   ide(baseide), nb-etc(baseide), platform(baseide)
                                          "/>
 
         <property name="fx.clusters" value="javafx(javafx), javafx-mac(javafx)"/>
@@ -191,7 +173,7 @@ Microsystems, Inc. All Rights Reserved.
         
     </target>
 
-    <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters,prepare-javame-sdk-zip,prepare-javafx-runtime-zip">
+    <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters,prepare-javame-sdk-zip">
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
             <exec executable="sh" failonerror="no">

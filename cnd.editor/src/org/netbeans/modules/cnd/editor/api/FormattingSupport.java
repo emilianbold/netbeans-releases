@@ -104,13 +104,23 @@ public final class FormattingSupport {
             DataObject dob = DataObject.find(data);
             EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
             if (ec != null) {
-                StyledDocument fmtDoc = ec.openDocument();
-                Reformat fmt = Reformat.get(fmtDoc);
+                final StyledDocument fmtDoc = ec.openDocument();
+                final Reformat fmt = Reformat.get(fmtDoc);
                 fmt.lock();
                 try {
-                    try {
-                        fmt.reformat(0, fmtDoc.getLength());
-                    } catch (BadLocationException ex) {
+                    final Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                fmt.reformat(0, fmtDoc.getLength());
+                            } catch (BadLocationException ex) {
+                            }
+                        }
+                    };
+                    if (fmtDoc instanceof BaseDocument) {
+                        ((BaseDocument)fmtDoc).runAtomic(runnable);
+                    } else {
+                        runnable.run();
                     }
                 } finally {
                     fmt.unlock();

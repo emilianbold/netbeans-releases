@@ -49,13 +49,12 @@ import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
-import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
-import org.netbeans.modules.css.lib.properties.GrammarParser;
 import org.netbeans.modules.css.lib.api.properties.GrammarResolver;
+import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
+import org.netbeans.modules.css.lib.properties.GrammarParser;
 
 /**
  *
@@ -129,12 +128,12 @@ public class CssTestBase extends CslTestBase {
         }
     }
 
-    protected ResolvedProperty assertResolve(PropertyModel propertyModel, String inputText) {
+    protected ResolvedProperty assertResolve(PropertyDefinition propertyModel, String inputText) {
         return assertResolve(propertyModel, inputText, true);
     }
     
-    protected ResolvedProperty assertResolve(PropertyModel propertyModel, String inputText, boolean expectedSuccess) {
-        return assertResolve(propertyModel.getGrammarElement(), inputText, expectedSuccess);
+    protected ResolvedProperty assertResolve(PropertyDefinition propertyModel, String inputText, boolean expectedSuccess) {
+        return assertResolve(propertyModel.getGrammarElement(null), inputText, expectedSuccess);
     }
     
     protected ResolvedProperty assertResolve(String grammar, String inputText) {

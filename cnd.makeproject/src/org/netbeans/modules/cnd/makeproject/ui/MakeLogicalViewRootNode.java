@@ -246,11 +246,18 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     }
     
     void reInitWithRemovedPrivate() {
-        try {
-            provider.getMakeConfigurationDescriptor().getNbPrivateProjectFileObject().delete();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }        
+        final MakeConfigurationDescriptor mcd = provider.getMakeConfigurationDescriptor();
+        Configuration[] confs = mcd.getConfs().toArray();
+        for (int i = 0; i < confs.length; i++) {
+            MakeConfiguration conf = (MakeConfiguration) confs[i];
+            if (conf.getDevelopmentHost().isLocalhost()) {
+                final int platform1 = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform();
+                final int platform2 = conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue();
+                if (platform1 != platform2) {
+                    conf.getDevelopmentHost().getBuildPlatformConfiguration().setValue(platform1);
+                }
+            }
+        }
         reInit(provider.getMakeConfigurationDescriptor());
     }
     

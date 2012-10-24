@@ -1536,7 +1536,7 @@ public class EjbJarProject implements Project, FileChangeListener {
             if (!checked){
                 Profile version=Profile.fromPropertiesString(evaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM));
                 isEE5 = Profile.JAVA_EE_5==version;
-                isEE6 = Profile.JAVA_EE_6_FULL==version;
+                isEE6 = Profile.JAVA_EE_6_FULL==version || Profile.JAVA_EE_7_FULL==version;
                 final Object srcType = helper.getAntProjectHelper().
                         getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.JAVA_SOURCE_BASED);
                 if ("false".equals(srcType)) {

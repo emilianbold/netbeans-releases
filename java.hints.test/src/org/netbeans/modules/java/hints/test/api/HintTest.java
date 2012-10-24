@@ -963,12 +963,37 @@ public class HintTest {
             String realCode = toCheckDocument.getText(0, toCheckDocument.getLength());
 
             //ignore whitespaces:
-            realCode = realCode.replaceAll("[ \t\n]+", " ");
+            realCode = reduceWhitespaces(realCode);
 
-            assertEquals("The output code does not match the expected code.", code.replaceAll("[ \t\n]+", " "), realCode);
+            assertEquals("The output code does not match the expected code.", reduceWhitespaces(code), realCode);
 
             return this;
         }
+        
+        private String reduceWhitespaces(String str) {
+            if (true) return str.replaceAll("[ \t\n]+", " ");
+            StringBuilder result = new StringBuilder();
+            int i = 0;
+            boolean wasWhitespace = false;
+            
+            while (i < str.length()) {
+                int codePoint = str.codePointAt(i);
+                
+                if (Character.isWhitespace(codePoint)) {
+                    if (!wasWhitespace) {
+                        result.append(" ");
+                        wasWhitespace = true;
+                    }
+                } else {
+                    result.appendCodePoint(codePoint);
+                    wasWhitespace = false;
+                }
+                i += Character.charCount(codePoint);
+            }
+            
+            return result.toString();
+        }
+        
         /**Verify the content of the resulting file. Equivalent to {@code assertVerbatimOutput("test/Test.java")}.
          *
          * This method will compare the content of the file exactly with the provided

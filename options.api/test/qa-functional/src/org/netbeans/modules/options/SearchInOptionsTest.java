@@ -114,7 +114,7 @@ public class SearchInOptionsTest extends JellyTestCase {
         searchFor("dictionary", tabIndexes, selectedCategories, enabledCategories);
 
         tabIndexes[0] = 7;
-        searchFor("on save", tabIndexes, selectedCategories, enabledCategories);
+        searchFor("save", tabIndexes, selectedCategories, enabledCategories);
 
         enabledCategories.clear();
         enabledCategories.add("General");
@@ -142,7 +142,7 @@ public class SearchInOptionsTest extends JellyTestCase {
 
         enabledCategories.clear();
         enabledCategories.add("Java");
-        tabIndexes[0] = 5;
+        tabIndexes[0] = 4;
         selectedCategories[0] = "Java";
         searchFor("maven", tabIndexes, selectedCategories, enabledCategories);
 
@@ -150,16 +150,7 @@ public class SearchInOptionsTest extends JellyTestCase {
         selectedCategories[0] = "Java";
         searchFor("ant", tabIndexes, selectedCategories, enabledCategories);
 
-        enabledCategories.add("Miscellaneous");
-        tabIndexes[0] = 4;
-        selectedCategories[0] = "Java";
-        searchFor("me", tabIndexes, selectedCategories, enabledCategories);
-
-        enabledCategories.clear();
-        enabledCategories.add("Java");
-        tabIndexes = new int[1];
-        selectedCategories = new String[1];
-        tabIndexes[0] = 7;
+        tabIndexes[0] = 6;
         selectedCategories[0] = "Java";
         searchFor("fx", tabIndexes, selectedCategories, enabledCategories);
 
@@ -169,15 +160,11 @@ public class SearchInOptionsTest extends JellyTestCase {
         selectedCategories[0] = "Miscellaneous";
         searchFor("groovy", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 5;
-        selectedCategories[0] = "Miscellaneous";
-        searchFor("javascript", tabIndexes, selectedCategories, enabledCategories);
-
-        tabIndexes[0] = 7;
+        tabIndexes[0] = 6;
         selectedCategories[0] = "Miscellaneous";
         searchFor("svg", tabIndexes, selectedCategories, enabledCategories);
 
-        tabIndexes[0] = 8;
+        tabIndexes[0] = 7;
         selectedCategories[0] = "Miscellaneous";
         searchFor("terminal", tabIndexes, selectedCategories, enabledCategories);
 

@@ -109,8 +109,6 @@ public class C2CUtil {
         
         // XXX is this all we need and how we need it?
 
-        C2CData clientData = getClientData(C2C.getInstance().getRepositoryConnector(), taskRepository);
-        
         AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
         TaskAttributeMapper attributeMapper = rc.getTaskDataHandler().getAttributeMapper(taskRepository);
         TaskData data = new TaskData(attributeMapper, rc.getConnectorKind(), taskRepository.getRepositoryUrl(), "");
@@ -143,31 +141,13 @@ public class C2CUtil {
         ta = rta.createMappedAttribute(C2CData.ATTR_PARENT);
         ta = rta.createMappedAttribute(C2CData.ATTR_SUBTASK);
         ta = rta.createMappedAttribute(C2CData.ATTR_NEWCOMMENT);
-        
-        
-//        ta.setValue(clientData.get().get(0).getValue());
-        
-//        ta = rta.createMappedAttribute(BugzillaAttribute.PRODUCT.getKey());
-//        ta.setValue(TEST_PROJECT);
-//
-//        String platform = client.getRepositoryConfiguration().getPlatforms().get(0);
-//        ta = rta.createMappedAttribute(BugzillaAttribute.REP_PLATFORM.getKey());
-//        ta.setValue(platform);
-//
-//        String version = client.getRepositoryConfiguration().getVersions(TEST_PROJECT).get(0);
-//        ta = rta.createMappedAttribute(BugzillaAttribute.VERSION.getKey());
-//        ta.setValue(version);
-//
-//        String component = client.getRepositoryConfiguration().getComponents(TEST_PROJECT).get(0);
-//        ta = rta.createMappedAttribute(BugzillaAttribute.COMPONENT.getKey());
-//        ta.setValue(component);
 
         return data;
     }
      
     public static RepositoryResponse postTaskData(AbstractRepositoryConnector cfcrc, TaskRepository repository, TaskData data) throws CoreException {
         C2C.LOG.log(Level.FINE, " dataRoot before post {0}", data.getRoot().toString());
-        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
+        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); 
         return postTaskData(cfcrc, repository, data, attrs);
     }
 
@@ -212,6 +192,7 @@ public class C2CUtil {
     public static Repository getRepository(C2CRepository c2cRepository) {
         //TODO review this, team projects were always initialized again and again
         //this caused problems with listeners
+        assert c2cRepository.getKenaiProject() != null : "looks like repository " + c2cRepository.getDisplayName() + " wasn't porperly inititalized via team support."; // NOI18N
         Repository repository = KenaiUtil.getRepository(c2cRepository.getKenaiProject());
         if (repository == null) {
             repository = createRepository(c2cRepository);
@@ -248,8 +229,8 @@ public class C2CUtil {
         }
 
         try {
-            C2CData cd = getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
-            if(cd == null /* XXX */) {
+            C2CData cd = C2C.getInstance().getClientData(repository);
+            if(cd == null) {
                 return keywordString;
             }
             Collection<Keyword> keywords = cd.getKeywords(); 
@@ -276,8 +257,8 @@ public class C2CUtil {
         }
 
         try {
-            C2CData cd = getClientData(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository());
-            if(cd == null /* XXX */) {
+            C2CData cd = C2C.getInstance().getClientData(repository);
+            if(cd == null) {
                 return usersString;
             }
             List<TaskUserProfile> userProfiles = cd.getUsers();
@@ -329,8 +310,4 @@ public class C2CUtil {
         return date;
     }
 
-    // XXX remove this - is the same as C2C.getclientData();
-    public static C2CData getClientData (AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository) {
-        return C2CExtender.getData(repositoryConnector, taskRepository, false);
-    }
 }

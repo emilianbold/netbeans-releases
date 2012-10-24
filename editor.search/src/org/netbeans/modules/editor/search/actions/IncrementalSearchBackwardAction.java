@@ -41,33 +41,23 @@
  */
 package org.netbeans.modules.editor.search.actions;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.modules.editor.search.SearchNbEditorKit;
-import org.openide.util.NbBundle;
 
-@EditorActionRegistration(name = SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD)
+@EditorActionRegistration(name = SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD,
+        menuText="#" + SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD + "_menu_text") // NOI18N
 public class IncrementalSearchBackwardAction extends SearchAction {
 
     static final long serialVersionUID = -1;
-    private static final Map<String, String> SEARCH_ATTRS;
 
-    static {
-        Map<String, String> aMap = new HashMap<String, String>();
-        aMap.put(Action.NAME, SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD);
-        SEARCH_ATTRS = Collections.unmodifiableMap(aMap);
+    public static Action create(Map<String,?> attrs) {
+        return new IncrementalSearchBackwardAction(attrs);
     }
 
     public IncrementalSearchBackwardAction(Map<String, ?> attrs) {
         super(attrs);
-        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IncrementalSearchBackwardAction.class, SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD));
-
     }
 
-    public IncrementalSearchBackwardAction() {
-        this(SEARCH_ATTRS);
-    }
 }

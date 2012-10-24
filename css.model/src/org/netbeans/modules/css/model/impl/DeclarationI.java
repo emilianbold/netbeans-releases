@@ -41,10 +41,9 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Expression;
@@ -52,7 +51,7 @@ import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Prio;
 import org.netbeans.modules.css.model.api.Property;
 import org.netbeans.modules.css.model.api.PropertyValue;
-import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -142,10 +141,11 @@ public class DeclarationI extends ModelElement implements Declaration {
 
     @Override
     public synchronized ResolvedProperty getResolvedProperty() {
+        FileObject file = getModel().getLookup().lookup(FileObject.class);
         if (resolvedProperty == null) {
-            PropertyModel pmodel = Properties.getPropertyModel(getProperty().getContent().toString().trim());
+            PropertyDefinition pmodel = Properties.getPropertyDefinition(file, getProperty().getContent().toString().trim());
             if (pmodel != null) {
-                resolvedProperty = ResolvedProperty.resolve(pmodel, getPropertyValue().getExpression().getContent());
+                resolvedProperty = ResolvedProperty.resolve(file, pmodel, getPropertyValue().getExpression().getContent());
             }
         }
         return resolvedProperty;

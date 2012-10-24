@@ -769,11 +769,11 @@ public final class CreateElementUtilities {
         }
         
         if (errorInRealArguments) {
-            TypeMirror[] proposedType = new TypeMirror[1];
+            List<TypeMirror> proposedTypes = new ArrayList<TypeMirror>();
             int[] proposedIndex = new int[1];
-            ExecutableElement ee = org.netbeans.modules.editor.java.Utilities.fuzzyResolveMethodInvocation(info, parent, proposedType, proposedIndex);
+            List<ExecutableElement> ee = org.netbeans.modules.editor.java.Utilities.fuzzyResolveMethodInvocation(info, parent, proposedTypes, proposedIndex);
             
-            if (ee == null) { //cannot be resolved
+            if (ee.isEmpty()) { //cannot be resolved
                 return null;
             }
             
@@ -781,7 +781,7 @@ public final class CreateElementUtilities {
             types.add(ElementKind.LOCAL_VARIABLE);
             types.add(ElementKind.FIELD);
             
-            return Collections.singletonList(proposedType[0]);
+            return proposedTypes;
         }
         
         return null;
@@ -796,11 +796,11 @@ public final class CreateElementUtilities {
         }
         
         if (errorInRealArguments) {
-            TypeMirror[] proposedType = new TypeMirror[1];
+            List<TypeMirror> proposedTypes = new ArrayList<TypeMirror>();
             int[] proposedIndex = new int[1];
-            ExecutableElement ee = org.netbeans.modules.editor.java.Utilities.fuzzyResolveMethodInvocation(info, parent, proposedType, proposedIndex);
+            List<ExecutableElement> ee = org.netbeans.modules.editor.java.Utilities.fuzzyResolveMethodInvocation(info, parent, proposedTypes, proposedIndex);
             
-            if (ee == null) { //cannot be resolved
+            if (ee.isEmpty()) { //cannot be resolved
                 return null;
             }
             
@@ -808,7 +808,7 @@ public final class CreateElementUtilities {
             types.add(ElementKind.LOCAL_VARIABLE);
             types.add(ElementKind.FIELD);
             
-            return Collections.singletonList(proposedType[0]);
+            return proposedTypes;
         }
 
         Tree id = nct.getIdentifier();

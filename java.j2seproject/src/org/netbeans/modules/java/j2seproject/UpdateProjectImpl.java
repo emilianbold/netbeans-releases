@@ -65,6 +65,7 @@ import org.w3c.dom.NodeList;
 /**
  *
  * @author Tomas Mysik
+ * @author Tomas Zezula
  */
 public class UpdateProjectImpl implements UpdateImplementation {
 
@@ -76,6 +77,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
     private final AntProjectHelper helper;
     private final AuxiliaryConfiguration cfg;
     private boolean alreadyAskedInWriteAccess;
+    private volatile boolean silentUpdate;
     private Boolean isCurrent;
     private Element cachedElement;
 
@@ -117,7 +119,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
     }
 
     public boolean canUpdate () {
-        if (TRANSPARENT_UPDATE) {
+        if (TRANSPARENT_UPDATE || silentUpdate) {
             return true;
         }
         //Ask just once under a single write access
@@ -136,6 +138,10 @@ public class UpdateProjectImpl implements UpdateImplementation {
             }
             return canUpdate;
         }
+    }
+
+    public void setTransparentUpdate(final boolean transparentUpdate) {
+        this.silentUpdate = transparentUpdate;
     }
 
     public void saveUpdate(final EditableProperties props) throws IOException {

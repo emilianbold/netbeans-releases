@@ -41,18 +41,12 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import java.util.Collection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.css.editor.Css3Utils;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.lib.api.CssModule;
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.properties.GrammarElement;
 import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.properties.GrammarParser;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 
 /**
  *
@@ -91,7 +85,7 @@ public class StandardPropertiesHelpResolverTest extends NbTestCase {
     }
     
     public void testGetHelpForAllCSS3StandardProperties() {
-        for(PropertyDefinition prop : Properties.getProperties()) {
+        for(PropertyDefinition prop : Properties.getPropertyDefinitions(null)) {
             if(!Css3Utils.isVendorSpecificProperty(prop.getName()) 
                     && !GrammarElement.isArtificialElementName(prop.getName())) {
                 
@@ -118,11 +112,9 @@ public class StandardPropertiesHelpResolverTest extends NbTestCase {
     
     private String assertPropertyHelp(String propertyName) {
         StandardPropertiesHelpResolver instance = new StandardPropertiesHelpResolver();
-        Collection<PropertyDefinition> properties = Properties.getProperties(propertyName);
-        assertNotNull(properties);
-        assertFalse(properties.isEmpty());
-        PropertyDefinition property = properties.iterator().next();
-        String helpContent = instance.getHelp(property);
+        PropertyDefinition property = Properties.getPropertyDefinition(null, propertyName);
+        assertNotNull(property);
+        String helpContent = instance.getHelp(null, property);
 //        System.out.println(helpContent);
         
         assertNotNull(String.format("Null help for property %s from module %s", propertyName, property.getCssModule().getDisplayName()), helpContent);

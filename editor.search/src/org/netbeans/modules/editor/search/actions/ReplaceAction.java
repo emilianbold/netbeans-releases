@@ -42,8 +42,6 @@
 package org.netbeans.modules.editor.search.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -57,28 +55,20 @@ import org.netbeans.modules.editor.search.ReplaceBar;
 import org.netbeans.modules.editor.search.SearchBar;
 import org.netbeans.modules.editor.search.SearchNbEditorKit;
 import org.netbeans.spi.editor.AbstractEditorAction;
-import org.openide.util.NbBundle;
 
-@EditorActionRegistration(name = SearchNbEditorKit.REPLACE_ACTION)
 public class ReplaceAction extends AbstractEditorAction {
 
     static final long serialVersionUID = -1;
-    private static final Map<String, String> REPLACE_ATTRS;
 
-    static {
-        Map<String, String> aMap = new HashMap<String, String>();
-        aMap.put(Action.NAME, SearchNbEditorKit.REPLACE_ACTION);
-        REPLACE_ATTRS = Collections.unmodifiableMap(aMap);
+    @EditorActionRegistration(name = SearchNbEditorKit.REPLACE_ACTION,
+            menuText="#" + SearchNbEditorKit.REPLACE_ACTION + "_menu_text") // NOI18N
+    public static Action create(Map<String,?> attrs) {
+        return new ReplaceAction(attrs);
     }
 
     public ReplaceAction(Map<String, ?> attrs) {
         super(attrs);
-        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(ReplaceAction.class, SearchNbEditorKit.REPLACE_ACTION));
         putValue(NbEditorKit.SYSTEM_ACTION_CLASS_NAME_PROPERTY, org.openide.actions.ReplaceAction.class.getName());
-    }
-
-    public ReplaceAction() {
-        this(REPLACE_ATTRS);
     }
 
     @Override

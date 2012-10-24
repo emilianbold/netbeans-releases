@@ -172,13 +172,12 @@ final class UndoRedoManager extends UndoRedo.Manager {
      *   <li>redone when edit right after savepoint is undone.</li>
      * </ul>
      */
-    private CompoundEdit saveActionsEdit;
+    private UndoableEdit saveActionsEdit;
     
     /**
-     * Set to true when the CES gave control to save actions that may produce
-     * undoable edits which need to be coalesced into a special compound edit.
+     * Set to true when a next edit delivered to addEdit() will come from performed save actions.
      */
-    private boolean performingSaveActions;
+    private boolean nextEditIsSaveActions;
     
     /**
      * Flag to check whether support.notifyUnmodified() should be called
@@ -211,24 +210,19 @@ final class UndoRedoManager extends UndoRedo.Manager {
         this.support = support;
         super.setLimit(1000);
     }
-    
-    void setPerformingSaveActions(boolean performingSaveActions) {
-        commitUndoGroup(); // setPerformingSaveActions() won't be called unless save actions produce Runnable
-        if (performingSaveActions != this.performingSaveActions) {
-            this.performingSaveActions = performingSaveActions;
-            if (performingSaveActions) {
-                clearSaveActionsEdit();
-                saveActionsEdit = new CompoundEdit();
-                checkLogOp("    NEW-saveActionsEdit", saveActionsEdit); // NOI18N
-            } else { // Stop performing save actions
-                saveActionsEdit.end();
-                checkLogOp("    COMPLETED-saveActionsEdit", saveActionsEdit); // NOI18N
-            }
+
+
+    void markNextEditAsSaveActions() {
+        commitUndoGroup();
+        clearSaveActionsEdit();
+        nextEditIsSaveActions = true;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("markNextEditAsSaveActions() called.\n"); // NOI18N
         }
     }
     
     void markSavepoint() {
-        commitUndoGroup(); // setPerformingSaveActions() won't be called unless save actions produce Runnable
+        commitUndoGroup();
         savepointEdit = SAVEPOINT;
     }
     
@@ -386,13 +380,11 @@ final class UndoRedoManager extends UndoRedo.Manager {
     private boolean addEditImpl(UndoableEdit edit) {
         // This should already be called under document's lock so DocLockedRun not necessary
         assert (edit != null) : "Cannot add null edit"; // NOI18N
-        if (performingSaveActions) {
-            checkLogOp("addEdit-performingSaveActions", edit); // NOI18N
-            boolean added = saveActionsEdit.addEdit(edit);
-            if (!added) {
-                throw new IllegalStateException("Cannot add to saveActionsEdit"); // NOI18N
-            }
-            return added;
+        if (nextEditIsSaveActions) {
+            nextEditIsSaveActions = false;
+            checkLogOp("addEdit: captured saveActionsEdit", edit); // NOI18N
+            saveActionsEdit = edit;
+            return true;
         }
         WrapUndoEdit wrapEdit = new WrapUndoEdit(this, edit); // Wrap the edit
         boolean added = super.addEdit(wrapEdit);

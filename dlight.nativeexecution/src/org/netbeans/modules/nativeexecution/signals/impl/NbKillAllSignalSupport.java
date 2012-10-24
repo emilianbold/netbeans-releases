@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
@@ -139,6 +140,18 @@ public final class NbKillAllSignalSupport extends HelperUtility implements Signa
             }
 
             StringBuilder cmd = new StringBuilder();
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                if (HostInfo.OSFamily.WINDOWS.equals(hostInfo.getOSFamily())) {
+                    path = WindowsSupport.getInstance().convertToShellPath(path);
+                }
+                if (path == null) {
+                    return -1;
+                }
+            } catch (ConnectionManager.CancellationException ex) {
+                return -1;
+            }
+
             cmd.append('"').append(path).append('"').append(' '); // NOI18N
             cmd.append(scope).append(' ');
             cmd.append(signal == Signal.NULL ? "NULL" : signal.name().substring(3)).append(' '); // NOI18N

@@ -250,6 +250,9 @@ public class AndroidPlatform {
         }
     }
 
+    public boolean isReady() {
+        return getSdkLocation() != null;
+    }
     
 }
 

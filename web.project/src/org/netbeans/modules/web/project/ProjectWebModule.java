@@ -592,7 +592,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public String getModuleVersion () {
         // return a version based on the Java EE version
         Profile platformVersion = getJ2eeProfile();
-        if (Profile.JAVA_EE_6_FULL.equals(platformVersion) || Profile.JAVA_EE_6_WEB.equals(platformVersion)) {
+        if (Profile.JAVA_EE_6_FULL.equals(platformVersion) || Profile.JAVA_EE_6_WEB.equals(platformVersion) ||
+                Profile.JAVA_EE_7_FULL.equals(platformVersion) || Profile.JAVA_EE_7_WEB.equals(platformVersion)) {
             return WebApp.VERSION_3_0;
         } else if (Profile.JAVA_EE_5.equals(platformVersion)) {
             return WebApp.VERSION_2_5;

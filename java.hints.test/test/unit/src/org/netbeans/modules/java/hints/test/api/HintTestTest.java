@@ -88,6 +88,18 @@ public class HintTestTest {
     }
 
     @Test
+    public void test220070() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test { }\n")
+                .input("test/test.txt", "1\n2\n", false)
+                .run(NonJavaChanges.class)
+                .findWarning("1:13-1:17:verifier:Test")
+                .applyFix()
+                .assertOutput("test/test.txt", "2\r3\r");
+    }
+    
+    @Test
     public void testNonJavaChangesOpenedInEditor() throws Exception {
         HintTest ht = HintTest.create()
                               .input("package test;\n" +

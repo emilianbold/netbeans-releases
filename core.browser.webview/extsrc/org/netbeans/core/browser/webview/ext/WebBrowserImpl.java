@@ -67,6 +67,7 @@ import javafx.embed.swing.JFXPanel;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.*;
 import javafx.scene.web.WebHistory.Entry;
@@ -173,6 +174,28 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             }
         }
         return container;
+    }
+
+    /**
+     * Workarounds issue 217410 that is caused by a bug in WebView.
+     *
+     * @param view view where the issue 217410 should be workarounded.
+     */
+    private void issue217410Hack(final WebView view) {
+        view.setOnMouseExited(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                // Deliver an artificial mouseout event to window
+                String script = "var event = document.createEvent('MouseEvents');\n" // NOI18N
+                    + "event.initMouseEvent(\n" // NOI18N
+                    + "    'mouseout', true, true, window,\n" // NOI18N
+                    + "    0, 0, 0, 0, 0,\n" // NOI18N
+                    + "    false, false, false, false,\n" // NOI18N
+                    + "    0, null);\n" // NOI18N
+                    + "window.dispatchEvent(event);"; // NOI18N
+                view.getEngine().executeScript(script);
+            }
+        });
     }
 
     /**
@@ -465,6 +488,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         if( null == browser ) {
             WebView view = new WebView();
             initBrowser( view );
+            issue217410Hack(view);
 
             browser = view;
             INIT_LOCK.release();

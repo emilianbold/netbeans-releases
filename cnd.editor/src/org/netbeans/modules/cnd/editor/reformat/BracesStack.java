@@ -592,6 +592,15 @@ class BracesStack implements Cloneable {
                         paren++;
                         break;
                     }
+                    case TEMPLATE:
+                    {
+                        if (paren == 0 && curly == 0 && triangle == 0) {
+                            if (isDeclarationLevel()){
+                                return StatementKind.FUNCTION;
+                            }
+                        }
+                        break;
+                    }
                     case RBRACE: //("}", "separator"),
                     case LBRACE: //("{", "separator"),
                     case SEMICOLON: //(";", "separator"),

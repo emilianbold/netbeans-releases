@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.css.lib.properties.GrammarParser;
+import org.openide.filesystems.FileObject;
 
 /**
  * Represents a resolved css declaration
@@ -57,14 +58,14 @@ public class ResolvedProperty {
 
     private final GrammarResolverResult grammarResolverResult;
     private static final Pattern FILTER_COMMENTS_PATTERN = Pattern.compile("/\\*.*?\\*/");//NOI18N
-    private PropertyModel propertyModel;
+    private PropertyDefinition propertyModel;
 
-    public static ResolvedProperty resolve(PropertyModel propertyModel, CharSequence propertyValue) {
-        return new ResolvedProperty(propertyModel, propertyValue);
+    public static ResolvedProperty resolve(FileObject context, PropertyDefinition propertyModel, CharSequence propertyValue) {
+        return new ResolvedProperty(context, propertyModel, propertyValue);
     }
     
-    public ResolvedProperty(PropertyModel propertyModel, CharSequence value) {
-        this(propertyModel.getGrammarElement(), filterComments(value));
+    public ResolvedProperty(FileObject context, PropertyDefinition propertyModel, CharSequence value) {
+        this(propertyModel.getGrammarElement(context), filterComments(value));
         this.propertyModel = propertyModel;
     }
    
@@ -72,6 +73,11 @@ public class ResolvedProperty {
     //tests only
     //
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    public ResolvedProperty(PropertyDefinition propertyModel, CharSequence value) {
+        this(propertyModel.getGrammarElement(null), filterComments(value));
+        this.propertyModel = propertyModel;
+    }
+    
     public ResolvedProperty(GroupGrammarElement groupGrammarElement, String value) {
         this.grammarResolverResult = GrammarResolver.resolve(groupGrammarElement, value);
     }
@@ -96,7 +102,7 @@ public class ResolvedProperty {
     /**
      * Return an instance of {@link PropertyModel}.
      */
-    public PropertyModel getPropertyModel() {
+    public PropertyDefinition getPropertyDefinition() {
         return propertyModel;
     }
     

@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
@@ -166,7 +168,16 @@ public class QmakeConfiguration implements Cloneable {
         expert.setDisplayName(getString("QtExpertTxt")); // NOI18N
         expert.setShortDescription(getString("QtExpertHint")); // NOI18N
         expert.put(new StringNodeProp(qmakespec, "QtQmakeSpec", getString("QtQmakeSpecTxt"), getString("QtQmakeSpecHint"))); // NOI18N
-        expert.put(new StringListNodeProp(customDefs, null, new String[]{"QtCustomDefs", getString("QtCustomDefsTxt"), getString("QtCustomDefsHint"), getString("QtCustomDefsLbl")}, false, HelpCtx.DEFAULT_HELP)); // NOI18N
+        expert.put(new StringListNodeProp(customDefs, null, new String[]{"QtCustomDefs", getString("QtCustomDefsTxt"), getString("QtCustomDefsHint"), getString("QtCustomDefsLbl")}, false, HelpCtx.DEFAULT_HELP) { // NOI18N
+            @Override
+            protected List<String> convertToList(String text) {
+                return TokenizerFactory.MACRO_CONVERTER.convertToList(text);
+            }
+            @Override
+            protected String convertToString(List<String> list) {
+                return TokenizerFactory.MACRO_CONVERTER.convertToString(list);
+            }
+        });
         sheet.put(expert);
 
         return sheet;
@@ -485,7 +496,7 @@ public class QmakeConfiguration implements Cloneable {
             return clone;
         } catch (CloneNotSupportedException ex) {
             // should not happen while this class implements Cloneable
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
             return null;
         }
     }

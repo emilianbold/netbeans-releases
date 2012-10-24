@@ -75,6 +75,21 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="OptionsPanelController.handleSuccessfulSearch">
+        <api name="OptionsAPI"/>
+        <summary>API to handle successfull search in some panel in options window</summary>
+        <version major="1" minor="30"/>
+        <date day="18" month="10" year="2012"/>
+        <author login="theofanis"/>
+        <compatibility addition="yes"/>
+        <description>
+            Added API to handle successful search in some panel in options window.
+            By default no action is performed. Each implementor should make special actions,
+            for example to choose a specific sub-panel, if this is required.
+        </description>
+        <class package="org.netbeans.spi.options" name="OptionsPanelController"/>
+        <issue number="219457"/>
+    </change>
     <change id="optionsSearchAnnotation">
       <api name="OptionsAPI"/>
       <summary>Annotation to register keywords for some panel in the Options dialog</summary>

@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodePro
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
+import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -275,7 +276,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     }
 
     // Sheet
-    protected Sheet.Set getSet() {
+    protected Sheet.Set getSet(final Project project, final Folder folder, final Item item) {
         CCCCompilerConfiguration master;
         OptionToString visitor = new OptionToString(null, null);
 
@@ -298,7 +299,17 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         for(int i = list.size() - 1; i >= 0; i--) {
             inheritedValues.append(list.get(i).getIncludeDirectories().toString(visitor, "\n")); //NOI18N
         }
-        set1.put(new VectorNodeProp(getIncludeDirectories(), getMaster() != null ? getInheritIncludes() : null, owner.getBaseFSPath(), new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
+        set1.put(new VectorNodeProp(getIncludeDirectories(), getMaster() != null ? getInheritIncludes() : null, owner.getBaseFSPath(), new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories")){// NOI18N
+            private final TokenizerFactory.Converter converter = TokenizerFactory.getPathConverter(project, folder, item);
+            @Override
+            protected List<String> convertToList(String text) {
+                return converter.convertToList(text);
+            }
+            @Override
+            protected String convertToString(List<String> list) {
+                return converter.convertToString(list);
+            }
+        }); 
         // Preprocessor Macros
         inheritedValues = new StringBuilder();
         master = (CCCCompilerConfiguration) getMaster();
@@ -310,12 +321,19 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
                 master = null;
             }
         }
-        set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getMaster() != null ? getInheritPreprocessor() : null, new String[]{"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsLbl"), inheritedValues.toString()}, true, new HelpCtx("preprocessor-definitions"))); // NOI18N
+        set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getMaster() != null ? getInheritPreprocessor() : null, new String[]{"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsLbl"), inheritedValues.toString()}, true, new HelpCtx("preprocessor-definitions")){  // NOI18N
+            @Override
+            protected List<String> convertToList(String text) {
+                return TokenizerFactory.MACRO_CONVERTER.convertToList(text);
+            }
+
+            @Override
+            protected String convertToString(List<String> list) {
+                return TokenizerFactory.MACRO_CONVERTER.convertToString(list);
+            }
+        });
      
-        if (false) {
-            // commented because:
-            // 1. managed projects do not support -U flags
-            // 2. no needs to show internal presentation of undefs
+        if (owner.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
             // Undefined Macros
             inheritedValues = new StringBuilder();
             master = (CCCCompilerConfiguration) getMaster();
@@ -329,8 +347,19 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
             }
             set1.put(new StringListNodeProp(getUndefinedPreprocessorConfiguration(),
                     getMaster() != null ? getInheritUndefinedPreprocessor() : null,
-                    new String[]{"preprocessor-undefined", getString("PreprocessorUndefinedTxt"), getString("PreprocessorUndefinedHint"), getString("PreprocessorUndefinedLbl"), inheritedValues.toString()},
-                    true, new HelpCtx("preprocessor-undefined"))); // NOI18N
+                    new String[]{"preprocessor-undefined", getString("PreprocessorUndefinedTxt"), getString("PreprocessorUndefinedHint"), getString("PreprocessorUndefinedLbl"), inheritedValues.toString()}, // NOI18N
+                    true, new HelpCtx("preprocessor-undefined")) { // NOI18N
+
+                        @Override
+                        protected List<String> convertToList(String text) {
+                            return TokenizerFactory.UNDEF_CONVERTER.convertToList(text);
+                        }
+
+                        @Override
+                        protected String convertToString(List<String> list) {
+                            return TokenizerFactory.UNDEF_CONVERTER.convertToString(list);
+                        }
+                    });
         }
         if (this.getMaster() == null) {            
             final IntConfiguration configurationType = this.getOwner() == null ? null : this.getOwner().getConfigurationType();
@@ -361,7 +390,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     // Sheet
     protected Sheet getSheet(Project project) {
         Sheet sheet = new Sheet();
-        sheet.put(getSet());
+        sheet.put(getSet(project, null, null));
         return sheet;
     }
 

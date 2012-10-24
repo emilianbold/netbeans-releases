@@ -41,8 +41,9 @@
  */
 package org.netbeans.modules.css.editor.module.spi;
 
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import java.net.URL;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -53,12 +54,12 @@ public abstract class HelpResolver {
     /**
      * Returns the help content in the html code form for the given property.
      */
-    public abstract String getHelp(PropertyDefinition property);
+    public abstract String getHelp(FileObject context, PropertyDefinition property);
     
     /**
      * Resolves a link (relative or absolute) from within the property help content
      */
-    public abstract URL resolveLink(PropertyDefinition property, String link);
+    public abstract URL resolveLink(FileObject context, PropertyDefinition property, String link);
     
     /**
      * Return a reasonable number representing a sort priority of the help resolver.

@@ -55,6 +55,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.web.common.api.Pair;
+import org.openide.filesystems.FileObject;
 
 /**
  * The basic class clients wanting to extend the CSS editor functionality needs
@@ -88,31 +89,67 @@ import org.netbeans.modules.web.common.api.Pair;
 public abstract class CssEditorModule {
     
  
-    //TODO: Pseudo classes and elements should be context/element aware.
-    public Collection<String> getPseudoClasses() {
+    /**
+     * Returns a list of css pseudo classes for the given context
+     * @param context instance of {@link EditorFeatureContext}
+     * @return list of css pseudo classes
+     */
+    public Collection<String> getPseudoClasses(EditorFeatureContext context) {
         return null;
     }
     
-    public Collection<String> getPseudoElements() {
+    /**
+     * Returns a list of css pseudo elements for the given context
+     * @param context instance of {@link EditorFeatureContext}
+     * @return list of css pseudo elements
+     */
+    public Collection<String> getPseudoElements(EditorFeatureContext context) {
         return null;
     }
     
     public PropertySupportResolver.Factory getPropertySupportResolverFactory() {
         return null;
     }
-    
-    public Collection<PropertyDefinition> getProperties() {
+
+    /**
+     * Gets a collection of property names which are applicable in the given context.
+     * @param file context file, may be null!
+     */
+    public Collection<String> getPropertyNames(FileObject file) {
         return Collections.emptyList();
     }
     
-    public Collection<HelpResolver> getHelpResolvers() {
+     /**
+     * Gets an instance of {@link PropertyDefinition} for the give property name 
+     * within the given context.
+     * 
+     * The module must return a non-null instance only if it also returns the property name
+     * in {@link #getPropertyNames(org.openide.filesystems.FileObject)!
+     * 
+     * @param file context file, may be null!
+     * @param propertyName name of the property
+     */
+    public PropertyDefinition getPropertyDefinition(FileObject file, String propertyName) {
+        return null;
+    }
+    
+    /**
+     * Returns a list of {@link HelpResolver} for the given file context.
+     * 
+     * @param file context file
+     * @return collection of {@link HelpResolver}
+     */
+    public Collection<HelpResolver> getHelpResolvers(FileObject file) {
         return null;
     }
     
     /**
      * The module may provide an information about some extra browsers / css rendering engines
+     * 
+     * @param file context file
+     * @return collection of {@link Broser}s which should be active for the given context.
      */
-    public Collection<Browser> getExtraBrowsers() {
+    public Collection<Browser> getExtraBrowsers(FileObject file) {
         return null;
     }
     

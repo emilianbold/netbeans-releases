@@ -92,6 +92,11 @@ public final class ClassMemberFilters extends Filters<Description> {
     public void sortUpdated() {        
         ui.sort();
     }
+
+    @Override
+    protected void fqnUpdated() {
+        ui.refresh();
+    }
     
     // Privare methods ---------------------------------------------------------
     

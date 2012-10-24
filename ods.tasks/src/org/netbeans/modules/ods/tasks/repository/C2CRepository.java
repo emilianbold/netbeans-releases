@@ -61,8 +61,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
@@ -338,7 +336,7 @@ public class C2CRepository implements PropertyChangeListener {
         }
 
         // XXX shouldn't be only a perfect match 
-        IRepositoryQuery iquery = new RepositoryQuery(taskRepository.getConnectorKind(), "bugzilla simple search query");            // NOI18N
+        IRepositoryQuery iquery = new RepositoryQuery(taskRepository.getConnectorKind(), "ODCS simple task search");            // NOI18N
         iquery.setAttribute(TaskAttribute.SUMMARY, criteria);
         
         PerformQueryCommand queryCmd = 
@@ -394,7 +392,7 @@ public class C2CRepository implements PropertyChangeListener {
     protected void requestRemoteSavedQueries () {
         List<C2CQuery> queries = new ArrayList<C2CQuery>();
         ensureCredentials();
-        RepositoryConfiguration conf = C2CUtil.getClientData(C2C.getInstance().getRepositoryConnector(), taskRepository).getRepositoryConfiguration();
+        RepositoryConfiguration conf = C2C.getInstance().getClientData(this).getRepositoryConfiguration();
         if (conf != null) {
             List<SavedTaskQuery> savedQueries = conf.getSavedTaskQueries();
             for (SavedTaskQuery sq : savedQueries) {

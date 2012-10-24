@@ -87,14 +87,10 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     // cached id of item
 //    private String id;
     public ItemConfiguration(Configuration configuration, Item item) {
-        this(configuration, item, false);
-    }
-    
-    public ItemConfiguration(Configuration configuration, Item item, boolean excluded) {
         // General
         this.configuration = configuration;
         setItem(item);
-        this.excluded = new BooleanConfiguration(excluded);
+        this.excluded = new BooleanConfiguration(false);
 
         // This is side effect of lazy configuration. We should init folder configuration
         // TODO: remove folder initialization. Folder should be responsible for it

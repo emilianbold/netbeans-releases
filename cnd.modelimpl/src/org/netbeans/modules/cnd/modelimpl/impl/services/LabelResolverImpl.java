@@ -57,7 +57,10 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
@@ -65,9 +68,10 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.openide.util.CharSequences;
 
 /**
@@ -142,16 +146,88 @@ public final class LabelResolverImpl extends CsmLabelResolver {
         private void addLabelDefinition(CsmLabel stmt){
             if (kinds.contains(LabelKind.Definiton)) {
                 if (label == null || CharSequences.comparator().compare(label, stmt.getLabel()) == 0){
-                    collection.add(CsmReferenceSupport.createObjectReference(stmt));
+                    collection.add(new CsmLabelReferenceImpl(stmt.getLabel(), stmt, CsmReferenceKind.DEFINITION));
                 }
             }
         }
         private void addLabelReference(CsmGotoStatement stmt){
             if (kinds.contains(LabelKind.Reference)) {
                 if (label == null || CharSequences.comparator().compare(label, stmt.getLabel()) == 0){
-                    collection.add(CsmReferenceSupport.createObjectReference(stmt));
+                    collection.add(new CsmLabelReferenceImpl(stmt.getLabel(), stmt, CsmReferenceKind.DIRECT_USAGE));
                 }
             }
         }
+        
+        private static class CsmLabelReferenceImpl implements CsmReference {
+
+            private final CharSequence label;
+            private final CsmOffsetable owner;
+            private final CsmReferenceKind kind;
+            private volatile CsmObject closest = null;
+
+            public CsmLabelReferenceImpl(CharSequence label, CsmOffsetable owner, CsmReferenceKind kind) {
+                this.label = label;
+                this.owner = owner;
+                this.kind = kind;
+            }
+
+            @Override
+            public CsmReferenceKind getKind() {
+                return kind;
+            }
+
+            @Override
+            public CsmObject getReferencedObject() {
+                return owner;
+            }
+
+            @Override
+            public CsmObject getOwner() {
+                return owner;
+            }
+
+            @Override
+            public CsmObject getClosestTopLevelObject() {
+                if (closest == null) {
+                    closest = CsmBaseUtilities.findClosestTopLevelObject((CsmObject) owner);
+                }
+                return closest;
+            }
+
+            @Override
+            public CsmFile getContainingFile() {
+                return owner.getContainingFile();
+            }
+
+            @Override
+            public int getStartOffset() {
+                return owner.getStartOffset();
+            }
+
+            @Override
+            public int getEndOffset() {
+                return owner.getEndOffset();
+            }
+
+            @Override
+            public Position getStartPosition() {
+                return owner.getStartPosition();
+            }
+
+            @Override
+            public Position getEndPosition() {
+                return owner.getEndPosition();
+            }
+
+            @Override
+            public CharSequence getText() {
+                return label;
+            }
+
+            @Override
+            public String toString() {
+                return "" + label + "[" + kind + "] " + owner; //NOI18N
+            }
+        }        
     }
 }

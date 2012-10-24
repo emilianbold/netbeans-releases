@@ -48,6 +48,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
@@ -56,6 +58,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
@@ -96,12 +99,27 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         initComponents();
         init();
         initListeners();
-        validateData();
     }
 
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("org.netbeans.modules.web.clientproject.ui.customizer.RunPanel"); // NOI18N
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        FileObject siteRoot = getSiteRoot();
+        String info;
+        if (siteRoot != null) {
+            info = NbBundle.getMessage(RunPanel.class, "URL_DESCRIPTION", FileUtil.getFileDisplayName(siteRoot));
+        } else {
+            info = " "; // NOI18N
+        }
+        jProjectURLDescriptionLabel.setText(info);
+        jFileToRunTextField.setEnabled(siteRoot != null);
+        jBrowseButton.setEnabled(siteRoot != null);
+        validateData();
     }
 
     private void init() {
@@ -120,8 +138,6 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         //jServerComboBox.setSelectedIndex(cfg.isUseServer() ? 1 : 0); // XXX: indexes are obsolete, use enums directly
         // url
         jProjectURLTextField.setText(uiProperties.getProjectUrl());
-        jProjectURLDescriptionLabel.setText(
-                NbBundle.getMessage(RunPanel.class, "URL_DESCRIPTION", FileUtil.getFileDisplayName(getSiteRoot())));
         // web root
         jWebRootTextField.setText(uiProperties.getWebRoot());
         updateWebRootEnablement();
@@ -171,26 +187,50 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     }
 
     @NbBundle.Messages({
+        "RunPanel.error.siteRoot.invalid=Invalid Site Root, fix it in Sources category.",
         "RunPanel.error.startFile.invalid=Start File must be a valid file.",
         "RunPanel.error.startFile.notUnderSiteRoot=Start File must be underneath Site Root directory."
     })
     private String validateStartFile() {
-        File startFile = getAbsoluteStartFile();
+        FileObject siteRoot = getSiteRoot();
+        if (siteRoot == null) {
+            return Bundle.RunPanel_error_siteRoot_invalid();
+        }
+        File startFile = getResolvedStartFile();
         if (startFile == null || !startFile.isFile()) {
             return Bundle.RunPanel_error_startFile_invalid();
         }
-        if (!FileUtil.isParentOf(getSiteRoot(), FileUtil.toFileObject(startFile))) {
+        if (!FileUtil.isParentOf(siteRoot, FileUtil.toFileObject(startFile))) {
             return Bundle.RunPanel_error_startFile_notUnderSiteRoot();
         }
         return null;
     }
 
-    @NbBundle.Messages("RunPanel.error.projectUrl.invalid=External server root URL of this project is missing.")
+    @NbBundle.Messages({
+        "RunPanel.error.projectUrl.missing=Project URL is missing.",
+        "RunPanel.error.projectUrl.invalidProtocol=Project URL must start with http(s):// or file://.",
+        "RunPanel.error.projectUrl.invalid=Project URL is invalid."
+    })
     private String validateProjectUrl() {
         if (!jProjectURLTextField.isVisible()) {
             return null;
         }
-        if (getProjectUrl().isEmpty()) {
+        String projectUrl = getProjectUrl();
+        if (projectUrl.isEmpty()) {
+            return Bundle.RunPanel_error_projectUrl_missing();
+        }
+        if (!projectUrl.startsWith("http://") // NOI18N
+                && !projectUrl.startsWith("https://") // NOI18N
+                && !projectUrl.startsWith("file://")) { // NOI18N
+            return Bundle.RunPanel_error_projectUrl_invalidProtocol();
+        }
+        try {
+            URL url = new URL(projectUrl);
+            String host = url.getHost();
+            if (host == null || host.isEmpty()) {
+                return Bundle.RunPanel_error_projectUrl_invalid();
+            }
+        } catch (MalformedURLException ex) {
             return Bundle.RunPanel_error_projectUrl_invalid();
         }
         return null;
@@ -221,16 +261,21 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         return (ClientProjectConfigurationImplementation) jConfigurationComboBox.getSelectedItem();
     }
 
+    @CheckForNull
     private FileObject getSiteRoot() {
-        // XXX it should be taken from ClientSideProjectProperties, not project (it can be changed but not saved yet)
-        return project.getSiteRootFolder();
+        File siteRoot = uiProperties.getResolvedSiteRootFolder();
+        if (siteRoot == null) {
+            return null;
+        }
+        return FileUtil.toFileObject(siteRoot);
     }
 
     private String getStartFile() {
         return jFileToRunTextField.getText();
     }
 
-    private File getAbsoluteStartFile() {
+    @CheckForNull
+    private File getResolvedStartFile() {
         String startFile = getStartFile();
         if (startFile == null) {
             return null;
@@ -239,7 +284,11 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         if (directFile.isAbsolute()) {
             return directFile;
         }
-        FileObject fo = getSiteRoot().getFileObject(startFile);
+        FileObject siteRoot = getSiteRoot();
+        if (siteRoot == null) {
+            return null;
+        }
+        FileObject fo = siteRoot.getFileObject(startFile);
         if (fo == null) {
             return null;
         }
@@ -385,10 +434,11 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     })
     private void jBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseButtonActionPerformed
         FileObject siteRootFolder = getSiteRoot();
+        assert siteRootFolder != null;
         File workDir;
-        File startFile = getAbsoluteStartFile();
+        File startFile = getResolvedStartFile();
         if (startFile != null && startFile.exists()) {
-            workDir = startFile;
+            workDir = startFile.getParentFile();
         } else {
             workDir = FileUtil.toFile(siteRootFolder);
         }

@@ -136,7 +136,6 @@ public class OptionsPanel extends JPanel {
     private HashMap<String, ArrayList<String>> categoryid2words = new HashMap<String, ArrayList<String>>();
     private HashMap<String, HashMap<Integer, TabInfo>> categoryid2tabs = new HashMap<String, HashMap<Integer, TabInfo>>();
     private ArrayList<String> disabledCategories = new ArrayList<String>();
-    private JTextField keymapsSearch = null;
 
     private ArrayList<FileObject> advancedFOs = new ArrayList<FileObject>();
     private HashMap<String, Integer> dublicateKeywordsFOs = new HashMap<String, Integer>();
@@ -466,13 +465,6 @@ public class OptionsPanel extends JPanel {
             component = components[i];
             String text;
             
-            if (component instanceof JLabel) {
-                text = ((JLabel) component).getText();
-                // hack to search into Keymaps category
-                if(categoryID.equals("Keymaps") && text.equals("Search:")) { // NOI18N
-                    keymapsSearch = (JTextField)((JLabel) component).getLabelFor();
-                }
-            }
             if(component instanceof JTabbedPane) {
                 if(categoryid2tabbedpane.get(categoryID) == null) {
                     categoryid2tabbedpane.put(categoryID, (JTabbedPane)component);
@@ -580,6 +572,7 @@ public class OptionsPanel extends JPanel {
             int exactTabIndex = -1;
             for (String id : CategoryModel.getInstance().getCategoryIDs()) {
                 ArrayList<String> entry = categoryid2words.get(id);
+		List<String> matchedKeywords;
                 if (entry != null) {
                     boolean found = containsAllSearchWords(entry, stWords);
                     for (String stWord : stWords) {
@@ -610,6 +603,8 @@ public class OptionsPanel extends JPanel {
                                         if (exactTabIndex == tabIndex) {
                                             pane.setSelectedIndex(tabIndex);
                                         }
+					matchedKeywords = tabWords;
+					CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
                                     } else {
                                         pane.setEnabledAt(tabIndex, false);
                                         if(exactTabIndex == -1) {
@@ -628,15 +623,14 @@ public class OptionsPanel extends JPanel {
                             }
                         } else {
                             setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+			    matchedKeywords = entry;
+			    CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
                         }
                     } else {
                         handleNotFound(id, exactCategory);
                     }
                 } else {
                     handleNotFound(id, exactCategory);
-                }
-                if (keymapsSearch != null) {
-                    keymapsSearch.setText(searchText);
                 }
             }
         }
@@ -721,9 +715,6 @@ public class OptionsPanel extends JPanel {
             }
             setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
             disabledCategories.clear();
-            if(keymapsSearch != null) {
-                keymapsSearch.setText(""); //NOI18N
-            }
         }
     }
     

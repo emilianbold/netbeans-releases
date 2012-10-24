@@ -175,17 +175,49 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         return groupId + ":" + artifactId + ":" + version + ":" + repoId;
     }
 
-    @Override public boolean equals(Object obj) {
-        if (!(obj instanceof NBVersionInfo)) {
-            return false;
-        }
-        NBVersionInfo other = (NBVersionInfo) obj;
-        return toString().equals(other.toString()) && Utilities.compareObjects(type, other.type) && Utilities.compareObjects(classifier, other.classifier);
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.groupId != null ? this.groupId.hashCode() : 0);
+        hash = 97 * hash + (this.artifactId != null ? this.artifactId.hashCode() : 0);
+        hash = 97 * hash + (this.version != null ? this.version.hashCode() : 0);
+        hash = 97 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 97 * hash + (this.classifier != null ? this.classifier.hashCode() : 0);
+        hash = 97 * hash + (this.repoId != null ? this.repoId.hashCode() : 0);
+        return hash;
     }
 
-    @Override public int hashCode() {
-        return toString().hashCode();
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final NBVersionInfo other = (NBVersionInfo) obj;
+        if ((this.groupId == null) ? (other.groupId != null) : !this.groupId.equals(other.groupId)) {
+            return false;
+        }
+        if ((this.artifactId == null) ? (other.artifactId != null) : !this.artifactId.equals(other.artifactId)) {
+            return false;
+        }
+        if ((this.version == null) ? (other.version != null) : !this.version.equals(other.version)) {
+            return false;
+        }
+        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+            return false;
+        }
+        if ((this.classifier == null) ? (other.classifier != null) : !this.classifier.equals(other.classifier)) {
+            return false;
+        }
+        if ((this.repoId == null) ? (other.repoId != null) : !this.repoId.equals(other.repoId)) {
+            return false;
+        }
+        return true;
     }
+
+    
 
     public @Override int compareTo(NBVersionInfo o) {
 //        int c = Float.compare(luceneScore, o.luceneScore);

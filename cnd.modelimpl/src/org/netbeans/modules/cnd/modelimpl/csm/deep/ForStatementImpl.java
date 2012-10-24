@@ -61,12 +61,13 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * Implements CsmForStatement statements
  * @author Vladimir Kvashin
  */
-public final class ForStatementImpl extends StatementBase implements CsmForStatement {
+public final class ForStatementImpl extends StatementBase implements CsmForStatement, CsmRangeForStatement {
     
     private StatementBase init;
     private CsmCondition condition;
     private ExpressionBase iteration;
     private StatementBase body;
+    private boolean rangeBased = false;
     
     private ForStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
@@ -88,7 +89,7 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
     
     @Override
     public CsmStatement.Kind getKind() {
-        return CsmStatement.Kind.FOR;
+        return rangeBased ? CsmStatement.Kind.RANGE_FOR : CsmStatement.Kind.FOR;
     }
 
     @Override
@@ -166,6 +167,9 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
             case CPPTokenTypes.CSM_CONDITION:
                 condition = renderer.renderCondition(token, this);
                 break;
+            case CPPTokenTypes.COLON:
+                rangeBased = true;
+                break;
             default:
                 if( AstRenderer.isStatement(token) ) {
                     body = AstRenderer.renderStatement(token, getContainingFile(), this);
@@ -197,6 +201,18 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
             l.add(stmt);
         }
         return l;
+    }
+
+    @Override
+    public CsmDeclarationStatement getDeclaration() {
+        assert rangeBased && init instanceof CsmDeclarationStatement;
+        return (CsmDeclarationStatement) init;
+    }
+
+    @Override
+    public CsmExpression getInitializer() {
+        assert rangeBased;
+        return iteration;
     }
     
     public static class ForStatementBuilder extends StatementBuilder implements StatementBuilderContainer {

@@ -44,12 +44,23 @@
 
 package org.netbeans.modules.php.editor.actions;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
+import org.netbeans.modules.php.editor.actions.ImportData.DataItem;
+import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -67,24 +78,21 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
         initComponents();
     }
 
-    public void initPanel(String[] simpleNames, String[][] choices, Icon[][] icons, String[] defaults, boolean removeUnusedImports) {
-        initComponentsMore(simpleNames, choices, icons, defaults, removeUnusedImports);
+    public void initPanel(ImportData importData, boolean removeUnusedImports) {
+        initComponentsMore(importData, removeUnusedImports);
         setAccessible();
     }
 
-    private void initComponentsMore(String simpleNames[], String choices[][], Icon[][] icons, String defaults[], boolean removeUnusedImports) {
+    private void initComponentsMore(ImportData importData, boolean removeUnusedImports) {
         contentPanel.setLayout( new GridBagLayout() );
         contentPanel.setBackground( UIManager.getColor("Table.background") ); //NOI18N
         jScrollPane1.setBorder( UIManager.getBorder("ScrollPane.border") ); //NOI18N
         jScrollPane1.getVerticalScrollBar().setUnitIncrement( new JLabel("X").getPreferredSize().height );
         jScrollPane1.getVerticalScrollBar().setBlockIncrement( new JLabel("X").getPreferredSize().height*10 );
-
-        if( choices.length > 0 ) {
-
+        int numberOfItems = importData.getItems().size();
+        if(numberOfItems > 0) {
             int row = 0;
-
-            combos = new JComboBox[choices.length];
-
+            combos = new JComboBox[numberOfItems];
             Font monoSpaced = new Font( "Monospaced", Font.PLAIN, new JLabel().getFont().getSize() );
             FocusListener focusListener = new FocusListener() {
                 @Override
@@ -97,14 +105,13 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
                 public void focusLost(FocusEvent arg0) {
                 }
             };
-            for (int i=0; i<choices.length; i++){
-                combos[i] = createComboBox( choices[i], defaults[i], icons[i], monoSpaced, focusListener );
-
-                JLabel lblSimpleName = new JLabel( simpleNames[i] );
+            for (int i = 0; i < numberOfItems; i++){
+                DataItem dataItem = importData.getItems().get(i);
+                combos[i] = createComboBox(dataItem, monoSpaced, focusListener);
+                JLabel lblSimpleName = new JLabel(dataItem.getTypeName());
                 lblSimpleName.setOpaque( false );
                 lblSimpleName.setFont( monoSpaced );
                 lblSimpleName.setLabelFor( combos[i] );
-
                 contentPanel.add( lblSimpleName, new GridBagConstraints(0,row,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(3,5,2,5),0,0) );
                 contentPanel.add( combos[i], new GridBagConstraints(1,row++,1,1,1.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(3,5,2,5),0,0) );
             }
@@ -129,16 +136,17 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
         checkUnusedImports.setSelected(removeUnusedImports);
     }
 
-    private JComboBox createComboBox( String[] choices, String defaultValue, Icon[] icons, Font font, FocusListener listener ) {
-        JComboBox combo = new JComboBox(choices);
-        combo.setSelectedItem(defaultValue);
+    private JComboBox createComboBox(DataItem item, Font font, FocusListener listener ) {
+        List<ItemVariant> variants = item.getVariants();
+        JComboBox combo = new JComboBox(variants.toArray());
+        combo.setSelectedItem(item.getDefaultVariant());
         combo.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_Combo_ACSD")); //NOI18N
         combo.getAccessibleContext().setAccessibleName(getBundleString("FixDupImportStmts_Combo_Name_ACSD")); //NOI18N
         combo.setOpaque(false);
         combo.setFont( font );
         combo.addFocusListener( listener );
-        combo.setEnabled( choices.length > 1 );
-        combo.setRenderer( new DelegatingRenderer(combo.getRenderer(), choices, icons ) );
+        combo.setEnabled(variants.size() > 1);
+        combo.setRenderer(new DelegatingRenderer(combo.getRenderer(), variants, item.getVariantIcons()));
         InputMap inputMap = combo.getInputMap( JComboBox.WHEN_FOCUSED );
         inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, 0), "showPopup" ); //NOI18N
         combo.getActionMap().put( "showPopup", new TogglePopupAction() ); //NOI18N
@@ -146,7 +154,7 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
     }
 
     private int getRowHeight() {
-        return combos.length == 0 ? 0 :combos[0].getPreferredSize().height+6;
+        return combos.length == 0 ? 0 : combos[0].getPreferredSize().height+6;
     }
 
     private static String getBundleString(String s) {
@@ -159,12 +167,15 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
 	checkUnusedImports.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_checkUnusedImports_a11y")); // NOI18N
     }
 
-    public String[] getSelections() {
-        String[] res = new String[null == combos ? 0 : combos.length];
-        for( int i=0; i<res.length; i++ ) {
-            res[i] = combos[i].getSelectedItem().toString();
+    public List<ItemVariant> getSelections() {
+        List<ItemVariant> result = new ArrayList<ItemVariant>();
+        int numberOfCombos = combos == null ? 0 : combos.length;
+        for( int i = 0; i < numberOfCombos; i++ ) {
+            Object selectedItem = combos[i].getSelectedItem();
+            assert (selectedItem instanceof ItemVariant);
+            result.add((ItemVariant) selectedItem);
         }
-        return res;
+        return result;
     }
 
     public boolean getRemoveUnusedImports() {
@@ -241,8 +252,8 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
     private static class DelegatingRenderer implements ListCellRenderer {
         private ListCellRenderer orig;
         private Icon[] icons;
-        private String[] values;
-        public DelegatingRenderer( ListCellRenderer orig, String[] values, Icon[] icons ) {
+        private List<ItemVariant> values;
+        public DelegatingRenderer( ListCellRenderer orig, List<ItemVariant> values, Icon[] icons ) {
             this.orig = orig;
             this.icons = icons;
             this.values = values;
@@ -252,8 +263,8 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Component res = orig.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if( res instanceof JLabel && null != icons ) {
-                for( int i=0; i<values.length; i++ ) {
-                    if( values[i].equals( value ) ) {
+                for( int i = 0; i < values.size(); i++ ) {
+                    if( values.get(i).equals( value ) ) {
                         ((JLabel)res).setIcon( icons[i] );
                         break;
                     }

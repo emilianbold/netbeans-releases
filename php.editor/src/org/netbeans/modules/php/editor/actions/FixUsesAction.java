@@ -66,6 +66,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
+import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -129,7 +130,7 @@ public class FixUsesAction extends BaseAction {
                                 importData.set(data);
                             }
                         } else {
-                            performFixUses((PHPParseResult) parserResult, data, data.defaults, isRemoveUnusedUses());
+                            performFixUses((PHPParseResult) parserResult, data, data.getDefaultVariants(), isRemoveUnusedUses());
                         }
                     }
                 }
@@ -181,7 +182,7 @@ public class FixUsesAction extends BaseAction {
         return importData;
     }
 
-    private static void performFixUses(final PHPParseResult parserResult, final ImportData importData, final String[] selections, final boolean removeUnusedUses) {
+    private static void performFixUses(final PHPParseResult parserResult, final ImportData importData, final List<ImportData.ItemVariant> selections, final boolean removeUnusedUses) {
         new FixUsesPerformer(parserResult, importData, selections, removeUnusedUses, createOptions(parserResult)).perform();
     }
 
@@ -198,8 +199,8 @@ public class FixUsesAction extends BaseAction {
         "LBL_Cancel=Cancel"
     })
     private static void showFixUsesDialog(final JTextComponent target, final ImportData importData) {
-        final FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
-        panel.initPanel(importData.names, importData.variants, importData.icons, importData.defaults, isRemoveUnusedUses());
+    final FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
+        panel.initPanel(importData, isRemoveUnusedUses());
         final JButton ok = new JButton(Bundle.LBL_Ok());
         final JButton cancel = new JButton(Bundle.LBL_Cancel());
         final AtomicBoolean stop = new AtomicBoolean();
@@ -213,7 +214,7 @@ public class FixUsesAction extends BaseAction {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ok.setEnabled(false);
-                final String[] selections = panel.getSelections();
+                final List<ItemVariant> selections = panel.getSelections();
                 final boolean removeUnusedUses = panel.getRemoveUnusedImports();
                 WORKER.post(new Runnable() {
 

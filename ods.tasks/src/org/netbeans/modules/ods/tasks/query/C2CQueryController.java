@@ -132,7 +132,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         this.criteria = criteria;
         
         issueTable = new IssueTable<C2CQuery>(C2CUtil.getRepository(repository), query, query.getColumnDescriptors());
-//      XXX  setupRenderer(issueTable);
+//      setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
         panel.productList.addListSelectionListener(this);
@@ -198,7 +198,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         }
     }
 
-    // XXX probably will need a redenderer like in jira to show parent - subtask relation
+    // probably will need a redenderer like in jira to show parent - subtask relation
 //    private void setupRenderer(IssueTable issueTable) {
 //        C2CQueryCellRenderer renderer = new C2CQueryCellRenderer((QueryTableCellRenderer)issueTable.getRenderer());
 //        issueTable.setRenderer(renderer);
@@ -316,7 +316,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
                                 parameters.getListParameter(QueryParameters.Column.PRODUCT).populate(clientData.getProducts());
                                 populateProductDetails(clientData);
                                 
-                                // XXX add description to tooltip
                                 parameters.getListParameter(QueryParameters.Column.TASK_TYPE).populate(clientData.getTaskTypes());
                                 parameters.getListParameter(QueryParameters.Column.PRIORITY).populate(clientData.getPriorities());
                                 parameters.getListParameter(QueryParameters.Column.SEVERITY).populate(clientData.getSeverities());

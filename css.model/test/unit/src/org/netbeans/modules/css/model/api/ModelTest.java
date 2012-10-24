@@ -201,25 +201,25 @@ public class ModelTest extends ModelTestBase {
         
     }
     
-    public void testModelCaching() {
-        CssParserResult result = TestUtil.parse("div { color: red; }");
-        Model model = Model.createModel(result);
-        
-        System.gc();
-        
-        Model model2 = Model.createModel(result);
-        
-        assertSame(model, model2);
-
-        //check the model is properly released when no one holds it
-        Reference<Model> ref = new WeakReference<Model>(model);
-        
-        model = null;
-        model2 = null;
-        
-        assertGC("model not properly released", ref);
-        
-    }
+//    public void testModelCaching() {
+//        CssParserResult result = TestUtil.parse("div { color: red; }");
+//        Model model = Model.createModel(result);
+//        
+//        System.gc();
+//        
+//        Model model2 = Model.createModel(result);
+//        
+//        assertSame(model, model2);
+//
+//        //check the model is properly released when no one holds it
+//        Reference<Model> ref = new WeakReference<Model>(model);
+//        
+//        model = null;
+//        model2 = null;
+//        
+//        assertGC("model not properly released", ref);
+//        
+//    }
     
     
 }

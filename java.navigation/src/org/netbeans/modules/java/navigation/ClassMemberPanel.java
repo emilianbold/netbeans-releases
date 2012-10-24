@@ -90,8 +90,10 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo, NavigatorPanelW
             @Override
             public void run () {
                 ClassMemberNavigatorJavaSourceFactory f = ClassMemberNavigatorJavaSourceFactory.getInstance();
-                if (f != null)
+                if (f != null) {
                     f.setLookup(context, panel);
+                    CaretListeningFactory.runAgain();
+                }
             }
         });
     }

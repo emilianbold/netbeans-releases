@@ -403,7 +403,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         FileObject fo = getFileObjectImpl();
         if (fo == null) {
             String p = (normalizedPath != null) ? normalizedPath : getAbsPath();
-            return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, normalizedPath);
+            return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, p);
         }
         return fo;
     }

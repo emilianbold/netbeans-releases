@@ -270,7 +270,6 @@ public class CCParser {
                     ts.token().id().primaryCategory().startsWith("string") || //NOI18N
                     ts.token().id().primaryCategory().equals("literal")) //NOI18N
                     && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
-                String prefix = ts.token().toString().substring(0, len);
                 offset = ts.offset();
             }
             Token<JavaTokenId> titk = ts.token();

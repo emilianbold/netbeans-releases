@@ -133,7 +133,7 @@ public class DialogSupport {
                 int cancelIndex, ActionListener listener );
     } // End of DialogFactory interface
     
-    private static final class Wrapper implements org.netbeans.spi.editor.DialogFactory {
+    private static final class Wrapper implements org.netbeans.modules.editor.lib2.DialogFactory {
         
         private DialogFactory origFactory;
         

@@ -62,6 +62,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.debugger.Properties;
 
 import org.openide.awt.StatusDisplayer;
@@ -95,7 +96,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  * Panel which presents a list of available processes and lets user
@@ -565,79 +569,6 @@ public final class AttachPanel extends TopComponent {
             executableProjectPanel.setExecutablePath(getHostName(), (String) cmdobj);
 	}
     }
-    
-    private void doAttach(String loadedPID) {
-
-        Object pidobj = loadedPID;
-
-        if (pidobj == null) {
-
-            int selectedRow = procTable.getSelectedRow();
-            if (selectedRow == -1) {
-                return;
-            }
-
-            pidobj = processModel.getValueAt(selectedRow, getPsData().pidColumnIdx());
-        }
-
-        if (pidobj instanceof String) {
-            ProjectSupport.ProjectSeed seed;
-
-            String pidstring = (String) pidobj;
-            long pid = Long.parseLong(pidstring);
-
-            assert pid != 0;
-
-            String executable = null;
-            Object path = executableProjectPanel.getExecutablePath();
-            Project project = executableProjectPanel.getSelectedProject();
-            boolean noproject = executableProjectPanel.getNoProject();
-
-            if (path != null) {
-                executable = path.toString();
-                // convert to world
-                executable = psData.getFileMapper().engineToWorld(executable);
-//                executablePickList.addElement(executable);
-//                executableProjectPanel.setExecutablePaths(
-//                        executablePickList.getElementsDisplayName());
-            }
-
-            seed = new ProjectSupport.ProjectSeed(
-                    project, engine.getType(), noproject,
-                    executable,
-                    ProjectSupport.Model.DONTCARE,
-                    /*corefile*/ null,
-                    pid,
-                    /*workingdir*/ null,
-                    /*args*/ null,
-                    /*envs*/ null,
-                    getHostName());
-
-            ProjectSupport.getProject(seed);
-
-            // For persistance
-            executableProjectPanel.setLastSelectedProject(seed.project());
-            lastExecPath = seed.executable();
-
-            // Do it
-            DebugTarget dt = new DebugTarget(seed.conf());
-            dt.setExecutable(seed.executableNoSentinel());
-            dt.setPid(seed.pid());
-            dt.setHostName(seed.getHostName());
-            dt.setEngine(engine.getType());
-
-            if (project == null) {
-                if (noproject) { // < no project>
-                    dt.createProject(false);
-                } else { // <new project>
-                    dt.setBuildFirst(false);
-                    dt.createProject(true);
-                }
-            }
-
-            NativeDebuggerManager.get().attach(dt);
-        }
-    }
 
     /**
      * Return hostCombo's current selection.
@@ -997,13 +928,42 @@ public final class AttachPanel extends TopComponent {
             //System.out.println("AttachPanel.ok");
             if (isValid()) {
                 saveState();
-                // Workaround for IZ 134708
+                // doAttach() should not be called in EDT (i.e. see #212908).
+                // The idea is to start it outside EDT, but 'block' UI.
+                // ProgressUtils.showProgressDialogAndRun() is a good candidate
+                // for this, but debugger also displays it's progress dialog on
+                // warm-up, which makes this look ugly and, most important, 
+                // it's 'Cancel' button is disabled in this case.
+                // So we can show 'blocking dialog' for the time of target 
+                // preparation and close it once we are close to debuger 
+                // invocation.
+                // see #212908
+
+                // Workaround for IZ 134708                
                 SwingUtilities.invokeLater(new Runnable() {
 
+                    @Override
                     public void run() {
-                        doAttach(loadedPID);
+                        String title = NbBundle.getMessage(AttachController.class, "PROGRESS_PREPARE_TARGET"); // NOI18N
+                        final TargetPreparator tp = new TargetPreparator(loadedPID);
+
+                        Runnable cont = new Runnable() {
+
+                            @Override
+                            public void run() {
+                                if (tp.cancelled.get()) {
+                                    return;
+                                }
+                                DebugTarget target = tp.targetRef.get();
+                                if (target != null) {
+                                    NativeDebuggerManager.get().attach(target);
+                                }
+                            }
+                        };
+                        ModalMessageDlg.runLongTask(WindowManager.getDefault().getMainWindow(), tp, cont, null, title, title);
                     }
                 });
+
                 return true;
             } else {
                 return false;
@@ -1100,6 +1060,100 @@ public final class AttachPanel extends TopComponent {
             return NbBundle.getMessage(AttachController.class, key, a1);
         }
 
+    }
+    
+    private class TargetPreparator implements Runnable, Cancellable {
+
+        private final String pidString;
+        private final AtomicBoolean cancelled = new AtomicBoolean(false);
+        private final AtomicReference<DebugTarget> targetRef = new AtomicReference<DebugTarget>(null);
+
+        public TargetPreparator(String process) {
+            this.pidString = process;
+        }
+
+        @Override
+        public void run() {
+            Object pidobj = pidString;
+
+            if (pidobj == null) {
+                int selectedRow = procTable.getSelectedRow();
+                if (selectedRow == -1) {
+                    return;
+                }
+
+                pidobj = processModel.getValueAt(selectedRow, getPsData().pidColumnIdx());
+            }
+
+            if (!(pidobj instanceof String)) {
+                return;
+            }
+
+            ProjectSupport.ProjectSeed seed;
+
+            String pidstring = (String) pidobj;
+            long pid = Long.parseLong(pidstring);
+
+            assert pid != 0;
+
+            String executable = null;
+            Object path = executableProjectPanel.getExecutablePath();
+            Project project = executableProjectPanel.getSelectedProject();
+            boolean noproject = executableProjectPanel.getNoProject();
+
+            if (path != null) {
+                executable = path.toString();
+                // convert to world
+                executable = psData.getFileMapper().engineToWorld(executable);
+//                executablePickList.addElement(executable);
+//                executableProjectPanel.setExecutablePaths(
+//                        executablePickList.getElementsDisplayName());
+            }
+
+            seed = new ProjectSupport.ProjectSeed(
+                    project, engine.getType(), noproject,
+                    executable,
+                    ProjectSupport.Model.DONTCARE,
+                        /*corefile*/ null,
+                    pid,
+                        /*workingdir*/ null,
+                        /*args*/ null,
+                        /*envs*/ null,
+                    getHostName());
+
+            ProjectSupport.getProject(seed);
+
+            if (cancelled.get()) {
+                return;
+            }
+
+            // For persistance
+            executableProjectPanel.setLastSelectedProject(seed.project());
+            lastExecPath = seed.executable();
+
+            // Do it
+            final DebugTarget dt = new DebugTarget(seed.conf());
+            dt.setExecutable(seed.executableNoSentinel());
+            dt.setPid(seed.pid());
+            dt.setHostName(seed.getHostName());
+            dt.setEngine(engine.getType());
+
+            if (project == null) {
+                if (noproject) { // < no project>
+                    dt.setProjectMode(DebugTarget.ProjectMode.NO_PROJECT);
+                } else { // <new project>
+                    dt.setBuildFirst(false);
+                    dt.setProjectMode(DebugTarget.ProjectMode.NEW_PROJECT);
+                }
+            }
+            targetRef.set(dt);
+        }
+
+        @Override
+        public boolean cancel() {
+            cancelled.set(true);
+            return true;
+        }
     }
 
     private void hostsButtonActionPerformed(java.awt.event.ActionEvent evt) {

@@ -443,23 +443,28 @@ public class JavaFixUtilities {
             if (Utilities.isFakeBlock(parsed)) {
                 TreePath parent = tp.getParentPath();
                 List<? extends StatementTree> statements = ((BlockTree) parsed).getStatements();
-
-                statements = statements.subList(1, statements.size() - 1);
-
-                if (parent.getLeaf().getKind() == Kind.BLOCK) {
-                    List<StatementTree> newStatements = new LinkedList<StatementTree>();
-
-                    for (StatementTree st : ((BlockTree) parent.getLeaf()).getStatements()) {
-                        if (st == tp.getLeaf()) {
-                            newStatements.addAll(statements);
-                        } else {
-                            newStatements.add(st);
-                        }
-                    }
-
-                    rewriteFromTo.put(original = parent.getLeaf(), wc.getTreeMaker().Block(newStatements, ((BlockTree) parent.getLeaf()).isStatic()));
+                
+                if (tp.getLeaf().getKind() == Kind.BLOCK) {
+                    BlockTree real = (BlockTree) tp.getLeaf();
+                    rewriteFromTo.put(original = real, wc.getTreeMaker().Block(statements, real.isStatic()));
                 } else {
-                    rewriteFromTo.put(original = tp.getLeaf(), wc.getTreeMaker().Block(statements, false));
+                    statements = statements.subList(1, statements.size() - 1);
+
+                    if (parent.getLeaf().getKind() == Kind.BLOCK) {
+                        List<StatementTree> newStatements = new LinkedList<StatementTree>();
+
+                        for (StatementTree st : ((BlockTree) parent.getLeaf()).getStatements()) {
+                            if (st == tp.getLeaf()) {
+                                newStatements.addAll(statements);
+                            } else {
+                                newStatements.add(st);
+                            }
+                        }
+
+                        rewriteFromTo.put(original = parent.getLeaf(), wc.getTreeMaker().Block(newStatements, ((BlockTree) parent.getLeaf()).isStatic()));
+                    } else {
+                        rewriteFromTo.put(original = tp.getLeaf(), wc.getTreeMaker().Block(statements, false));
+                    }
                 }
             } else if (Utilities.isFakeClass(parsed)) {
                 TreePath parent = tp.getParentPath();
@@ -524,7 +529,7 @@ public class JavaFixUtilities {
                 }
             }.scan(original, null);
             
-            new ReplaceParameters(wc, ctx.isCanShowUI(), inImport, parameters, extraParamsData, parametersMulti, parameterNames, rewriteFromTo, originalTrees).scan(new TreePath(tp.getParentPath(), parsed), null);
+            new ReplaceParameters(wc, ctx.isCanShowUI(), inImport, parameters, extraParamsData, parametersMulti, parameterNames, rewriteFromTo, originalTrees).scan(new TreePath(tp.getParentPath(), rewriteFromTo.get(original)), null);
 
             if (inPackage) {
                 String newPackage = wc.getTreeUtilities().translate(wc.getCompilationUnit().getPackageName(), new IdentityHashMap<Tree, Tree>(rewriteFromTo))./*XXX: not correct*/toString();
