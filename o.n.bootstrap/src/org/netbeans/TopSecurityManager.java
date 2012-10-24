@@ -451,6 +451,7 @@ public class TopSecurityManager extends SecurityManager {
         wl.add("org.apache.lucene.store.MMapDirectory$1");              //NOI18N
         wl.add("org.apache.lucene.util.Constants"); //#217037
         wl.add("org.apache.lucene.util.RamUsageEstimator");//#217037
+        wl.add("com.google.gson.internal.UnsafeAllocator"); //#219464   //NOI18N
         return wl;
     }
     
