@@ -508,8 +508,10 @@ public class CSSStylesSelectionPanel extends JPanel {
                 private Border border = BorderFactory.createEmptyBorder(1,0,0,0);
                 @Override
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                    String toolTip = null;
                     if (value instanceof Node.Property) {
                         Node.Property property = (Node.Property)value;
+                        toolTip = property.getShortDescription();
                         try {
                             value = property.getValue();
                         } catch (IllegalAccessException ex) {
@@ -518,7 +520,9 @@ public class CSSStylesSelectionPanel extends JPanel {
                     }
                     Component component = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (component instanceof JComponent) {
-                        ((JComponent)component).setBorder(border);
+                        JComponent jcomponent = ((JComponent)component);
+                        jcomponent.setBorder(border);
+                        jcomponent.setToolTipText(toolTip);
                     }
                     return component;
                 }
