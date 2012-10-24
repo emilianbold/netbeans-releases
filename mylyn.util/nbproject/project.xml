@@ -14,7 +14,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.tasks.core</code-name-base>
+                    <code-name-base>org.eclipse.equinox.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -30,11 +30,25 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.equinox.common</code-name-base>
+                    <code-name-base>org.eclipse.mylyn.tasks.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>3.6.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.mylyn.wikitext.core</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.bugtracking</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.28</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -43,6 +57,22 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.spellchecker.apimodule</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.51</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -59,6 +89,7 @@
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.jira</friend>
                 <friend>org.netbeans.modules.ods.tasks</friend>
+                <friend>org.netbeans.modules.ods.ui</friend>
                 <package>org.netbeans.modules.mylyn.util</package>
             </friend-packages>
         </data>
