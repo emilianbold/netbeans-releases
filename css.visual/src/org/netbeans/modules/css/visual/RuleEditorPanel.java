@@ -777,6 +777,7 @@ public class RuleEditorPanel extends JPanel {
         filterTextField.setMaximumSize(new java.awt.Dimension(32767, 32767));
         filterTextField.setMinimumSize(new java.awt.Dimension(60, 28));
 
+        setPreferredSize(new java.awt.Dimension(400, 300));
         setLayout(new java.awt.BorderLayout());
 
         northPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));

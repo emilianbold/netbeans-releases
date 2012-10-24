@@ -39,21 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.inspect;
+package org.netbeans.modules.css.visual.spi;
 
-import org.openide.modules.ModuleInstall;
+import javax.swing.JComponent;
 
 /**
- * Installer of {@code web.inspect} module.
- * 
- * @author Jan Stola
+ *
+ * @author marekfukala
  */
-public class Installer extends ModuleInstall {
+public interface CssStylesPanelProvider {
+    
+    /**
+     * Unique system id for the panel.
+     */
+    public String getPanelID();
 
-    @Override
-    public boolean closing() {
-        PageInspectionTCGroupManager.getInstance().setPageInspectionGroupVisible(false);
-        return true;
-    }
-
+    /**
+     * Displayname which shows in the toolbar.
+     */
+    public String getPanelDisplayName();
+    
+    /**
+     * The content.
+     */
+    public JComponent getContent();
+    
 }

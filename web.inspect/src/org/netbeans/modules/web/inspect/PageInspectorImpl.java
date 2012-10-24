@@ -108,7 +108,6 @@ public class PageInspectorImpl extends PageInspector {
      * Creates a new {@code PageInspectorImpl}.
      */
     public PageInspectorImpl() {
-        propChangeSupport.addPropertyChangeListener(PageInspectionTCGroupManager.getInstance());
     }
 
     /**
