@@ -102,7 +102,7 @@ public class PrintVisitor extends FxNodeVisitor.ModelTraversal {
 
     @Override
     public void visitInstance(FxNewInstance decl) {
-        i().append(String.format("instance: id=%s, className=%s\n", decl.getId(), decl.getSourceName()));
+        i().append(String.format("instance: id=%s, className=%s\n", decl.getId(), decl.getTypeName()));
         super.visitInstance(decl);
     }
 

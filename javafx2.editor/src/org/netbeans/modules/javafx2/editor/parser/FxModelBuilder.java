@@ -350,6 +350,11 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
                     // ignore source in fx:copy
                     continue;
                 }
+            } else if ((current instanceof FxNewInstance) && ((FxNewInstance)current).isCustomRoot()) {
+                if (FxXmlSymbols.FX_ATTR_TYPE.equals(name) && uri == null) {
+                    // ignore type in fx:root
+                    continue;
+                }
             }
             
             // if the name begins with "on", it's an event handler.
@@ -422,6 +427,8 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             return handleFxInclude(atts, localName);
         } else if (FX_SCRIPT.equals(localName)) {
             return handleFxScript(atts);
+        } else if (FX_ROOT.equals(localName)) {
+            return handleFxRoot(atts);
         } else {
             // error, invalid fx: element
             FxNode n = accessor.createErrorElement(localName);
@@ -429,6 +436,72 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             addError("invalid-fx-element", ERR_invalidFxElement(localName), localName);
             return n;
         }
+    }
+    
+    @NbBundle.Messages({
+        "ERR_rootMissingType=fx:root is missing ''type'' attribute"
+    })
+    private FxNode handleFxRoot(Attributes atts) {
+        String typeName = null;
+        String fxId = null;
+        
+        for (int i = 0; i < atts.getLength(); i++) {
+            String name = atts.getLocalName(i);
+             if (FX_ATTR_TYPE.equals(name)) {
+                 typeName = atts.getValue(i);
+             } else if (FX_CONTROLLER.equals(name)) {
+                if (nodeStack.peek().getKind() != Kind.Source) {
+                    addAttributeError(atts.getQName(i),
+                        "fx-controller-permitted-on-root",
+                        ERR_fxControllerPermittedOnRoot(FX_ROOT),
+                        FX_ROOT
+                    );
+                } else {
+                    controllerName = atts.getValue(i);
+                }
+            } else if (FX_ID.equals(name)) {
+                fxId = atts.getValue(i);
+            }
+        }
+        int off = contentLocator.getElementOffset() + 1; // the <
+        boolean broken = false;
+        if (typeName == null) {
+            addError(
+                new ErrorMark(
+                    off, contentLocator.getEndOffset() - off, 
+                    "root-missing-type", 
+                    ERR_rootMissingType(),
+                    null
+            ));
+            typeName = "";
+            broken = true;
+        } else if (!FxXmlSymbols.isQualifiedIdentifier(typeName)) {
+            // not a java identifier, error
+            int[] offsets = contentLocator.getAttributeOffsets(FX_ATTR_TYPE);
+            int start, len;
+
+            if (offsets == null) {
+                start = off;
+                len = contentLocator.getEndOffset() - off;
+            } else {
+                start = offsets[0];
+                len = offsets[1] - start;
+            }
+            addError(
+                new ErrorMark(
+                    start, len,
+                    "invalid-class-name", 
+                    ERR_tagNotJavaIdentifier(typeName),
+                    typeName
+            ));
+            broken = true;
+        }
+        FxNewInstance instance = accessor.createCustomRoot(typeName, fxId);
+        
+        if (broken) {
+            accessor.makeBroken(instance);
+        }
+        return instance;
     }
     
     @NbBundle.Messages({
