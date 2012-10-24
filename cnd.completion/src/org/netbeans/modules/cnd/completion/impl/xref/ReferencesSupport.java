@@ -923,7 +923,10 @@ public final class ReferencesSupport {
 
         @Override
         public int hashCode() {
-            int hash = 7;
+            int hash = 3;
+            hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 97 * hash + (this.file != null ? this.file.hashCode() : 0);
+            hash = 97 * hash + this.startOffset;
             return hash;
         }
 
