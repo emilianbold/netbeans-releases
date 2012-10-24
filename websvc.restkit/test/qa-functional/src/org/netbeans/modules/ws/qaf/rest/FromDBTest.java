@@ -93,29 +93,8 @@ public class FromDBTest extends CRUDTest {
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 1);
         jcbo.clearText();
         jcbo.typeText(getRestPackage() + ".service"); //NOI18N
-        wo.finish();
-        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
-            new Thread("Close REST Resources Configuration dialog") {
-                private boolean found = false;
-                private static final String dlgLbl = "REST Resources Configuration";
-
-                @Override
-                public void run() {
-                    while (!found) {
-                        try {
-                            sleep(300);
-                        } catch (InterruptedException ex) {
-                            // ignore
-                        }
-                        JDialog dlg = JDialogOperator.findJDialog(dlgLbl, true, true);
-                        if (null != dlg) {
-                            found = true;
-                            new NbDialogOperator(dlg).ok();
-                        }
-                    }
-                }
-            }.start();
-        }
+        wo.btFinish().pushNoBlock();
+        closeResourcesConfDialog();
         String generationTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "TXT_EntityClassesGeneration");
         waitDialogClosed(generationTitle);
         new EventTool().waitNoEvent(1500);
