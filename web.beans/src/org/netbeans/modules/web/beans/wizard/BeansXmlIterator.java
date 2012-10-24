@@ -160,8 +160,8 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
             if (steps[i] == null) {
                 steps[i] = jc.getName ();
             }
-            jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i)); // NOI18N
-            jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+            jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
+            jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); 
         }
 
         Templates.setTargetName(wizard, defaultName);
