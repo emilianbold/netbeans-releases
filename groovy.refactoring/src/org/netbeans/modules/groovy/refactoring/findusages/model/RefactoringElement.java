@@ -48,6 +48,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -72,25 +73,37 @@ public abstract class RefactoringElement {
     }
 
 
-    public abstract ElementKind getKind();
-
-    public abstract String getShowcase();
-
     /**
      * Returns the name of the refactoring element. (e.g. for field declaration
      * "private GalacticMaster master" the method return "master")
      *
      * @return name of the refactoring element
      */
-    public String getName() {
-        return ElementUtils.getNameWithoutPackage(node);
-    }
+    public abstract String getName();
 
-    public final String getDeclaringClassName() {
+    public abstract ElementKind getKind();
+
+    public abstract String getShowcase();
+
+    /**
+     * Returns the name of the class owning this refactoring element. That means
+     * the fully qualified name of the class where the method/variable/field is
+     * defined.
+     *
+     * @return the name of the owning class
+     */
+    public final String getOwnerName() {
         return ElementUtils.getDeclaringClassName(node);
     }
 
-    public final String getDeclaringClassNameWithoutPackage() {
+    /**
+     * Returns the name of the class owning this refactoring element only 
+     * without package name. That means the name of the class where the
+     * method/variable/field is defined.
+     *
+     * @return
+     */
+    public final String getOwnerNameWithoutPackage() {
         return ElementUtils.getDeclaringClassNameWithoutPackage(node);
     }
 
