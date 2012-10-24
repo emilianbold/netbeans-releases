@@ -73,6 +73,7 @@ import org.openide.util.WeakListeners;
  */
 @OptionsPanelController.SubRegistration(
     location=OptionsDisplayer.EDITOR,
+    id="CodeCompletion",
     displayName="#CTL_CodeCompletion_DisplayName",
     keywords="#KW_CodeCompletion",
     keywordsCategory="Editor/CodeCompletion",

@@ -73,6 +73,7 @@ import org.openide.util.WeakListeners;
  */
 @OptionsPanelController.SubRegistration(
     location=OptionsDisplayer.EDITOR,
+    id="OnSave",
     displayName="#CTL_OnSave_DisplayName",
     keywords="#KW_OnSave",
     keywordsCategory="Editor/OnSave",

@@ -60,6 +60,7 @@ import org.openide.util.Lookup;
  */
 @OptionsPanelController.SubRegistration(
     location=OptionsDisplayer.EDITOR,
+    id="Macros",
     displayName="#CTL_Macros_DisplayName",
     keywords="#KW_Macros",
     keywordsCategory="Editor/Macros",

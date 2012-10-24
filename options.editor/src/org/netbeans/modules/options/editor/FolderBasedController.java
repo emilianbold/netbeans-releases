@@ -92,6 +92,7 @@ public final class FolderBasedController extends OptionsPanelController implemen
     private final Document filterDocument = new PlainDocument();
 
     @OptionsPanelController.SubRegistration(
+	id="Hints",
         displayName="#CTL_Hints_DisplayName",
         location=OptionsDisplayer.EDITOR,
         keywords="#KW_Hints",
@@ -104,6 +105,7 @@ public final class FolderBasedController extends OptionsPanelController implemen
     }
 
     @OptionsPanelController.SubRegistration(
+	id="MarkOccurrences",
         displayName="#CTL_MarkOccurences_DisplayName",
         location=OptionsDisplayer.EDITOR,
         keywords="#KW_Mark",

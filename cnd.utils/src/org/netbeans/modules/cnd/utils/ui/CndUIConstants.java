@@ -54,11 +54,11 @@ public final class CndUIConstants {
     // CND options IDs
     public static final String TOOLS_OPTIONS_CND_CATEGORY_ID="CPlusPlus"; // NOI18N
     public static final String TOOLS_OPTIONS_CND_HIGHLIGHTING_ID="HighlightingTab"; // NOI18N
-    public static final String TOOLS_OPTIONS_CND_DEBUGGER_ID="org-netbeans-modules-cnd-debugger-common2-debugger-options-GlobalAdvancedOption"; // NOI18N
-    public static final String TOOLS_OPTIONS_CND_TOOLS_ID="org-netbeans-modules-cnd-toolchain-ui-options-ToolsPanelController"; // NOI18N
-    public static final String TOOLS_OPTIONS_CND_OTHER_ID="org-netbeans-modules-cnd-ui-options-CndOtherOptionsPanelController"; // NOI18N
-    public static final String TOOLS_OPTIONS_CND_CODE_ASSISTANCE_ID="org-netbeans-modules-cnd-toolchain-ui-compiler-CodeAssistancePanelController"; // NOI18N
-    public static final String TOOLS_OPTIONS_CND_PROJECTS_ID="org-netbeans-modules-cnd-makeproject-ui-options-ProjectOptionsPanelController"; // NOI18N
+    public static final String TOOLS_OPTIONS_CND_DEBUGGER_ID="DebuggerAdvancedOption"; // NOI18N
+    public static final String TOOLS_OPTIONS_CND_TOOLS_ID="ToolsTab"; // NOI18N
+    public static final String TOOLS_OPTIONS_CND_OTHER_ID="OtherOptionsTab"; // NOI18N
+    public static final String TOOLS_OPTIONS_CND_CODE_ASSISTANCE_ID="CodeAssistanceTab"; // NOI18N
+    public static final String TOOLS_OPTIONS_CND_PROJECTS_ID="ProjectsTab"; // NOI18N
 
     private static final String DELIM = "/"; // NOI18N
 

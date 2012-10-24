@@ -61,6 +61,7 @@ import org.openide.util.Lookup;
     displayName="org.netbeans.modules.options.editor.Bundle#CTL_General_DisplayName",
     keywords="org.netbeans.modules.options.editor.Bundle#KW_General",
     keywordsCategory="Editor/General",
+    id="General", // XXX used anywhere?
     location=OptionsDisplayer.EDITOR,
     position=100
 //    toolTip="org.netbeans.modules.options.editor.Bundle#CTL_General_ToolTip"

@@ -82,6 +82,7 @@ import org.openide.util.WeakListeners;
  * @author Dusan Balek
  */
 @OptionsPanelController.SubRegistration(
+    id="Formatting",
     displayName="org.netbeans.modules.options.editor.Bundle#CTL_Formating_DisplayName",
 //    tooltip="org.netbeans.modules.options.editor.Bundle#CTL_Formating_ToolTip",
     keywords="org.netbeans.modules.options.editor.Bundle#KW_Formatting",

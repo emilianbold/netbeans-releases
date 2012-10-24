@@ -59,6 +59,7 @@ import org.openide.util.Lookup;
  */
 @OptionsPanelController.SubRegistration(
     location="Editor",
+    id="CodeTemplates",
     displayName="#CTL_CodeTemplates_DisplayName",
     keywords="#KW_CodeTemplates",
     keywordsCategory="Editor/CodeTemplates",
