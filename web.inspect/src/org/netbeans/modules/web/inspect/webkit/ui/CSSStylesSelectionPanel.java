@@ -59,6 +59,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.basic.BasicTreeUI;
@@ -348,6 +349,18 @@ public class CSSStylesSelectionPanel extends JPanel {
                                             }
                                         }
                                     });
+                                } else {
+                                    EventQueue.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Node[] nodes = propertyPaneRoot.getChildren().getNodes();
+                                            if (nodes.length > 0) {
+                                                try {
+                                                    propertyPaneManager.setSelectedNodes(new Node[] { nodes[0] });
+                                                } catch (PropertyVetoException pvex) {}
+                                            }
+                                        }
+                                    });
                                 }
                             }
                         }
@@ -484,6 +497,9 @@ public class CSSStylesSelectionPanel extends JPanel {
                 }
             });
             hideTreeLines();
+            if (propertyPane) {
+                treeTable.setBackground(UIManager.getColor("Label.background"));  // NOI18N
+            }
             final TableCellRenderer defaultRenderer = HtmlRenderer.createRenderer();
             treeTable.setDefaultRenderer(Node.Property.class, new TableCellRenderer() {
                 // Text rendered in the first column of tree-table (i.e. in the tree)
@@ -492,8 +508,10 @@ public class CSSStylesSelectionPanel extends JPanel {
                 private Border border = BorderFactory.createEmptyBorder(1,0,0,0);
                 @Override
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                    String toolTip = null;
                     if (value instanceof Node.Property) {
                         Node.Property property = (Node.Property)value;
+                        toolTip = property.getShortDescription();
                         try {
                             value = property.getValue();
                         } catch (IllegalAccessException ex) {
@@ -502,10 +520,9 @@ public class CSSStylesSelectionPanel extends JPanel {
                     }
                     Component component = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (component instanceof JComponent) {
-                        ((JComponent)component).setBorder(border);
-                        if (propertyPane && column == 1) {
-                            component.setEnabled(false);
-                        }
+                        JComponent jcomponent = ((JComponent)component);
+                        jcomponent.setBorder(border);
+                        jcomponent.setToolTipText(toolTip);
                     }
                     return component;
                 }

@@ -45,8 +45,11 @@ package org.netbeans.modules.css.visual;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.css.visual.api.RuleEditorTC;
+import org.netbeans.modules.css.visual.api.CssStylesTC;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -59,21 +62,27 @@ import org.openide.windows.WindowManager;
  *
  * @author mfukala@netbeans.org
  */
-public class RuleEditorTCController implements PropertyChangeListener {
+public class CssStylesTCController implements PropertyChangeListener {
 
-    private static final RequestProcessor RP = new RequestProcessor(RuleEditorTCController.class);
+    private static final RequestProcessor RP = new RequestProcessor(CssStylesTCController.class);
     
-    private static RuleEditorTCController STATIC_INSTANCE;
-
+    /**
+     * Which mimetypes should cause the CssStyles window to be activated.
+     */
+    private static final Set<String> SUPPORTED_MIMES = new HashSet<String>(Arrays.asList("text/css", "text/html", "text/xhtml")); //NOI18N
+    
+    private static CssStylesTCController STATIC_INSTANCE;
+    
     //called from CssCaretAwareSourceTask constructor
     public static synchronized void init() {
         if (STATIC_INSTANCE == null) {
-            STATIC_INSTANCE = new RuleEditorTCController();
+            STATIC_INSTANCE = new CssStylesTCController();
         }
     }
+    
     private TopComponent activeCssContentTC = null;
 
-    public RuleEditorTCController() {
+    public CssStylesTCController() {
         //register a weak property change listener to the window manager registry
         //XXX is the weak listener really necessary? Is the registry ever GCed?
         Registry reg = WindowManager.getDefault().getRegistry();
@@ -100,7 +109,7 @@ public class RuleEditorTCController implements PropertyChangeListener {
                 return; //not editor TC, ignore
             }
 
-            if (activated instanceof RuleEditorTC) {
+            if (activated instanceof CssStylesTC) {
                 return; //ignore if its me
             }
 
@@ -116,11 +125,11 @@ public class RuleEditorTCController implements PropertyChangeListener {
                         public void run() {
                             if (cssContent) {
                                 //editor with css file has been opened
-                                openRuleEditor(activated);
+                                openCssStyles(activated);
                             } else {
                                 //some foreign editor activated, close the rule editor
                                 if (activeCssContentTC != null) {
-                                    closeRuleEditor();
+                                    closeCssStyles();
                                 }
                             }
                         }
@@ -132,7 +141,7 @@ public class RuleEditorTCController implements PropertyChangeListener {
         } else if (activeCssContentTC != null && TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
             TopComponent closedTC = (TopComponent) evt.getNewValue();
             if (closedTC == activeCssContentTC) {
-                closeRuleEditor();
+                closeCssStyles();
             }
         }
     }
@@ -143,24 +152,22 @@ public class RuleEditorTCController implements PropertyChangeListener {
         }
         FileObject fob = tc.getLookup().lookup(FileObject.class);
         if (fob != null) {
-            if ("text/css".equals(fob.getMIMEType())) { //NOI18N
-                return true;
-            }
+            return SUPPORTED_MIMES.contains(fob.getMIMEType());
         }
         return false;
     }
 
-    private void openRuleEditor(TopComponent tc) {
+    private void openCssStyles(TopComponent tc) {
         this.activeCssContentTC = tc;
         getRuleEditorTopComponent().open();
     }
 
-    private void closeRuleEditor() {
+    private void closeCssStyles() {
         this.activeCssContentTC = null;
         getRuleEditorTopComponent().close();
     }
 
     private TopComponentGroup getRuleEditorTopComponent() {
-        return WindowManager.getDefault().findTopComponentGroup("RuleEditor"); //NOI18N
+        return WindowManager.getDefault().findTopComponentGroup("CssStyles"); //NOI18N
     }
 }

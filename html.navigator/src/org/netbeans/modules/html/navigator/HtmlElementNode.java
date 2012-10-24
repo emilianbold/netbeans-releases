@@ -98,7 +98,6 @@ public class HtmlElementNode extends AbstractNode {
     //actions
     private OpenAction openAction;
     private ModifyElementRulesAction editRulesAction;
-    private DeleteElementAction deleteElementAction;
     
     //static description (of the source element)
     private SourceDescription source;
@@ -118,7 +117,6 @@ public class HtmlElementNode extends AbstractNode {
         this.source = sourceDescription;
         getElementChildren().setStaticKeys(sourceDescription.getChildren(), true);
         
-        deleteElementAction = new DeleteElementAction(fileObject, sourceDescription.getElementPath());
         editRulesAction = new ModifyElementRulesAction(fileObject, sourceDescription.getElementPath());
     }
     
@@ -129,7 +127,6 @@ public class HtmlElementNode extends AbstractNode {
         
         getElementChildren().setDynamicKeys(domDescription.getChildren(), true);
         
-        deleteElementAction = new DeleteElementAction(fileObject, null);
         editRulesAction = new ModifyElementRulesAction(fileObject, domDescription.getElementPath());
     }
     
@@ -414,7 +411,6 @@ public class HtmlElementNode extends AbstractNode {
             actions.add(openAction);
             actions.add(null);
             actions.add(editRulesAction);
-            actions.add(deleteElementAction);
             actions.add(null);
             actions.addAll(Arrays.asList(ui.getActions()));
         }

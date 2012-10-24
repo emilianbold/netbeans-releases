@@ -44,77 +44,53 @@ package org.netbeans.modules.web.inspect.ui;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * CSS Styles view.
- * 
+ *
  * @author Jan Stola
  */
-@TopComponent.Description(
-        preferredID = MatchedRulesTC.ID,
-        persistenceType = TopComponent.PERSISTENCE_ALWAYS,
-        iconBase = MatchedRulesTC.ICON_BASE)
-@TopComponent.Registration(
-        mode = "commonpalette", // NOI18N
-        position = 200,
-        openAtStartup = false)
-@ActionID(
-        category = "Window", // NOI18N
-        id = "org.netbeans.modules.web.inspect.ui.MatchedRulesTC") // NOI18N
-@ActionReference(
-        path = "Menu/Window/Web", // NOI18N
-        position = 200)
-@TopComponent.OpenActionRegistration(
-        displayName = "#CTL_MatchedRulesAction", // NOI18N
-        preferredID = MatchedRulesTC.ID)
-@Messages({
-    "CTL_MatchedRulesAction=CSS Styles", // NOI18N
-    "CTL_MatchedRulesTC=CSS Styles", // NOI18N
-    "HINT_MatchedRulesTC=This window shows matched style rules of an element." // NOI18N
-})
-public final class MatchedRulesTC extends TopComponent {
-    /** Icon base of the {@code TopComponent}. */
-    static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
-    /** TopComponent ID. */
-    public static final String ID = "MatchedRulesTC"; // NOI18N
-    /** Label shown when no styles information is available. */
+
+public abstract class CssStylesPanelProviderImpl extends JPanel implements CssStylesPanelProvider {
+
+    /**
+     * Label shown when no styles information is available.
+     */
     private JLabel noStylesLabel;
     /** Current view shown in this {@code TopComponent}.  */
-    private PageModel.CSSStylesView currentView;
-    /** Wrapper for the lookup of the current view. */
-    private MatchedRulesLookup lookup;
-
+    
+    //very very much hacky
+    private static int activeViewType = -1;
+    
+    
     /**
      * Creates a new {@code MatchedRulesTC}.
      */
-    public MatchedRulesTC() {
-        lookup = new MatchedRulesLookup();
-        associateLookup(lookup);
-        setName(Bundle.CTL_MatchedRulesTC());
-        setToolTipText(Bundle.HINT_MatchedRulesTC());
+    public CssStylesPanelProviderImpl() {
         setLayout(new BorderLayout());
         initNoStylesLabel();
         PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
-        update();
     }
 
+    public abstract int getViewType();
+    
     /**
      * Initializes the "no Styles" label.
      */
     private void initNoStylesLabel() {
         noStylesLabel = new JLabel();
-        noStylesLabel.setText(NbBundle.getMessage(MatchedRulesTC.class, "MatchedRulesTC.noStylesLabel.text")); // NOI18N
+        noStylesLabel.setText(NbBundle.getMessage(CssStylesPanelProviderImpl.class, "MatchedRulesTC.noStylesLabel.text")); // NOI18N
         noStylesLabel.setHorizontalAlignment(SwingConstants.CENTER);
         noStylesLabel.setVerticalAlignment(SwingConstants.CENTER);
         noStylesLabel.setEnabled(false);
@@ -122,32 +98,29 @@ public final class MatchedRulesTC extends TopComponent {
         noStylesLabel.setOpaque(true);
     }
 
-    /**
-     * Updates the content of this {@code TopComponent}.
-     */
-    private void update() {
+    protected void update(boolean forceRefresh) {
         PageModel pageModel = PageInspectorImpl.getDefault().getPage();
         boolean noPage = (pageModel == null);
         boolean noStylesLabelShown = noStylesLabel.getParent() != null;
-        if (!noStylesLabelShown || !noPage) {
-            removeAll();
-            if (noPage) {
-                add(noStylesLabel, BorderLayout.CENTER);
-                currentView = null;
-            } else {
-                PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
-                add(stylesView.getView(), BorderLayout.CENTER);
-                currentView = stylesView;
+        if(forceRefresh || activeViewType == getViewType()) {
+            activeViewType = getViewType();
+            if (!noStylesLabelShown || !noPage) {
+                removeAll();
+                if (noPage) {
+                    add(noStylesLabel, BorderLayout.CENTER);
+                } else {
+                    PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
+                    add(stylesView.getView(getViewType()), BorderLayout.CENTER);
+                }
             }
         }
-        lookup.setView(currentView);
         revalidate();
         repaint();
     }
-
+    
     /**
      * Creates a page inspector listener.
-     * 
+     *
      * @return page inspector listener.
      */
     private PropertyChangeListener createInspectorListener() {
@@ -156,45 +129,72 @@ public final class MatchedRulesTC extends TopComponent {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (PageInspectorImpl.PROP_MODEL.equals(propName)) {
-                    update();
+                    update(false);
                 }
             }
         };
     }
 
-    @Override
-    protected void componentActivated() {
-        super.componentActivated();
-        if (currentView != null) {
-            currentView.activated();
+    @NbBundle.Messages({
+        "CTL_CssStylesProviderImpl.document.view.title=Document"
+    })
+    @ServiceProvider(service = CssStylesPanelProvider.class, position=2000)
+    public static class DocumentView extends CssStylesPanelProviderImpl {
+
+        private static String DOCUMENT_PANEL_ID = "document"; //NOI18N
+
+        @Override
+        public String getPanelID() {
+            return DOCUMENT_PANEL_ID;
+        }
+
+        @Override
+        public String getPanelDisplayName() {
+            return Bundle.CTL_CssStylesProviderImpl_document_view_title();
+        }
+
+        @Override
+        public JComponent getContent() {
+            update(true);
+            return this;
+        }
+
+        @Override
+        public int getViewType() {
+            return PageModel.CSSStylesView.DOCUMENT_VIEW_TYPE;
         }
     }
+    
+    @NbBundle.Messages({
+        "CTL_CssStylesProviderImpl.selection.view.title=Selection"
+    })
+    @ServiceProvider(service = CssStylesPanelProvider.class, position=1000)
+    public static class SelectionView extends CssStylesPanelProviderImpl {
 
-    @Override
-    protected void componentDeactivated() {
-        super.componentDeactivated();
-        if (currentView != null) {
-            currentView.deactivated();
+        private static String SELECTION_PANEL_ID = "selection"; //NOI18N
+
+        @Override
+        public String getPanelID() {
+            return SELECTION_PANEL_ID;
+        }
+
+        @Override
+        public String getPanelDisplayName() {
+            return Bundle.CTL_CssStylesProviderImpl_selection_view_title();
+        }
+
+        @Override
+        public JComponent getContent() {
+            update(true);
+            return this;
+        }
+
+        @Override
+        public int getViewType() {
+            return PageModel.CSSStylesView.SELECTION_VIEW_TYPE;
         }
     }
-
-    /**
-     * Wrapper for the lookup of the current view.
-     */
-    static class MatchedRulesLookup extends ProxyLookup {
-
-        /**
-         * Sets the current view.
-         * 
-         * @param view current view.
-         */
-        void setView(PageModel.CSSStylesView view) {
-            if (view == null) {
-                setLookups();
-            } else {
-                setLookups(view.getLookup());
-            }
-        }
-    }
-
+    
+    
+    
 }

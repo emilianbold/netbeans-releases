@@ -433,6 +433,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.web.inspect</friend>
                 <package>org.netbeans.modules.css.visual.api</package>
+                <package>org.netbeans.modules.css.visual.spi</package>
             </friend-packages>
         </data>
     </configuration>
