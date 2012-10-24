@@ -55,7 +55,7 @@ import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
-import org.netbeans.modules.web.inspect.ui.MatchedRulesTC;
+import org.netbeans.modules.web.inspect.ui.CssStylesPanelProviderImpl;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
@@ -218,6 +218,16 @@ public class WebKitPageModel extends PageModel {
             }
             return documentNode;
         }
+    }
+
+    @Override
+    public void removeNode(org.openide.nodes.Node node) {
+        try {
+            Node webKitNode = node.getLookup().lookup(Node.class);
+            if (webKitNode != null) {
+                webKit.getDOM().removeNode(webKitNode);
+            }
+        } catch (TransportStateException tsex) {}
     }
 
     @Override
@@ -709,23 +719,23 @@ public class WebKitPageModel extends PageModel {
      * Activates CSS Styles view (to fill the content of Navigator).
      */
     void activateStylesView() {
-        if (!isExternal()) {
-            return;
-        }
-        if (EventQueue.isDispatchThread()) {
-            WindowManager manager = WindowManager.getDefault();
-            TopComponent stylesTC = manager.findTopComponent(MatchedRulesTC.ID);
-            if (stylesTC != null) {
-                stylesTC.requestActive();
-            }
-        } else {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    activateStylesView();
-                }
-            });
-        }
+//        if (!isExternal()) {
+//            return;
+//        }
+//        if (EventQueue.isDispatchThread()) {
+//            WindowManager manager = WindowManager.getDefault();
+//            TopComponent stylesTC = manager.findTopComponent(MatchedRules.ID);
+//            if (stylesTC != null) {
+//                stylesTC.requestActive();
+//            }
+//        } else {
+//            EventQueue.invokeLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    activateStylesView();
+//                }
+//            });
+//        }
     }
 
     class WebPaneSynchronizer implements PropertyChangeListener {

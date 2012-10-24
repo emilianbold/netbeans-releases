@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -57,6 +58,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -99,6 +102,7 @@ import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
@@ -109,8 +113,10 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
+import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmDefineHyperlinkProvider;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
+import org.openide.util.CharSequences;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -219,6 +225,9 @@ public final class ReferencesSupport {
                             csmItem = ((CsmInclude)csmItem).getIncludeFile();
                         }
                         break;
+                    case PREPROCESSOR_IDENTIFIER:
+                        csmItem = findDefine(doc, csmFile, jumpToken, offset);
+                        break;
                 }
             }
         }
@@ -243,6 +252,20 @@ public final class ReferencesSupport {
         }
         return csmItem;
     }
+    
+    public static CsmObject findDefine(Document doc, CsmFile csmFile, TokenItem<TokenId> tokenUnderOffset, int offset) {
+        assert (csmFile != null);
+        assert (doc != null);
+        DefineImpl define = getDefine(doc, csmFile, offset);
+        if(define != null) {
+            for (DefineParameterImpl param : define.getParams()) {
+                if(param.getText().equals(tokenUnderOffset.text())) {
+                    return param;
+                }
+            }
+        }
+        return null;
+    }    
 
     public static CsmInclude findInclude(CsmFile csmFile, int offset) {
         assert (csmFile != null);
@@ -475,7 +498,9 @@ public final class ReferencesSupport {
 
     private static boolean isSupportedToken(TokenItem<TokenId> token) {
         return token != null &&
-                (CsmIncludeHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION) || CsmHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION));
+                (CsmIncludeHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION) || 
+                CsmHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION) || 
+                CsmDefineHyperlinkProvider.isSupportedToken(token, HyperlinkType.GO_TO_DECLARATION));
     }
 
     public static Scope fastCheckScope(CsmReference ref) {
@@ -749,4 +774,203 @@ public final class ReferencesSupport {
             inst.cache.dumpInfo(printOut);
         }
     }
+    
+    private static DefineImpl getDefine(Document doc, CsmFile file, int offset) {
+        TokenSequence<TokenId> ts;
+        ts = CndLexerUtilities.getCppTokenSequence(doc, 0, false, false);
+        
+        int start = getDefineStartOffset(ts, offset);
+        
+        if(start == -1) {
+            return null;
+        }
+        
+        ts.move(start);
+        if (!ts.moveNext()) {
+            return null;
+        }
+        if(ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+            ts = (TokenSequence<TokenId>)ts.embedded();
+            if (!ts.moveNext()) {
+                return null;
+            }
+            if(ts == null || !ts.token().id().equals(CppTokenId.PREPROCESSOR_START)) {
+                return null;
+            }
+            if (!ts.moveNext()) {
+                return null;
+            }
+            while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
+                    ts.token().id().equals(CppTokenId.NEW_LINE)) {
+                if (!ts.moveNext()) {
+                    return null;
+                }
+            }
+            if(!ts.token().id().equals(CppTokenId.PREPROCESSOR_DEFINE)) {
+                return null;
+            }
+            if (!ts.moveNext()) {
+                return null;
+            }
+            while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
+                    ts.token().id().equals(CppTokenId.NEW_LINE)) {
+                if (!ts.moveNext()) {
+                    return null;
+                }
+            }
+            if(!ts.token().id().equals(CppTokenId.PREPROCESSOR_IDENTIFIER)) {
+                return null;
+            }
+            CharSequence name = ts.token().text();
+            if (!ts.moveNext()) {
+                return null;
+            }
+            List<DefineParameterImpl> params = new ArrayList<DefineParameterImpl>();
+            if(ts.token().id().equals(CppTokenId.LPAREN)) {
+                while(!ts.token().id().equals(CppTokenId.RPAREN)) {
+                    if(ts.token().id().equals(CppTokenId.PREPROCESSOR_IDENTIFIER)) {
+                        params.add(new DefineParameterImpl(ts.token().text(), file, ts.offset()));
+                    }
+                    if (!ts.moveNext()) {
+                        break;
+                    }
+                }
+            }
+            int end = ts.offset();
+            return new DefineImpl(name, params, file, start, offset);
+        }
+        return null;
+    }
+    
+    private static int getDefineStartOffset(TokenSequence<TokenId> ts, int offset) {
+        if (!ts.moveNext()) {
+            return -1;
+        }
+        int lastDefineOffset = -1;
+        int currentOffset = ts.offset();
+        while(currentOffset < offset) {
+            if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+                lastDefineOffset = ts.offset();
+            }
+            if (!ts.moveNext()) {
+                break;
+            }
+            currentOffset = ts.offset();
+        }
+        return lastDefineOffset;
+    }
+    
+
+    private static class DefineParameterImpl implements CsmOffsetable {
+        private final CharSequence name;
+        private final CsmFile file;
+        private final int startOffset;
+
+        public DefineParameterImpl(CharSequence name, CsmFile file, int startOffset) {
+            this.name = CharSequences.create(name);
+            this.file = file;
+            this.startOffset = startOffset;
+        }
+        
+        @Override
+        public CsmFile getContainingFile() {
+            return file;
+        }
+
+        @Override
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        @Override
+        public int getEndOffset() {
+            return startOffset + name.length();
+        }
+
+        @Override
+        public Position getStartPosition() {
+            return DUMMY_POSITION;
+        }
+
+        @Override
+        public Position getEndPosition() {
+            return DUMMY_POSITION;
+        }
+
+        @Override
+        public CharSequence getText() {
+            return name;
+        }
+    }
+    
+    private static class DefineImpl implements CsmOffsetable {
+        private final int startOffset;
+        private final int endOffset;
+        private final CsmFile file;
+        private final CharSequence name;
+        private final List<DefineParameterImpl> params;
+
+        public DefineImpl(CharSequence name, List<DefineParameterImpl> params, CsmFile file, int startOffset, int endOffset) {
+            this.name = CharSequences.create(name);
+            this.file = file;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.params = params;
+        }
+        
+        @Override
+        public CsmFile getContainingFile() {
+            return file;
+        }
+
+        @Override
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        @Override
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        @Override
+        public Position getStartPosition() {
+            return DUMMY_POSITION;
+        }
+
+        @Override
+        public Position getEndPosition() {
+            return DUMMY_POSITION;
+        }
+
+        @Override
+        public CharSequence getText() {
+            return name;
+        }
+
+        public List<DefineParameterImpl> getParams() {
+            return params;
+        }
+        
+        
+    }
+    
+    private static final CsmOffsetable.Position DUMMY_POSITION = new CsmOffsetable.Position() {
+
+        @Override
+        public int getOffset() {
+            return -1;
+        }
+
+        @Override
+        public int getLine() {
+            return -1;
+        }
+
+        @Override
+        public int getColumn() {
+            return -1;
+        }
+    };    
+    
 }

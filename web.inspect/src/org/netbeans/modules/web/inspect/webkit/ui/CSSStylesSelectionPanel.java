@@ -59,6 +59,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.basic.BasicTreeUI;
@@ -212,11 +213,14 @@ public class CSSStylesSelectionPanel extends JPanel {
                 RuleId id = rule.getId();
                 Lookup lookup = root.getLookup();
                 Rule otherRule = lookup.lookup(Rule.class);
-                if (otherRule != null && otherRule.getId().equals(id)) {
-                    try {
-                        rulePaneManager.setSelectedNodes(new Node[] { root });
-                    } catch (PropertyVetoException ex) {}
-                    return true;
+                if (otherRule != null) {
+                    RuleId otherId = otherRule.getId();
+                    if (otherId != null && otherId.equals(id)) {
+                        try {
+                            rulePaneManager.setSelectedNodes(new Node[] { root });
+                        } catch (PropertyVetoException ex) {}
+                        return true;
+                    }
                 }
                 for (Node subNode : root.getChildren().getNodes()) {
                     if (selectRule(rule, subNode)) {
@@ -342,6 +346,18 @@ public class CSSStylesSelectionPanel extends JPanel {
                                                         } catch (PropertyVetoException pvex) {}
                                                     }
                                                 }
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    EventQueue.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Node[] nodes = propertyPaneRoot.getChildren().getNodes();
+                                            if (nodes.length > 0) {
+                                                try {
+                                                    propertyPaneManager.setSelectedNodes(new Node[] { nodes[0] });
+                                                } catch (PropertyVetoException pvex) {}
                                             }
                                         }
                                     });
@@ -481,6 +497,9 @@ public class CSSStylesSelectionPanel extends JPanel {
                 }
             });
             hideTreeLines();
+            if (propertyPane) {
+                treeTable.setBackground(UIManager.getColor("Label.background"));  // NOI18N
+            }
             final TableCellRenderer defaultRenderer = HtmlRenderer.createRenderer();
             treeTable.setDefaultRenderer(Node.Property.class, new TableCellRenderer() {
                 // Text rendered in the first column of tree-table (i.e. in the tree)
@@ -500,9 +519,6 @@ public class CSSStylesSelectionPanel extends JPanel {
                     Component component = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (component instanceof JComponent) {
                         ((JComponent)component).setBorder(border);
-                        if (propertyPane && column == 1) {
-                            component.setEnabled(false);
-                        }
                     }
                     return component;
                 }

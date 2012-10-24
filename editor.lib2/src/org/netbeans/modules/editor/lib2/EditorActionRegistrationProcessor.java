@@ -132,8 +132,8 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
                         mapCtor = constructor;
                     }
                 }
-                String msgBase = "No-argument (or single-argument \"Map<String,?> attrs\") constructor";
-                if (defaultCtor == null && mapCtor == null) {
+                String msgBase = "No-argument constructor";
+                if (defaultCtor == null) {
                     throw new LayerGenerationException(msgBase + " not present in " + actionClassName, e);
                 }
                 boolean defaultCtorPublic = (defaultCtor != null && defaultCtor.getModifiers().contains(Modifier.PUBLIC));

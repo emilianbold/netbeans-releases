@@ -794,15 +794,17 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                                     if (cancelRequest.get()) {
                                         break;
                                     }
-                                    final boolean finished = APIAccessor.DEFAULT.isFinished(session);
+                                    final boolean finished = session!= null? APIAccessor.DEFAULT.isFinished(session) : true;
                                     final boolean last = !it.hasNext();
                                     if ((occurrences % 10 == 0 && !finished) || last) {
                                         SwingUtilities.invokeLater(new Runnable() {
                                             @Override
                                             public void run() {
-                                                root.setNodeLabel(description + getErrorDesc(0, occurrences, hiddenOccurrences, isQuery && sizeIsApproximate.get()));
-                                                if (last) {
-                                                    tree.repaint();
+                                                if (tree!=null) {
+                                                    root.setNodeLabel(description + getErrorDesc(0, occurrences, hiddenOccurrences, isQuery && sizeIsApproximate.get()));
+                                                    if (last) {
+                                                        tree.repaint();
+                                                    }
                                                 }
                                             }
                                         });
@@ -1258,6 +1260,8 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         if (fuListener!=null) {
             stopSearch();
             ui.getRefactoring().removeProgressListener(fuListener);
+            fuListener.stop(null);
+            fuListener = null;
         }
         timeStamps.clear();
         //UndoWatcher.stopWatching(this);

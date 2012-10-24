@@ -79,6 +79,13 @@ public abstract class PageModel {
     public abstract Node getDocumentNode();
 
     /**
+     * Removes the specified node from the document.
+     *
+     * @param node node to remove.
+     */
+    public abstract void removeNode(Node node);
+
+    /**
      * Returns the document URL.
      * 
      * @return document URL.
@@ -233,12 +240,15 @@ public abstract class PageModel {
      */
     public static interface CSSStylesView {
 
+        public static final int DOCUMENT_VIEW_TYPE = 1;
+        public static final int SELECTION_VIEW_TYPE = 2;
+        
         /**
          * Returns the visual representation of CSS Styles.
          *
          * @return visual representation of CSS Styles.
          */
-        JComponent getView();
+        JComponent getView(int type);
 
         /**
          * Returns the lookup of this view. This lookup will be included
