@@ -514,6 +514,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     javaSource.runModificationTask(new Task<WorkingCopy>() {
                         @Override
                         public void run(WorkingCopy copy) throws IOException {
+                            copy.toPhase(Phase.RESOLVED);
                         }
                     }).commit();
                 } catch (IOException e) {
