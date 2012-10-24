@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.bugtracking.kenai.spi;
 
-import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
