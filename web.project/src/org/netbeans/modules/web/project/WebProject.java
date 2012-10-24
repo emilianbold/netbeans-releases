@@ -550,7 +550,6 @@ public final class WebProject implements Project {
             // remove in next release
             new WebModuleImpl(apiWebModule),
             enterpriseResourceSupport,
-            new WebActionProvider( this, this.updateHelper, this.eval ),
             new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper, webModule),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),

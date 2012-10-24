@@ -178,6 +178,11 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
 
         inheritCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(inheritCheckBox, bundle.getString("INHERIT_CHECKBOX_LBL")); // NOI18N
+        inheritCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                inheritCheckBoxActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -209,6 +214,10 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(inheritPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void inheritCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inheritCheckBoxActionPerformed
+        inheritValues.setValue(inheritCheckBox.isSelected());
+    }//GEN-LAST:event_inheritCheckBoxActionPerformed
 
     private class MyListEditorPanel extends ListEditorPanel<String> {
 

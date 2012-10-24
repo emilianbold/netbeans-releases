@@ -95,7 +95,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Lahoda, Vladimir Voskresensky
  */
-public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
+public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 
     public CsmHyperlinkProvider() {
     }
@@ -121,7 +121,6 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             if(token.id() instanceof CppTokenId) {
                 switch ((CppTokenId)token.id()) {
                     case IDENTIFIER:
-                    case PREPROCESSOR_IDENTIFIER:
                     case OPERATOR:
                     case PROC_DIRECTIVE:
                         return true;
@@ -264,7 +263,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return false;
     }
 
-    private CsmOffsetable toJumpObject(CsmObject csmObject, CsmFile csmFile, int offset) {
+    protected CsmOffsetable toJumpObject(CsmObject csmObject, CsmFile csmFile, int offset) {
         CsmOffsetable item = null;
         if (CsmKindUtilities.isOffsetable(csmObject)) {
             item = (CsmOffsetable) csmObject;
