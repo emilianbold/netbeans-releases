@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -52,6 +53,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.php.editor.indent.FormatToken.AssignmentAnchorToken;
 import org.netbeans.modules.php.editor.indent.TokenFormatter.DocumentOptions;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -66,22 +68,21 @@ import org.openide.util.Exceptions;
 public class FormatVisitor extends DefaultVisitor {
 
     private static final Logger LOGGER = Logger.getLogger(FormatVisitor.class.getName());
-    private BaseDocument document;
+    private final BaseDocument document;
     private final List<FormatToken> formatTokens;
-    TokenSequence<PHPTokenId> ts;
-    private LinkedList<ASTNode> path;
-    private int indentLevel;
-    private final int tsTokenCount;
-    private DocumentOptions options;
+    private final TokenSequence<PHPTokenId> ts;
+    private final LinkedList<ASTNode> path;
+    private final DocumentOptions options;
+    private final Stack<GroupAlignmentTokenHolder> groupAlignmentTokenHolders;
+    private final int indentLevel;
+    private final int caretOffset;
+    private final int startOffset;
+    private final int endOffset;
     private boolean includeWSBeforePHPDoc;
     private boolean isCurly; // whether the last visited block is curly or standard syntax.
     private boolean isMethodInvocationShifted; // is continual indentation already included ?
     private boolean isFirstUseStatementPart;
     private boolean isFirstUseTraitStatementPart;
-    private FormatToken.AssignmentAnchorToken previousGroupToken = null; //used for assignment alignment
-    private final int caretOffset;
-    private final int startOffset;
-    private final int endOffset;
 
     public FormatVisitor(BaseDocument document, final int caretOffset, final int startOffset, final int endOffset) {
         this.document = document;
@@ -90,13 +91,13 @@ public class FormatVisitor extends DefaultVisitor {
         indentLevel = 0;
         options = new DocumentOptions(document);
         includeWSBeforePHPDoc = true;
-        tsTokenCount = ts == null ? 1 : ts.tokenCount();
-        formatTokens = new ArrayList<FormatToken>(tsTokenCount * 2);
+        formatTokens = new ArrayList<FormatToken>(ts == null ? 1 : ts.tokenCount() * 2);
         this.caretOffset = caretOffset;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
+        groupAlignmentTokenHolders = new Stack<GroupAlignmentTokenHolder>();
     }
 
     public List<FormatToken> getFormatTokens() {
@@ -219,10 +220,22 @@ public class FormatVisitor extends DefaultVisitor {
             }
         }
         formatTokens.add(new FormatToken.IndentToken(ts.offset(), delta));
-        previousGroupToken = null;
-        super.visit(node);
+        createGroupAlignment();
+        List<ArrayElement> arrayElements = node.getElements();
+        if (arrayElements != null && arrayElements.size() > 0) {
+            ArrayElement arrayElement = arrayElements.get(0);
+            addAllUntilOffset(arrayElement.getStartOffset());
+            scan(arrayElement);
+            for (int i = 1; i < arrayElements.size(); i++) {
+                arrayElement = arrayElements.get(i);
+                addAllUntilOffset(arrayElement.getStartOffset());
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_ARRAY_ELEMENT_LIST, ts.offset() + ts.token().length()));
+                scan(arrayElement);
+            }
+        }
         formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * delta));
         addAllUntilOffset(node.getEndOffset());
+        resetGroupAlignment();
     }
 
     @Override
@@ -267,7 +280,7 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Block node) {
-        previousGroupToken = null; // for every block reset group of alignment
+        resetAndCreateGroupAlignment(); // for every block reset group of alignment
         if (path.size() > 1 && (path.get(1) instanceof NamespaceDeclaration
                 && !((NamespaceDeclaration) path.get(1)).isBracketed())) {
             // dont process blok for namespace
@@ -1304,7 +1317,7 @@ public class FormatVisitor extends DefaultVisitor {
                         if (ts.token().id() == PHPTokenId.WHITESPACE) {
                             if (countOfNewLines(ts.token().text()) > 0) {
                                 // reset group alignment, if there is an empty line
-                                previousGroupToken = null;
+                                resetAndCreateGroupAlignment();
                             }
                             tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, newOffset, "\n" + ts.token().text().toString()));
                             if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
@@ -1430,7 +1443,7 @@ public class FormatVisitor extends DefaultVisitor {
                     } else if (parent instanceof ArrayCreation) {
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_PAREN, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_DECL_PARENS, ts.offset() + ts.token().length()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_ARRAY_DECL_LEFT_PAREN, ts.offset() + ts.token().length()));
                     } else {
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     }
@@ -1457,7 +1470,7 @@ public class FormatVisitor extends DefaultVisitor {
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_CATCH_PARENS, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     } else if (parent instanceof ArrayCreation) {
-                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_DECL_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     } else {
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
@@ -1466,14 +1479,14 @@ public class FormatVisitor extends DefaultVisitor {
                     if (parent instanceof ArrayCreation) {
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_PAREN, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_DECL_PARENS, ts.offset() + ts.token().length()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_ARRAY_DECL_LEFT_PAREN, ts.offset() + ts.token().length()));
                     } else {
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset() + ts.token().length()));
                     }
                 } else if ("]".equals(text)) {
                     if (parent instanceof ArrayCreation) {
-                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_DECL_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     } else {
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset()));
@@ -1582,7 +1595,7 @@ public class FormatVisitor extends DefaultVisitor {
         int countNewLines = countOfNewLines(ts.token().text());
         if (countNewLines > 1) {
             // reset group alignment, if there is an empty line
-            previousGroupToken = null;
+            resetAndCreateGroupAlignment();
         }
         String tokenText = ts.token().text().toString();
         int tokenStartOffset = ts.offset();
@@ -1807,7 +1820,11 @@ public class FormatVisitor extends DefaultVisitor {
      * the group
      */
     private void handleGroupAlignment(ASTNode node) {
-
+        if (groupAlignmentTokenHolders.empty()) {
+            createGroupAlignment();
+        }
+        GroupAlignmentTokenHolder tokenHolder = groupAlignmentTokenHolders.peek();
+        FormatToken.AssignmentAnchorToken previousGroupToken = tokenHolder.getToken();
         int length = node.getEndOffset() - node.getStartOffset();
         if (previousGroupToken == null) {
             // it's the first line in the group
@@ -1836,7 +1853,45 @@ public class FormatVisitor extends DefaultVisitor {
                 previousGroupToken = aaToken;
             }
         }
+        tokenHolder.setToken(previousGroupToken);
         formatTokens.add(previousGroupToken);
+    }
+
+    private void resetAndCreateGroupAlignment() {
+        resetGroupAlignment();
+        createGroupAlignment();
+    }
+
+    private void resetGroupAlignment() {
+        if (!groupAlignmentTokenHolders.empty()) {
+            groupAlignmentTokenHolders.pop();
+        }
+    }
+
+    private void createGroupAlignment() {
+        groupAlignmentTokenHolders.push(new GroupAlignmentTokenHolderImpl());
+    }
+
+    private static interface GroupAlignmentTokenHolder {
+
+        public void setToken(FormatToken.AssignmentAnchorToken token);
+
+        public FormatToken.AssignmentAnchorToken getToken();
+    }
+
+    private static class GroupAlignmentTokenHolderImpl implements GroupAlignmentTokenHolder {
+        private AssignmentAnchorToken token;
+
+        @Override
+        public void setToken(AssignmentAnchorToken token) {
+            this.token = token;
+        }
+
+        @Override
+        public AssignmentAnchorToken getToken() {
+            return token;
+        }
+
     }
 
     protected static boolean isWhitespace(final CharSequence text) {

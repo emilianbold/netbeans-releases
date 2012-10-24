@@ -66,7 +66,6 @@ import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.ZOrder;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.util.WeakListeners;
@@ -104,6 +103,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         groovyBackground = attribs;
     }
 
+    @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         synchronized (this) {
             if (groovyBackground != null) {
@@ -122,10 +122,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         }
     }
 
-    // ----------------------------------------------------------------------
-    //  TokenHierarchyListener implementation
-    // ----------------------------------------------------------------------
-
+    @Override
     public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
         synchronized (this) {
             version++;
@@ -134,10 +131,6 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         fireHighlightsChange(evt.affectedStartOffset(), evt.affectedEndOffset());
     }
     
-    // ----------------------------------------------------------------------
-    //  Private implementation
-    // ----------------------------------------------------------------------
-
     private static Color getColoring(FontColorSettings fcs, String tokenName) {
         AttributeSet as = fcs.getTokenFontColors(tokenName);
         if (as != null) {
@@ -175,11 +168,21 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
             this.endOffset = endOffset;
         }
 
+        @Override
         public boolean moveNext() {
             synchronized (EmbeddedSectionsHighlighting.this) {
                 if (checkVersion()) {
                     if (sequence == null) {
                         sequence = scanner.tokenSequence();
+
+                        if (sequence == null) {
+                            sectionStart = -1;
+                            sectionEnd = -1;
+                            finished = true;
+
+                            return false;
+                        }
+
                         sequence.move(startOffset);
                     }
 
@@ -240,6 +243,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         }
 
         
+        @Override
         public int getStartOffset() {
             synchronized (EmbeddedSectionsHighlighting.this) {
                 if (finished) {
@@ -251,6 +255,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
             }
         }
 
+        @Override
         public int getEndOffset() {
             synchronized (EmbeddedSectionsHighlighting.this) {
                 if (finished) {
@@ -262,6 +267,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
             }
         }
 
+        @Override
         public AttributeSet getAttributes() {
             synchronized (EmbeddedSectionsHighlighting.this) {
                 if (finished) {
@@ -276,9 +282,10 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         private boolean checkVersion() {
             return this.version == EmbeddedSectionsHighlighting.this.version;
         }
-   } // End of Highlights class
+   }
     
     public static final class Factory implements HighlightsLayerFactory {
+        @Override
         public HighlightsLayer[] createLayers(Context context) {
             return new HighlightsLayer[]{ HighlightsLayer.create(
                 "gsp-embedded-groovy-scriplets-highlighting-layer", //NOI18N
@@ -287,5 +294,5 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                 new EmbeddedSectionsHighlighting(context.getDocument())
             )};
         }
-    } // End of Factory class
+    }
 }

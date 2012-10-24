@@ -73,6 +73,7 @@ import org.openide.util.NbBundle;
 import static org.netbeans.modules.javafx2.editor.parser.Bundle.*;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode.Kind;
 import org.netbeans.modules.javafx2.editor.completion.model.FxObjectBase;
+import org.netbeans.modules.javafx2.editor.completion.model.FxScriptFragment;
 import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.LanguageDecl;
@@ -419,6 +420,8 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             return handleFxReference(atts, false);
         } else if (FX_INCLUDE.equals(localName)) {
             return handleFxInclude(atts, localName);
+        } else if (FX_SCRIPT.equals(localName)) {
+            return handleFxScript(atts);
         } else {
             // error, invalid fx: element
             FxNode n = accessor.createErrorElement(localName);
@@ -426,6 +429,28 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             addError("invalid-fx-element", ERR_invalidFxElement(localName), localName);
             return n;
         }
+    }
+    
+    @NbBundle.Messages({
+        "#0 - attribute name",
+        "ERR_unexpectedScriptAttribute=Unexpected attribute in fx:script: {0}"
+    })
+    private FxNode handleFxScript(Attributes atts) {
+        String ref = null;
+        
+        for (int i = 0; i < atts.getLength(); i++) {
+            String name = atts.getLocalName(i);
+             if (!FX_ATTR_REFERENCE_SOURCE.equals(name)) {
+                addAttributeError(atts.getQName(i),
+                    "invalid-script-attribute",
+                    ERR_unexpectedScriptAttribute(name),
+                    name
+                );
+                continue;
+            }
+            ref = atts.getValue(i);
+        }
+        return accessor.createScript(ref);
     }
     
     @NbBundle.Messages({
@@ -801,7 +826,9 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             case Property:
                 addedNode = handlePropertyContent(seq);
                 break;
-                
+            case Script:
+                addedNode = handleScriptContent(seq);
+                break;
             default:
                 addError(new ErrorMark(
                     contentLocator.getElementOffset(),
@@ -814,6 +841,35 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             i(addedNode).endsAt(contentLocator.getEndOffset());
         }
 
+    }
+    
+    @NbBundle.Messages({
+        "ERR_scriptHasContentAndSource=A script with external source cannot have inline content",
+        "ERR_scriptWithoutLanguage=No script language is declared"
+    })
+    private FxNode handleScriptContent(CharSequence content) {
+        FxScriptFragment script = (FxScriptFragment)nodeStack.peek();
+        if (content.length() > 0) {
+            if (language == null) {
+                addError(
+                    "script-np-language", 
+                    ERR_scriptWithoutLanguage()
+                );
+                accessor.makeBroken(script);
+            }
+        }
+        if (script.getSourcePath() != null) {
+            // warn just for the 1st content chunk.
+            if (!script.hasContent()) {
+                addError(
+                    "script-source-and-content", 
+                    ERR_scriptHasContentAndSource()
+                );
+                accessor.makeBroken(script);
+            }
+        }
+        accessor.addContent(script, content);
+        return script;
     }
     
     private FxNode handleEventContent(CharSequence content) {

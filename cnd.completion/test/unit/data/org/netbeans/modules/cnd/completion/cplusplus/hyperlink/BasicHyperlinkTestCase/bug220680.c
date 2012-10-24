@@ -1,0 +1,1 @@
+_Noreturn void bug220680_foo(void);

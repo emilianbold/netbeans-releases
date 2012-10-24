@@ -48,6 +48,7 @@ import org.codehaus.groovy.ast.DynamicVariable;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.PackageNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
@@ -111,6 +112,8 @@ public final class ElementUtils {
             return ElementKind.VARIABLE;
         } else if ((node instanceof ConstantExpression) && (leafParent instanceof PropertyExpression)) {
             return ElementKind.VARIABLE;
+        } else if (node instanceof PackageNode) {
+            return ElementKind.PACKAGE;
         }
         return ElementKind.OTHER;
     }

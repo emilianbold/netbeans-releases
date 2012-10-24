@@ -120,7 +120,7 @@ public abstract class AbstractFindUsages {
          */
         public AddFindUsagesElementsTask(FileObject fo) {
             this.fo = fo;
-            this.defClass = element.getDeclaringClassName();
+            this.defClass = element.getOwnerName();
         }
 
         @Override

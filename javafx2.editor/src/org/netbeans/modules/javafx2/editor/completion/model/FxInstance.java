@@ -44,6 +44,8 @@ package org.netbeans.modules.javafx2.editor.completion.model;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -67,6 +69,11 @@ public abstract class FxInstance extends FxObjectBase {
      * Event handlers
      */
     private Map<String, EventHandler> eventHandlers = Collections.emptyMap();
+    
+    /**
+     * Script fragments embedded in the object tag
+     */
+    private List<FxScriptFragment>  scripts = Collections.emptyList();
 
     public String getId() {
         return id;
@@ -91,6 +98,17 @@ public abstract class FxInstance extends FxObjectBase {
             eventHandlers = new HashMap<String, EventHandler>();
         }
         eventHandlers.put(p.getEvent(), p);
+    }
+    
+    void addScript(FxScriptFragment script) {
+        if (scripts.isEmpty()) {
+            scripts = new LinkedList<FxScriptFragment>();
+        }
+        scripts.add(script);
+    }
+    
+    public List<FxScriptFragment> getScripts() {
+        return Collections.unmodifiableList(scripts);
     }
     
     public Collection<String>   getEventNames() {
@@ -144,6 +162,8 @@ public abstract class FxInstance extends FxObjectBase {
             addProperty((PropertyValue)child);
         } else if (child instanceof EventHandler) {
             addEvent((EventHandler)child);
+        } else if (child instanceof FxScriptFragment) {
+            addScript((FxScriptFragment)child);
         } else {
             throw new IllegalArgumentException();
         }

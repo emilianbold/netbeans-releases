@@ -50,6 +50,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.PackageNode;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
@@ -64,6 +65,7 @@ import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.findusages.model.ClassRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.MethodRefactoringElement;
+//import org.netbeans.modules.groovy.refactoring.findusages.model.PackageRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.VariableRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.FindMethodUtils;
@@ -102,7 +104,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         private JTextComponent textC;
         private RefactoringUI ui;
 
-        
+
         protected TextComponentTask(EditorCookie ec, FileObject fileObject) {
             this.textC = ec.getOpenedPanes()[0];
             this.fileObject = fileObject;
@@ -140,7 +142,12 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             final BaseDocument doc = GroovyProjectUtil.getDocument(parserResult, fileObject);
             final AstPath path = new AstPath(root, caret, doc);
             final ASTNode findingNode = FindTypeUtils.findCurrentNode(path, doc, caret);
-            final ElementKind kind = ElementUtils.getKind(path, doc, caret);
+            final ElementKind kind;
+            if (findingNode instanceof PackageNode) {
+                kind = ElementKind.PACKAGE;
+            } else {
+                kind = ElementUtils.getKind(path, doc, caret);
+            }
 
             final RefactoringElement element = createRefactoringElement(path, findingNode, kind);
             if (element != null && element.getName() != null && element.getFileObject() != null) {
@@ -213,6 +220,8 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
                         final FieldNode field = ((PropertyNode) currentNode).getField();
                         return new VariableRefactoringElement(fileObject, field.getOwner(), field.getName());
                     }
+                case PACKAGE:
+//                    return new PackageRefactoringElement(fileObject, currentNode);
                 default:
                     throw new IllegalStateException("Unknown element kind. Refactoring shouldn't be enabled in this context !"); // NOI18N
             }
@@ -255,7 +264,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             if (root == null) {
                 return;
             }
-            
+
             final RefactoringElement element = new ClassRefactoringElement(fileObject, root);
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, parserResult);

@@ -47,8 +47,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
-import org.openide.filesystems.FileObject;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
@@ -60,20 +58,22 @@ import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModelProvider;
 import org.openide.loaders.DataObject;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author joelle
  */
-public class PageFlowControllerTest extends NbTestCase implements TestServices {
+public class PageFlowControllerTest extends NbTestCase {
 
     final String zipPath;
     private PageFlowTestUtility tu;
     PageFlowView view;
     PageFlowScene scene;
     PageFlowController controller;
+
+    static {
+        TestUtilities.setLookup(new Object[0]);
+    }
 
     public PageFlowControllerTest(String testName) {
         super(testName);
@@ -117,12 +117,6 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         view = null;
         scene = null;
         controller = null;
-    }
-
-    public void setupServices() {
-
-        ClassLoader l = this.getClass().getClassLoader();
-        MockLookup.setLookup(Lookups.fixed(l), Lookups.metaInfServices(l));
     }
 
     public void testCheckPageFlowControllerMemorySize() {

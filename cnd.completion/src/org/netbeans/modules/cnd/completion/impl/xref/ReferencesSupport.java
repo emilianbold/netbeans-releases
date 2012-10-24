@@ -102,6 +102,7 @@ import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
@@ -775,71 +776,84 @@ public final class ReferencesSupport {
         }
     }
     
-    private static DefineImpl getDefine(Document doc, CsmFile file, int offset) {
-        TokenSequence<TokenId> ts;
-        ts = CndLexerUtilities.getCppTokenSequence(doc, 0, false, false);
+    private static DefineImpl getDefine(final Document doc, final CsmFile file, final int offset) {
         
-        int start = getDefineStartOffset(ts, offset);
+        final DefineTarget dt = new DefineTarget();
         
-        if(start == -1) {
-            return null;
-        }
-        
-        ts.move(start);
-        if (!ts.moveNext()) {
-            return null;
-        }
-        if(ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
-            ts = (TokenSequence<TokenId>)ts.embedded();
-            if (!ts.moveNext()) {
-                return null;
-            }
-            if(ts == null || !ts.token().id().equals(CppTokenId.PREPROCESSOR_START)) {
-                return null;
-            }
-            if (!ts.moveNext()) {
-                return null;
-            }
-            while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
-                    ts.token().id().equals(CppTokenId.NEW_LINE)) {
-                if (!ts.moveNext()) {
-                    return null;
-                }
-            }
-            if(!ts.token().id().equals(CppTokenId.PREPROCESSOR_DEFINE)) {
-                return null;
-            }
-            if (!ts.moveNext()) {
-                return null;
-            }
-            while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
-                    ts.token().id().equals(CppTokenId.NEW_LINE)) {
-                if (!ts.moveNext()) {
-                    return null;
-                }
-            }
-            if(!ts.token().id().equals(CppTokenId.PREPROCESSOR_IDENTIFIER)) {
-                return null;
-            }
-            CharSequence name = ts.token().text();
-            if (!ts.moveNext()) {
-                return null;
-            }
-            List<DefineParameterImpl> params = new ArrayList<DefineParameterImpl>();
-            if(ts.token().id().equals(CppTokenId.LPAREN)) {
-                while(!ts.token().id().equals(CppTokenId.RPAREN)) {
-                    if(ts.token().id().equals(CppTokenId.PREPROCESSOR_IDENTIFIER)) {
-                        params.add(new DefineParameterImpl(ts.token().text(), file, ts.offset()));
+        if (doc instanceof BaseDocument) {
+            ((BaseDocument)doc).render(new Runnable() {
+                @Override
+                public void run() {
+                    TokenSequence<TokenId> ts;
+                    ts = CndLexerUtilities.getCppTokenSequence(doc, 0, false, false);
+
+                    int start = getDefineStartOffset(ts, offset);
+
+                    if(start == -1) {
+                        return;
                     }
+
+                    ts.move(start);
                     if (!ts.moveNext()) {
-                        break;
+                        return;
                     }
+                    if(ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+                        ts = (TokenSequence<TokenId>)ts.embedded();
+                        if (!ts.moveNext()) {
+                            return;
+                        }
+                        if(ts == null || !ts.token().id().equals(CppTokenId.PREPROCESSOR_START)) {
+                            return;
+                        }
+                        if (!ts.moveNext()) {
+                            return;
+                        }
+                        while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
+                                ts.token().id().equals(CppTokenId.NEW_LINE) ||
+                                ts.token().id().equals(CppTokenId.BLOCK_COMMENT)) {
+                            if (!ts.moveNext()) {
+                                return;
+                            }
+                        }
+                        if(!ts.token().id().equals(CppTokenId.PREPROCESSOR_DEFINE)) {
+                            return;
+                        }
+                        if (!ts.moveNext()) {
+                            return;
+                        }
+                        while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
+                                ts.token().id().equals(CppTokenId.NEW_LINE) ||
+                                ts.token().id().equals(CppTokenId.BLOCK_COMMENT)) {
+                            if (!ts.moveNext()) {
+                                return;
+                            }
+                        }
+                        if(!ts.token().id().equals(CppTokenId.PREPROCESSOR_IDENTIFIER)) {
+                            return;
+                        }
+                        CharSequence name = ts.token().text();
+                        if (!ts.moveNext()) {
+                            return;
+                        }
+                        List<DefineParameterImpl> params = new ArrayList<DefineParameterImpl>();
+                        if(ts.token().id().equals(CppTokenId.LPAREN)) {
+                            while(!ts.token().id().equals(CppTokenId.RPAREN)) {
+                                if(ts.token().id().equals(CppTokenId.PREPROCESSOR_IDENTIFIER)) {
+                                    params.add(new DefineParameterImpl(ts.token().text(), file, ts.offset()));
+                                }
+                                if (!ts.moveNext()) {
+                                    break;
+                                }
+                            }
+                        }
+                        int end = ts.offset();
+                        dt.setDefine(new DefineImpl(name, params, file, start, offset));
+                    }                    
+                    
                 }
-            }
-            int end = ts.offset();
-            return new DefineImpl(name, params, file, start, offset);
-        }
-        return null;
+            });
+        }        
+        return dt.getDefine();
     }
     
     private static int getDefineStartOffset(TokenSequence<TokenId> ts, int offset) {
@@ -861,7 +875,7 @@ public final class ReferencesSupport {
     }
     
 
-    private static class DefineParameterImpl implements CsmOffsetable {
+    private static class DefineParameterImpl implements CsmOffsetable, CsmNamedElement {
         private final CharSequence name;
         private final CsmFile file;
         private final int startOffset;
@@ -870,6 +884,11 @@ public final class ReferencesSupport {
             this.name = CharSequences.create(name);
             this.file = file;
             this.startOffset = startOffset;
+        }
+     
+        @Override
+        public CharSequence getName() {
+            return name;
         }
         
         @Override
@@ -900,6 +919,49 @@ public final class ReferencesSupport {
         @Override
         public CharSequence getText() {
             return name;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 97 * hash + (this.file != null ? this.file.hashCode() : 0);
+            hash = 97 * hash + this.startOffset;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final DefineParameterImpl other = (DefineParameterImpl) obj;
+            if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+                return false;
+            }
+            if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+                return false;
+            }
+            if (this.startOffset != other.startOffset) {
+                return false;
+            }
+            return true;
+        }
+
+    }
+    
+    private static class DefineTarget {
+        private DefineImpl define;
+
+        public DefineImpl getDefine() {
+            return define;
+        }
+
+        public void setDefine(DefineImpl define) {
+            this.define = define;
         }
     }
     

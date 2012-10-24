@@ -39,29 +39,28 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javafx2.editor.completion.model;
 
-package org.netbeans.modules.groovy.refactoring.move;
-
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringPlugin;
-import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.openide.filesystems.FileObject;
+import java.net.URL;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
- *
- * @author Martin Janicek
+ * Common interface for model elements, which point to an external resource.
+ * 
+ * @author sdedic
  */
-public class MoveRefactoringPlugin extends GroovyRefactoringPlugin {
-
-    public MoveRefactoringPlugin(FileObject fileObject, RefactoringElement element, AbstractRefactoring refactoring) {
-        super(element, fileObject, refactoring);
-    }
-
-    @Override
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        // TODO: Move class
-        return null;
-    }
+public interface HasResource {
+    /**
+     * Path to the resource, as given in the soruce text
+     * @return 
+     */
+    @CheckForNull
+    public String getSourcePath();
+    
+    /**
+     * Resolved reference to the resource.
+     * @return 
+     */
+    @CheckForNull
+    public URL  getResolvedURL();
 }

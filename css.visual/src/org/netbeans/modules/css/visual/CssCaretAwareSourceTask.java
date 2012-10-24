@@ -57,7 +57,7 @@ import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
-import org.netbeans.modules.css.visual.api.RuleEditorTC;
+import org.netbeans.modules.css.visual.api.CssStylesTC;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.*;
 import org.openide.cookies.EditorCookie;
@@ -77,7 +77,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
     private boolean cancelled;
 
     public CssCaretAwareSourceTask() {
-        RuleEditorTCController.init();
+        CssStylesTCController.init();
     }
 
     @Override
@@ -179,13 +179,13 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
             }
         }
 
-        final RuleEditorTC ruleEditorTC = (RuleEditorTC) WindowManager.getDefault().findTopComponent(RuleEditorTC.ID);
-        if (ruleEditorTC == null) {
+        final CssStylesTC cssStylesTC = (CssStylesTC) WindowManager.getDefault().findTopComponent(CssStylesTC.ID);
+        if (cssStylesTC == null) {
             return;
         }
         
         //update the RuleEditor TC name
-        RuleEditorController controller = ruleEditorTC.getRuleEditorController();
+        RuleEditorController controller = cssStylesTC.getRuleEditorController();
         LOG.log(Level.FINER, "SourceTask: calling controller.setModel({0})", model);
         controller.setModel(result.getModel());
         
