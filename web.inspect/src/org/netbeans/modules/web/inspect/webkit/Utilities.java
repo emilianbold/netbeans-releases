@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
@@ -60,11 +61,14 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.inspect.CSSUtils;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.webkit.debugging.api.css.Property;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.SourceRange;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetOrigin;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 
 /**
@@ -286,6 +290,26 @@ public class Utilities {
             }
         }
         return parserResults;
+    }
+
+    /**
+     * Returns name of the resource relative to the project directory.
+     *
+     * @param resourceUrl absolute name/URL of the resource.
+     * @param project project owning the resource.
+     * @return relative name of the resource.
+     */
+    public static String relativeResourceName(String resourceUrl, Project project) {
+        String name = resourceUrl;
+        if (project != null) {
+            FileObject fob = new Resource(project, resourceUrl).toFileObject();
+            if (fob != null) {
+                FileObject projectDir = project.getProjectDirectory();
+                String relativePath = FileUtil.getRelativePath(projectDir, fob);
+                name = relativePath;
+            }
+        }
+        return name;
     }
 
 }
