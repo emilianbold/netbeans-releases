@@ -53,8 +53,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -91,7 +89,6 @@ import javax.swing.text.View;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
@@ -104,7 +101,6 @@ import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
-import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
@@ -434,6 +430,7 @@ public class ActionFactory {
             super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
+        @Override
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
@@ -446,6 +443,7 @@ public class ActionFactory {
                     return;
                 }
                 doc.runAtomicAsUser (new Runnable () {
+                    @Override
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -473,10 +471,8 @@ public class ActionFactory {
                             if (zeroBaseStartLineNumber == -1) {
                                 // could not get line number
                                 target.getToolkit().beep();
-                                return;
                             } else if (zeroBaseStartLineNumber == 0) {
                                 // already first line
-                                return;
                             } else {
                                 try {
                                     // get line text
@@ -498,9 +494,9 @@ public class ActionFactory {
                                     
                                     // remove the line
                                     if (endLineEndOffset + linesText.length() > doc.getLength()) {
-                                        doc.remove(startLineStartOffset + linesText.length() - 1, endLineEndOffset - startLineStartOffset);
+                                        removeLineByLine(doc, startLineStartOffset + linesText.length() - 1, endLineEndOffset - startLineStartOffset);
                                     } else {
-                                        doc.remove(startLineStartOffset + linesText.length(), endLineEndOffset - startLineStartOffset);
+                                        removeLineByLine(doc, startLineStartOffset + linesText.length(), endLineEndOffset - startLineStartOffset);
                                     }
                                     
                                     if (selection) {
@@ -538,6 +534,7 @@ public class ActionFactory {
             super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
+        @Override
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
@@ -550,6 +547,7 @@ public class ActionFactory {
                     return;
                 }
                 doc.runAtomicAsUser (new Runnable () {
+                    @Override
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -577,7 +575,6 @@ public class ActionFactory {
                             if (zeroBaseEndLineNumber == -1) {
                                 // could not get line number
                                 target.getToolkit().beep();
-                                return;
                             } else {
                                 try {
                                     // get line text
@@ -594,7 +591,6 @@ public class ActionFactory {
                                     String linesText = doc.getText(startLineStartOffset, (endLineEndOffset - startLineStartOffset));
 
                                     Element nextLineElement = rootElement.getElement(zeroBaseEndLineNumber + 1);
-                                    int nextLineStartOffset = nextLineElement.getStartOffset();
                                     int nextLineEndOffset = nextLineElement.getEndOffset();
 
                                     int column = start - startLineStartOffset;
@@ -607,7 +603,7 @@ public class ActionFactory {
                                     }
 
                                     // remove original line
-                                    doc.remove(startLineStartOffset, (endLineEndOffset - startLineStartOffset));
+                                    removeLineByLine(doc, startLineStartOffset, (endLineEndOffset - startLineStartOffset));
                                     if (selection) {
                                         // select moved lines
                                         if (backwardSelection) {
@@ -631,6 +627,31 @@ public class ActionFactory {
                     }
                 });
             }
+        }
+    }
+    
+    static void removeLineByLine(Document doc, int startPosition, int length) throws BadLocationException {
+        String text = doc.getText(startPosition, length);
+        BadLocationException ble = null;
+        int notDeleted = 0;
+        int deleted = 0;
+        int line = 0;
+        while(true) {
+            line = text.indexOf('\n', line+1);
+            if (line == -1) {
+                break;
+            }
+            try {
+                doc.remove(startPosition + notDeleted, line + 1 - deleted - notDeleted);
+                deleted = line + 1 - notDeleted;
+            } catch (BadLocationException blee) {
+                ble = blee;
+                notDeleted = line + 1 - deleted;
+            }
+        }
+        doc.remove(startPosition + notDeleted, length - deleted - notDeleted);
+        if (ble != null) {
+            throw ble;
         }
     }
     
