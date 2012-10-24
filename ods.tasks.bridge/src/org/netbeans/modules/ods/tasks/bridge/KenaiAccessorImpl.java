@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,6 +65,7 @@ import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.client.api.ODSException;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.ods.ui.api.OdsUIUtil;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.NbModuleOwnerSupport;
 import org.netbeans.modules.team.ui.common.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -80,6 +82,33 @@ import org.openide.util.lookup.ServiceProvider;
                                            @ServiceProvider(service=KenaiAccessorImpl.class)})
 public class KenaiAccessorImpl extends KenaiAccessor {
 
+    private final List<PropertyChangeListener> allKenaiListeners = new ArrayList<PropertyChangeListener>(1);
+    public KenaiAccessorImpl() {
+        super();
+        CloudServerManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(CloudServerManager.PROP_INSTANCES.equals(evt.getPropertyName())) {
+                    if(evt.getNewValue() != null) {
+                        CloudServer s = (CloudServer) evt.getNewValue();
+                        synchronized(allKenaiListeners) {
+                            for (PropertyChangeListener l : allKenaiListeners) {
+                                addPropertyChangeListener(l, s);
+                            }
+                        }
+                    } else {
+                        CloudServer s = (CloudServer) evt.getOldValue();
+                        synchronized(allKenaiListeners) {
+                            for (PropertyChangeListener l : allKenaiListeners) {
+                                removePropertyChangeListener(l, s);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
     static KenaiAccessorImpl getInstance() {
         return Lookup.getDefault().lookup(KenaiAccessorImpl.class);
     }
@@ -155,7 +184,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     }
 
     @Override
-    public KenaiProject[] getDashboardProjects() {
+    public KenaiProject[] getDashboardProjects(boolean onlyOpened) {
         ProjectHandle<ODSProject>[] handles = CloudUiServer.getOpenProjects();
         if ((handles == null) || (handles.length == 0)) {
             return new KenaiProjectImpl[0];
@@ -291,6 +320,26 @@ public class KenaiAccessorImpl extends KenaiAccessor {
         getKenaiListener(server).remove(listener);
     }
 
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        synchronized(allKenaiListeners) {
+            allKenaiListeners.add(listener);
+        }
+        for (CloudServer server : CloudServerManager.getDefault().getServers()) {
+            addPropertyChangeListener(listener, server);
+        }
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        synchronized(allKenaiListeners) {
+            allKenaiListeners.remove(listener);
+        }
+        for (CloudServer server : CloudServerManager.getDefault().getServers()) {
+            removePropertyChangeListener(listener, server);
+        }
+    }
+    
     private class OwnerInfoImpl extends org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo {
         private final OwnerInfo delegate;
 
@@ -330,13 +379,23 @@ public class KenaiAccessorImpl extends KenaiAccessor {
         }
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(TeamServer.PROP_LOGIN)) {
+            if(evt.getPropertyName().equals(TeamServer.PROP_LOGIN) ||
+               evt.getPropertyName().equals(DefaultDashboard.PROP_OPENED_PROJECTS)) 
+            {
                 PropertyChangeListener[] la;
                 synchronized (delegates) {
                    la = delegates.toArray(new PropertyChangeListener[delegates.size()]);
                 }
+                String propName;
+                if(TeamServer.PROP_LOGIN.equals(evt.getPropertyName())) {
+                    propName = PROP_LOGIN;
+                } else if (DefaultDashboard.PROP_OPENED_PROJECTS.equals(evt.getPropertyName())) {
+                    propName = PROP_PROJETCS_CHANGED;
+                } else {
+                    throw new IllegalStateException("Unknown event " + evt.getPropertyName()); // NOI18N
+                }
                 for (PropertyChangeListener l : la) {
-                    l.propertyChange(new PropertyChangeEvent(evt.getSource(), PROP_LOGIN, evt.getOldValue(), evt.getNewValue()));
+                    l.propertyChange(new PropertyChangeEvent(evt.getSource(), propName, evt.getOldValue(), evt.getNewValue()));
                 }
             }
         }
@@ -344,6 +403,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
             delegates.add(l);
             if(delegates.size() == 1) {
                 server.addPropertyChangeListener(this);
+                OdsUIUtil.addDashboardListener(server, this);
             }
         }
         private synchronized void remove(PropertyChangeListener l) {

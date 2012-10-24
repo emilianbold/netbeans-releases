@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.ods.ui.api;
 
+import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -70,6 +71,14 @@ public final class OdsUIUtil {
     private static Set<String> loggedParams = Collections.synchronizedSet(new HashSet<String>());
     private static Logger metricsLogger;
     private OdsUIUtil() { }
+    
+    public static void addDashboardListener(CloudServer server, PropertyChangeListener propertyChangeListener) {
+        CloudUiServer.forServer(server).getDashboard().addPropertyChangeListener(propertyChangeListener);
+    }
+    
+    public static void removeDashboardListener(CloudServer server, PropertyChangeListener propertyChangeListener) {
+        CloudUiServer.forServer(server).getDashboard().removePropertyChangeListener(propertyChangeListener);
+    }
     
     @NbBundle.Messages("CTL_AddInstance=Add ODS Server")
     public static Action createAddInstanceAction() {

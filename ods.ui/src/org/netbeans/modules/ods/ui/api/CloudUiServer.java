@@ -121,7 +121,7 @@ public class CloudUiServer implements TeamServer {
         }
         LinkedList<ProjectHandle<ODSProject>> ret = new LinkedList<ProjectHandle<ODSProject>>();
         for (CloudUiServer s : servers) {
-            ProjectHandle<ODSProject>[] projects = s.getDashboard().getOpenProjects();
+            ProjectHandle<ODSProject>[] projects = s.getDashboard().getProjects(true);
             if(projects != null) {
                 ret.addAll(Arrays.asList(projects));
             }
