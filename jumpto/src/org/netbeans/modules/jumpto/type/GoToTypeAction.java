@@ -764,13 +764,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             if ( isSelected ) {
                 jlName.setForeground(fgSelectionColor);
                 jlPkg.setForeground(fgSelectionColor);
-                jlPrj.setForeground(fgSelectionColor);
+                jlPrj.setForeground(fgSelectionColor);                
                 rendererComponent.setBackground(bgSelectionColor);
             }
             else {
                 jlName.setForeground(fgColor);
                 jlPkg.setForeground(fgColorLighter);
-                jlPrj.setForeground(fgColor);                
+                jlPrj.setForeground(fgColor);
                 rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
             }
             
@@ -779,7 +779,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 TypeDescriptor td = (TypeDescriptor)value;                
                 jlName.setIcon(td.getIcon());
                 //highlight matching search text patterns in type
-                final String formattedTypeName = typeNameFormatter.formatName(td.getTypeName(), searchText, caseSensitive);
+                final String formattedTypeName = typeNameFormatter.formatName(
+                        td.getTypeName(),
+                        searchText,
+                        caseSensitive,
+                        isSelected? fgSelectionColor : fgColor);
                 jlName.setText(formattedTypeName);
                 jlPkg.setText(td.getContextName());
                 setProjectName(jlPrj, td.getProjectName());
