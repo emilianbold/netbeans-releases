@@ -862,6 +862,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                         selText = selText.substring(0, n);
                     }
                     incSearchTextField.setText(selText);
+                    searchProps.setProperty(EditorFindSupport.FIND_WHAT, selText);
                 } else {
                     if (isClosingSearchType()) {
                         String findWhat = (String) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_WHAT);

@@ -48,6 +48,7 @@ import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNodeVisitor;
 import org.netbeans.modules.javafx2.editor.completion.model.FxReference;
+import org.netbeans.modules.javafx2.editor.completion.model.FxScriptFragment;
 import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.LanguageDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.MapProperty;
@@ -133,6 +134,10 @@ public class PrintVisitor extends FxNodeVisitor.ModelTraversal {
     public void visitStaticProperty(StaticProperty p) {
         i().append(String.format("attached: name=%s, source=%s, content=%s\n", p.getPropertyName(), p.getSourceClassName(), p.getContent()));
         super.visitStaticProperty(p);
+    }
+    
+    public void visitScript(FxScriptFragment f) {
+        i().append(String.format("script: src=%s, len=%d", f.getSourcePath(), (f.hasContent() ? f.getContent().length() : -1)));
     }
     
     private static final String PADDING = "                ";

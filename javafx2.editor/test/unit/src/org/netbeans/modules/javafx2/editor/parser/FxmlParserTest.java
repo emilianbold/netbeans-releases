@@ -87,6 +87,7 @@ public class FxmlParserTest extends GoldenFileTestBase {
         TestSuite s = new TestSuite();
         s.addTest(new FxmlParserTest("testUnresolvedThings"));
         s.addTest(new FxmlParserTest("testDefinitionsResolved"));
+        s.addTest(new FxmlParserTest("testInlineScript"));
         return s;
     }
     
@@ -106,6 +107,22 @@ public class FxmlParserTest extends GoldenFileTestBase {
         });
     }
     
+    public void testInlineScript() throws Exception {
+        Source fxmlSource = Source.create(document);
+        
+        ParserManager.parse(Collections.singleton(fxmlSource), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result result = resultIterator.getParserResult();
+                
+                FxmlParserResult fxResult = (FxmlParserResult)result;
+                appendParsedTree(fxResult, report);
+                appendErrors(fxResult, report);
+                assertContents(report);
+            }
+        });
+    }
+
     public void testUnresolvedThings() throws Exception {
         Source fxmlSource = Source.create(document);
         
