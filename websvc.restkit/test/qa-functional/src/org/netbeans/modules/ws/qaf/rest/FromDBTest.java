@@ -47,10 +47,10 @@ import java.util.Set;
 import javax.swing.JDialog;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 
@@ -94,23 +94,28 @@ public class FromDBTest extends CRUDTest {
         jcbo.clearText();
         jcbo.typeText(getRestPackage() + ".service"); //NOI18N
         wo.finish();
-        Runnable r = new Runnable() {
+        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
+            new Thread("Close REST Resources Configuration dialog") {
+                private boolean found = false;
+                private static final String dlgLbl = "REST Resources Configuration";
 
-            private boolean found = false;
-
-            @Override
-            public void run() {
-                while (!found) {
-                    String dlgLbl = "REST Resources Configuration";
-                    JDialog dlg = JDialogOperator.findJDialog(dlgLbl, true, true);
-                    if (null != dlg) {
-                        found = true;
-                        new JButtonOperator(new JDialogOperator(dlg), "OK").push();
+                @Override
+                public void run() {
+                    while (!found) {
+                        try {
+                            sleep(300);
+                        } catch (InterruptedException ex) {
+                            // ignore
+                        }
+                        JDialog dlg = JDialogOperator.findJDialog(dlgLbl, true, true);
+                        if (null != dlg) {
+                            found = true;
+                            new NbDialogOperator(dlg).ok();
+                        }
                     }
                 }
-            }
-        };
-        new Thread(r).start();
+            }.start();
+        }
         String generationTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "TXT_EntityClassesGeneration");
         waitDialogClosed(generationTitle);
         new EventTool().waitNoEvent(1500);
