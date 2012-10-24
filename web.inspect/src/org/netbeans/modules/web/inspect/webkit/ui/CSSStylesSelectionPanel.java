@@ -348,6 +348,18 @@ public class CSSStylesSelectionPanel extends JPanel {
                                             }
                                         }
                                     });
+                                } else {
+                                    EventQueue.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Node[] nodes = propertyPaneRoot.getChildren().getNodes();
+                                            if (nodes.length > 0) {
+                                                try {
+                                                    propertyPaneManager.setSelectedNodes(new Node[] { nodes[0] });
+                                                } catch (PropertyVetoException pvex) {}
+                                            }
+                                        }
+                                    });
                                 }
                             }
                         }
