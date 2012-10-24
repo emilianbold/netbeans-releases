@@ -50,22 +50,45 @@ import org.netbeans.api.java.source.ElementHandle;
  * @author sdedic
  */
 public final class FxNewInstance extends FxInstance {
-    private String          sourceName;
+    private String          typeName;
     private String          initValue;
     private String          factoryMethod;
     
-    public String getSourceName() {
-        return sourceName;
+    /**
+     * True, if the instance represents a fx:root element - custom root.
+     */
+    private boolean         customRoot;
+    
+    public String getTypeName() {
+        return typeName;
+    }
+    
+    public FxNewInstance(String sourceName, boolean customRoot) {
+        this.typeName = sourceName;
+        this.customRoot = customRoot;
+        if (customRoot) {
+            setSourceName(FxXmlSymbols.FX_ROOT);
+        } else {
+            setSourceName(sourceName);
+        }
     }
 
     public FxNewInstance(String sourceName) {
-
-        this.sourceName = sourceName;
+        setSourceName(sourceName);
+        this.typeName = sourceName;
     }
 
     @Override
     public Kind getKind() {
         return Kind.Instance;
+    }
+    
+    /**
+     * True, if the instance represents a fx:root element
+     * @return 
+     */
+    public boolean isCustomRoot() {
+        return customRoot;
     }
 
     @Override
@@ -84,7 +107,9 @@ public final class FxNewInstance extends FxInstance {
     }
     
     void resolveClass(String className, ElementHandle<TypeElement> handle) {
-        setSourceName(className);
+        if (!customRoot) {
+            setSourceName(className);
+        }
         setJavaType(handle);
     }
 
