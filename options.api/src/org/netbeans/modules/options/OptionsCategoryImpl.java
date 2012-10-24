@@ -129,7 +129,7 @@ public class OptionsCategoryImpl extends OptionsCategory {
     }
 
     final Set<String> getKeywordsByCategory() {
-	if (keywordsCategory != null && keywords != null) {
+	if (keywords != null) {
 	    return Collections.singleton(keywords);
 	} else {
 	    return Collections.emptySet();

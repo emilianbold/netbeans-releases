@@ -62,6 +62,7 @@ import java.io.IOException;
  * @author Maros Sandor
  */
 @OptionsPanelController.SubRegistration(
+    id=DiffOptionsController.OPTIONS_SUBPATH,
     displayName="#LBL_DiffOptions",
     keywords="#KW_DiffOptions",
     keywordsCategory="Advanced/Diff"
@@ -69,7 +70,7 @@ import java.io.IOException;
 )
 public class DiffOptionsController extends OptionsPanelController {
 
-    public static final String OPTIONS_SUBPATH = "org-netbeans-modules-diff-options-DiffOptionsController"; // NOI18N
+    public static final String OPTIONS_SUBPATH = "Diff";
 
     private DiffOptionsPanel panel;
     

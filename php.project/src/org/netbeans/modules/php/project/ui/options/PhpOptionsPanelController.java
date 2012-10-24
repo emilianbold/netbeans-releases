@@ -56,6 +56,7 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     displayName="#LBL_GeneralOptions",
 //    toolTip="#LBL_GeneralOptionsTooltip",
+    id=PhpOptionsPanelController.ID,
     location=UiUtils.OPTIONS_PATH,
     position=100
 )

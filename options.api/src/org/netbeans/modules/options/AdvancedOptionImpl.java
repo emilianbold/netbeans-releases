@@ -89,7 +89,7 @@ public class AdvancedOptionImpl extends AdvancedOption {
      * @return list of keywords for each optioncategory sub-panel
      */
     public Set<String> getKeywordsByCategory() {
-	if (keywordsCategory != null && keywords != null) {
+	if (keywords != null) {
 	    return Collections.singleton(keywords);
 	} else {
 	    return Collections.emptySet();

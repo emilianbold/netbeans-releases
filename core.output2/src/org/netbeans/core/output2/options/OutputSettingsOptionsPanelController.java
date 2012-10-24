@@ -51,7 +51,8 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
 displayName = "#AdvancedOption_DisplayName_OutputSettings",
 keywords = "#AdvancedOption_Keywords_OutputSettings",
-keywordsCategory = "Advanced/OutputSettings")
+keywordsCategory = "Advanced/OutputSettings",
+id="OutputSettings")
 @org.openide.util.NbBundle.Messages({
     "AdvancedOption_DisplayName_OutputSettings=Output",
     "AdvancedOption_Keywords_OutputSettings=Output Window Font Color"})
