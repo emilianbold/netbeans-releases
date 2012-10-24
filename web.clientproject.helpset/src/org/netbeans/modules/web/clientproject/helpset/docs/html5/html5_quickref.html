@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 1997, 2011, Oracle and/or its affiliates.  
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>HTML5 Application Tasks: Quick Reference</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta name="keywords" content="enterprise" />
+    </head>
+
+    <body>
+        <h2>HTML5 Application Tasks: Quick Reference</h2>
+        <p> This topic describes common tasks you might want to perform when you are
+            developing HTML5 applications. For
+            more detailed information, click the links in the right column. </p>
+
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+               task name. The right column lists the steps to perform.">
+            <tr valign="top">
+                <th scope="col" align="left">To perform this task</th>
+                <th scope="col" align="left">Follow these steps</th>
+            </tr>
+            <tr valign="top">
+                <td>Create a project.</td>
+                <td>
+                    <ol>
+                        <li>Choose File &gt; New Project (Ctrl-Shift-N).</li>
+                        <li>Select the correct <a href="html5-createproj.html">template</a> for your project.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Add a JavaScript library to a project.</td>
+                <td>
+                    <ol>
+                        <li>In the Projects window, right-click the project node and
+                            choose Properties.</li>
+                        <li>Select the JavaScript Files category in the Project Properties dialog box.</li>
+                        <li>Select the JavaScript file from the list in the left pane and click the right arrow button
+                            to move the selected file to the list in the right pane. Click OK.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Specify the target browser.</td>
+                <td>
+                    <ol>
+                        <li>Select the project node in the Projects window.</li>
+                        <li><a href="html5-runproject.html">Select the browser</a> from the dropdown list in the Toolbar.
+                            <p>Alternatively, right-click the project node and choose Properties
+                                in the popup menu and then select a browser from the dropdown list
+                                in the Run panel of the Project Properties window.</p>
+                        </li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Inspect source code with the browser.</td>
+                <td>
+                    <ol>
+                        <li>Specify Chrome with NetBeans Integration as the target browser and <a href="html5-chrome.html">install the NetBeans extension for Chrome</a>.
+                            <p>Alternatively, you can specify Embedded WebKit Browser. </p></li>
+                        <li>Run the project.</li>
+                        <li>Enable <a href="html5-inspect.html">Inspect in NetBeans Mode</a>.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Preview the application in various browser sizes.</td>
+                <td>
+                    <ol>
+                        <li>Specify either Chrome with NetBeans Integration or Embedded WebKit Browser as the target browser.</li>
+                        <li>Run the project.</li>
+                        <li>Select one of the standard browser sizes or create
+                        a custom browser size.</li>
+                    </ol>
+                </td>
+            </tr>
+
+            
+            
+
+            
+            <tr valign="top">
+                <td>Run a project.</td>
+                <td>
+                    <ol>
+                        <li>In the Projects window, right-click the project node and
+                            choose Properties.</li>
+                        <li>Select the Run category in the Project Properties dialog box.</li>
+                        <li>Select a browser from the Browser dropdown list. Click OK.</li>
+                        <li>Right-click the project node in the Projects window and choose Run.</li>
+                    </ol>
+                </td>
+            </tr>
+
+            <tr valign="top">
+                <td>Modify deployment settings.</td>
+                <td>
+                    <p>Do one or both of the following:</p>
+
+                    <ul>
+                        <li><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/webbrowser/default.html">Change the browser</a>.</li>
+                        <li><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/deploy/deploy_changeserver.html">Change the server</a>.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Verify an enterprise application.</td>
+                <td>
+                    <ol>
+                        <li>Right-click any module project whose target server is the Sun Java
+                            System Application Server/GlassFish and choose Verify.
+                            <p>The Verifier window opens and displays all the results.</p>
+                        </li>
+                        <li>Filter the results according to your needs:
+                            <ul>
+                                <li>Click Failures Only to display only failures.</li>
+                                <li>Click Failures and Warnings Only to display only failures and warnings.</li>
+                            </ul>
+                        <li>Make appropriate changes, if any, and verify the project again.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Debug a project.</td>
+                <td>
+                    <ol>
+                        <li>Set the project as the <a href="nbdocs:/org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_main.html">main project</a>
+                        and choose Debug &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_local.html">Debug
+                        Main Project</a> (Ctrl-F5) or right-click the project in the Projects window and choose Debug.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Attach source code to libraries for debugging.</td>
+                <td>
+                    <p>Instead of debugging the source code of a library that you created in the IDE,
+                        debug the project where you created the library.
+                        But, if you want to debug a library created outside the IDE, do the following:
+                    <ol>
+                        <li>Choose Tools &gt; Ant Libraries from the main menu.</li>
+                        <li>If the JAR file is not already registered in the Ant Library Manager,
+                            create a new library using the Add Library button.</li>
+                        <li>Select the library in the left panel of the Ant Library Manager.</li>
+                        <li>In the Classpath tab, click Add JAR/Folder and specify the location
+                            of the JAR file containing the compiled class files. A library can contain
+                            multiple JAR files.</li>
+                        <li>In the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_source.html">Sources tab</a>, add the
+                            folder or archive file containing the source code. </li>
+                    </ol>
+                </td>
+            </tr>
+            
+            
+            
+        </table>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+    </body>
+</html>
