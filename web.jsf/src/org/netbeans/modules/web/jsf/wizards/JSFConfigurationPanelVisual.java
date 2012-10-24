@@ -361,7 +361,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                                 }
                             }
                         } catch (IOException exception) {
-                            Exceptions.printStackTrace(exception);
+                            LOG.log(Level.INFO, "", exception);
                         }
                     }
 
@@ -506,7 +506,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                     serverJsfLibraries.add(new ServerLibraryItem(null, jsfVersion));
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.INFO, "", ex);
             }
 
             setServerLibraryModel(serverJsfLibraries);
