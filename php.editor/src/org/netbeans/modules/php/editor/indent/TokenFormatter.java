@@ -170,8 +170,7 @@ public class TokenFormatter {
         public CodeStyle.WrapStyle wrapMethodParams;
         public CodeStyle.WrapStyle wrapMethodCallArgs;
         public CodeStyle.WrapStyle wrapChainedMethodCalls;
-        @org.netbeans.api.annotations.common.SuppressWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-        public CodeStyle.WrapStyle wrapArrayInit; // not implemented yet
+        public CodeStyle.WrapStyle wrapArrayInit;
         public CodeStyle.WrapStyle wrapFor;
         public CodeStyle.WrapStyle wrapForStatement;
         public CodeStyle.WrapStyle wrapIfStatement;
@@ -778,6 +777,35 @@ public class TokenFormatter {
                                                 break;
                                         }
                                         break;
+                                    case WHITESPACE_IN_ARRAY_ELEMENT_LIST:
+                                        switch (docOptions.wrapArrayInit) {
+                                            case WRAP_ALWAYS:
+                                                indentRule = true;
+                                                newLines = 1;
+                                                countSpaces = docOptions.alignMultilineArrayInit ? lastAnchor.getAnchorColumn() : indent;
+                                                break;
+                                            case WRAP_NEVER:
+                                                if (isAfterLineComment(formatTokens, index)) {
+                                                    indentRule = true;
+                                                    newLines = 1;
+                                                    countSpaces = docOptions.alignMultilineArrayInit ? lastAnchor.getAnchorColumn() : indent;
+                                                } else {
+                                                    newLines = 0;
+                                                    countSpaces = docOptions.spaceAfterComma ? 1 : 0;
+                                                }
+                                                break;
+                                            case WRAP_IF_LONG:
+                                                if (isAfterLineComment(formatTokens, index) || column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                    indentRule = true;
+                                                    newLines = 1;
+                                                    countSpaces = docOptions.alignMultilineArrayInit ? lastAnchor.getAnchorColumn() : indent;
+                                                } else {
+                                                    newLines = 0;
+                                                    countSpaces = docOptions.spaceAfterComma ? 1 : 0;
+                                                }
+                                                break;
+                                        }
+                                        break;
                                     case WHITESPACE_AROUND_OBJECT_OP:
                                         countSpaces = docOptions.spaceAroundObjectOp ? 1 : 0;
                                         break;
@@ -960,21 +988,36 @@ public class TokenFormatter {
                                             countSpaces = 1;
                                         }
                                         break;
-                                    case WHITESPACE_WITHIN_ARRAY_DECL_PARENS:
-                                        int hIndex = index - 1;
-                                        FormatToken token;
-                                        do {
-                                            token = formatTokens.get(hIndex);
-                                            hIndex--;
-
-                                        } while (token.getId() != FormatToken.Kind.WHITESPACE_INDENT
-                                                && token.getId() != FormatToken.Kind.TEXT
-                                                && hIndex > 0);
-                                        if (token.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
-                                            countSpaces = indent;
-                                        } else {
-                                            countSpaces = docOptions.spaceWithinArrayDeclParens ? 1 : 0;
+                                    case WHITESPACE_AFTER_ARRAY_DECL_LEFT_PAREN:
+                                        switch (docOptions.wrapArrayInit) {
+                                            case WRAP_ALWAYS:
+                                                indentRule = true;
+                                                newLines = 1;
+                                                countSpaces = docOptions.alignMultilineArrayInit ? lastAnchor.getAnchorColumn() : indent;
+                                                break;
+                                            case WRAP_NEVER:
+                                                if (isAfterLineComment(formatTokens, index)) {
+                                                    newLines = 1;
+                                                    countSpaces = docOptions.alignMultilineArrayInit ? lastAnchor.getAnchorColumn() : indent;
+                                                } else {
+                                                    newLines = 0;
+                                                    countSpaces = countSpacesForArrayDeclParens(index, indent, formatTokens);
+                                                }
+                                                break;
+                                            case WRAP_IF_LONG:
+                                                if (isAfterLineComment(formatTokens, index) || column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                    indentRule = true;
+                                                    newLines = 1;
+                                                    countSpaces = docOptions.alignMultilineArrayInit ? lastAnchor.getAnchorColumn() : indent;
+                                                } else {
+                                                    newLines = 0;
+                                                    countSpaces = countSpacesForArrayDeclParens(index, indent, formatTokens);
+                                                }
+                                                break;
                                         }
+                                        break;
+                                    case WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN:
+                                        countSpaces = countSpacesForArrayDeclParens(index, indent, formatTokens);
                                         break;
                                     case WHITESPACE_WITHIN_METHOD_DECL_PARENS:
                                         int helpIndex = index - 1;
@@ -1547,6 +1590,25 @@ public class TokenFormatter {
                     long end = System.currentTimeMillis();
                     LOGGER.log(Level.FINE, "Applaying format stream took: {0} ms", (end - start.get())); // NOI18N
                 }
+            }
+
+            private int countSpacesForArrayDeclParens(int index, int indent, List<FormatToken> formatTokens) {
+                int countSpaces;
+                int hIndex = index - 1;
+                FormatToken token;
+                do {
+                    token = formatTokens.get(hIndex);
+                    hIndex--;
+
+                } while (token.getId() != FormatToken.Kind.WHITESPACE_INDENT
+                        && token.getId() != FormatToken.Kind.TEXT
+                        && hIndex > 0);
+                if (token.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+                    countSpaces = indent;
+                } else {
+                    countSpaces = docOptions.spaceWithinArrayDeclParens ? 1 : 0;
+                }
+                return countSpaces;
             }
 
             private int countLastBracedBlockIndent(int indent, CharSequence oldText) {
