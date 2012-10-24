@@ -170,11 +170,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         incSearchTextField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                if (ReplaceBar.getInstance(SearchBar.getInstance()).isVisible()) {
-                    ReplaceBar.getInstance(SearchBar.getInstance()).getReplaceTextField().select(0, 0);
-                }
                 hadFocusOnIncSearchTextField = true;
-                incSearchTextField.selectAll();
             }
         });
 
