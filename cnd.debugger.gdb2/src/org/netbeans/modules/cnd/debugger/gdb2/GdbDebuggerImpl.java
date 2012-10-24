@@ -951,7 +951,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
 
 	protected void onError(MIRecord record) {
-	    if (failureChain == null && reportError) {
+            if (failureChain == null && reportError) {
 		genericFailure(record);
             }
 	    finish();
@@ -4062,7 +4062,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 return;  // In order to avoid errors in multiple locations breakpoints
             }
 	}
-        newHandler(rt, (MIResult) results.get(0), bp);
+        if (results.size() > 0) {   // IN case of async BPs we get "^done" response
+            newHandler(rt, (MIResult) results.get(0), bp);
+        }
     }
 
     private void newHandler(int rt, MIResult result, BreakpointPlan bp) {
@@ -4253,6 +4255,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             if (isConsoleCommand()) {
                 cliBreakpointsRTs.add(rt);
             }
+        }
+
+        @Override
+        protected void onError(MIRecord record) {
+            cliBreakpointsRTs.poll();   // removing routing tokens in case of error
+            super.onError(record);
         }
 
         @Override

@@ -170,11 +170,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         incSearchTextField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                if (ReplaceBar.getInstance(SearchBar.getInstance()).isVisible()) {
-                    ReplaceBar.getInstance(SearchBar.getInstance()).getReplaceTextField().select(0, 0);
-                }
                 hadFocusOnIncSearchTextField = true;
-                incSearchTextField.selectAll();
             }
         });
 
@@ -862,6 +858,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                         selText = selText.substring(0, n);
                     }
                     incSearchTextField.setText(selText);
+                    searchProps.setProperty(EditorFindSupport.FIND_WHAT, selText);
                 } else {
                     if (isClosingSearchType()) {
                         String findWhat = (String) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_WHAT);

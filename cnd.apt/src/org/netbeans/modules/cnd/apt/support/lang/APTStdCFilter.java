@@ -126,5 +126,6 @@ class APTStdCFilter extends APTBaseLanguageFilter {
         filter("__restrict", APTTokenTypes.LITERAL___restrict); // NOI18N    
         filter("_Complex", APTTokenTypes.LITERAL__Complex); // NOI18N
         filter("_Imaginary", APTTokenTypes.LITERAL__Imaginary); // NOI18N
+        filter("_Noreturn", APTTokenTypes.LITERAL__Noreturn); // NOI18N        
     }    
 }

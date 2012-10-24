@@ -44,6 +44,7 @@ package org.netbeans.modules.groovy.refactoring.findusages.model;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -54,6 +55,11 @@ public class ClassRefactoringElement extends RefactoringElement {
 
     public ClassRefactoringElement(FileObject fileObject, ASTNode node) {
         super(fileObject, node);
+    }
+
+    @Override
+    public String getName() {
+        return ElementUtils.getNameWithoutPackage(node);
     }
 
     @Override

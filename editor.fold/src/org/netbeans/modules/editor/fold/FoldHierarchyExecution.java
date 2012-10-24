@@ -78,6 +78,7 @@ import org.netbeans.spi.editor.fold.FoldOperation;
 import org.netbeans.lib.editor.util.PriorityMutex;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /**
  * Class backing the <code>FoldHierarchy</code> in one-to-one relationship.
@@ -161,7 +162,13 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     
     private PropertyChangeListener componentChangesListener;
     
+    private Task initTask;
+    
     public static synchronized FoldHierarchy getOrCreateFoldHierarchy(JTextComponent component) {
+        return getOrCreateFoldExecution(component).getHierarchy();
+    }
+    
+    private static synchronized FoldHierarchyExecution getOrCreateFoldExecution(JTextComponent component) {
         if (component == null) {
             throw new NullPointerException("component cannot be null"); // NOI18N
         }
@@ -176,7 +183,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             component.putClientProperty(FoldHierarchyExecution.class, execution);
         }
         
-        return execution.getHierarchy();
+        return execution;
     }
     
     /**
@@ -228,7 +235,16 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         // Start listening on component changes
         startComponentChangesListening();
 
-        RP.post(this);
+        this.initTask = RP.post(this);
+    }
+    
+    /* testing only */
+    static void waitHierarchyInitialized(JTextComponent panel) {
+        getOrCreateFoldExecution(panel).getInitTask().waitFinished();
+    }
+    
+    private Task getInitTask() {
+        return initTask;
     }
     
     @Override

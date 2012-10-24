@@ -71,7 +71,8 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
     
     @Override
     public String[] getProperties() {
-        return new String[] { DebuggerManager.PROP_DEBUGGER_ENGINES };
+        return new String[] { DebuggerManager.PROP_DEBUGGER_ENGINES,
+                              DebuggerManager.PROP_CURRENT_ENGINE };
     }
     
     @Override
@@ -126,6 +127,22 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
                     Project project = pc != null ? pc.getProject() : null;
                     Line line = MiscEditorUtil.getLine(project, script, cf.getLineNumber());
                     MiscEditorUtil.showLine(line, true);
+                }
+            }
+        }
+        if (DebuggerManager.PROP_CURRENT_ENGINE.equals(propertyName)) {
+            DebuggerEngine engine = (DebuggerEngine) evt.getNewValue();
+            if (engine != null) {
+                Debugger d = engine.lookupFirst("", Debugger.class);
+                if (d != null) {
+                    pc = engine.lookupFirst(null, ProjectContext.class);
+                    List<CallFrame> stackTrace;
+                    if (d.isSuspended()) {
+                        stackTrace = d.getCurrentCallStack();
+                    } else {
+                        stackTrace = Collections.emptyList();
+                    }
+                    updateAnnotations(stackTrace);
                 }
             }
         }

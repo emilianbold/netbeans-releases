@@ -751,6 +751,7 @@ public final class CndLexerUtilities {
             CppTokenId._BOOL, // C
             CppTokenId._COMPLEX, // C
             CppTokenId._IMAGINARY, // C
+            CppTokenId._NORETURN, // C11
         };
         addToFilter(ids, filterToModify);
     }

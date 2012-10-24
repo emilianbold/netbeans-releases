@@ -88,9 +88,9 @@ public final class AnnotationUtil {
     public static final String NORMAL_SCOPE_FQN 
                                           = "javax.enterprise.context."+NORMAL_SCOPE;// NOI18N
     
-    public static String SCOPE =    "Scope";                                        // NOI18N
+    public static final String SCOPE =    "Scope";                                  // NOI18N
     
-    public static String SCOPE_FQN = "javax.inject."+SCOPE;                         // NOI18N
+    public static final String SCOPE_FQN = "javax.inject."+SCOPE;                   // NOI18N
     
     public static final String DISPOSES = "Disposes";                               // NOI18N
     
