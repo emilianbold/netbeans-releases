@@ -679,7 +679,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (gdb != null && gdb.connected()) {
             // see IZ 191508, need to pause before exit
             // or kill gdb if process pid is unavailable
-            if (!pause(true)) {
+            if (getHost().getPlatform() == Platform.Windows_x86 || !pause(true)) {
                 try {
                     executor.terminate();
                     kill();
@@ -3606,8 +3606,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             protected void onDone(MIRecord record) {
                 if (isCore) {
                     state().isCore = true;
-                } else {
-                    getFullPath(null);
                 }
 
 		gdb.startProgressManager().finishProgress();

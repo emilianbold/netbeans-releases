@@ -53,6 +53,10 @@ public final class FxNewInstance extends FxInstance {
     private String          typeName;
     private String          initValue;
     private String          factoryMethod;
+    /**
+     * true, if the init value is a declared constant (fx:constant)
+     */
+    private boolean         constantValue;
     
     /**
      * True, if the instance represents a fx:root element - custom root.
@@ -104,6 +108,14 @@ public final class FxNewInstance extends FxInstance {
     FxNewInstance usingFactory(String factory) {
         this.factoryMethod = factory;
         return this;
+    }
+    
+    void setConstant(boolean constant) {
+        this.constantValue = constant;
+    }
+    
+    public boolean isConstant() {
+        return constantValue;
     }
     
     void resolveClass(String className, ElementHandle<TypeElement> handle) {

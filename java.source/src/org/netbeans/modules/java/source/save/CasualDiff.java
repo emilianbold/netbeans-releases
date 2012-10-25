@@ -1920,7 +1920,7 @@ public class CasualDiff {
             }
             copyTo(localPointer, startPos);
             PositionEstimator est = EstimatorFactory.annotations(oldAnnotations,newAnnotations, diffContext, parameterPrint);
-            localPointer = diffList(oldAnnotations, newAnnotations, startPos, est, Measure.DEFAULT, printer);
+            localPointer = diffList(oldAnnotations, newAnnotations, startPos, est, Measure.ARGUMENT, printer);
         }
 
         return localPointer;

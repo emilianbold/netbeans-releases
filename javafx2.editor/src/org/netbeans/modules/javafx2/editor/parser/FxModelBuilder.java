@@ -237,6 +237,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         String fxValueContent = null;
         String fxFactoryContent = null;
         String fxId = null;
+        boolean constant = false;
         
         int off = contentLocator.getElementOffset() + 1; // the <
         
@@ -249,6 +250,9 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             String name = atts.getLocalName(i);
             if (FX_VALUE.equals(name)) {
                 fxValueContent = atts.getValue(i);
+            } else if (FX_ATTR_CONSTANT.equals(name)) {
+                fxValueContent = atts.getValue(i);
+                constant = true;
             } else if (FX_FACTORY.equals(name)) {
                 fxFactoryContent = atts.getValue(i);
             } else if (FX_ID.equals(name)) {
@@ -274,7 +278,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         }
         
         // first we must check how this class tag is created. 
-        FxNewInstance instance = accessor.createInstance(localName, fxValueContent, fxFactoryContent, fxId);
+        FxNewInstance instance = accessor.createInstance(localName, fxValueContent, constant, fxFactoryContent, fxId);
         
         if (!FxXmlSymbols.isQualifiedIdentifier(localName)) {
             // not a java identifier, error
@@ -337,7 +341,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             }
             
             if (FXML_FX_NAMESPACE.equals(uri)) {
-                if (!(FX_ID.equals(name) || FX_CONTROLLER.equals(name) || FX_VALUE.equals(name) || FX_FACTORY.contains(name))) {
+                if (!FxXmlSymbols.isFxReservedAttribute(name)) {
                     addAttributeError(qname, "error-unsupported-attribute", 
                             ERR_unsupportedAttribute(qname, tagName), 
                             qname, tagName);
