@@ -182,7 +182,10 @@ public class PropertyCompleter extends InstanceCompleter {
     @Override
     public List<CompletionItem> complete() {
         init();
-        
+
+        if (getBeanInfo() == null) {
+            return null;
+        }
         Set<String> names = new HashSet<String>();
         if (ctx.getCompletionType() == CompletionProvider.COMPLETION_QUERY_TYPE) {
             addImportantProperties();

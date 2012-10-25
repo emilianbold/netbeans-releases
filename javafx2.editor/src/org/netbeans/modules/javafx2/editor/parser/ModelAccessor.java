@@ -102,6 +102,7 @@ public abstract class ModelAccessor {
     public abstract LanguageDecl createLanguage(String lang);
     public abstract FxInclude createInclude(String included);
     public abstract FxNewInstance createInstance(String sourceName, CharSequence value, String factory, String id);
+    public abstract FxNewInstance createCustomRoot(String sourceName, String id);
     public abstract FxObjectBase createCopyReference(boolean copy, String targetName);
     public abstract PropertySetter createProperty(String name, boolean implicit);
     public abstract StaticProperty createStaticProperty(String name, String sourceName);
