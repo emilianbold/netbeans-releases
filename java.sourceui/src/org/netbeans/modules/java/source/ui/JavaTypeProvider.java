@@ -504,6 +504,7 @@ public class JavaTypeProvider implements TypeProvider {
     static final class CacheItem {
         
         public final URL root;
+        public final URI rootURI;
         public String projectName;
         public Icon projectIcon;
         private final boolean isBinary;
@@ -512,15 +513,16 @@ public class JavaTypeProvider implements TypeProvider {
         private final String cpType;
         private FileObject cachedRoot;
 
-        public CacheItem (final URL root, final String cpType) {
+        public CacheItem (final URL root, final String cpType) throws URISyntaxException  {
             this.cpType = cpType;
             this.isBinary = ClassPath.BOOT.equals(cpType) || ClassPath.COMPILE.equals(cpType);
             this.root = root;
+            this.rootURI = root == null ? null : root.toURI();
         }
 
         @Override
         public int hashCode () {
-            return this.root == null ? 0 : this.root.hashCode();
+            return this.rootURI == null ? 0 : this.rootURI.hashCode();
         }
 
         @Override
@@ -530,7 +532,7 @@ public class JavaTypeProvider implements TypeProvider {
             }
             if (other instanceof CacheItem) {
                 CacheItem otherItem = (CacheItem) other;
-                return this.root == null ? otherItem.root == null : this.root.equals(otherItem.root);
+                return this.rootURI == null ? otherItem.rootURI == null : this.rootURI.equals(otherItem.rootURI);
             }
             return false;
         }
@@ -614,16 +616,12 @@ public class JavaTypeProvider implements TypeProvider {
         }
 
         private void initProjectInfo() {
-            try {
-                Project p = FileOwnerQuery.getOwner(this.root.toURI());
-                if (p != null) {
-                    ProjectInformation pi = ProjectUtils.getInformation( p );
-                    projectName = pi.getDisplayName();
-                    projectIcon = pi.getIcon();
-                }
-            } catch (URISyntaxException e) {
-                Exceptions.printStackTrace(e);
-            }
+            Project p = FileOwnerQuery.getOwner(this.rootURI);
+            if (p != null) {
+                ProjectInformation pi = ProjectUtils.getInformation( p );
+                projectName = pi.getDisplayName();
+                projectIcon = pi.getIcon();
+            }            
         }
 
         @NonNull
