@@ -10,6 +10,9 @@
     <mapID target="html5-process" url="html5/html5-process.html"/>
     <mapID target="html5-debug" url="html5/html5-debug.html"/>
     <mapID target="html5-chrome" url="html5/html5-chrome.html"/>
+    <mapID target="html5-inspect" url="html5/html5-inspect.html"/>
+    <mapID target="html5-run" url="html5/html5-runproject.html"/>
+    <mapID target="html5-create" url="html5/html5-createproj.html"/>
     
     
     
