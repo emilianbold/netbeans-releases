@@ -56,7 +56,7 @@ import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
 /**
- * Base class for actions return via {@link HistoryEntry#getActions()}.
+ * Base class for actions returned via {@link HistoryEntry#getActions()}.
  * 
  * @author Tomas Stupka
  */
