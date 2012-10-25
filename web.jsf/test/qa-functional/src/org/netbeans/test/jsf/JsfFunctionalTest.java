@@ -37,6 +37,7 @@
  */
 package org.netbeans.test.jsf;
 
+import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import junit.framework.Test;
@@ -45,6 +46,7 @@ import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -360,8 +362,18 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         webPages.setComparator(new DefaultStringComparator(true, true));
         Node webXML = new Node(webPages, "WEB-INF|web.xml");
         new EditAction().performAPI(webXML);
-        EditorOperator webXMLEditor = new EditorOperator("web.xml");
-        assertTrue("web.xml should contain /faces/*", webXMLEditor.contains("/faces/*"));
+        final EditorOperator webXMLEditor = new EditorOperator("web.xml");
+        webXMLEditor.waitState(new ComponentChooser() {
+            @Override
+            public boolean checkComponent(Component comp) {
+                return webXMLEditor.contains("/faces/*");
+            }
+
+            @Override
+            public String getDescription() {
+                return "web.xml contains /faces/*";
+            }
+        });
         webXMLEditor.close();
         new CloseAction().perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME + "2"));
     }
