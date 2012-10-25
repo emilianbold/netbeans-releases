@@ -178,6 +178,10 @@ public abstract class OptionsPanelController {
      * Handle successful search in some panel in options window.
      * By default no action is performed. Each implementor should make special
      * actions, for example to choose a specific sub-panel, if this is required.
+     *
+     * <p>Note that if the search is cleared (user presses <code>Esc</code> or <code>Enter</code> with empty text)
+     * this method is called with <code>null</code> as values for both the parameters, giving the
+     * implementors the chance to undo the filtering done is some previous invocation.
      * @param searchText the text the user has entered in the search box in the options window.
      * @param matchedKeywords the list of matched keywords for a specific panel in the options window.
      * @since 1.30
