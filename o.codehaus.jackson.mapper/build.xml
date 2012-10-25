@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="o.codehaus.jackson.mapper" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/jackson-mapper-asl-1.9.2.jar"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="org.codehaus.jackson.mapper"/>
+                <attribute name="Bundle-Version" value="1.9.2"/>
+                <attribute name="Implementation-Title" value="Data mapper for Jackson JSON processor"/>
+                <attribute name="Implementation-Version" value="1.9.2"/>
+                <attribute name="Export-Package" 
+                           value="org.codehaus.jackson.schema;
+                                    uses:=&quot;org.codehaus.jackson.node,
+                                                org.codehaus.jackson.map,
+                                                org.codehaus.jackson.annotate,
+                                                org.codehaus.jackson&quot;;
+                                    version=&quot;1.9.2&quot;,
+                                  org.codehaus.jackson.map.deser.impl;
+                                    uses:=&quot;org.codehaus.jackson.map.type,
+                                                org.codehaus.jackson.type,
+                                                org.codehaus.jackson.map.deser,
+                                                org.codehaus.jackson.map,
+                                                org.codehaus.jackson.util,
+                                                org.codehaus.jackson.map.introspect,
+                                                org.codehaus.jackson.map.util,
+                                                org.codehaus.jackson.map.deser.std,
+                                                org.codehaus.jackson&quot;;
+                                    version=&quot;1.9.2&quot;,
+                                  org.codehaus.jackson.map.exc;
+                                    uses:=&quot;org.codehaus.jackson.map,
+                                                org.codehaus.jackson&quot;;
+                                    version=&quot;1.9.2&quot;,
+                                  org.codehaus.jackson.map.annotate;
+                                    uses:=&quot;org.codehaus.jackson.map,
+                                                org.codehaus.jackson.annotate&quot;;
+                                    version=&quot;1.9.2&quot;,
+                                  org.codehaus.jackson.map.ser.impl;
+                                    uses:=&quot;org.codehaus.jackson.io,
+                                                org.codehaus.jackson.map,
+                                                org.codehaus.jackson.map.ser.std,
+                                                org.codehaus.jackson,
+                                                org.codehaus.jackson.map.ser,
+                                                org.codehaus.jackson.type&quot;;
+                                    version=&quot;1.9.2&quot;,
+                                  org.codehaus.jackson.map.ser.std;
+                                    uses:=&quot;org.codehaus.jackson.schema,
+                                                org.codehaus.jackson.map.annotate,
+                                                org.codehaus.jackson.map.ser.impl,
+                                                org.codehaus.jackson.map.type,
+                                                org.codehaus.jackson.type,
+                                                org.codehaus.jackson.io,
+                                                org.codehaus.jackson.node,
+                                                org.codehaus.jackson.map,
+                                                org.codehaus.jackson.util,
+                                                org.codehaus.jackson.map.introspect,
+                                                org.codehaus.jackson.map.util,
+                                                org.codehaus.jackson,org.codehaus.jackson.map.ser&quot;;
+                                    version=&quot;1.9.2&quot;,
+                                  org.codehaus.jackson.map.type;
+                                    uses:=&quot;org.codehaus.jackson.map,
+                                                org.codehaus.jackson.map.util,
+                                                org.codehaus.jackson,
+                                                org.codehaus.jackson.type&quot;;
+                                    version=&quot;1.9.2&quot;,
+                                  org.codehaus.jackson.map.module;
+                                    uses:=&quot;org.codehaus.jackson.map.deser,
+                                                org.codehaus.jackson.map,
+                                                org.codehaus.jackson.map.type,
+                                                org.codehaus.jackson,
+                                                org.codehaus.jackson.type&quot;;
+                                    version=&quot;1.9.2&quot;,
+                                org.codehaus.jackson.node;
+                                    uses:=&quot;org.codehaus.jackson.io,
+                                                org.codehaus.jackson.map,
+                                                org.codehaus.jackson.util,
+                                                org.codehaus.jackson.impl,
+                                                org.codehaus.jackson&quot;;
+                                    version=&quot;1.9.2&quot;,
+                                org.codehaus.jackson.map;
+                                    uses:=&quot;org.codehaus.jackson.format,
+                                                org.codehaus.jackson.schema,
+                                                org.codehaus.jackson.map.annotate,
+                                                org.codehaus.jackson.annotate,
+                                                org.codehaus.jackson.map.type,
+                                                org.codehaus.jackson.type,
+                                                org.codehaus.jackson.io,
+                                                org.codehaus.jackson.node,
+                                                org.codehaus.jackson.map.deser,
+                                                org.codehaus.jackson.util,
+                                                org.codehaus.jackson.map.introspect,
+                                                org.codehaus.jackson.map.jsontype,
+                                                org.codehaus.jackson.map.util,
+                                                org.codehaus.jackson,
+                                                org.codehaus.jackson.map.ser,
+                                                org.codehaus.jackson.map.jsontype.impl&quot;;
+                                    version=&quot;1.9.2&quot;,
+                                org.codehaus.jackson.map.deser;uses:=&quot;org.codehaus.jackson.map.exc,org.codehaus.jackson.map.deser.impl,org.codehaus.jackson.map.annotate,org.codehaus.jackson.annotate,org.codehaus.jackson.map.type,org.codehaus.jackson.type,org.codehaus.jackson.io,org.codehaus.jackson.node,org.codehaus.jackson.map,org.codehaus.jackson.util,org.codehaus.jackson.map.introspect,org.codehaus.jackson.map.jsontype,org.codehaus.jackson.map.util,org.codehaus.jackson,org.codehaus.jackson.map.deser.std&quot;;version=&quot;1.9.2&quot;,org.codehaus.jackson.map.introspect;uses:=&quot;org.codehaus.jackson.map.annotate,org.codehaus.jackson.map.ser.std,org.codehaus.jackson.annotate,org.codehaus.jackson.map.type,org.codehaus.jackson.type,org.codehaus.jackson.map,org.codehaus.jackson.map.jsontype,org.codehaus.jackson.map.util,org.codehaus.jackson.map.jsontype.impl&quot;;version=&quot;1.9.2&quot;,org.codehaus.jackson.map.jsontype;uses:=&quot;org.codehaus.jackson.map,org.codehaus.jackson.annotate,org.codehaus.jackson.map.introspect,org.codehaus.jackson.type&quot;;version=&quot;1.9.2&quot;,org.codehaus.jackson.map.util;uses:=&quot;org.codehaus.jackson.io,org.codehaus.jackson.map,org.codehaus.jackson.map.type,org.codehaus.jackson.map.introspect,org.codehaus.jackson,org.codehaus.jackson.type&quot;;version=&quot;1.9.2&quot;,org.codehaus.jackson.map.deser.std;uses:=&quot;org.codehaus.jackson.map.deser.impl,org.codehaus.jackson.map.annotate,org.codehaus.jackson.map.type,org.codehaus.jackson.type,org.codehaus.jackson.io,org.codehaus.jackson.node,org.codehaus.jackson.map,org.codehaus.jackson.map.deser,org.codehaus.jackson.util,org.codehaus.jackson.map.introspect,org.codehaus.jackson,org.codehaus.jackson.map.util&quot;;version=&quot;1.9.2&quot;,org.codehaus.jackson.map.jsontype.impl;uses:=&quot;org.codehaus.jackson.annotate,org.codehaus.jackson.map.type,org.codehaus.jackson.type,org.codehaus.jackson.map,org.codehaus.jackson.util,org.codehaus.jackson.map.introspect,org.codehaus.jackson.map.jsontype,org.codehaus.jackson,org.codehaus.jackson.map.util&quot;;version=&quot;1.9.2&quot;,org.codehaus.jackson.map.ser;uses:=&quot;org.codehaus.jackson.schema,org.codehaus.jackson.map.annotate,org.codehaus.jackson.map.ser.impl,org.codehaus.jackson.map.ser.std,org.codehaus.jackson.map.type,org.codehaus.jackson.type,org.codehaus.jackson.node,org.codehaus.jackson.io,org.codehaus.jackson.map,org.codehaus.jackson.util,org.codehaus.jackson.map.introspect,org.codehaus.jackson.map.jsontype,org.codehaus.jackson.map.util,org.codehaus.jackson&quot;;version=&quot;1.9.2&quot;"/>
+                <attribute name="Import-Package" value="javax.xml.datatype,javax.xml.namespace,javax.xml.parsers,org.codehaus.jackson;version=&quot;1.9.2&quot;,org.codehaus.jackson.annotate;version=&quot;1.9.2&quot;,org.codehaus.jackson.format;version=&quot;1.9.2&quot;,org.codehaus.jackson.impl;version=&quot;1.9.2&quot;,org.codehaus.jackson.io;version=&quot;1.9.2&quot;,org.codehaus.jackson.type;version=&quot;1.9.2&quot;,org.codehaus.jackson.util;version=&quot;1.9.2&quot;,org.w3c.dom,org.xml.sax"/>
+            </manifest> 
+        </jar>
+    </target>
+</project>
