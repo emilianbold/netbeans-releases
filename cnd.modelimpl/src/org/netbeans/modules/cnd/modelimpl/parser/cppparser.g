@@ -2428,8 +2428,8 @@ access_specifier
 	;
 
 member_declarator_list
-	:	member_declarator (ASSIGNEQUAL constant_expression)?
-		(COMMA member_declarator (ASSIGNEQUAL constant_expression)?)*
+	:	member_declarator (ASSIGNEQUAL initializer)?
+		(COMMA member_declarator (ASSIGNEQUAL initializer)?)*
 	;
 
 member_declarator
