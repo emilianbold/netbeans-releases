@@ -60,6 +60,7 @@ import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
@@ -246,6 +247,34 @@ public class CsmUtilities {
         return getCsmFile(node.getLookup().lookup(DataObject.class), waitParsing, false);
     }
 
+    public static DataObject getDataObject(JTextComponent component) {
+        if (component == null) {
+            return null;
+        }
+        Document doc = component.getDocument();
+        return (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+    }
+    
+    public static JTextComponent findOpenedEditor(DataObject dob) {
+        if (dob == null) {
+            return null;
+        }
+        List<? extends JTextComponent> componentList = EditorRegistry.componentList();
+        for (JTextComponent comp : componentList) {
+            if (comp instanceof JEditorPane) {
+                DataObject dobj = getDataObject(comp);
+                if (dob.equals(dobj)) {
+                    return (JEditorPane) comp;
+                }
+            }
+        }
+        return null;
+    }
+    
+    /*
+     * redirected into EDT => can block
+     * if interested in opened editor => try findRecentEditor method
+     */
     public static JEditorPane findRecentEditorPaneInEQ(final EditorCookie ec) {
         assert ec != null;
         final JEditorPane[] panes = {null};
@@ -253,6 +282,17 @@ public class CsmUtilities {
             panes[0] = NbDocument.findRecentEditorPane(ec);
         } else {
             try {
+                List<? extends JTextComponent> componentList = EditorRegistry.componentList();
+                for (JTextComponent comp : componentList) {
+                    if (comp instanceof JEditorPane) {
+                        DataObject dobj = getDataObject(comp);
+                        if (dobj != null) {
+                            if (dobj.getLookup().lookup(EditorCookie.class) == ec) {
+                                return (JEditorPane) comp;
+                            }
+                        }
+                    }
+                }
                 SwingUtilities.invokeAndWait(new Runnable() {
 
                     @Override
