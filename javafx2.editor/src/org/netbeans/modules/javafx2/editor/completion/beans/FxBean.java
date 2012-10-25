@@ -107,6 +107,11 @@ public final class FxBean extends FxDefinition {
      * Names of factory methods
      */
     private Set<String> factoryNames = Collections.emptySet();
+    
+    /**
+     * Constants declared at the bean
+     */
+    private Set<String> constants = Collections.emptySet();
 
     /**
      * Definition of the superclass' bean
@@ -415,6 +420,10 @@ public final class FxBean extends FxDefinition {
         this.superclassInfo = parent;
     }
     
+    void setConstants(Set<String> constants) {
+        this.constants = constants;
+    }
+    
     /**
      * Provides FxBean instance for the superclass.
      * Returns {@code null} for no superclass or j.l.Object, which does
@@ -425,6 +434,15 @@ public final class FxBean extends FxDefinition {
     @CheckForNull
     public FxBean getSuperclassInfo() {
         return superclassInfo;
+    }
+
+    /**
+     * Provides constant names for this Bean
+     * 
+     * @return 
+     */
+    public Set<String> getConstants() {
+        return Collections.unmodifiableSet(constants);
     }
     
     public String toString() {

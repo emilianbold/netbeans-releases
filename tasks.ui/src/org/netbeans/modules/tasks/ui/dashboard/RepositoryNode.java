@@ -176,7 +176,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
         for (Query query : queries) {
             QueryNode queryNode = new QueryNode(query, this, !loaded);
             queryNodes.add(queryNode);
-            if ((DashboardViewer.getInstance().expandNodes() && !queryNode.getFilteredTaskNodes().isEmpty()) || !DashboardViewer.getInstance().expandNodes()) {
+            if ((DashboardViewer.getInstance().expandNodes() && queryNode.getFilteredTaskCount() > 0) || !DashboardViewer.getInstance().expandNodes()) {
                 filteredQueryNodes.add(queryNode);
             }
         }
@@ -250,7 +250,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
     public int getFilterHits() {
         int hits = 0;
         for (QueryNode queryNode : filteredQueryNodes) {
-            hits += queryNode.getTotalTaskCount();
+            hits += queryNode.getFilteredTaskCount();
         }
         return hits;
     }
