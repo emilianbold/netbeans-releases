@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.remote.projectui.wizard.ide.OpenProjectList;
 import org.netbeans.modules.cnd.remote.projectui.wizard.ide.OpenProjectListSettings;
 import org.netbeans.modules.cnd.remote.projectui.wizard.ide.ProjectTemplatePanel;
 import org.netbeans.modules.cnd.remote.projectui.wizard.ide.ProjectUtilities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -152,7 +153,7 @@ public class NewRemoteProjectPerformer extends RemoteActionPerformer {
                     //#69618: the non-project cache may contain a project folder listed in newObjects:
                     ProjectManager.getDefault().clearNonProjectCache();
                     ProjectUtilities.WaitCursor.show();
-                    
+                    CndFileUtils.clearFileExistenceCache();
                     if ( newObjects != null && !newObjects.isEmpty() ) {
                         // First. Open all returned projects in the GUI.
 
