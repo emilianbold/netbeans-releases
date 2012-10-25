@@ -727,6 +727,7 @@ public class OptionsPanel extends JPanel {
             }
             setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
             disabledCategories.clear();
+	    CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(null, null);
         }
     }
     
