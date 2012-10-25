@@ -46,6 +46,7 @@ package org.netbeans.core;
 
 import java.awt.EventQueue;
 import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
 import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,20 +90,16 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
     final int cli(String[] args) {
         if (cnt++ == 0) return 0;
         
-        /*
-        for (int i = 0; i < args.length; i++) {
-            if ("--nofront".equals (args[i])) {
-                return 0;
-            }
+        if (!GraphicsEnvironment.isHeadless()) {
+            LOG.fine("CLI running");
+            SwingUtilities.invokeLater(this);
+            task.schedule(EQ_TIMEOUT);
         }
-         */
-        LOG.fine("CLI running");
-        SwingUtilities.invokeLater(this);
-        task.schedule(EQ_TIMEOUT);
         
         return 0;
     }
     
+    @Override
     public void run () {
         if (!EventQueue.isDispatchThread()) {
             eqStuck();
@@ -110,18 +107,7 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
         }
         LOG.fine("running in EQ");
         task.cancel();
-
-        Frame f = WindowManager.getDefault().getMainWindow();
-
-        // makes sure the frame is visible
-        f.setVisible(true);
-        // uniconifies the frame if it is inconified
-        if ((f.getExtendedState() & Frame.ICONIFIED) != 0) {
-            f.setExtendedState(~Frame.ICONIFIED & f.getExtendedState());
-        }
-        // moves it to front and requests focus
-        f.toFront ();
-        
+        frontMainWindow ();
     }
 
     @SuppressWarnings("deprecation") // Thread.stop
@@ -150,6 +136,19 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
             }
         }
         eq.stop();
+    }
+
+    private static void frontMainWindow() {
+        Frame f = WindowManager.getDefault().getMainWindow();
+
+        // makes sure the frame is visible
+        f.setVisible(true);
+        // uniconifies the frame if it is inconified
+        if ((f.getExtendedState() & Frame.ICONIFIED) != 0) {
+            f.setExtendedState(~Frame.ICONIFIED & f.getExtendedState());
+        }
+        // moves it to front and requests focus
+        f.toFront ();
     }
     private static class EQStuck extends Throwable {
         EQStuck(StackTraceElement[] stack) {
