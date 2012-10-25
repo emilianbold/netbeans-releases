@@ -78,7 +78,7 @@ public class XDMAccessProvider implements DocumentModelAccessProvider {
     
     public Document loadSwingDocument(InputStream in) throws IOException, BadLocationException {
         BaseDocument sd = new BaseDocument(true, "text/xml"); //NOI18N
-        String encoding = EncodingUtil.detectEncoding(in);
+        String encoding = in.markSupported() ? EncodingUtil.detectEncoding(in) : null;
         Reader r = encoding == null ? new InputStreamReader(in) : new InputStreamReader(in, encoding);
         sd.read(r, 0);
         return sd;
