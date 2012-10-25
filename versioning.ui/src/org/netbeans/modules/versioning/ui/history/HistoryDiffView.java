@@ -186,7 +186,25 @@ public class HistoryDiffView implements PropertyChangeListener {
 
     private VCSFileProxy getFile(Node node, HistoryEntry entry) {
         Collection<? extends VCSFileProxy> proxies = node.getLookup().lookupAll(VCSFileProxy.class);
-        return proxies != null && proxies.size() == 1 ? proxies.iterator().next() : entry.getFiles()[0];
+        if(proxies != null && proxies.size() == 1) {
+            return proxies.iterator().next();
+        } else {
+            VCSFileProxy[] files = entry.getFiles();
+            // HACK ensure that for form files .java is returned as default
+            if(files.length == 2) {
+                if((files[0].getName().endsWith(".java") &&                     // NOI18N
+                    files[1].getName().endsWith(".form")))                      // NOI18N
+                {
+                    return files[0];
+                }
+                if((files[1].getName().endsWith(".java") &&                     // NOI18N
+                    files[0].getName().endsWith(".form")))                      // NOI18N
+                {
+                    return files[1];
+                }
+            } 
+            return files[0];
+        }
     }
 
     private boolean onSelectionLastDifference = false;
