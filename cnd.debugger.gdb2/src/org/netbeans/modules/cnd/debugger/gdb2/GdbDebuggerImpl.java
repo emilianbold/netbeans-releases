@@ -3606,8 +3606,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             protected void onDone(MIRecord record) {
                 if (isCore) {
                     state().isCore = true;
-                } else {
-                    getFullPath(null);
                 }
 
 		gdb.startProgressManager().finishProgress();
