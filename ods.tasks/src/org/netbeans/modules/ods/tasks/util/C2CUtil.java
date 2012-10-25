@@ -63,6 +63,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import org.netbeans.modules.ods.tasks.C2C;
@@ -193,8 +194,17 @@ public class C2CUtil {
         //TODO review this, team projects were always initialized again and again
         //this caused problems with listeners
         assert c2cRepository.getKenaiProject() != null : "looks like repository " + c2cRepository.getDisplayName() + " wasn't porperly inititalized via team support."; // NOI18N
-        Repository repository = KenaiUtil.getRepository(c2cRepository.getKenaiProject());
+        KenaiProject teamProject = c2cRepository.getKenaiProject();
+        Repository repository = null;
+        // It is posible to bypass the generaly contract that it isn't possible 
+        // to create an ODCS repository by hand (in such case there always should 
+        // be a teamProject available). 
+        // for more info see o.n.m.bugtracking.DelegatingConnector#OVERRIDE_REPOSITORY_MANAGEMENT
+        if(teamProject != null) {
+            repository = KenaiUtil.getRepository(teamProject);
+        }
         if (repository == null) {
+            
             repository = createRepository(c2cRepository);
         }
         return repository;
