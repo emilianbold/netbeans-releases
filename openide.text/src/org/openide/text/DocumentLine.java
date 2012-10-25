@@ -1041,14 +1041,38 @@ public abstract class DocumentLine extends Line {
         }
 
         @Override
-        public int getOriginalLineNumber(Line line) {
-            Line find = findLine(line);
-
-            if (find != null) {
-                return listener.getOld(find.getLineNumber());
-            } else {
-                return -1;
+        public int getOriginalLineNumber(final Line line) {
+            final int[] ret = new int[1];
+            Document d = null;
+            if (line instanceof DocumentLine) {
+                DocumentLine dl = (DocumentLine)line;
+                if (dl.pos != null) {
+                    CloneableEditorSupport ces = dl.pos.getCloneableEditorSupport();
+                    if (ces != null) {
+                        d = ces.getDocument();
+                    }
+                }
             }
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    Line find = findLine(line);
+
+                    if (find != null) {
+                        ret[0] = listener.getOld(find.getLineNumber());
+                    } else {
+                        ret[0] =  -1;
+                    }
+                }
+            };
+            if (d != null) {
+                // An attempt to lock the doument ...
+                d.render(r);
+            } else {
+                // No document, no need to lock it (hopefully)
+                r.run();
+            }
+            return ret[0];
         }
 
         /* Creates current line.
