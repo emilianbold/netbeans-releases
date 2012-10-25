@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -61,6 +62,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
@@ -112,6 +114,8 @@ public final class BeanModelBuilder {
     private Set<String> factoryMethods = Collections.emptySet();
     
     private FxBean  resultInfo;
+    
+    private Set<String> constants = Collections.emptySet();
     
     /**
      * Type element for the class.
@@ -213,6 +217,7 @@ public final class BeanModelBuilder {
         resultInfo.setAttachedProperties(staticProperties);
         resultInfo.setEvents(events);
         resultInfo.setFactoryNames(factoryMethods);
+        resultInfo.setConstants(constants);
         String defaultProperty = FxClassUtils.getDefaultProperty(classElement);
         resultInfo.setDefaultPropertyName(defaultProperty);
         
@@ -235,6 +240,8 @@ public final class BeanModelBuilder {
         }
         resultInfo.setParentBeanInfo(superBi);
         resultInfo.merge(declared);
+        // constants are not merged, apply to just the single type
+        resultInfo.setConstants(constants);
 
         
         // add to the bean cache:
@@ -568,7 +575,7 @@ public final class BeanModelBuilder {
          return m.getModifiers().contains(Modifier.STATIC);
     }
     
-    private boolean isAccessible(ExecutableElement m) {
+    private boolean isAccessible(Element m) {
         if (!m.getModifiers().contains(Modifier.PUBLIC)) {
             for (AnnotationMirror am : m.getAnnotationMirrors()) {
                 String atype = ((TypeElement)am.getAnnotationType().asElement()).getQualifiedName().toString();
@@ -711,6 +718,15 @@ public final class BeanModelBuilder {
         
         // generate property changes from existing properties
         generatePropertyChanges();
+        
+        List<VariableElement> vars =  ElementFilter.fieldsIn(classElement.getEnclosedElements());
+        for (VariableElement v : vars) {
+            if (!isAccessible(v)) {
+                continue;
+            }
+            consumed = false;
+            addConstant(v);
+        }
     }
 
    void setBeanCache(FxBeanCache beanCache) {
@@ -743,5 +759,41 @@ public final class BeanModelBuilder {
             superBi = provider.getBeanInfo(fqn);
         }
         resultInfo.merge(superBi);
+    }
+    
+    private void addConstant(VariableElement v) {
+        Set<Modifier> mods = v.getModifiers();
+        if (!(mods.contains(Modifier.FINAL) && mods.contains(Modifier.STATIC))) {
+            return;
+        }
+        
+        boolean ok = false;
+        
+        // check that the return type is the same as this class' type
+        if (!compilationInfo.getTypes().isSameType(
+                v.asType(), classElement.asType())) {
+            // the constant may be primitive & our type the wrapper
+            TypeMirror t = v.asType();
+            if (t instanceof PrimitiveType) {
+                PrimitiveType p = (PrimitiveType)t;
+                if (compilationInfo.getTypes().isSameType(
+                        compilationInfo.getTypes().boxedClass(p).asType(),
+                        classElement.asType())) {
+                    ok = true;
+                }
+            } 
+            if (!ok) {
+                return;
+            }
+        }
+        
+        addConstant(v.getSimpleName().toString());
+    }
+    
+    private void addConstant(String s) {
+        if (constants.isEmpty()) {
+            constants = new HashSet<String>();
+        }
+        constants.add(s);
     }
 }
