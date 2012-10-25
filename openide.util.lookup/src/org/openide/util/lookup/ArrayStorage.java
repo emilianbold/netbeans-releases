@@ -48,6 +48,7 @@ import org.openide.util.Lookup;
 
 
 import java.util.*;
+import java.util.logging.Level;
 import org.openide.util.lookup.AbstractLookup.Pair;
 
 
@@ -279,11 +280,22 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
 
     /** Cleanup the references
      */
+    @Override
     public AbstractLookup.ReferenceToResult cleanUpResult(Lookup.Template<?> templ) {
+        long now = System.currentTimeMillis();
         AbstractLookup.ReferenceIterator it = new AbstractLookup.ReferenceIterator(this.results);
 
+        int cnt = 0;
         while (it.next()) {
-            // empty
+            cnt++;
+        }
+        
+        long took = System.currentTimeMillis() - now;
+        if (took > 500) {
+            AbstractLookup.LOG.log(Level.WARNING, 
+                "Too long ({0} ms and {1} references) cleanUpResult for {2}",
+                new Object[]{took, cnt, templ.getType()}
+            );
         }
 
         return this.results = it.first();
