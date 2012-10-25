@@ -555,7 +555,7 @@ public class LayersBridge extends KeymapManager {
 
     // hack: hardcoded OpenIDE impl class name + field
     private static final String OPENIDE_DELEGATE_ACTION = "org.openide.awt.GeneralAction$DelegateAction"; // NOI18N
-    private static Field KEY_FIELD;
+    private static volatile Field KEY_FIELD;
 
     /**
      * Hack, which allows to somehow extract actionId from OpenIDE actions. Public API
@@ -573,8 +573,10 @@ public class LayersBridge extends KeymapManager {
             if (a.getClass().getName().equals(OPENIDE_DELEGATE_ACTION)) {
                 if (KEY_FIELD == null) {
                     Class c = a.getClass();
-                    KEY_FIELD = c.getSuperclass().getDeclaredField("key"); // NOI18N
-                    KEY_FIELD.setAccessible(true);
+                    // #220683: the field must be first made accessible before assingment to global variable.
+                    Field f = c.getSuperclass().getDeclaredField("key"); // NOI18N
+                    f.setAccessible(true);
+                    KEY_FIELD = f;
                 }
                 String key = (String)KEY_FIELD.get(a);
                 if (key != null) {

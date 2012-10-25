@@ -70,6 +70,7 @@ import org.netbeans.modules.javafx2.editor.parser.processors.PropertyResolver;
 import org.netbeans.modules.javafx2.editor.parser.processors.ReferenceResolver;
 import org.netbeans.modules.javafx2.editor.parser.processors.ScriptResolver;
 import org.netbeans.modules.javafx2.editor.parser.processors.TypeResolver;
+import org.netbeans.modules.javafx2.editor.parser.processors.ValueChecker;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -204,6 +205,7 @@ class FxmlParser extends Parser implements ErrorReporter {
         steps.add(new ReferenceResolver());
         steps.add(new PropertyResolver());
         steps.add(new EventResolver());
+        steps.add(new ValueChecker());
     }
     
     @SuppressWarnings("unchecked")
