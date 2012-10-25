@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
@@ -147,7 +146,7 @@ public final class ScopePanel extends javax.swing.JPanel {
                     scopeCombobox.setModel(new DefaultComboBoxModel(scopes.toArray(new ScopeProvider[scopes.size()])));
                     ScopePanel.this.btnCustomScope.setVisible(customizable.get());
                     String preselectId = preferences.get(preferencesKey, null);
-                    if (preselectId == null) { // Needed for the old preferences of Java's Where Used Panel.
+                    if (preselectId == null || isNumeric(preselectId)) { // Needed for the old preferences of Java's Where Used Panel.
                         int defaultItem = (Integer) preferences.getInt(preferencesKey, -1); // NOI18N
                         if (defaultItem != (-1)) {
                             switch (defaultItem) {
@@ -178,6 +177,15 @@ public final class ScopePanel extends javax.swing.JPanel {
             });
         }
         return !scopes.isEmpty();
+    }
+    
+    private static boolean isNumeric(String str) {
+        try {
+            double d = Double.parseDouble(str);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -265,7 +273,13 @@ public final class ScopePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void scopeComboboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeComboboxActionPerformed
-        preferences.putInt(preferencesKey, scopeCombobox.getSelectedIndex());
+        Object selectedItem = scopeCombobox.getSelectedItem();
+        if(selectedItem instanceof DelegatingScopeInformation) {
+            DelegatingScopeInformation scopeInfo = (DelegatingScopeInformation) selectedItem;
+            preferences.put(preferencesKey, scopeInfo.getId());
+        } else {
+            preferences.remove(preferencesKey);
+        }
     }//GEN-LAST:event_scopeComboboxActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCustomScope;
