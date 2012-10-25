@@ -82,7 +82,6 @@ public class JEE6MvnPatternsTest extends MvnPatternsTest {
                 "testContainerI3", //NOI18N
                 "testCcContainerI2", //NOI18N
                 "testCcContainerI3", //NOI18N
-                "testNodes", //NOI18N
                 "testRun", //NOI18N
                 "testUndeploy"); //NOI18N
     }
