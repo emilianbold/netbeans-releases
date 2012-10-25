@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -58,7 +60,6 @@ import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.AsynchronousNode;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,10 +78,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     protected List<LinkButton> buttons;
     private int pageSize;
     private int pageCountShown;
-
-    public TaskContainerNode(boolean expandable, TreeListNode parent, String title) {
-        this(false, expandable, parent, title);
-    }
+    private boolean error;
 
     public TaskContainerNode(boolean refresh, boolean expandable, TreeListNode parent, String title) {
         super(expandable, parent, title);
@@ -154,11 +152,11 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         refresh();
     }
 
-    public final List<TaskNode> getFilteredTaskNodes() {
+    final List<TaskNode> getFilteredTaskNodes() {
         return filteredTaskNodes;
     }
 
-    public final List<TaskNode> getTaskNodes() {
+    final List<TaskNode> getTaskNodes() {
         return taskNodes;
     }
 
@@ -182,9 +180,9 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         }
     }
 
-    public final int getTotalTaskCount() {
+    public final int getFilteredTaskCount() {
         synchronized (LOCK) {
-            return filteredTaskNodes.size();
+            return filteredTaskNodes != null ? filteredTaskNodes.size() : 0;
         }
     }
     
@@ -215,7 +213,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     final String getTotalString() {
         String bundleName = DashboardViewer.getInstance().expandNodes() ? "LBL_Matches" : "LBL_Total"; //NOI18N
-        return getTotalTaskCount() + " " + NbBundle.getMessage(TaskContainerNode.class, bundleName);
+        return getFilteredTaskCount() + " " + NbBundle.getMessage(TaskContainerNode.class, bundleName);
     }
 
     final String getChangedString() {
@@ -250,7 +248,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     @Override
     protected List<TreeListNode> createChildren() {
-        List<TaskNode> filteredNodes = getFilteredTaskNodes();
+        List<TaskNode> filteredNodes = filteredTaskNodes;
         Collections.sort(filteredNodes);
         List<TaskNode> taskNodesToShow;
         boolean addShowNext = false;
@@ -285,6 +283,20 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
                 }
             }
         }
+    }
+    
+    final void handleError(String message) {
+        DashboardViewer.LOG.log(Level.WARNING, "Tasks loading failed due to: {0}", message); //NOI18N
+        setRefresh(true);
+        setError(true);
+    }
+
+    boolean isError() {
+        return error;
+    }
+
+    void setError(boolean error) {
+        this.error = error;
     }
 
     private class TaskListener implements PropertyChangeListener {

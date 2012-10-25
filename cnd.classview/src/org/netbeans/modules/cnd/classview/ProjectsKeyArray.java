@@ -106,7 +106,23 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
         }
         setKeys(res);
     }
-    
+
+    public void projectLibsChanged(CsmProject owner) {
+        if (owner == libOwnerProject) {
+            synchronized(myProjectsLock) {
+                if (myProjects == null) {
+                    myProjects = createProjectsMap();
+                } else {
+                    myProjects.clear();
+                }
+                for (CsmProject p : owner.getLibraries()) {
+                    myProjects.put(p, getSortedName(p, true));
+                }
+            }
+            resetKeys();
+        }
+    }
+
     public void dispose(){
         synchronized(myProjectsLock) {
             if (myProjects != null) {

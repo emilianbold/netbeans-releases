@@ -76,7 +76,6 @@ import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
@@ -801,42 +800,37 @@ public class ProjectActionSupport {
             String executable = pae.getExecutable();
             if (executable.length() == 0) {
                 SelectExecutablePanel panel = new SelectExecutablePanel(pae);
-                DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE"));
+                DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE")); // NOI18N
                 panel.setDialogDescriptor(descriptor);
                 DialogDisplayer.getDefault().notify(descriptor);
                 if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                    // Set executable in configuration
-                    MakeConfiguration makeConfiguration = pae.getConfiguration();
-                    executable = panel.getExecutable();
-                    executable = CndPathUtilitities.naturalizeSlashes(executable);
-                    //executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
-                    executable = ProjectSupport.toProperPath(makeConfiguration.getBaseDir(), executable, pae.getProject());
-                    executable = CndPathUtilitities.normalizeSlashes(executable);
-                    if (makeConfiguration.isMakefileConfiguration()) {
-                        makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
+                    final String selectedExecutable = panel.getExecutable();
+                    final MakeConfiguration projectConfiguration = pae.getConfiguration();
+
+                    // Modify Configuration ...
+                    RunProfile runProfile = projectConfiguration.getProfile();
+                    if (runProfile != null) {
+                        String currentValue = runProfile.getRunCommand().getValue();
+                        if (currentValue.isEmpty()) {
+                            // Will set this field to default macro
+                            runProfile.getRunCommand().setValue("\"" + MakeConfiguration.CND_OUTPUT_PATH_MACRO + "\""); // NOI18N
+                        }
+//                      } else if (currentValue.indexOf(CND_OUTPUT_PATH_MACRO) < 0) {
+//                          String relativeToRunDir = ProjectSupport.toProperPath(runProfile.getRunDirectory(), executable, MakeProjectOptions.getPathMode());
+//                          runProfile.getRunCommand().setValue(relativeToRunDir);
+//                          return;
+//                      }
                     }
-                    else if (makeConfiguration.isLibraryConfiguration()) {
-                        makeConfiguration.getProfile().getRunCommand().setValue(executable);
-                    }
-                    ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
-                    if (pdp != null) {
-                        pdp.getConfigurationDescriptor().setModified();
-                    }
-                    // Set executable in pae
-                    if (pae.getType() == PredefinedType.RUN) {
-                        // Next block is commented out due to IZ120794
-                        /*CompilerSet compilerSet = CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
-                        if (compilerSet != null && compilerSet.getCompilerFlavor() != CompilerFlavor.MinGW) {
-                        // IZ 120352
-                        executable = FilePathAdaptor.naturalize(executable);
-                        }*/
-                        pae.setExecutable(executable);
-                    } else {
-                        pae.setExecutable(makeConfiguration.getMakefileConfiguration().getAbsOutput());
-                    }
-                } else {
-                    return false;
+
+                    String relativeToBaseDir = ProjectSupport.toProperPath(projectConfiguration.getBaseDir(), executable, pae.getProject());
+                    projectConfiguration.getMakefileConfiguration().getOutput().setValue(relativeToBaseDir);
+
+                    // Modify pae ...
+                    pae.setExecutable(selectedExecutable);
+                    pae.setFinalExecutable();
+                    return true;
                 }
+                return false;
             }
             // Check existence of executable
             if (!CndPathUtilitities.isPathAbsolute(executable)) { // NOI18N
