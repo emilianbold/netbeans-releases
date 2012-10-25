@@ -99,6 +99,12 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         performStaticTest("bug217827.cpp");
     }     
     
+    public void testBug220527() throws Exception {
+        // Bug 220527 - [73cat] Unexpected token return
+        performStaticTest("bug220527.cpp");
+    }        
+    
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
