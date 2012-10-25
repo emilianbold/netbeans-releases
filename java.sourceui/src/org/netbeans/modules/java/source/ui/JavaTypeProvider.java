@@ -352,10 +352,12 @@ public class JavaTypeProvider implements TypeProvider {
                                 return null;
                             }
                             try {
-                                ci.collectDeclaredTypes(packageName, textForQuery,nameKind, types);
+                                final Set<JavaTypeDescription> ct = new HashSet<JavaTypeDescription>();
+                                ci.collectDeclaredTypes(packageName, textForQuery,nameKind, ct);
                                 if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
-                                    ci.collectDeclaredTypes(packageName, textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, types);
+                                    ci.collectDeclaredTypes(packageName, textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, ct);
                                 }
+                                types.addAll(ct);
                             } catch (IOException ioe) {
                                 Exceptions.printStackTrace(ioe);
                             } catch (InterruptedException ie) {
@@ -523,6 +525,9 @@ public class JavaTypeProvider implements TypeProvider {
 
         @Override
         public boolean equals (Object other) {
+            if (other == this) {
+                return true;
+            }
             if (other instanceof CacheItem) {
                 CacheItem otherItem = (CacheItem) other;
                 return this.root == null ? otherItem.root == null : this.root.equals(otherItem.root);

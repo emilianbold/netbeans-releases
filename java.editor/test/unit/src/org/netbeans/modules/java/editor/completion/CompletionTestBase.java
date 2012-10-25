@@ -189,7 +189,7 @@ public class CompletionTestBase extends NbTestCase {
         final ClassPath sourcePath = ClassPathSupport.createClassPath(new FileObject[] {FileUtil.toFileObject(getDataDir())});
         final ClassIndexManager mgr  = ClassIndexManager.getDefault();
         for (ClassPath.Entry entry : sourcePath.entries()) {
-            TransactionContext tx = TransactionContext.beginStandardTransaction(true, entry.getURL());
+            TransactionContext tx = TransactionContext.beginStandardTransaction(entry.getURL(), true, true);
             try {
                 mgr.createUsagesQuery(entry.getURL(), true);
             } finally {
@@ -204,7 +204,7 @@ public class CompletionTestBase extends NbTestCase {
             public void run(CompilationController parameter) throws Exception {
                 for (ClassPath.Entry entry : bootPath.entries()) {
                     final URL url = entry.getURL();
-                    TransactionContext.beginStandardTransaction(false, entry.getURL());
+                    TransactionContext.beginStandardTransaction(entry.getURL(), false, true);
                     try {
                         final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
                         BinaryAnalyser ba = cii.getBinaryAnalyser();
