@@ -84,7 +84,6 @@ public class JEE6PatternsTest extends PatternsTest {
                 "testContainerI3", //NOI18N
                 "testCcContainerI2", //NOI18N
                 "testCcContainerI3", //NOI18N
-                "testNodes", //NOI18N
                 "testDeploy", //NOI18N
                 "testUndeploy"); //NOI18N
     }
