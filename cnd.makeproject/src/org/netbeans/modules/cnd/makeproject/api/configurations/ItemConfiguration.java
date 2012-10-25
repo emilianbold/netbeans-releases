@@ -111,6 +111,10 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public boolean isDefaultConfiguration() {
+        if (org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE) {
+            // FIXUP: if excluded => skip as 'default'
+            return excluded.getValue();
+        }
         if (excluded.getValue()) {
             return false;
         }
@@ -345,7 +349,15 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     public boolean shared() {
         return true;
     }
-
+    
+    public boolean isVCSVisible() {
+        assert org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
+        if (getExcluded() != null) {
+            return !getExcluded().getValue();
+        }
+        return shared();
+    }
+    
     // interface ConfigurationAuxObject
     @Override
     public boolean hasChanged() {
@@ -674,7 +686,11 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
     @Override
     public String toString() {
-        return getItem().getPath();
+        String pref = "";
+        if (this.excluded != null && excluded.getValue()) {
+            pref = "[excluded]"; // NOI18N
+        }
+        return pref + getItem().getPath();
     }
     private static ResourceBundle bundle = null;
 

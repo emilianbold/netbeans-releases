@@ -124,6 +124,14 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         return true;
     }
 
+    public boolean isVCSVisible() {
+        assert org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
+        if (folder != null) {
+            return folder.hasIncludedItems();
+        }
+        return shared();
+    }
+    
     // interface ConfigurationAuxObject
     @Override
     public boolean hasChanged() {

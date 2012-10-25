@@ -267,7 +267,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding item {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    addItemImpl(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, setModified, true);
+                    addExcludedItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, setModified);
                 }
             }
         }
@@ -595,8 +595,8 @@ public class Folder implements FileChangeListener, ChangeListener {
         return addItemImpl(item, true, true, false);
     }
 
-    public Item addItem(Item item, boolean notify, boolean setModified) {
-        return addItemImpl(item, notify, setModified, false);
+    public Item addExcludedItem(Item item, boolean notify, boolean setModified) {
+        return addItemImpl(item, notify, setModified, true);
     }
 
     private synchronized Item addItemImpl(Item item, boolean notify, boolean setModified, boolean excludedByDefault) {
@@ -1074,6 +1074,25 @@ public class Folder implements FileChangeListener, ChangeListener {
         return found.toArray(new Item[found.size()]);
     }
 
+    public boolean hasIncludedItems() {
+        assert org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
+        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
+        while (iter.hasNext()) {
+            Object o = iter.next();
+            if (o instanceof Item) {
+                if (((Item)o).isIncludedInAnyConfiguration()) {
+                    return true;
+                }
+            }
+            if (o instanceof Folder) {
+                if (((Folder) o).hasIncludedItems()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     private List<NativeFileItem> getAllItemsAsList() {
         ArrayList<NativeFileItem> found = new ArrayList<NativeFileItem>();
         Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
