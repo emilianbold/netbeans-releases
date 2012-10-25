@@ -72,6 +72,8 @@ public abstract class CsmChangeEvent extends EventObject {
     
     public abstract Collection<CsmProject> getChangedProjects();
     
+    public abstract Collection<CsmProject> getProjectsWithChangedLibs();
+    
     public abstract Collection<CsmNamespace> getNewNamespaces();
     
     public abstract Collection<CsmNamespace> getRemovedNamespaces();
