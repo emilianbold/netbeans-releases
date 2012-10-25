@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,44 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl;
+package org.netbeans.modules.findbugs;
 
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.modules.OnStart;
-import org.openide.modules.OnStop;
+import edu.umd.cs.findbugs.BugPattern;
+import edu.umd.cs.findbugs.DetectorFactoryCollection;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInstall;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
-/**
- * start/stop csm model support.
- * @author Vladimir Voskresensky
- */
-public final class Installer {
+public class Installer extends ModuleInstall {
 
-    @OnStart
-    public static final class Start implements Runnable {
-
-        @Override
-        public void run() {
-            CndUtils.assertNonUiThread();
-            if (TraceFlags.TRACE_MODEL_STATE) {
-                System.err.println("=== Installer.Start");
+    private static final int CURRENT_FINDBUGS_KEYWORD_VERSION = 1;
+    @Override
+    public void restored() {
+        super.restored();
+        FileObject findbugsKeywords = FileUtil.getConfigFile("OptionsDialog/Keywords/findbugs");
+        
+        if (findbugsKeywords == null || !Integer.valueOf(CURRENT_FINDBUGS_KEYWORD_VERSION).equals(findbugsKeywords.getAttribute("version"))) {
+            try {
+                findbugsKeywords = FileUtil.createData(FileUtil.getConfigRoot(), "OptionsDialog/Keywords/findbugs");
+                findbugsKeywords.setAttribute("location", "Editor");
+                findbugsKeywords.setAttribute("tabTitle", NbBundle.getBundle("org.netbeans.modules.options.editor.Bundle").getString("CTL_Hints_DisplayName"));
+                
+                DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
+                StringBuilder keywords = new StringBuilder();
+                
+                for (BugPattern bp : dfc.getBugPatterns()) {
+                    keywords.append(RunFindBugs.computeFilterText(bp).toUpperCase());
+                    keywords.append(",");
+                }
+                
+                findbugsKeywords.setAttribute("keywords", keywords.toString());
+                findbugsKeywords.setAttribute("version", CURRENT_FINDBUGS_KEYWORD_VERSION);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            ModelSupport.instance().startup();
         }
     }
 
-    @OnStop
-    public static final class Stop implements Runnable {
-
-        @Override
-        public void run() {
-            CndUtils.assertNonUiThread();
-            if (TraceFlags.TRACE_MODEL_STATE) {
-                System.err.println("=== Installer.Stop");
-            }
-            ModelSupport.instance().shutdown();
-        }
-    }
 }

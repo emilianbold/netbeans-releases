@@ -367,7 +367,7 @@ final class UndoRedoManager extends UndoRedo.Manager {
             commitUndoGroup();
         }
 
-        if (buildUndoGroup > 0) {
+        if (!nextEditIsSaveActions && buildUndoGroup > 0) {
             if (undoGroup == null) {
                 undoGroup = new CompoundEdit();
             }

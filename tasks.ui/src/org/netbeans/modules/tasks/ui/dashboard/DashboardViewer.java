@@ -42,19 +42,19 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.LinkButton;
@@ -111,6 +111,8 @@ public final class DashboardViewer implements PropertyChangeListener {
     private boolean opened = false;
     private final TitleNode titleCategoryNode;
     private final TitleNode titleRepositoryNode;
+    private final ErrorNode errorRepositories;
+    private final ErrorNode errorCategories;
     private final Object LOCK_CATEGORIES = new Object();
     private final Object LOCK_REPOSITORIES = new Object();
     private Map<Category, CategoryNode> mapCategoryToNode;
@@ -164,6 +166,16 @@ public final class DashboardViewer implements PropertyChangeListener {
         LinkButton btnAddRepo = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_repo.png", true), new CreateRepositoryAction()); //NOI18N
         btnAddRepo.setToolTipText(NbBundle.getMessage(DashboardViewer.class, "LBL_AddRepo")); // NOI18N
         titleRepositoryNode = new TitleNode(NbBundle.getMessage(TitleNode.class, "LBL_Repositories"), btnAddRepo); // NOI18N
+
+        AbstractAction reloadAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                loadData();
+            }
+        };
+        errorRepositories = new ErrorNode(NbBundle.getMessage(TitleNode.class, "ERR_Repositories"), reloadAction); // NOI18N
+        errorCategories = new ErrorNode(NbBundle.getMessage(TitleNode.class, "ERR_Categories"), reloadAction); // NOI18N
+
         modelListener = new ModelListener();
         model.addModelListener(modelListener);
         model.addRoot(-1, titleCategoryNode);
@@ -788,6 +800,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     public void loadData() {
+        removeErrorNodes();
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
@@ -808,6 +821,15 @@ public final class DashboardViewer implements PropertyChangeListener {
         });
     }
 
+    private void removeErrorNodes() {
+        if (model.getRootNodes().contains(errorCategories)) {
+            model.removeRoot(errorCategories);
+        }
+        if (model.getRootNodes().contains(errorRepositories)) {
+            model.removeRoot(errorRepositories);
+        }
+    }
+
     public void loadCategory(Category category) {
         DashboardStorage storage = DashboardStorage.getInstance();
         List<TaskEntry> taskEntries = storage.readCategory(category.getName());
@@ -815,28 +837,35 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private void loadCategories() {
-        DashboardStorage storage = DashboardStorage.getInstance();
-        List<CategoryEntry> categoryEntries = storage.readCategories();
-        List<String> names = storage.readClosedCategories();
+        try {
+            DashboardStorage storage = DashboardStorage.getInstance();
+            List<CategoryEntry> categoryEntries = storage.readCategories();
+            List<String> names = storage.readClosedCategories();
 
-        final List<CategoryNode> catNodes = new ArrayList<CategoryNode>(categoryEntries.size());
-        for (CategoryEntry categoryEntry : categoryEntries) {
-            // was category opened
-            boolean open = !names.contains(categoryEntry.getCategoryName());
-            if (open) {
-                //List<Issue> tasks = loadTasks(categoryEntry.getTaskEntries());
-                catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName()), true));
-            } else {
-                catNodes.add(new ClosedCategoryNode(new Category(categoryEntry.getCategoryName())));
-            }
-        }
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    setCategories(catNodes);
+            final List<CategoryNode> catNodes = new ArrayList<CategoryNode>(categoryEntries.size());
+            for (CategoryEntry categoryEntry : categoryEntries) {
+                // was category opened
+                boolean open = !names.contains(categoryEntry.getCategoryName());
+                if (open) {
+                    //List<Issue> tasks = loadTasks(categoryEntry.getTaskEntries());
+                    catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName()), true));
+                } else {
+                    catNodes.add(new ClosedCategoryNode(new Category(categoryEntry.getCategoryName())));
                 }
-            });
+            }
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setCategories(catNodes);
+                    }
+                });
+            } else {
+                setCategories(catNodes);
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, "Categories loading failed due to: {0}", ex.getMessage());
+            showCategoriesError();
         }
     }
 
@@ -945,26 +974,43 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private void loadRepositories() {
-        List<Repository> allRepositories = new ArrayList<Repository>(RepositoryManager.getInstance().getRepositories());
-        List<String> closedIds = DashboardStorage.getInstance().readClosedRepositories();
-        final List<RepositoryNode> repoNodes = new ArrayList<RepositoryNode>(allRepositories.size());
+        try {
+            List<Repository> allRepositories = new ArrayList<Repository>(RepositoryManager.getInstance().getRepositories());
+            List<String> closedIds = DashboardStorage.getInstance().readClosedRepositories();
+            final List<RepositoryNode> repoNodes = new ArrayList<RepositoryNode>(allRepositories.size());
 
-        for (Repository repository : allRepositories) {
-            boolean open = !closedIds.contains(repository.getId());
-            if (open) {
-                repoNodes.add(new RepositoryNode(repository, false));
-            } else {
-                repoNodes.add(new ClosedRepositoryNode(repository, false));
-            }
-        }
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    setRepositories(repoNodes);
+            for (Repository repository : allRepositories) {
+                boolean open = !closedIds.contains(repository.getId());
+                if (open) {
+                    repoNodes.add(new RepositoryNode(repository, false));
+                } else {
+                    repoNodes.add(new ClosedRepositoryNode(repository, false));
                 }
-            });
+            }
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setRepositories(repoNodes);
+                    }
+                });
+            } else {
+                setRepositories(repoNodes);
+            }
+        } catch(Exception ex) {
+            LOG.log(Level.WARNING, "Repositories loading failed due to: {0}", ex.getMessage());
+            showRepositoriesError();
         }
+    }
+
+    private void showRepositoriesError() {
+        int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
+        model.addRoot(index, errorRepositories);
+    }
+
+    private void showCategoriesError() {
+        int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
+        model.addRoot(index, errorCategories);
     }
 
     private TaskNode getCategorizedTask(TaskNode taskNode) {
@@ -1023,7 +1069,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             for (CategoryNode categoryNode : categoryNodes) {
                 mapCategoryToNode.put(categoryNode.getCategory(), categoryNode);
                 if (isCategoryInFilter(categoryNode)) {
-                    taskHits += categoryNode.getTotalTaskCount();
+                    taskHits += categoryNode.getFilteredTaskCount();
                     addRootToModel(index++, categoryNode);
                 }
             }
@@ -1056,7 +1102,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private boolean isCategoryInFilter(CategoryNode categoryNode) {
-        return expandNodes() ? !categoryNode.getFilteredTaskNodes().isEmpty() && appliedCategoryFilters.isInFilter(categoryNode) : appliedCategoryFilters.isInFilter(categoryNode);
+        return expandNodes() ? categoryNode.getFilteredTaskCount() > 0 && appliedCategoryFilters.isInFilter(categoryNode) : appliedCategoryFilters.isInFilter(categoryNode);
     }
 
     private boolean isRepositoryInFilter(RepositoryNode repositoryNode) {
