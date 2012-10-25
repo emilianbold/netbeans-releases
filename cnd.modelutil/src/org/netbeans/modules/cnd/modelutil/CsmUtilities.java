@@ -282,17 +282,6 @@ public class CsmUtilities {
             panes[0] = NbDocument.findRecentEditorPane(ec);
         } else {
             try {
-                List<? extends JTextComponent> componentList = EditorRegistry.componentList();
-                for (JTextComponent comp : componentList) {
-                    if (comp instanceof JEditorPane) {
-                        DataObject dobj = getDataObject(comp);
-                        if (dobj != null) {
-                            if (dobj.getLookup().lookup(EditorCookie.class) == ec) {
-                                return (JEditorPane) comp;
-                            }
-                        }
-                    }
-                }
                 SwingUtilities.invokeAndWait(new Runnable() {
 
                     @Override
