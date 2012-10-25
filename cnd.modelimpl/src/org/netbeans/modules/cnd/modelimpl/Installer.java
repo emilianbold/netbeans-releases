@@ -41,40 +41,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl;
 
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
-import org.openide.modules.ModuleInstall;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.modules.OnStart;
+import org.openide.modules.OnStop;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ * start/stop csm model support.
+ * @author Vladimir Voskresensky
  */
-public class Installer extends ModuleInstall {
-    
-    @Override
-    public void restored() {
-	if( TraceFlags.TRACE_MODEL_STATE ) {System.err.println("=== Installer.restored");}
-	ModelSupport.instance().startup();
-//	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.restored");
-//	CsmModel model = CsmModelAccessor.getModel();
-//	if( model instanceof Startupable ) {
-//	    ((Startupable) model).startup();
-//	}
-//	super.restored();
+public final class Installer {
+
+    @OnStart
+    public static final class Start implements Runnable {
+
+        @Override
+        public void run() {
+            CndUtils.assertNonUiThread();
+            if (TraceFlags.TRACE_MODEL_STATE) {
+                System.err.println("=== Installer.Start");
+            }
+            ModelSupport.instance().startup();
+        }
     }
 
-    @Override
-    public void close() {
-	if( TraceFlags.TRACE_MODEL_STATE ) {System.err.println("=== Installer.close");}
-	ModelSupport.instance().shutdown();
-//        super.close();
-//	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.close");
-//	final CsmModel model = CsmModelAccessor.getModel();
-//	if( model instanceof Startupable ) {
-//            ((Startupable) model).shutdown();
-//	}
+    @OnStop
+    public static final class Stop implements Runnable {
+
+        @Override
+        public void run() {
+            CndUtils.assertNonUiThread();
+            if (TraceFlags.TRACE_MODEL_STATE) {
+                System.err.println("=== Installer.Stop");
+            }
+            ModelSupport.instance().shutdown();
+        }
     }
 }
