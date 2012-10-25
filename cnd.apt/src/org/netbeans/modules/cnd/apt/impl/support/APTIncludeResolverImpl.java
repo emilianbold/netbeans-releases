@@ -134,7 +134,6 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
             }
         }
         if (result == null && fileSearch != null) {
-            APTIncludeUtils.resolveFilePath(fileSystem, includedFile, baseFile);
             String path = fileSearch.searchInclude(includedFile, baseFile);
             if (path != null) {
                 result = APTIncludeUtils.resolveFilePath(fileSystem, CndPathUtilitities.getBaseName(path), path);
