@@ -268,6 +268,15 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         return CppUtils.reformatWhitespaces(options);
     }
 
+    public String getOutputOptions(){
+        String options = ""; // NOI18N
+        CompilerSet cs = getMakeConfiguration().getCompilerSet().getCompilerSet();
+        if (cs != null) {
+            options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getOutputFileFlag() + getOutputValue() + " "; // NOI18N
+        }
+        return CppUtils.reformatWhitespaces(options);
+    }
+    
     public String getBasicOptions() {
         String options = ""; // NOI18N
         CompilerSet cs = getMakeConfiguration().getCompilerSet().getCompilerSet();
@@ -284,9 +293,6 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
                     options += libName + " "; // NOI18N
                 }
             }
-        }
-        if (cs != null) {
-            options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getOutputFileFlag() + getOutputValue() + " "; // NOI18N
         }
         if (cs != null && getStripOption().getValue()) {
             options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getStripFlag() + " "; // NOI18N
