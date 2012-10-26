@@ -742,7 +742,9 @@ public class DiscoveryProjectGeneratorImpl {
                 }
             } else {
                 if (!usedItems.contains(item)) {
-                    ProjectBridge.setExclude(item,false);
+                    if (!ConfigurationDescriptorProvider.VCS_WRITE) {
+                        ProjectBridge.setExclude(item,false);
+                    }
                     ProjectBridge.setHeaderTool(item);
                 } else {
                     if(!MIMENames.isCppOrCOrFortran(item.getMIMEType())){
@@ -836,12 +838,16 @@ public class DiscoveryProjectGeneratorImpl {
                             projectBridge.setAuxObject(item, old);
                         }
                     }
-                    ProjectBridge.setExclude(item,false);
+                    if (!ConfigurationDescriptorProvider.VCS_WRITE) {
+                        ProjectBridge.setExclude(item,false);
+                    }
                     ProjectBridge.setHeaderTool(item);
                 } else {
                     item = projectBridge.createItem(file);
                     item = added.addItem(item);
-                    ProjectBridge.setExclude(item,false);
+                    if (!ConfigurationDescriptorProvider.VCS_WRITE) {
+                        ProjectBridge.setExclude(item,false);
+                    }
                     ProjectBridge.setHeaderTool(item);
                     ProjectBridge.excludeItemFromOtherConfigurations(item);
                 }

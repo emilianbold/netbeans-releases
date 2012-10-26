@@ -249,8 +249,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
 public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
-    public static final boolean VCS_WRITE = Boolean.getBoolean("cnd.make.vcs.write");
     
+    public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
     public final static int CURRENT_VERSION = 87;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -603,9 +603,6 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private void writeLogicalFolder(XMLEncoderStream xes, Folder folder, final int level) {
-        if (VCS_WRITE && !folder.hasIncludedItems()) {
-            return;
-        }
         Kind kind = folder.getKind();
         Kind storedKind = null;
         if (kind != null) {
@@ -638,28 +635,24 @@ public abstract class CommonConfigurationXMLCodec
             }
         }
         // write out items
+        // we always write all items of logical folder
         Item[] items = folder.getItemsAsArray();
         for (int i = 0; i < items.length; i++) {
             Item item = items[i];
-            if (!VCS_WRITE || item.isIncludedInAnyConfiguration()) {
-                xes.element(ITEM_PATH_ELEMENT, item.getPath());
-            }
+            xes.element(ITEM_PATH_ELEMENT, item.getPath());
         }
         xes.elementClose(LOGICAL_FOLDER_ELEMENT);
     }
 
     private void writeDiskFolder(XMLEncoderStream xes, Folder folder) {
-        if (VCS_WRITE && !folder.hasIncludedItems()) {
+        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE && !folder.hasIncludedItems()) {
             return;
         }
         List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
         if (folder.getRoot() != null) {
-            // Do not store source root name. See bug #216604
-            //attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getDiskName())); // NOI18N    
             attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
-        } else {
-            attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N    
         }
+        attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N
         xes.elementOpen(DISK_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
@@ -670,7 +663,7 @@ public abstract class CommonConfigurationXMLCodec
         Item[] items = folder.getItemsAsArray();
         for (int i = 0; i < items.length; i++) {
             Item item = items[i];
-            if (!VCS_WRITE || item.isIncludedInAnyConfiguration()) {
+            if (!org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE || item.isIncludedInAnyConfiguration()) {
                 xes.element(ITEM_NAME_ELEMENT, item.getName());
             }
         }
@@ -1134,7 +1127,7 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private boolean publicallyVisible(ConfigurationAuxObject auxObject) {
-        if (VCS_WRITE) {
+        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
             if (auxObject instanceof org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration) {
                 return ((org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration)auxObject).isVCSVisible();
             } else if (auxObject instanceof org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration) {
