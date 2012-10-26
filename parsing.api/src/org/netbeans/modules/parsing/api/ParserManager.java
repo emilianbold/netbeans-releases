@@ -98,10 +98,13 @@ public final class ParserManager {
     ) throws ParseException {
         Parameters.notNull("sources", sources);     //NOI18N
         Parameters.notNull("userTask", userTask);   //NOI18N
-        if (sources.size () == 1)
-            TaskProcessor.runUserTask (new UserTaskAction (sources.iterator ().next (), userTask), sources);
-        else
+        if (sources.size () == 1) {
+            final Source source = sources.iterator().next();
+            Parameters.notNull("sources[0]", source);   //NOI18N
+            TaskProcessor.runUserTask (new UserTaskAction (source, userTask), sources);
+        } else {
             TaskProcessor.runUserTask (new MultiUserTaskAction (sources, userTask), sources);
+        }
     }
 
     /**
