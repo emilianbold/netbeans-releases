@@ -2327,8 +2327,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         storeFieldValue(IssueField.SEVERITY, severityCombo);
         storeFieldValue(IssueField.STATUS, statusCombo);
         storeFieldValues(IssueField.CC, list(ccField.getText()));
-        storeFieldValue(IssueField.DUEDATE, Long.toString(C2CUtil.parseDate(dueDateField.getText().trim(), 
-                new DateFormat[] { DEFAULT_DATE_FORMAT }).getTime()));
+        Date dueDate = C2CUtil.parseDate(dueDateField.getText().trim(), new DateFormat[] { DEFAULT_DATE_FORMAT });
+        storeFieldValue(IssueField.DUEDATE, dueDate == null ? "" : Long.toString(dueDate.getTime())); //NOI18N
         storeFieldValue(IssueField.OWNER, ((TaskUserProfile) ownerCombo.getSelectedItem()).getLoginName());
         storeFieldValues(IssueField.PARENT, bugs(parentField.getText()));
         storeFieldValues(IssueField.SUBTASK, bugs(subtaskField.getText()));
