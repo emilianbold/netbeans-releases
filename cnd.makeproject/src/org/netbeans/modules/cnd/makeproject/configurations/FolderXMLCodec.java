@@ -110,11 +110,7 @@ public class FolderXMLCodec extends XMLDecoder implements XMLEncoder {
         final LinkerConfiguration linkerConfiguration = folder.getLinkerConfiguration();
         boolean linkerConfigurationModified = linkerConfiguration != null ? linkerConfiguration.getModified() : false;
         if (cCompilerConfigurationModified || ccCompilerConfigurationModified || linkerConfigurationModified) {
-            if (false && org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE) {
-                xes.elementOpen(FOLDER_ELEMENT, new AttrValuePair[] {new AttrValuePair(PATH_ATTR, folder.getFolder().getRootPath())});
-            } else {
-                xes.elementOpen(FOLDER_ELEMENT, new AttrValuePair[]{new AttrValuePair(PATH_ATTR, folder.getFolder().getPath())});
-            }
+            xes.elementOpen(FOLDER_ELEMENT, new AttrValuePair[]{new AttrValuePair(PATH_ATTR, folder.getFolder().getPath())});
             if (cCompilerConfigurationModified) {
                 CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, folder.getCCompilerConfiguration(), CommonConfigurationXMLCodec.FOLDER_LEVEL);
             }

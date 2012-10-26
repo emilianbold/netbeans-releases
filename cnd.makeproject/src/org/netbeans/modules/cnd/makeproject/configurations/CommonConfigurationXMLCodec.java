@@ -603,9 +603,6 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private void writeLogicalFolder(XMLEncoderStream xes, Folder folder, final int level) {
-        if (VCS_WRITE && !folder.hasIncludedItems()) {
-            return;
-        }
         Kind kind = folder.getKind();
         Kind storedKind = null;
         if (kind != null) {
@@ -638,12 +635,11 @@ public abstract class CommonConfigurationXMLCodec
             }
         }
         // write out items
+        // we always write all items of logical folder
         Item[] items = folder.getItemsAsArray();
         for (int i = 0; i < items.length; i++) {
             Item item = items[i];
-            if (!VCS_WRITE || item.isIncludedInAnyConfiguration()) {
-                xes.element(ITEM_PATH_ELEMENT, item.getPath());
-            }
+            xes.element(ITEM_PATH_ELEMENT, item.getPath());
         }
         xes.elementClose(LOGICAL_FOLDER_ELEMENT);
     }

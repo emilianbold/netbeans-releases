@@ -936,7 +936,6 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         for (ItemConfiguration conf : getItemConfigurations()) {
             if (conf == null) {
                 conf = null;
-                return true;
             } else {
                 // if special item or not excluded => included in this configuration
                 if (conf.getExcluded() == null || !conf.getExcluded().getValue()) {

@@ -1076,6 +1076,12 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public boolean hasIncludedItems() {
         assert org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
+        if (!this.isDiskFolder()) {
+            return true;
+        }
+        if (this.getRoot() != null) {
+            return true;
+        }
         Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
