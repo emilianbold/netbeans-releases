@@ -56,14 +56,14 @@ import org.openide.util.EditableProperties;
 public final class ConfigUtils {
 
     public static FileObject createConfigFile(FileObject projectRoot, final String name, final EditableProperties props) throws IOException {
-        final File f = new File(projectRoot.getPath() + "/nbproject/configs");
+        final File f = new File(projectRoot.getPath() + "/nbproject/configs"); //NOI18N
         final FileObject[] config = new FileObject[1];
         projectRoot.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
                 FileObject configs = FileUtil.createFolder(f);
-                String freeName = FileUtil.findFreeFileName(configs, name, "properties");
-                config[0] = configs.createData(freeName + ".properties");
+                String freeName = FileUtil.findFreeFileName(configs, name, "properties"); //NOI18N
+                config[0] = configs.createData(freeName + ".properties"); //NOI18N
                 final OutputStream outputStream = config[0].getOutputStream();
                 try {
                     props.store(outputStream);

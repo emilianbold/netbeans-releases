@@ -46,11 +46,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cordova.android.AndroidPlatform;
+import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 final class MobilePlatformsPanel extends javax.swing.JPanel {
 
@@ -214,9 +215,9 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
+    @NbBundle.Messages("LBL_AndroidPath=Choose Android SDK directory")
     private void androidSdkBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_androidSdkBrowseActionPerformed
-        File sdkDir = new FileChooserBuilder(MobilePlatformsPanel.class).setDirectoriesOnly(true).setTitle("Choose Android SDK directory").showOpenDialog();
+        File sdkDir = new FileChooserBuilder(MobilePlatformsPanel.class).setDirectoriesOnly(true).setTitle(Bundle.LBL_AndroidPath()).showOpenDialog();
         if (sdkDir != null) {
             androidSdkField.setText(sdkDir.getAbsolutePath());
         }
@@ -224,14 +225,15 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
 
     private void androidSdkDownloadMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_androidSdkDownloadMouseClicked
         try {
-            URLDisplayer.getDefault().showURL(new URL("http://developer.android.com/sdk/index.html"));
+            URLDisplayer.getDefault().showURL(new URL("http://developer.android.com/sdk/index.html"));//NOI18N
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
     }//GEN-LAST:event_androidSdkDownloadMouseClicked
 
+    @NbBundle.Messages("LBL_CordovaPath=Choose PhoneGap SDK directory")
     private void cordovaSdkBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cordovaSdkBrowseActionPerformed
-        File sdkDir = new FileChooserBuilder(MobilePlatformsPanel.class).setDirectoriesOnly(true).setTitle("Choose Cordova SDK directory").showOpenDialog();
+        File sdkDir = new FileChooserBuilder(MobilePlatformsPanel.class).setDirectoriesOnly(true).setTitle(Bundle.LBL_CordovaPath()).showOpenDialog();
         if (sdkDir != null) {
             cordovaSdkField.setText(sdkDir.getAbsolutePath());
         }
@@ -239,7 +241,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
 
     private void cordovaSdkDownloadMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cordovaSdkDownloadMouseClicked
         try {
-            URLDisplayer.getDefault().showURL(new URL("http://phonegap.com/download"));
+            URLDisplayer.getDefault().showURL(new URL("http://phonegap.com/download")); //NOI18N
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -264,13 +266,13 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
 
     boolean valid() {
         File androidLoc = new File(androidSdkField.getText());
-        File androidTools = new File(androidLoc, "tools");
+        File androidTools = new File(androidLoc, "tools"); //NOI18N
         boolean adroidValid = androidLoc.exists() && androidLoc.isDirectory()
                                && androidTools.exists() && androidTools.isDirectory();
 
         File cordovaLoc = new File(cordovaSdkField.getText());
-        File cordovaAndroid = new File(cordovaLoc, "lib/android");
-        File cordovaIOS = new File(cordovaLoc, "lib/ios");
+        File cordovaAndroid = new File(cordovaLoc, "lib/android"); //NOI18N
+        File cordovaIOS = new File(cordovaLoc, "lib/ios"); //NOI18N
         boolean cordovaValid = cordovaLoc.exists() && cordovaLoc.isDirectory()
                                && cordovaAndroid.exists() && cordovaAndroid.isDirectory()
                                && cordovaIOS.exists() && cordovaIOS.isDirectory() ;
