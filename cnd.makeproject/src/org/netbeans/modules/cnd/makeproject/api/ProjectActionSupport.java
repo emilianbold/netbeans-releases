@@ -822,7 +822,7 @@ public class ProjectActionSupport {
 //                      }
                     }
 
-                    String relativeToBaseDir = ProjectSupport.toProperPath(projectConfiguration.getBaseDir(), executable, pae.getProject());
+                    String relativeToBaseDir = ProjectSupport.toProperPath(projectConfiguration.getBaseDir(), selectedExecutable, pae.getProject());
                     projectConfiguration.getMakefileConfiguration().getOutput().setValue(relativeToBaseDir);
 
                     // Modify pae ...
