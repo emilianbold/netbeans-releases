@@ -141,12 +141,30 @@ public class CordovaTemplate implements SiteTemplateImplementation {
     @ServiceProvider(service=ClientProjectExtender.class)
     public static class CordovaExtender implements ClientProjectExtender {
 
-        public CordovaExtender() {
+        private boolean enabled;
+
+        /**
+         * Get the value of enabled
+         *
+         * @return the value of enabled
+         */
+        public boolean isEnabled() {
+            return enabled;
         }
 
+        /**
+         * Set the value of enabled
+         *
+         * @param enabled new value of enabled
+         */
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+
         @Override
-        public Panel<WizardDescriptor> createWizardPanel() {
-            return new CordovaWizardPanel();
+        public Panel<WizardDescriptor>[] createWizardPanels() {
+            return new Panel[]{new CordovaWizardPanel(this)};
         }
 
         @Override
@@ -187,33 +205,15 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                 Exceptions.printStackTrace(ex);
             }
         }
-
-        @Override
-        public boolean isExtenderRequired(SiteTemplateImplementation impl) {
-            return impl instanceof CordovaTemplate;
-        }
-
-        @Override
-        public void openOptionsDialog(PropertyChangeListener changeListener) {
-            OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
-            CordovaPlatform.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(changeListener, CordovaPlatform.getDefault()));
-        }
-
-        @Override
-        public boolean isExtenderReady() {
-            return CordovaPlatform.getDefault().getSdkLocation() !=null;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "Cordova Support";
-        }
     }
 
     private static class CordovaWizardPanel implements Panel<WizardDescriptor>, PropertyChangeListener  {
 
-        public CordovaWizardPanel() {
+        private CordovaExtender ext;
+        private WizardDescriptor wizardDescriptor;
+        public CordovaWizardPanel(CordovaExtender ext) {
             CordovaPlatform.getDefault().addPropertyChangeListener(this);
+            this.ext = ext;
         }
 
         private CordovaTemplatePanel panel;
@@ -232,7 +232,8 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         @Override
         public JComponent getComponent() {
             if (panel == null) {
-                panel = new CordovaTemplatePanel();
+                panel = new CordovaTemplatePanel(ext);
+                panel.addPropertyChangeListener(this);
             }
             return panel;
         }
@@ -244,7 +245,10 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         }
 
         @Override
-        public void readSettings(WizardDescriptor settings) {
+        public void readSettings(WizardDescriptor wizardDescriptor) {
+            this.wizardDescriptor = wizardDescriptor;
+            SiteTemplateImplementation template = (SiteTemplateImplementation) wizardDescriptor.getProperty("SITE_TEMPLATE");
+            panel.setPanelEnabled(template instanceof CordovaTemplate);
         }
 
         @Override
@@ -254,7 +258,16 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         @Override
         public boolean isValid() {
             final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
-            return sdkLocation != null;
+            if (sdkLocation == null && ext.isEnabled()) {
+                setErrorMessage("Mobile Platforms are not configured");
+                return false;
+            }
+            setErrorMessage("");
+            return true;
+        }
+
+        private void setErrorMessage(String message) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
         }
 
         @Override

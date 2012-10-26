@@ -51,10 +51,15 @@ import org.openide.util.NbBundle;
  */
 public class CordovaTemplatePanel extends javax.swing.JPanel {
 
+    private CordovaTemplate.CordovaExtender ext;
+    
+    public static String PROP_EXT_ENABLED = "PROP_EXT_ENABLED";
+    
     /**
      * Creates new form CordovaTemplatePanel
      */
-    public CordovaTemplatePanel() {
+    public CordovaTemplatePanel(CordovaTemplate.CordovaExtender ext) {
+        this.ext = ext;
         setName(NbBundle.getMessage(CordovaTemplatePanel.class, "LBL_CordovaSetup"));
         initComponents();
         update();
@@ -62,10 +67,11 @@ public class CordovaTemplatePanel extends javax.swing.JPanel {
     
     public void update() {
         platformSetup.setVisible(CordovaPlatform.getDefault().getSdkLocation()==null);
-        jLabel1.setVisible(false);
-        jLabel2.setVisible(false);
-        jComboBox1.setVisible(false);
-        jComboBox2.setVisible(false);
+        androidTarget.setVisible(false);
+        iosTarget.setVisible(false);
+        androidTargetCombo.setVisible(false);
+        iosTargetCombo.setVisible(false);
+        controlsPanel.setEnabled(phonegapCheckBox.isSelected());
     }
 
     /**
@@ -77,16 +83,15 @@ public class CordovaTemplatePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        phonegapLabel = new javax.swing.JLabel();
+        controlsPanel = new javax.swing.JPanel();
         packageTextField = new javax.swing.JTextField();
         packageLabel = new javax.swing.JLabel();
         platformSetup = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
-        jComboBox2 = new javax.swing.JComboBox();
-
-        org.openide.awt.Mnemonics.setLocalizedText(phonegapLabel, org.openide.util.NbBundle.getMessage(CordovaTemplatePanel.class, "CordovaTemplatePanel.phonegapLabel.text")); // NOI18N
+        androidTarget = new javax.swing.JLabel();
+        iosTarget = new javax.swing.JLabel();
+        androidTargetCombo = new javax.swing.JComboBox();
+        iosTargetCombo = new javax.swing.JComboBox();
+        phonegapCheckBox = new javax.swing.JCheckBox();
 
         packageTextField.setText(org.openide.util.NbBundle.getMessage(CordovaTemplatePanel.class, "CordovaTemplatePanel.packageTextField.text")); // NOI18N
 
@@ -99,56 +104,79 @@ public class CordovaTemplatePanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CordovaTemplatePanel.class, "CordovaTemplatePanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(androidTarget, org.openide.util.NbBundle.getMessage(CordovaTemplatePanel.class, "CordovaTemplatePanel.androidTarget.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CordovaTemplatePanel.class, "CordovaTemplatePanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(iosTarget, org.openide.util.NbBundle.getMessage(CordovaTemplatePanel.class, "CordovaTemplatePanel.iosTarget.text")); // NOI18N
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "API Level 14 (Android 4.0+)", "API Level 8 (Android 2.2+)" }));
+        androidTargetCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "API Level 14 (Android 4.0+)", "API Level 8 (Android 2.2+)" }));
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "iOS 5.1", "iOS 5.0" }));
+        iosTargetCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "iOS 5.1", "iOS 5.0" }));
+
+        org.jdesktop.layout.GroupLayout controlsPanelLayout = new org.jdesktop.layout.GroupLayout(controlsPanel);
+        controlsPanel.setLayout(controlsPanelLayout);
+        controlsPanelLayout.setHorizontalGroup(
+            controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, controlsPanelLayout.createSequentialGroup()
+                .add(0, 0, Short.MAX_VALUE)
+                .add(platformSetup))
+            .add(controlsPanelLayout.createSequentialGroup()
+                .add(controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(androidTarget)
+                    .add(iosTarget))
+                .add(15, 15, 15)
+                .add(controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(androidTargetCombo, 0, 287, Short.MAX_VALUE)
+                    .add(iosTargetCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .add(controlsPanelLayout.createSequentialGroup()
+                .add(packageLabel)
+                .add(18, 18, 18)
+                .add(packageTextField))
+        );
+        controlsPanelLayout.setVerticalGroup(
+            controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(controlsPanelLayout.createSequentialGroup()
+                .add(controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(packageLabel)
+                    .add(packageTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(androidTarget)
+                    .add(androidTargetCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(iosTarget)
+                    .add(iosTargetCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 154, Short.MAX_VALUE)
+                .add(platformSetup)
+                .addContainerGap())
+        );
+
+        org.openide.awt.Mnemonics.setLocalizedText(phonegapCheckBox, org.openide.util.NbBundle.getMessage(CordovaTemplatePanel.class, "CordovaTemplatePanel.phonegapCheckBox.text")); // NOI18N
+        phonegapCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                phonegapCheckBoxStateChanged(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(0, 199, Short.MAX_VALUE)
-                .add(platformSetup))
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
-                    .add(jLabel2))
-                .add(15, 15, 15)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jComboBox1, 0, 287, Short.MAX_VALUE)
-                    .add(jComboBox2, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-            .add(layout.createSequentialGroup()
-                .add(phonegapLabel)
-                .add(0, 0, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(packageLabel)
-                .add(18, 18, 18)
-                .add(packageTextField))
+                    .add(layout.createSequentialGroup()
+                        .add(phonegapCheckBox)
+                        .add(0, 0, Short.MAX_VALUE))
+                    .add(controlsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(phonegapLabel)
+                .add(phonegapCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(packageLabel)
-                    .add(packageTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(jComboBox2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 149, Short.MAX_VALUE)
-                .add(platformSetup)
-                .addContainerGap())
+                .add(controlsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -156,14 +184,36 @@ public class CordovaTemplatePanel extends javax.swing.JPanel {
         OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
     }//GEN-LAST:event_platformSetupActionPerformed
 
+    private void phonegapCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_phonegapCheckBoxStateChanged
+        setControlsEnabled(phonegapCheckBox.isSelected());  
+        ext.setEnabled(phonegapCheckBox.isSelected());
+        firePropertyChange(PROP_EXT_ENABLED, !phonegapCheckBox.isSelected(), phonegapCheckBox.isSelected());
+    }//GEN-LAST:event_phonegapCheckBoxStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox jComboBox1;
-    private javax.swing.JComboBox jComboBox2;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel androidTarget;
+    private javax.swing.JComboBox androidTargetCombo;
+    private javax.swing.JPanel controlsPanel;
+    private javax.swing.JLabel iosTarget;
+    private javax.swing.JComboBox iosTargetCombo;
     private javax.swing.JLabel packageLabel;
     private javax.swing.JTextField packageTextField;
-    private javax.swing.JLabel phonegapLabel;
+    private javax.swing.JCheckBox phonegapCheckBox;
     private javax.swing.JButton platformSetup;
     // End of variables declaration//GEN-END:variables
+
+    void setPanelEnabled(boolean b) {
+        phonegapCheckBox.setSelected(b);
+    }
+    
+    private void setControlsEnabled(boolean enabled) {
+        androidTarget.setEnabled(enabled);
+        androidTargetCombo.setEnabled(enabled);
+        iosTarget.setEnabled(enabled);
+        iosTargetCombo.setEnabled(enabled);
+        packageLabel.setEnabled(enabled);
+        packageTextField.setEnabled(enabled);
+        platformSetup.setEnabled(enabled);
+        controlsPanel.setEnabled(enabled);
+    }
 }
