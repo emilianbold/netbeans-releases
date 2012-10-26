@@ -88,7 +88,6 @@ public class AntJEE6Suite extends J2eeTestCase {
                 "testContainerI3", //NOI18N
                 "testCcContainerI2", //NOI18N
                 "testCcContainerI3", //NOI18N
-                "testNodes", //NOI18N
                 "testDeploy", //NOI18N
                 "testUndeploy"), JEE6RestCStubsTest.class,
                 "testWizard", //NOI18N
