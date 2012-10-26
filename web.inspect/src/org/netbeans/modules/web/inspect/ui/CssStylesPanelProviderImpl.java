@@ -53,7 +53,6 @@ import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
