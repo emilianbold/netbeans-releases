@@ -270,6 +270,11 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                 }
             }
 
+            while (t.id() == JavaTokenId.WHITESPACE) {
+                ts.moveNext();
+                t = ts.token();
+            }
+            
             if (t.id() == JavaTokenId.IDENTIFIER) {
                 return ts.offsetToken();
             }

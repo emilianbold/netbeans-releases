@@ -335,7 +335,7 @@ public abstract class PositionEstimator {
         @Override()
         public int[] getPositions(int index) {
             if (!initialized) initialize();
-            return data.get(index);
+            return data.get(index).clone();
         }
         
         @Override
@@ -571,7 +571,7 @@ public abstract class PositionEstimator {
         @Override()
         public int[] getPositions(int index) {
             if (!initialized) initialize();
-            return data.get(index);
+            return data.get(index).clone();
         }
         
         public int prepare(int startPos, StringBuilder aHead,
@@ -1144,7 +1144,7 @@ public abstract class PositionEstimator {
         @Override()
         public int[] getPositions(int index) {
             if (!initialized) initialize();
-            return data.get(index);
+            return data.get(index).clone();
         }
         
         @Override
@@ -1314,7 +1314,7 @@ public abstract class PositionEstimator {
         @Override()
         public int[] getPositions(int index) {
             if (!initialized) initialize();
-            return data.get(index);
+            return data.get(index).clone();
         }
         
         public int prepare(int startPos, StringBuilder aHead,
@@ -1532,7 +1532,7 @@ public abstract class PositionEstimator {
         @Override()
         public int[] getPositions(int index) {
             if (!initialized) initialize();
-            return data.get(index);
+            return data.get(index).clone();
         }
         
         @Override
