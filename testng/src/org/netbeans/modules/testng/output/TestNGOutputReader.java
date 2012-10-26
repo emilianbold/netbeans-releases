@@ -123,6 +123,7 @@ final class TestNGOutputReader {
     private String parameters;
     private String values;
     private String duration;
+    private int msDuration;
     private boolean failedInConfigurationMethod;
     private boolean failedInAfterClassMethod;
     private boolean failedInBeforeClassMethod;
@@ -203,6 +204,7 @@ final class TestNGOutputReader {
     private void handleInvocationCount(int invocationCount) {
         double actual = (double) (invocationCount - passedWithErrorsFailure) / (double) invocationCount;
         double expected = (double) successPercentage / 100.0;
+	duration = Integer.toString(msDuration);
         if (actual == 100) {
             testFinished("PASSED", suiteName, testCase, parameters, values, duration);
         } else if (actual < expected) {
@@ -234,6 +236,7 @@ final class TestNGOutputReader {
         if (in.startsWith("RUNNING: ")) {
             passedWithErrorsFailure = 0;
             successPercentage = -1;
+	    msDuration = 0;
             descriptionInPassedWithErrors = false;
             failedInAfterClassMethod = false;
             failedInBeforeClassMethod = false;
@@ -331,7 +334,24 @@ final class TestNGOutputReader {
             if (m.matches()) {
                 if(successPercentage == -1) {
                     testFinished("PASSED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
-                }
+                } else {
+		    int currentInvocation;
+		    int invocationCount;
+		    int dur;
+
+		    try {
+			dur = Integer.parseInt(m.group(8));
+			currentInvocation = Integer.parseInt(m.group(10));
+			invocationCount = Integer.parseInt(m.group(11));
+			msDuration += dur;
+		    } catch (NumberFormatException ex) {
+			return;
+		    }
+		    if (currentInvocation == invocationCount) {
+			testFinished("PASSED", m.group(1), m.group(2), m.group(4), m.group(6), Integer.toString(msDuration));
+			successPercentage = -1;
+		    }
+		}
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
                 if (m2.matches()) {
@@ -348,6 +368,7 @@ final class TestNGOutputReader {
                 passedWithErrorsFailure++;
                 int currentInvocation;
                 int invocationCount;
+		int dur;
 
                 suiteName = m.group(1);
                 testCase = m.group(2);
@@ -356,14 +377,17 @@ final class TestNGOutputReader {
                 duration = m.group(8);
 
                 try{
+		    dur = Integer.parseInt(duration);
                     currentInvocation = Integer.parseInt(m.group(10));
                     invocationCount = Integer.parseInt(m.group(11));
+		    msDuration += dur;
                 } catch(NumberFormatException ex) {
                     descriptionInPassedWithErrors = true;
                     return;
                 }
                 if (currentInvocation == invocationCount) {
                     handleInvocationCount(invocationCount);
+		    successPercentage = -1;
                 }
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
@@ -402,7 +426,26 @@ final class TestNGOutputReader {
 
         if (in.startsWith("FAILED: ")) {
             if (m.matches()) {
-                testFinished("FAILED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                if(successPercentage == -1) {
+                    testFinished("FAILED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                } else {
+		    int currentInvocation;
+		    int invocationCount;
+		    int dur;
+
+		    try {
+			dur = Integer.parseInt(m.group(8));
+			currentInvocation = Integer.parseInt(m.group(10));
+			invocationCount = Integer.parseInt(m.group(11));
+			msDuration += dur;
+		    } catch (NumberFormatException ex) {
+			return;
+		    }
+		    if (currentInvocation == invocationCount) {
+			testFinished("FAILED", m.group(1), m.group(2), m.group(4), m.group(6), Integer.toString(msDuration));
+			successPercentage = -1;
+		    }
+		}
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
                 if (m2.matches()) {
