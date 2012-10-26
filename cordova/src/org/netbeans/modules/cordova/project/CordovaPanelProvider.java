@@ -56,8 +56,8 @@ public class CordovaPanelProvider implements ProjectCustomizer.CompositeCategory
     @Override
     public Category createCategory(Lookup context) {
             return ProjectCustomizer.Category.create(
-                    "phonegap",
-                    "PhoneGap",
+                    "phonegap",//NOI18N
+                    "PhoneGap",//NOI18N
                     null);
     }
 
@@ -67,7 +67,7 @@ public class CordovaPanelProvider implements ProjectCustomizer.CompositeCategory
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org.netbeans.modules.web.clientproject",
+            projectType = "org.netbeans.modules.web.clientproject",//NOI18N
             position = 200)
     public static CordovaPanelProvider createRunConfigs() {
         return new CordovaPanelProvider();

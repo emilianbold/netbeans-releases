@@ -646,10 +646,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	state().isLoaded = false;
 	stateChanged();
         
-        if (MemoryWindow.getDefault().isShowing()) {
-            MemoryWindow.getDefault().setDebugger(null);
-        }
+        SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
+            public void run() {
+                if (MemoryWindow.getDefault().isShowing()) {
+                    MemoryWindow.getDefault().setDebugger(null);
+                }
+            }
+        });
+        
         // tell debuggercore that we're going away
         engineProvider.getDestructor().killEngine();
 

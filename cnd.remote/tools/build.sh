@@ -1,4 +1,9 @@
 #!/bin/bash
+
+#
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+#
+
 if [ -z "${MAKE}" ]; then
 	MAKE=gmake
 fi

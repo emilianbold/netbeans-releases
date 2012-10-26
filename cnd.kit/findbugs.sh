@@ -1,5 +1,9 @@
 #!/bin/sh -x
 
+#
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+#
+
 fb_home="$1"
 workspace="$2"
 out="$3"

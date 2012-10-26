@@ -125,7 +125,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     }
 
     public boolean isVCSVisible() {
-        assert org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
+        assert org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE;
         if (folder != null) {
             return folder.hasIncludedItems();
         }
