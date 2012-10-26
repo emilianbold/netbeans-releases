@@ -120,7 +120,6 @@ public class HelperUtility {
 
                         final String fileName = new File(localFile).getName();
                         final String remoteFile = hinfo.getTempDir() + '/' + fileName;
-
                         // Helper utility could be needed at the early stages
                         // Should not use NPB here
                         ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
@@ -128,6 +127,7 @@ public class HelperUtility {
                         if (channel == null) {
                             return null;
                         }
+                        Object activityID = RemoteStatistics.stratChannelActivity("UploadHelperUtility", channel, localFile); // NOI18N
                         try {
                             channel.connect();
                             channel.put(localFile, remoteFile);
@@ -137,6 +137,7 @@ public class HelperUtility {
                             log.log(Level.WARNING, "Failed to upload {0}", fileName); // NOI18N
                             Exceptions.printStackTrace(ex);
                         } finally {
+                            RemoteStatistics.stopChannelActivity(activityID);
                             cmAccess.closeAndReleaseChannel(env, channel);
                         }
                     }
