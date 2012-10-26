@@ -41,108 +41,37 @@
  */
 package org.netbeans.modules.cordova;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cordova.android.AndroidPlatform;
-import org.netbeans.modules.cordova.ios.Device;
-import org.netbeans.modules.cordova.ios.IOSPlatform;
+import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
+import org.netbeans.modules.cordova.platforms.ios.Device;
+import org.netbeans.modules.cordova.platforms.ios.IOSPlatform;
 import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.*;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jan Becicka
  */
-public class CordovaPerformer extends AbstractAction implements ProjectActionPerformer, ActionListener, ContextAwareAction {
+@ServiceProvider(service=BuildPerformer.class)
+public class CordovaPerformer implements BuildPerformer {
     
-    public static final String BUILD_IOS = "build-ios";
-    public static final String BUILD_ANDROID = "build-android";
-    public static final String RUN_IOS = "sim-ios";
-    public static final String RUN_ANDROID = "sim-android";
-    public static final String CLEAN_IOS = "clean-ios";
-    public static final String CLEAN_ANDROID = "clean-android";
-    
-    private String target;
-    private Project p;
- 
-    
-//    @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.buildIOS", category = "Project")
-//    @ActionRegistration(displayName = "#build-ios", lazy=false)
-//    @ActionReference(position = 1000, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
-    public static CordovaPerformer buildIOS() {
-        return new CordovaPerformer(BUILD_IOS);
-    }
-
-//    @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.buildAndroid", category = "Project")
-//    @ActionRegistration(displayName = "#build-android", lazy=false)
-//    @ActionReference(position = 1100, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
-    public static CordovaPerformer buildAndroid() {
-        return new CordovaPerformer(BUILD_ANDROID);
-    }
-
-//    @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.runIOS", category = "Project")
-//    @ActionRegistration(displayName = "#sim-ios", lazy=false)
-//    @ActionReference(position = 1200, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
-    public static CordovaPerformer runIOS() {
-        return new CordovaPerformer(RUN_IOS);
-    }
-
-//    @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.runAndroid", category = "Project")
-//    @ActionRegistration(displayName = "#sim-android", lazy=false)
-//    @ActionReference(position = 1300, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
-    public static CordovaPerformer runAndroid() {
-        return new CordovaPerformer(RUN_ANDROID);
-    }
-
-//    @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.cleanIOS", category = "Project")
-//    @ActionRegistration(displayName = "#clean-ios", lazy=false)
-//    @ActionReference(position = 1400, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
-    public static CordovaPerformer cleanIOS() {
-        return new CordovaPerformer(CLEAN_IOS);
-    }
-
-//    @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.cleanAndroid", category = "Project")
-//    @ActionRegistration(displayName = "#clean-android", lazy=false)
-//    @ActionReference(position = 1500, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
-    public static CordovaPerformer cleanAndroid() {
-        return new CordovaPerformer(CLEAN_ANDROID);
-    }
-
-    public CordovaPerformer(String target) {
-        super(NbBundle.getMessage(CordovaPerformer.class, target));
-        this.target = target;
-    }
-
-    private CordovaPerformer(Project p, String target) {
-        this(target);
-        this.p = p;
-    }
-
     @Override
-    public boolean enable(Project project) {
-        return true;
-    }
-
-    @Override
-    public void perform(Project project) {
+    public void perform(String target, Project project) {
         FileObject buildFo = project.getProjectDirectory().getFileObject("nbproject/build.xml");
         if (buildFo == null) {
             generateBuildScripts(project);
-            //updateProjectProperties(project);
             buildFo = project.getProjectDirectory().getFileObject("nbproject/build.xml");
         }
         try { 
@@ -194,15 +123,7 @@ public class CordovaPerformer extends AbstractAction implements ProjectActionPer
         }
     }
 
-//    private void updateProjectProperties(Project project) {
-//        AntProjectHelper helper = project.getLookup().lookup(AntProjectHelper.class);
-//        helper.getProperties("nbproject/project.properties");
-//        EditableProperties ep = new EditableProperties(true);
-//        throw new UnsupportedOperationException("Not yet implemented");
-//    }
-
     private void createScript(Project project, String source, String target) throws IOException {
-        //URL buildUrl = CordovaPerformer.class.getResource("build.xml");
         FileObject build= FileUtil.createData(project.getProjectDirectory(), target);
         InputStream resourceAsStream = CordovaPerformer.class.getResourceAsStream(source);
         OutputStream outputStream = build.getOutputStream();
@@ -237,22 +158,5 @@ public class CordovaPerformer extends AbstractAction implements ProjectActionPer
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        perform(p);
-    }
-
-    @Override
-    public Action createContextAwareInstance(Lookup actionContext) {
-        Project p = actionContext.lookup(Project.class);
-        if (p == null) {
-            return this;
-        }
-        if (p instanceof Project) {
-            return new CordovaPerformer(p, target);
-        }
-        return this;
     }
 }

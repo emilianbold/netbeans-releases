@@ -41,13 +41,14 @@
  */
 package org.netbeans.modules.cordova;
 
+import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.android.AndroidDebugTransport;
-import org.netbeans.modules.cordova.ios.IOSDebugTransport;
-import org.netbeans.modules.cordova.ios.IOSPlatform;
+import org.netbeans.modules.cordova.platforms.android.AndroidDebugTransport;
+import org.netbeans.modules.cordova.platforms.ios.IOSDebugTransport;
+import org.netbeans.modules.cordova.platforms.ios.IOSPlatform;
 import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;

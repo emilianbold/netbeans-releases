@@ -46,7 +46,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cordova.android.AndroidPlatform;
+import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
