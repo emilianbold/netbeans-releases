@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.findbugs;
 
-package org.netbeans.modules.ws.qaf.utilities;
+import edu.umd.cs.findbugs.BugPattern;
+import edu.umd.cs.findbugs.DetectorFactoryCollection;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInstall;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
-import javax.swing.JDialog;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
+public class Installer extends ModuleInstall {
 
-/**
- *
- * @author lukas
- */
-public class RestWizardOperator extends WizardOperator {
-
-    public RestWizardOperator(String title) {
-        super(title);
-    }
-
-    public RestWizardOperator(JDialog dialog) {
-        super(dialog);
-    }
-
+    private static final int CURRENT_FINDBUGS_KEYWORD_VERSION = 1;
     @Override
-    public void finish() {
-        btFinish().requestFocus();
-        btFinish().pushNoBlock();
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException ex) {
-            //ignore
-        }
-        String dlgLbl = "REST Resources Configuration";
-        if (null != JDialogOperator.findJDialog(dlgLbl, true, true)) {
-            new JButtonOperator(new JDialogOperator(dlgLbl), "OK").push();
+    public void restored() {
+        super.restored();
+        FileObject findbugsKeywords = FileUtil.getConfigFile("OptionsDialog/Keywords/findbugs");
+        
+        if (findbugsKeywords == null || !Integer.valueOf(CURRENT_FINDBUGS_KEYWORD_VERSION).equals(findbugsKeywords.getAttribute("version"))) {
+            try {
+                findbugsKeywords = FileUtil.createData(FileUtil.getConfigRoot(), "OptionsDialog/Keywords/findbugs");
+                findbugsKeywords.setAttribute("location", "Editor");
+                findbugsKeywords.setAttribute("tabTitle", NbBundle.getBundle("org.netbeans.modules.options.editor.Bundle").getString("CTL_Hints_DisplayName"));
+                
+                DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
+                StringBuilder keywords = new StringBuilder();
+                
+                for (BugPattern bp : dfc.getBugPatterns()) {
+                    keywords.append(RunFindBugs.computeFilterText(bp).toUpperCase());
+                    keywords.append(",");
+                }
+                
+                findbugsKeywords.setAttribute("keywords", keywords.toString());
+                findbugsKeywords.setAttribute("version", CURRENT_FINDBUGS_KEYWORD_VERSION);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
-
-
 
 }

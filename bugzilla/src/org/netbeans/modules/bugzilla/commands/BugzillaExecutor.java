@@ -446,28 +446,30 @@ public class BugzillaExecutor {
             if (status instanceof BugzillaStatus) {
                 BugzillaStatus bs = (BugzillaStatus) status;
                 BugzillaUserMatchResponse res = bs.getUserMatchResponse();
-
-                String assignedMsg = res.getAssignedToMsg();
-                String newCCMsg = res.getNewCCMsg();
-                String qaContactMsg = res.getQaContactMsg();
                 
-                StringBuilder sb = new StringBuilder();
-                if(msg != null) {
-                    sb.append(msg);
+                if(res != null) {
+                    String assignedMsg = res.getAssignedToMsg();
+                    String newCCMsg = res.getNewCCMsg();
+                    String qaContactMsg = res.getQaContactMsg();
+
+                    StringBuilder sb = new StringBuilder();
+                    if(msg != null) {
+                        sb.append(msg);
+                    }
+                    if(assignedMsg != null) {
+                        sb.append('\n');
+                        sb.append(assignedMsg);
+                    }
+                    if (newCCMsg != null) {
+                        sb.append('\n');
+                        sb.append(newCCMsg);
+                    }
+                    if (qaContactMsg != null) {
+                        sb.append('\n');
+                        sb.append(qaContactMsg);
+                    }
+                    msg = sb.toString();
                 }
-                if(assignedMsg != null) {
-                    sb.append('\n');
-                    sb.append(assignedMsg);
-                }
-                if (newCCMsg != null) {
-                    sb.append('\n');
-                    sb.append(newCCMsg);
-                }
-                if (qaContactMsg != null) {
-                    sb.append('\n');
-                    sb.append(qaContactMsg);
-                }
-                msg = sb.toString();
             }
             
             if (msg == null && status instanceof RepositoryStatus) {

@@ -197,6 +197,15 @@ public interface LocalHistoryStore {
      */ 
     public void cleanUp(long ttl);    
     
+    /**
+     * Checks whether the given file is currently being copied into the Local History 
+     * storage and blocks eventually until the copying operation finishes.
+     * See implementation for info about a possible timeout. 
+     * 
+     * 
+     * @param file the file to check
+     * @param caller identifies whoever called this method
+     */
     public void waitForProcessedStoring(File file, String caller);
             
 }

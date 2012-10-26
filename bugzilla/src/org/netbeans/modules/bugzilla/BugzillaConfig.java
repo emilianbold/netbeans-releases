@@ -58,6 +58,7 @@ import javax.swing.Icon;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.util.FileUtils;
+import org.openide.modules.Places;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 
@@ -331,7 +332,7 @@ public class BugzillaConfig {
         if (t9yNbConfigPath != null && t9yNbConfigPath.length() > 0) {
             return t9yNbConfigPath;
         }
-        String nbHome = System.getProperty("netbeans.user");            //NOI18N
+        String nbHome = Places.getUserDirectory().getAbsolutePath();            //NOI18N
         return nbHome + "/config/issue-tracking/org-netbeans-modules-bugzilla"; //NOI18N
     }
 }

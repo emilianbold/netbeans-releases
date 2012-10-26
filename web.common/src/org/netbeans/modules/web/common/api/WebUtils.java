@@ -398,7 +398,7 @@ public class WebUtils {
             if (end == -1) {
                 end = res.lastIndexOf('#');
             }
-            if (end != -1) {
+            if (pathOnly && end != -1) {
                 res = res.substring(0, end);
             }
             return res;

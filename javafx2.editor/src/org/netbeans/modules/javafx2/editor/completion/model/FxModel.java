@@ -260,11 +260,19 @@ public final class FxModel extends FxNode {
         public FxScriptFragment createScript(String sourceRef) {
             return new FxScriptFragment(sourceRef);
         }
+        
+        @Override
+        public FxNewInstance createCustomRoot(String sourceName, String id) {
+            FxNewInstance n = new FxNewInstance(sourceName, true);
+            n.withId(id);
+            return n;
+        }
 
         @Override
-        public FxNewInstance createInstance(String sourceName, CharSequence value, String factory, String id) {
+        public FxNewInstance createInstance(String sourceName, CharSequence value, boolean constant, String factory, String id) {
             FxNewInstance n = new FxNewInstance(sourceName);
             n.fromValue(value).usingFactory(factory).withId(id);
+            n.setConstant(constant);
             
             return n;
         }

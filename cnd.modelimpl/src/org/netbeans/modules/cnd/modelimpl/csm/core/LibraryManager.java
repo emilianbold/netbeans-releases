@@ -371,6 +371,8 @@ public final class LibraryManager {
         }
         if (!entry.containsProject(projectUid)) {
             entry.addProject(projectUid);
+            Notificator.instance().registerChangedLibraryDependency(project);
+            Notificator.instance().flush(); // should we rely on subsequent flush instead? 
         }
         return (LibProjectImpl) entry.getLibrary().getObject();
     }
@@ -404,11 +406,17 @@ public final class LibraryManager {
     public void onProjectPropertyChanged(ProjectBase project) {
         project.getGraph().clear();
         CsmUID<CsmProject> uid = project.getUID();
+        boolean notify = false;
         for (LibraryEntry entry : librariesEntries.values()) {
             Boolean removed = entry.removeProject(uid);
             if (removed != null) {
                 project.invalidateLibraryStorage(entry.libraryUID);
+                notify = true;
             }
+        }
+        if (notify) {
+            Notificator.instance().registerChangedLibraryDependency(project);
+            Notificator.instance().flush(); // should we rely on subsequent flush instead? 
         }
     }
 
@@ -492,7 +500,7 @@ public final class LibraryManager {
             for (int i = 0; i < len; i++) {
                 LibraryKey key =  new LibraryKey(input);
                 LibraryEntry entry =  getOrCreateLibrary(key);
-                entry.addProject(project);
+                entry.addProject(project); // no need to notiy here, we are called from project constructor here
             }
         }
     }
@@ -602,7 +610,7 @@ public final class LibraryManager {
         private Boolean removeProject(CsmUID<CsmProject> project) {
             return dependentProjects.remove(project);
         }
-
+        
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();

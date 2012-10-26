@@ -1390,7 +1390,7 @@ public final class CompletionContext {
             } else if (ts.offset() < caretOffset) {
                 // assume preceding token
                 
-                prefix = t.toString();
+                prefix = t.text().toString();
             }
         }
         if (startOffset == -1) {

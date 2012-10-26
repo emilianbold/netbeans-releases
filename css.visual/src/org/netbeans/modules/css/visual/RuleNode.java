@@ -596,7 +596,7 @@ public class RuleNode extends AbstractNode {
         });
 
         if (!fixedElements.isEmpty()) {
-            return new PropertyValuesEditor(pmodel, getModel(), fixedElements, unitElements, addNoneProperty);
+            return new PropertyValuesEditor(panel, pmodel, getModel(), fixedElements, unitElements, addNoneProperty);
         }
 
         return null;

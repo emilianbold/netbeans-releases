@@ -264,7 +264,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             try {
-                TransactionContext.beginStandardTransaction(false, context.getRootURI());
+                TransactionContext.beginStandardTransaction(context.getRootURI(), false, context.isAllFilesIndexing());
                 final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), false);
                 if (uq == null) {
                     //Closing...
@@ -283,26 +283,12 @@ public class JavaBinaryIndexer extends BinaryIndexer {
 
         @Override
         public void scanFinished(Context context) {
+            final TransactionContext txCtx = TransactionContext.get();
+            assert txCtx != null;
             try {
-                final ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI(), false);
-                if (uq == null) {
-                    //Closing...
-                    return;
-                }
-                uq.setState(ClassIndexImpl.State.INITIALIZED);
-                if (context.isAllFilesIndexing()) {
-                    JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.FALSE.toString());
-                }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            } finally {
-                final TransactionContext txCtx = TransactionContext.get();
-                assert txCtx != null;
-                try {
-                    txCtx.commit();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                txCtx.commit();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }

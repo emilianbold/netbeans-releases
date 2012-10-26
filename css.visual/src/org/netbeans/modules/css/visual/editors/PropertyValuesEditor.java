@@ -45,6 +45,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.FeatureDescriptor;
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,6 +64,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.SpinnerModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -71,9 +75,12 @@ import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
+import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
+import org.netbeans.modules.css.visual.RuleEditorPanel;
 import org.netbeans.modules.css.visual.RuleNode;
+import org.netbeans.modules.css.visual.actions.GoToSourceAction;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -98,11 +105,13 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     private boolean containsColor;
     private FileObject file;
     private PropertyDefinition pmodel;
+    private RuleEditorPanel panel;
     
     private static final String CHOOSE_COLOR_ITEM = new StringBuilder().append("<html><b>").append(Bundle.choose_color_item()).append("</b></html>").toString();  //NOI18N
     private static final JColorChooser COLOR_CHOOSER = new JColorChooser();
 
-    public PropertyValuesEditor(PropertyDefinition pmodel, Model model, Collection<FixedTextGrammarElement> fixedElements, Collection<UnitGrammarElement> unitElements, boolean addNoneProperty) {
+    public PropertyValuesEditor(RuleEditorPanel panel, PropertyDefinition pmodel, Model model, Collection<FixedTextGrammarElement> fixedElements, Collection<UnitGrammarElement> unitElements, boolean addNoneProperty) {
+        this.panel = panel;
         this.fixedElements = fixedElements;
         this.unitElements = unitElements;
         this.addNoneProperty = addNoneProperty;
@@ -235,6 +244,25 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     public void attachEnv(PropertyEnv env) {
         //if there's at least one unit element, then the text field needs to be editable
         env.getFeatureDescriptor().setValue("canEditAsText", Boolean.TRUE); //NOI18N
+
+        env.getFeatureDescriptor().setValue("nb.propertysheet.mouse.doubleclick.listener", new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                if (me.getID() == MouseEvent.MOUSE_PRESSED && SwingUtilities.isLeftMouseButton(me)) {
+                    if (me.getClickCount() > 1) {
+                        FeatureDescriptor selected = panel.getSelected();
+                        if(selected != null) {
+                            if(selected instanceof RuleNode.DeclarationProperty) {
+                                RuleNode.DeclarationProperty declarationProperty = (RuleNode.DeclarationProperty)selected;
+                                GoToSourceAction action = new GoToSourceAction(panel, declarationProperty);
+                                action.actionPerformed(null);
+                            }
+                        }
+                    }
+
+                }
+            }
+        });
 
         if (containsColor) {
             env.getFeatureDescriptor().setValue("customListCellRendererSupport", new ColorListCellRendererSupport()); //NOI18N

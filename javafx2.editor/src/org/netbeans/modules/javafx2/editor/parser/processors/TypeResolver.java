@@ -98,14 +98,26 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
     })
     @Override
     public void visitInstance(FxNewInstance decl) {
-        String sourceName = decl.getSourceName();
+        String sourceName = decl.getTypeName();
         // try to resolve the sourceName, may be a full classname
         TypeElement el = env.getCompilationInfo().getElements().getTypeElement(sourceName);
         FxBean bean;
         ElementHandle<TypeElement> handle;
         
         if (el == null) {
-            int start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
+            int start;
+            
+            if (decl.isCustomRoot()) {
+                int[] pos = env.getTreeUtilities().findAttributePos(decl, null, FxXmlSymbols.FX_ATTR_TYPE, true);
+                if (pos == null) {
+                    super.visitInstance(decl);
+                    return;
+                } else {
+                    start = pos[0];
+                }
+            } else {
+                start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
+            }
             handle = resolveClassname(sourceName, decl, start);
 
             String fqn;
@@ -129,7 +141,7 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
                     ERR_unableAnalyseClass(handle.getQualifiedName().toString()),
                     handle
                 ));
-            } else if (!bean.isFxInstance() && bean.getBuilder() == null) {
+            } else if (!bean.isFxInstance() && bean.getBuilder() == null && !decl.isCustomRoot()) {
                 env.addError(new ErrorMark(
                     start, sourceName.length(),
                     "class-not-fx-instance",

@@ -80,7 +80,7 @@ public class TestJQuery extends GeneralJavaScript {
                 "testElementSelectorjQuery",
                 "testMultipleSelectors",
                 "testMultipleSelectorsJQuery",
-                "testHelpWindow").enableModules(".*").clusters(".*"));
+                "testHelpWindow").enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
     public void openProject() throws Exception {
@@ -188,13 +188,13 @@ public class TestJQuery extends GeneralJavaScript {
 
     public void testElementSelectorjQuery() {
         startTest();
-        simpleCase("\njQuery(", new String[]{"div", "span"}, new String[]{});
+        simpleCase("\njQuery(\"", new String[]{"div", "span"}, new String[]{});
         endTest();
     }
 
     public void testElementSelector() {
         startTest();
-        simpleCase("$().first().children(", new String[]{"div", "span"}, new String[]{});
+        simpleCase("$().first().children(\"", new String[]{"div", "span"}, new String[]{});
         endTest();
     }
 

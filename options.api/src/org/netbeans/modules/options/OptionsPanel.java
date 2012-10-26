@@ -349,6 +349,9 @@ public class OptionsPanel extends JPanel {
                     searchTC.requestFocusInWindow();
                 } else {
                     clearSearch = false;
+		    if(e.getOppositeComponent() != null && e.getOppositeComponent().equals(quickSearch)) {
+			pOptions.requestFocusInWindow();
+		    }
                 }
             }
         });
@@ -724,6 +727,7 @@ public class OptionsPanel extends JPanel {
             }
             setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
             disabledCategories.clear();
+	    CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(null, null);
         }
     }
     
