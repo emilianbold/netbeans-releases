@@ -39,50 +39,86 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.spi;
+package org.netbeans.modules.css.visual;
 
-import java.util.Collection;
-import javax.swing.JComponent;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import javax.swing.Action;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
- * Representation of the CssStyles window named panel.
- * 
- * Instance to be registered in global lookup.
+ * Node whose sole purpose is to serve as a hidden root node
+ * in {@code TreeView} and provide a context menu for this view
+ * through its actions.
  *
- * @author marekfukala
+ * @author Jan Stola
+ * @param <T> type of the real root node.
  */
-public interface CssStylesPanelProvider {
-    
-    /**
-     * Gets a collection of mimetypes to which this panel provider should be bound.
-     */
-    public Collection<String> getMimeTypes();
-    
-    /**
-     * Gets an unique system id for the panel. 
-     * 
-     * Not presented in UI.
-     */
-    public String getPanelID();
+public class FakeRootNode<T extends Node> extends AbstractNode {
+    /** Real root node, i.e., the only child of this fake root. */
+    private T realRoot;
+    /** Actions of this node. */
+    private Action[] actions;
 
     /**
-     * Gets a display name which is show in the toolbar.
+     * Creates a new {@code FakeRootNode}.
+     * 
+     * @param realRoot real root node.
+     * @param actions actions of the new fake root node.
      */
-    public String getPanelDisplayName();
-    
+    public FakeRootNode(T realRoot, Action[] actions) {
+        super(new FakeRootChildren(realRoot));
+        this.realRoot = realRoot;
+        this.actions = actions;
+    }
+
     /**
-     * Gets the content component.
+     * Returns the real root node.
      * 
-     * Called just once per IDE session when the panel content is about to be 
-     * shown in the UI for the first time.
-     * 
-     * The implementor should listen on the lookup content and respond according upon changes.
-     * An instance of {@link FileObject} is updated in the lookup as the edited file changes.
-     * 
-     * @param lookup instance of {@link Lookup} with some context object. 
+     * @return real root node.
      */
-    public JComponent getContent(Lookup lookup);
+    public T getRealRoot() {
+        return realRoot;
+    }
+    
+    @Override
+    public Action[] getActions(boolean context) {
+        return actions;
+    }
+
+    /**
+     * Children used by {@code FakeRootNode}. The only child provided by
+     * these children is the real root node.
+     * 
+     * @param <T> type of the real root node.
+     */
+    static class FakeRootChildren<T extends Node> extends Children.Keys<String> {
+        /** Key for the real root node. */
+        private static final String ROOT_KEY = "root"; // NOI18N
+        /** Real root node. */
+        private T realRoot;
+
+        /**
+         * Creates a new {@code FakeRootChildren}.
+         * 
+         * @param realRoot real root node.
+         */
+        FakeRootChildren(T realRoot) {
+            this.realRoot = realRoot;
+            setKeys(new String[]{ROOT_KEY});
+        }
+
+        @Override
+        protected Node[] createNodes(String key) {
+            Node[] result;
+            if (ROOT_KEY.equals(key)) {
+                result = new Node[] {realRoot};
+            } else {
+                result = new Node[0];
+            }
+            return result;
+        }
+
+    }
     
 }

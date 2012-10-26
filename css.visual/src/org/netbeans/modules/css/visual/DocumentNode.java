@@ -39,50 +39,64 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.spi;
+package org.netbeans.modules.css.visual;
 
-import java.util.Collection;
-import javax.swing.JComponent;
+import java.util.List;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
- * Representation of the CssStyles window named panel.
- * 
- * Instance to be registered in global lookup.
+ * Root node of the document section of CSS Styles view.
  *
- * @author marekfukala
+ * @author Jan Stola
  */
-public interface CssStylesPanelProvider {
-    
-    /**
-     * Gets a collection of mimetypes to which this panel provider should be bound.
-     */
-    public Collection<String> getMimeTypes();
-    
-    /**
-     * Gets an unique system id for the panel. 
-     * 
-     * Not presented in UI.
-     */
-    public String getPanelID();
+@NbBundle.Messages({
+    "DocumentNode.displayName=Style Sheets"
+})
+public class DocumentNode extends AbstractNode {
+    /** Icon base of the node. */
+    static final String ICON_BASE = "org/netbeans/modules/css/visual/resources/style_sheet_16.png"; // NOI18N
 
     /**
-     * Gets a display name which is show in the toolbar.
+     * Creates a new {@code DocumentNode}.
+     *
+     * @param pageModel owning model of the node.
+     * @param filter filter for the subtree of the node.
      */
-    public String getPanelDisplayName();
-    
+    DocumentNode(DocumentViewModel pageModel, Filter filter) {
+        super(Children.create(new DocumentChildFactory(pageModel,filter), true), Lookups.fixed(pageModel));
+        setDisplayName(Bundle.DocumentNode_displayName());
+        setIconBaseWithExtension(ICON_BASE);
+    }
+
     /**
-     * Gets the content component.
-     * 
-     * Called just once per IDE session when the panel content is about to be 
-     * shown in the UI for the first time.
-     * 
-     * The implementor should listen on the lookup content and respond according upon changes.
-     * An instance of {@link FileObject} is updated in the lookup as the edited file changes.
-     * 
-     * @param lookup instance of {@link Lookup} with some context object. 
+     * Factory for children of {@code DocumentNode}.
      */
-    public JComponent getContent(Lookup lookup);
-    
+    static class DocumentChildFactory extends ChildFactory<FileObject> {
+        private Filter filter;
+        private DocumentViewModel model;
+        
+        private DocumentChildFactory(DocumentViewModel model, Filter filter) {
+            this.model = model;
+            this.filter = filter;
+        }
+
+        @Override
+        protected boolean createKeys(List<FileObject> toPopulate) {
+            toPopulate.addAll(model.getFileToRulesMap().keySet());
+            return true;
+        }
+
+        @Override
+        protected Node createNodeForKey(FileObject key) {
+            return new StyleSheetNode(model, key, filter);
+        }
+
+    }
+
 }

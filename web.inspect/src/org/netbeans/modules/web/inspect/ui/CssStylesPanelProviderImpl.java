@@ -44,6 +44,8 @@ package org.netbeans.modules.web.inspect.ui;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -52,6 +54,7 @@ import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -67,11 +70,6 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
      * Label shown when no styles information is available.
      */
     private JLabel noStylesLabel;
-    /** Current view shown in this {@code TopComponent}.  */
-    
-    //very very much hacky
-    private static int activeViewType = -1;
-    
     
     /**
      * Creates a new {@code MatchedRulesTC}.
@@ -80,10 +78,9 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         setLayout(new BorderLayout());
         initNoStylesLabel();
         PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
+        update();
     }
 
-    public abstract int getViewType();
-    
     /**
      * Initializes the "no Styles" label.
      */
@@ -97,22 +94,19 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         noStylesLabel.setOpaque(true);
     }
 
-    protected void update(boolean forceRefresh) {
+    protected void update() {
         PageModel pageModel = PageInspectorImpl.getDefault().getPage();
         boolean noPage = (pageModel == null);
         boolean noStylesLabelShown = noStylesLabel.getParent() != null;
-        if(forceRefresh || activeViewType == getViewType()) {
-            activeViewType = getViewType();
             if (!noStylesLabelShown || !noPage) {
                 removeAll();
                 if (noPage) {
                     add(noStylesLabel, BorderLayout.CENTER);
                 } else {
                     PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
-                    add(stylesView.getView(getViewType()), BorderLayout.CENTER);
+                    add(stylesView.getView(), BorderLayout.CENTER);
                 }
             }
-        }
         revalidate();
         repaint();
     }
@@ -128,42 +122,12 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (PageInspectorImpl.PROP_MODEL.equals(propName)) {
-                    update(false);
+                    update();
                 }
             }
         };
     }
 
-    @NbBundle.Messages({
-        "CTL_CssStylesProviderImpl.document.view.title=Document"
-    })
-    @ServiceProvider(service = CssStylesPanelProvider.class, position=2000)
-    public static class DocumentView extends CssStylesPanelProviderImpl {
-
-        private static String DOCUMENT_PANEL_ID = "document"; //NOI18N
-
-        @Override
-        public String getPanelID() {
-            return DOCUMENT_PANEL_ID;
-        }
-
-        @Override
-        public String getPanelDisplayName() {
-            return Bundle.CTL_CssStylesProviderImpl_document_view_title();
-        }
-
-        @Override
-        public JComponent getContent() {
-            update(true);
-            return this;
-        }
-
-        @Override
-        public int getViewType() {
-            return PageModel.CSSStylesView.DOCUMENT_VIEW_TYPE;
-        }
-    }
-    
     @NbBundle.Messages({
         "CTL_CssStylesProviderImpl.selection.view.title=Selection"
     })
@@ -171,6 +135,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     public static class SelectionView extends CssStylesPanelProviderImpl {
 
         private static String SELECTION_PANEL_ID = "selection"; //NOI18N
+        private static Collection<String> MIME_TYPES = Arrays.asList(new String[]{"text/html", "text/xhtml"});
 
         @Override
         public String getPanelID() {
@@ -183,15 +148,15 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         }
 
         @Override
-        public JComponent getContent() {
-            update(true);
+        public JComponent getContent(Lookup lookup) {
             return this;
         }
 
         @Override
-        public int getViewType() {
-            return PageModel.CSSStylesView.SELECTION_VIEW_TYPE;
+        public Collection<String> getMimeTypes() {
+            return MIME_TYPES;
         }
+
     }
     
     

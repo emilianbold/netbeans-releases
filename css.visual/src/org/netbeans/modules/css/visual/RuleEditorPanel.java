@@ -86,7 +86,7 @@ import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
-import org.netbeans.modules.css.visual.RuleNode.DeclarationProperty;
+import org.netbeans.modules.css.visual.RuleEditorNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
 import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
@@ -177,7 +177,7 @@ public class RuleEditorPanel extends JPanel {
     private RuleEditorFilters filters;
     private boolean showAllProperties, showCategories;
     private SortMode sortMode;
-    public RuleNode node;
+    public RuleEditorNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
    
@@ -256,7 +256,7 @@ public class RuleEditorPanel extends JPanel {
                 ? new FiltersSettings(false, false, true)
                 : new FiltersSettings();
 
-        node = new RuleNode(this);
+        node = new RuleEditorNode(this);
 
         sortMode = SortMode.ALPHABETICAL;
 
@@ -950,7 +950,7 @@ public class RuleEditorPanel extends JPanel {
         protected JPopupMenu createPopupMenu() {
             FeatureDescriptor fd = getSelection();
             if(fd != null) {
-                if(fd instanceof RuleNode.DeclarationProperty) {
+                if(fd instanceof RuleEditorNode.DeclarationProperty) {
                     //property
                     //
                     //actions:
@@ -960,13 +960,13 @@ public class RuleEditorPanel extends JPanel {
                     //custom popop for the whole panel
                     JPopupMenu pm = new JPopupMenu();
                     
-                    pm.add(new GoToSourceAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
+                    pm.add(new GoToSourceAction(RuleEditorPanel.this, (RuleEditorNode.DeclarationProperty)fd));
                     pm.addSeparator();
-                    pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
+                    pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleEditorNode.DeclarationProperty)fd));
 
                     return pm;
                     
-                } else if(fd instanceof RuleNode.PropertyCategoryPropertySet) {
+                } else if(fd instanceof RuleEditorNode.PropertyCategoryPropertySet) {
                     //property category
                     //TODO possibly add "add property" action which would
                     //preselect the css category in the "add property dialog".
