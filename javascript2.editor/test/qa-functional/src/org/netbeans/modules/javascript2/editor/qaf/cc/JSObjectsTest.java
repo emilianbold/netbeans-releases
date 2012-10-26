@@ -232,7 +232,7 @@ public class JSObjectsTest extends GeneralJavaScript {
         WindowOperator jdDoc = new WindowOperator(0);
         JEditorPaneOperator jeEdit = new JEditorPaneOperator(jdDoc);
         String sCompleteContent = jeEdit.getText();
-        String toFind = "absolute value of a number";
+        String toFind = "Returns";
         if (-1 == sCompleteContent.indexOf(toFind)) {
             System.out.println(">>>" + sCompleteContent + "<<<");
             fail("Unable to find part of required documentation: \"" + toFind + "\"");
@@ -317,7 +317,7 @@ public class JSObjectsTest extends GeneralJavaScript {
         WindowOperator jdDoc = new WindowOperator(0);
         JEditorPaneOperator jeEdit = new JEditorPaneOperator(jdDoc);
         String sCompleteContent = jeEdit.getText();
-        String toFind = "previously created by encodeURI";
+        String toFind = "Returns";
         if (-1 == sCompleteContent.indexOf(toFind)) {
             System.out.println(">>>" + sCompleteContent + "<<<");
             fail("Unable to find part of required documentation: \"" + toFind + "\"");
