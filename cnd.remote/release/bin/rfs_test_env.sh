@@ -1,5 +1,9 @@
 #!/bin/sh
 
+#
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+#
+
 if [ "$1" -eq "64" ]; then
     suffix_64="_64"
 else
