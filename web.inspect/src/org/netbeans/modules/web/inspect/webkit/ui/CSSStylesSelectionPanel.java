@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
@@ -63,6 +64,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.basic.BasicTreeUI;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeSelectionModel;
@@ -115,6 +117,8 @@ public class CSSStylesSelectionPanel extends JPanel {
     private ExplorerManager rulePaneManager;
     /** Label for messages. */
     private JLabel messageLabel;
+    /** Header of Property Summary section. */
+    private JLabel propertySummaryLabel;
     /** Component showing the style information for the current selection. */
     private JComponent selectionView;
 
@@ -127,10 +131,18 @@ public class CSSStylesSelectionPanel extends JPanel {
         splitPane.setTopComponent(initPropertyPane());
         splitPane.setBottomComponent(initRulePane());
         splitPane.setDividerLocation(100);
-        selectionView = splitPane;
+        splitPane.setBorder(null);
+        selectionView = new JPanel();
+        selectionView.setLayout(new BorderLayout());
+        selectionView.add(splitPane, BorderLayout.CENTER);
         initMessageLabel();
         initSelectionOfOwningRule();
-        add(splitPane, BorderLayout.CENTER);
+        propertySummaryLabel = new JLabel();
+        propertySummaryLabel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEtchedBorder(),
+                BorderFactory.createEmptyBorder(4, 16, 4, 0)));
+        selectionView.add(propertySummaryLabel, BorderLayout.PAGE_START);
+        add(selectionView, BorderLayout.CENTER);
         updateContent(null, false);
     }
 
@@ -141,8 +153,9 @@ public class CSSStylesSelectionPanel extends JPanel {
      */
     private JPanel initPropertyPane() {
         propertyPane = new CustomTreeTableView(true);
+        String valueTitle =  NbBundle.getMessage(CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.value"); // NOI18N
         propertyPane.setProperties(new Node.Property[] {
-            new PropertySupport.ReadOnly<String>(MatchedPropertyNode.PROPERTY_VALUE, String.class, "", null) { // NOI18N
+            new PropertySupport.ReadOnly<String>(MatchedPropertyNode.PROPERTY_VALUE, String.class, valueTitle, null) {
                 @Override
                 public String getValue() throws IllegalAccessException, InvocationTargetException {
                     return null;
@@ -295,6 +308,15 @@ public class CSSStylesSelectionPanel extends JPanel {
                 final org.netbeans.modules.web.webkit.debugging.api.dom.Node node =
                     selectedNode.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
                 if (node.getNodeType() == Document.ELEMENT_NODE) {
+                    String name = selectedNode.getHtmlDisplayName();
+                    if (name.startsWith("<html>")) { // NOI18N
+                        name = name.substring(6);
+                    }
+                    String header = NbBundle.getMessage(CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.propertySummaryHeader", name); // NOI18N
+                    propertySummaryLabel.setText("<html><div>" + header + "</div>"); // NOI18N
+                    // Hack that avoids line wrapping
+                    int width = propertySummaryLabel.getPreferredSize().width;
+                    propertySummaryLabel.setText("<html><div width=\""+width+"\">" + header + "</div>"); // NOI18N
                     showLabel(null);
                     RP.post(new Runnable() {
                         @Override
@@ -498,7 +520,9 @@ public class CSSStylesSelectionPanel extends JPanel {
             });
             hideTreeLines();
             if (propertyPane) {
-                treeTable.setBackground(UIManager.getColor("Label.background"));  // NOI18N
+                Color bgColor = UIManager.getColor("Label.background"); // NOI18N
+                treeTable.setBackground(bgColor);
+                treeTable.getParent().setBackground(bgColor);
             }
             final TableCellRenderer defaultRenderer = HtmlRenderer.createRenderer();
             treeTable.setDefaultRenderer(Node.Property.class, new TableCellRenderer() {
@@ -527,6 +551,22 @@ public class CSSStylesSelectionPanel extends JPanel {
                     return component;
                 }
             });
+            if (propertyPane) {
+            treeTable.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                    Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                    if (component instanceof JLabel) {
+                        JLabel label = (JLabel)component;
+                        label.setText("<html><b>"+label.getText()+"<b>"); // NOI18N
+                        label.setBorder(BorderFactory.createCompoundBorder(
+                            BorderFactory.createEtchedBorder(),
+                            BorderFactory.createEmptyBorder(0, 16, 0, 0)));
+                    }
+                    return component;
+                }
+            });
+            }
         }
 
         /**

@@ -697,7 +697,7 @@ public class ConfigurationMakefileWriter {
         LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
         String command = getLinkerTool(projectDescriptor, conf, conf.getLinkerConfiguration(), compilerSet);
         if (conf.getDevelopmentHost().isLocalhost()) {
-            command += linkerConfiguration.getOptions() + " "; // NOI18N
+            command += linkerConfiguration.getOutputOptions() + " "; // NOI18N
         } else {
             // This hack is used to workaround the following issue:
             // the linker options contains linker output file
@@ -705,10 +705,11 @@ public class ConfigurationMakefileWriter {
             // It's quite hard to implement mapping in the LinkerConfiguration class,
             // as it's not quite clear when we should do this.
             // See Bug 193797 - '... does not exists or is not an executable' when remote mode and not default linker output
-            command += linkerConfiguration.getOptions().replace(conf.getOutputValue(), output) + " "; // NOI18N
+            command += linkerConfiguration.getOutputOptions().replace(conf.getOutputValue(), output) + " "; // NOI18N
         }
         command += "${OBJECTFILES}" + " "; // NOI18N
         command += "${LDLIBSOPTIONS}" + " "; // NOI18N
+        command += linkerConfiguration.getOptions() + " "; // NOI18N
         String[] additionalDependencies = linkerConfiguration.getAdditionalDependencies().getValues();
         for (int i = 0; i < additionalDependencies.length; i++) {
             bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N

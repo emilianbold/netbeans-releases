@@ -121,7 +121,8 @@ public class CssStylesPanel extends javax.swing.JPanel {
         
         //the top component
         topPanel.add(toolBar, BorderLayout.PAGE_START);
-        
+
+        splitPane.setDividerLocation(300);
         splitPane.setResizeWeight(0.5);
     }
     
