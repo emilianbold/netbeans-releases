@@ -81,6 +81,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
@@ -253,6 +254,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     protected void setUp() throws Exception {
         setLoggers(true);
         setupProperties();
+        RemoteStatistics.startTest(getName(), null, 10000);
         super.setUp();
     }
 
