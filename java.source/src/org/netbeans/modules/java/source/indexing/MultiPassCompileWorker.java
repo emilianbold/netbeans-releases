@@ -63,6 +63,7 @@ import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
@@ -93,6 +94,7 @@ final class MultiPassCompileWorker extends CompileWorker {
 
     private static final int MEMORY_LOW = 1;
     private static final int ERR = 2;
+    private final AtomicBoolean checkForMemLow = new AtomicBoolean(true);
 
     @Override
     ParsingOutput compile(
@@ -169,7 +171,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     if (jt == null) {
                         jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), diagnosticListener, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
                             public @Override boolean isCanceled() {
-                                return context.isCancelled() || mem.isLowMemory();
+                                return context.isCancelled() || (checkForMemLow.get() && mem.isLowMemory());
                             }
                         }, active.aptGenerated ? null : APTUtils.get(context.getRoot()));
                         Iterable<? extends Processor> processors = jt.getProcessors();
@@ -458,7 +460,12 @@ final class MultiPassCompileWorker extends CompileWorker {
         JavaFileObject file = jfm.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT,
                 cs.flatname.toString(), JavaFileObject.Kind.CLASS, cs.sourcefile);
         if (file instanceof FileObjects.FileBase && !alreadyCreated.contains(((FileObjects.FileBase)file).getFile())) {
-            TreeLoader.dumpSymFile(jfm, jti, cs);
+            checkForMemLow.set(false);
+            try {
+                TreeLoader.dumpSymFile(jfm, jti, cs);
+            } finally {
+                checkForMemLow.set(true);
+            }
         }
     }
 }
