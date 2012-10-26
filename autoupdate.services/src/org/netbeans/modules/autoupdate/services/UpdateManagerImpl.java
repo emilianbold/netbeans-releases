@@ -54,7 +54,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -73,7 +72,6 @@ public class UpdateManagerImpl extends Object {
     private static final UpdateManager.TYPE [] DEFAULT_TYPES = new UpdateManager.TYPE [] {  UpdateManager.TYPE.KIT_MODULE };
     
     private Reference<Cache> cacheReference = null;            
-    private static final Logger logger = null;
     
     // package-private for tests only
     
@@ -252,29 +250,30 @@ public class UpdateManagerImpl extends Object {
 
         Cache() {
             units = UpdateUnitFactory.getDefault ().getUpdateUnits ();
+            createMaps ();
         }        
-        public synchronized Set<UpdateElement> getAvailableEagers() {
+        public Set<UpdateElement> getAvailableEagers() {
             if (availableEagers == null) {
                 createMaps ();
             }
             assert availableEagers != null : "availableEagers initialized";
             return availableEagers;
         }
-        public synchronized Set<UpdateElement> getInstalledEagers() {
+        public Set<UpdateElement> getInstalledEagers() {
             if (installedEagers == null) {
                 createMaps ();
             }            
             assert installedEagers != null : "installedEagers initialized";
             return installedEagers;
         }                        
-        public synchronized Map<String, Collection<ModuleInfo>> createMapToken2InstalledProviders () {
+        public Map<String, Collection<ModuleInfo>> createMapToken2InstalledProviders () {
             if (token2installedProviders == null) {
                 createMaps ();
             }            
             assert token2installedProviders != null : "token2installedProviders initialized";
             return token2installedProviders;
         }                        
-        public synchronized Map<String, Collection<ModuleInfo>> createMapToken2AvailableProviders () {
+        public Map<String, Collection<ModuleInfo>> createMapToken2AvailableProviders () {
             if (token2availableProviders == null) {
                 createMaps ();
             }
@@ -288,11 +287,12 @@ public class UpdateManagerImpl extends Object {
             return units.get(moduleCodeName);
         }
         
-        private void createMaps () {
+        synchronized private void createMaps () {
             availableEagers = new HashSet<UpdateElement> (getUnits ().size ());
             installedEagers = new HashSet<UpdateElement> (getUnits ().size ());
             token2installedProviders = new HashMap<String, Collection<ModuleInfo>> (11);
             token2availableProviders = new HashMap<String, Collection<ModuleInfo>> (11);
+            DependencyAggregator.clearMaps();
             for (UpdateUnit unit : getUnits ()) {
                 UpdateElement el;
                 if ((el = unit.getInstalled ()) != null) {
