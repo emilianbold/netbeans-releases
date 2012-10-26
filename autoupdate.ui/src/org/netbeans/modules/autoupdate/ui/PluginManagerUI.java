@@ -113,6 +113,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     public PluginManagerUI (JButton closeButton, Object initialTab, boolean detailView) {
         this.detailView = detailView;
         this.closeButton = closeButton;
+        this.willClose = false;
         int selIndex = -1;
         for( int i=0; i<TAB_NAMES.length; i++ ) {
             if( TAB_NAMES[i].equals(initialTab) ) {
@@ -226,6 +227,16 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     
     public void close () {
         bClose.doClick ();
+    }
+
+    private boolean willClose;
+
+    public void willClose() {
+        willClose = true;
+    }
+
+    public boolean isClosing() {
+        return willClose;
     }
 
     private void initialize () {
