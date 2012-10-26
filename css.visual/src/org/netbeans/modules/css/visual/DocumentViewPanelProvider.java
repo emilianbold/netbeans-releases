@@ -39,50 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.spi;
+package org.netbeans.modules.css.visual;
 
+import java.util.Arrays;
 import java.util.Collection;
 import javax.swing.JComponent;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Representation of the CssStyles window named panel.
- * 
- * Instance to be registered in global lookup.
  *
  * @author marekfukala
  */
-public interface CssStylesPanelProvider {
-    
-    /**
-     * Gets a collection of mimetypes to which this panel provider should be bound.
-     */
-    public Collection<String> getMimeTypes();
-    
-    /**
-     * Gets an unique system id for the panel. 
-     * 
-     * Not presented in UI.
-     */
-    public String getPanelID();
 
-    /**
-     * Gets a display name which is show in the toolbar.
-     */
-    public String getPanelDisplayName();
+@NbBundle.Messages({
+    "DocumentView.displayName=Document"
+})
+@ServiceProvider(service=CssStylesPanelProvider.class)
+public class DocumentViewPanelProvider implements CssStylesPanelProvider {
+
+    private static String DOCUMENT_PANEL_ID = "static_document";
+    private static Collection<String> MIME_TYPES = Arrays.asList(new String[]{"text/css", "text/html", "text/xhtml"});
     
-    /**
-     * Gets the content component.
-     * 
-     * Called just once per IDE session when the panel content is about to be 
-     * shown in the UI for the first time.
-     * 
-     * The implementor should listen on the lookup content and respond according upon changes.
-     * An instance of {@link FileObject} is updated in the lookup as the edited file changes.
-     * 
-     * @param lookup instance of {@link Lookup} with some context object. 
-     */
-    public JComponent getContent(Lookup lookup);
+    @Override
+    public String getPanelDisplayName() {
+        return Bundle.DocumentView_displayName();
+    }
+
+    @Override
+    public JComponent getContent(Lookup lookup) {
+        return new DocumentViewPanel(lookup);
+    }
+
+    @Override
+    public String getPanelID() {
+        return DOCUMENT_PANEL_ID;
+    }
+
+    @Override
+    public Collection<String> getMimeTypes() {
+        return MIME_TYPES;
+    }
+    
     
 }

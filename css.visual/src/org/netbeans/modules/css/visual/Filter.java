@@ -39,50 +39,69 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.spi;
+package org.netbeans.modules.css.visual;
 
-import java.util.Collection;
-import javax.swing.JComponent;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
- * Representation of the CssStyles window named panel.
- * 
- * Instance to be registered in global lookup.
+ * Descriptor of a filter.
  *
- * @author marekfukala
+ * @author Jan Stola
  */
-public interface CssStylesPanelProvider {
-    
-    /**
-     * Gets a collection of mimetypes to which this panel provider should be bound.
-     */
-    public Collection<String> getMimeTypes();
-    
-    /**
-     * Gets an unique system id for the panel. 
-     * 
-     * Not presented in UI.
-     */
-    public String getPanelID();
+public class Filter {
+    /** Name of the property fired when the pattern changes. */
+    public static final String PROPERTY_PATTERN = "pattern"; // NOI18N
+    /** Pattern of this filter. */
+    private String pattern;
+    /** Property change support. */
+    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
     /**
-     * Gets a display name which is show in the toolbar.
+     * Returns the pattern of this filter.
+     *
+     * @return pattern of this filter.
      */
-    public String getPanelDisplayName();
-    
+    public String getPattern() {
+        return pattern;
+    }
+
     /**
-     * Gets the content component.
-     * 
-     * Called just once per IDE session when the panel content is about to be 
-     * shown in the UI for the first time.
-     * 
-     * The implementor should listen on the lookup content and respond according upon changes.
-     * An instance of {@link FileObject} is updated in the lookup as the edited file changes.
-     * 
-     * @param lookup instance of {@link Lookup} with some context object. 
+     * Sets the pattern of this filter.
+     *
+     * @param pattern new pattern of this filter.
      */
-    public JComponent getContent(Lookup lookup);
-    
+    void setPattern(String pattern) {
+        String oldPattern = this.pattern;
+        this.pattern = pattern;
+        changeSupport.firePropertyChange(PROPERTY_PATTERN, oldPattern, pattern);
+    }
+
+    /**
+     * Registers a property change listener.
+     *
+     * @param listener listener to register.
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Unregisters a property change listener.
+     *
+     * @param listener listener to unregister.
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Unregisters all previously registered property change listeners.
+     */
+    public void removePropertyChangeListeners() {
+        for (PropertyChangeListener listener : changeSupport.getPropertyChangeListeners()) {
+            removePropertyChangeListener(listener);
+        }
+    }
+
 }

@@ -44,15 +44,19 @@ package org.netbeans.modules.css.visual;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collection;
-import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -60,20 +64,27 @@ import org.openide.util.Lookup;
  */
 public class CssStylesPanel extends javax.swing.JPanel {
 
-     private RuleEditorController controller;
-     private Collection<? extends CssStylesPanelProvider> providers;
-     private ActionListener toolbarListener;
+     private final RuleEditorController controller;
+     private final Collection<CssStylesPanelProvider> providers;
+     private final ActionListener toolbarListener;
+     private final ModifiableLookup lookup;
+     private final JToolBar toolBar;
      
      private JComponent activePanel;
-    
+     private FileObject context;
+     
     /**
      * Creates new form CssStylesPanel
      */
     public CssStylesPanel() {
         initComponents();
 
+        lookup = new ModifiableLookup();
         //assumption: should not change in time, otherwise we need to listen
-        providers = Lookup.getDefault().lookupAll(CssStylesPanelProvider.class);
+        providers = new ArrayList<CssStylesPanelProvider>();
+        for(CssStylesPanelProvider provider : Lookup.getDefault().lookupAll(CssStylesPanelProvider.class)) {
+            providers.add(new ProxyCssStylesPanelProvider(provider));
+        }
         
         //the bottom component
         controller = RuleEditorController.createInstance();
@@ -85,44 +96,62 @@ public class CssStylesPanel extends javax.swing.JPanel {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 String command = ae.getActionCommand();
-                //linear search, but should be max 2 or 3 items
+                //linear search, but should be at most 2 or 3 items
                 for(CssStylesPanelProvider provider : providers) {
                     if(provider.getPanelID().equals(command)) {
-                        setActivePanel(provider.getContent());
+                        setActivePanel(provider.getContent(lookup));
                     }
                 }
             }
         };
         
-        JToolBar toolBar = new JToolBar();
+        toolBar = new JToolBar();
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
 
+        //the top component
+        topPanel.add(toolBar, BorderLayout.PAGE_START);
+        
+        splitPane.setResizeWeight(0.5);
+    }
+    
+    private void updateToolbar(FileObject file) {
+        toolBar.removeAll();
+        
+        String mimeType = file.getMIMEType();
+        
         // Button group for document and source buttons
         ButtonGroup buttonGroup = new ButtonGroup();
         
         boolean first = true;
         for(CssStylesPanelProvider provider : providers) {
-            JToggleButton button = new JToggleButton();
-            button.setText(provider.getPanelDisplayName());
-            button.setActionCommand(provider.getPanelID());
-            
-            button.setFocusPainted(false);
-            button.addActionListener(toolbarListener);
-            buttonGroup.add(button);
-            toolBar.add(button);
-            
-            button.setSelected(first);
-            if(first) {
-                setActivePanel(provider.getContent());
-                first = false;
+            if(provider.getMimeTypes().contains(mimeType)) {
+                JToggleButton button = new JToggleButton();
+                button.setText(provider.getPanelDisplayName());
+                button.setActionCommand(provider.getPanelID());
+
+                button.setFocusPainted(false);
+                button.addActionListener(toolbarListener);
+                buttonGroup.add(button);
+                toolBar.add(button);
+
+                button.setSelected(first);
+                if(first) {
+                    setActivePanel(provider.getContent(lookup));
+                    first = false;
+                }
             }
         }
+    }
+    
+    public void setContext(FileObject file) {
+        this.context = file;
         
-        //the top component
-        topPanel.add(toolBar, BorderLayout.PAGE_START);
+        updateToolbar(file);
         
-        splitPane.setResizeWeight(0.5);
+        InstanceContent ic = new InstanceContent();
+        ic.add(context);
+        lookup.updateLookup(new AbstractLookup(ic));
     }
     
     private void setActivePanel(JComponent panel) {
@@ -175,4 +204,52 @@ public class CssStylesPanel extends javax.swing.JPanel {
     private javax.swing.JSplitPane splitPane;
     private javax.swing.JPanel topPanel;
     // End of variables declaration//GEN-END:variables
+
+    private static class ModifiableLookup extends ProxyLookup {
+        protected final void updateLookup(Lookup lookup) {
+            if (lookup == null) {
+                setLookups();
+            } else {
+                setLookups(lookup);
+            }
+        }
+    }
+    
+    /**
+     * Caches the content panel so the real provider is asked for it just once.
+     */
+    private static class ProxyCssStylesPanelProvider implements CssStylesPanelProvider {
+        
+        private final CssStylesPanelProvider delegate;
+        private JComponent content;
+
+        public ProxyCssStylesPanelProvider(CssStylesPanelProvider delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public String getPanelID() {
+            return delegate.getPanelID();
+        }
+
+        @Override
+        public String getPanelDisplayName() {
+            return delegate.getPanelDisplayName();
+        }
+
+        @Override
+        public JComponent getContent(Lookup lookup) {
+            if(content == null) {
+                content = delegate.getContent(lookup);
+            }
+            return content;
+        }
+
+        @Override
+        public Collection<String> getMimeTypes() {
+            return delegate.getMimeTypes();
+        }
+        
+    }
+
 }

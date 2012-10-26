@@ -1,3 +1,8 @@
+package org.netbeans.modules.css.visual;
+
+
+import org.openide.filesystems.FileObject;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,50 +44,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.spi;
-
-import java.util.Collection;
-import javax.swing.JComponent;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
- * Representation of the CssStyles window named panel.
- * 
- * Instance to be registered in global lookup.
  *
  * @author marekfukala
  */
-public interface CssStylesPanelProvider {
-    
-    /**
-     * Gets a collection of mimetypes to which this panel provider should be bound.
-     */
-    public Collection<String> getMimeTypes();
-    
-    /**
-     * Gets an unique system id for the panel. 
-     * 
-     * Not presented in UI.
-     */
-    public String getPanelID();
+public class Location {
 
-    /**
-     * Gets a display name which is show in the toolbar.
-     */
-    public String getPanelDisplayName();
+    private FileObject file;
+    private int offset = -1;
+
+    Location(FileObject file) {
+        this.file = file;
+    }
     
-    /**
-     * Gets the content component.
-     * 
-     * Called just once per IDE session when the panel content is about to be 
-     * shown in the UI for the first time.
-     * 
-     * The implementor should listen on the lookup content and respond according upon changes.
-     * An instance of {@link FileObject} is updated in the lookup as the edited file changes.
-     * 
-     * @param lookup instance of {@link Lookup} with some context object. 
-     */
-    public JComponent getContent(Lookup lookup);
-    
+    Location(FileObject file, int offset) {
+        this(file);
+        this.offset = offset;
+    }
+
+    public FileObject getFile() {
+        return file;
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
 }

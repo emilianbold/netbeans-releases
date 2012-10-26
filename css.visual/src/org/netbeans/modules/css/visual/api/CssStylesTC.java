@@ -42,9 +42,6 @@
 package org.netbeans.modules.css.visual.api;
 
 import java.awt.BorderLayout;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.visual.CssStylesPanel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -80,7 +77,7 @@ position = 180)
 preferredID = CssStylesTC.ID)
 @NbBundle.Messages({
     "CTL_CssStylesAction=Css Styles", // NOI18N
-    "CTL_CssStylesTC=Css Styles", // NOI18N
+    "CTL_CssStylesTC.title={0}Css Styles", // NOI18N
     "HINT_CssStylesTC=This window shows matched style rules of an element and allows to edit them." // NOI18N
 })
 public final class CssStylesTC extends TopComponent {
@@ -97,11 +94,15 @@ public final class CssStylesTC extends TopComponent {
 
     public CssStylesTC() {
         initComponents();
-        setName(Bundle.CTL_CssStylesTC());
-//        setFileNameInTitle(null);
+        setFileNameInTitle(null);
         setToolTipText(Bundle.HINT_CssStylesTC());
     }
 
+    public void setContext(FileObject file) {
+        setFileNameInTitle(file);
+        cssStylesPanel.setContext(file);
+    }
+    
     /**
      * Returns the default {@link RuleEditorController} associated with this
      * rule editor top component.
@@ -110,11 +111,11 @@ public final class CssStylesTC extends TopComponent {
         return cssStylesPanel.getRuleEditorController();
     }
 
-//    private void setFileNameInTitle(FileObject file) {
-//        String fileName = file == null ? "" : " - " + file.getNameExt();
-//        setName(Bundle.CTL_CssStylesTC(fileName));
-//    }
-     
+    private void setFileNameInTitle(FileObject file) {
+        String fileName = file == null ? "" : file.getNameExt() + " - ";
+        setName(Bundle.CTL_CssStylesTC_title(fileName));
+    }
+    
     /**
      * Initializes the components in this {@link TopComponent}.
      */
