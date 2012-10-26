@@ -596,7 +596,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Item addExcludedItem(Item item, boolean notify, boolean setModified) {
-        return addItemImpl(item, notify, setModified, true);
+        return addItemImpl(item, notify, setModified, ConfigurationDescriptorProvider.VCS_WRITE);
     }
 
     private synchronized Item addItemImpl(Item item, boolean notify, boolean setModified, boolean excludedByDefault) {
