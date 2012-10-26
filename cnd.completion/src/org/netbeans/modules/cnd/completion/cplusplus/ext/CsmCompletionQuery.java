@@ -2318,7 +2318,7 @@ abstract public class CsmCompletionQuery {
                                         lastNamespace = CsmCompletion.getProjectNamespace(getCsmProject(), csmNamespace);
                                         break;
                                     }
-                                    List<CsmObject> elems = finder.findNamespaceElements(curNs, mtdName, openingSource, false, false); // matching classes
+                                    List<CsmObject> elems = finder.findNamespaceElements(curNs, mtdName, openingSource, true, false); // matching classes
 //                                    elems.addAll(finder.findStaticNamespaceElements(lastNamespace, mtdName, openingSource)); // matching static elements
                                     for (CsmObject obj: elems) {
                                         if (CsmKindUtilities.isFunction(obj)) {
