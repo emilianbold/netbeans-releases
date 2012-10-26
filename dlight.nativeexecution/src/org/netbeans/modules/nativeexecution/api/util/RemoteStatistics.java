@@ -110,6 +110,9 @@ public final class RemoteStatistics implements Runnable {
      */
     public static void startTest(final String description, final Runnable continuation, final int quietPrePeriodMillis, final int quietPostPeriodMillis) {
         if (!COLLECT_STATISTICS) {
+            if (continuation != null) {
+                continuation.run();
+            }
             return;
         }
 
