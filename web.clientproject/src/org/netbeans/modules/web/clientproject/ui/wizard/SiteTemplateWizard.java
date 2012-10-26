@@ -44,21 +44,14 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.GridBagConstraints;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
@@ -68,9 +61,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
-import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
@@ -96,8 +87,6 @@ public class SiteTemplateWizard extends JPanel {
 
     // @GuardedBy("siteTemplateLock")
     SiteTemplateImplementation siteTemplate = NO_SITE_TEMPLATE;
-    private Collection<? extends ClientProjectExtender> extenders;
-    private JCheckBox[] checkBoxes;
     
     public SiteTemplateWizard() {
         assert EventQueue.isDispatchThread();
@@ -106,7 +95,6 @@ public class SiteTemplateWizard extends JPanel {
         assert archiveSiteCustomizer != null : "Archive template must have a customizer"; //NOI18N
 
         initComponents();
-        initExtenders();
         // archive
         initArchiveTemplate();
         // other templates
@@ -223,11 +211,7 @@ public class SiteTemplateWizard extends JPanel {
         });
     }
 
-    @NbBundle.Messages({
-            "SiteTemplateWizard.error.noTemplateSelected=No online template selected.",
-            "# {0} - extender name",
-            "SiteTemplateWizard.error.cordova={0} must be enabled."})
-    
+    @NbBundle.Messages({"SiteTemplateWizard.error.noTemplateSelected=No online template selected."})
     public String getErrorMessage() {
         boolean isArchiveSiteTemplate;
         synchronized (siteTemplateLock) {
@@ -240,12 +224,6 @@ public class SiteTemplateWizard extends JPanel {
             // archive
             archiveSiteCustomizer.isValid();
             return archiveSiteCustomizer.getErrorMessage();
-        }
-        int i = 0;
-        for (ClientProjectExtender extender:extenders) {
-            if (extender.isExtenderRequired(siteTemplate) && !isExtenderChecked(i++)) {
-                return Bundle.SiteTemplateWizard_error_cordova(extender.getDisplayName());
-            }
         }
         return null;
     }
@@ -348,7 +326,6 @@ public class SiteTemplateWizard extends JPanel {
         onlineTemplateDescriptionLabel = new javax.swing.JLabel();
         onlineTemplateDescriptionScrollPane = new javax.swing.JScrollPane();
         onlineTemplateDescriptionTextPane = new javax.swing.JTextPane();
-        customCheckBoxPanel = new javax.swing.JPanel();
 
         org.openide.awt.Mnemonics.setLocalizedText(infoLabel, org.openide.util.NbBundle.getMessage(SiteTemplateWizard.class, "SiteTemplateWizard.infoLabel.text")); // NOI18N
 
@@ -372,8 +349,6 @@ public class SiteTemplateWizard extends JPanel {
 
         onlineTemplateDescriptionScrollPane.setViewportView(onlineTemplateDescriptionTextPane);
 
-        customCheckBoxPanel.setLayout(new java.awt.GridBagLayout());
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -396,7 +371,6 @@ public class SiteTemplateWizard extends JPanel {
                     .addComponent(archiveTemplateRadioButton)
                     .addComponent(onlineTemplateRadioButton))
                 .addContainerGap())
-            .addComponent(customCheckBoxPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -411,20 +385,20 @@ public class SiteTemplateWizard extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(onlineTemplateRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
+                .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(onlineTemplateDescriptionLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(customCheckBoxPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
+
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {onlineTemplateDescriptionScrollPane, onlineTemplateScrollPane});
+
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel archiveTemplatePanel;
     private javax.swing.JRadioButton archiveTemplateRadioButton;
-    private javax.swing.JPanel customCheckBoxPanel;
     private javax.swing.JLabel infoLabel;
     private javax.swing.JRadioButton noTemplateRadioButton;
     private javax.swing.JLabel onlineTemplateDescriptionLabel;
@@ -435,70 +409,6 @@ public class SiteTemplateWizard extends JPanel {
     private javax.swing.JScrollPane onlineTemplateScrollPane;
     private javax.swing.ButtonGroup templateButtonGroup;
     // End of variables declaration//GEN-END:variables
-
-    private boolean isExtenderChecked(int i) {
-        return checkBoxes[i].isSelected();
-    }
-
-    Collection<ClientProjectExtender> getActiveExtenders() {
-        int i = 0;
-        Collection<ClientProjectExtender> result = new ArrayList();
-        
-        for (ClientProjectExtender extender:extenders) {
-            if (isExtenderChecked(i++)) {
-                result.add(extender);
-            }
-        }
-        return result;
-    }
-
-    private void initExtenders() throws MissingResourceException {
-        extenders = Lookup.getDefault().lookupAll(ClientProjectExtender.class);
-
-        int i = 0;
-        checkBoxes = new JCheckBox[extenders.size()];
-        for (final ClientProjectExtender extender : extenders) {
-            final JButton options = new JButton();
-            final JCheckBox checkBox = new JCheckBox();
-            checkBoxes[i] = checkBox;
-            org.openide.awt.Mnemonics.setLocalizedText(checkBox, extender.getDisplayName()); // NOI18N
-            org.openide.awt.Mnemonics.setLocalizedText(options, org.openide.util.NbBundle.getMessage(SiteTemplateWizard.class, "SiteTemplateWizard.manage.text")); // NOI18N
-            options.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    extender.openOptionsDialog(new PropertyChangeListener() {
-                        @Override
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            options.setVisible(!extender.isExtenderReady());
-                            checkBox.setEnabled(extender.isExtenderReady());
-                        }
-                    });
-                }
-            });
-            GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = i;
-            gridBagConstraints.gridheight = 2;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-            gridBagConstraints.weightx = 0.5;
-            customCheckBoxPanel.add(options, gridBagConstraints);
-
-            checkBox.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    fireChange();
-                }
-            });
-            gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = i;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            gridBagConstraints.weightx = 0.5;
-            customCheckBoxPanel.add(checkBox, gridBagConstraints);
-
-            options.setVisible(!extender.isExtenderReady());
-            checkBox.setEnabled(extender.isExtenderReady());
-            i++;
-        }
-    }
 
     //~ Inner classes
 

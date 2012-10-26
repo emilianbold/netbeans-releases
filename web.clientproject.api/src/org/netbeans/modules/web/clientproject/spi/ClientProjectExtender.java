@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.spi;
 
-import java.beans.PropertyChangeListener;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -55,45 +53,19 @@ import org.openide.filesystems.FileObject;
 public interface ClientProjectExtender {
 
     /**
-     * Creates Wizard Descriptor Panel which can be added to New Client Project
+     * Creates Wizard Descriptor Panels which can be added to New Client Project
      * Wizard.
      * @return 
      */
-    @CheckForNull
-    public Panel<WizardDescriptor> createWizardPanel();
+    @NonNull
+    public Panel<WizardDescriptor>[] createWizardPanels();
 
     /**
-     * Creates additional changes in Client Side Project if extender is enabled 
-     * in wizard.
+     * Creates additional changes in Client Side Project.
      * @param projectRoot
      * @param siteRoot
      * @param libsPath 
      */
     public void apply(FileObject projectRoot, FileObject siteRoot, String libsPath);
-    
-    /**
-     * Tests if given template requires modifications by this extender.
-     * @param impl null means no template was selected
-     * @return 
-     */
-    public boolean isExtenderRequired(@NullAllowed SiteTemplateImplementation impl);
-
-    /**
-     * Invokes options dialog.
-     * @param changeListener gets notified about changes in options dialog. 
-     */
-    public void openOptionsDialog(@NullAllowed PropertyChangeListener changeListener);
-
-    /**
-     * Is extender ready? Is customization required through {@link #openOptionsDialog(java.beans.PropertyChangeListener) 
-     * @return 
-     */
-    public boolean isExtenderReady();
-
-    /**
-     * Display name of the extender.
-     * @return
-     */
-    public String getDisplayName();
     
 }

@@ -51,7 +51,7 @@ import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
-import org.netbeans.modules.css.visual.RuleNode;
+import org.netbeans.modules.css.visual.RuleEditorNode;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -71,9 +71,9 @@ import org.openide.util.NbBundle;
 public class GoToSourceAction extends AbstractAction {
 
     private RuleEditorPanel panel;
-    private RuleNode.DeclarationProperty propertyDescriptor;
+    private RuleEditorNode.DeclarationProperty propertyDescriptor;
 
-    public GoToSourceAction(RuleEditorPanel panel, RuleNode.DeclarationProperty propertyDescriptor) {
+    public GoToSourceAction(RuleEditorPanel panel, RuleEditorNode.DeclarationProperty propertyDescriptor) {
         super(Bundle.label_go_to_source_action());
         this.panel = panel;
         this.propertyDescriptor = propertyDescriptor;

@@ -79,7 +79,7 @@ import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
-import org.netbeans.modules.css.visual.RuleNode;
+import org.netbeans.modules.css.visual.RuleEditorNode;
 import org.netbeans.modules.css.visual.actions.GoToSourceAction;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -171,7 +171,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
             
             if (addNoneProperty) {
                 //put as first item
-                tagsList.add(0, RuleNode.NONE_PROPERTY_NAME);
+                tagsList.add(0, RuleEditorNode.NONE_PROPERTY_NAME);
             }
             
             tags = tagsList.toArray(new String[0]);
@@ -252,8 +252,8 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                     if (me.getClickCount() > 1) {
                         FeatureDescriptor selected = panel.getSelected();
                         if(selected != null) {
-                            if(selected instanceof RuleNode.DeclarationProperty) {
-                                RuleNode.DeclarationProperty declarationProperty = (RuleNode.DeclarationProperty)selected;
+                            if(selected instanceof RuleEditorNode.DeclarationProperty) {
+                                RuleEditorNode.DeclarationProperty declarationProperty = (RuleEditorNode.DeclarationProperty)selected;
                                 GoToSourceAction action = new GoToSourceAction(panel, declarationProperty);
                                 action.actionPerformed(null);
                             }

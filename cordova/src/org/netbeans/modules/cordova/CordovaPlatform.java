@@ -53,7 +53,7 @@ public class CordovaPlatform {
     
     private static CordovaPlatform instance;
     
-    private static String CORDOVA_SDK_ROOT_PREF = "cordova.home";
+    private static String CORDOVA_SDK_ROOT_PREF = "cordova.home";//NOI18N
     
     private String version;
 
@@ -75,7 +75,7 @@ public class CordovaPlatform {
 
     public void setSdkLocation(String sdkLocation) {
         NbPreferences.forModule(CordovaPlatform.class).put(CORDOVA_SDK_ROOT_PREF, sdkLocation);
-        propertyChangeSupport.firePropertyChange("SDK", null, sdkLocation);
+        propertyChangeSupport.firePropertyChange("SDK", null, sdkLocation);//NOI18N
     }
 
     public String getVersion() {
@@ -84,7 +84,7 @@ public class CordovaPlatform {
         if (version == null) {
             final BufferedReader bufferedReader;
             try {
-                bufferedReader = new BufferedReader(new FileReader(sdkLocation + "/VERSION"));
+                bufferedReader = new BufferedReader(new FileReader(sdkLocation + "/VERSION"));//NOI18N
                 version = bufferedReader.readLine().trim();
                 bufferedReader.close();
             } catch (IOException ex) {

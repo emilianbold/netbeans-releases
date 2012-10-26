@@ -54,8 +54,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.android.AndroidPlatform;
-import org.netbeans.modules.cordova.ios.IOSPlatform;
+import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
+import org.netbeans.modules.cordova.platforms.ios.IOSPlatform;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
 import org.openide.filesystems.FileChangeAdapter;
@@ -95,7 +95,7 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
         }
 
         private void update(FileEvent ev) {
-            LOGGER.log(Level.FINEST, "Received {0}", ev);
+            LOGGER.log(Level.FINEST, "Received {0}", ev); 
             Set<String> oldConfigs = configs != null ? configs.keySet() : Collections.<String>emptySet();
             configDir = p.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
             if (configDir != null) {
@@ -171,8 +171,8 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
     @Override
     public String createConfiguration(String configurationType, String configurationName) {
         EditableProperties props = new EditableProperties(true);
-        props.put("type", configurationType);
-        props.put("display.name", configurationName);
+        props.put("type", configurationType); //NOI18N
+        props.put("display.name", configurationName); //NOI18N
         FileObject conf;
         try {
             conf = ConfigUtils.createConfigFile(p.getProjectDirectory(), configurationType, props);

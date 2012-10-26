@@ -51,7 +51,7 @@ import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
-import org.netbeans.modules.css.visual.RuleNode;
+import org.netbeans.modules.css.visual.RuleEditorNode;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -65,9 +65,9 @@ import org.openide.util.NbBundle;
 public class RemovePropertyAction extends AbstractAction {
 
     private RuleEditorPanel panel;
-    private RuleNode.DeclarationProperty propertyDescriptor;
+    private RuleEditorNode.DeclarationProperty propertyDescriptor;
 
-    public RemovePropertyAction(RuleEditorPanel panel, RuleNode.DeclarationProperty propertyDescriptor) {
+    public RemovePropertyAction(RuleEditorPanel panel, RuleEditorNode.DeclarationProperty propertyDescriptor) {
         super(Bundle.label_remove_property());
         this.panel = panel;
         this.propertyDescriptor = propertyDescriptor;

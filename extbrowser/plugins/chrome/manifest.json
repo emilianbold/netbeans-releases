@@ -43,7 +43,7 @@
   "name": "__MSG__pluginName__",
   "manifest_version": 2,
 
-  "version": "0.5.1",
+  "version": "0.5.2",
 
   "background": {
     "page": "html/main.html"
@@ -61,7 +61,7 @@
     "contextMenus",
     "tabs",
     "debugger",
-    "<all_urls>" // content scripts (for window resizing)
+    "<all_urls>" /* content scripts (for window resizing) */
   ],
 
   "content_security_policy": "default-src 'self'; connect-src ws://127.0.0.1:8008/",
