@@ -47,6 +47,8 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Image;
 import java.awt.ItemSelectable;
 import java.awt.LayoutManager;
 import java.awt.Window;
@@ -75,6 +77,7 @@ import org.openide.util.NbBundle;
 import static javax.swing.JComponent.LEFT_ALIGNMENT;
 import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
+import javax.swing.Icon;
 import static javax.swing.SwingConstants.EAST;
 import static javax.swing.SwingConstants.HORIZONTAL;
 import static javax.swing.SwingConstants.NORTH;
@@ -748,12 +751,16 @@ public final class RepositorySelectorBuilder implements ItemListener,
                                                       Object value,
                                                       int index,
                                                       boolean isSelected,
-                                                      boolean cellHasFocus) {
+                                                      boolean cellHasFocus) 
+        {
             String text;
+            Image icon = null;
             if (value == null) {
                 text = null;
             } else if (value instanceof RepositoryImpl) {
-                text = ((RepositoryImpl) value).getDisplayName();
+                RepositoryImpl repo = (RepositoryImpl) value;
+                text = repo.getDisplayName();
+                icon = repo.getIcon();
             } else if (value instanceof NewRepositoryInfo) {
                 String connectorName = ((NewRepositoryInfo) value).connector
                                        .getDisplayName();
@@ -762,11 +769,16 @@ public final class RepositorySelectorBuilder implements ItemListener,
                 assert false;
                 text = "???";                                           //NOI18N
             }
-            return defaultRenderer.getListCellRendererComponent(list,
-                                                                text,
-                                                                index,
-                                                                isSelected,
-                                                                cellHasFocus);
+            Component r = defaultRenderer.getListCellRendererComponent(list,
+                                                                         text,
+                                                                         index,
+                                                                         isSelected,
+                                                                         cellHasFocus);
+            if (r instanceof JLabel) {
+                JLabel label = (JLabel) r;
+                label.setIcon((Icon) icon);
+            }
+            return r;
         }
 
     }

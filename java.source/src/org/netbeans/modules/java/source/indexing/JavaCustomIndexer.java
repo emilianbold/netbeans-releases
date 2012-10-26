@@ -904,7 +904,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             JavaIndex.LOG.log(Level.FINE, "scan started for root ({0})", context.getRootURI()); //NOI18N
-            TransactionContext.beginStandardTransaction(true, context.getRootURI());
+            TransactionContext.beginStandardTransaction(context.getRootURI(), true, context.isAllFilesIndexing());
             boolean vote = true;
             try {
                 final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
@@ -952,29 +952,13 @@ public class JavaCustomIndexer extends CustomIndexer {
         }        
 
         @Override
-        public void scanFinished(final Context context) {
+        public void scanFinished(final Context context) {            
+            final TransactionContext txCtx = TransactionContext.get();
+            assert txCtx != null;
             try {
-                final ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI(), false);
-                if (uq == null) {
-                    //Closing
-                    return;
-                }
-                if (uq.getState() == ClassIndexImpl.State.NEW) {
-                    if (uq.getType() != ClassIndexImpl.Type.SOURCE) {
-                        JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.TRUE.toString());
-                    }
-                    uq.setState(ClassIndexImpl.State.INITIALIZED);
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                final TransactionContext txCtx = TransactionContext.get();
-                assert txCtx != null;
-                try {
-                    txCtx.commit();
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+                txCtx.commit();
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
         
