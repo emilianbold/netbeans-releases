@@ -128,7 +128,7 @@ public abstract class ClassIndexImpl {
             @NonNull ClassIndex.NameKind kind,
             @NonNull Set<? extends ClassIndex.SearchScopeType> scope,
             @NonNull Convertor<? super Document, T> convertor,
-            @NonNull Set<? super T> result) throws IOException, InterruptedException;
+            @NonNull Collection<? super T> result) throws IOException, InterruptedException;
 
     public abstract <T> void getDeclaredElements (
             String ident,

@@ -44,12 +44,10 @@ package org.netbeans.modules.javafx2.editor.completion.model;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -140,12 +138,28 @@ public final class FxModel extends FxNode {
         this.imports = Collections.unmodifiableList(decls);
     }
     
-    void setDefinitions(List<FxNewInstance> defs) {
-        Map<String, FxNewInstance> instances = new LinkedHashMap<String, FxNewInstance>();
-        for (FxNewInstance i : defs) {
-            instances.put(i.getId(), i);
+    void addDefinitions(Collection<FxNewInstance> defs) {
+        if (defs.isEmpty()) {
+            return;
         }
-        this.definitions = Collections.unmodifiableMap(instances);
+        Map<String, FxNewInstance> newInstances = new LinkedHashMap<String, FxNewInstance>(this.definitions.size() + defs.size());
+        newInstances.putAll(definitions);
+        addDefinitions(defs, newInstances);
+        this.definitions = Collections.unmodifiableMap(newInstances);
+    }
+    
+    private void addDefinitions(Collection<FxNewInstance> defs, Map<String, FxNewInstance> instances) {
+        for (FxNewInstance i : defs) {
+            if (i.getId() != null) {
+                instances.put(i.getId(), i);
+            }
+        }
+    }
+    
+    void setDefinitions(List<FxNewInstance> defs) {
+        Map<String, FxNewInstance> newInstances = new LinkedHashMap<String, FxNewInstance>(defs.size());
+        addDefinitions(defs, newInstances);
+        this.definitions = Collections.unmodifiableMap(newInstances);
     }
     
     void setRootComponent(FxObjectBase root) {
@@ -243,9 +257,22 @@ public final class FxModel extends FxNode {
         }
 
         @Override
-        public FxNewInstance createInstance(String sourceName, CharSequence value, String factory, String id) {
+        public FxScriptFragment createScript(String sourceRef) {
+            return new FxScriptFragment(sourceRef);
+        }
+        
+        @Override
+        public FxNewInstance createCustomRoot(String sourceName, String id) {
+            FxNewInstance n = new FxNewInstance(sourceName, true);
+            n.withId(id);
+            return n;
+        }
+
+        @Override
+        public FxNewInstance createInstance(String sourceName, CharSequence value, boolean constant, String factory, String id) {
             FxNewInstance n = new FxNewInstance(sourceName);
             n.fromValue(value).usingFactory(factory).withId(id);
+            n.setConstant(constant);
             
             return n;
         }
@@ -314,6 +341,8 @@ public final class FxModel extends FxNode {
                 ((EventHandler)content).addContent(additionalContent);
             } else if (content instanceof PropertySetter) {
                 ((PropertySetter)content).addContent(additionalContent);
+            } else if (content instanceof FxScriptFragment) {
+                ((FxScriptFragment)content).addContent(additionalContent);
             } else {
                 throw new IllegalArgumentException();
             }
@@ -325,8 +354,13 @@ public final class FxModel extends FxNode {
         }
 
         @Override
-        public void resolveResource(FxInclude decl, URL resolved) {
-            decl.resolveFile(resolved);
+        public void resolveResource(HasResource decl, URL resolved) {
+            // TODO: build a method into an abstract predecessor
+            if (decl instanceof FxInclude) {
+                ((FxInclude)decl).resolveFile(resolved);
+            } else if (decl instanceof FxScriptFragment) {
+                ((FxScriptFragment)decl).resolveSource(resolved);
+            }
         }
 
         @Override
@@ -343,6 +377,11 @@ public final class FxModel extends FxNode {
         @Override
         public void setNamedInstances(FxModel model, Map<String, FxInstance> instances) {
             model.setNamedInstances(instances);
+        }
+        
+        @Override
+        public void addDefinitions(FxModel model, Collection<FxNewInstance> definitions) {
+            model.addDefinitions(definitions);
         }
 
         @Override

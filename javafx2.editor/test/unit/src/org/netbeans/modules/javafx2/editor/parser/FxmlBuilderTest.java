@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.javafx2.editor.parser;
 
+import java.util.Collection;
 import org.netbeans.modules.javafx2.editor.completion.model.FxTreeUtilities;
 import org.netbeans.modules.javafx2.editor.ErrorMark;
 import org.netbeans.modules.javafx2.editor.GoldenFileTestBase;
+import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.sax.XmlLexerParser;
 
 /**
@@ -119,6 +121,23 @@ public class FxmlBuilderTest extends GoldenFileTestBase {
         }
         
         assertContents(v.out);
+    }
+    
+    /**
+     * Checks that fx:define is recognized, and that those beans are resolved
+     * when referenced from fx:copy, fx:reference.
+     * 
+     * @throws Exception 
+     */
+    public void testDefinedBeans() throws Exception {
+        defaultTestContents();
+        Collection<FxNewInstance> defs = builder.getModel().getDefinitions();
+        assertEquals(2, defs.size());
+        for (FxNewInstance d : defs) {
+            String id = d.getId();
+            assertNotNull(id);
+            assertTrue(id.equals("SubmitButtonX") || id.equals("OptOutCheckBox"));
+        }
     }
     
 }

@@ -418,7 +418,8 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 final String formattedSymbolName = symbolNameFormatter.formatName(
                         td.getSymbolName(),
                         textToFind,
-                        caseSensitive);
+                        caseSensitive,
+                        isSelected? fgSelectionColor : fgColor);
                 jlName.setText(formattedSymbolName);
                 jlOwner.setText(NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn",td.getOwnerName()));
                 setProjectName(jlPrj, td.getProjectName());

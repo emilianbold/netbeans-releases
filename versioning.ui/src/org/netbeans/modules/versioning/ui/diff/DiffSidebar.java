@@ -660,6 +660,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         JTextComponent component = textComponent;
         TextUI textUI = component.getUI();
         EditorUI editorUI = Utilities.getEditorUI(textComponent);
+        if (editorUI == null) {
+            LOG.log(Level.WARNING, "No editor UI for file {0}, has {1} text UI", new Object[] { //NOI18N
+                fileObject == null ? null : fileObject.getPath(),
+                textComponent.getUI() });
+            return;
+        }
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) {
             return;

@@ -757,7 +757,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             List content = new ArrayList();
             File platformRoot = new File(getPlatformRoot());
             WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class ,
-                    new WebLogicJaxWsStack(platformRoot), WSStack.Source.SERVER);
+                    new WebLogicJaxWsStack(), WSStack.Source.SERVER);
             Collections.addAll(content, platformRoot, 
                     new JpaSupportImpl(this),new JsxWsPoliciesSupportImpl(this), 
                     new JaxRsStackSupportImpl(this, dm.getServerVersion()), wsStack );

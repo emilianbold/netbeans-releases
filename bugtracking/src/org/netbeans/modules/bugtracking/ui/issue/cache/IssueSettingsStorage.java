@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.cache.StorageUtils.FileLocks;
 import org.netbeans.modules.bugtracking.ui.issue.cache.StorageUtils.FileLocks.FileLock;
+import org.openide.modules.Places;
 
 /**
  *
@@ -82,8 +83,7 @@ public class IssueSettingsStorage {
     }
     
     private File getStorageRootFile() {
-        String userDir = System.getProperty("netbeans.user");                   // NOI18N
-        return new File(new File(userDir, "config"), "issue-tracking");         // NOI18N
+        return new File(new File(Places.getUserDirectory(), "config"), "issue-tracking");         // NOI18N
     }
 
     public Collection<Long> loadCollapsedCommenst(String repoUrl, String id) {

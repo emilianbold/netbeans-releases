@@ -115,7 +115,8 @@ public class JQueryModel {
             return this.parent;
         }
         
-        protected void setParent(JsObject parent) {
+        @Override
+        public void setParent(JsObject parent) {
             this.parent = parent;
         }    
     }

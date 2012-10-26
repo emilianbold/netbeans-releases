@@ -330,6 +330,7 @@ tokens {
     LITERAL___is_base_of="__is_base_of"; // NOI18N
     LITERAL___has_trivial_constructor="__has_trivial_constructor"; // NOI18N
     LITERAL___restrict__="__restrict__"; // NOI18N
+    LITERAL__Noreturn="_Noreturn"; // NOI18N
 
     LAST_LITERAL_TOKEN;
 

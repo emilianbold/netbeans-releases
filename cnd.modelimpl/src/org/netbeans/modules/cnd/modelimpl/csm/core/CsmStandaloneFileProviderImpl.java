@@ -234,10 +234,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         try {
             DataObject dao = DataObject.find(fo);
             if (dao != null) {
-                EditorCookie editorCookie = dao.getLookup().lookup(EditorCookie.class);
-                if (editorCookie != null) {
-                    return CsmUtilities.findRecentEditorPaneInEQ(editorCookie) != null;
-                }
+                return CsmUtilities.findOpenedEditor(dao) != null;
             }
         } catch (DataObjectNotFoundException ex) {
             // we don't need to report this exception;

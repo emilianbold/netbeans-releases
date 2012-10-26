@@ -88,6 +88,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.runner.JavaRunner;
@@ -112,17 +113,21 @@ import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
  */
-class WebActionProvider extends BaseActionProvider {
+public class WebActionProvider extends BaseActionProvider {
 
     // property definitions
     private static final String DIRECTORY_DEPLOYMENT_SUPPORTED = "directory.deployment.supported"; // NOI18N
@@ -1050,5 +1055,16 @@ class WebActionProvider extends BaseActionProvider {
         public void antTargetInvocationStarted(String command, Lookup context) {
             Deployment.getDefault().suspendDeployOnSave(provider);
         }
+    }
+
+    @ProjectServiceProvider(
+            service = ActionProvider.class,
+            projectTypes = {@LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-web-project", position=1)})
+    public static WebActionProvider create(@NonNull final Lookup lkp) {
+        Parameters.notNull("lkp", lkp); //NOI18N
+        final WebProject project = lkp.lookup(WebProject.class);
+        final WebActionProvider webActionProvider = new WebActionProvider(project, project.getUpdateHelper(), project.evaluator());
+        webActionProvider.startFSListener();
+        return webActionProvider;
     }
 }

@@ -44,6 +44,10 @@
  * Author: Tomas Holy
  */
 
+#ifndef _WIN32_WINNT        
+#define _WIN32_WINNT 0x05010100
+#endif
+
 #include "nblauncher.h"
 #include "../../../o.n.bootstrap/launcher/windows/utilsfuncs.h"
 #include "../../../o.n.bootstrap/launcher/windows/argnames.h"
@@ -116,6 +120,7 @@ int NbLauncher::start(int argc, char *argv[]) {
     adjustHeapAndPermGenSize();
     addExtraClusters();
     string nbexecPath;
+    SetDllDirectory(baseDir.c_str());
     if (dirExists(platformDir.c_str())) {
         nbexecPath = platformDir;
     } else {

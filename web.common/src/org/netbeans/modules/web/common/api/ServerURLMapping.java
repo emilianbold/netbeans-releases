@@ -142,6 +142,8 @@ public final class ServerURLMapping {
     public static FileObject fromServer(Project p, int projectContext, URL serverURL) {
         Parameters.notNull("project", p); //NOI18N
         Parameters.notNull("serverURL", serverURL); //NOI18N
+        // #219339 - strip down query and/or fragment:
+        serverURL = WebUtils.stringToUrl(WebUtils.urlToString(serverURL, true));
         ServerURLMappingImplementation impl = p.getLookup().lookup(ServerURLMappingImplementation.class);
         if (impl != null) {
             FileObject fo = impl.fromServer(projectContext, serverURL);

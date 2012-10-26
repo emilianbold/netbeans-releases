@@ -99,6 +99,17 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         performStaticTest("bug217827.cpp");
     }     
     
+    public void testBug220527() throws Exception {
+        // Bug 220527 - [73cat] Unexpected token return
+        performStaticTest("bug220527.cpp");
+    }        
+    
+    public void testBug220307() throws Exception {
+        // Bug 220307 - C++11 parsing: Cannot parse member initializer for array
+        performStaticTest("bug220307.cpp");
+    }        
+    
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

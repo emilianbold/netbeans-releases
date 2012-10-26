@@ -7,18 +7,17 @@
 <HTML>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<TITLE>Remote Debugging and Path Mapping</TITLE>
+<TITLE>Remote PHP Debugging and Path Mapping</TITLE>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </HEAD>
 <BODY>
 
-<h2>Remote Debugging and Path Mapping</h2>
-<p>
-<small><a href="#seealso">See Also</a></small></p>
+<h2>Remote PHP Debugging and Path Mapping</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
 <p>It is possible to debug both scripts and web pages, and web pages can be 
     debugged either locally or remotely. For Remote Debugging, unfortunately the 
-    debugged php file on the remote server isn't the same as the file opened in 
-    NetBeans IDE running on a local machine. Debugger support in NetBeans must thus 
+    debugged php file on the remote server is not the same as the file opened in 
+    the IDE running on a local machine. Debugger support in the IDE must thus 
     be able to map server paths to local paths. However, due to many complications, 
     path mapping cannot be resolved automatically for every individual scenario. 
     Therefore, you must manually define path mapping through 
@@ -27,7 +26,9 @@
     not specify this URL, debugging starts at your index file.</p>
 <p><b>To set up path mapping and enable custom debugging URLs:</b></p>
 <ol>
-            <li>Right-click the project's node in the Projects window and open the project's Properties from the context menu.</li><li>In the Project Properties dialog, go to the Run Configuration category.</li><li>Click the Advanced button. The Advanced Web Configuration dialog opens.</li><li>Add the server path and the project path for path mapping.</li><li>Under "Debug URL", select one of the following (do not leave the default selected): <br>
+            <li>Right-click the project's node in the Projects window and open the project's Properties from the context menu.</li>
+            <li>In the Project Properties dialog, go to the Run Configuration category.</li>
+            <li>Click the Advanced button. The Advanced Web Configuration dialog opens.</li><li>Add the server path and the project path for path mapping.</li><li>Under "Debug URL", select one of the following (do not leave the default selected): <br>
 
                 <br>
                 <ul><li>Ask Every Time, which has the IDE prompt you for the URL  when you start a debugging session.</li><li>Do
@@ -36,16 +37,17 @@
             </li>
         </ol>
 
-<p>For more information, please see the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<p>For more information, please see the following post in the NetBeans for PHP blog.</p>
+    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
         <param name="content" value="http://blogs.oracle.com/netbeansphp/entry/path_mapping_in_php_debugger">
         <param name="text" value="<html><u>Path Mapping in PHP Debugger</u></html>">
         <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
-    </object> post in the Net Beans for PHP blog.</p>
+    </object>
 
-
+<dl>
     <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="breakpoint_setting.html">Setting a PHP Breakpoint</a></dd>
+    <dd><a href="breakpoint_php.html">PHP Breakpoints in the IDE</a></dd>
     <dd><a href="debug_local.html">Starting a Debugging Session</a></dd>
 </dl>
 <hr>

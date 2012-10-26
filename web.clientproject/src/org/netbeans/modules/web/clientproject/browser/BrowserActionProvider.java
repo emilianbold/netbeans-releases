@@ -50,11 +50,12 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -85,8 +86,11 @@ public class BrowserActionProvider implements ActionProvider {
             WebServer.getWebserver().stop(project);
         }
         String startFile = project.getStartFile();
+        String splt[] = ClientSideProjectUtilities.splitPathAndFragment(startFile);
+        String justStartFile = splt[0];
+        String fragment = splt[1];
         if (COMMAND_RUN.equals(command)) {
-            FileObject fo = project.getSiteRootFolder().getFileObject(startFile);
+            FileObject fo = project.getSiteRootFolder().getFileObject(justStartFile);
             if (fo == null) {
                 DialogDisplayer.getDefault().notify(
                     new DialogDescriptor.Message(
@@ -94,13 +98,16 @@ public class BrowserActionProvider implements ActionProvider {
                 CustomizerProviderImpl cust = project.getLookup().lookup(CustomizerProviderImpl.class);
                 cust.showCustomizer("buildConfig"); //NOI18N
                 // try again:
-                fo = project.getSiteRootFolder().getFileObject(startFile);
+                splt = ClientSideProjectUtilities.splitPathAndFragment(project.getStartFile());
+                justStartFile = splt[0];
+                fragment = splt[1];
+                fo = project.getSiteRootFolder().getFileObject(justStartFile);
                 if (fo == null) {
                     return;
                 }
             }
             if (fo != null) {
-                browseFile(support, fo);
+                browseFile(support, fo, fragment);
             }
         } else if (COMMAND_RUN_SINGLE.equals(command)) {
             FileObject fo = getFile(context);
@@ -172,7 +179,14 @@ public class BrowserActionProvider implements ActionProvider {
     }
     
     private void browseFile(BrowserSupport bs, FileObject fo) {
+        browseFile(bs, fo, "");
+    }
+    
+    private void browseFile(BrowserSupport bs, FileObject fo, String fragment) {
         URL url = ServerURLMapping.toServer(project, fo);
+        if (fragment.length() > 0) {
+            url = WebUtils.stringToUrl(WebUtils.urlToString(url)+fragment);
+        }
         bs.load(url, fo);
     }
 }

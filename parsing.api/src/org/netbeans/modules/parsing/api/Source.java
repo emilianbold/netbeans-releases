@@ -604,7 +604,7 @@ public final class Source {
         }
         
         @Override
-        public void assignListeners (final Source source) {
+        public void assignListeners (@NonNull final Source source) {
             assert source != null;
             source.assignListeners();
         }

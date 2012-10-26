@@ -2680,11 +2680,11 @@
 
     <!-- Project Build Targets -->
 
-    <target name="jfx-build" depends="-jfx-do-compile, -jfx-do-jar"/>
-    <target name="jfx-build-noscript" depends="-set-fallback-no-javascript, -jfx-do-compile, -jfx-do-jar"/>
+    <target name="jfx-build" depends="-jfx-do-compile, -jfx-do-jar, -jfx-do-post-jar"/>
+    <target name="jfx-build-noscript" depends="-set-fallback-no-javascript, -jfx-do-compile, -jfx-do-jar, -jfx-do-post-jar"/>
     
-    <target name="jfx-rebuild" depends="clean, -jfx-do-compile, -jfx-do-jar"/>
-    <target name="jfx-rebuild-noscript" depends="-set-fallback-no-javascript, clean, -jfx-do-compile, -jfx-do-jar"/>
+    <target name="jfx-rebuild" depends="clean, -jfx-do-compile, -jfx-do-jar, -jfx-do-post-jar"/>
+    <target name="jfx-rebuild-noscript" depends="-set-fallback-no-javascript, clean, -jfx-do-compile, -jfx-do-jar, -jfx-do-post-jar"/>
 
     <target name="jfx-build-native" depends="-set-do-build-native-package, -check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, jfx-rebuild"/>
     <target name="jfx-build-native-noscript" depends="-set-do-build-native-package, -check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, jfx-rebuild-noscript"/>
@@ -2706,6 +2706,10 @@
     </target>
     <target name="-jfx-do-jar" depends="-check-do-jar" unless="do-jar-false">
         <antcall target="jar"/>
+    </target>
+    <target name="-jfx-do-post-jar" depends="-init-check,-check-project" if="preloader-app">
+        <!-- Preloaders are created using SE copylibs task that creates readme file relevant for SE only -->
+        <delete file="${basedir}${file.separator}${dist.dir}${file.separator}README.TXT"/>
     </target>
     
     <target name="-set-do-build-native-package">

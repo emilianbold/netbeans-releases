@@ -50,6 +50,7 @@ import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -137,10 +138,10 @@ public class DefaultClassPathProvider implements ClassPathProvider {
         // returns null).
         try {
             URL externalURL = URLMapper.findURL(file, URLMapper.EXTERNAL);
-            if ( externalURL == null || !externalURL.equals(file.getURL())) {
+            if ( externalURL == null || !externalURL.toURI().equals(file.toURI())) {
                 return null;
             }
-        } catch (FileStateInvalidException fsi) {
+        } catch (URISyntaxException fsi) {
             return null;
         }
         if (JAVA_EXT.equalsIgnoreCase(file.getExt()) || file.isFolder()) {  //Workaround: Editor asks for package root

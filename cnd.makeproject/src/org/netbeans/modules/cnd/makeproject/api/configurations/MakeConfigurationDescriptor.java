@@ -1862,7 +1862,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             } else {
                 String path = ProjectSupport.toProperPath(baseDirFO, file, project);
                 Item item = Item.createInBaseDir(baseDirFO, path);
-                if (folder.addItem(item, notify, setModified) != null) {
+                if (folder.addExcludedItem(item, notify, setModified) == item) {
                     filesAdded.add(item);
                 }
                 if (handle != null) {

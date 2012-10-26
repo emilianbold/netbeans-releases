@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
-import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -55,7 +54,6 @@ import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
-import org.netbeans.modules.web.inspect.ui.MatchedRulesTC;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
@@ -65,8 +63,6 @@ import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * WebKit-based implementation of {@code PageModel}.
@@ -218,6 +214,16 @@ public class WebKitPageModel extends PageModel {
             }
             return documentNode;
         }
+    }
+
+    @Override
+    public void removeNode(org.openide.nodes.Node node) {
+        try {
+            Node webKitNode = node.getLookup().lookup(Node.class);
+            if (webKitNode != null) {
+                webKit.getDOM().removeNode(webKitNode);
+            }
+        } catch (TransportStateException tsex) {}
     }
 
     @Override
@@ -709,23 +715,23 @@ public class WebKitPageModel extends PageModel {
      * Activates CSS Styles view (to fill the content of Navigator).
      */
     void activateStylesView() {
-        if (!isExternal()) {
-            return;
-        }
-        if (EventQueue.isDispatchThread()) {
-            WindowManager manager = WindowManager.getDefault();
-            TopComponent stylesTC = manager.findTopComponent(MatchedRulesTC.ID);
-            if (stylesTC != null) {
-                stylesTC.requestActive();
-            }
-        } else {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    activateStylesView();
-                }
-            });
-        }
+//        if (!isExternal()) {
+//            return;
+//        }
+//        if (EventQueue.isDispatchThread()) {
+//            WindowManager manager = WindowManager.getDefault();
+//            TopComponent stylesTC = manager.findTopComponent(MatchedRules.ID);
+//            if (stylesTC != null) {
+//                stylesTC.requestActive();
+//            }
+//        } else {
+//            EventQueue.invokeLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    activateStylesView();
+//                }
+//            });
+//        }
     }
 
     class WebPaneSynchronizer implements PropertyChangeListener {

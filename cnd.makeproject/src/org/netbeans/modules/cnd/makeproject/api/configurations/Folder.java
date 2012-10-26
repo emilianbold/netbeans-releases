@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
+import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
@@ -266,7 +267,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding item {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    addItemImpl(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, setModified, true);
+                    addExcludedItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, setModified);
                 }
             }
         }
@@ -561,13 +562,28 @@ public class Folder implements FileChangeListener, ChangeListener {
         fireChangeEvent(this, setModified);
     }
 
+    /**
+     * add item and make sure it is included in all configurations
+     * @param item
+     * @return 
+     */
     public Item addItemAction(Item item) {
-        return addItemActionImpl(item, true, false);
+        Item added = addItemActionImpl(item, true, false);
+        if (added != null) {
+            for (ItemConfiguration conf : added.getItemConfigurations()) {
+                if (conf != null) {
+                    conf.getExcluded().setValue(false);
+                }
+            }
+            MakeLogicalViewProvider.checkForChangedViewItemNodes(this.getProject(), this, added);
+        }
+        return added;
     }
 
     private Item addItemActionImpl(Item item, boolean setModified, boolean excludedByDefault) {
-        if (addItemImpl(item, true, setModified, excludedByDefault) == null) {
-            return null; // Nothing added
+        final Item addedItem = addItemImpl(item, true, setModified, excludedByDefault);
+        if (addedItem != item) {
+            return addedItem; // Nothing new was added
         }
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
         list.add(item);
@@ -579,11 +595,11 @@ public class Folder implements FileChangeListener, ChangeListener {
         return addItemImpl(item, true, true, false);
     }
 
-    public Item addItem(Item item, boolean notify, boolean setModified) {
-        return addItemImpl(item, notify, setModified, false);
+    public Item addExcludedItem(Item item, boolean notify, boolean setModified) {
+        return addItemImpl(item, notify, setModified, true);
     }
 
-    private Item addItemImpl(Item item, boolean notify, boolean setModified, boolean excludedByDefault) {
+    private synchronized Item addItemImpl(Item item, boolean notify, boolean setModified, boolean excludedByDefault) {
         if (item == null) {
             return null;
         }
@@ -592,7 +608,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (isProjectFiles() && (existingItem = configurationDescriptor.findProjectItemByPath(item.getPath())) != null) {
             //System.err.println("Folder - addItem - item ignored, already added: " + item); // NOI18N  // FIXUP: correct?
             fireChangeEvent(existingItem, setModified);
-            return null; // Nothing added
+            return existingItem; // Nothing added
         }
         // Add it to the folder
         item.setFolder(this);
@@ -633,6 +649,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (item.canHaveConfiguration()) {
                 Configuration[] configurations = configurationDescriptor.getConfs().toArray();
                 for (int i = 0; i < configurations.length; i++) {
+                    // this is hack to initialize folder configuration
                     FolderConfiguration folderConfiguration = getFolderConfiguration(configurations[i]);
                     DeletedConfiguration old = null;
                     if (map != null) {
@@ -1057,6 +1074,25 @@ public class Folder implements FileChangeListener, ChangeListener {
         return found.toArray(new Item[found.size()]);
     }
 
+    public boolean hasIncludedItems() {
+        assert org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
+        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
+        while (iter.hasNext()) {
+            Object o = iter.next();
+            if (o instanceof Item) {
+                if (((Item)o).isIncludedInAnyConfiguration()) {
+                    return true;
+                }
+            }
+            if (o instanceof Folder) {
+                if (((Folder) o).hasIncludedItems()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     private List<NativeFileItem> getAllItemsAsList() {
         ArrayList<NativeFileItem> found = new ArrayList<NativeFileItem>();
         Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();

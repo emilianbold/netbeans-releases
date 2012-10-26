@@ -51,7 +51,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
@@ -76,6 +75,7 @@ public class ChildrenUpdater {
             new HashMap<CsmProject, Map<PersistentKey, UpdatebleHost>>();
 
     private Set<ProjectsKeyArray> projectListeners = new HashSet<ProjectsKeyArray>();
+    //private Map<Map, ProjectsKeyArray> projectListeners = new HashMap<Map, ProjectsKeyArray>();
 
     public ChildrenUpdater() {
     }
@@ -231,6 +231,11 @@ public class ChildrenUpdater {
                         toFlush.add(keys);
                     }
                 }
+            }
+        }
+        if (e.hasChangedLibs() && project.isValid()) {
+            for (ProjectsKeyArray pka : projectListeners) {
+                pka.projectLibsChanged(project);
             }
         }
         if (toFlush.size() > 0) {

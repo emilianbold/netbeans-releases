@@ -43,6 +43,8 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.Resource;
@@ -155,6 +157,10 @@ public class MatchedRulesNode extends AbstractNode {
             }
         }
         ruleInfo.setInherited(!matched);
+        if (rule.getId() == null) {
+            // Debugging message inspired by issue 220611
+            Logger.getLogger(MatchedRuleNode.class.getName()).log(Level.INFO, "Matched rule with null ID: {0}", rule); // NOI18N
+        }
         return new MatchedRuleNode(node, rule, new Resource(project, rule.getSourceURL()), ruleInfo);
     }
 

@@ -166,7 +166,7 @@ public class RuleEditorPanel extends JPanel {
         ERROR_LABEL.setToolTipText(Bundle.label_rule_error_tooltip());
     }
 //    private static final Color defaultPanelBackground = javax.swing.UIManager.getDefaults().getColor("Panel.background"); //NOI18N
-    private PropertySheet sheet;
+    private REPropertySheet sheet;
     private Model model;
     private Rule rule;
     private Action addPropertyAction;
@@ -461,6 +461,9 @@ public class RuleEditorPanel extends JPanel {
         }
     }
     
+    public FeatureDescriptor getSelected() {
+        return sheet.getSelectedFeatureDescriptor();
+    }
     
     private void editCreatedDeclaration() {
         DeclarationProperty descriptor = node.getDeclarationProperty(createdDeclaration);
@@ -777,6 +780,7 @@ public class RuleEditorPanel extends JPanel {
         filterTextField.setMaximumSize(new java.awt.Dimension(32767, 32767));
         filterTextField.setMinimumSize(new java.awt.Dimension(60, 28));
 
+        setPreferredSize(new java.awt.Dimension(400, 300));
         setLayout(new java.awt.BorderLayout());
 
         northPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
@@ -936,6 +940,10 @@ public class RuleEditorPanel extends JPanel {
 
         public REPropertySheet(JPopupMenu genericPopupMenu) {
             this.genericPopupMenu = genericPopupMenu;
+        }
+        
+        public FeatureDescriptor getSelectedFeatureDescriptor() {
+            return super.getSelection();
         }
         
         @Override

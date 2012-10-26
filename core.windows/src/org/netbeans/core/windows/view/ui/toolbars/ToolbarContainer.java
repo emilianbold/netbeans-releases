@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
@@ -199,6 +200,9 @@ final class ToolbarContainer extends JPanel {
             if( toolbar.getComponentCount() > 1 )
                 d.width += toolbar.getComponent(1).getMinimumSize().width;
         }
+        Insets insets = toolbar.getInsets();
+        if( null != insets )
+            d.width += insets.left + insets.right;
         return d;
     }
 

@@ -63,6 +63,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.swing.outline.CheckRenderDataProvider;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
@@ -72,11 +74,14 @@ import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.TaskListener;
 
 /**
  * Export/import options panel.
@@ -92,6 +97,8 @@ public final class OptionsChooserPanel extends JPanel {
     private OptionsExportModel optionsExportModel;
     private static TreeModel treeModel;
     private static OptionsTreeDataProvider treeDataProvider;
+    private static RequestProcessor.Task exportTask;
+    private static final Icon OPTIONS_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/options/export/options.png", true);  //NOI18N
 
     /** To distinguish between import and export panels. */
     private enum PanelType {
@@ -115,7 +122,13 @@ public final class OptionsChooserPanel extends JPanel {
     }
 
     /** Shows panel for export of options. */
+    @NbBundle.Messages({"ProgressHandle_Export_DisplayName=Exporting Options",
+	"# {0} - path where the exported options are saved",
+	"Export_Notification_DetailsText=File saved at {0}"})
     public static void showExportDialog() {
+	if(exportTask != null && !exportTask.isFinished()) {
+	    return;
+	}
         LOGGER.fine("showExportDialog");  //NOI18N
         File sourceUserdir = new File(System.getProperty("netbeans.user")); // NOI18N
         final OptionsChooserPanel optionsChooserPanel = new OptionsChooserPanel();
@@ -184,11 +197,30 @@ public final class OptionsChooserPanel extends JPanel {
                 LOGGER.fine("Export canceled.");  //NOI18N
                 return;
             }
-            String targetPath = optionsChooserPanel.getSelectedFilePath();
-            optionsChooserPanel.getOptionsExportModel().doExport(new File(targetPath));
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.export.status.text"));
-            LOGGER.fine("Export finished.");  //NOI18N
+            final String targetPath = optionsChooserPanel.getSelectedFilePath();
+	    RequestProcessor RP = new RequestProcessor("OptionsChooserPanel Export", 1); // NOI18N
+	    Runnable runnable = new Runnable() {
+		@Override
+		public void run() {
+		    optionsChooserPanel.getOptionsExportModel().doExport(new File(targetPath));
+		    NotificationDisplayer.getDefault().notify(
+			    NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.export.status.text"),  //NOI18N
+			    OPTIONS_ICON, Bundle.Export_Notification_DetailsText(targetPath), null);
+		    LOGGER.fine("Export finished.");  //NOI18N
+		}
+	    };
+	    exportTask = RP.create(runnable);
+
+	    final ProgressHandle ph = ProgressHandleFactory.createHandle(Bundle.ProgressHandle_Export_DisplayName(), exportTask);
+	    exportTask.addTaskListener(new TaskListener() {
+		@Override
+		public void taskFinished(org.openide.util.Task task) {
+		    ph.finish();
+		}
+	    });
+
+	    ph.start();
+	    exportTask.schedule(0);
         }
     }
 

@@ -65,6 +65,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.util.FileUtils;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.openide.modules.Places;
 
 /**
  *
@@ -252,7 +253,7 @@ public class JiraStorageManager {
         if (t9yNbConfigPath != null && t9yNbConfigPath.length() > 0) {
             return t9yNbConfigPath;
         }
-        String nbHome = System.getProperty("netbeans.user");            //NOI18N
+        String nbHome = Places.getUserDirectory().getAbsolutePath();    //NOI18N
         return nbHome + "/config/jira/";                                //NOI18N
     }
 

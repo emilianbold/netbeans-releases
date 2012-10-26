@@ -105,6 +105,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
     public static final String CND_DISTDIR_MACRO = "${CND_DISTDIR}"; // NOI18N
     public static final String CND_BUILDDIR_MACRO = "${CND_BUILDDIR}"; // NOI18N
     public static final String CND_DLIB_EXT_MACRO = "${CND_DLIB_EXT}"; // NOI18N
+    public static final String CND_OUTPUT_PATH_MACRO = "${OUTPUT_PATH}"; // NOI18N
     // Project Types
     private static String[] TYPE_NAMES_UNMANAGED = {
         getString("MakefileName")

@@ -1093,8 +1093,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                     // update cached info about lines
                     updateLineSet(true);
-                    // updateTitles(); radim #58266
-                    callNotifyUnmodified();
                 } catch (BadLocationException blex) {
                     Exceptions.printStackTrace(blex);
                 } catch (IOException ex) {
@@ -1102,6 +1100,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 }
             }
         };
+        if (ioException[0] != null) {
+            throw ioException[0];
+        }
+
         Runnable beforeSaveRunnable = (Runnable) myDoc.getProperty("beforeSaveRunnable");
         if (beforeSaveRunnable != null) {
             // Create runnable that marks next edit fired from document as save actions.
@@ -1126,9 +1128,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         } else { // No on-save tasks
             myDoc.render(saveToMemory); // Run under doc's readlock
         }
-        if (ioException[0] != null) {
-            throw ioException[0];
-        }
 
         OutputStream os = null;
         long oldSaveTime = lastSaveTime;
@@ -1138,6 +1137,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             memoryOutputStream[0].writeTo(os);
             os.close(); // performs firing
             os = null;
+            callNotifyUnmodified();
 
             // remember time of last save
             ERR.fine("Save ok, assign new time, while old was: " + oldSaveTime); // NOI18N
