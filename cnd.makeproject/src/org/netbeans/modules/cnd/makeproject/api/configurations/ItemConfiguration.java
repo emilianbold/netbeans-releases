@@ -90,7 +90,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         // General
         this.configuration = configuration;
         setItem(item);
-        this.excluded = new BooleanConfiguration(false);
+        this.excluded = new BooleanConfiguration(org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE);
 
         // This is side effect of lazy configuration. We should init folder configuration
         // TODO: remove folder initialization. Folder should be responsible for it
@@ -111,12 +111,15 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public boolean isDefaultConfiguration() {
-        if (org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE) {
-            // FIXUP: if excluded => skip as 'default'
-            return excluded.getValue();
-        }
-        if (excluded.getValue()) {
-            return false;
+        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
+            // was included => not default state to allow serialization
+            if (!excluded.getValue()) {
+                return false;
+            }
+        } else {
+            if (excluded.getValue()) {
+                return false;
+            }
         }
         if (getTool() != item.getDefaultTool()) {
             return false;
@@ -351,9 +354,12 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
     
     public boolean isVCSVisible() {
-        assert org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
-        if (getExcluded() != null) {
-            return !getExcluded().getValue();
+        assert org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE;
+        if (item != null && getExcluded() != null) {
+            Folder folder = item.getFolder();
+            if (folder != null && folder.isDiskFolder()) {
+                return !getExcluded().getValue();
+            }
         }
         return shared();
     }
