@@ -76,13 +76,14 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     private DialogDescriptor dialogDescriptor;
     private final MakeConfiguration conf;
     private final FileObject buildWorkingDirFO;
+    private final PathMap mapper;
 
     /** Creates new form SelectExecutable */
     public SelectExecutablePanel(ProjectActionEvent pae) {
         this.conf = pae.getConfiguration();
         initComponents();
         instructionsTextArea.setBackground(getBackground());
-        PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
+        mapper = RemoteSyncSupport.getPathMap(pae.getProject());
         String wd = conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir();
         if (mapper != null) {
             String aWd = mapper.getRemotePath(conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir(), true);
@@ -180,7 +181,11 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     }
 
     public String getExecutable() {
-        return executableTextField.getText();
+        String path = executableTextField.getText();
+        if (mapper != null) {
+            path = mapper.getLocalPath(path);
+        }
+        return path;
     }
 
     private String[] findAllExecutables(FileObject root) {

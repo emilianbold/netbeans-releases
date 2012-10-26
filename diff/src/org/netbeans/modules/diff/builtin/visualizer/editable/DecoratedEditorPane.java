@@ -132,6 +132,7 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
         if (currentDiff == null) return;
 
         EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(this);
+        if (editorUI == null) return;
         
         Graphics2D g = (Graphics2D) gr.create();
         Rectangle clip = g.getClipBounds();
