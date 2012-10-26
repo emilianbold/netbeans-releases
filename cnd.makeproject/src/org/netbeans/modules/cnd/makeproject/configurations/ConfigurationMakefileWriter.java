@@ -708,8 +708,11 @@ public class ConfigurationMakefileWriter {
             command += linkerConfiguration.getOutputOptions().replace(conf.getOutputValue(), output) + " "; // NOI18N
         }
         command += "${OBJECTFILES}" + " "; // NOI18N
-        command += "${LDLIBSOPTIONS}" + " "; // NOI18N
-        command += linkerConfiguration.getOptions() + " "; // NOI18N
+        command += "${LDLIBSOPTIONS}"; // NOI18N
+        final String options = linkerConfiguration.getOptions();
+        if (options.length() > 0) {
+            command += " " + options; // NOI18N
+        }
         String[] additionalDependencies = linkerConfiguration.getAdditionalDependencies().getValues();
         for (int i = 0; i < additionalDependencies.length; i++) {
             bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N
