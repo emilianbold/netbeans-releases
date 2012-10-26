@@ -42,20 +42,9 @@
 
 package org.netbeans.modules.versioning.util;
 
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import static java.util.logging.Level.FINER;
-import static java.util.logging.Level.FINEST;
+import org.openide.util.lookup.AbstractLookup;
 
 /**
  * Simple lookup with modifiable content.
@@ -63,21 +52,9 @@ import static java.util.logging.Level.FINEST;
  * @author Marian Petras
  * @since 1.9.1
  */
-public class SimpleLookup extends Lookup {
-
-    private static final Logger LOG = Logger.getLogger(SimpleLookup.class.getName());
+public class SimpleLookup extends AbstractLookup {
 
     protected final Object dataSetLock = new Object();
-
-    private final List<AbstractResult> results = new CopyOnWriteArrayList<AbstractResult>();
-    private final Map<Lookup.Template,AbstractResult> resultsCache
-                        = new HashMap<Lookup.Template,AbstractResult>(20, .75f);
-
-    private Object[] data = new Object[0];
-
-    public SimpleLookup() {
-        super();
-    }
 
     public void setData(Object... data) {
         validateData(data);
@@ -136,549 +113,95 @@ public class SimpleLookup extends Lookup {
             throw new IllegalArgumentException("null");                 //NOI18N
         }
 
-        this.data = data;
-        dataChanged();
+        Collection<Pair> pairs = new ArrayList<Pair>(data.length);
+        for (Object d : data) {
+            pairs.add(new SimpleItem(d));
+        }
+        setPairs(pairs);
     }
+    
+    /** Copy from AbstractLookup.SimpleItem */
+    private final static class SimpleItem<T> extends Pair<T> {
+        private T obj;
 
-    private void dataChanged() {
-        LOG.log(FINER, "dataChanged()");                                //NOI18N
-
-        notifyResults();
-    }
-
-    @Override
-    public <T> T lookup(Class<T> clazz) {
-        LOG.log(FINER, "lookup ({0})", clazz.getName());                //NOI18N
-        Object[] currData = data;
-        for (Object o : currData) {
-            if (clazz.isInstance(o)) {
-                return clazz.cast(o);
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public <T> Lookup.Result<T> lookup(Template<T> template) {
-        if (template.getId() != null) {
-            return new EmptyResult<T>();    //no items with Id's can be present
-        }
-
-        AbstractResult<T> result;
-
-        synchronized (results) {
-            result = resultsCache.get(template);
-            if (result == null) {
-                result = createLookupResult(template);
-                resultsCache.put(template, result);
-                results.add(result);
-            }
-        }
-        return result;
-    }
-
-    private <T> AbstractResult<T> createLookupResult(Template<T> template) {
-        Class<T> templateType = template.getType();
-        T templateInstance = template.getInstance();
-        assert template.getId() == null;
-
-        AbstractResult<T> result;
-        if (templateInstance == null) {
-            if (templateType == null) {
-                result = new AllResult();
-            } else {
-                result = new TypeResult(templateType);
-            }
-        } else {
-            if (templateType == null) {
-                result = new InstanceResult(templateInstance);
-            } else {
-                result = new TypeInstanceResult(templateType, templateInstance);
-            }
-        }
-        return result;
-    }
-
-    private void notifyResults() {
-        for (AbstractResult result : results) {
-            result.dataChanged();
-        }
-    }
-
-    public void cleanup() {
-        synchronized (results) {
-            resultsCache.clear();
-        }
-    }
-
-    abstract class AbstractResult<T> extends Lookup.Result<T> {
-
-        private final LookupListener[] listenersArray
-                                       = new LookupListener[0];
-        private final LookupEvent lookupEvent = new LookupEvent(this);
-        private final Set<LookupListener> listeners = Collections.synchronizedSet(new LinkedHashSet<LookupListener>());
-
-        protected Collection<? extends T> allInstances;
-        protected Collection<? extends Item<T>> allItems;
-        protected Set<Class<? extends T>> allClasses;
-
-        @Override
-        public Collection<? extends T> allInstances() {
-            Collection<? extends T> currentInstances = allInstances;
-            if (currentInstances != null) {
-                if (LOG.isLoggable(FINEST)) {
-                    LOG.log(FINEST,
-                            "allInstances({0}) - cache HIT",            //NOI18N
-                            paramString());
-                }
-                return currentInstances;
-            }
-
-            return (allInstances = allInstancesImpl());
-        }
-
-        @Override
-        public Collection<? extends Item<T>> allItems() {
-            Collection<? extends Item<T>> currentItems = allItems;
-            if (currentItems != null) {
-                if (LOG.isLoggable(FINEST)) {
-                    LOG.log(FINEST,
-                            "allItems({0}) - cache HIT",                //NOI18N
-                            paramString());
-                }
-                return currentItems;
-            }
-
-            return (allItems = allItemsImpl());
-        }
-
-        @Override
-        public Set<Class<? extends T>> allClasses() {
-            Set<Class<? extends T>> currentClasses = allClasses;
-            if (currentClasses != null) {
-                if (LOG.isLoggable(FINEST)) {
-                    LOG.log(FINEST,
-                            "allClasses({0}) - cache HIT",              //NOI18N
-                            paramString());
-                }
-                return currentClasses;
-            }
-
-            return (allClasses = allClassesImpl());
-        }
-
-        protected abstract Collection<? extends T> allInstancesImpl();
-
-        protected abstract Collection<? extends Item<T>> allItemsImpl();
-
-        protected abstract Set<Class<? extends T>> allClassesImpl();
-
-        @Override
-        public void addLookupListener(LookupListener l) {
-            listeners.add(l);
-        }
-
-        @Override
-        public void removeLookupListener(LookupListener l) {
-            listeners.remove(l);
-        }
-
-        protected LookupListener[] getListeners() {
-            return listeners.toArray(listenersArray);
-        }
-
-        protected void notifyListeners(LookupListener[] listeners) {
-            for (LookupListener l : listeners) {
-                l.resultChanged(lookupEvent);
-            }
-        }
-
-        protected void dataChanged() {
-            LookupListener[] currListeners = getListeners();
-
-            boolean resultChanged = updateData(currListeners.length != 0);
-
-            if (resultChanged) {
-                allInstances = null;
-                allItems = null;
-                allClasses = null;
-
-                if (currListeners.length != 0) {
-                    notifyListeners(currListeners);
-                }
-            }
-        }
-
-        /**
-         * Updates internal data structures such that this result returns
-         * the correct information when queried since now.
-         * <p>
-         * This method is called from the default implementation
-         * of method {@link #dataChanged dataChanged()}.
-         * If method {@link #dataChanged dataChanged()} is overridden
-         * in such a way that it does not call this method,
-         * this method may be implemented as a no-op, returning {@code true}
-         * or {@code false}.
-         *
-         * @param  listenersRegistered  {@code true} if at least one listener
-         *                              is registered, {@code false} otherwise
-         * @return  {@code true} if the previous data were found out-of-date
-         *          so the cache needs to be refreshed and listeners notified;
-         *          {@code false} otherwise
+        /** Create an item.
+         * @obj object to register
          */
-        protected abstract boolean updateData(boolean listenersRegistered);
-
-        protected abstract String paramString();
-
-    }
-
-    class AllResult<T> extends AbstractResult<T> {
-
-        /** matching instances */
-        protected T[] instances;
-
-        AllResult() {
-            super();
+        public SimpleItem(T obj) {
+            if (obj == null) {
+                throw new NullPointerException();
+            }
+            this.obj = obj;
         }
 
+        /** Tests whether this item can produce object
+         * of class c.
+         */
         @Override
-        protected Collection<? extends T> allInstancesImpl() {
-            if (LOG.isLoggable(FINEST)) {
-                LOG.log(FINEST,
-                        "allInstances({0}) - cache miss",               //NOI18N
-                        paramString());
-            }
-            return CollectionUtils.unmodifiableList(getInstances());
+        public boolean instanceOf(Class<?> c) {
+            return c.isInstance(obj);
         }
 
-        @Override
-        protected Collection<? extends Item<T>> allItemsImpl() {
-            if (LOG.isLoggable(FINEST)) {
-                LOG.log(FINEST,
-                        "allItems({0}) - cache miss",                   //NOI18N
-                        paramString());
-            }
-            T[] insts = getInstances();
-            Item[] items = new Item[insts.length];
-            for (int i = 0; i < items.length; i++) {
-                items[i] = new LookupItem(insts[i]);
-            }
-            return CollectionUtils.unmodifiableList((Item<T>[]) items);
-        }
-
-        @Override
-        protected Set<Class<? extends T>> allClassesImpl() {
-            if (LOG.isLoggable(FINEST)) {
-                LOG.log(FINEST,
-                        "allClasses({0}) - cache miss",                 //NOI18N
-                        paramString());
-            }
-            T[] insts = getInstances();
-            Class[] classes = new Class[insts.length];
-
-            for (int i = 0; i < classes.length; i++) {
-                classes[i] = insts[i].getClass();
-            }
-            return CollectionUtils.unmodifiableSet(
-                                            (Class<? extends T>[]) classes);
-        }
-
-        protected T[] getInstances() {
-            T[] currentInstances = instances;
-            if (currentInstances != null) {
-                if (LOG.isLoggable(FINEST)) {
-                    LOG.log(FINEST,
-                            "getInstances({0}) - cache HIT",            //NOI18N
-                            paramString());
-                }
-                return currentInstances;
-            }
-
-            return (instances = getInstancesImpl());
-        }
-
-        protected T[] getInstancesImpl() {
-            if (LOG.isLoggable(FINEST)) {
-                LOG.log(FINEST,
-                        "getInstances({0}) - cache miss",               //NOI18N
-                        paramString());
-            }
-            return (T[]) SimpleLookup.this.data;
-        }
-
-        @Override
-        protected boolean updateData(boolean listenersRegistered) {
-            boolean dataChanged;
-
-            T[] oldInstances;
-            T[] newInstances;
-
-            oldInstances = instances;
-            if (listenersRegistered) {
-                newInstances = getInstancesImpl();
-                dataChanged = !CollectionUtils.containSameObjects(oldInstances,
-                                                                  newInstances);
-            } else {
-                dataChanged = true;
-                newInstances = null;
-            }
-            instances = newInstances;
-
-            return dataChanged;
-        }
-
-        @Override
-        protected String paramString() {
-            return "AllResults";                                        //NOI18N
-        }
-
-    }
-
-    class TypeResult<T> extends AllResult<T> {
-
-        /** kind of data held by this lookup result */
-        protected final Class<T> requestedType;
-
-        TypeResult(Class<T> requestedType) {
-            super();
-            this.requestedType = requestedType;
-        }
-
-        @Override
-        protected T[] getInstancesImpl() {
-            if (LOG.isLoggable(FINEST)) {
-                LOG.log(FINEST,
-                        "getInstances({0}) - cache miss",               //NOI18N
-                        paramString());
-            }
-            Object[] currData = SimpleLookup.this.data;
-            Object[] result = new Object[currData.length];
-            int count = 0;
-            for (Object o : currData) {
-                if (requestedType.isInstance(o)) {
-                    result[count++] = o;
-                }
-            }
-            return (T[]) CollectionUtils.shortenArray(result, count);
-        }
-
-        @Override
-        protected String paramString() {
-            return "TypeResult(" + requestedType.getSimpleName() + ')'; //NOI18N
-        }
-
-    }
-
-    class InstanceResult<T> extends AbstractResult<T> {
-
-        protected final T UNKNOWN = (T) new Object();
-
-        /** kind of data held by this lookup result */
-        protected final T requestedInstance;
-
-        protected T instance = UNKNOWN;
-
-        InstanceResult(T requestedInstance) {
-            if (requestedInstance == null) {
-                throw new IllegalArgumentException("null instance"); //NOI18N
-            }
-            this.requestedInstance = requestedInstance;
-        }
-
-        @Override
-        protected Collection<? extends T> allInstancesImpl() {
-            if (LOG.isLoggable(FINEST)) {
-                LOG.log(FINEST,
-                        "allInstances({0}) - cache miss",               //NOI18N
-                        paramString());
-            }
-            T inst = getInstance();
-            return (inst != null)
-                   ? Collections.<T>singletonList(inst)
-                   : Collections.<T>emptyList();
-        }
-
-        @Override
-        protected Collection<? extends Item<T>> allItemsImpl() {
-            if (LOG.isLoggable(FINEST)) {
-                LOG.log(FINEST,
-                        "allItems({0}) - cache miss",                   //NOI18N
-                        paramString());
-            }
-            T inst = getInstance();
-            Item<T> item = (inst != null)
-                           ? new LookupItem<T>(inst)
-                           : null;
-            return (item != null)
-                   ? Collections.<Item<T>>singletonList(item)
-                   : Collections.<Item<T>>emptyList();
-        }
-
-        @Override
-        protected Set<Class<? extends T>> allClassesImpl() {
-            if (LOG.isLoggable(FINEST)) {
-                LOG.log(FINEST,
-                        "allClasses({0}) - cache miss",                 //NOI18N
-                        paramString());
-            }
-            T inst = getInstance();
-            Class<? extends T> clazz = (inst != null)
-                                       ? (Class<? extends T>) inst.getClass()
-                                       : null;
-            return (clazz != null)
-                   ? Collections.<Class<? extends T>>singleton(clazz)
-                   : Collections.<Class<? extends T>>emptySet();
-        }
-
-        protected T getInstance() {
-            T currentInstance = instance;
-            if (currentInstance != UNKNOWN) {
-                if (LOG.isLoggable(FINEST)) {
-                    LOG.log(FINEST,
-                            "getInstance({0}) - cache HIT",             //NOI18N
-                            paramString());
-                }
-                return currentInstance;
-            }
-
-            return (instance = getInstanceImpl());
-        }
-
-        protected T getInstanceImpl() {
-            if (LOG.isLoggable(FINEST)) {
-                LOG.log(FINEST,
-                        "getInstance({0}) - cache miss",                //NOI18N
-                        paramString());
-            }
-            Object[] currData = SimpleLookup.this.data;
-            Object result = null;
-            for (Object o : currData) {
-                if (o == requestedInstance) {
-                    result = o;
-                    break;
-                }
-            }
-            return (T) result;
-        }
-
-        @Override
-        protected boolean updateData(boolean listenersRegistered) {
-            boolean dataChanged;
-
-            T oldInstance;
-            T newInstance;
-
-            oldInstance = instance;
-            if (listenersRegistered) {
-                newInstance = getInstanceImpl();
-                dataChanged = (newInstance != oldInstance);
-            } else {
-                dataChanged = true;
-                newInstance = UNKNOWN;
-            }
-            instance = newInstance;
-
-            return dataChanged;
-        }
-
-        @Override
-        protected String paramString() {
-            return "InstanceResult(0x"                                  //NOI18N
-                   + Integer.toHexString(System.identityHashCode(requestedInstance))
-                   + ')';
-        }
-
-    }
-
-    class TypeInstanceResult<T> extends InstanceResult<T> {
-
-        protected final Class<T> requestedType;
-
-        TypeInstanceResult(Class<T> requestedType, T requestedInstance) {
-            super(requestedInstance);
-            this.requestedType = requestedType;
-        }
-
-        @Override
-        protected T getInstanceImpl() {
-            if (LOG.isLoggable(FINEST)) {
-                LOG.log(FINEST,
-                        "getInstance({0}) - cache miss",                //NOI18N
-                        paramString());
-            }
-            Object[] currData = SimpleLookup.this.data;
-            Object result = null;
-            for (Object o : currData) {
-                if (o == requestedInstance) {
-                    if (requestedType.isInstance(o)) {
-                        result = o;
-                    }
-                    break;
-                }
-            }
-            return (T) result;
-        }
-
-        @Override
-        protected String paramString() {
-            StringBuilder buf = new StringBuilder(100);
-            buf.append("TypeInstanceResult(")                           //NOI18N
-               .append(requestedType.getSimpleName())
-               .append(", 0x")                                          //NOI18N
-               .append(Integer.toHexString(System.identityHashCode(requestedInstance)))
-               .append(')');
-            return buf.toString();
-        }
-
-    }
-
-    static class EmptyResult<T> extends Lookup.Result<T> {
-
-        @Override
-        public void addLookupListener(LookupListener l) {
-            //the data never change - no need to register/unregister currListeners
-        }
-
-        @Override
-        public void removeLookupListener(LookupListener l) {
-            //the data never change - no need to register/unregister currListeners
-        }
-
-        @Override
-        public Collection<? extends T> allInstances() {
-            return Collections.emptyList();
-        }
-
-    }
-
-    static class LookupItem<T> extends Lookup.Item<T> {
-
-        private final T instance;
-
-        LookupItem(T instance) {
-            this.instance = instance;
-        }
-
+        /** Get instance of registered object. If convertor is specified then
+         *  method InstanceLookup.Convertor.convertor is used and weak reference
+         * to converted object is saved.
+         * @return the instance of the object.
+         */
         @Override
         public T getInstance() {
-            return instance;
+            return obj;
         }
 
         @Override
-        public Class<? extends T> getType() {
-            return (Class<? extends T>) instance.getClass();
+        public boolean equals(Object o) {
+            if (o instanceof SimpleItem) {
+                return obj.equals(((SimpleItem) o).obj);
+            } else {
+                return false;
+            }
         }
 
+        @Override
+        public int hashCode() {
+            return obj.hashCode();
+        }
+
+        /** An identity of the item.
+         * @return string representing the item, that can be used for
+         *   persistance purposes to locate the same item next time
+         */
         @Override
         public String getId() {
-            return null;
+            return "IL[" + obj.toString(); // NOI18N
         }
 
+        /** Getter for display name of the item.
+         */
         @Override
         public String getDisplayName() {
-            return instance.toString();
+            return obj.toString();
         }
 
+        /** Method that can test whether an instance of a class has been created
+         * by this item.
+         *
+         * @param obj the instance
+         * @return if the item has already create an instance and it is the same
+         *  as obj.
+         */
+        @Override
+        protected boolean creatorOf(Object obj) {
+            return obj == this.obj;
+        }
+
+        /** The class of this item.
+         * @return the correct class
+         */
+        @SuppressWarnings("unchecked")
+        @Override
+        public Class<? extends T> getType() {
+            return (Class<? extends T>)obj.getClass();
+        }
     }
 
 }
