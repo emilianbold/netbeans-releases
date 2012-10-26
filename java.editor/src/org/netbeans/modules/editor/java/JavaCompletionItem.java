@@ -1809,18 +1809,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             if (Utilities.inAnonymousOrLocalClass(tp)) {
                                 copy.toPhase(Phase.RESOLVED);
                             }
-                            int idx = 0;
-                            for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
-                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < embeddedOffset) {
-                                    idx++;
-                                } else {
-                                    break;
-                                }
-                            }
                             if (implement) {
-                                GeneratorUtils.generateAbstractMethodImplementation(copy, tp, ee, idx);
+                                GeneratorUtils.generateAbstractMethodImplementation(copy, tp, ee, embeddedOffset);
                             } else {
-                                GeneratorUtils.generateMethodOverride(copy, tp, ee, idx);
+                                GeneratorUtils.generateMethodOverride(copy, tp, ee, embeddedOffset);
                             }
                         }
                     }
@@ -1980,19 +1972,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             if (Utilities.inAnonymousOrLocalClass(tp)) {
                                 copy.toPhase(Phase.RESOLVED);
                             }
-                            int idx = 0;
-                            for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
-                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < embeddedOffset) {
-                                    idx++;
-                                } else {
-                                    break;
-                                }
-                            }
                             TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
                             if (te != null) {
                                 GeneratorUtilities gu = GeneratorUtilities.get(copy);
                                 MethodTree method = setter ? gu.createSetter(te, ve) : gu.createGetter(te, ve);
-                                ClassTree decl = copy.getTreeMaker().insertClassMember((ClassTree)tp.getLeaf(), idx, method);
+                                ClassTree decl = GeneratorUtils.insertClassMember(copy, (ClassTree)tp.getLeaf(), method, embeddedOffset);
                                 copy.rewrite(tp.getLeaf(), decl);
                             }
                         }
@@ -3295,19 +3279,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             for (ElementHandle<? extends Element> handle : fieldHandles) {
                                 fieldElements.add((VariableElement)handle.resolve(copy));
                             }
-                            int idx = 0;
-                            for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
-                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < embeddedOffset) {
-                                    idx++;
-                                } else {
-                                    break;
-                                }
-                            }
                             ExecutableElement superConstructor = superConstructorHandle != null ? superConstructorHandle.resolve(copy) : null;
-                            TreeMaker make = copy.getTreeMaker();
                             ClassTree clazz = (ClassTree) tp.getLeaf();
                             GeneratorUtilities gu = GeneratorUtilities.get(copy);
-                            ClassTree decl = make.insertClassMember(clazz, idx, gu.createConstructor(parent, fieldElements, superConstructor)); //NOI18N
+                            ClassTree decl = GeneratorUtils.insertClassMember(copy, clazz, gu.createConstructor(parent, fieldElements, superConstructor), embeddedOffset);
                             copy.rewrite(clazz, decl);
                         }
                     }
