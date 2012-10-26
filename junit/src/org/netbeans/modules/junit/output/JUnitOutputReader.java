@@ -617,7 +617,11 @@ final class JUnitOutputReader {
             switch(state){
                 case SUITE_STARTED:
                 case TESTCASE_STARTED:
-                    report.setAborted(true);
+		    if (report.getTotalTests() == report.getPassed() + report.getErrors() + report.getFailures()) {
+			Logger.getLogger(JUnitOutputReader.class.getName()).log(Level.WARNING, "Ensure that the output-stream is not closed.");
+		    } else {
+			report.setAborted(true);
+		    }
                 default:
                     manager.displayReport(testSession, report, true);
             }
