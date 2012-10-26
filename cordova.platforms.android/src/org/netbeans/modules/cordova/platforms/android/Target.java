@@ -68,7 +68,7 @@ public class Target {
     public static List<Target> parse(String output) throws IOException {
         BufferedReader r = new BufferedReader(new StringReader(output));
         
-        Pattern pattern = Pattern.compile("id: ([\\d]*) or \"([^\"]+)\" *");
+        Pattern pattern = Pattern.compile("id: ([\\d]*) or \"([^\"]+)\" *"); //NOI18N
         
         ArrayList<Target> result = new ArrayList<Target>();
         //ignore first 2 lines
@@ -88,7 +88,7 @@ public class Target {
                 current.id = Integer.parseInt(m.group(1));
                 current.name = m.group(2);
             } else {
-                if (line.contains("---------")) {
+                if (line.contains("---------")) { //NOI18N
                     result.add(current);
                     current = new Target();
                 } else {
@@ -105,6 +105,6 @@ public class Target {
 
     @Override
     public String toString() {
-        return "Target{" + "id=" + id + ", name=" + name + '}';
+        return "Target{" + "id=" + id + ", name=" + name + '}'; //NOI18N
     }
 }

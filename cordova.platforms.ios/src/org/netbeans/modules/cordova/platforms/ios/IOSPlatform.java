@@ -55,7 +55,7 @@ public class IOSPlatform {
     
     private static IOSPlatform instance;
     
-    public static final String TYPE = "ios";
+    public static final String TYPE = "ios"; //NOI18N
     
     private IOSPlatform() {
     }
@@ -68,7 +68,7 @@ public class IOSPlatform {
     }
     
     public Collection<SDK> getSDKs() throws IOException {
-        String listSdks = ProcessUtils.callProcess("xcodebuild", "-showsdks");
+        String listSdks = ProcessUtils.callProcess("xcodebuild", "-showsdks"); //NOI18N
         return SDK.parse(listSdks);
     }
 }

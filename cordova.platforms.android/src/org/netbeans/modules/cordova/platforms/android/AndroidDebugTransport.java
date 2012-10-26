@@ -44,7 +44,6 @@ package org.netbeans.modules.cordova.platforms.android;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.netbeans.modules.cordova.*;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.netserver.api.ProtocolDraft;
 import org.netbeans.modules.netserver.api.WebSocketClient;
@@ -59,13 +58,13 @@ public class AndroidDebugTransport extends MobileDebugTransport {
 
     @Override
     public String getConnectionName() {
-        return "Android";
+        return "Android"; //NOI18N
     }
 
     @Override
     public WebSocketClient createWebSocket(WebSocketReadHandler handler) throws IOException {
         try {
-            URI urI = new URI("ws://localhost:9222/devtools/page/1");
+            URI urI = new URI("ws://localhost:9222/devtools/page/1"); //NOI18N
             return new WebSocketClient(urI, ProtocolDraft.getRFC(), handler);
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
@@ -74,7 +73,7 @@ public class AndroidDebugTransport extends MobileDebugTransport {
 
     @Override
     public String getVersion() {
-        return "1.0";
+        return "1.0"; //NOI18N
     }
 
 }

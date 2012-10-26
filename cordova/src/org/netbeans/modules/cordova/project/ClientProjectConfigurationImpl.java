@@ -136,7 +136,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
                 p.load(is);
                 String id = configFile.getName();
                 String label = p.getProperty("display.name"); // NOI18N
-                String type = p.getProperty("type");
+                String type = p.getProperty("type"); //NOI18N
                 return new ClientProjectConfigurationImpl(proj, configFile, id, label != null ? label : id, type, p);
             } finally {
                 is.close();

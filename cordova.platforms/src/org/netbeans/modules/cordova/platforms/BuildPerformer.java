@@ -48,12 +48,12 @@ import org.netbeans.api.project.Project;
  * @author Jan Becicka
  */
 public interface BuildPerformer {
-    public static final String BUILD_ANDROID = "build-android";
-    public static final String BUILD_IOS = "build-ios";
-    public static final String CLEAN_ANDROID = "clean-android";
-    public static final String CLEAN_IOS = "clean-ios";
-    public static final String RUN_ANDROID = "sim-android";
-    public static final String RUN_IOS = "sim-ios";
+    public static final String BUILD_ANDROID = "build-android"; //NOI18N
+    public static final String BUILD_IOS = "build-ios"; //NOI18N
+    public static final String CLEAN_ANDROID = "clean-android"; //NOI18N
+    public static final String CLEAN_IOS = "clean-ios"; //NOI18N
+    public static final String RUN_ANDROID = "sim-android"; //NOI18N
+    public static final String RUN_IOS = "sim-ios"; //NOI18N
     
     public void perform(String target, Project p);
     

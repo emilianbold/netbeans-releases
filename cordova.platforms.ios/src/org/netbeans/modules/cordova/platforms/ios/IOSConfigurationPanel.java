@@ -51,9 +51,8 @@ import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -77,7 +76,7 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
                 break;
             }
         }
-        final String deviceProp = config.getProperty("vd");
+        final String deviceProp = config.getProperty("vd"); //NOI18N
         if (deviceProp !=null)
             virtualDeviceCombo.setSelectedItem(Device.valueOf(deviceProp));
     }
@@ -133,18 +132,19 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
         initComponents();
         virtualDeviceCombo.setModel(new DefaultComboBoxModel(new Object[]{Device.IPHONE, Device.IPHONE_RETINA, Device.IPAD, Device.IPAD_RETINA}));
         virtualDeviceCombo.setRenderer(new DeviceRenderer());
-        String device = config.getProperty("device");
-        if ("device".equals(device)) {
-            deviceCombo.setSelectedIndex("device".equals(device)?1:0);
+        String device = config.getProperty("device"); //NOI18N
+        if ("device".equals(device)) { //NOI18N
+            deviceCombo.setSelectedIndex("device".equals(device)?1:0); //NOI18N
         }
-        setCombosVisible(!"device".equals(device));
+        setCombosVisible(!"device".equals(device)); //NOI18N
 
         
     }
 
+    @NbBundle.Messages("LBL_PleaseWait=Please Wait...")
     private void setCombosVisible(boolean visible) {
         if (visible) {
-        sdkCombo.setModel(new DefaultComboBoxModel(new Object[]{"Please Wait..."}));
+        sdkCombo.setModel(new DefaultComboBoxModel(new Object[]{Bundle.LBL_PleaseWait()}));
         sdkCombo.setEnabled(false);
         RP.post(new Runnable() {
             @Override
@@ -264,21 +264,21 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
     private void virtualDeviceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_virtualDeviceComboActionPerformed
         final Device val = (Device)virtualDeviceCombo.getSelectedItem();
         if (val != null)
-            config.putProperty("vd", val.name());
+            config.putProperty("vd", val.name()); //NOI18N
     }//GEN-LAST:event_virtualDeviceComboActionPerformed
 
     private void deviceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceComboActionPerformed
         if (deviceCombo.getSelectedIndex() == 0) {
-            config.putProperty("device", "emulator");
+            config.putProperty("device", "emulator"); //NOI18N
             setCombosVisible(true);
         } else {
-            config.putProperty("device", "device");
+            config.putProperty("device", "device"); //NOI18N
             setCombosVisible(false);
         }
     }//GEN-LAST:event_deviceComboActionPerformed
 
     private void debuggerCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debuggerCheckBoxActionPerformed
-        config.putProperty("debug.enabled", Boolean.toString(debuggerCheckBox.isSelected()));
+        config.putProperty("debug.enabled", Boolean.toString(debuggerCheckBox.isSelected())); //NOI18N
     }//GEN-LAST:event_debuggerCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

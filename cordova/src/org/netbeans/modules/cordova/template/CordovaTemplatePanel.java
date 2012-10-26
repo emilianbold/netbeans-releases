@@ -53,14 +53,14 @@ public class CordovaTemplatePanel extends javax.swing.JPanel {
 
     private CordovaTemplate.CordovaExtender ext;
     
-    public static String PROP_EXT_ENABLED = "PROP_EXT_ENABLED";
+    public static String PROP_EXT_ENABLED = "PROP_EXT_ENABLED";//NOI18N
     
     /**
      * Creates new form CordovaTemplatePanel
      */
     public CordovaTemplatePanel(CordovaTemplate.CordovaExtender ext) {
         this.ext = ext;
-        setName(NbBundle.getMessage(CordovaTemplatePanel.class, "LBL_CordovaSetup"));
+        setName(NbBundle.getMessage(CordovaTemplatePanel.class, "LBL_CordovaSetup"));//NOI18N
         initComponents();
         update();
     }
@@ -181,7 +181,7 @@ public class CordovaTemplatePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void platformSetupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformSetupActionPerformed
-        OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+        OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");//NOI18N
     }//GEN-LAST:event_platformSetupActionPerformed
 
     private void phonegapCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_phonegapCheckBoxStateChanged

@@ -59,7 +59,7 @@ public class Device {
     public static Collection<Device> parse(String output) throws IOException {
         BufferedReader r = new BufferedReader(new StringReader(output));
 
-        Pattern pattern = Pattern.compile("([-\\w]+)\\s+([\\w]+) *");
+        Pattern pattern = Pattern.compile("([-\\w]+)\\s+([\\w]+) *"); //NOI18N
 
         ArrayList<Device> result = new ArrayList<Device>();
         //ignore first line
@@ -83,7 +83,7 @@ public class Device {
     }
     
     public boolean isEmulator() {
-        return name.startsWith("emulator");
+        return name.startsWith("emulator"); //NOI18N
     }
 
     public String getName() {
@@ -94,7 +94,7 @@ public class Device {
 
     @Override
     public String toString() {
-        return "Device{" + "name=" + name + ", emulator: " + isEmulator() + '}';
+        return "Device{" + "name=" + name + ", emulator: " + isEmulator() + '}'; //NOI18N
     }
     
 }

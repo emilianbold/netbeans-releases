@@ -52,11 +52,13 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Becicka
  */
+@NbBundle.Messages("ERR_Title=Error")
 public class AndroidActionProvider implements ActionProvider {
 
     private final Project p;
@@ -81,7 +83,7 @@ public class AndroidActionProvider implements ActionProvider {
         if (checkAndroid!=null) {
                 NotifyDescriptor not = new NotifyDescriptor(
                         checkAndroid, 
-                        "Error", 
+                        Bundle.ERR_Title(), 
                         NotifyDescriptor.OK_CANCEL_OPTION, 
                         NotifyDescriptor.ERROR_MESSAGE,
                         null, 
@@ -102,7 +104,7 @@ public class AndroidActionProvider implements ActionProvider {
             while (checkDevices !=null) {
                 NotifyDescriptor not = new NotifyDescriptor(
                         checkDevices, 
-                        "Error", 
+                        Bundle.ERR_Title(), 
                         NotifyDescriptor.DEFAULT_OPTION, 
                         NotifyDescriptor.ERROR_MESSAGE,
                         null, 
@@ -124,33 +126,38 @@ public class AndroidActionProvider implements ActionProvider {
         return true;
     }
 
+    @NbBundle.Messages({
+            "ERR_ConnectAndroidDevice=Please connect Android device and enable USB debugging.",
+            "ERR_RunAndroidEmulator=Please run Android Emulator.",
+            "ERR_Unknown=Unknown Error."})
     private String checkDevices(Project p) {
         PropertyProvider config = (PropertyProvider) p.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
         try {
-            if ("device".equals(config.getProperty("device"))) {
+            if ("device".equals(config.getProperty("device"))) { //NOI18N
                 for (Device dev : AndroidPlatform.getDefault().getDevices()) {
                     if (!dev.isEmulator()) {
                         return null;
                     }
                 }
-                return "Please connect Android device and enable USB debugging.";
+                return Bundle.ERR_ConnectAndroidDevice();
             } else {
                 for (Device dev : AndroidPlatform.getDefault().getDevices()) {
                     if (dev.isEmulator()) {
                         return null;
                     }
                 }
-                return "Please run Android Emulator";
+                return Bundle.ERR_RunAndroidEmulator();
             }
         } catch (IOException iOException) {
             Exceptions.printStackTrace(iOException);
         }
-        return "Unknown Error";
+        return Bundle.ERR_Unknown();
     }
-
+    
+    @NbBundle.Messages("ERR_AndroidNotConfigured=Android Platform is not configured.\nConfigure?")
     private String checkAndroid() {
         if (!AndroidPlatform.getDefault().isReady()) {
-            return "Android Platform is not configured.\nConfigure?";
+            return Bundle.ERR_AndroidNotConfigured();
         }
         return null;
     }

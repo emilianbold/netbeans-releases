@@ -66,7 +66,7 @@ public class AVD {
     public static Collection<AVD> parse(String output) throws IOException {
         BufferedReader r = new BufferedReader(new StringReader(output));
         
-        Pattern pattern = Pattern.compile(" *([\\w]*): (.*)");
+        Pattern pattern = Pattern.compile(" *([\\w]*): (.*)"); //NOI18N
         
         ArrayList<AVD> result = new ArrayList<AVD>();
         //ignore first line
@@ -82,14 +82,14 @@ public class AVD {
             }
             Matcher m = pattern.matcher(line);
             if (m.matches()) {
-                if ("Name".equals(m.group(1))) {
+                if ("Name".equals(m.group(1))) { //NOI18N
                     current.name = m.group(2);
                 } else {
                     current.props.put(m.group(1), m.group(2));
                     lastProp = m.group(1);
                 }
             } else {
-                if (line.contains("---------")) {
+                if (line.contains("---------")) { //NOI18N
                     result.add(current);
                     current = new AVD();
                 } else {
@@ -106,6 +106,6 @@ public class AVD {
 
     @Override
     public String toString() {
-        return "AVD{" + "name=" + name + ", props=" + props + '}';
+        return "AVD{" + "name=" + name + ", props=" + props + '}'; //NOI18N
     }
 }

@@ -69,10 +69,10 @@ public class CordovaPerformer implements BuildPerformer {
     
     @Override
     public void perform(String target, Project project) {
-        FileObject buildFo = project.getProjectDirectory().getFileObject("nbproject/build.xml");
+        FileObject buildFo = project.getProjectDirectory().getFileObject("nbproject/build.xml"); //NOI18N
         if (buildFo == null) {
             generateBuildScripts(project);
-            buildFo = project.getProjectDirectory().getFileObject("nbproject/build.xml");
+            buildFo = project.getProjectDirectory().getFileObject("nbproject/build.xml");//NOI18N
         }
         try { 
             ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
@@ -87,28 +87,28 @@ public class CordovaPerformer implements BuildPerformer {
         ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
         ClientProjectConfigurationImpl activeConfiguration = (ClientProjectConfigurationImpl) provider.getActiveConfiguration();
         Properties props = new Properties();
-        props.put("cordova.home", CordovaPlatform.getDefault().getSdkLocation());
-        props.put("cordova.version", CordovaPlatform.getDefault().getVersion());
-        String debug = activeConfiguration.getProperty("debug.enable");
+        props.put("cordova.home", CordovaPlatform.getDefault().getSdkLocation());//NOI18N
+        props.put("cordova.version", CordovaPlatform.getDefault().getVersion());//NOI18N
+        String debug = activeConfiguration.getProperty("debug.enable");//NOI18N
         if (debug == null) {
-            debug = "true";
+            debug = "true";//NOI18N
         }
-        props.put("debug.enable", debug);
+        props.put("debug.enable", debug);//NOI18N
         //workaround for some strange behavior of ant execution in netbeans
-        props.put("env.DISPLAY", ":0.0");
+        props.put("env.DISPLAY", ":0.0");//NOI18N
         if (activeConfiguration.getType().equals(AndroidPlatform.TYPE)) {
-            props.put("android.build.target", AndroidPlatform.getDefault().getPrefferedTarget());
-            props.put("android.sdk.home", AndroidPlatform.getDefault().getSdkLocation());
-            props.put("android.target.device.arg", "device".equals(activeConfiguration.getProperty("device"))?"-d":"-e");
+            props.put("android.build.target", AndroidPlatform.getDefault().getPrefferedTarget());//NOI18N
+            props.put("android.sdk.home", AndroidPlatform.getDefault().getSdkLocation());//NOI18N
+            props.put("android.target.device.arg", "device".equals(activeConfiguration.getProperty("device"))?"-d":"-e");//NOI18N
         } else if (activeConfiguration.getType().equals(IOSPlatform.TYPE)) {
-            props.put("ios.sim.exec", InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova", false).getPath());
+            props.put("ios.sim.exec", InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova", false).getPath());//NOI18N
             String virtualDevice = activeConfiguration.getProperty("vd");
             if (virtualDevice!=null) {
                 Device dev = Device.valueOf(virtualDevice);
-                props.put("ios.device.args", dev.getArgs());
+                props.put("ios.device.args", dev.getArgs());//NOI18N
             } else {
                 //default
-                props.put("ios.device.args", Device.IPHONE.getArgs());
+                props.put("ios.device.args", Device.IPHONE.getArgs());//NOI18N
             }
         }
         return props;
@@ -116,8 +116,8 @@ public class CordovaPerformer implements BuildPerformer {
 
     private void generateBuildScripts(Project project) {
         try {
-            createScript(project, "build.xml", "nbproject/build.xml");
-            createProperties(project, "build.properties", "nbproject/build.properties");
+            createScript(project, "build.xml", "nbproject/build.xml");//NOI18N
+            createProperties(project, "build.properties", "nbproject/build.properties");//NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -138,16 +138,16 @@ public class CordovaPerformer implements BuildPerformer {
     private void createProperties(Project project, String buildproperties, String nbprojectbuildproperties) {
         Properties props = new Properties();
         try {
-            InputStream is = CordovaPerformer.class.getResourceAsStream("build.properties");
+            InputStream is = CordovaPerformer.class.getResourceAsStream("build.properties");//NOI18N
             try {
                 props.load(is);
             } finally {
                 is.close();
             }
-            props.put("project.name", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));
-            props.put("android.project.activity", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));
-            props.put("android.project.package","org.netbeans");
-            props.put("android.project.package.folder","org/netbeans");
+            props.put("project.name", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));//NOI18N
+            props.put("android.project.activity", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));//NOI18N
+            props.put("android.project.package","org.netbeans");//NOI18N
+            props.put("android.project.package.folder","org/netbeans");//NOI18N
             FileObject p= FileUtil.createData(project.getProjectDirectory(), nbprojectbuildproperties);
             OutputStream outputStream = p.getOutputStream();
             try {

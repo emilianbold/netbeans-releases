@@ -59,13 +59,13 @@ public class IOSDebugTransport extends MobileDebugTransport {
 
     @Override
     public String getConnectionName() {
-        return "iPhone";
+        return "iPhone"; //NOI18N
     }
 
     @Override
     public WebSocketClient createWebSocket(WebSocketReadHandler handler) throws IOException {
         try {
-            URI urI = new URI("ws://[::1]:9999/devtools/page/1");
+            URI urI = new URI("ws://[::1]:9999/devtools/page/1"); //NOI18N
             return new WebSocketClient(urI, ProtocolDraft.getProtocol(76), handler);
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
@@ -74,12 +74,12 @@ public class IOSDebugTransport extends MobileDebugTransport {
 
     @Override
     public String translate(String toString) {
-        return super.translate(toString).replaceAll("requestChildNodes", "getChildNodes");
+        return super.translate(toString).replaceAll("requestChildNodes", "getChildNodes"); //NOI18N
     }
 
     @Override
     public String getVersion() {
-        return "iphone";
+        return "iphone"; //NOI18N
     }
 
     

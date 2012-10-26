@@ -115,7 +115,7 @@ public abstract class MobileDebugTransport implements TransportImplementation, W
     @Override
     public void read(SelectionKey key, byte[] message, Integer dataType) {
         final String string;
-        string = new String(message, Charset.forName("UTF-8")).trim();
+        string = new String(message, Charset.forName("UTF-8")).trim(); //NOI18N
         try {
             final Object parse = JSONValue.parseWithException(string);
             callBack.handleResponse(new Response((JSONObject) parse));
@@ -133,17 +133,17 @@ public abstract class MobileDebugTransport implements TransportImplementation, W
     public abstract WebSocketClient createWebSocket(WebSocketReadHandler handler) throws IOException;
 
     public String translate(String toString) {
-        if (toString.contains("Debugger.setBreakpointByUrl")) {
+        if (toString.contains("Debugger.setBreakpointByUrl")) { //NOI18N
             JSONObject json = (JSONObject) JSONValue.parse(toString);
-            JSONObject params = ((JSONObject) json.get("params"));
-            String url = (String) params.get("url");
+            JSONObject params = ((JSONObject) json.get("params")); //NOI18N
+            String url = (String) params.get("url"); //NOI18N
             
-            String suffix = url.substring(url.indexOf("ClientSideProject6") + "ClientSideProject6/".length(), url.length());
+            String suffix = url.substring(url.indexOf("ClientSideProject6") + "ClientSideProject6/".length(), url.length()); //NOI18N
 
                      
-            String newUrl = indexHtmlLocation.substring(0, indexHtmlLocation.length()-"index.html".length());
+            String newUrl = indexHtmlLocation.substring(0, indexHtmlLocation.length()-"index.html".length()); //NOI18N
             
-            params.put("url", newUrl + suffix);
+            params.put("url", newUrl + suffix); //NOI18N
             System.out.println(json.toJSONString());
             return json.toJSONString();
         }

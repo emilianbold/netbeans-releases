@@ -47,10 +47,10 @@ package org.netbeans.modules.cordova.platforms.ios;
  */
 public enum Device {
     
-    IPHONE("iPhone", "--family iphone"),
-    IPHONE_RETINA("iPhone (Retina)", "--family iphone --retina"),
-    IPAD("iPad", "--family ipad"),
-    IPAD_RETINA("iPad (Retina)", "--family ipad --retina");
+    IPHONE("iPhone", "--family iphone"), //NOI18N
+    IPHONE_RETINA("iPhone (Retina)", "--family iphone --retina"), //NOI18N
+    IPAD("iPad", "--family ipad"), //NOI18N
+    IPAD_RETINA("iPad (Retina)", "--family ipad --retina"); //NOI18N
     
     String displayName;
     String args;

@@ -78,8 +78,8 @@ public class AndroidPlatform {
     
     private static AndroidPlatform instance;
     
-    private static String ANDROID_SDK_ROOT_PREF = "android.sdk.home";
-    public static final String TYPE = "android";
+    private static String ANDROID_SDK_ROOT_PREF = "android.sdk.home"; //NOI18N
+    public static final String TYPE = "android"; //NOI18N
 
     private AndroidPlatform() {
     }
@@ -124,28 +124,28 @@ public class AndroidPlatform {
     
     public Collection<AVD> getAVDs() throws IOException {
         assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/tools/android", "list", "avd");
+        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/tools/android", "list", "avd"); //NOI18N
         return AVD.parse(avdString);
     }
     
 
     public List<Target> getTargets() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/tools/android", "list", "targets");
+        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/tools/android", "list", "targets");//NOI18N
         return Target.parse(avdString);
     }
     
     private final HashSet<String> targets = new HashSet<String>(Arrays.asList(new String[]{
-            "android-7",
-            "android-8",
-            "android-9",
-            "android-10",
-            "android-11",
-            "android-12",
-            "android-13",
-            "android-14",
-            "android-15",
-            "android-16"}));
+            "android-7", //NOI18N
+            "android-8", //NOI18N
+            "android-9", //NOI18N
+            "android-10", //NOI18N
+            "android-11", //NOI18N
+            "android-12", //NOI18N
+            "android-13", //NOI18N
+            "android-14", //NOI18N
+            "android-15", //NOI18N
+            "android-16"})); //NOI18N
     
     
     public String getPrefferedTarget() {
@@ -166,21 +166,21 @@ public class AndroidPlatform {
     
     public Collection<Device> getDevices() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "devices");
+        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "devices"); //NOI18N
         Collection<Device> devices = Device.parse(avdString);
         if (devices.isEmpty()) {
             //maybe adb is just down. try to restart adb
-            ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "kill-server");
-            ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "start-server");
+            ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "kill-server"); //NOI18N
+            ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "start-server"); //NOI18N
         }
-        avdString = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "devices");
+        avdString = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "devices"); //NOI18N
         devices = Device.parse(avdString);
         return devices;
     }
     
     
     public ExecutorTask buildProject(File dir, String... targets) throws IOException {
-        File build = new File(dir.getAbsolutePath() + File.separator + "build.xml");
+        File build = new File(dir.getAbsolutePath() + File.separator + "build.xml"); //NOI18N
         FileObject buildFo = FileUtil.toFileObject(build);
         return ActionUtils.runTarget(buildFo, targets, null);
     }
@@ -223,8 +223,8 @@ public class AndroidPlatform {
         try {
             String value;
             for(;;) {
-                value = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "-e", "wait-for-device", "shell", "getprop", "init.svc.bootanim");
-                if ("stopped".equals(value.trim())) {
+                value = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "-e", "wait-for-device", "shell", "getprop", "init.svc.bootanim"); //NOI18N
+                if ("stopped".equals(value.trim())) { //NOI18N
                     return true;
                 }
                 try {
@@ -244,7 +244,7 @@ public class AndroidPlatform {
     public void manageAVDs() {
         assert !SwingUtilities.isEventDispatchThread();
         try {
-            ProcessUtils.callProcess(getSdkLocation() + "/tools/android", "avd");
+            ProcessUtils.callProcess(getSdkLocation() + "/tools/android", "avd"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

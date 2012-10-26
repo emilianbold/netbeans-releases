@@ -62,7 +62,7 @@ public class SDK {
     public static Collection<SDK> parse(String output) throws IOException {
         BufferedReader r = new BufferedReader(new StringReader(output));
         
-        Pattern pattern = Pattern.compile("(.*)-sdk(.*)");
+        Pattern pattern = Pattern.compile("(.*)-sdk(.*)"); //NOI18N
         
         ArrayList<SDK> result = new ArrayList<SDK>();
         //ignore first line
@@ -70,7 +70,7 @@ public class SDK {
         String line = null;
         do {
             line = r.readLine();
-        } while (!line.startsWith("iOS SDKs"));
+        } while (!line.startsWith("iOS SDKs")); //NOI18N
       
         while (line !=null && r.ready()) {
             Matcher m = pattern.matcher(line);
@@ -100,6 +100,6 @@ public class SDK {
 
     @Override
     public String toString() {
-        return "SDK{" + "name=" + name + ", identifier=" + identifier + '}';
+        return "SDK{" + "name=" + name + ", identifier=" + identifier + '}'; //NOI18N
     }
 }

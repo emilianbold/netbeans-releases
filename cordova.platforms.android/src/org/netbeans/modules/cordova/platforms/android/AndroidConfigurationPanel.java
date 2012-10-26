@@ -53,6 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -99,16 +100,17 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
     public AndroidConfigurationPanel(final PropertyProvider config) {
         this.config = config;
         initComponents();
-        String device = config.getProperty("device");
-        if ("device".equals(device)) {
-            deviceCombo.setSelectedIndex("device".equals(device)?1:0);
+        String device = config.getProperty("device"); //NOI18N
+        if ("device".equals(device)) { //NOI18N
+            deviceCombo.setSelectedIndex("device".equals(device)?1:0); //NOI18N
         }
-        setAVDComboVisible(!"device".equals(device));
+        setAVDComboVisible(!"device".equals(device)); //NOI18N
     }
 
+    @NbBundle.Messages("LBL_PleaseWait=Please Wait...")
     private void setAVDComboVisible(boolean visible) {
         if (visible) {
-            avdCombo.setModel(new DefaultComboBoxModel(new Object[]{"Please Wait..."}));
+            avdCombo.setModel(new DefaultComboBoxModel(new Object[]{Bundle.LBL_PleaseWait()}));
             avdCombo.setEnabled(false);
             RP.post(new Runnable() {
                 @Override
@@ -136,7 +138,7 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
                 final AVD[] avds = (AVD[]) avDs.toArray(new AVD[avDs.size()]);
                 avdCombo.setModel(new DefaultComboBoxModel(avds));
                 for (AVD avd : avds) {
-                    if (avd.getName().equals(config.getProperty("device"))) {
+                    if (avd.getName().equals(config.getProperty("device"))) {//NOI18N
                         avdCombo.setSelectedItem(avd);
                         break;
                     }
@@ -262,21 +264,21 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_manageButtonActionPerformed
 
     private void avdComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_avdComboActionPerformed
-        config.putProperty("avd", ((AVD)avdCombo.getSelectedItem()).getName());
+        config.putProperty("avd", ((AVD)avdCombo.getSelectedItem()).getName()); //NOI18N
     }//GEN-LAST:event_avdComboActionPerformed
 
     private void deviceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceComboActionPerformed
         if (deviceCombo.getSelectedIndex() == 0) {
-            config.putProperty("device", "emulator");
+            config.putProperty("device", "emulator"); //NOI18N
             setAVDComboVisible(true);
         } else {
-            config.putProperty("device", "device");
+            config.putProperty("device", "device"); //NOI18N
             setAVDComboVisible(false);
         }
     }//GEN-LAST:event_deviceComboActionPerformed
 
     private void debuggerCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debuggerCheckBoxActionPerformed
-        config.putProperty("debug.enabled", Boolean.toString(debuggerCheckBox.isSelected()));
+        config.putProperty("debug.enabled", Boolean.toString(debuggerCheckBox.isSelected())); //NOI18N
     }//GEN-LAST:event_debuggerCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

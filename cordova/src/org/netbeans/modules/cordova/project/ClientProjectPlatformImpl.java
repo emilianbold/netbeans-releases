@@ -95,7 +95,7 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
         }
 
         private void update(FileEvent ev) {
-            LOGGER.log(Level.FINEST, "Received {0}", ev);
+            LOGGER.log(Level.FINEST, "Received {0}", ev); 
             Set<String> oldConfigs = configs != null ? configs.keySet() : Collections.<String>emptySet();
             configDir = p.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
             if (configDir != null) {
@@ -171,8 +171,8 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
     @Override
     public String createConfiguration(String configurationType, String configurationName) {
         EditableProperties props = new EditableProperties(true);
-        props.put("type", configurationType);
-        props.put("display.name", configurationName);
+        props.put("type", configurationType); //NOI18N
+        props.put("display.name", configurationName); //NOI18N
         FileObject conf;
         try {
             conf = ConfigUtils.createConfigFile(p.getProjectDirectory(), configurationType, props);
