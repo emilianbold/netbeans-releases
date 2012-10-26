@@ -50,8 +50,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,7 +91,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
     private Connection connection;
     private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("golden");
     private static final Logger LOGGER = Logger.getLogger(RestTestBase.class.getName());
-    private static boolean resourceConfDialogClosed = false;
+    private static List<String> resourceConfDialogClosed = new ArrayList<String>();
 
     /**
      * Enum type to hold supported Mime Types
@@ -404,7 +406,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
     }
     
     protected void closeResourcesConfDialog() {
-        if (!resourceConfDialogClosed && getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
+        if (!resourceConfDialogClosed.contains(getProjectName()) && getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
             new Thread("Close REST Resources Configuration dialog") {
                 private boolean found = false;
                 private static final String dlgLbl = "REST Resources Configuration";
@@ -422,7 +424,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
                         if (null != dlg) {
                             found = true;
                             new NbDialogOperator(dlg).ok();
-                            resourceConfDialogClosed = true;
+                            resourceConfDialogClosed.add(getProjectName());
                         }
                     }
                 }
