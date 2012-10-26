@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-{
-  "name": "__MSG__pluginName__",
-  "manifest_version": 2,
 
-  "version": "0.5.2",
+window.addEventListener('load', function() {
+    I18n.pageTitle();
+    // texts
+    I18n.element('title');
+    I18n.element('info');
+    I18n.element('rerun');
+    I18n.element('chromeIssue');
+}, false);
 
-  "background": {
-    "page": "html/main.html"
-  },
-
-  "options_page": "html/options.html",
-
-  "page_action": {
-    "default_icon": "img/netbeans16.png",
-    "default_title": "Open NetBeans actions",
-    "default_popup": "html/popup.html"
-  },
-
-  "permissions": [
-    "contextMenus",
-    "tabs",
-    "debugger",
-    "<all_urls>" /* content scripts (for window resizing) */
-  ],
-
-  "content_security_policy": "default-src 'self'; connect-src ws://127.0.0.1:8008/",
-
-  "icons": {
-    "16": "img/netbeans16.png",
-    "48": "img/netbeans48.png",
-    "128": "img/netbeans128.png"
-  },
-
-  "default_locale": "en"
-
-}
