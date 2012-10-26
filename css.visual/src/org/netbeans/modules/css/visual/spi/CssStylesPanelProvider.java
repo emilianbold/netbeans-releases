@@ -41,27 +41,48 @@
  */
 package org.netbeans.modules.css.visual.spi;
 
+import java.util.Collection;
 import javax.swing.JComponent;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
+ * Representation of the CssStyles window named panel.
+ * 
+ * Instance to be registered in global lookup.
  *
  * @author marekfukala
  */
 public interface CssStylesPanelProvider {
     
     /**
-     * Unique system id for the panel.
+     * Gets a collection of mimetypes to which this panel provider should be bound.
+     */
+    public Collection<String> getMimeTypes();
+    
+    /**
+     * Gets an unique system id for the panel. 
+     * 
+     * Not presented in UI.
      */
     public String getPanelID();
 
     /**
-     * Displayname which shows in the toolbar.
+     * Gets a display name which is show in the toolbar.
      */
     public String getPanelDisplayName();
     
     /**
-     * The content.
+     * Gets the content component.
+     * 
+     * Called just once per IDE session when the panel content is about to be 
+     * shown in the UI for the first time.
+     * 
+     * The implementor should listen on the lookup content and respond according upon changes.
+     * An instance of {@link FileObject} is updated in the lookup as the edited file changes.
+     * 
+     * @param lookup instance of {@link Lookup} with some context object. 
      */
-    public JComponent getContent();
+    public JComponent getContent(Lookup lookup);
     
 }

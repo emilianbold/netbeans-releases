@@ -53,8 +53,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cordova.CordovaPlatform;
-import org.netbeans.modules.cordova.android.AndroidPlatform;
-import org.netbeans.modules.cordova.ios.IOSPlatform;
+import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
+import org.netbeans.modules.cordova.platforms.ios.IOSPlatform;
 import org.netbeans.modules.cordova.project.ConfigUtils;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
@@ -76,7 +76,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  *
  */
-@NbBundle.Messages({"LBL_Name=Cordova Project"})
+@NbBundle.Messages({"LBL_Name=PhoneGap Sample Project"})
 @ServiceProvider(service = SiteTemplateImplementation.class, position = 1000)
 public class CordovaTemplate implements SiteTemplateImplementation {
 
@@ -89,19 +89,19 @@ public class CordovaTemplate implements SiteTemplateImplementation {
     public void apply(FileObject projectDir, ProjectProperties projectProperties, ProgressHandle handle) throws IOException {
         try {
             FileObject p = FileUtil.createFolder(projectDir, projectProperties.getSiteRootFolder());
-            File examplesFolder = new File(CordovaPlatform.getDefault().getSdkLocation() + "/lib/android/example/assets/www");
+            File examplesFolder = new File(CordovaPlatform.getDefault().getSdkLocation() + "/lib/android/example/assets/www");//NOI18N
             FileObject examples = FileUtil.toFileObject(examplesFolder);
-            FileObject index = FileUtil.copyFile(examples.getFileObject("index.html"), p, "index");
-            FileUtil.copyFile(examples.getFileObject("main.js"), p, "main");
-            FileUtil.copyFile(examples.getFileObject("master.css"), p, "master");
+            FileObject index = FileUtil.copyFile(examples.getFileObject("index.html"), p, "index");//NOI18N
+            FileUtil.copyFile(examples.getFileObject("main.js"), p, "main");//NOI18N
+            FileUtil.copyFile(examples.getFileObject("master.css"), p, "master");//NOI18N
             DataObject find = DataObject.find(index);
             EditorCookie c = find.getLookup().lookup(EditorCookie.class);
             StyledDocument openDocument = c.openDocument();
             String version = CordovaPlatform.getDefault().getVersion();
-            final String cordova = "cordova-" + version + ".js";
+            final String cordova = "cordova-" + version + ".js";//NOI18N
             int start = openDocument.getText(0, openDocument.getLength()).indexOf(cordova);
             openDocument.remove(start, cordova.length());
-            openDocument.insertString(start, "js/libs/Cordova-" + version + "/" + cordova, null);
+            openDocument.insertString(start, "js/libs/Cordova-" + version + "/" + cordova, null);//NOI18N
             find.getCookie(SaveCookie.class).save();
 
         } catch (IOException ex) {
@@ -114,7 +114,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
 
     @Override
     public String getDescription() {
-        return "Cordova Template";
+        return Bundle.LBL_Name();
     }
 
     @Override
@@ -128,58 +128,81 @@ public class CordovaTemplate implements SiteTemplateImplementation {
 
     @Override
     public Collection<String> supportedLibraries() {
-        return Collections.singletonList("Cordova");
+        return Collections.singletonList("Cordova");//NOI18N
     }
 
     @Override
     public void configure(ProjectProperties projectProperties) {
-        projectProperties.setConfigFolder("config");
-        projectProperties.setSiteRootFolder("public_html");
-        projectProperties.setTestFolder("test");
+        projectProperties.setConfigFolder("config");//NOI18N
+        projectProperties.setSiteRootFolder("public_html");//NOI18N
+        projectProperties.setTestFolder("test");//NOI18N
     }
 
     @ServiceProvider(service=ClientProjectExtender.class)
     public static class CordovaExtender implements ClientProjectExtender {
 
-        public CordovaExtender() {
+        private boolean enabled;
+
+        /**
+         * Get the value of enabled
+         *
+         * @return the value of enabled
+         */
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        /**
+         * Set the value of enabled
+         *
+         * @param enabled new value of enabled
+         */
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+
+        @Override
+        public Panel<WizardDescriptor>[] createWizardPanels() {
+            return new Panel[]{new CordovaWizardPanel(this)};
         }
 
         @Override
-        public Panel<WizardDescriptor> createWizardPanel() {
-            return new CordovaWizardPanel();
-        }
-
-        @Override
+        @NbBundle.Messages({
+            "LBL_iPhoneSimulator=iPhone Simulator",
+            "LBL_AndroidEmulator=Android Emulator",
+            "LBL_AndroidDevice=Android Device"
+        })
         public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {
             try {
-                File examplesFolder = new File(CordovaPlatform.getDefault().getSdkLocation() + "/lib/android/example/assets/www");
+                File examplesFolder = new File(CordovaPlatform.getDefault().getSdkLocation() + "/lib/android/example/assets/www");//NOI18N
                 FileObject examples = FileUtil.toFileObject(examplesFolder);
                 String version = CordovaPlatform.getDefault().getVersion();
 
                 final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
-                File lib = new File(sdkLocation + "/lib/android/cordova-"+version +".js");
+                File lib = new File(sdkLocation + "/lib/android/cordova-"+version +".js");//NOI18N
                 FileObject libFo = FileUtil.toFileObject(lib);
-                FileObject createFolder = FileUtil.createFolder(siteRoot, librariesPath + "/Cordova-" + version);
-                FileUtil.copyFile(libFo, createFolder, "cordova-" + version);
+                FileObject createFolder = FileUtil.createFolder(siteRoot, librariesPath + "/Cordova-" + version);//NOI18N
+                FileUtil.copyFile(libFo, createFolder, "cordova-" + version);//NOI18N
 
 
                 EditableProperties ios = new EditableProperties(true);
-                ios.put("display.name", "iPhone Simulator");
-                ios.put("type", IOSPlatform.TYPE);
-                ios.put("device", "emulator");
-                ConfigUtils.createConfigFile(projectRoot, "ios", ios);
+                ios.put("display.name", Bundle.LBL_iPhoneSimulator());//NOI18N
+                ios.put("type", IOSPlatform.TYPE);//NOI18N
+                ios.put("device", "emulator");//NOI18N
+                ConfigUtils.createConfigFile(projectRoot, "ios", ios);//NOI18N
 
                 EditableProperties androide = new EditableProperties(true);
-                androide.put("display.name", "Android Emulator");
-                androide.put("type", AndroidPlatform.TYPE);
-                androide.put("device", "emulator");
-                ConfigUtils.createConfigFile(projectRoot, "android", androide);
+                androide.put("display.name", Bundle.LBL_AndroidEmulator());
+                androide.put("type", AndroidPlatform.TYPE);//NOI18N
+                androide.put("device", "emulator");//NOI18N
+                ConfigUtils.createConfigFile(projectRoot, "android", androide);//NOI18N
 
                 EditableProperties androidd = new EditableProperties(true);
-                androidd.put("display.name", "Android Device");
-                androidd.put("type", AndroidPlatform.TYPE);
-                androidd.put("device", "device");
-                ConfigUtils.createConfigFile(projectRoot, "android", androidd);
+                androidd.put("display.name", Bundle.LBL_AndroidDevice());
+                androidd.put("type", AndroidPlatform.TYPE);//NOI18N
+                androidd.put("device", "device");//NOI18N
+                ConfigUtils.createConfigFile(projectRoot, "android", androidd);//NOI18N
 
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -187,33 +210,15 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                 Exceptions.printStackTrace(ex);
             }
         }
-
-        @Override
-        public boolean isExtenderRequired(SiteTemplateImplementation impl) {
-            return impl instanceof CordovaTemplate;
-        }
-
-        @Override
-        public void openOptionsDialog(PropertyChangeListener changeListener) {
-            OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
-            CordovaPlatform.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(changeListener, CordovaPlatform.getDefault()));
-        }
-
-        @Override
-        public boolean isExtenderReady() {
-            return CordovaPlatform.getDefault().getSdkLocation() !=null;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "Cordova Support";
-        }
     }
 
     private static class CordovaWizardPanel implements Panel<WizardDescriptor>, PropertyChangeListener  {
 
-        public CordovaWizardPanel() {
+        private CordovaExtender ext;
+        private WizardDescriptor wizardDescriptor;
+        public CordovaWizardPanel(CordovaExtender ext) {
             CordovaPlatform.getDefault().addPropertyChangeListener(this);
+            this.ext = ext;
         }
 
         private CordovaTemplatePanel panel;
@@ -232,7 +237,8 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         @Override
         public JComponent getComponent() {
             if (panel == null) {
-                panel = new CordovaTemplatePanel();
+                panel = new CordovaTemplatePanel(ext);
+                panel.addPropertyChangeListener(this);
             }
             return panel;
         }
@@ -240,11 +246,14 @@ public class CordovaTemplate implements SiteTemplateImplementation {
 
         @Override
         public HelpCtx getHelp() {
-            return new HelpCtx("org.netbeans.modules.cordova.template.CordovaTemplate$CordovaWizardPanel");
+            return new HelpCtx("org.netbeans.modules.cordova.template.CordovaTemplate$CordovaWizardPanel");//NOI18N
         }
 
         @Override
-        public void readSettings(WizardDescriptor settings) {
+        public void readSettings(WizardDescriptor wizardDescriptor) {
+            this.wizardDescriptor = wizardDescriptor;
+            SiteTemplateImplementation template = (SiteTemplateImplementation) wizardDescriptor.getProperty("SITE_TEMPLATE");//NOI18N
+            panel.setPanelEnabled(template instanceof CordovaTemplate);
         }
 
         @Override
@@ -252,9 +261,19 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         }
 
         @Override
+        @NbBundle.Messages("ERR_MobilePlatforms=Mobile Platforms are not configured")
         public boolean isValid() {
             final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
-            return sdkLocation != null;
+            if (sdkLocation == null && ext.isEnabled()) {
+                setErrorMessage(Bundle.ERR_MobilePlatforms());
+                return false;
+            }
+            setErrorMessage("");
+            return true;
+        }
+
+        private void setErrorMessage(String message) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
         }
 
         @Override
