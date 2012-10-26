@@ -62,6 +62,7 @@ NetBeans.browserCloseCallback = function(tabId) {
     chrome.tabs.remove(tabId);
 };
 
+NetBeans.lastClosedTabId = null;
 NetBeans.debuggedTab = null;
 NetBeans.windowWithDebuggedTab = null;
 NetBeans.browserAttachDebugger = function(tabId) {
@@ -251,11 +252,35 @@ NetBeans.addPageInspectionPropertyListener(function(event) {
     }
 });
 
+/**
+ * Open page with warning about unexpected/incorrect debugger detach.
+ * This means that the NetBeans integration will not work.
+ * This warning is shown always except these cases:
+ * 1. user closes NetBeans IDE
+ * 2. user closes the tab that is being debugged by NetBeans
+ */
+NetBeans._checkUnexpectedDetach = function(tabId) {
+    // delay the check since detach is called before tabClosed
+    setTimeout(function() {
+        // 1. user closes NetBeans IDE -> this case already works out-of-the-box
+        // 2. user closes the tab that is being debugged by NetBeans
+        if (NetBeans.lastClosedTabId != tabId) {
+            chrome.windows.create({
+                url: 'html/warnDebuggerDetached.html',
+                type: 'popup',
+                width: 600,
+                height: 250
+            });
+        }
+    }, 100);
+}
+
 chrome.debugger.onEvent.addListener(function(source, method, params) {
     NetBeans.sendDebuggingResponse(source.tabId, {method : method, params : params});
 });
 
 chrome.debugger.onDetach.addListener(function(source) {
+    NetBeans._checkUnexpectedDetach(source.tabId);
     NetBeans.hidePageIcon(source.tabId);
     chrome.contextMenus.removeAll();
     NetBeans.sendDebuggerDetached(source.tabId);
@@ -269,6 +294,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     NetBeans.tabUpdated(tab);
 });
 chrome.tabs.onRemoved.addListener(function(tabId) {
+    NetBeans.lastClosedTabId = tabId;
     NetBeans.tabRemoved(tabId);
 });
 
