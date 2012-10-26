@@ -258,12 +258,12 @@ public final class LexUtilities {
      */
     public static int getTokenBalance(Document doc, TokenId open, TokenId close, int offset)
         throws BadLocationException {
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, 0);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
         if (ts == null) {
             return 0;
         }
 
-        // XXX Why 0? Why not offset?
+        // get balance from start index of the tokenSequence
         ts.moveIndex(0);
 
         if (!ts.moveNext()) {

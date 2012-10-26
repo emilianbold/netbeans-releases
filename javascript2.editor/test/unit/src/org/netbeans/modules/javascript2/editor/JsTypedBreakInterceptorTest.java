@@ -341,4 +341,9 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         insertBreak("$(table).find(\"tbody tr\").each(function(){^)",
                 "$(table).find(\"tbody tr\").each(function(){\n    ^\n})");
     }
+
+    public void testIssue220903() throws Exception {
+        insertBreak("<script>function Foo(){^</script>",
+                "<script>function Foo(){\n    ^\n}</script>");
+    }
 }
