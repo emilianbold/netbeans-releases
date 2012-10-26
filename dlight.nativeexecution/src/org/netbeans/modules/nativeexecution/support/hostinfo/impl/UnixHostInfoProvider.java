@@ -60,6 +60,7 @@ import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.netbeans.modules.nativeexecution.pty.NbStartUtility;
 import org.netbeans.modules.nativeexecution.support.EnvReader;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
@@ -258,8 +259,10 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
         ChannelStreams login_shell_channels = null;
 
+        Object activityID = null;
         try {
             login_shell_channels = JschSupport.startLoginShellSession(execEnv);
+            activityID = RemoteStatistics.stratChannelActivity("UnixHostInfoProvider", login_shell_channels.channel, execEnv.getDisplayName()); // NOI18N
             if (nbstart != null && envPath != null) {
                 login_shell_channels.in.write((nbstart + " --dumpenv " + envPath + "\n").getBytes()); // NOI18N
             }
@@ -272,6 +275,9 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         } catch (Exception ex) {
             log.log(Level.WARNING, "Failed to get getRemoteUserEnvironment for " + execEnv.getDisplayName(), ex); // NOI18N
         } finally {
+            if (activityID != null) {
+                RemoteStatistics.stopChannelActivity(activityID);
+            }
             if (login_shell_channels != null) {
                 if (login_shell_channels.channel != null) {
                     try {

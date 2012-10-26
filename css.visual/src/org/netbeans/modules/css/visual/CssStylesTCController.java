@@ -118,14 +118,18 @@ public class CssStylesTCController implements PropertyChangeListener {
                 public void run() {
 
                     //slow IO, do not run in EDT
-                    final boolean cssContent = isCssContentTC(activated);
+                    final FileObject file = getFileObject(activated);
+                    if(file == null) {
+                        return ;
+                    }
+                    final boolean supported = isSupportedFileType(file);
 
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            if (cssContent) {
-                                //editor with css file has been opened
-                                openCssStyles(activated);
+                            if (supported) {
+                                //editor with supported file has been opened
+                                openCssStyles(activated, file);
                             } else {
                                 //some foreign editor activated, close the rule editor
                                 if (activeCssContentTC != null) {
@@ -145,29 +149,34 @@ public class CssStylesTCController implements PropertyChangeListener {
             }
         }
     }
-
-    private boolean isCssContentTC(TopComponent tc) {
+    
+    private boolean isSupportedFileType(FileObject fob) {
+        return SUPPORTED_MIMES.contains(fob.getMIMEType());
+    }
+    
+    private FileObject getFileObject(TopComponent tc) {
         if (tc == null) {
-            return false;
+            return null;
         }
-        FileObject fob = tc.getLookup().lookup(FileObject.class);
-        if (fob != null) {
-            return SUPPORTED_MIMES.contains(fob.getMIMEType());
-        }
-        return false;
+        return tc.getLookup().lookup(FileObject.class);
     }
 
-    private void openCssStyles(TopComponent tc) {
+    private void openCssStyles(TopComponent tc, FileObject file) {
         this.activeCssContentTC = tc;
-        getRuleEditorTopComponent().open();
+        getCssStylesTC().setContext(file);
+        getCssStylesTCGroup().open();
     }
 
     private void closeCssStyles() {
         this.activeCssContentTC = null;
-        getRuleEditorTopComponent().close();
+        getCssStylesTCGroup().close();
     }
 
-    private TopComponentGroup getRuleEditorTopComponent() {
+    private CssStylesTC getCssStylesTC() {
+        return (CssStylesTC)WindowManager.getDefault().findTopComponent("CssStylesTC");
+    }
+    
+    private TopComponentGroup getCssStylesTCGroup() {
         return WindowManager.getDefault().findTopComponentGroup("CssStyles"); //NOI18N
     }
 }

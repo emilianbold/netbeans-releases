@@ -106,8 +106,6 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     private static final RequestProcessor RP = new RequestProcessor(CSSStylesPanel.class);
     /** The default instance of this class. */
     private static final CSSStylesPanel DEFAULT = new CSSStylesPanel();
-    /** Document section of CSS Styles view. */
-    private CSSStylesDocumentPanel documentPanel = new CSSStylesDocumentPanel();
     /** Selection section of CSS Styles view. */
     private CSSStylesSelectionPanel selectionPanel = new CSSStylesSelectionPanel();
     /** The current inspected page. */
@@ -127,8 +125,8 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         setPreferredSize(new Dimension(400,400));
         PageInspectorImpl.getDefault().addPropertyChangeListener(getListener());
         updatePageModel();
-//        add(documentPanel, BorderLayout.CENTER);
-//        updateVisiblePanel(false);
+        add(selectionPanel, BorderLayout.CENTER);
+        lookup.updateLookup(selectionPanel.getLookup());
         ruleLookupResult = lookup.lookupResult(Rule.class);
         ruleLookupResult.addLookupListener(getListener());
     }
@@ -181,29 +179,6 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     }
 
     /**
-     * Switches the visible panel (either document or selection view).
-     *
-     * @param showDocumentPanel if {@code true} then the document view
-     * should be shown, otherwise the selection view should be shown.
-     */
-    private void updateVisiblePanel(boolean showDocumentPanel) {
-        boolean documentPanelVisible = (documentPanel.getParent() != null);
-        if (documentPanelVisible != showDocumentPanel) {
-            if (showDocumentPanel) {
-                remove(selectionPanel);
-                add(documentPanel, BorderLayout.CENTER);
-                lookup.updateLookup(documentPanel.getLookup());
-            } else {
-                remove(documentPanel);
-                add(selectionPanel, BorderLayout.CENTER);
-                lookup.updateLookup(selectionPanel.getLookup());
-            }
-        }
-        revalidate();
-        repaint();
-    }
-
-    /**
      * Updates the content of this panel.
      *
      * @param keepSelection if {@code true} then an attempt to keep the current
@@ -213,7 +188,6 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         try {
             contentUpdateInProgress = keepSelection;
             nodeLookup.setPageModel(pageModel);
-            documentPanel.updateContent(pageModel, keepSelection);
             selectionPanel.updateContent(pageModel, keepSelection);
         } finally {
             // Ugly hack that ensures that contentUpdateInProgress
@@ -303,19 +277,8 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     }
 
     
-    //big hack - sharing one instance of view content
-    //will be removed once we provide the static document view
     @Override
-    public JComponent getView(int type) {
-        switch(type) {
-            case PageModel.CSSStylesView.DOCUMENT_VIEW_TYPE:
-                updateVisiblePanel(true);
-                break;
-            case PageModel.CSSStylesView.SELECTION_VIEW_TYPE:
-                updateVisiblePanel(false);
-                break;
-        }
-        
+    public JComponent getView() {
         return this;
     }
 

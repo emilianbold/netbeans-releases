@@ -110,7 +110,11 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cordova</friend>
+                <friend>org.netbeans.modules.cordova.platforms</friend>
+                <friend>org.netbeans.modules.cordova.platforms.android</friend>
+                <friend>org.netbeans.modules.cordova.platforms.ios</friend>
                 <friend>org.netbeans.modules.html.navigator</friend>
+                <friend>org.netbeans.modules.platforms.android</friend>
                 <friend>org.netbeans.modules.web.client.rest</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>
@@ -119,7 +123,6 @@
                 <package>org.netbeans.modules.web.clientproject.api</package>
                 <package>org.netbeans.modules.web.clientproject.spi</package>
                 <package>org.netbeans.modules.web.clientproject.spi.platform</package>
-                <package>org.netbeans.modules.web.clientproject.spi.webserver</package>
             </friend-packages>
         </data>
     </configuration>

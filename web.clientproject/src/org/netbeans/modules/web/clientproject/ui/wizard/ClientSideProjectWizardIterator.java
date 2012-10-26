@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -162,33 +163,51 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         index = 0;
         extenders = Lookup.getDefault().lookupAll(ClientProjectExtender.class);
         panels = wizard.createPanels();
+        
         // Make sure list of steps is accurate.
-        String[] steps = wizard.createSteps();
+        ArrayList<String> steps = new ArrayList<String>();
+        steps.addAll(Arrays.asList(wizard.createSteps()));
+
+
+        //Compute steps from extenders
+        ArrayList<Panel<? extends WizardDescriptor>> extenderPanelsCol = new ArrayList();
+        for (ClientProjectExtender extender: extenders) {
+            for (Panel<WizardDescriptor> panel: extender.createWizardPanels()) {
+                extenderPanelsCol.add(panel);
+                steps.add(panel.getComponent().getName());
+            }
+        }
+        
+        extenderPanels = extenderPanelsCol.toArray(new Panel[0]);
+       
+        //Regular panels
         int i = 0;
         for (; i < panels.length; i++) {
             Component c = panels[i].getComponent();
-            assert steps[i] != null : "Missing name for step: " + i; //NOI18N
+            assert steps.get(i) != null : "Missing name for step: " + i; //NOI18N
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[0]));
             }
         }
-        extenderPanels = new Panel[extenders.size()];
-        String steps2[] = Arrays.copyOf(steps, steps.length + 1);
-        for (ClientProjectExtender extender: extenders) {
-            extenderPanels[i-panels.length] = extender.createWizardPanel();
-            JComponent component = (JComponent) extenderPanels[i-panels.length].getComponent();
 
-            steps2[i] = component.getName();
-            // Step #.
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
-            // Step name (actually the whole list for reference).
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps2);
-            i++;
+        
+        //Extenders
+        for (; i < extenderPanels.length + panels.length; i++) {
+            Component c = extenderPanels[i-panels.length].getComponent();
+            assert steps.get(i) != null : "Missing name for step: " + i; //NOI18N
+            if (c instanceof JComponent) { // assume Swing components
+                JComponent jc = (JComponent) c;
+                // Step #.
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
+                // Step name (actually the whole list for reference).
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray());
+            }
         }
+        
     }
 
     @Override
@@ -213,7 +232,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public boolean hasNext() {
-        return index < panels.length + enabledExtenders(wizardDescriptor).size() -1;
+        return index < panels.length + extenderPanels.length -1;
     }
 
     @Override
@@ -256,17 +275,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         // noop
     }
     
-    private static Collection<? extends ClientProjectExtender> enabledExtenders(WizardDescriptor wizardDescriptor) {
-        final Collection<? extends ClientProjectExtender> prop = (Collection<? extends ClientProjectExtender>)wizardDescriptor.getProperty(Wizard.EXTENDERS);
-        return prop==null?(Collection<? extends ClientProjectExtender>)Collections.EMPTY_LIST:prop;
-    }
-
     //~ Inner classes
 
     public interface Wizard {
         String PROJECT_DIRECTORY = "PROJECT_DIRECTORY"; // NOI18N
         String NAME = "NAME"; // NOI18N
-        String EXTENDERS = "EXTENDERS";
 
         WizardDescriptor.Panel<WizardDescriptor>[] createPanels();
         String[] createSteps();
@@ -353,7 +366,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             }
 
             // apply extenders
-            for (ClientProjectExtender extender : enabledExtenders(wizardDescriptor)) {
+            for (ClientProjectExtender extender : Lookup.getDefault().lookupAll(ClientProjectExtender.class)) {
                 extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
             }
 

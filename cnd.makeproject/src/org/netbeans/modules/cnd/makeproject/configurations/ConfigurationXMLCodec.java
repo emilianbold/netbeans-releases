@@ -261,13 +261,22 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 String name = getString(atts.getValue(NAME_ATTR));
                 String root = getString(atts.getValue(ROOT_ATTR));
-                if (root != null) {
-                    // Restore actual source root name. See bug #216604
+                // physical folders have own name as display name
+                String displayName = name;
+                if (root != null) { 
+                    // except source root which has name as ID and we'd like to display physical
                     String absRootPath = CndPathUtilitities.toAbsolutePath(projectDescriptor.getBaseDirFileObject(), root);
                     absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, projectDescriptor.getProject());
-                    name = CndPathUtilitities.getBaseName(absRootPath);
+                    displayName = CndPathUtilitities.getBaseName(absRootPath);
+                    if (name == null) {
+                        // due to fix of bug #216604 name can be null => if we lucky we can try to deserialize with folder physical name
+                        name = displayName;
+                    }                    
+                    if (descriptorVersion < VERSION_WITH_INVERTED_SERIALIZATION) {
+                        // TODO: at the end of decoding source root physical folders will be assigned with unique IDs
+                    }
                 }
-                currentFolder = currentFolder.addNewFolder(name, name, true, Folder.Kind.SOURCE_DISK_FOLDER);
+                currentFolder = currentFolder.addNewFolder(name, displayName, true, Folder.Kind.SOURCE_DISK_FOLDER);
                 if (root != null) {
                     currentFolder.setRoot(root);
                 }
