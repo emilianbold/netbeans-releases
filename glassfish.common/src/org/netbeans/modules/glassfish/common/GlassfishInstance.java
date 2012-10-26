@@ -904,8 +904,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * <p/>
      * @return <code>CommonServerSupport</code> instance associated with
      * this object.
-     * @deprecated GlassfishInstance class should not be dependent
-     *             on CommonServerSupport.
      */
     @Deprecated
     public final CommonServerSupport getCommonSupport() {
@@ -964,7 +962,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         if(commonSupport.isStartedByIde()) {
             ServerState state = commonSupport.getServerState();
             if(state == ServerState.STARTING ||
-                    (state == ServerState.RUNNING && commonSupport.isReallyRunning())) {
+                    (state == ServerState.RUNNING
+                    && GlassFishStatus.isReady(this, false))) {
                 try {
                     Future<OperationState> stopServerTask = commonSupport.stopServer(null);
                     if(timeout > 0) {
