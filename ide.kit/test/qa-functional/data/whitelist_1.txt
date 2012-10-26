@@ -1,3 +1,10 @@
+#220904
+org.netbeans.modules.openide.nodes.PERegistrationSupport
+org.netbeans.modules.openide.nodes.PERegistrationSupport$ClassReg
+org.netbeans.modules.openide.nodes.PERegistrationSupport$PEClassRegistration
+org.netbeans.modules.openide.nodes.PERegistrationSupport$PEPackageRegistration
+org.netbeans.modules.openide.nodes.PERegistrationSupport$PkgReg
+
 #220899
 org.eclipse.core.runtime.internal.adaptor.EclipseLogFactory
 org.eclipse.core.runtime.internal.adaptor.EclipseLogHook
