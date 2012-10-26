@@ -248,11 +248,11 @@ public class PluginManagerUI extends javax.swing.JPanel  {
                 List<UnitCategory> precompute2 = Utilities.makeUpdateCategories (nbms, true);
             }
             // postpone later
-            // getLocalDownloadSupport().getUpdateUnits();
+            refreshUnitsInBackground(uu);
             SwingUtilities.invokeAndWait (new Runnable () {
                 @Override
                 public void run () {
-                    refreshUnits(uu);
+                    refreshUnitsInAWT();
                     setSelectedTab ();
                 }
             });
@@ -543,6 +543,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
                 tpTabs.setTitleAt(INDEX_OF_SETTINGS_TAB, tab.getDisplayName());
             }
         });
+        setWaitingState(true);
     }
     
     void decorateTabTitle (UnitTable table) {
@@ -577,7 +578,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         }
     }
     
-    private void refreshUnits(List<UpdateUnit> newUnits) {
+    private void refreshUnitsInBackground(List<UpdateUnit> newUnits) {
         //ensure exclusivity between this refreshUnits code(which can run even after this dialog is disposed) and uninitialization code
         synchronized(initLock) {
             //return immediatelly if uninialization(after removeNotify) was alredy called
@@ -604,6 +605,13 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             }
             availableTableModel.setUnits(units);
             localTableModel.setUnits(units);
+        }
+    }
+    
+    private void refreshUnitsInAWT() {
+        assert SwingUtilities.isEventDispatchThread() : "Call from AWT only";
+        //ensure exclusivity between this refreshUnits code(which can run even after this dialog is disposed) and uninitialization code
+        synchronized(initLock) {
             selectFirstRow(installedTable);
             selectFirstRow(updateTable);
             selectFirstRow(availableTable);
@@ -665,7 +673,16 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     
     //TODO: all the request for refresh should be cancelled if there is already one such running refresh task
     public void updateUnitsChanged () {
-        refreshUnits (UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes()));
+        refreshUnitsInBackground(UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes()));
+        if (! SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    refreshUnitsInAWT();
+                }
+            });
+        }
     }
     
     public void tableStructureChanged () {
