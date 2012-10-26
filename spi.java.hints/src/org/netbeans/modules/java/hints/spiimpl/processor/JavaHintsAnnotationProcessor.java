@@ -186,8 +186,15 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
             for (Entry<Element, AnnotationMirror> e : candidates) {
                 AnnotationMirror hintMirror = e.getValue();
                 
-                keywordsFile = keywordsFile.bundlevalue("keywords-1", getAttributeValue(hintMirror, "displayName", String.class));
-                keywordsFile = keywordsFile.bundlevalue("keywords-2", getAttributeValue(hintMirror, "description", String.class));
+                String displayName = getAttributeValue(hintMirror, "displayName", String.class);
+                
+                if (displayName != null)
+                    keywordsFile = keywordsFile.bundlevalue("keywords-1", displayName);
+                
+                String description = getAttributeValue(hintMirror, "description", String.class);
+                
+                if (description != null)
+                    keywordsFile = keywordsFile.bundlevalue("keywords-2", description);
                 
                 int i = 3;
                 
