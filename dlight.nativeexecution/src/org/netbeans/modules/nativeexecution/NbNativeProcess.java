@@ -156,7 +156,7 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
         if (info.isCommandLineDefined()) {
             command.add(hostInfo.getShell());
             command.add("-c"); // NOI18N
-            command.add(info.getCommandLineForShell()); // NOI18N
+            command.add("exec " + info.getCommandLineForShell()); // NOI18N
         } else {
             command.add(fixForWindows(info.getExecutable()));
             command.addAll(info.getArguments());
