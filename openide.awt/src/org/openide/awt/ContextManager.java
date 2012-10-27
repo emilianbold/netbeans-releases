@@ -56,6 +56,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Item;
 import org.openide.util.Lookup.Provider;
@@ -72,6 +74,7 @@ import org.openide.util.lookup.ProxyLookup;
 /** Listener on a global context.
  */
 class ContextManager extends Object {
+    private static final Logger LOG = GeneralAction.LOG;
     
     private static final Map<LookupRef, Reference<ContextManager>> CACHE = new HashMap<LookupRef, Reference<ContextManager>>();
     private static final Map<LookupRef, Reference<ContextManager>> SURVIVE = new HashMap<LookupRef, Reference<ContextManager>>();
@@ -164,6 +167,12 @@ class ContextManager extends Object {
     }
     
     private <T> boolean isEnabledOnData(Lookup.Result<T> result, Class<T> type, ContextSelection selectMode) {
+        boolean res = isEnabledOnDataImpl(result, type, selectMode);
+        LOG.log(Level.FINE, "isEnabledOnData(result, {0}, {1}) = {2}", new Object[]{type, selectMode, res});
+        return res;
+    }
+    
+    private <T> boolean isEnabledOnDataImpl(Lookup.Result<T> result, Class<T> type, ContextSelection selectMode) {
         switch (selectMode) {
             case EXACTLY_ONE:
                 Collection<Lookup.Item<T>> instances = new HashSet<Lookup.Item<T>>(result.allItems());
