@@ -171,7 +171,17 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
             addProcessInfo(line);
         }
 
-        setPID(Integer.parseInt(getProcessInfo("PID"))); // NOI18N    
+        String pidProperty = getProcessInfo("PID"); // NOI18N
+
+        if (pidProperty == null) {
+            InputStream error = getErrorStream();
+            while (!(line = readLine(error).trim()).isEmpty()) {
+                LOG.info(line);
+            }
+            throw new InternalError("Failed to get process PID"); // NOI18N
+        }
+
+        setPID(Integer.parseInt(pidProperty)); // NOI18N    
     }
 
     @Override
