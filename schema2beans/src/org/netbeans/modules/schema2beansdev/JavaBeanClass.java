@@ -2044,12 +2044,9 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
             }
             jw.endMethod();
 
-            // FIXME we do not know really know how the string comparison has been
-            // designed - perhaps based on intern - we do not want to change it
-            // lets just suppress warnings
             jw.beginMethod("readNodeChild", "org.w3c.dom.Node childNode, String childNodeName, String childNodeValue, "+namespacePrefixesFormalParameter+(hasReadState ? ", "+getRootClassName()+".ReadState readState" : ""),
                            config.isVetoable() ? "java.beans.PropertyVetoException" : null,
-                           "boolean", jw.PROTECTED | jw.IO, config.isJava5() ? new String[] {"ES_COMPARING_PARAMETER_STRING_WITH_EQ"} : null);
+                           "boolean", jw.PROTECTED | jw.IO);
            jw.comment("assert childNodeName == childNodeName.intern()");
            if (hasNillableElement || hasQNameType ||
                 nonDirectAttributes.size() > 0)
@@ -3904,11 +3901,8 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
     }
 
     public void genPropertiesByName() throws IOException {
-        // FIXME we do not know really know how the string comparison has been
-        // designed - perhaps based on intern - we do not want to change it
-        // lets just suppress warnings
         jw.beginMethod("changePropertyByName", "String name, Object value",
-                       null, "void", jw.PUBLIC, config.isJava5() ? new String[] {"ES_COMPARING_PARAMETER_STRING_WITH_EQ"} : null);
+                       null, "void", jw.PUBLIC);
         geneol("if (name == null) return");
         geneol("name = name.intern()");
         int size = attrList.size();
@@ -3949,11 +3943,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         end();
         cr();
 
-        // FIXME we do not know really know how the string comparison has been
-        // designed - perhaps based on intern - we do not want to change it
-        // lets just suppress warnings
-        jw.beginMethod("fetchPropertyByName", "String name", null, "Object", jw.PUBLIC,
-                config.isJava5() ? new String[] {"ES_COMPARING_PARAMETER_STRING_WITH_EQ"} : null);
+        jw.beginMethod("fetchPropertyByName", "String name", null, "Object", jw.PUBLIC);
         for (int i = 0; i < size; i++) {
             Property a = (Property)attrList.get(i);
             boolean   	indexed = a.isIndexed();
@@ -4334,12 +4324,8 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         jw.writeEol("return nameChild(childObj, returnConstName, returnSchemaName, false)");
         jw.endMethod();
 
-        // FIXME we do not know really know how the string comparison has been
-        // designed - perhaps based on intern - we do not want to change it
-        // lets just suppress warnings
         jw.bigComment("@param childObj  The child object to search for\n@param returnSchemaName  Whether or not the schema name should be returned or the property name\n@return null if not found");
-        jw.beginMethod("nameChild", "Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName", null, "String", jw.PUBLIC,
-                config.isJava5() ? new String[] {"ES_COMPARING_STRINGS_WITH_EQ"} : null);
+        jw.beginMethod("nameChild", "Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName", null, "String", jw.PUBLIC);
         // Sort by type
         Map typeMap = new HashMap();	// Map<String, List<Property>>
         for (int i = 0, size = attrList.size(); i < size; i++) {

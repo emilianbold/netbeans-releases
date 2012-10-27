@@ -231,12 +231,7 @@ public class JavaWriter extends IndentingWriter {
 
     public void beginMethod(String name, String parameters, String exceptions,
                             String returnType, int options) throws IOException {
-        beginMethod(name, parameters, exceptions, returnType, options, null);
-    }
-
-    public void beginMethod(String name, String parameters, String exceptions,
-                            String returnType, int options, String[] suppressed) throws IOException {
-        writeMethod(name, parameters, exceptions, returnType, options, suppressed);
+        writeMethod(name, parameters, exceptions, returnType, options);
         write(" ");
         begin();
     }
@@ -248,22 +243,6 @@ public class JavaWriter extends IndentingWriter {
 
     public void writeMethod(String name, String parameters, String exceptions,
                             String returnType, int options) throws IOException {
-        writeMethod(name, parameters, exceptions, returnType, options, null);
-    }
-
-    public void writeMethod(String name, String parameters, String exceptions,
-                            String returnType, int options, String[] suppressed) throws IOException {
-        if (suppressed != null && suppressed.length > 0) {
-            write("@org.netbeans.api.annotations.common.SuppressWarnings(");
-            for (int i = 0; i < suppressed.length; i++) {
-                if (i > 0) {
-                    write(", ");
-                }
-                write("\"" + suppressed[i] + "\"");
-            }
-            write(")");
-            cr();
-        }
         String nameParameters = name+"("+parameters+")";
         if (storeMethods) {
             addToMethodStore(name, parameters, exceptions, returnType, options);
