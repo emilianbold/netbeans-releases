@@ -51,6 +51,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -291,33 +294,57 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             root = new FakeRootNode<DocumentNode>(documentNode,
                     new Action[]{});
         }
-//        final Node[] oldSelection = manager.getSelectedNodes();
+        final Node[] oldSelection = manager.getSelectedNodes();
         manager.setRootContext(root);
         treeView.expandAll();
-            
-//        if (keepSelection) {
-//            EventQueue.invokeLater(new Runnable() {
-//                @Override
-//                public void run() {
-//                    List<Node> selection = new ArrayList<Node>(oldSelection.length);
-//                    for (Node oldSelected : oldSelection) {
-//                        Rule rule = oldSelected.getLookup().lookup(Rule.class);
-//                        if (rule != null) {
-//                            Node newSelected = Utilities.findRule(root, rule);
-//                            if (newSelected != null) {
-//                                selection.add(newSelected);
-//                            }
-//                        }
-//                    }
-//                    try {
-//                        manager.setSelectedNodes(selection.toArray(new Node[selection.size()]));
-//                    } catch (PropertyVetoException pvex) {
-//                    }
-//                }
-//            });
-//        }
+
+        //keep selection
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                List<Node> selection = new ArrayList<Node>(oldSelection.length);
+                for (Node oldSelected : oldSelection) {
+                    Location location = oldSelected.getLookup().lookup(Location.class);
+                    if (location != null) {
+                        Node newSelected = findRule(root, location);
+                        if (newSelected != null) {
+                            selection.add(newSelected);
+                        }
+                    }
+                }
+                try {
+                    manager.setSelectedNodes(selection.toArray(new Node[selection.size()]));
+                } catch (PropertyVetoException pvex) {
+                    //no-op
+                }
+            }
+        });
 
     }
+    
+    /**
+     * Finds a node that represents the specified location in a tree
+     * represented by the given root node.
+     *
+     * @param root root of a tree to search.
+     * @param rule rule to find.
+     * @return node that represents the rule or {@code null}.
+     */
+    public static Node findRule(Node root, Location location) {
+        Location candidate = root.getLookup().lookup(Location.class);
+        if (candidate != null &&  location.equals(candidate)) {
+            return root;
+        }
+        for (Node node : root.getChildren().getNodes()) {
+            Node result = findRule(node, location);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+    
+    
     // The last node we were hovering over.
     Object lastHover = null;
 
