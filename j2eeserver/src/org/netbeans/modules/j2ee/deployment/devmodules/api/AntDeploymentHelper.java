@@ -171,8 +171,8 @@ public final class AntDeploymentHelper {
                     try
                     {
                         OutputStream fileOS = fo.getOutputStream(lock);
-                        writer = new OutputStreamWriter(fileOS);
-                        String outString = os.toString();
+                        writer = new OutputStreamWriter(fileOS, "UTF-8"); // NOI18N
+                        String outString = os.toString("UTF-8"); // NOI18N
                         writer.write(outString, 0, outString.length());
                     }
                     finally
