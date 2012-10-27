@@ -160,7 +160,7 @@ public class DocumentViewModel implements ChangeListener {
                         public void run(ResultIterator resultIterator) throws Exception {
                             ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css"); //NOI18N
                             if (ri != null) {
-                                CssCslParserResult result = (CssCslParserResult) ri.getParserResult();
+                                final CssCslParserResult result = (CssCslParserResult) ri.getParserResult();
                                 final Model model = result.getModel();
 
                                 final List<RuleHandle> rules = new ArrayList<RuleHandle>();
@@ -168,7 +168,8 @@ public class DocumentViewModel implements ChangeListener {
                                     @Override
                                     public void visitRule(Rule rule) {
                                         String image = model.getElementSource(rule.getSelectorsGroup()).toString();
-                                        RuleHandle handle = new RuleHandle(related, rule.getStartOffset(), image );
+                                        int offset = result.getSnapshot().getOriginalOffset(rule.getStartOffset());
+                                        RuleHandle handle = new RuleHandle(related, rule, offset, image );
                                         rules.add(handle);
                                     }
                                 };

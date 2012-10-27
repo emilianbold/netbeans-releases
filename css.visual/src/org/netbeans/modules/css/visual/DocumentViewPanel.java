@@ -53,7 +53,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -67,6 +69,19 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelUtils;
+import org.netbeans.modules.css.model.api.ModelVisitor;
+import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.api.RuleEditorController;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -74,6 +89,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -81,18 +97,16 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author marekfukala
  */
-@NbBundle.Messages({
-    
-})
+@NbBundle.Messages({})
 public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerManager.Provider {
 
     private static RequestProcessor RP = new RequestProcessor();
-    
     /**
      * Tree view showing the style sheet information.
      */
@@ -104,8 +118,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     /**
      * Lookup of this panel.
      */
-    private final Lookup lookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
-    
+    private final Lookup lookup;
     private final Lookup cssStylesLookup;
     /**
      * Filter for the tree displayed in this panel.
@@ -116,8 +129,8 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     /**
      * Creates new form DocumentViewPanel
      */
-    public DocumentViewPanel(Lookup lookup) {
-        cssStylesLookup = lookup;
+    public DocumentViewPanel(Lookup cssStylesLookup) {
+        this.cssStylesLookup = cssStylesLookup;
         Result<FileObject> result = cssStylesLookup.lookupResult(FileObject.class);
         result.addLookupListener(new LookupListener() {
             @Override
@@ -126,14 +139,70 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             }
         });
 
+        lookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
+        Result<Node> lookupResult = lookup.lookupResult(Node.class);
+        lookupResult.addLookupListener(new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                Node[] selectedNodes = manager.getSelectedNodes();
+                Node selected = selectedNodes.length > 0 ? selectedNodes[0] : null;
+                if (selected != null) {
+                    RuleHandle ruleHandle = selected.getLookup().lookup(RuleHandle.class);
+                    if (ruleHandle != null) {
+                        selectRuleInRuleEditor(ruleHandle);
+                    }
+                }
+            }
+        });
+
         initComponents();
 
         initTreeView();
         initFilter();
-//        updateContent(null, true);
 
         contextChanged();
 
+    }
+
+    private void selectRuleInRuleEditor(RuleHandle handle) {
+        RuleEditorController rec = cssStylesLookup.lookup(RuleEditorController.class);
+        if (rec == null) {
+            return;
+        }
+        final Rule rule = handle.getRule();
+        final AtomicReference<Rule> matched_rule_ref = new AtomicReference<Rule>();
+        
+        FileObject file = handle.getFile();
+        Source source = Source.create(file);
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css"); //NOI18N
+                    if (ri != null) {
+                        final CssCslParserResult result = (CssCslParserResult) ri.getParserResult();
+                        final Model model = result.getModel();
+
+                        model.runReadTask(new Model.ModelTask() {
+                            @Override
+                            public void run(StyleSheet styleSheet) {
+                                ModelUtils utils = new ModelUtils(model);
+                                Rule match = utils.findMatchingRule(rule.getModel(), rule);
+                                matched_rule_ref.set(match);
+                            }
+                        });
+                    }
+                }
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        Rule match = matched_rule_ref.get();
+        if(match != null) {
+            rec.setModel(match.getModel());
+            rec.setRule(match);
+        }
     }
 
     @Override
@@ -150,7 +219,6 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      */
     private void contextChanged() {
         RP.post(new Runnable() {
-
             @Override
             public void run() {
                 final FileObject context = getContext();
@@ -165,10 +233,9 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                 } else {
                     documentModel = new DocumentViewModel(context);
                 }
-                
+
                 updateContent();
             }
-            
         });
 
     }
@@ -321,10 +388,10 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         });
 
     }
-    
+
     /**
-     * Finds a node that represents the specified location in a tree
-     * represented by the given root node.
+     * Finds a node that represents the specified location in a tree represented
+     * by the given root node.
      *
      * @param root root of a tree to search.
      * @param rule rule to find.
@@ -332,7 +399,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      */
     public static Node findRule(Node root, Location location) {
         Location candidate = root.getLookup().lookup(Location.class);
-        if (candidate != null &&  location.equals(candidate)) {
+        if (candidate != null && location.equals(candidate)) {
             return root;
         }
         for (Node node : root.getChildren().getNodes()) {
@@ -343,8 +410,6 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         }
         return null;
     }
-    
-    
     // The last node we were hovering over.
     Object lastHover = null;
 
