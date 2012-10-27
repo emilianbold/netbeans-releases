@@ -28,8 +28,10 @@
                 <td>Create a project.</td>
                 <td>
                     <ol>
-                        <li>Choose File &gt; New Project (Ctrl-Shift-N).</li>
-                        <li>Select the correct <a href="html5-createproj.html">template</a> for your project.</li>
+                        <li>Choose File &gt; New Project (Ctrl-Shift-N) in the main menu.</li>
+                        <li>Select the correct <a href="html5-createproj.html">project template</a> in the 
+                            New Project wizard.</li>
+                        <li>Step through the wizard to specify a site template option and add JavaScript files.</li>
                     </ol>
                 </td>
             </tr>
@@ -39,7 +41,7 @@
                     <ol>
                         <li>In the Projects window, right-click the project node and
                             choose Properties.</li>
-                        <li>Select the JavaScript Files category in the Project Properties dialog box.</li>
+                        <li>Select the JavaScript Files category in the Project Properties window.</li>
                         <li>Select the JavaScript file from the list in the left pane and click the right arrow button
                             to move the selected file to the list in the right pane. Click OK.</li>
                     </ol>
@@ -75,16 +77,12 @@
                     <ol>
                         <li>Specify either Chrome with NetBeans Integration or Embedded WebKit Browser as the target browser.</li>
                         <li>Run the project.</li>
-                        <li>Select one of the standard browser sizes or create
+                        <li>In the browser tab, select one of the standard browser sizes or create
                         a custom browser size.</li>
                     </ol>
                 </td>
             </tr>
 
-            
-            
-
-            
             <tr valign="top">
                 <td>Run a project.</td>
                 <td>
@@ -98,60 +96,33 @@
                 </td>
             </tr>
 
+            
+            
             <tr valign="top">
-                <td>Modify deployment settings.</td>
-                <td>
-                    <p>Do one or both of the following:</p>
-
-                    <ul>
-                        <li><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/webbrowser/default.html">Change the browser</a>.</li>
-                        <li><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/deploy/deploy_changeserver.html">Change the server</a>.</li>
-                    </ul>
-                </td>
-            </tr>
-            <tr valign="top">
-                <td>Verify an enterprise application.</td>
+                <td>Debug a JavaScript file.</td>
                 <td>
                     <ol>
-                        <li>Right-click any module project whose target server is the Sun Java
-                            System Application Server/GlassFish and choose Verify.
-                            <p>The Verifier window opens and displays all the results.</p>
-                        </li>
-                        <li>Filter the results according to your needs:
-                            <ul>
-                                <li>Click Failures Only to display only failures.</li>
-                                <li>Click Failures and Warnings Only to display only failures and warnings.</li>
-                            </ul>
-                        <li>Make appropriate changes, if any, and verify the project again.</li>
+                        <li>Specify either Chrome with NetBeans Integration or Embedded WebKit Browser as the target browser.</li>
+                        <li>Set the breakpoints in the JavaScript file.</li>
+                        <li>Right-click the project node and choose Run.
+                            <p>Alternatively, right-click the HTML file that invokes the JavaScript
+                                file and choose Run File.</p></li>
                     </ol>
                 </td>
             </tr>
             <tr valign="top">
-                <td>Debug a project.</td>
-                <td>
-                    <ol>
-                        <li>Set the project as the <a href="nbdocs:/org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_main.html">main project</a>
-                        and choose Debug &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_local.html">Debug
-                        Main Project</a> (Ctrl-F5) or right-click the project in the Projects window and choose Debug.</li>
-                    </ol>
-                </td>
-            </tr>
-            <tr valign="top">
-                <td>Attach source code to libraries for debugging.</td>
+                <td>Test a JavaScript file.</td>
                 <td>
                     <p>Instead of debugging the source code of a library that you created in the IDE,
                         debug the project where you created the library.
                         But, if you want to debug a library created outside the IDE, do the following:
                     <ol>
-                        <li>Choose Tools &gt; Ant Libraries from the main menu.</li>
-                        <li>If the JAR file is not already registered in the Ant Library Manager,
-                            create a new library using the Add Library button.</li>
-                        <li>Select the library in the left panel of the Ant Library Manager.</li>
-                        <li>In the Classpath tab, click Add JAR/Folder and specify the location
-                            of the JAR file containing the compiled class files. A library can contain
-                            multiple JAR files.</li>
-                        <li>In the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_source.html">Sources tab</a>, add the
-                            folder or archive file containing the source code. </li>
+                        <li>In the Services window, right-click the JS Test Driver node and choose Configure.</li>
+                        <li>Configure JS Test Driver by specify the location of the JS Test Driver JAR
+                         and specifying the browsers that you would like to test the JavaScript against.</li>
+                        <li>Create a jsTest Driver Configuration File by choosing File &gt; New File and selecting jsTest Driver Configuration File in the Unit Tests category.</li>
+                        <li>Create the JavaScript file and unit tests.</li>
+                        <li>Right-click the project node and choose Test.</li>
                     </ol>
                 </td>
             </tr>
