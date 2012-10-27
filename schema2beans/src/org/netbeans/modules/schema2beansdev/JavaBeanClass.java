@@ -1927,10 +1927,11 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         if (beanElement.isRoot) {
             ++attrCount;
             jw.writeEol("String xsiPrefix = \"xsi\"");
-            jw.beginFor("java.util.Iterator it = namespacePrefixes.keySet().iterator()",
+            jw.beginFor("java.util.Iterator it = namespacePrefixes.entrySet().iterator()",
                         "it.hasNext()", "");
-            jw.writeEol("String prefix = (String) it.next()");
-            jw.writeEol("String ns = (String) namespacePrefixes.get(prefix)");
+            jw.writeEol("java.util.Map.Entry entry = (java.util.Map.Entry) it.next()");
+            jw.writeEol("String prefix = (String) entry.getKey()");
+            jw.writeEol("String ns = (String) entry.getValue()");
             jw.beginIf("\"http://www.w3.org/2001/XMLSchema-instance\".equals(ns)");
             jw.writeEol("xsiPrefix = prefix");
             jw.writeEol("break");
