@@ -250,7 +250,6 @@ public class UpdateManagerImpl extends Object {
 
         Cache() {
             units = UpdateUnitFactory.getDefault ().getUpdateUnits ();
-            createMaps ();
         }        
         public Set<UpdateElement> getAvailableEagers() {
             if (availableEagers == null) {
