@@ -404,8 +404,6 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         for(UpdateElement p : plugins) {
             units.add(p.getUpdateUnit());
         }
-        //HashMap <UpdateUnit, List<UpdateElement>> map = Utilities.getVisibleModulesDependecyMap(UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes()));
-        
 
         if (plugins != null && ! plugins.isEmpty ()) {
 

@@ -199,6 +199,9 @@ public class Utilities {
         List<String> names = new ArrayList<String> ();
         Set<UpdateUnit> coveredByVisible = new HashSet <UpdateUnit> ();
         Map<UpdateUnit, List<UpdateElement>> coveredByVisibleMap = new HashMap <UpdateUnit, List<UpdateElement>> ();
+        
+        Set<UpdateUnit> visibleUnits = new HashSet <UpdateUnit> ();
+        Set<UpdateUnit> invisibleUnits = new HashSet <UpdateUnit> ();
 
         for (UpdateUnit u : units) {
             UpdateElement el = u.getInstalled ();
@@ -207,33 +210,22 @@ public class Utilities {
                 if (updates.isEmpty()) {
                     continue;
                 }
-                coveredByVisible.add(u);
-
-                OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
-                OperationInfo<InstallSupport> info = container.add(updates.get(0));
-                Set <UpdateElement> required = info.getRequiredElements();
-                for(UpdateElement ue : required){
-                    if(!ue.getUpdateUnit().isPending()) {
-                        coveredByVisible.add(ue.getUpdateUnit());
+                if (UpdateManager.TYPE.KIT_MODULE.equals(u.getType())) {
+                    visibleUnits.add(u);
+                    String catName = el.getCategory();
+                    if (names.contains (catName)) {
+                        UnitCategory cat = res.get (names.indexOf (catName));
+                        cat.addUnit (new Unit.Update (u, isNbms, catName));
+                    } else {
+                        UnitCategory cat = new UnitCategory (catName);
+                        cat.addUnit (new Unit.Update (u, isNbms, catName));
+                        res.add (cat);
+                        names.add (catName);
                     }
-                }
-                for(OperationInfo <InstallSupport> i : container.listAll()) {
-                    if(!i.getUpdateUnit().isPending()) {
-                        coveredByVisible.add((i.getUpdateUnit()));
-                    }
-                }
-                //coveredByVisibleMap.put(u,list);
-
-                String catName = el.getCategory();
-                if (names.contains (catName)) {
-                    UnitCategory cat = res.get (names.indexOf (catName));
-                    cat.addUnit (new Unit.Update (u, isNbms, catName));
                 } else {
-                    UnitCategory cat = new UnitCategory (catName);
-                    cat.addUnit (new Unit.Update (u, isNbms, catName));
-                    res.add (cat);
-                    names.add (catName);
+                    invisibleUnits.add(u);
                 }
+
             }
         }
 

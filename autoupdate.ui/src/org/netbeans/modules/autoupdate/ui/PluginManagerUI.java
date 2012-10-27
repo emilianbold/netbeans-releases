@@ -241,7 +241,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
 
     private void initialize () {
         try {
-            final List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes ());
+            final List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
             List<UnitCategory> precompute1 = Utilities.makeUpdateCategories (uu, false);
             if (localTable != null) {
                 final List<UpdateUnit> nbms = new ArrayList<UpdateUnit>(((LocallyDownloadedTableModel) localTable.getModel()).getLocalDownloadSupport().getUpdateUnits());
@@ -673,7 +673,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     
     //TODO: all the request for refresh should be cancelled if there is already one such running refresh task
     public void updateUnitsChanged () {
-        refreshUnitsInBackground(UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes()));
+        refreshUnitsInBackground(UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE));
         if (! SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
 
