@@ -56,9 +56,11 @@ import org.openide.modules.ModuleInfo;
  * @author Jirka Rechtacek
  */
 public class DependencyAggregator extends Object {
-    private final static Map<DependencyDecoratorKey, DependencyAggregator> key2dependency = new HashMap<DependencyDecoratorKey, DependencyAggregator> (11, 11);
+    private static Map<DependencyDecoratorKey, DependencyAggregator> key2dependency = new HashMap<DependencyDecoratorKey, DependencyAggregator> (11, 11);
+
     private Collection<ModuleInfo> depending = new HashSet<ModuleInfo>();
     private final DependencyDecoratorKey key;
+    private static final Object LOCK = new Object();
     
     private DependencyAggregator (DependencyDecoratorKey key) {
         this.key = key;        
@@ -66,13 +68,13 @@ public class DependencyAggregator extends Object {
     
     public static DependencyAggregator getAggregator (Dependency dep) {
         DependencyDecoratorKey key = new DependencyDecoratorKey (dep.getName (), dep.getType (), dep.getComparison ());
-        synchronized(key2dependency) {
-        DependencyAggregator res = key2dependency.get (key);
-        if (res == null) {
-            res = new DependencyAggregator (key);
-            key2dependency.put (key, res);
-        }
-        return res;
+        synchronized(LOCK) {
+            DependencyAggregator res = key2dependency.get (key);
+            if (res == null) {
+                res = new DependencyAggregator (key);
+                key2dependency.put (key, res);
+            }
+            return res;
         }
     }
     
@@ -84,12 +86,16 @@ public class DependencyAggregator extends Object {
         return key.name;
     }
     
-    synchronized public boolean addDependee(ModuleInfo dependee) {
+    public boolean addDependee(ModuleInfo dependee) {
         return depending.add (dependee);
     }
     
-    synchronized public Collection<ModuleInfo> getDependening() {
+    public Collection<ModuleInfo> getDependening() {
         return depending;
+    }
+    
+    static void clearMaps() {
+        key2dependency = new HashMap<DependencyDecoratorKey, DependencyAggregator> (11, 11);
     }
     
     @Override

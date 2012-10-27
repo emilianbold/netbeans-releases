@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -1298,6 +1298,9 @@ public final class UnitTab extends javax.swing.JPanel {
             try {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.UPDATE, manager);
             } finally {
+                if (manager != null && manager.isClosing()) {
+                    return ;
+                }
                 //must be called before restoreState
                 fireUpdataUnitChange ();
                 if (!wizardFinished) {
