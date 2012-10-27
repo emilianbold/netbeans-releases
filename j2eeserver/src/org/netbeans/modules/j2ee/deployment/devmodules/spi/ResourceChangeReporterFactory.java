@@ -64,6 +64,6 @@ public class ResourceChangeReporterFactory {
      */
     @NonNull
     public static ResourceChangeReporter createResourceChangeReporter(ResourceChangeReporterImplementation impl) {
-        return ResourceChangeReporterAccessor.DEFAULT.createResourceChangeReporter(impl);
+        return ResourceChangeReporterAccessor.getDefault().createResourceChangeReporter(impl);
     }
 }
