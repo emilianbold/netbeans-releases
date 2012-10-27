@@ -888,7 +888,7 @@ public class RequestProcessor180386Test extends NbTestCase {
         RequestProcessor.getDefault().scheduleWithFixedDelay(c, 0, 200, TimeUnit.MILLISECONDS);
 //        latch.await(5000, TimeUnit.MILLISECONDS);
         latch.await();
-        assertEquals (5, c.runCount);
+        assertAtLeast (5, c.runCount);
     }
 
     public void testScheduleRepeatingSanityFixedDelay() throws Exception {
@@ -914,7 +914,7 @@ public class RequestProcessor180386Test extends NbTestCase {
         RequestProcessor.getDefault().scheduleAtFixedRate(c, 0, 200, TimeUnit.MILLISECONDS);
         latch.await(2000, TimeUnit.MILLISECONDS);
 
-        assertEquals (5, c.runCount);
+        assertAtLeast (5, c.runCount);
     }
 
     public void testScheduleOneShot() throws Exception {
@@ -1300,4 +1300,10 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertTrue("Awaiting task not returned on shutdownNow()", awaiting.contains(awaitingRunnable));
         assertFalse("Running task returned on shutdownNow()", awaiting.contains(blockingRunnable));
     }    
+
+    private static void assertAtLeast(int exp, int real) {
+        if (exp > real) {
+            fail("Expecting at least " + exp + " but was only " + real);
+        }
+    }
 }

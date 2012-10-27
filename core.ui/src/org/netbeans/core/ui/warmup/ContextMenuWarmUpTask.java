@@ -56,7 +56,7 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.OnShowing;
 import org.openide.windows.TopComponent;
 
 
@@ -65,27 +65,15 @@ import org.openide.windows.TopComponent;
  *
  * @author  Tomas Pavek, Peter Zavadsky
  */
-@ServiceProvider(service=Runnable.class, path="WarmUp")
+@OnShowing
 public final class ContextMenuWarmUpTask implements Runnable {
     @Override
     public void run() {
+        assert EventQueue.isDispatchThread();
         // For first context menu.
         org.openide.actions.ActionManager.getDefault().getContextActions();
         JMenuItem mi = new javax.swing.JMenuItem();
-
-        // #30676 ToolsAction popup warm up.
-        try {
-            EventQueue.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    warmUpToolsPopupMenuItem();
-                }
-            });
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        warmUpToolsPopupMenuItem();
     }
 
     /** Warms up tools action popup menu item. */
