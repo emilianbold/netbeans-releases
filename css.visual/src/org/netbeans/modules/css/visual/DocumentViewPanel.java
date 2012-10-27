@@ -44,6 +44,7 @@ package org.netbeans.modules.css.visual;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Insets;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
@@ -76,6 +77,7 @@ import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -86,6 +88,8 @@ import org.openide.util.NbBundle;
 })
 public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerManager.Provider {
 
+    private static RequestProcessor RP = new RequestProcessor();
+    
     /**
      * Tree view showing the style sheet information.
      */
@@ -142,20 +146,28 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      * Called when the CssStylesPanel is activated for different file.
      */
     private void contextChanged() {
-        final FileObject context = getContext();
+        RP.post(new Runnable() {
 
-        //dispose old model
-        if (documentModel != null) {
-            documentModel.dispose();
-        }
+            @Override
+            public void run() {
+                final FileObject context = getContext();
 
-        if (context == null) {
-            documentModel = null;
-        } else {
-            documentModel = new DocumentViewModel(context);
-        }
+                //dispose old model
+                if (documentModel != null) {
+                    documentModel.dispose();
+                }
 
-        updateContent();
+                if (context == null) {
+                    documentModel = null;
+                } else {
+                    documentModel = new DocumentViewModel(context);
+                }
+                
+                updateContent();
+            }
+            
+        });
+
     }
 
     /**
@@ -282,7 +294,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
 //        final Node[] oldSelection = manager.getSelectedNodes();
         manager.setRootContext(root);
         treeView.expandAll();
-        
+            
 //        if (keepSelection) {
 //            EventQueue.invokeLater(new Runnable() {
 //                @Override

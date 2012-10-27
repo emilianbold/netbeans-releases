@@ -145,10 +145,31 @@ public class StyleSheetNode extends AbstractNode {
 
         @Override
         protected boolean createKeys(List<RuleHandle> toPopulate) {
-            toPopulate.addAll(model.getFileToRulesMap().get(stylesheet));
+            for(RuleHandle handle : model.getFileToRulesMap().get(stylesheet)) {
+                if(includeKey(handle)) {
+                    toPopulate.add(handle);
+                }
+            }
             return true;
         }
 
+        /**
+         * Determines whether the specified rule should be included among keys.
+         *
+         * @param rule rule to check.
+         * @return {@code true} when the rule should be included among keys,
+         * returns {@code false} otherwise.
+         */
+        private boolean includeKey(RuleHandle rule) {
+            boolean include = true;
+            String pattern = filter.getPattern();
+            if (pattern != null) {
+                String selector = rule.getDisplayName();
+                include = (selector.indexOf(pattern) != -1);
+            }
+            return include;
+        }
+        
         @Override
         protected Node createNodeForKey(RuleHandle key) {
             return new RuleNode(key);

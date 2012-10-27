@@ -102,8 +102,8 @@ public class DocumentViewModel implements ChangeListener {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            update();
         }
+        update();
     }
     
     public void addChangeListener(ChangeListener l) {
@@ -139,7 +139,7 @@ public class DocumentViewModel implements ChangeListener {
      * Gets a map of stylesheet -> list of rules
      */
     public synchronized Map<FileObject, List<RuleHandle>> getFileToRulesMap() {
-        if (relatedStylesheets == null || indexModified) {
+        if (indexModified) {
             update();
         }
         return relatedStylesheets;
