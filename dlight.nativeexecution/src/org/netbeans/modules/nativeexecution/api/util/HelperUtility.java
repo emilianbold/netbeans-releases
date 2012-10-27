@@ -161,8 +161,9 @@ public class HelperUtility {
                             if (remoteSize >= 0) {
                                 log.log(Level.WARNING, "File {0} exists, but cannot be updated. Used by other process?", remoteFile); // NOI18N
                             } else {
-                                log.log(Level.WARNING, "File {0} doesn't exist, and cannot be uploaded. Do you have enough rights?", remoteFile); // NOI18N
+                                log.log(Level.WARNING, "File {0} doesn't exist, and cannot be uploaded. Do you have enough privileges?", remoteFile); // NOI18N
                             }
+                            log.log(Level.WARNING, "You could try to use -J-Dcnd.tmpbase=<other base location> to re-define default one."); // NOI18N
                             Exceptions.printStackTrace(ex);
                         } finally {
                             RemoteStatistics.stopChannelActivity(activityID);
