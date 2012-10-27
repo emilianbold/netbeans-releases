@@ -38,5 +38,7 @@ echo ${STATUS} > "${SHFILE}.res"
 if [ "${PROMPT}" != "NO" ]; then
   echo "${PROMPT}"
   read X
+else
+  sleep 1
 fi
 
