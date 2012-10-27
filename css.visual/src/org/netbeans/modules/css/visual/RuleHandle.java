@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.visual;
 
+import org.netbeans.modules.css.model.api.Rule;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -50,12 +51,18 @@ import org.openide.filesystems.FileObject;
 public class RuleHandle extends Location {
     
     private String displayName;
+    private Rule rule;
 
-    RuleHandle(FileObject styleSheet, int offset, String displayName) {
+    RuleHandle(FileObject styleSheet, Rule rule, int offset, String displayName) {
         super(styleSheet, offset);
+        this.rule = rule;
         this.displayName = displayName;
     }
 
+    public Rule getRule() {
+        return rule;
+    }
+    
     public String getDisplayName() {
         return displayName;
     }

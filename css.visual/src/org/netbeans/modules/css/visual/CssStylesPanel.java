@@ -151,6 +151,7 @@ public class CssStylesPanel extends javax.swing.JPanel {
         
         InstanceContent ic = new InstanceContent();
         ic.add(context);
+        ic.add(getRuleEditorController());
         lookup.updateLookup(new AbstractLookup(ic));
     }
     
