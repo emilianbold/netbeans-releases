@@ -316,7 +316,7 @@ final class InstanceNode extends DataNode implements Runnable {
         if (Action.class.isAssignableFrom(clazz)) {
             Action action = (Action)ic.instanceCreate();
             // Set node's display name.
-            String name = (String)action.getValue(Action.NAME);
+            String name = action != null ? (String)action.getValue(Action.NAME) : null;
             
             // #31227 - some action does not implement its name properly.
             // Throw exception with the name of the class.

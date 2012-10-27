@@ -230,6 +230,7 @@ public final class Version {
      * notation the versions are equal only if the version strings exactly
      * matches.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("RC_REF_COMPARISON")
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -281,7 +282,7 @@ public final class Version {
 
         // standard
         int hash = 7;
-        hash = 97 * hash + (this.majorNumber != null ? this.majorNumber.hashCode() : 0);
+        hash = 97 * hash + this.majorNumber.hashCode();
         hash = 97 * hash + (this.minorNumber != null ? this.minorNumber.hashCode() : 0);
         hash = 97 * hash + (this.microNumber != null ? this.microNumber.hashCode() : 0);
         hash = 97 * hash + (this.updateNumber != null ? this.updateNumber.hashCode() : 0);
