@@ -596,7 +596,10 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Item addExcludedItem(Item item, boolean notify, boolean setModified) {
-        return addItemImpl(item, notify, setModified, true);
+        // TODO: fixing #215568 - Cannot put unmanaged project in VCS
+        // we want item to be excluded, but when old version of xml was read
+        // included items were missed there => can not drop them yet
+        return addItemImpl(item, notify, setModified, ConfigurationDescriptorProvider.VCS_WRITE);
     }
 
     private synchronized Item addItemImpl(Item item, boolean notify, boolean setModified, boolean excludedByDefault) {
