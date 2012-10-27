@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,16 +34,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2011 Oracle
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.netbinox;
 
+package org.netbeans.test.ide;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
@@ -51,6 +55,7 @@ import java.security.Permission;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -59,14 +64,13 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Assert;
-import org.openide.modules.Places;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-final class CountingSecurityManager extends SecurityManager implements Callable<Integer> {
+final class PerfCountingSecurityManager extends SecurityManager implements Callable<Integer> {
     private static int cnt;
     private static StringWriter msgs;
     private static PrintWriter pw;
@@ -74,25 +78,54 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     private static Map<String,Exception> who = new HashMap<String, Exception>();
     private static Set<String> allowed = Collections.emptySet();
     private static SecurityManager man;
-    private static Mode mode;
+    private static PerfCountingSecurityManager.Mode mode;
+
+    static void initWrites() throws IOException {
+        Set<String> allowedFiles = new HashSet<String>();
+        InputStream is = PerfCountingSecurityManager.class.getResourceAsStream("allowed-file-writes.txt");
+        Assert.assertNotNull("file found", is);
+        BufferedReader r = new BufferedReader(new InputStreamReader(is));
+        for (;;) {
+            String line = r.readLine();
+            if (line == null) {
+                break;
+            }
+            if (line.startsWith("#")) {
+                continue;
+            }
+            allowedFiles.add(line);
+        }
+        PerfCountingSecurityManager.initialize(null, PerfCountingSecurityManager.Mode.CHECK_WRITE, allowedFiles);
+    }
+
+    private static boolean startsWith(String ths, String with) {
+        if (Utilities.isWindows()) {
+            return ths.toUpperCase().startsWith(with.toUpperCase());
+        } else {
+            return ths.startsWith(with);
+        }
+    }
 
     public enum Mode {
         CHECK_READ, CHECK_WRITE
     };
     
-    public static void initialize(String prefix, Mode mode, Set<String> allowedFiles) {
+    public static void initialize(String prefix, PerfCountingSecurityManager.Mode mode, Set<String> allowedFiles) {
         System.setProperty("counting.security.disabled", "true");
 
-        if (System.getSecurityManager() instanceof CountingSecurityManager) {
+        if (System.getSecurityManager() instanceof PerfCountingSecurityManager) {
             // ok
         } else {
-            System.setSecurityManager(new CountingSecurityManager());
+            System.setSecurityManager(new PerfCountingSecurityManager());
         }
         setCnt(0);
         msgs = new StringWriter();
         pw = new PrintWriter(msgs);
-        CountingSecurityManager.prefix = prefix;
-        CountingSecurityManager.mode = mode;
+        if (prefix != null && Utilities.isWindows()) {
+            prefix = prefix.toUpperCase();
+        }
+        PerfCountingSecurityManager.prefix = prefix;
+        PerfCountingSecurityManager.mode = mode;
         allowed = allowedFiles;
 
         Logger.getLogger("org.netbeans.TopSecurityManager").setLevel(Level.OFF);
@@ -167,7 +200,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     
     @Override
     public void checkRead(String file) {
-        if (mode == Mode.CHECK_READ && acceptFileRead(file)) {
+        if (mode == PerfCountingSecurityManager.Mode.CHECK_READ && acceptFileRead(file)) {
             String dirs = System.getProperty("netbeans.dirs");
             if (dirs == null) {
                 // not initialized yet
@@ -202,7 +235,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         }
         Properties okAccess = new Properties();
         try {
-            okAccess.load(CountingSecurityManager.class.getResourceAsStream(res));
+            okAccess.load(PerfCountingSecurityManager.class.getResourceAsStream(res));
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
@@ -210,11 +243,11 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         int myCnt = 0;
         StringWriter w = new StringWriter();
         PrintWriter p = new PrintWriter(w);
-        Set<Who> m;
+        Set<PerfCountingSecurityManager.Who> m;
         synchronized (members) {
-            m = new TreeSet<Who>(members.values());
+            m = new TreeSet<PerfCountingSecurityManager.Who>(members.values());
         }
-        for (Who wh : m) {
+        for (PerfCountingSecurityManager.Who wh : m) {
             if (wh.isIgnore()) {
                 continue;
             }
@@ -232,22 +265,22 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         }
     }
 
-    private final Map<Class,Who> members = Collections.synchronizedMap(new HashMap<Class, Who>());
+    private final Map<Class,PerfCountingSecurityManager.Who> members = Collections.synchronizedMap(new HashMap<Class, PerfCountingSecurityManager.Who>());
     @Override
     public void checkMemberAccess(Class<?> clazz, int which) {
         if (clazz == null) {
             assertMembers(which);
         }
 
-        Who w = members.get(clazz);
+        PerfCountingSecurityManager.Who w = members.get(clazz);
         if (w == null) {
-            w = new Who(clazz);
+            w = new PerfCountingSecurityManager.Who(clazz);
             members.put(clazz, w);
         }
         w.count++;
     }
 
-    private static class Who extends Exception implements Comparable<Who> {
+    private static class Who extends Exception implements Comparable<PerfCountingSecurityManager.Who> {
         int hashCode;
         final Class<?> clazz;
         int count;
@@ -283,7 +316,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final Who other = (Who) obj;
+            final PerfCountingSecurityManager.Who other = (PerfCountingSecurityManager.Who) obj;
             if (this.clazz != other.clazz) {
                 return false;
             }
@@ -293,7 +326,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             return Arrays.equals(getStackTrace(), other.getStackTrace());
         }
 
-        public int compareTo(Who o) {
+        public int compareTo(PerfCountingSecurityManager.Who o) {
             if (o == this) {
                 return 0;
             }
@@ -321,7 +354,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             }
 
             for (StackTraceElement stackTraceElement : getStackTrace()) {
-                if (stackTraceElement.getClassName().contains("CountingSecurityManager")) {
+                if (stackTraceElement.getClassName().contains("PerfCountingSecurityManager")) {
                     continue;
                 }
                 if (stackTraceElement.getClassName().equals("java.lang.Class")) {
@@ -376,7 +409,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
 
     @Override
     public void checkWrite(String file) {
-        if (mode == Mode.CHECK_WRITE && acceptFileWrite(file)) {
+        if (mode == PerfCountingSecurityManager.Mode.CHECK_WRITE && acceptFileWrite(file)) {
             setCnt(getCnt() + 1);
             pw.println("checkWrite: " + file);
             if (who.get(file) == null) {
@@ -389,9 +422,12 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
 
     @Override
     public void checkDelete(String file) {
-        if (mode == Mode.CHECK_WRITE && acceptFileWrite(file)) {
-            setCnt(getCnt() + 1);
-            pw.println("checkDelete: " + file);
+        if (mode == PerfCountingSecurityManager.Mode.CHECK_WRITE && acceptFileWrite(file)) {
+            int c = getCnt() + 1;
+            setCnt(c);
+            if (c < 9999) { // #161646
+                pw.println("checkDelete: " + file);
+            }
         }
     }
     
@@ -401,15 +437,22 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             // still initializing
             return false;
         }
-        if (!file.startsWith(ud)) {
+        if (!startsWith(file, ud)) {
             return false;
         }
 
         String f = file.substring(ud.length()).replace(File.separatorChar, '/');
+        if (f.startsWith("/.metadata")) {
+            // equinox runtime
+            return false;
+        }
         if (f.contains("config/Modules")) {
             return false;
         }
         if (f.contains("config/Windows2Local")) {
+            return false;
+        }
+        if (f.contains("var/cache/netigso")) {
             return false;
         }
         if (f.endsWith(".hg")) {
@@ -424,149 +467,87 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             }
         }
         
-        if (file.startsWith(ud)) {
-            if (f.startsWith("/")) {
+        if (startsWith(file, ud)) {
+            if (startsWith(f, "/")) {
                 f = f.substring(1);
             }
             if (allowed.contains(f)) {
                 return false;
             }
         }
-
-        return prefix == null || file.startsWith(prefix);
-    }
-
-    private boolean acceptFileRead(String file) {
-        if (prefix != null && !file.startsWith(prefix)) {
-            return false;
-        }
-        if (containsPath(file, "lib/jhall.jar")) {
-            return false;
-        }
-        if (containsPath(file, "/var/cache/netigso/org.eclipse.osgi/.")) {
-            // Just finite number of files in a cache
-            return false;
-        }
-        if (containsPath(file, "/var/cache/netigso/org.eclipse.equinox.app/.")) {
-            // Just finite number of files in a cache
-            return false;
-        }
-        if (containsPath(file, "/var/cache/netigso/org.eclipse.core.runtime/.")) {
-            // Just finite number of files in a cache
-            return false;
-        }
-        if (containsPath(file, "/var/cache/netigso/.settings")) {
-            // Just finite number of files among settings
-            return false;
-        }
-        if (containsPath(file, ".eclipse/org.eclipse.equinox.security/secure_storage")) {
-            // comes from org.eclipse.equinox.internal.security.storage.StorageUtils.getDefaultLocation
-            // and does not seem to be preventable
-            return false;
-        }
-
-        if (containsPath(file, Places.getUserDirectory().getName() + "/.metadata")) {
-            return false;
-        }
-        if (
-            file.equals(System.getProperty("netbeans.user")) ||
-            file.equals(System.getProperty("netbeans.home")) ||
-            (file + File.separator + "platform").equals(System.getProperty("netbeans.home")) ||
-            file.matches(".*/modules/ext/org\\.eclipse\\.osgi_[0-9\\.]*v[0-9]*\\.jar") ||
-            containsPath(file, "modules/ext/org.eclipse.osgi_3.8.0.v20120529-1548.jar") ||
-            containsPath(file, "modules/org-netbeans-modules-netbinox.jar") ||
-            containsPath(file, "platform/lib/org-openide-util.jar") ||
-            containsPath(file, "var/cache/netigso") ||
-            containsPath(file, "sun/net/www/content/content/unknown.class")
-        ) {
-            // equinox just needs to touch some files, preferrably leave them
-            // under our directory
-            return false;
-        }
-        for (Class<?> onStack : getClassContext()) {
-            if (onStack.getName().startsWith("org.eclipse.osgi.internal.permadmin.SecurityAdmin")) {
-                // this is caused by our CountingSecurityManager being on
+        for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
+            if (e.getClassName().contains("junit.JUnitTestRunner")) {
+                return false;
+            }
+            // this happens from time to time (according to GC being scheduled or not)
+            // and shall not influence the results of this test
+            if (e.getClassName().equals("org.openide.util.WeakListenerImpl$ListenerReference") && e.getMethodName().equals("getRemoveMethod")) {
                 return false;
             }
         }
-        for (Class<?> onStack : getClassContext()) {
-            if (onStack.getName().startsWith("org.eclipse")) {
-                return true;
-            }
+
+        return prefix == null || startsWith(file, prefix);
+    }
+
+    private boolean acceptFileRead(String file) {
+        if (prefix != null && !startsWith(file, prefix)) {
+            return false;
         }
 
-        if (!file.endsWith(".jar") && !file.endsWith("bundlefile")) {
+        if (!file.endsWith(".jar")) {
             return false;
         }
         if (file.endsWith("tests.jar")) {
             return false;
         }
-        if (file.endsWith("org-netbeans-modules-nbjunit.jar") || file.endsWith("org-netbeans-libs-junit4.jar")) {
+        if (startsWith(file, System.getProperty("java.home").replaceAll("[/\\\\][^/\\\\]*$", ""))) {
             return false;
         }
-        /* NB-Core-Build #7998, #8006:
-        java.lang.Exception: checkRead: .../nbbuild/netbeans/ide/modules/org-netbeans-modules-projectui.jar
-            at org.netbeans.modules.netbinox.CountingSecurityManager.checkRead(CountingSecurityManager.java:178)
-            at java.util.zip.ZipFile.<init>(ZipFile.java:122)
-            ...
-            at java.lang.ClassLoader.loadClass(ClassLoader.java:247)
-            at org.netbeans.modules.project.ui.actions.ProjectAction.refresh(ProjectAction.java:145)
-            at org.netbeans.modules.project.ui.actions.LookupSensitiveAction.doRefresh(LookupSensitiveAction.java:193)
-            at org.netbeans.modules.project.ui.actions.LookupSensitiveAction.isEnabled(LookupSensitiveAction.java:136)
-            at org.netbeans.modules.project.ui.actions.ProjectAction.isEnabled(ProjectAction.java:66)
-            at org.netbeans.modules.debugger.jpda.projects.MainProjectManager$1.run(MainProjectManager.java:106)
-            at java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:209)
-        (where MPM is initialized from registration of DebuggerAction.createKillAction)
-        */
-        if (file.endsWith("org-netbeans-modules-projectui.jar")) {
-            return false;
-        }
-        if (isFromJDK(file)) {
-            return false;
-        }
-        if (file.startsWith(System.getProperty("netbeans.home") + File.separator + "lib")) {
-            return false;
-        }
-        if (file.startsWith(System.getProperty("netbeans.home") + File.separator + "core")) {
+        if (!acceptFileInDir(file, System.getProperty("netbeans.home"))) {
             return false;
         }
         String dirs = System.getProperty("netbeans.dirs");
         if (dirs != null) {
             for (String dir : dirs.split(File.pathSeparator)) {
-                if (file.startsWith(dir + File.separator + "lib")) {
-                    return false;
-                }
-                if (file.startsWith(dir + File.separator + "core")) {
+                if (!acceptFileInDir(file, dir)) {
                     return false;
                 }
             }
         }
+        if (file.endsWith("harness" + File.separator + "modules" + File.separator + "org-netbeans-modules-nbjunit.jar")) {
+            return false;
+        }
+
         // mac osx
         dirs = System.getProperty("java.ext.dirs");
         if (dirs != null) {
             for (String dir : dirs.split(File.pathSeparator)) {
-                if (file.startsWith(dir)) {
+                if (startsWith(file, dir)) {
                     return false;
                 }
             }
         }
-        if (file.endsWith("lib" + File.pathSeparator + "dt.jar")) {
-            return false;
-        }
-        if (file.endsWith(File.pathSeparator + "lib" + File.pathSeparator + "jhall.jar")) {
+        if (Utilities.isMac() && startsWith(file, "/System/Library/Frameworks/JavaVM.framework/")) {
             return false;
         }
 
-        for (Class<?> onStack : getClassContext()) {
-            if (onStack.getName().equals("org.netbeans.Stamps")) {
+        return true;
+    }
+
+    private static boolean acceptFileInDir(String file, String dir) {
+        if (startsWith(file, dir + File.separator + "lib")) {
+            return false;
+        }
+        if (startsWith(file, dir + File.separator + "core")) {
+            return false;
+        }
+        if (startsWith(file, dir)) {
+            String sub = file.substring(dir.length() + 1);
+            if (allowed.contains(sub)) {
                 return false;
             }
         }
         return true;
-    }
-    
-    private boolean containsPath(String file, String pathWithSlash) {
-        return file.contains(pathWithSlash.replace('/', File.separatorChar));
     }
 
     @Override
@@ -574,14 +555,10 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (cmd.contains("chmod")) {
             return;
         }
-        if (cmd.equals("hg")) {
-            return;
-        }
-        if (cmd.endsWith("/hg")) {
-            return;
-        }
-        if (cmd.endsWith("hg.exe")) {
-            return;
+        for (StackTraceElement e : Thread.currentThread().getStackTrace()) {
+            if (e.getMethodName().equals("execEnv") && e.getClassName().equals("org.netbeans.modules.mercurial.util.HgCommand")) {
+                return;
+            }
         }
 
         super.checkExec(cmd);
@@ -599,14 +576,5 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
      */
     private static boolean isDisabled() {
         return Boolean.getBoolean("counting.security.disabled");
-    }
-    
-    private boolean isFromJDK(String file) {
-        String jdkDir = System.getProperty("java.home").replaceAll("[/\\\\][^/\\\\]*$", "");
-        if (Utilities.isWindows()) {
-            jdkDir = jdkDir.toLowerCase();
-            file = file.toLowerCase();
-        }
-        return file.startsWith(jdkDir);
     }
 }
