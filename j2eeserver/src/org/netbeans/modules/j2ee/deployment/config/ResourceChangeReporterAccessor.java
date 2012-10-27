@@ -58,7 +58,7 @@ public abstract class ResourceChangeReporterAccessor {
     static {
         Class c = ResourceChangeReporter.class;
         try {
-            Class.forName(c.getName(), true, J2eeApplicationAccessor.class.getClassLoader()); // NOI18N
+            Class.forName(c.getName(), true, ResourceChangeReporterAccessor.class.getClassLoader()); // NOI18N
         } catch (ClassNotFoundException cnf) {
             Exceptions.printStackTrace(cnf);
         }
