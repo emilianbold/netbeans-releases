@@ -44,15 +44,23 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
+import org.netbeans.api.autoupdate.UpdateUnit;
+import org.openide.modules.ModuleInfo;
 
 public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
+    private UpdateUnit visibleAncestor;
 
     public ModuleUpdateUnitImpl (String codename) {
         super (codename);
     }
 
+    @Override
     public TYPE getType () {
         return UpdateManager.TYPE.MODULE;
     }
@@ -60,6 +68,43 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
     @Override
     public boolean isPending () {
         return UpdateUnitFactory.getDefault().isScheduledForRestart (getUpdateUnit ());
+    }
+
+    @Override
+    public UpdateUnit getVisibleAncestor() {
+        if (visibleAncestor == null) {
+            assert getInstalled() != null : this + " is installed";
+            UpdateElementImpl installedImpl = Trampoline.API.impl(getInstalled());
+            Set<Module> visible = new HashSet<Module> ();
+            for (ModuleInfo mi : installedImpl.getModuleInfos()) {
+                visible.addAll(findVisibleAncestor(Utilities.toModule(mi)));
+            }
+            String cat = installedImpl.getCategory();
+            for (Module visMod : visible) {
+                visibleAncestor = Utilities.toUpdateUnit(visMod);
+                if (cat.equals(visibleAncestor.getInstalled().getCategory())) {
+                    break;
+                }
+            }
+        }
+        return visibleAncestor;
+    }
+    
+    private static Set<Module> findVisibleAncestor(Module module) {
+        Set<Module> visible = new HashSet<Module> ();
+        ModuleManager manager = module.getManager();
+        Set<Module> moduleInterdependencies = manager.getModuleInterdependencies(module, true, false, true);
+        for (Module m : moduleInterdependencies) {
+            if (Utilities.isKitModule(m)) {
+                visible.add(m);
+            }
+        }
+        if (visible.isEmpty()) {
+            for (Module m : moduleInterdependencies) {
+                visible.addAll(findVisibleAncestor(m));
+            }
+        }
+        return visible;
     }
     
 }

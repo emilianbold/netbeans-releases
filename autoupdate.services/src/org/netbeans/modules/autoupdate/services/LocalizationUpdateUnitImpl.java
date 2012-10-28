@@ -47,6 +47,7 @@ package org.netbeans.modules.autoupdate.services;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
+import org.netbeans.api.autoupdate.UpdateUnit;
 
 public class LocalizationUpdateUnitImpl extends UpdateUnitImpl {
     private Logger err = Logger.getLogger (this.getClass ().getName ());
@@ -57,6 +58,11 @@ public class LocalizationUpdateUnitImpl extends UpdateUnitImpl {
 
     public TYPE getType () {
         return UpdateManager.TYPE.LOCALIZATION;
+    }
+
+    @Override
+    public UpdateUnit getVisibleAncestor() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
 

@@ -197,10 +197,7 @@ public class Utilities {
         }
 
         List<String> names = new ArrayList<String> ();
-        Set<UpdateUnit> coveredByVisible = new HashSet <UpdateUnit> ();
-        Map<UpdateUnit, List<UpdateElement>> coveredByVisibleMap = new HashMap <UpdateUnit, List<UpdateElement>> ();
-        
-        Set<UpdateUnit> visibleUnits = new HashSet <UpdateUnit> ();
+
         Set<UpdateUnit> invisibleUnits = new HashSet <UpdateUnit> ();
 
         for (UpdateUnit u : units) {
@@ -211,7 +208,6 @@ public class Utilities {
                     continue;
                 }
                 if (UpdateManager.TYPE.KIT_MODULE.equals(u.getType())) {
-                    visibleUnits.add(u);
                     String catName = el.getCategory();
                     if (names.contains (catName)) {
                         UnitCategory cat = res.get (names.indexOf (catName));
@@ -225,207 +221,56 @@ public class Utilities {
                 } else {
                     invisibleUnits.add(u);
                 }
-
             }
         }
 
-        // not covered by visible modules
+        if (invisibleUnits.size() > 0 && !isNbms) {
+            Map<UpdateUnit, Unit.InternalUpdate> uu2internal = new HashMap<UpdateUnit, Unit.InternalUpdate>();
+            for (UpdateUnit invisibleUnit : invisibleUnits) {
+                UpdateUnit visUnit = invisibleUnit.getVisibleAncestor();
+                assert visUnit != null : invisibleUnit + " has a visible ancestor";
+                assert visUnit.getInstalled() != null : "Visible ancestor is installed";
+                if (visUnit == null || visUnit.getInstalled() == null) {
+                    // fallback for unit w/o visible ancestor
+                    visUnit = invisibleUnit;
+                }
+                UpdateElement visElement = visUnit.getInstalled();
+                logger.finer(invisibleUnit + " -> " + visUnit);
 
-        Collection<UpdateUnit> allUnits = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
-        Set <UpdateUnit> otherUnits = new HashSet <UpdateUnit> ();
-        for(UpdateUnit u : allUnits) {
-            if(!coveredByVisible.contains(u) && 
-                    u.getAvailableUpdates().size() > 0 &&
-                    u.getInstalled()!=null &&
-                    !u.isPending() &&
-                    (u.getInstalled().isEnabled() ||
-                        OperationContainer.createForEnable().canBeAdded(u, u.getInstalled()))) { // just disabled, but can be enabled: i.e. not eager/autoload
-                otherUnits.add(u);
-            }
-        }
-
-        List<Unit.InternalUpdate> internals = new ArrayList <Unit.InternalUpdate>();
-        createVisibleModulesDependecyMap(units, coveredByVisibleMap);
-
-        Set <UpdateUnit> invisibleElementsWithoutVisibleParent = new HashSet <UpdateUnit> ();
-
-        if(otherUnits.size() > 0 && !isNbms) {
-            for(UpdateUnit uu : otherUnits) {
-                UpdateUnit u = getVisibleUnitForInvisibleModule(uu, coveredByVisibleMap);
-                if (u != null) {
-                    if (u.getInstalled() != null && !u.getInstalled().isEnabled()) {
-                        continue;
+                // belongs to one of already visible unit
+                String catName = visElement.getCategory();
+                if (names.contains(catName)) {
+                    logger.finer(invisibleUnit + " belongs to " + catName);
+                    if (! uu2internal.containsKey(visUnit)) {
+                        Unit.InternalUpdate internalUnit = new Unit.InternalUpdate(visUnit, catName, false);
+                        uu2internal.put(visUnit, internalUnit);
                     }
-                    boolean exist = false;
-                    for(Unit.InternalUpdate internal : internals) {
-                        if(internal.getVisibleUnit() == u) {
-                            internal.getUpdateUnits().add(uu);
-                            exist = true;
-                        }
-                    }
-                    if(!exist) {
-                        //all already determined "internal" visible updates does not contain just found one
-                        String catName = u.getInstalled().getCategory();
-                        Unit.InternalUpdate iu = new Unit.InternalUpdate(u, catName, false);
-                        iu.getUpdateUnits().add(uu);
-                        internals.add(iu);
+                    uu2internal.get(visUnit).getUpdateUnits().add(invisibleUnit);
+                    
+                // belongs to category which is not listed yet
+                } else {
+                    logger.finer(invisibleUnit + " makes new unit " + catName);
+                    if (! uu2internal.containsKey(visUnit)) {
+                        Unit.InternalUpdate internalUnit = new Unit.InternalUpdate(visUnit, catName, false);
+                        uu2internal.put(visUnit, internalUnit);
                         UnitCategory cat = new UnitCategory(catName);
                         res.add(cat);
                         names.add(catName);
-                        cat.addUnit(iu);
+                        cat.addUnit(internalUnit);
                     }
-                } else {
-                    // fallback, show module itself
-                    invisibleElementsWithoutVisibleParent.add(uu);
+                    uu2internal.get(visUnit).getUpdateUnits().add(invisibleUnit);
                 }
-            }            
-        }
-
-        Map<UpdateUnit, List<UpdateElement>> coveredByInvisibleMap = new HashMap <UpdateUnit, List<UpdateElement>> ();
-        createVisibleModulesDependecyMap(invisibleElementsWithoutVisibleParent, coveredByInvisibleMap);
-
-        Set <UpdateUnit> coveredByInvisible = new HashSet <UpdateUnit>();
-        for (UpdateUnit invisibleUnit : invisibleElementsWithoutVisibleParent) {
-            boolean add = true;
-            UpdateElement update = invisibleUnit.getAvailableUpdates().get(0);
-            if (invisibleUnit.getInstalled() != null && !invisibleUnit.getInstalled().isEnabled()) {
-                continue;
-            }
-            for(UpdateUnit key : coveredByInvisibleMap.keySet()) {
-                if(key.equals(invisibleUnit)) {
-                    continue;
+                for (Unit.InternalUpdate iu : uu2internal.values()) {
+                    iu.initState();
                 }
-                if(coveredByInvisibleMap.get(key).contains(update) && !coveredByInvisible.contains(key)) {
-                    add = false;
-                    break;
-                }
-            }
-            
-            if (add) {
-                String catName = update.getCategory();
-                UnitCategory cat;
-
-                if (names.contains(catName)) {
-                    cat = res.get(names.indexOf(catName));
-                } else {
-                    cat = new UnitCategory(catName);
-                    res.add(cat);
-                    names.add(catName);
-                }
-                cat.addUnit(new Unit.Update(invisibleUnit, isNbms, cat.getCategoryName()));
-            } else {
-                coveredByInvisible.add(invisibleUnit);
             }
         }
 
-        for(Unit.InternalUpdate iu : internals) {
-            iu.initState();
-        }
         logger.log(Level.FINE, "makeUpdateCategories (" + units.size () + ") returns " + res.size () + ", took " + (System.currentTimeMillis()-start) + " ms");
 
         return res;
     };
 
-    public static HashMap<UpdateUnit, List<UpdateElement>> getVisibleModulesDependecyMap(Collection<UpdateUnit> allUnits) {
-        HashMap<UpdateUnit, List<UpdateElement>> result = new HashMap <UpdateUnit, List<UpdateElement>>();
-        createVisibleModulesDependecyMap(allUnits, result);
-        return result;
-    }
-
-    private static void createVisibleModulesDependecyMap(Collection<UpdateUnit> allUnits, Map <UpdateUnit, List<UpdateElement>> result) {
-        for (UpdateUnit u : allUnits) {
-            if (u.getInstalled() != null && !u.isPending() && u.getInstalled().isEnabled() && !result.containsKey(u)) {
-
-                OperationContainer<InstallSupport> container = u.getAvailableUpdates().isEmpty() ? 
-                    OperationContainer.createForInternalUpdate() :
-                    OperationContainer.createForUpdate();
-                OperationInfo<InstallSupport> info = container.add(u, 
-                        u.getAvailableUpdates().isEmpty() ? u.getInstalled() : u.getAvailableUpdates().get(0));
-
-                List<UpdateElement> list = new ArrayList<UpdateElement>();
-
-                for (UpdateElement ur : info.getRequiredElements()) {
-                    if(!ur.getUpdateUnit().isPending()) {
-                        list.add(ur);
-                    }
-                }
-                for (OperationInfo<InstallSupport> in : container.listAll()) {
-                    UpdateUnit unit = in.getUpdateUnit();
-                    if (unit != u) {
-                        List<UpdateElement> updates = unit.getAvailableUpdates();
-                        if (updates.size() > 0 && !list.contains(updates.get(0))) {
-                            list.add(updates.get(0));
-                        }
-                    }
-                }
-                if(!list.isEmpty()) {
-                    result.put(u, list);
-                }
-            }
-        }        
-    }
-
-    public static UpdateUnit getVisibleUnitForInvisibleModule(UpdateUnit invisible, Map<UpdateUnit, List<UpdateElement>> map) {
-        List <UpdateUnit> candidates = new ArrayList<UpdateUnit>();
-
-        for(UpdateUnit unit : map.keySet()) {
-            for (UpdateElement ue : map.get(unit)) {
-                if (ue.getUpdateUnit().equals(invisible)) {
-                    logger.log(Level.FINEST,
-                            "... found candidate visible module " + unit.getCodeName() + " for invisible " + invisible.getCodeName());
-                    candidates.add(unit);
-                }
-            }
-        }
-
-        UpdateUnit result = null;
-        if(candidates.isEmpty()) {
-            logger.log(Level.FINEST,
-                    "Have not found visible module for invisible " + invisible.getCodeName());
-        } else {
-            
-            int overlap = 0;
-            UpdateUnit takeMe = null;
-            for(UpdateUnit tryMe : candidates) {
-                int o = getNameOverlapping(tryMe.getCodeName(), invisible.getCodeName());
-                if(o > overlap) {
-                    takeMe = tryMe;
-                    overlap = o;
-                }
-            }
-            if (takeMe != null) {
-                result = takeMe;
-            } else {
-                result = candidates.get(0);
-                for (UpdateUnit u : candidates) {
-                    if (u.getCodeName().endsWith(".kit")) {
-                        result = u;
-                        break;
-                    }
-                }
-            }
-            logger.log(Level.FINEST,
-                    "Found visible module " + candidates.get(0).getCodeName() + " for invisible " + invisible.getCodeName());
-        }
-
-        return result;
-    }
-    private static int getNameOverlapping(String cn1, String cn2) {
-        String[] cn1sp = cn1.split("\\.");
-        String[] cn2sp = cn2.split("\\.");
-
-        int length1 = cn1sp.length;
-        int length2 = cn2sp.length;
-        int min = Math.min(length1, length2);
-        int i;
-        for(i=0;i<min;i++) {
-            if(!cn1sp[i].equals(cn2sp[i])) {
-                break;
-            }
-        }
-        return (2 * i > min) ? i : 0;
-    }
-   
     public static long getTimeOfInitialization () {
         return getPreferences ().getLong (TIME_OF_MODEL_INITIALIZATION, 0);
     }

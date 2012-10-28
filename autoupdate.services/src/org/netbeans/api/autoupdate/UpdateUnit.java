@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -136,6 +136,15 @@ public final class UpdateUnit {
         return impl.isPending ();
     }
     
+    public UpdateUnit getVisibleAncestor() {
+        if (getInstalled() != null) {
+            return impl.getVisibleAncestor();
+        } else {
+            return null;
+        }
+    }
+    
+    @Override
     public boolean equals(Object obj) {
         if (obj == null)
             return false;
@@ -149,6 +158,7 @@ public final class UpdateUnit {
         return true;
     }
 
+    @Override
     public int hashCode() {
         int hash = 5;
 
