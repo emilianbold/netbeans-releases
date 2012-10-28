@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,36 +34,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.j2ee.deployment.impl;
 
-package org.netbeans.modules.j2ee.deployment.plugins.spi;
-
-import org.netbeans.modules.j2ee.deployment.impl.ServerLibraryAccessor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryImplementation;
 
 /**
- * Factory creating the API representation of the library provided in SPI.
  *
- * @since 1.68
  * @author Petr Hejl
  */
-public final class ServerLibraryFactory {
+public abstract class ServerLibraryAccessor {
 
-    private ServerLibraryFactory() {
-        super();
+    private static volatile ServerLibraryAccessor accessor;
+
+    public static void setDefault(ServerLibraryAccessor accessor) {
+        if (ServerLibraryAccessor.accessor != null) {
+            throw new IllegalStateException("Already initialized accessor"); // NOI18N
+        }
+        ServerLibraryAccessor.accessor = accessor;
     }
-    
+
+    public static ServerLibraryAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
+        }
+
+        // invokes static initializer of ServerLibrary.class
+        // that will assign value to the DEFAULT field above
+        Class c = ServerLibrary.class;
+        try {
+            Class.forName(c.getName(), true, ServerLibraryAccessor.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
+        }
+
+        return accessor;
+    }
+
     /**
-     * Creates the API representation of the provided SPI instance.
-     * 
+     * Creates the API instance.
+     *
      * @param impl the SPI instance
-     * @return the API server instance representation
+     * @return the API instance
      */
-    public static ServerLibrary createServerLibrary(ServerLibraryImplementation impl) {
-        return ServerLibraryAccessor.getDefault().createServerLibrary(impl);
-    }
+    public abstract ServerLibrary createServerLibrary(ServerLibraryImplementation impl);
+
 }

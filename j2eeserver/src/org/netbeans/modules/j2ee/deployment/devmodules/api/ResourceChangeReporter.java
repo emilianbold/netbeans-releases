@@ -55,13 +55,13 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporte
 public final class ResourceChangeReporter {
 
     static {
-        ResourceChangeReporterAccessor.DEFAULT = new ResourceChangeReporterAccessor() {
+        ResourceChangeReporterAccessor.setDefault(new ResourceChangeReporterAccessor() {
 
             @Override
             public ResourceChangeReporter createResourceChangeReporter(ResourceChangeReporterImplementation impl) {
                 return new ResourceChangeReporter(impl);
             }
-        };
+        });
     }
 
     private final ResourceChangeReporterImplementation impl;
