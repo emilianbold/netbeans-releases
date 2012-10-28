@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -603,7 +604,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
                 Set jdks = j2eePlatform.getSupportedJavaPlatformVersions();
                 // make sure that chosen source level is suported by server:
-                if (!jdks.contains(sourceLevel)) {
+                if (jdks != null && !jdks.contains(sourceLevel)) { // workaround for #212146 when jdks == null
                     if ("1.6".equals(sourceLevel) && jdks.contains("1.7")) {
                         sourceLevel = "1.6";
                     } else if ("1.6".equals(sourceLevel) && jdks.contains("1.5")) {
