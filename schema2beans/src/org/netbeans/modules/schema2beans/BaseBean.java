@@ -1240,11 +1240,13 @@ public abstract class BaseBean implements Cloneable, Bean {
     public Object clone() {
         BaseBean bean = null;
         try {
-            bean = (BaseBean) super.clone();
-        } catch (CloneNotSupportedException ex) {
-            TraceLogger.error(ex);
+            // FIXME this seriosly breaks the clone contract :(
+            // Create a new instance of ourself
+            bean = (BaseBean)this.getClass().newInstance();
+        } catch(Exception e) {
+            TraceLogger.error(e);
             throw new Schema2BeansRuntimeException(Common.
-                    getMessage("CantInstantiateBean_msg", ex.getMessage()));
+                    getMessage("CantInstantiateBean_msg", e.getMessage()));
         }
         
         //  If we are cloning the root - we need some extra initialization
