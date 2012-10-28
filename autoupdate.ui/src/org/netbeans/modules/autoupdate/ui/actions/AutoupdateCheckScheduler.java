@@ -217,7 +217,7 @@ public class AutoupdateCheckScheduler {
                 problems.addAll(updateProblems);
             }
         }
-        List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
+        List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
         boolean handleUpdates = OperationType.UPDATE == type;
         Collection<UnitCategory> cats =  handleUpdates ?
             Utilities.makeUpdateCategories (units, false) :
