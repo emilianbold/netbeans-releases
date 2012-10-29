@@ -395,7 +395,7 @@ public class StartTask extends BasicTask<OperationState> {
             }
 
             if (httpLive) {
-                if (!GlassFishStatus.isReady(instance, true, true)) {
+                if (!GlassFishStatus.isReady(instance, true, true, true)) {
                     OperationState  state = OperationState.FAILED;
                     String messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
                     Logger.getLogger("glassfish").log(Level.INFO,
