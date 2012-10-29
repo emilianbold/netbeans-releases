@@ -2091,7 +2091,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                 else if (a.type == Common.TYPE_COMMENT)
                     jw.write("childNode instanceof org.w3c.dom.Comment");
                 else
-                    jw.write("childNodeName == \""+a.dtdName+"\"");
+                    jw.write("\""+a.dtdName+"\".equals(childNodeName)");
                 jw.write(") ");
                 begin();
                 String var;
@@ -3914,13 +3914,13 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
             String type = a.getType();
             if (i > 0)
                 gen("else ");
-            gencr("if (name == \""+a.beanIntrospectorName()+"\")");
+            gencr("if (\""+a.beanIntrospectorName()+"\".equals(name))");
             tabIn();
             if (indexed) {
                 gen("add"+a.name);
                 geneol("("+JavaUtil.fromObject(type, "value")+")");
                 gen("else ");
-                gencr("if (name == \""+a.beanIntrospectorName()+"[]\")");
+                gencr("if (\""+a.beanIntrospectorName()+"[]\".equals(name))");
                 tabIn();
                 gen(a.getWriteMethod()+"(");
                 geneol("("+type+"[]) value)");
@@ -3948,10 +3948,10 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
             Property a = (Property)attrList.get(i);
             boolean   	indexed = a.isIndexed();
             String type = a.getType();
-            gen("if (name == \""+a.beanIntrospectorName());
+            gen("if (\""+a.beanIntrospectorName());
             if (indexed)
                 gen("[]");
-            gencr("\")");
+            gencr("\".equals(name))");
             tabIn();
             jw.write("return ");
             if (indexed)
@@ -4342,6 +4342,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         }
         for (Iterator types = typeMap.keySet().iterator(); types.hasNext(); ) {
             String type = (String) types.next();
+            boolean isString = type != null && type.equals("java.lang.String"); // NOI18N
             jw.beginIf("childObj instanceof "+type);
             jw.writeEol(type, " child = (", type, ") childObj");
             boolean firstUseOfIndex = true;
@@ -4359,7 +4360,11 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                         jw.writeEol("index = 0");
                     }
                     beginAttrIterator(attr, prop, "element");
-                    jw.beginIf(childExpr+" == element");
+                    if (isString) {
+                        jw.beginIf(childExpr+".equals(element)");
+                    } else {
+                        jw.beginIf(childExpr+" == element");
+                    }
                     jw.beginIf("returnConstName");
                     jw.writeEol("return ", prop.constName);
                     if (prop.type != Common.TYPE_COMMENT) {
@@ -4379,7 +4384,11 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     jw.writeEol("++index");
                     jw.end();
                 } else {
-                    jw.beginIf(childExpr+" == "+attr);
+                    if (isString) {
+                        jw.beginIf(childExpr+".equals("+attr+")");
+                    } else {
+                        jw.beginIf(childExpr+" == "+attr);
+                    }
                     jw.beginIf("returnConstName");
                     jw.writeEol("return ", prop.constName);
                     if (prop.type != Common.TYPE_COMMENT) {

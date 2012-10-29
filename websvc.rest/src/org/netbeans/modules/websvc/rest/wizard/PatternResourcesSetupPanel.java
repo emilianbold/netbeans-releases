@@ -229,8 +229,9 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
             Project project = Templates.getProject(wizard);
             WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
             Profile profile = webModule.getJ2eeProfile();
-            final WebRestSupport restSupport = project.getLookup().lookup(WebRestSupport.class);
-            boolean hasSpringSupport = restSupport!= null && restSupport.hasSpringSupport();
+            final WebRestSupport restSupport = (WebRestSupport)project.getLookup().
+                    lookup(RestSupport.class);
+            boolean hasSpringSupport = restSupport.hasSpringSupport();
             boolean hasJaxRs = restSupport.hasJaxRsApi();
             if ( hasSpringSupport ){
                 wizard.putProperty( WizardProperties.USE_JERSEY, true);
@@ -242,24 +243,19 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
                     remove(jerseyPanel);
                     jerseyPanel = null;
                 }
-                if (restSupport instanceof WebRestSupport) {
-                    ScanDialog.runWhenScanFinished(new Runnable() {
+                ScanDialog.runWhenScanFinished(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            List<RestApplication> restApplications = ((WebRestSupport) restSupport)
-                                    .getRestApplications();
-                            boolean configured = restApplications != null
-                                    && !restApplications.isEmpty();
-                            configureJersey(configured, wizard);
-                        }
-                    }, NbBundle.getMessage(PatternResourcesSetupPanel.class,
-                            "LBL_SearchAppConfig")); // NOI18N
+                    @Override
+                    public void run() {
+                        List<RestApplication> restApplications = restSupport.
+                                getRestApplications();
+                        boolean configured = restApplications != null
+                                && !restApplications.isEmpty();
+                        configureJersey(configured, wizard);
+                    }
+                }, NbBundle.getMessage(PatternResourcesSetupPanel.class,
+                        "LBL_SearchAppConfig")); // NOI18N
 
-                }
-                else {
-                    jerseyPanel.read(wizard);
-                }
             }
             
         }
