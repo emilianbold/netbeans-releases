@@ -251,6 +251,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
     private javax.swing.JTextField txtFolder;
     // End of variables declaration//GEN-END:variables
 
+    @Messages("RenameProject=Renaming Project")
     void renameProject() {
         final boolean artId = cbArtifactId.isSelected();
         final boolean dname = cbDisplayName.isSelected();
@@ -271,7 +272,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
                 FileObject pomFO = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
                 Utilities.performPOMModelOperations(pomFO, opers);
                 if (folder) {
-                    final ProgressHandle handle = ProgressHandleFactory.createHandle("Rename Project" + dname);
+                    final ProgressHandle handle = ProgressHandleFactory.createHandle(RenameProject());
                     //#76559
                     handle.start(MAX_WORK);
                     try {
