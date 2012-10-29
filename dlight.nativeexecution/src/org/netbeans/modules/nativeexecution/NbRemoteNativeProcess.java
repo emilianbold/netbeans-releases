@@ -72,7 +72,6 @@ public final class NbRemoteNativeProcess extends NbNativeProcess {
         setErrorStream(streams.err);
         setInputStream(streams.out);
         setOutputStream(streams.in);
-        streams.in.flush();
     }
 
     public boolean isAlive() {
