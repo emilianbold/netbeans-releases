@@ -119,6 +119,8 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (kind == null) {
             if (parent.isDiskFolder()) {
                 kind = Kind.SOURCE_DISK_FOLDER;
+            } else if (parent.isTestLogicalFolder()) {
+                kind = Kind.TEST_LOGICAL_FOLDER;
             } else {
                 kind = Kind.SOURCE_LOGICAL_FOLDER;
             }
