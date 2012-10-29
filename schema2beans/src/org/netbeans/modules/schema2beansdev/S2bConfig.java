@@ -2133,10 +2133,11 @@ public class S2bConfig {
 				}
 			}
 			String xsiPrefix = "xsi";
-			for (java.util.Iterator it = namespacePrefixes.keySet().iterator(); 
+			for (java.util.Iterator it = namespacePrefixes.entrySet().iterator(); 
 				it.hasNext(); ) {
-				String prefix = (String) it.next();
-				String ns = (String) namespacePrefixes.get(prefix);
+				java.util.Map.Entry entry = (java.util.Map.Entry) it.next();
+				String prefix = (String) entry.getKey();
+				String ns = (String) entry.getValue();
 				if ("http://www.w3.org/2001/XMLSchema-instance".equals(ns)) {
 					xsiPrefix = prefix;
 					break;
@@ -2180,421 +2181,421 @@ public class S2bConfig {
 
 	protected boolean readNodeChild(org.w3c.dom.Node childNode, String childNodeName, String childNodeValue, java.util.Map namespacePrefixes) {
 		// assert childNodeName == childNodeName.intern()
-		if (childNodeName == "schemaType") {
+		if ("schemaType".equals(childNodeName)) {
 			_SchemaType = childNodeValue;
 		}
-		else if (childNodeName == "traceParse") {
+		else if ("traceParse".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_TraceParse = true;
 			else
 				_TraceParse = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_TraceParse = true;
 		}
-		else if (childNodeName == "traceGen") {
+		else if ("traceGen".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_TraceGen = true;
 			else
 				_TraceGen = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_TraceGen = true;
 		}
-		else if (childNodeName == "traceMisc") {
+		else if ("traceMisc".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_TraceMisc = true;
 			else
 				_TraceMisc = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_TraceMisc = true;
 		}
-		else if (childNodeName == "traceDot") {
+		else if ("traceDot".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_TraceDot = true;
 			else
 				_TraceDot = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_TraceDot = true;
 		}
-		else if (childNodeName == "filename") {
+		else if ("filename".equals(childNodeName)) {
 			_Filename = new java.io.File(childNodeValue);
 		}
-		else if (childNodeName == "fileIn") {
+		else if ("fileIn".equals(childNodeName)) {
 			// Don't know how to create a java.io.InputStream
 		}
-		else if (childNodeName == "docRoot") {
+		else if ("docRoot".equals(childNodeName)) {
 			_DocRoot = childNodeValue;
 		}
-		else if (childNodeName == "rootDir") {
+		else if ("rootDir".equals(childNodeName)) {
 			_RootDir = new java.io.File(childNodeValue);
 		}
-		else if (childNodeName == "packagePath") {
+		else if ("packagePath".equals(childNodeName)) {
 			_PackagePath = childNodeValue;
 		}
-		else if (childNodeName == "indent") {
+		else if ("indent".equals(childNodeName)) {
 			_Indent = childNodeValue;
 		}
-		else if (childNodeName == "indentAmount") {
+		else if ("indentAmount".equals(childNodeName)) {
 			_IndentAmount = Integer.parseInt(childNodeValue);
 			_isSet_IndentAmount = true;
 		}
-		else if (childNodeName == "mddFile") {
+		else if ("mddFile".equals(childNodeName)) {
 			_MddFile = new java.io.File(childNodeValue);
 		}
-		else if (childNodeName == "mddIn") {
+		else if ("mddIn".equals(childNodeName)) {
 			// Don't know how to create a java.io.InputStream
 		}
-		else if (childNodeName == "metaDD") {
+		else if ("metaDD".equals(childNodeName)) {
 			// Don't know how to create a org.netbeans.modules.schema2beansdev.metadd.MetaDD
 		}
-		else if (childNodeName == "doGeneration") {
+		else if ("doGeneration".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_DoGeneration = true;
 			else
 				_DoGeneration = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_DoGeneration = true;
 		}
-		else if (childNodeName == "scalarException") {
+		else if ("scalarException".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_ScalarException = true;
 			else
 				_ScalarException = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_ScalarException = true;
 		}
-		else if (childNodeName == "dumpToString") {
+		else if ("dumpToString".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_DumpToString = true;
 			else
 				_DumpToString = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_DumpToString = true;
 		}
-		else if (childNodeName == "vetoable") {
+		else if ("vetoable".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_Vetoable = true;
 			else
 				_Vetoable = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_Vetoable = true;
 		}
-		else if (childNodeName == "standalone") {
+		else if ("standalone".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_Standalone = true;
 			else
 				_Standalone = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_Standalone = true;
 		}
-		else if (childNodeName == "auto") {
+		else if ("auto".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_Auto = true;
 			else
 				_Auto = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_Auto = true;
 		}
-		else if (childNodeName == "messageOut") {
+		else if ("messageOut".equals(childNodeName)) {
 			// Don't know how to create a java.io.PrintStream
 		}
-		else if (childNodeName == "outputStreamProvider") {
+		else if ("outputStreamProvider".equals(childNodeName)) {
 			// Don't know how to create a org.netbeans.modules.schema2beansdev.GenBeans.OutputStreamProvider
 		}
-		else if (childNodeName == "throwErrors") {
+		else if ("throwErrors".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_ThrowErrors = true;
 			else
 				_ThrowErrors = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_ThrowErrors = true;
 		}
-		else if (childNodeName == "generateXMLIO") {
+		else if ("generateXMLIO".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_GenerateXMLIO = true;
 			else
 				_GenerateXMLIO = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_GenerateXMLIO = true;
 		}
-		else if (childNodeName == "generateValidate") {
+		else if ("generateValidate".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_GenerateValidate = true;
 			else
 				_GenerateValidate = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_GenerateValidate = true;
 		}
-		else if (childNodeName == "generatePropertyEvents") {
+		else if ("generatePropertyEvents".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_GeneratePropertyEvents = true;
 			else
 				_GeneratePropertyEvents = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_GeneratePropertyEvents = true;
 		}
-		else if (childNodeName == "generateStoreEvents") {
+		else if ("generateStoreEvents".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_GenerateStoreEvents = true;
 			else
 				_GenerateStoreEvents = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_GenerateStoreEvents = true;
 		}
-		else if (childNodeName == "generateTransactions") {
+		else if ("generateTransactions".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_GenerateTransactions = true;
 			else
 				_GenerateTransactions = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_GenerateTransactions = true;
 		}
-		else if (childNodeName == "attributesAsProperties") {
+		else if ("attributesAsProperties".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_AttributesAsProperties = true;
 			else
 				_AttributesAsProperties = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_AttributesAsProperties = true;
 		}
-		else if (childNodeName == "generateDelegator") {
+		else if ("generateDelegator".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_GenerateDelegator = true;
 			else
 				_GenerateDelegator = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_GenerateDelegator = true;
 		}
-		else if (childNodeName == "delegateDir") {
+		else if ("delegateDir".equals(childNodeName)) {
 			_DelegateDir = new java.io.File(childNodeValue);
 		}
-		else if (childNodeName == "delegatePackage") {
+		else if ("delegatePackage".equals(childNodeName)) {
 			_DelegatePackage = childNodeValue;
 		}
-		else if (childNodeName == "generateCommonInterface") {
+		else if ("generateCommonInterface".equals(childNodeName)) {
 			_GenerateCommonInterface = childNodeValue;
 		}
-		else if (childNodeName == "defaultsAccessable") {
+		else if ("defaultsAccessable".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_DefaultsAccessable = true;
 			else
 				_DefaultsAccessable = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_DefaultsAccessable = true;
 		}
-		else if (childNodeName == "useInterfaces") {
+		else if ("useInterfaces".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_UseInterfaces = true;
 			else
 				_UseInterfaces = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_UseInterfaces = true;
 		}
-		else if (childNodeName == "generateInterfaces") {
+		else if ("generateInterfaces".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_GenerateInterfaces = true;
 			else
 				_GenerateInterfaces = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_GenerateInterfaces = true;
 		}
-		else if (childNodeName == "keepElementPositions") {
+		else if ("keepElementPositions".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_KeepElementPositions = true;
 			else
 				_KeepElementPositions = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_KeepElementPositions = true;
 		}
-		else if (childNodeName == "removeUnreferencedNodes") {
+		else if ("removeUnreferencedNodes".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_RemoveUnreferencedNodes = true;
 			else
 				_RemoveUnreferencedNodes = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_RemoveUnreferencedNodes = true;
 		}
-		else if (childNodeName == "inputURI") {
+		else if ("inputURI".equals(childNodeName)) {
 			_InputURI = childNodeValue;
 		}
-		else if (childNodeName == "indexedPropertyType") {
+		else if ("indexedPropertyType".equals(childNodeName)) {
 			_IndexedPropertyType = childNodeValue;
 		}
-		else if (childNodeName == "doCompile") {
+		else if ("doCompile".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_DoCompile = true;
 			else
 				_DoCompile = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_DoCompile = true;
 		}
-		else if (childNodeName == "generateSwitches") {
+		else if ("generateSwitches".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_GenerateSwitches = true;
 			else
 				_GenerateSwitches = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_GenerateSwitches = true;
 		}
-		else if (childNodeName == "dumpBeanTree") {
+		else if ("dumpBeanTree".equals(childNodeName)) {
 			_DumpBeanTree = new java.io.File(childNodeValue);
 		}
-		else if (childNodeName == "generateDotGraph") {
+		else if ("generateDotGraph".equals(childNodeName)) {
 			_GenerateDotGraph = new java.io.File(childNodeValue);
 		}
-		else if (childNodeName == "processComments") {
+		else if ("processComments".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_ProcessComments = true;
 			else
 				_ProcessComments = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_ProcessComments = true;
 		}
-		else if (childNodeName == "processDocType") {
+		else if ("processDocType".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_ProcessDocType = true;
 			else
 				_ProcessDocType = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_ProcessDocType = true;
 		}
-		else if (childNodeName == "checkUpToDate") {
+		else if ("checkUpToDate".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_CheckUpToDate = true;
 			else
 				_CheckUpToDate = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_CheckUpToDate = true;
 		}
-		else if (childNodeName == "generateParentRefs") {
+		else if ("generateParentRefs".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_GenerateParentRefs = true;
 			else
 				_GenerateParentRefs = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_GenerateParentRefs = true;
 		}
-		else if (childNodeName == "generateHasChanged") {
+		else if ("generateHasChanged".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_GenerateHasChanged = true;
 			else
 				_GenerateHasChanged = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_GenerateHasChanged = true;
 		}
-		else if (childNodeName == "newestSourceTime") {
+		else if ("newestSourceTime".equals(childNodeName)) {
 			_NewestSourceTime = Long.parseLong(childNodeValue);
 			_isSet_NewestSourceTime = true;
 		}
-		else if (childNodeName == "writeBeanGraphFile") {
+		else if ("writeBeanGraphFile".equals(childNodeName)) {
 			_WriteBeanGraphFile = new java.io.File(childNodeValue);
 		}
-		else if (childNodeName == "readBeanGraphFiles") {
+		else if ("readBeanGraphFiles".equals(childNodeName)) {
 			java.io.File aReadBeanGraphFiles;
 			aReadBeanGraphFiles = new java.io.File(childNodeValue);
 			_ReadBeanGraphFiles.add(aReadBeanGraphFiles);
 		}
-		else if (childNodeName == "readBeanGraphs") {
+		else if ("readBeanGraphs".equals(childNodeName)) {
 			org.netbeans.modules.schema2beansdev.beangraph.BeanGraph aReadBeanGraphs;
 			// Don't know how to create a org.netbeans.modules.schema2beansdev.beangraph.BeanGraph
 		}
-		else if (childNodeName == "minFeatures") {
+		else if ("minFeatures".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_MinFeatures = true;
 			else
 				_MinFeatures = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_MinFeatures = true;
 		}
-		else if (childNodeName == "forME") {
+		else if ("forME".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_ForME = true;
 			else
 				_ForME = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_ForME = true;
 		}
-		else if (childNodeName == "java5") {
+		else if ("java5".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_Java5 = true;
 			else
 				_Java5 = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_Java5 = true;
 		}
-		else if (childNodeName == "generateTagsFile") {
+		else if ("generateTagsFile".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_GenerateTagsFile = true;
 			else
 				_GenerateTagsFile = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_GenerateTagsFile = true;
 		}
-		else if (childNodeName == "codeGeneratorFactory") {
+		else if ("codeGeneratorFactory".equals(childNodeName)) {
 			// Don't know how to create a org.netbeans.modules.schema2beansdev.CodeGeneratorFactory
 		}
-		else if (childNodeName == "generateTimeStamp") {
+		else if ("generateTimeStamp".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_GenerateTimeStamp = true;
 			else
 				_GenerateTimeStamp = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_GenerateTimeStamp = true;
 		}
-		else if (childNodeName == "quiet") {
+		else if ("quiet".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_Quiet = true;
 			else
 				_Quiet = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_Quiet = true;
 		}
-		else if (childNodeName == "writeConfig") {
+		else if ("writeConfig".equals(childNodeName)) {
 			_WriteConfig = new java.io.File(childNodeValue);
 		}
-		else if (childNodeName == "readConfig") {
+		else if ("readConfig".equals(childNodeName)) {
 			java.io.File aReadConfig;
 			aReadConfig = new java.io.File(childNodeValue);
 			_ReadConfig.add(aReadConfig);
 		}
-		else if (childNodeName == "makeDefaults") {
+		else if ("makeDefaults".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_MakeDefaults = true;
 			else
 				_MakeDefaults = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_MakeDefaults = true;
 		}
-		else if (childNodeName == "setDefaults") {
+		else if ("setDefaults".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_SetDefaults = true;
 			else
 				_SetDefaults = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_SetDefaults = true;
 		}
-		else if (childNodeName == "trimNonStrings") {
+		else if ("trimNonStrings".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_TrimNonStrings = true;
 			else
 				_TrimNonStrings = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_TrimNonStrings = true;
 		}
-		else if (childNodeName == "useRuntime") {
+		else if ("useRuntime".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_UseRuntime = true;
 			else
 				_UseRuntime = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_UseRuntime = true;
 		}
-		else if (childNodeName == "extendBaseBean") {
+		else if ("extendBaseBean".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_ExtendBaseBean = true;
 			else
 				_ExtendBaseBean = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_ExtendBaseBean = true;
 		}
-		else if (childNodeName == "finder") {
+		else if ("finder".equals(childNodeName)) {
 			java.lang.String aFinder;
 			aFinder = childNodeValue;
 			_Finder.add(aFinder);
 		}
-		else if (childNodeName == "target") {
+		else if ("target".equals(childNodeName)) {
 			_Target = childNodeValue;
 		}
-		else if (childNodeName == "staxProduceXMLEventReader") {
+		else if ("staxProduceXMLEventReader".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_StaxProduceXMLEventReader = true;
 			else
 				_StaxProduceXMLEventReader = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_StaxProduceXMLEventReader = true;
 		}
-		else if (childNodeName == "staxUseXMLEventReader") {
+		else if ("staxUseXMLEventReader".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_StaxUseXMLEventReader = true;
 			else
 				_StaxUseXMLEventReader = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_StaxUseXMLEventReader = true;
 		}
-		else if (childNodeName == "optionalScalars") {
+		else if ("optionalScalars".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_OptionalScalars = true;
 			else
 				_OptionalScalars = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_OptionalScalars = true;
 		}
-		else if (childNodeName == "defaultElementType") {
+		else if ("defaultElementType".equals(childNodeName)) {
 			_DefaultElementType = childNodeValue;
 		}
-		else if (childNodeName == "respectExtension") {
+		else if ("respectExtension".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_RespectExtension = true;
 			else
 				_RespectExtension = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
 			_isSet_RespectExtension = true;
 		}
-		else if (childNodeName == "logSuspicious") {
+		else if ("logSuspicious".equals(childNodeName)) {
 			if (childNode.getFirstChild() == null)
 				_LogSuspicious = true;
 			else
@@ -3261,322 +3262,322 @@ public class S2bConfig {
 	public void changePropertyByName(String name, Object value) {
 		if (name == null) return;
 		name = name.intern();
-		if (name == "schemaType")
+		if ("schemaType".equals(name))
 			setSchemaType((java.lang.String)value);
-		else if (name == "traceParse")
+		else if ("traceParse".equals(name))
 			setTraceParse(((java.lang.Boolean)value).booleanValue());
-		else if (name == "traceGen")
+		else if ("traceGen".equals(name))
 			setTraceGen(((java.lang.Boolean)value).booleanValue());
-		else if (name == "traceMisc")
+		else if ("traceMisc".equals(name))
 			setTraceMisc(((java.lang.Boolean)value).booleanValue());
-		else if (name == "traceDot")
+		else if ("traceDot".equals(name))
 			setTraceDot(((java.lang.Boolean)value).booleanValue());
-		else if (name == "filename")
+		else if ("filename".equals(name))
 			setFilename((java.io.File)value);
-		else if (name == "fileIn")
+		else if ("fileIn".equals(name))
 			setFileIn((java.io.InputStream)value);
-		else if (name == "docRoot")
+		else if ("docRoot".equals(name))
 			setDocRoot((java.lang.String)value);
-		else if (name == "rootDir")
+		else if ("rootDir".equals(name))
 			setRootDir((java.io.File)value);
-		else if (name == "packagePath")
+		else if ("packagePath".equals(name))
 			setPackagePath((java.lang.String)value);
-		else if (name == "indent")
+		else if ("indent".equals(name))
 			setIndent((java.lang.String)value);
-		else if (name == "indentAmount")
+		else if ("indentAmount".equals(name))
 			setIndentAmount(((java.lang.Integer)value).intValue());
-		else if (name == "mddFile")
+		else if ("mddFile".equals(name))
 			setMddFile((java.io.File)value);
-		else if (name == "mddIn")
+		else if ("mddIn".equals(name))
 			setMddIn((java.io.InputStream)value);
-		else if (name == "metaDD")
+		else if ("metaDD".equals(name))
 			setMetaDD((org.netbeans.modules.schema2beansdev.metadd.MetaDD)value);
-		else if (name == "doGeneration")
+		else if ("doGeneration".equals(name))
 			setDoGeneration(((java.lang.Boolean)value).booleanValue());
-		else if (name == "scalarException")
+		else if ("scalarException".equals(name))
 			setScalarException(((java.lang.Boolean)value).booleanValue());
-		else if (name == "dumpToString")
+		else if ("dumpToString".equals(name))
 			setDumpToString(((java.lang.Boolean)value).booleanValue());
-		else if (name == "vetoable")
+		else if ("vetoable".equals(name))
 			setVetoable(((java.lang.Boolean)value).booleanValue());
-		else if (name == "standalone")
+		else if ("standalone".equals(name))
 			setStandalone(((java.lang.Boolean)value).booleanValue());
-		else if (name == "auto")
+		else if ("auto".equals(name))
 			setAuto(((java.lang.Boolean)value).booleanValue());
-		else if (name == "messageOut")
+		else if ("messageOut".equals(name))
 			setMessageOut((java.io.PrintStream)value);
-		else if (name == "outputStreamProvider")
+		else if ("outputStreamProvider".equals(name))
 			setOutputStreamProvider((org.netbeans.modules.schema2beansdev.GenBeans.OutputStreamProvider)value);
-		else if (name == "throwErrors")
+		else if ("throwErrors".equals(name))
 			setThrowErrors(((java.lang.Boolean)value).booleanValue());
-		else if (name == "generateXMLIO")
+		else if ("generateXMLIO".equals(name))
 			setGenerateXMLIO(((java.lang.Boolean)value).booleanValue());
-		else if (name == "generateValidate")
+		else if ("generateValidate".equals(name))
 			setGenerateValidate(((java.lang.Boolean)value).booleanValue());
-		else if (name == "generatePropertyEvents")
+		else if ("generatePropertyEvents".equals(name))
 			setGeneratePropertyEvents(((java.lang.Boolean)value).booleanValue());
-		else if (name == "generateStoreEvents")
+		else if ("generateStoreEvents".equals(name))
 			setGenerateStoreEvents(((java.lang.Boolean)value).booleanValue());
-		else if (name == "generateTransactions")
+		else if ("generateTransactions".equals(name))
 			setGenerateTransactions(((java.lang.Boolean)value).booleanValue());
-		else if (name == "attributesAsProperties")
+		else if ("attributesAsProperties".equals(name))
 			setAttributesAsProperties(((java.lang.Boolean)value).booleanValue());
-		else if (name == "generateDelegator")
+		else if ("generateDelegator".equals(name))
 			setGenerateDelegator(((java.lang.Boolean)value).booleanValue());
-		else if (name == "delegateDir")
+		else if ("delegateDir".equals(name))
 			setDelegateDir((java.io.File)value);
-		else if (name == "delegatePackage")
+		else if ("delegatePackage".equals(name))
 			setDelegatePackage((java.lang.String)value);
-		else if (name == "generateCommonInterface")
+		else if ("generateCommonInterface".equals(name))
 			setGenerateCommonInterface((java.lang.String)value);
-		else if (name == "defaultsAccessable")
+		else if ("defaultsAccessable".equals(name))
 			setDefaultsAccessable(((java.lang.Boolean)value).booleanValue());
-		else if (name == "useInterfaces")
+		else if ("useInterfaces".equals(name))
 			setUseInterfaces(((java.lang.Boolean)value).booleanValue());
-		else if (name == "generateInterfaces")
+		else if ("generateInterfaces".equals(name))
 			setGenerateInterfaces(((java.lang.Boolean)value).booleanValue());
-		else if (name == "keepElementPositions")
+		else if ("keepElementPositions".equals(name))
 			setKeepElementPositions(((java.lang.Boolean)value).booleanValue());
-		else if (name == "removeUnreferencedNodes")
+		else if ("removeUnreferencedNodes".equals(name))
 			setRemoveUnreferencedNodes(((java.lang.Boolean)value).booleanValue());
-		else if (name == "inputURI")
+		else if ("inputURI".equals(name))
 			setInputURI((java.lang.String)value);
-		else if (name == "indexedPropertyType")
+		else if ("indexedPropertyType".equals(name))
 			setIndexedPropertyType((java.lang.String)value);
-		else if (name == "doCompile")
+		else if ("doCompile".equals(name))
 			setDoCompile(((java.lang.Boolean)value).booleanValue());
-		else if (name == "generateSwitches")
+		else if ("generateSwitches".equals(name))
 			setGenerateSwitches(((java.lang.Boolean)value).booleanValue());
-		else if (name == "dumpBeanTree")
+		else if ("dumpBeanTree".equals(name))
 			setDumpBeanTree((java.io.File)value);
-		else if (name == "generateDotGraph")
+		else if ("generateDotGraph".equals(name))
 			setGenerateDotGraph((java.io.File)value);
-		else if (name == "processComments")
+		else if ("processComments".equals(name))
 			setProcessComments(((java.lang.Boolean)value).booleanValue());
-		else if (name == "processDocType")
+		else if ("processDocType".equals(name))
 			setProcessDocType(((java.lang.Boolean)value).booleanValue());
-		else if (name == "checkUpToDate")
+		else if ("checkUpToDate".equals(name))
 			setCheckUpToDate(((java.lang.Boolean)value).booleanValue());
-		else if (name == "generateParentRefs")
+		else if ("generateParentRefs".equals(name))
 			setGenerateParentRefs(((java.lang.Boolean)value).booleanValue());
-		else if (name == "generateHasChanged")
+		else if ("generateHasChanged".equals(name))
 			setGenerateHasChanged(((java.lang.Boolean)value).booleanValue());
-		else if (name == "newestSourceTime")
+		else if ("newestSourceTime".equals(name))
 			setNewestSourceTime(((java.lang.Long)value).longValue());
-		else if (name == "writeBeanGraphFile")
+		else if ("writeBeanGraphFile".equals(name))
 			setWriteBeanGraphFile((java.io.File)value);
-		else if (name == "readBeanGraphFiles")
+		else if ("readBeanGraphFiles".equals(name))
 			addReadBeanGraphFiles((java.io.File)value);
-		else if (name == "readBeanGraphFiles[]")
+		else if ("readBeanGraphFiles[]".equals(name))
 			setReadBeanGraphFiles((java.io.File[]) value);
-		else if (name == "readBeanGraphs")
+		else if ("readBeanGraphs".equals(name))
 			addReadBeanGraphs((org.netbeans.modules.schema2beansdev.beangraph.BeanGraph)value);
-		else if (name == "readBeanGraphs[]")
+		else if ("readBeanGraphs[]".equals(name))
 			setReadBeanGraphs((org.netbeans.modules.schema2beansdev.beangraph.BeanGraph[]) value);
-		else if (name == "minFeatures")
+		else if ("minFeatures".equals(name))
 			setMinFeatures(((java.lang.Boolean)value).booleanValue());
-		else if (name == "forME")
+		else if ("forME".equals(name))
 			setForME(((java.lang.Boolean)value).booleanValue());
-		else if (name == "java5")
+		else if ("java5".equals(name))
 			setJava5(((java.lang.Boolean)value).booleanValue());
-		else if (name == "generateTagsFile")
+		else if ("generateTagsFile".equals(name))
 			setGenerateTagsFile(((java.lang.Boolean)value).booleanValue());
-		else if (name == "codeGeneratorFactory")
+		else if ("codeGeneratorFactory".equals(name))
 			setCodeGeneratorFactory((org.netbeans.modules.schema2beansdev.CodeGeneratorFactory)value);
-		else if (name == "generateTimeStamp")
+		else if ("generateTimeStamp".equals(name))
 			setGenerateTimeStamp(((java.lang.Boolean)value).booleanValue());
-		else if (name == "quiet")
+		else if ("quiet".equals(name))
 			setQuiet(((java.lang.Boolean)value).booleanValue());
-		else if (name == "writeConfig")
+		else if ("writeConfig".equals(name))
 			setWriteConfig((java.io.File)value);
-		else if (name == "readConfig")
+		else if ("readConfig".equals(name))
 			addReadConfig((java.io.File)value);
-		else if (name == "readConfig[]")
+		else if ("readConfig[]".equals(name))
 			setReadConfig((java.io.File[]) value);
-		else if (name == "makeDefaults")
+		else if ("makeDefaults".equals(name))
 			setMakeDefaults(((java.lang.Boolean)value).booleanValue());
-		else if (name == "setDefaults")
+		else if ("setDefaults".equals(name))
 			setSetDefaults(((java.lang.Boolean)value).booleanValue());
-		else if (name == "trimNonStrings")
+		else if ("trimNonStrings".equals(name))
 			setTrimNonStrings(((java.lang.Boolean)value).booleanValue());
-		else if (name == "useRuntime")
+		else if ("useRuntime".equals(name))
 			setUseRuntime(((java.lang.Boolean)value).booleanValue());
-		else if (name == "extendBaseBean")
+		else if ("extendBaseBean".equals(name))
 			setExtendBaseBean(((java.lang.Boolean)value).booleanValue());
-		else if (name == "finder")
+		else if ("finder".equals(name))
 			addFinder((java.lang.String)value);
-		else if (name == "finder[]")
+		else if ("finder[]".equals(name))
 			setFinder((java.lang.String[]) value);
-		else if (name == "target")
+		else if ("target".equals(name))
 			setTarget((java.lang.String)value);
-		else if (name == "staxProduceXMLEventReader")
+		else if ("staxProduceXMLEventReader".equals(name))
 			setStaxProduceXMLEventReader(((java.lang.Boolean)value).booleanValue());
-		else if (name == "staxUseXMLEventReader")
+		else if ("staxUseXMLEventReader".equals(name))
 			setStaxUseXMLEventReader(((java.lang.Boolean)value).booleanValue());
-		else if (name == "optionalScalars")
+		else if ("optionalScalars".equals(name))
 			setOptionalScalars(((java.lang.Boolean)value).booleanValue());
-		else if (name == "defaultElementType")
+		else if ("defaultElementType".equals(name))
 			setDefaultElementType((java.lang.String)value);
-		else if (name == "respectExtension")
+		else if ("respectExtension".equals(name))
 			setRespectExtension(((java.lang.Boolean)value).booleanValue());
-		else if (name == "logSuspicious")
+		else if ("logSuspicious".equals(name))
 			setLogSuspicious(((java.lang.Boolean)value).booleanValue());
 		else
 			throw new IllegalArgumentException(name+" is not a valid property name for S2bConfig");
 	}
 
 	public Object fetchPropertyByName(String name) {
-		if (name == "schemaType")
+		if ("schemaType".equals(name))
 			return getSchemaType();
-		if (name == "traceParse")
+		if ("traceParse".equals(name))
 			return (isTraceParse() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "traceGen")
+		if ("traceGen".equals(name))
 			return (isTraceGen() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "traceMisc")
+		if ("traceMisc".equals(name))
 			return (isTraceMisc() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "traceDot")
+		if ("traceDot".equals(name))
 			return (isTraceDot() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "filename")
+		if ("filename".equals(name))
 			return getFilename();
-		if (name == "fileIn")
+		if ("fileIn".equals(name))
 			return getFileIn();
-		if (name == "docRoot")
+		if ("docRoot".equals(name))
 			return getDocRoot();
-		if (name == "rootDir")
+		if ("rootDir".equals(name))
 			return getRootDir();
-		if (name == "packagePath")
+		if ("packagePath".equals(name))
 			return getPackagePath();
-		if (name == "indent")
+		if ("indent".equals(name))
 			return getIndent();
-		if (name == "indentAmount")
+		if ("indentAmount".equals(name))
 			return new java.lang.Integer(getIndentAmount());
-		if (name == "mddFile")
+		if ("mddFile".equals(name))
 			return getMddFile();
-		if (name == "mddIn")
+		if ("mddIn".equals(name))
 			return getMddIn();
-		if (name == "metaDD")
+		if ("metaDD".equals(name))
 			return getMetaDD();
-		if (name == "doGeneration")
+		if ("doGeneration".equals(name))
 			return (isDoGeneration() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "scalarException")
+		if ("scalarException".equals(name))
 			return (isScalarException() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "dumpToString")
+		if ("dumpToString".equals(name))
 			return (isDumpToString() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "vetoable")
+		if ("vetoable".equals(name))
 			return (isVetoable() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "standalone")
+		if ("standalone".equals(name))
 			return (isStandalone() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "auto")
+		if ("auto".equals(name))
 			return (isAuto() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "messageOut")
+		if ("messageOut".equals(name))
 			return getMessageOut();
-		if (name == "outputStreamProvider")
+		if ("outputStreamProvider".equals(name))
 			return getOutputStreamProvider();
-		if (name == "throwErrors")
+		if ("throwErrors".equals(name))
 			return (isThrowErrors() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "generateXMLIO")
+		if ("generateXMLIO".equals(name))
 			return (isGenerateXMLIO() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "generateValidate")
+		if ("generateValidate".equals(name))
 			return (isGenerateValidate() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "generatePropertyEvents")
+		if ("generatePropertyEvents".equals(name))
 			return (isGeneratePropertyEvents() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "generateStoreEvents")
+		if ("generateStoreEvents".equals(name))
 			return (isGenerateStoreEvents() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "generateTransactions")
+		if ("generateTransactions".equals(name))
 			return (isGenerateTransactions() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "attributesAsProperties")
+		if ("attributesAsProperties".equals(name))
 			return (isAttributesAsProperties() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "generateDelegator")
+		if ("generateDelegator".equals(name))
 			return (isGenerateDelegator() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "delegateDir")
+		if ("delegateDir".equals(name))
 			return getDelegateDir();
-		if (name == "delegatePackage")
+		if ("delegatePackage".equals(name))
 			return getDelegatePackage();
-		if (name == "generateCommonInterface")
+		if ("generateCommonInterface".equals(name))
 			return getGenerateCommonInterface();
-		if (name == "defaultsAccessable")
+		if ("defaultsAccessable".equals(name))
 			return (isDefaultsAccessable() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "useInterfaces")
+		if ("useInterfaces".equals(name))
 			return (isUseInterfaces() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "generateInterfaces")
+		if ("generateInterfaces".equals(name))
 			return (isGenerateInterfaces() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "keepElementPositions")
+		if ("keepElementPositions".equals(name))
 			return (isKeepElementPositions() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "removeUnreferencedNodes")
+		if ("removeUnreferencedNodes".equals(name))
 			return (isRemoveUnreferencedNodes() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "inputURI")
+		if ("inputURI".equals(name))
 			return getInputURI();
-		if (name == "indexedPropertyType")
+		if ("indexedPropertyType".equals(name))
 			return getIndexedPropertyType();
-		if (name == "doCompile")
+		if ("doCompile".equals(name))
 			return (isDoCompile() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "generateSwitches")
+		if ("generateSwitches".equals(name))
 			return (isGenerateSwitches() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "dumpBeanTree")
+		if ("dumpBeanTree".equals(name))
 			return getDumpBeanTree();
-		if (name == "generateDotGraph")
+		if ("generateDotGraph".equals(name))
 			return getGenerateDotGraph();
-		if (name == "processComments")
+		if ("processComments".equals(name))
 			return (isProcessComments() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "processDocType")
+		if ("processDocType".equals(name))
 			return (isProcessDocType() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "checkUpToDate")
+		if ("checkUpToDate".equals(name))
 			return (isCheckUpToDate() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "generateParentRefs")
+		if ("generateParentRefs".equals(name))
 			return (isGenerateParentRefs() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "generateHasChanged")
+		if ("generateHasChanged".equals(name))
 			return (isGenerateHasChanged() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "newestSourceTime")
+		if ("newestSourceTime".equals(name))
 			return new java.lang.Long(getNewestSourceTime());
-		if (name == "writeBeanGraphFile")
+		if ("writeBeanGraphFile".equals(name))
 			return getWriteBeanGraphFile();
-		if (name == "readBeanGraphFiles[]")
+		if ("readBeanGraphFiles[]".equals(name))
 			return getReadBeanGraphFiles();
-		if (name == "readBeanGraphs[]")
+		if ("readBeanGraphs[]".equals(name))
 			return getReadBeanGraphs();
-		if (name == "minFeatures")
+		if ("minFeatures".equals(name))
 			return (isMinFeatures() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "forME")
+		if ("forME".equals(name))
 			return (isForME() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "java5")
+		if ("java5".equals(name))
 			return (isJava5() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "generateTagsFile")
+		if ("generateTagsFile".equals(name))
 			return (isGenerateTagsFile() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "codeGeneratorFactory")
+		if ("codeGeneratorFactory".equals(name))
 			return getCodeGeneratorFactory();
-		if (name == "generateTimeStamp")
+		if ("generateTimeStamp".equals(name))
 			return (isGenerateTimeStamp() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "quiet")
+		if ("quiet".equals(name))
 			return (isQuiet() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "writeConfig")
+		if ("writeConfig".equals(name))
 			return getWriteConfig();
-		if (name == "readConfig[]")
+		if ("readConfig[]".equals(name))
 			return getReadConfig();
-		if (name == "makeDefaults")
+		if ("makeDefaults".equals(name))
 			return (isMakeDefaults() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "setDefaults")
+		if ("setDefaults".equals(name))
 			return (isSetDefaults() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "trimNonStrings")
+		if ("trimNonStrings".equals(name))
 			return (isTrimNonStrings() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "useRuntime")
+		if ("useRuntime".equals(name))
 			return (isUseRuntime() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "extendBaseBean")
+		if ("extendBaseBean".equals(name))
 			return (isExtendBaseBean() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "finder[]")
+		if ("finder[]".equals(name))
 			return getFinder();
-		if (name == "target")
+		if ("target".equals(name))
 			return getTarget();
-		if (name == "staxProduceXMLEventReader")
+		if ("staxProduceXMLEventReader".equals(name))
 			return (isStaxProduceXMLEventReader() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "staxUseXMLEventReader")
+		if ("staxUseXMLEventReader".equals(name))
 			return (isStaxUseXMLEventReader() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "optionalScalars")
+		if ("optionalScalars".equals(name))
 			return (isOptionalScalars() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "defaultElementType")
+		if ("defaultElementType".equals(name))
 			return getDefaultElementType();
-		if (name == "respectExtension")
+		if ("respectExtension".equals(name))
 			return (isRespectExtension() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "logSuspicious")
+		if ("logSuspicious".equals(name))
 			return (isLogSuspicious() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
 		throw new IllegalArgumentException(name+" is not a valid property name for S2bConfig");
 	}
@@ -4327,7 +4328,7 @@ public class S2bConfig {
 		}
 		if (childObj instanceof java.lang.String) {
 			java.lang.String child = (java.lang.String) childObj;
-			if (child == _SchemaType) {
+			if (child.equals(_SchemaType)) {
 				if (returnConstName) {
 					return SCHEMATYPE;
 				} else if (returnSchemaName) {
@@ -4338,7 +4339,7 @@ public class S2bConfig {
 					return "SchemaType";
 				}
 			}
-			if (child == _DocRoot) {
+			if (child.equals(_DocRoot)) {
 				if (returnConstName) {
 					return DOCROOT;
 				} else if (returnSchemaName) {
@@ -4349,7 +4350,7 @@ public class S2bConfig {
 					return "DocRoot";
 				}
 			}
-			if (child == _PackagePath) {
+			if (child.equals(_PackagePath)) {
 				if (returnConstName) {
 					return PACKAGEPATH;
 				} else if (returnSchemaName) {
@@ -4360,7 +4361,7 @@ public class S2bConfig {
 					return "PackagePath";
 				}
 			}
-			if (child == _Indent) {
+			if (child.equals(_Indent)) {
 				if (returnConstName) {
 					return INDENT;
 				} else if (returnSchemaName) {
@@ -4371,7 +4372,7 @@ public class S2bConfig {
 					return "Indent";
 				}
 			}
-			if (child == _DelegatePackage) {
+			if (child.equals(_DelegatePackage)) {
 				if (returnConstName) {
 					return DELEGATEPACKAGE;
 				} else if (returnSchemaName) {
@@ -4382,7 +4383,7 @@ public class S2bConfig {
 					return "DelegatePackage";
 				}
 			}
-			if (child == _GenerateCommonInterface) {
+			if (child.equals(_GenerateCommonInterface)) {
 				if (returnConstName) {
 					return GENERATECOMMONINTERFACE;
 				} else if (returnSchemaName) {
@@ -4393,7 +4394,7 @@ public class S2bConfig {
 					return "GenerateCommonInterface";
 				}
 			}
-			if (child == _InputURI) {
+			if (child.equals(_InputURI)) {
 				if (returnConstName) {
 					return INPUTURI;
 				} else if (returnSchemaName) {
@@ -4404,7 +4405,7 @@ public class S2bConfig {
 					return "InputURI";
 				}
 			}
-			if (child == _IndexedPropertyType) {
+			if (child.equals(_IndexedPropertyType)) {
 				if (returnConstName) {
 					return INDEXEDPROPERTYTYPE;
 				} else if (returnSchemaName) {
@@ -4419,7 +4420,7 @@ public class S2bConfig {
 			for (java.util.Iterator it = _Finder.iterator(); it.hasNext(); 
 				) {
 				java.lang.String element = (java.lang.String)it.next();
-				if (child == element) {
+				if (child.equals(element)) {
 					if (returnConstName) {
 						return FINDER;
 					} else if (returnSchemaName) {
@@ -4432,7 +4433,7 @@ public class S2bConfig {
 				}
 				++index;
 			}
-			if (child == _Target) {
+			if (child.equals(_Target)) {
 				if (returnConstName) {
 					return TARGET;
 				} else if (returnSchemaName) {
@@ -4443,7 +4444,7 @@ public class S2bConfig {
 					return "Target";
 				}
 			}
-			if (child == _DefaultElementType) {
+			if (child.equals(_DefaultElementType)) {
 				if (returnConstName) {
 					return DEFAULTELEMENTTYPE;
 				} else if (returnSchemaName) {
