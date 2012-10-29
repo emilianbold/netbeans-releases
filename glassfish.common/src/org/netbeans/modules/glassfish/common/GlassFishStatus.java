@@ -294,18 +294,22 @@ public class GlassFishStatus {
      * <p/>
      * @param instance GlassFish server instance.
      * @param retry    Allow up to 3 retries.
-     * @param warnings Display warning pop up messages when <code>true</code>.
+     * @param startup  Trigger startup mode:<ul>
+     *                 <li>Display warning pop up messages when
+     *                 <code>true</code>.</li><br/>
+     *                 <li>Trigger longer administration commands execution
+     *                 timeouts when <code>true</code>.</li><br/></ul>
      * @return Returns <code>true</code> when GlassFish server is ready
      *         or <code>false</code> otherwise.
      */
     public static boolean isReady(final GlassfishInstance instance,
-            final boolean retry, final boolean warnings) {
+            final boolean retry, final boolean startup) {
         boolean isReady = false;
         int maxTries = retry ? 3 : 1;
         int tries = 0;
         boolean notYetReady = false;
         long begTm = System.currentTimeMillis(), actTm = begTm;
-        ServerStatus status = new ServerStatus(instance);
+        ServerStatus status = new ServerStatus(instance, startup);
         while (!isReady && (
                 tries++ < maxTries || (notYetReady
                 && (actTm = System.currentTimeMillis()) - begTm
@@ -320,7 +324,7 @@ public class GlassFishStatus {
                 return false;
             }
             ResultString versionCommandResult = processVersionTaskResult(
-                    instance, status.getVersionResult(), warnings);
+                    instance, status.getVersionResult(), startup);
             // Version command result.
             if (versionCommandResult != null) {
                 String value = versionCommandResult.getValue();
@@ -337,7 +341,7 @@ public class GlassFishStatus {
                             break;
                     case COMPLETED:
                         isReady = true;
-                        if (warnings) {
+                        if (startup) {
                             handleGlassFishWarnings(instance, status);
                         }
                         break;
