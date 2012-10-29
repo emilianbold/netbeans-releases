@@ -50,6 +50,7 @@ made subject to such option by the copyright holder.
             <folder name="Samples">
                 <folder name="HTML5">
                 	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.samples.Bundle"/>
+                	<attr name="position" intvalue="210"/>
                 	 <!--  file name="EaselDemo" url="Easel.zip">
                         <attr name="position" intvalue="100"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/clientproject/ui/resources/projecticon.png"/>
