@@ -23,7 +23,7 @@ SetUnits(int u) void
 SetVendor(const char* v) void
 operator =(const Module& obj) Module&
 ~Module() 
-Cpu(int type, int architecture, int units)
+Cpu(int type = MEDIUM, int architecture = OPTERON, int units = 1)
 Module()
 Module(const char* description, const char* vendor, int type, int category, int units)
 Module(const Module& obj)

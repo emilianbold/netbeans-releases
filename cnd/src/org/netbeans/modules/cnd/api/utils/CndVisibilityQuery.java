@@ -83,7 +83,7 @@ public class CndVisibilityQuery  implements VisibilityQueryImplementation2 {
         return isVisible(file.getName());
     }
 
-    public boolean isVisible(final String fileName) {
+    private boolean isVisible(final String fileName) {
         return pattern.matcher(fileName).find();
     }
 

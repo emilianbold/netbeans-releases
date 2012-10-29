@@ -217,7 +217,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     }
     
     public Set<String> getIncludedFiles() {
-        if (ConfigurationDescriptorProvider.VCS_WRITE) {
+        if (false && ConfigurationDescriptorProvider.VCS_WRITE) {
             return Collections.emptySet();
         }
         return includedFiles;
