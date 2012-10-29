@@ -59,6 +59,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.nativeexecution.NbRemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -83,6 +84,9 @@ public final class ProcessUtils {
     public static boolean isAlive(Process p) {
         if (p instanceof RemoteNativeProcess) {
             RemoteNativeProcess rnp = (RemoteNativeProcess) p;
+            return rnp.isAlive();
+        } else if (p instanceof NbRemoteNativeProcess) {
+            NbRemoteNativeProcess rnp = (NbRemoteNativeProcess) p;
             return rnp.isAlive();
         } else {
             try {
