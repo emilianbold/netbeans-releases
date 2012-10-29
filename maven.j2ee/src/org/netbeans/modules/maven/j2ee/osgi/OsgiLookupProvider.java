@@ -106,11 +106,20 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
             stackTrace = Thread.currentThread().getStackTrace();
         } else {
             // If the second access occurs, log it (it most probably will lead to the ISA - see #216942)
-            LOGGER.log(Level.WARNING, "When the first InstanceContent was created, the StackTrace was: \n{0}", stackTrace);
-            LOGGER.log(Level.WARNING, "When the second InstanceContent was created, the StackTrace was: \n{0}", Thread.currentThread().getStackTrace());
+            LOGGER.log(Level.WARNING, "When the first InstanceContent was created, the StackTrace was: \n\n");
+            logStackTrace(stackTrace);
+
+            LOGGER.log(Level.WARNING, "When the second InstanceContent was created, the StackTrace was: \n\n");
+            logStackTrace(Thread.currentThread().getStackTrace());
         }
         
         return new AbstractLookup(ic);
+    }
+
+    private void logStackTrace(StackTraceElement[] stackTraceElements) {
+        for (StackTraceElement element : stackTraceElements) {
+            LOGGER.log(Level.WARNING, "Line: {2}, ClassName.methodName: {0}.{1}\n", new Object[] {element.getClassName(), element.getMethodName(), element.getLineNumber()});
+        }
     }
 
     @Override
