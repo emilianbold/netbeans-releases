@@ -742,7 +742,7 @@ public class DiscoveryProjectGeneratorImpl {
                 }
             } else {
                 if (!usedItems.contains(item)) {
-                    if (!ConfigurationDescriptorProvider.VCS_WRITE) {
+                    if (true || !ConfigurationDescriptorProvider.VCS_WRITE) {
                         ProjectBridge.setExclude(item,false);
                     }
                     ProjectBridge.setHeaderTool(item);
@@ -838,14 +838,14 @@ public class DiscoveryProjectGeneratorImpl {
                             projectBridge.setAuxObject(item, old);
                         }
                     }
-                    if (!ConfigurationDescriptorProvider.VCS_WRITE) {
+                    if (true || !ConfigurationDescriptorProvider.VCS_WRITE) {
                         ProjectBridge.setExclude(item,false);
                     }
                     ProjectBridge.setHeaderTool(item);
                 } else {
                     item = projectBridge.createItem(file);
                     item = added.addItem(item);
-                    if (!ConfigurationDescriptorProvider.VCS_WRITE) {
+                    if (true || !ConfigurationDescriptorProvider.VCS_WRITE) {
                         ProjectBridge.setExclude(item,false);
                     }
                     ProjectBridge.setHeaderTool(item);

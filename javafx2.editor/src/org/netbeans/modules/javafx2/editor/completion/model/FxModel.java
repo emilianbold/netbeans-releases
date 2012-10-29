@@ -406,5 +406,10 @@ public final class FxModel extends FxNode {
         public void attach(FxNode node, FxModel model) {
             node.setModel(model);
         }
+
+        @Override
+        public void rename(FxInstance instance, PropertyValue value, String newName) {
+            instance.propertyRenamed(value);
+        }
     }
 }

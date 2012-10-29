@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
@@ -142,7 +143,7 @@ public final class SourceUtilsEx {
      * @return collection of {@link FileObject}s
      * @see SourceUtils#getFile(org.netbeans.api.java.source.ElementHandle, org.netbeans.api.java.source.ClasspathInfo) SourceUtils.getFile
      */
-    public static Collection<FileObject> getFiles(final Collection<ElementHandle<? extends Element>> handles, final ClasspathInfo cpInfo) {
+    public static Collection<FileObject> getFiles(final Collection<ElementHandle<? extends Element>> handles, final ClasspathInfo cpInfo, AtomicBoolean cancel) {
         Parameters.notNull("handle", handles);
         Parameters.notNull("cpInfo", cpInfo);
 
@@ -158,6 +159,9 @@ public final class SourceUtilsEx {
                     });
 
             for (ElementHandle<? extends Element> handle : handles) {
+                if(cancel != null && cancel.get()) {
+                    return Collections.<FileObject>emptySet();
+                }
                 ResolvedElementHandle resolvedEHandle = ResolvedElementHandle.create(handle);
                 List<ResolvedElementHandle> l = handlesPerPackages.get(resolvedEHandle.pkgName);
                 if (l == null) {

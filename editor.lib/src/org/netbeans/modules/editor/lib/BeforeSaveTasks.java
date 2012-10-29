@@ -55,6 +55,8 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.document.DocumentSpiPackageAccessor;
+import org.netbeans.modules.editor.lib2.document.EditorDocumentHandler;
+import org.netbeans.modules.editor.lib2.document.EditorDocumentServices;
 import org.netbeans.modules.editor.lib2.document.ModRootElement;
 import org.netbeans.spi.editor.document.OnSaveTask;
 
@@ -107,9 +109,7 @@ public final class BeforeSaveTasks {
                 tasks.add(task);
             }
         }
-//        if (tasks.size() > 0) {//jlahoda: commented as a hotfix - the "beforeSaveEnd" would not be run is tasks.isEmpty() (e.g. in tests), leading to a NPE in CloneableEditorSupport.saveDocument (after 3e982b70e64e)
-            new TaskRunnable(doc, tasks, context).run();
-//        }
+        new TaskRunnable(doc, tasks, context).run();
     }
 
     private static final class TaskRunnable implements Runnable {
@@ -135,26 +135,20 @@ public final class BeforeSaveTasks {
                 task.runLocked(this);
 
             } else {
-                try {
-                    doc.runAtomicAsUser(new Runnable() {
-                        @Override
-                        public void run() {
-                            // See CloneableEditorSupport for property explanation
-                            Runnable beforeSaveStart = (Runnable) doc.getProperty("beforeSaveStart");
-                            if (beforeSaveStart != null) {
-                                beforeSaveStart.run();
-                            }
+                doc.runAtomicAsUser(new Runnable() {
+                    @Override
+                    public void run() {
+                        // See CloneableEditorSupport for property explanation
+                        Runnable beforeSaveStart = (Runnable) doc.getProperty("beforeSaveStart");
+                        if (beforeSaveStart != null) {
+                            beforeSaveStart.run();
+                        }
 
-                            UndoableEdit atomicEdit = EditorPackageAccessor.get().BaseDocument_markAtomicEditsNonSignificant(doc);
-                            // Ensure that the atomic edit will always be reported to undo manager
-                            // by firing undoable edit. Since BaseDocument checks if any real edits
-                            // were performed during atomic sections add an empty edit to ensure firing.
-                            CompoundEdit emptyEdit = new CompoundEdit();
-                            emptyEdit.end();
-                            atomicEdit.addEdit(emptyEdit);
-
+                        UndoableEdit atomicEdit = EditorDocumentHandler.startOnSaveTasks(doc);
+                        assert (atomicEdit != null) : "Null atomic edit"; // NOI18N
+                        boolean success = false;
+                        try {
                             DocumentSpiPackageAccessor.get().setUndoEdit(context, atomicEdit);
-
                             for (int i = 0; i < tasks.size(); i++) {
                                 OnSaveTask task = tasks.get(i);
                                 DocumentSpiPackageAccessor.get().setTaskStarted(context, true);
@@ -164,6 +158,13 @@ public final class BeforeSaveTasks {
                             if (modRootElement != null) {
                                 modRootElement.resetMods(atomicEdit);
                             }
+                            success = true;
+
+                        } finally {
+                            // The save should be done even if the save tasks fail so that the user
+                            // is not left with an unsaved document.
+                            // Just undo an effect of the failed save tasks.
+                            EditorDocumentHandler.endOnSaveTasks(doc, success);
 
                             // See CloneableEditorSupport for property explanation
                             Runnable beforeSaveEnd = (Runnable) doc.getProperty("beforeSaveEnd");
@@ -171,10 +172,8 @@ public final class BeforeSaveTasks {
                                 beforeSaveEnd.run();
                             }
                         }
-                    });
-                } finally {
-                    EditorPackageAccessor.get().BaseDocument_clearAtomicEdits(doc);
-                }
+                    }
+                });
             }
         }
 
