@@ -75,6 +75,14 @@ public final class NbRemoteNativeProcess extends NbNativeProcess {
         streams.in.flush();
     }
 
+    public boolean isAlive() {
+        if (streams == null || streams.channel == null) {
+            return false;
+        }
+
+        return streams.channel.isConnected();
+    }
+
     @Override
     protected int waitResultImpl() throws InterruptedException {
         if (streams == null || streams.channel == null) {
