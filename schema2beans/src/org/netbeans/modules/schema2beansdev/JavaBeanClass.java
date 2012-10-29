@@ -3603,8 +3603,8 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         end();
         cr();
         jw.beginMethod("_setVetoableChangeSupport",
-                       "java.beans.VetoableChangeSupport vs", "void", null,
-                       jw.PACKAGE_LEVEL);
+                       "java.beans.VetoableChangeSupport vs", null,
+                       "void", jw.PACKAGE_LEVEL);
         geneol("vetos = vs");
         end();
         cr();
