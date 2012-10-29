@@ -49,6 +49,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -403,6 +404,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                 String actionNames = prefs.get(settingName, null);
 
                 if (actionNames != null) {
+                    l = new ArrayList();
                     for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
                         String action = t.nextToken().trim();
                         l.add(action);
