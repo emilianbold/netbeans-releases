@@ -85,6 +85,8 @@ public final class NbRemoteNativeProcess extends NbNativeProcess {
             while (streams.channel.isConnected()) {
                 Thread.sleep(200);
             }
+            
+            finishing();
 
             return streams.channel.getExitStatus();
         } finally {
