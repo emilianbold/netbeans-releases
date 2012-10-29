@@ -126,6 +126,7 @@ public class Module extends ModuleInstall {
                 Object className = uid.get(KEY);
                 if ((name.equals(KEY) || name.equals("UIDefaults")) && !val.equals(className)
                         && !isQuickFileChooser(className)) {
+                    originalImpl = (Class<?>) uid.getUIClass(KEY);
                     uid.put(KEY, val);
                 }
             }
