@@ -45,10 +45,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
@@ -57,7 +61,10 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.jsf.icefaces.ui.Icefaces2CustomizerPanelVisual;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -68,6 +75,7 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
     private static final Logger LOGGER = Logger.getLogger(Icefaces2Customizer.class.getName());
     private Icefaces2CustomizerPanelVisual panel;
     private ChangeSupport changeSupport = new ChangeSupport(this);
+    private Future<Boolean> result = null;
 
     @Override
     public void addChangeListener(ChangeListener listener) {
@@ -96,22 +104,59 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
             return true;
         }
 
-        for (Library library : LibraryManager.getDefault().getLibraries()) {
-            if (!"j2se".equals(library.getType())) { // NOI18N
-                continue;
-            }
+        synchronized (this) {
+            if (result == null) {
+                result = RequestProcessor.getDefault().submit(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        for (Library library : LibraryManager.getDefault().getLibraries()) {
+                            if (!"j2se".equals(library.getType())) { //NOI18N
+                                continue;
+                            }
 
-            List<URL> content = library.getContent("classpath"); //NOI18N
-            if (isValidIcefacesLibrary(content)) {
-                return true;
+                            List<URL> content = library.getContent("classpath"); //NOI18N
+                            if (isValidIcefacesLibrary(content)) {
+                                refreshParentValidation();
+                                return true;
+                            }
+                        }
+                        refreshParentValidation();
+                        return false;
+                    }
+
+                    private void refreshParentValidation() {
+                        // refresh validation of the parent panel
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                changeSupport.fireChange();
+                            }
+                        });
+                    }
+                });
+            } else if (!result.isDone()) {
+                return false;
+            } else {
+                try {
+                    return result.get();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
-
         return false;
     }
 
+    @NbBundle.Messages({
+        "Icefaces2Customizer.err.searching.icefaces.library=Searching valid ICEfaces library. Please wait..."
+    })
     @Override
     public String getErrorMessage() {
+        if (result == null || !result.isDone()) {
+            return Bundle.Icefaces2Customizer_err_searching_icefaces_library();
+        }
         return panel.getErrorMessage();
     }
 
