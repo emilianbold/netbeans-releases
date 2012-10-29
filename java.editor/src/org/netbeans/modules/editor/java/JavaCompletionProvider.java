@@ -4382,6 +4382,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         sourcePositions = env.getSourcePositions();
                         root = env.getRoot();
                         int typeEndPos = (int)sourcePositions.getEndPosition(root, arrayType);
+                        if (typeEndPos > offset) {
+                            break;
+                        }
                         text = controller.getText().substring(typeEndPos, offset);
                         if (text.indexOf('{') >= 0) {
                             type = controller.getTrees().getTypeMirror(new TreePath(path, arrayType));
