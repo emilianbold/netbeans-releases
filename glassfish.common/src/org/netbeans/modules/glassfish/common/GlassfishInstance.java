@@ -743,6 +743,19 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     ////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Get information if this GlassFish server instance is local or remote.
+     * <p/>
+     * Local GlassFish server instance has domains folder attribute set while
+     * remote does not.
+     * <p/>
+     * @return Value of <code>true</code> when this GlassFish server instance
+     *         is remote or <code>false</code> otherwise.
+     */
+    boolean isRemote() {
+        return properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
+    }
+
+    /**
      * Returns property value to which the specified <code>key</code> is mapped,
      * or <code>null</code> if this map contains no mapping for the
      * <code>key</code>.
@@ -904,8 +917,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * <p/>
      * @return <code>CommonServerSupport</code> instance associated with
      * this object.
-     * @deprecated GlassfishInstance class should not be dependent
-     *             on CommonServerSupport.
      */
     @Deprecated
     public final CommonServerSupport getCommonSupport() {
@@ -964,7 +975,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         if(commonSupport.isStartedByIde()) {
             ServerState state = commonSupport.getServerState();
             if(state == ServerState.STARTING ||
-                    (state == ServerState.RUNNING && commonSupport.isReallyRunning())) {
+                    (state == ServerState.RUNNING
+                    && GlassFishStatus.isReady(this, false))) {
                 try {
                     Future<OperationState> stopServerTask = commonSupport.stopServer(null);
                     if(timeout > 0) {

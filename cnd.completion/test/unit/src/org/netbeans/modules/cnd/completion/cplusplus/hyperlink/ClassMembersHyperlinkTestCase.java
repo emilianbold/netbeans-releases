@@ -1054,6 +1054,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug211033.cpp", 41, 13, "bug211033.cpp", 31, 5);
         performTest("bug211033.cpp", 46, 13, "bug211033.cpp", 36, 5);
     }    
+
+    public void testBug217994() throws Exception {
+        // Bug 217994 - default method parameter construct isn't handled properly
+        performTest("bug217994.cpp", 17, 32, "bug217994.cpp", 3, 5);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

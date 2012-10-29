@@ -169,4 +169,9 @@ public abstract class FxInstance extends FxObjectBase {
         }
     }
     
+    void propertyRenamed(PropertyValue pv) {
+        if (this.properties.values().remove(pv)) {
+            this.properties.put(pv.getPropertyName(), pv);
+        } 
+    }
 }

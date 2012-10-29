@@ -4217,7 +4217,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             sourcePositions = env.getSourcePositions();
                             root = env.getRoot();
                             text = null;
-                            if (efl.getVariable() == null) {
+                            if (efl.getVariable() == null || sourcePositions.getEndPosition(root, efl.getVariable()) > offset) {
                                 text = controller.getText().substring((int)sourcePositions.getStartPosition(root, efl), offset).trim();
                                 int idx = text.indexOf('('); //NOI18N
                                 if (idx >= 0)
