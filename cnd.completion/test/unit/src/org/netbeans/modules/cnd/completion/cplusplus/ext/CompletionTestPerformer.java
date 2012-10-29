@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.LockForFile;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObject;
@@ -254,6 +255,10 @@ public class CompletionTestPerformer {
                 }
             } finally {
                 testFile.setModified(false);
+                FileLock lock = LockForFile.findValid(testSourceFile);
+                if (lock != null) {
+                    lock.releaseLock();
+                }
                 log.flush();
             }
             //((CloseCookie) testFile.getCookie(CloseCookie.class)).close();
