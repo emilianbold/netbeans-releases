@@ -84,7 +84,7 @@ public final class UpdateUnit {
         return impl.getInstalled();
     }
     
-    /** Returns list of avaiable element which are not installed in IDE
+    /** Returns list of available element which are not installed in IDE
      * and has higher version then installed element (is any). These elements
      * can be installed as new one element or as update of already installed element.
      * 
@@ -112,7 +112,7 @@ public final class UpdateUnit {
         return impl.getInstalledLocalization ();
     }
     
-    /** Returns list of avaiable localization active with current <code>Locale</code>,
+    /** Returns list of available localization active with current <code>Locale</code>,
      * the localization are not installed in IDE and has higher version then
      * installed localization (is any). These elements can be installed as new one element
      * or as update of already installed element.
