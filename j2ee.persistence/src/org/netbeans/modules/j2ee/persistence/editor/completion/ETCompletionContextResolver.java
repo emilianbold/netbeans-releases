@@ -174,16 +174,24 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
 
             if(buildContentAssistProposals!=null && buildContentAssistProposals.hasProposals()){
                 for (String var : buildContentAssistProposals.identificationVariables()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(var, true, method.getValueOffset(), offset, completedValue, buildContentAssistProposals));
+                    if(var!=null && var.length()>0) {
+                        results.add(new JPACompletionItem.JPQLElementItem(var, true, method.getValueOffset(), offset, completedValue, buildContentAssistProposals));
+                    }
                 }
                 for (IMapping mapping : buildContentAssistProposals.mappings()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(mapping.getName(), true, method.getValueOffset(), offset, completedValue, buildContentAssistProposals));
+                    if(mapping.getName()!=null && mapping.getName().length()>0) {
+                        results.add(new JPACompletionItem.JPQLElementItem(mapping.getName(), true, method.getValueOffset(), offset, completedValue, buildContentAssistProposals));
+                    }
                 }
                 for (IEntity entity : buildContentAssistProposals.abstractSchemaTypes()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(entity.getName(), true, method.getValueOffset(), offset, completedValue, buildContentAssistProposals));
+                    if(entity.getName()!=null && entity.getName().length()>0) {
+                        results.add(new JPACompletionItem.JPQLElementItem(entity.getName(), true, method.getValueOffset(), offset, completedValue, buildContentAssistProposals));
+                    }
                 }
                 for (String ids : buildContentAssistProposals.identifiers()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(ids, true, method.getValueOffset(), offset, completedValue, buildContentAssistProposals));
+                    if(ids!=null && ids.length()>0) {
+                        results.add(new JPACompletionItem.JPQLElementItem(ids, true, method.getValueOffset(), offset, completedValue, buildContentAssistProposals));
+                    }
                 }
             }
         
