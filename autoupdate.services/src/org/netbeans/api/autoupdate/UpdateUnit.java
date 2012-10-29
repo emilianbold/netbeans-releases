@@ -136,6 +136,13 @@ public final class UpdateUnit {
         return impl.isPending ();
     }
     
+    /** Returns a nearest plugin depending upon this unit which is supposed
+     * to be visible in application UI.
+     * Works only for units which are already installed in the application.
+     * 
+     * @since 1.37
+     * @return UpdateUnit or null
+     */
     public UpdateUnit getVisibleAncestor() {
         if (getInstalled() != null) {
             return impl.getVisibleAncestor();
