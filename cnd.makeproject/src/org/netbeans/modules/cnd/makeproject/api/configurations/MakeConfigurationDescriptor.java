@@ -1852,10 +1852,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
                 Folder dirfolder = folder.findFolderByName(file.getNameExt());
                 if (dirfolder == null) {
+                    // child folder inherits kind of parent folder
                     if (inList(absTestRootsList, RemoteFileUtil.getAbsolutePath(file)) || folder.isTestLogicalFolder()) {
-                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.TEST_LOGICAL_FOLDER);
+                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, (Folder.Kind)null);
                     } else {
-                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, (Folder.Kind)null);
                     }
                 }
                 addFiles(antiLoop, dirfolder, file, handle, filesAdded, notify, setModified, fileFilter);
