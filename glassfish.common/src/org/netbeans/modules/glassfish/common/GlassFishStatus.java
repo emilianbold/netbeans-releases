@@ -208,7 +208,7 @@ public class GlassFishStatus {
                 break;
             // No break here, default: does the rest.
             case TIMEOUT:
-                if (warnings) {
+                if (warnings && instance.isRemote()) {
                     String message = NbBundle.getMessage(
                             CommonServerSupport.class, "MSG_COMMAND_SSL_ERROR",
                             "version", instance.getName(),
@@ -284,7 +284,7 @@ public class GlassFishStatus {
      */
     public static boolean isReady(final GlassfishInstance instance,
             final boolean retry) {
-        return isReady(instance, retry, false);
+        return isReady(instance, retry, false, false);
     }
 
     /**
@@ -294,16 +294,14 @@ public class GlassFishStatus {
      * <p/>
      * @param instance GlassFish server instance.
      * @param retry    Allow up to 3 retries.
-     * @param startup  Trigger startup mode:<ul>
-     *                 <li>Display warning pop up messages when
-     *                 <code>true</code>.</li><br/>
-     *                 <li>Trigger longer administration commands execution
-     *                 timeouts when <code>true</code>.</li><br/></ul>
+     * @param startup  Trigger startup mode. Triggers longer administration
+     *                 commands execution timeouts when <code>true</code>.
+     * @param warnings Display warnings pop up messages.
      * @return Returns <code>true</code> when GlassFish server is ready
      *         or <code>false</code> otherwise.
      */
     public static boolean isReady(final GlassfishInstance instance,
-            final boolean retry, final boolean startup) {
+            final boolean retry, final boolean startup, final boolean warnings) {
         boolean isReady = false;
         int maxTries = retry ? 3 : 1;
         int tries = 0;
@@ -324,7 +322,7 @@ public class GlassFishStatus {
                 return false;
             }
             ResultString versionCommandResult = processVersionTaskResult(
-                    instance, status.getVersionResult(), startup);
+                    instance, status.getVersionResult(), warnings);
             // Version command result.
             if (versionCommandResult != null) {
                 String value = versionCommandResult.getValue();
@@ -341,7 +339,7 @@ public class GlassFishStatus {
                             break;
                     case COMPLETED:
                         isReady = true;
-                        if (startup) {
+                        if (warnings) {
                             handleGlassFishWarnings(instance, status);
                         }
                         break;
