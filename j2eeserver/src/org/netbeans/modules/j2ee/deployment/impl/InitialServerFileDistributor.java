@@ -160,19 +160,7 @@ public class InitialServerFileDistributor extends ServerProgress {
         }
         return null;
     }
-    
-    public void cleanup () {
-        if (inPlace)
-            return;
-        
-        ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
-        J2eeModule deployable = deployment.getJ2eeModule(null);
-        File dir = incDeployment.getDirectoryForNewApplication (target, deployable, deployment.getModuleConfiguration());
-        if (!cleanup (dir)) {
-            setStatusDistributeFailed ("Failed to cleanup the data after unsucesful distribution");
-        }
-    }
-    
+
     private boolean cleanup (File f) {
         String chNames[] = f.list ();
         boolean deleted = true;
@@ -295,12 +283,42 @@ public class InitialServerFileDistributor extends ServerProgress {
                 FileUtil.copy(is, os);
             }
         } finally {
-            if (null != out) { try { out.close(); } catch (IOException ioe) {} }
-            if (null != in) {try { in.close(); } catch (IOException ioe) {} }
-            if (null != is) { try { is.close(); } catch (IOException ioe) {} }
-            if (null != fis) { try { fis.close(); } catch (IOException ioe) {} }
-            if (null != os) { try { os.close(); } catch (IOException ioe) {} }
-         }
+            if (null != out) {
+                try {
+                    out.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+            if (null != in) {
+                try {
+                    in.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+            if (null != is) {
+                try {
+                    is.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+            if (null != fis) {
+                try {
+                    fis.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+            if (null != os) {
+                try {
+                    os.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+        }
     }
 
     private void zeroOutArchive(FileObject garbage) throws IOException, FileAlreadyLockedException {

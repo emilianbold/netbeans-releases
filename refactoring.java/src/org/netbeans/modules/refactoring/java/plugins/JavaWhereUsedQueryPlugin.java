@@ -225,7 +225,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         final FileObject file = tph.getFileObject();
         JavaSource source;
         source = JavaPluginUtils.createSource(file, cpInfo, tph);
-        //XXX: This is slow!
+        if(cancel != null && cancel.get()) {
+            return Collections.<FileObject>emptySet();
+        }
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
             @Override
             public void cancel() {
@@ -239,7 +241,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     throw new NullPointerException(String.format("#145291: Cannot resolve handle: %s\n%s", tph, info.getClasspathInfo())); // NOI18N
                 }
                 Set<SearchScopeType> searchScopeType = new HashSet<SearchScopeType>(1);
-                if(packages.isEmpty()) {
+                if (packages.isEmpty()) {
                     searchScopeType.add(ClassIndex.SearchScope.SOURCE);
                 } else {
                     final Set<String> packageSet = new HashSet<String>(packages.size());
@@ -252,28 +254,34 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                         public Set<? extends String> getPackages() {
                             return packageSet;
                         }
+
                         @Override
                         public boolean isSources() {
                             return true;
                         }
+
                         @Override
                         public boolean isDependencies() {
                             return false;
                         }
                     });
-                }                
+                }
+                if (cancel != null && cancel.get()) {
+                    set.clear();
+                    return;
+                }
                 if (el.getKind().isField()) {
                     //get field references from index
-                    set.addAll(idx.getResources(ElementHandle.create((TypeElement)el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), searchScopeType));
+                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), searchScopeType));
                 } else if (el.getKind().isClass() || el.getKind().isInterface()) {
                     if (isFindSubclasses || isFindDirectSubclassesOnly) {
                         if (isFindDirectSubclassesOnly) {
                             //get direct implementors from index
                             EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
-                            set.addAll(idx.getResources(ElementHandle.create((TypeElement)el), searchKind, searchScopeType));
+                            set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), searchKind, searchScopeType));
                         } else {
                             //itererate implementors recursively
-                            set.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement)el, cancel));
+                            set.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement) el, cancel));
                         }
                     } else {
                         //get type references from index
@@ -283,18 +291,22 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     //Find overriding methods
                     TypeElement type = (TypeElement) el.getEnclosingElement();
                     set.addAll(getImplementorsRecursive(idx, cpInfo, type, cancel));
-                } 
+                }
                 if (el.getKind() == ElementKind.METHOD && isFindUsages) {
                     //get method references for method and for all it's overriders
-                    Set<ElementHandle<TypeElement>> s = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement)el.getEnclosingElement(), cancel);
-                    for (ElementHandle<TypeElement> eh:s) {
+                    Set<ElementHandle<TypeElement>> s = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement) el.getEnclosingElement(), cancel);
+                    for (ElementHandle<TypeElement> eh : s) {
+                        if (cancel != null && cancel.get()) {
+                            set.clear();
+                            return;
+                        }
                         TypeElement te = eh.resolve(info);
-                        if (te==null) {
+                        if (te == null) {
                             continue;
                         }
-                        for (Element e:te.getEnclosedElements()) {
+                        for (Element e : te.getEnclosedElements()) {
                             if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
-                                if (info.getElements().overrides((ExecutableElement)e, (ExecutableElement)el, te)) {
+                                if (info.getElements().overrides((ExecutableElement) e, (ExecutableElement) el, te)) {
                                     set.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType));
                                 }
                             }
@@ -302,9 +314,8 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     }
                     set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType)); //?????
                 } else if (el.getKind() == ElementKind.CONSTRUCTOR) {
-                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType));
+                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType));
                 }
-                    
             }
         };
         try {
@@ -318,8 +329,11 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
     private static Collection<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el, AtomicBoolean cancel) {
         Set<?> implementorsAsHandles = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, el, cancel);
 
+        if(cancel != null && cancel.get()) {
+            return Collections.<FileObject>emptySet();
+        }
         @SuppressWarnings("unchecked")
-        Collection<FileObject> set = SourceUtilsEx.getFiles((Collection<ElementHandle<? extends Element>>) implementorsAsHandles, cpInfo);
+        Collection<FileObject> set = SourceUtilsEx.getFiles((Collection<ElementHandle<? extends Element>>) implementorsAsHandles, cpInfo, cancel);
 
         // filter out files that are not on source path
         ClassPath source = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
@@ -327,6 +341,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         for (FileObject fo : set) {
             if (source.contains(fo)) {
                 set2.add(fo);
+            }
+            if(cancel != null && cancel.get()) {
+                return Collections.<FileObject>emptySet();
             }
         }
         return set2;
@@ -439,21 +456,22 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
     private class FindTask implements CancellableTask<CompilationController> {
 
         private RefactoringElementsBag elements;
-        private volatile boolean cancelled;
+        private volatile AtomicBoolean cancelled;
 
         public FindTask(RefactoringElementsBag elements) {
             super();
             this.elements = elements;
+            this.cancelled = new AtomicBoolean(false);
         }
 
         @Override
         public void cancel() {
-            cancelled=true;
+            cancelled.set(true);
         }
 
         @Override
         public void run(CompilationController compiler) throws IOException {
-            if (cancelled) {
+            if (cancelled.get()) {
                 return ;
             }
             if (compiler.toPhase(JavaSource.Phase.RESOLVED)!=JavaSource.Phase.RESOLVED) {
@@ -474,7 +492,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             final boolean fromTestRoot = RefactoringUtils.isFromTestRoot(compiler.getFileObject(), compiler.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE));
             AtomicBoolean inImport = new AtomicBoolean();
             if (isFindUsages()) {
-                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS), fromTestRoot, inImport);
+                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, cancelled, refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS), fromTestRoot, inImport);
                 findVisitor.scan(compiler.getCompilationUnit(), element);
                 Collection<WhereUsedElement> foundElements = findVisitor.getElements();
                 for (WhereUsedElement el : foundElements) {

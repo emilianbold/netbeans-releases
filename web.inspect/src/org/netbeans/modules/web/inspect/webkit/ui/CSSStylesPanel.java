@@ -124,10 +124,10 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(400,400));
         PageInspectorImpl.getDefault().addPropertyChangeListener(getListener());
-        updatePageModel();
-        add(selectionPanel, BorderLayout.CENTER);
         lookup.updateLookup(selectionPanel.getLookup());
         ruleLookupResult = lookup.lookupResult(Rule.class);
+        updatePageModel();
+        add(selectionPanel, BorderLayout.CENTER);
         ruleLookupResult.addLookupListener(getListener());
     }
 

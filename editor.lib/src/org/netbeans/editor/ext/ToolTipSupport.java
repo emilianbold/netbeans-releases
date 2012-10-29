@@ -1014,7 +1014,8 @@ public class ToolTipSupport {
 
             LOG.log(Level.FINER, "Action-name: {0}", actionName); //NOI18N
             if (actionName.contains("delete") || actionName.contains("insert") || //NOI18N
-                actionName.contains("paste") || actionName.contains("default") //NOI18N
+                actionName.contains("paste") || actionName.contains("default") || //NOI18N
+                actionName.contains("cut") //NOI18N
             ) {
                 actionMap.put(key, NO_ACTION);
             }

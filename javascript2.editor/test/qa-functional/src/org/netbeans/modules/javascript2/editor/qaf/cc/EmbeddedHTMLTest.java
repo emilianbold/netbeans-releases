@@ -76,10 +76,10 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
 
     public void createApplication() {
         startTest();
-        this.name_iterator++;
-        createPhpApplication(TEST_BASE_NAME + name_iterator);
+        EmbeddedHTMLTest.NAME_ITERATOR++;
+        createPhpApplication(TEST_BASE_NAME + NAME_ITERATOR);
 
-        EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + name_iterator, "HTML File");
+        EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + NAME_ITERATOR, "HTML File");
         EmbeddedHTMLTest.currentFile = "cc.html";
         eo.setCaretPosition("</body>", true);
         type(eo, "\n <script>\n \n </script>");
@@ -306,7 +306,7 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
 
     public void testAllCompletionMultipleFiles() {
         startTest();
-        EditorOperator eo = createWebFile("other", TEST_BASE_NAME + name_iterator, "JavaScript File");
+        EditorOperator eo = createWebFile("other", TEST_BASE_NAME + NAME_ITERATOR, "JavaScript File");
         eo.typeKey('a', InputEvent.CTRL_MASK);
         eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
         eo.setCaretPositionToLine(1);

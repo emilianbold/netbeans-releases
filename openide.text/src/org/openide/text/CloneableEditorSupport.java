@@ -1077,19 +1077,24 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         // (reading doc's contents) should be done under single runAtomic().
         final MemoryOutputStream[] memoryOutputStream = new MemoryOutputStream[1];
         final IOException[] ioException = new IOException[1];
+        final boolean[] onSaveTasksStarted = new boolean[1];
         Runnable saveToMemory = new Runnable() {
             @Override
             public void run() {
                 try {
+                    UndoRedo.Manager urm = getUndoRedo();
+                    if (urm instanceof UndoRedoManager) {
+                        UndoRedoManager urManager = (UndoRedoManager) urm;
+                        if (onSaveTasksStarted[0]) {
+                            urManager.endOnSaveTasks();
+                        }
+                        urManager.markSavepoint();
+                    }
+
                     // Alloc 10% for non-single byte chars
                     int byteArrayAllocSize = myDoc.getLength() * 11 / 10;
                     memoryOutputStream[0] = new MemoryOutputStream(byteArrayAllocSize);
                     saveFromKitToStream(myDoc, kit, memoryOutputStream[0]);
-
-                    UndoRedo.Manager urm = getUndoRedo();
-                    if (urm instanceof UndoRedoManager) {
-                        ((UndoRedoManager) urm).markSavepoint();
-                    }
 
                     // update cached info about lines
                     updateLineSet(true);
@@ -1114,7 +1119,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 public void run() {
                     UndoRedo.Manager urm = getUndoRedo();
                     if (urm instanceof UndoRedoManager) {
-                        ((UndoRedoManager) undoRedo).markNextEditAsSaveActions();
+                        ((UndoRedoManager) undoRedo).startOnSaveTasks();
+                        onSaveTasksStarted[0] = true;
                     }
                 }
             };
@@ -1137,7 +1143,21 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             memoryOutputStream[0].writeTo(os);
             os.close(); // performs firing
             os = null;
-            callNotifyUnmodified();
+            myDoc.render(new Runnable() {
+                @Override
+                public void run() {
+                    UndoRedo.Manager urm = getUndoRedo();
+                    // Compare whether the savepoint edit is still the edit-to-be-undone
+                    if (urm instanceof UndoRedoManager) {
+                        // If not on savepoint then do not mark as unmodified
+                        if (((UndoRedoManager)urm).isAtSavepoint()) {
+                            callNotifyUnmodified();
+                        }
+                    } else {
+                        callNotifyUnmodified();
+                    }
+                }
+            });
 
             // remember time of last save
             ERR.fine("Save ok, assign new time, while old was: " + oldSaveTime); // NOI18N

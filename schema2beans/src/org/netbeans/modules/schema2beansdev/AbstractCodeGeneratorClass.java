@@ -2198,7 +2198,7 @@ public abstract class AbstractCodeGeneratorClass {
             else
                 writeMethod = a.getWriteMethod();
             //jw.comment("a.name="+a.name+" sw="+sw+" sd.help="+sd.getHelp()+" mandatory="+sd.isMandatory());
-            jw.beginIf("arg == "+JavaUtil.instanceFrom("String", "-"+sw));
+            jw.beginIf(JavaUtil.instanceFrom("String", "-"+sw) + ".equals(arg)");
             boolean isBoolean = (type == "boolean" || type == "Boolean" || type == "java.lang.Boolean");
             helpParams.append(" ");
             if (!sd.isMandatory())
@@ -2236,7 +2236,7 @@ public abstract class AbstractCodeGeneratorClass {
             }
             helpText.append('\n');
             if (isBoolean) {
-                jw.beginIf("arg == "+JavaUtil.instanceFrom("String", "-no"+sw));
+                jw.beginIf(JavaUtil.instanceFrom("String", "-no"+sw) + ".equals(arg)");
                 jw.writeEol(writeMethod+"(false)");
                 jw.writeEol("continue");
                 jw.end();

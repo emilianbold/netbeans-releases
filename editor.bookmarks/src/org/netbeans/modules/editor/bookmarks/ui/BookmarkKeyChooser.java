@@ -52,6 +52,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
@@ -65,6 +67,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkManager;
+import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
 import org.netbeans.modules.editor.bookmarks.FileBookmarks;
 import org.netbeans.modules.editor.bookmarks.ProjectBookmarks;
@@ -193,11 +196,20 @@ public class BookmarkKeyChooser implements KeyListener, ActionListener {
                         super.paintComponent(g);
                     }
                 };
-                BookmarkInfo bookmark = key2bookmark.get(start);
+                final BookmarkInfo bookmark = key2bookmark.get(start);
                 if (bookmark != null) {
                     cell.setForeground(selForeColor);
                     cell.setBackground(selBackColor);
                     cell.setToolTipText(bookmark.getDescription(true, false, false));
+                    cell.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            if (e.getClickCount() == 1) {
+                                result = bookmark;
+                                dispose();
+                            }
+                        }
+                    });
                 } else {
                     cell.setForeground(foreColor);
                     cell.setBackground(backColor);

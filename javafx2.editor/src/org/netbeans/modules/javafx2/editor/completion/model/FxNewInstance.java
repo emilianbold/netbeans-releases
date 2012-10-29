@@ -132,5 +132,6 @@ public final class FxNewInstance extends FxInstance {
     public String getFactoryMethod() {
         return factoryMethod;
     }
+    
 }
 

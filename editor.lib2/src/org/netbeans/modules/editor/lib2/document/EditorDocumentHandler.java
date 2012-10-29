@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.lib2.document;
 
 import javax.swing.text.Document;
+import javax.swing.undo.UndoableEdit;
 
 /**
  * Performer of various document services implemented currently
@@ -83,6 +84,19 @@ public final class EditorDocumentHandler {
     public static void resetUndoMerge(Document doc) {
         if (editorDocClass != null && editorDocClass.isInstance(doc)) {
             editorDocServices.resetUndoMerge(doc);
+        }
+    }
+
+    public static UndoableEdit startOnSaveTasks(Document doc) {
+        if (editorDocClass != null && editorDocClass.isInstance(doc)) {
+            return editorDocServices.startOnSaveTasks(doc);
+        }
+        return null;
+    }
+
+    public static void endOnSaveTasks(Document doc, boolean success) {
+        if (editorDocClass != null && editorDocClass.isInstance(doc)) {
+            editorDocServices.endOnSaveTasks(doc, success);
         }
     }
 

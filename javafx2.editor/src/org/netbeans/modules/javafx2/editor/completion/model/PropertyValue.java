@@ -78,6 +78,9 @@ public abstract class PropertyValue extends FxNode {
     }
     
     public String getPropertyName() {
+        if (name == null && propertyInfo != null) {
+            return propertyInfo.getName();
+        }
         return name;
     }
     
