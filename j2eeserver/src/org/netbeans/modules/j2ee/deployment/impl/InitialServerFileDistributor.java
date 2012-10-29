@@ -295,12 +295,42 @@ public class InitialServerFileDistributor extends ServerProgress {
                 FileUtil.copy(is, os);
             }
         } finally {
-            if (null != out) { try { out.close(); } catch (IOException ioe) {} }
-            if (null != in) {try { in.close(); } catch (IOException ioe) {} }
-            if (null != is) { try { is.close(); } catch (IOException ioe) {} }
-            if (null != fis) { try { fis.close(); } catch (IOException ioe) {} }
-            if (null != os) { try { os.close(); } catch (IOException ioe) {} }
-         }
+            if (null != out) {
+                try {
+                    out.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+            if (null != in) {
+                try {
+                    in.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+            if (null != is) {
+                try {
+                    is.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+            if (null != fis) {
+                try {
+                    fis.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+            if (null != os) {
+                try {
+                    os.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+        }
     }
 
     private void zeroOutArchive(FileObject garbage) throws IOException, FileAlreadyLockedException {
