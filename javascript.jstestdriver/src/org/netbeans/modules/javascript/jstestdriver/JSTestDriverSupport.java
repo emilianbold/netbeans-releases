@@ -203,6 +203,13 @@ public class JSTestDriverSupport {
                         }
 
                     });
+                    if (td2.wasStartedExternally()) {
+                        starting = false;
+                        TestDriverServiceNode.getInstance().refresh();
+                        if (l != null) {
+                            l.serverStarted();
+                        }
+                    }
                 } catch (Throwable t) {
                     LOGGER.log(Level.SEVERE, "cannot start server", t);
                 }
@@ -242,7 +249,7 @@ public class JSTestDriverSupport {
         return JSTestDriverCustomizerPanel.isConfiguredProperly();
     }
 
-    public void runAllTests(Project project, String serverURL, int port, boolean strictMode, File baseFolder, File configFile, 
+    public void runAllTests(Project project, File baseFolder, File configFile, 
             String testsToRun) {
         JsTestDriver td = getJsTestDriver();
         if (td == null) {
@@ -253,6 +260,9 @@ public class JSTestDriverSupport {
         if (td == null) {
             return;
         }
+        String serverURL = JSTestDriverCustomizerPanel.getServerURL();
+        int port = JSTestDriverCustomizerPanel.getPort();
+        boolean strictMode = JSTestDriverCustomizerPanel.isStricModel();
         if (!isRunning() && port != -1) {
             final Semaphore s = new Semaphore(0);
             start(new ServerListener() {
