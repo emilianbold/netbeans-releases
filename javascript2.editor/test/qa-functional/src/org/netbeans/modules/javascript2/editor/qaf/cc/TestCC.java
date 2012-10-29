@@ -64,16 +64,16 @@ public class TestCC extends GeneralJavaScript {
                 NbModuleSuite.createConfiguration(TestCC.class).addTest(
                 "createApplication",
                 "testSimplePrototype",
-//                "testObjectFunction",
-//                "testObjectLiteral",
-//                "testPrototypeInheritance",
-//                "testObjectLiteral",
-//                "testIssue215394",
-//                "testIssue215393",
-//                "testAllCompletionSingleFile",
-//                "testAllCompletionMultipleFiles",
-//                "testCallAndApply",
-//                "testLearning",
+                "testObjectFunction",
+                "testObjectLiteral",
+                "testPrototypeInheritance",
+                "testObjectLiteral",
+                "testIssue215394",
+                "testIssue215393",
+                "testAllCompletionSingleFile",
+                "testAllCompletionMultipleFiles",
+                "testCallAndApply",
+                "testLearning",
                 "testSetterGetter").enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
