@@ -154,7 +154,7 @@ public class GeneralJavaScript extends JellyTestCase {
 //        long lBack = t.getTimeout("JTextComponentOperator.TypeTextTimeout");
 //        t.setTimeout("JTextComponentOperator.TypeTextTimeout", 30000);
 //        jcPath.setTimeouts(t);
-
+        evt.waitNoEvent(1000);
         jcPath.getTextField().setText(sProjectPath);
 
 //        t.setTimeout("JTextComponentOperator.TypeTextTimeout", lBack);
