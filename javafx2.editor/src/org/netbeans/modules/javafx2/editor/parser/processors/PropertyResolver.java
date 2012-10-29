@@ -214,46 +214,69 @@ public class PropertyResolver extends FxNodeVisitor.ModelTreeTraversal implement
         super.visitPropertySetter(p);
     }
     
+    private int[] findContentPositions(PropertySetter p) {
+        int start = env.getTreeUtilities().positions(p).getStart();
+        int len = 1;
+        TokenSequence<XMLTokenId>  seq = (TokenSequence<XMLTokenId>)env.getHierarchy().tokenSequence();
+        seq.move(start);
+        if (seq.moveNext()) {
+            Token<XMLTokenId>   t = seq.token();
+            if (t.id() == XMLTokenId.TEXT) {
+                String tokenText = t.text().toString();
+                String trimmed = tokenText.trim();
+                int indexOfTrimmed = tokenText.indexOf(trimmed);
+                int indexOfNl = trimmed.indexOf('\n');
+
+                start = seq.offset() + indexOfTrimmed;
+                if (indexOfNl > -1) {
+                    len = indexOfNl;
+                } else {
+                    len = trimmed.length();
+                }
+            } else {
+                start = seq.offset();
+                len = t.length();
+            }
+        }
+        return new int[] { start, len };
+    }
+    
     
     
     @NbBundle.Messages({
         "# {0} - class name",
-        "ERR_noDefaultProperty=Class {0} has no default property. Place {0} content in a property element."
+        "ERR_noDefaultProperty=Class {0} has no default property. Place {0} content in a property element.",
+        "# {0} - property name",
+        "ERR_defaultPropertyClash=The content belongs to property ''{0}'', which has its own element or attribute."
     })
     @SuppressWarnings("unchecked")
     private void processDefaultProperty(PropertySetter p) {
         FxProperty pi = beanInfo.getDefaultProperty();
         if (pi == null) {
-            int start = env.getTreeUtilities().positions(p).getStart();
-            int len = 1;
-            TokenSequence<XMLTokenId>  seq = (TokenSequence<XMLTokenId>)env.getHierarchy().tokenSequence();
-            seq.move(start);
-            if (seq.moveNext()) {
-                Token<XMLTokenId>   t = seq.token();
-                if (t.id() == XMLTokenId.TEXT) {
-                    String tokenText = t.text().toString();
-                    String trimmed = tokenText.trim();
-                    int indexOfTrimmed = tokenText.indexOf(trimmed);
-                    int indexOfNl = trimmed.indexOf('\n');
-                    
-                    start = seq.offset() + indexOfTrimmed;
-                    if (indexOfNl > -1) {
-                        len = indexOfNl;
-                    }
-                } else {
-                    start = seq.offset();
-                    len = t.length();
-                }
-            }
+            int[] posInfo = findContentPositions(p);
             env.addError(new ErrorMark(
-                    start,
-                    len,
+                    posInfo[0],
+                    posInfo[1],
                     "no-default-property",
                     ERR_noDefaultProperty(beanInfo.getClassName()),
                     beanInfo.getClassName()
             ));
         } else {
-            env.getAccessor().resolve(p, pi.getAccessor(), pi.getType(), null, pi);
+            // check if there's an explicit property of that name;
+            if (p.getSourceName() == null && currentInstance.getProperty(pi.getName()) != null) {
+                int[] posInfo = findContentPositions(p);
+                env.addError(new ErrorMark(
+                        posInfo[0],
+                        posInfo[1],
+                        "default-property-clash",
+                        ERR_defaultPropertyClash(pi.getName()),
+                        p
+                ));
+                env.getAccessor().makeBroken(p);
+            } else {
+                env.getAccessor().resolve(p, pi.getAccessor(), pi.getType(), null, pi);
+                env.getAccessor().rename(currentInstance, p, pi.getName());
+            }
         }
     }
     

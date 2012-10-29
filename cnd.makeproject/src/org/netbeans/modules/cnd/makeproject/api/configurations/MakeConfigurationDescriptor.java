@@ -1835,6 +1835,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getNameExt())) {
                 continue;
             }
+            if (file.isData() && folder.isDiskFolder() && !CndFileVisibilityQuery.getDefault().isVisible(file)) {
+                // be consistent in checks to prevent adding item here followed
+                // by remove in Folder.refreshDiskFolder due to !CndFileVisibilityQuery.getDefault().isVisible(file)
+                continue;
+            }
             if (file.isFolder() && getFolderVisibilityQuery().isVisible(file)) {
                 continue;
             }
@@ -1852,10 +1857,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
                 Folder dirfolder = folder.findFolderByName(file.getNameExt());
                 if (dirfolder == null) {
+                    // child folder inherits kind of parent folder
                     if (inList(absTestRootsList, RemoteFileUtil.getAbsolutePath(file)) || folder.isTestLogicalFolder()) {
                         dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.TEST_LOGICAL_FOLDER);
                     } else {
-                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, (Folder.Kind)null);
                     }
                 }
                 addFiles(antiLoop, dirfolder, file, handle, filesAdded, notify, setModified, fileFilter);

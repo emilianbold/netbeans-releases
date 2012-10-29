@@ -385,6 +385,12 @@ abstract public class CsmCompletionQuery {
                         if(e.getExpID() == CsmCompletionExpression.METHOD_OPEN) {
                             exp = e;
                             break;
+                        } else if(e.getExpID() == CsmCompletionExpression.SCOPE) {
+                            if(e.getParameterCount() > 1 && 
+                                    e.getParameter(e.getParameterCount() - 1).getExpID() == CsmCompletionExpression.METHOD_OPEN) {
+                                exp = e;
+                                break;
+                            }
                         }
                     }
                     exp = (exp != null) ? exp : tp.getResultExp();
@@ -2318,7 +2324,7 @@ abstract public class CsmCompletionQuery {
                                         lastNamespace = CsmCompletion.getProjectNamespace(getCsmProject(), csmNamespace);
                                         break;
                                     }
-                                    List<CsmObject> elems = finder.findNamespaceElements(curNs, mtdName, openingSource, false, false); // matching classes
+                                    List<CsmObject> elems = finder.findNamespaceElements(curNs, mtdName, openingSource, true, false); // matching classes
 //                                    elems.addAll(finder.findStaticNamespaceElements(lastNamespace, mtdName, openingSource)); // matching static elements
                                     for (CsmObject obj: elems) {
                                         if (CsmKindUtilities.isFunction(obj)) {
