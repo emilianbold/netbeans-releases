@@ -74,7 +74,7 @@ public class TestCC extends GeneralJavaScript {
                 "testAllCompletionMultipleFiles",
                 "testCallAndApply",
                 "testLearning",
-                "testSetterGetter").enableModules(".*").clusters(".*"));
+                "testSetterGetter").enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
     public void createApplication() {
