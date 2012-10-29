@@ -223,7 +223,10 @@ public class CommonServerSupport
     private FileObject instanceFO;
 
     private volatile boolean startedByIde = false;
+
+    /** Cache local/remote test for instance. */
     private transient boolean isRemote = false;
+
     // prevent j2eeserver from stopping an authenticated domain that
     // the IDE did not start.
     private boolean stopDisabled = false;
@@ -232,8 +235,7 @@ public class CommonServerSupport
 
     CommonServerSupport(GlassfishInstance instance) {
         this.instance = instance;
-        this.isRemote = instance.getProperties().get(
-                GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
+        this.isRemote = instance.isRemote();
         // !PW FIXME temporary patch for JavaONE 2008 to make it easier
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
@@ -1178,7 +1180,8 @@ public class CommonServerSupport
                 public void run() {
                     try {
                         // Can block for up to a few seconds...
-                        boolean isRunning = GlassFishStatus.isReady(instance, false);
+                        boolean isRunning = GlassFishStatus.isReady(
+                                instance, false, GlassFishStatus.Mode.REFRESH);
                         if (isRunning && !Util.isDefaultOrServerTarget(
                                 instance.getProperties())) {
                             isRunning = pingHttp(1);

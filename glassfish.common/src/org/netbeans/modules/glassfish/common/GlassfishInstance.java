@@ -743,6 +743,19 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     ////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Get information if this GlassFish server instance is local or remote.
+     * <p/>
+     * Local GlassFish server instance has domains folder attribute set while
+     * remote does not.
+     * <p/>
+     * @return Value of <code>true</code> when this GlassFish server instance
+     *         is remote or <code>false</code> otherwise.
+     */
+    boolean isRemote() {
+        return properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
+    }
+
+    /**
      * Returns property value to which the specified <code>key</code> is mapped,
      * or <code>null</code> if this map contains no mapping for the
      * <code>key</code>.

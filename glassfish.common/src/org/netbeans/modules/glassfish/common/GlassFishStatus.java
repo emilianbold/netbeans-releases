@@ -62,6 +62,27 @@ import org.openide.util.NbBundle;
 public class GlassFishStatus {
 
     ////////////////////////////////////////////////////////////////////////////
+    // Inner classes                                                          //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Check mode.
+     * <p/>
+     * Allows to select server status check mode.
+     */
+    public static enum Mode {
+        /** Default server status check mode. All special features
+         *  are turned off. */
+        DEFAULT,
+        /** Startup mode. Sets longer administration commands timeout
+         *  and displays GlassFish 3.1.2 WS bug warning. */
+        STARTUP,
+        /** Refresh mode. Displays enable-secure-admin warning
+         *  for remote servers. */
+        REFRESH;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
 
@@ -193,14 +214,13 @@ public class GlassFishStatus {
      * <p/>
      * @param instance          GlassFish server instance.
      * @param versionTaskResult Task execution result.
-     * @param warnings          Display warning pop up messages
-     *                          when <code>true</code>.
+     * @param mode              Check mode.
      * @return Version command response.
      */
     private static ResultString processVersionTaskResult(
             final GlassfishInstance instance,
             final ServerStatus.ResultVersion versionTaskResult,
-            final boolean warnings) {
+            final Mode mode) {
         ResultString versionCommandResult;
         switch (versionTaskResult.getStatus()) {
             case SUCCESS:
@@ -208,7 +228,7 @@ public class GlassFishStatus {
                 break;
             // No break here, default: does the rest.
             case TIMEOUT:
-                if (warnings) {
+                if (mode == Mode.REFRESH && instance.isRemote()) {
                     String message = NbBundle.getMessage(
                             CommonServerSupport.class, "MSG_COMMAND_SSL_ERROR",
                             "version", instance.getName(),
@@ -231,11 +251,14 @@ public class GlassFishStatus {
      * <p/>
      * @param instance GlassFish server instance.
      * @param status   Server status checker containing check results.
+     * @param mode              Check mode.
      */
     private static void handleGlassFishWarnings(final GlassfishInstance instance,
-            final ServerStatus status) {
+            final ServerStatus status, final Mode mode) {
         GlassFishVersion version = status.getVersion();
-        if (version == GlassFishVersion.GF_3_1_2) {
+        // Remote GlassFish 3.1.2 won't crash NetBeans.
+        if (mode == Mode.STARTUP && version == GlassFishVersion.GF_3_1_2
+                && !instance.isRemote()) {
             String message = NbBundle.getMessage(
                     CommonServerSupport.class, "MSG_GF312_BUG",
                     instance.getName());
@@ -284,7 +307,7 @@ public class GlassFishStatus {
      */
     public static boolean isReady(final GlassfishInstance instance,
             final boolean retry) {
-        return isReady(instance, retry, false);
+        return isReady(instance, retry, Mode.DEFAULT);
     }
 
     /**
@@ -294,22 +317,20 @@ public class GlassFishStatus {
      * <p/>
      * @param instance GlassFish server instance.
      * @param retry    Allow up to 3 retries.
-     * @param startup  Trigger startup mode:<ul>
-     *                 <li>Display warning pop up messages when
-     *                 <code>true</code>.</li><br/>
-     *                 <li>Trigger longer administration commands execution
-     *                 timeouts when <code>true</code>.</li><br/></ul>
+     * @param startup  Trigger startup mode. Triggers longer administration
+     *                 commands execution timeouts when <code>true</code>.
+     * @param warnings Display warnings pop up messages.
      * @return Returns <code>true</code> when GlassFish server is ready
      *         or <code>false</code> otherwise.
      */
     public static boolean isReady(final GlassfishInstance instance,
-            final boolean retry, final boolean startup) {
+            final boolean retry, final Mode mode) {
         boolean isReady = false;
         int maxTries = retry ? 3 : 1;
         int tries = 0;
         boolean notYetReady = false;
         long begTm = System.currentTimeMillis(), actTm = begTm;
-        ServerStatus status = new ServerStatus(instance, startup);
+        ServerStatus status = new ServerStatus(instance, mode == Mode.STARTUP);
         while (!isReady && (
                 tries++ < maxTries || (notYetReady
                 && (actTm = System.currentTimeMillis()) - begTm
@@ -324,7 +345,7 @@ public class GlassFishStatus {
                 return false;
             }
             ResultString versionCommandResult = processVersionTaskResult(
-                    instance, status.getVersionResult(), startup);
+                    instance, status.getVersionResult(), mode);
             // Version command result.
             if (versionCommandResult != null) {
                 String value = versionCommandResult.getValue();
@@ -341,9 +362,7 @@ public class GlassFishStatus {
                             break;
                     case COMPLETED:
                         isReady = true;
-                        if (startup) {
-                            handleGlassFishWarnings(instance, status);
-                        }
+                        handleGlassFishWarnings(instance, status, mode);
                         break;
                 }
             }
