@@ -385,6 +385,12 @@ abstract public class CsmCompletionQuery {
                         if(e.getExpID() == CsmCompletionExpression.METHOD_OPEN) {
                             exp = e;
                             break;
+                        } else if(e.getExpID() == CsmCompletionExpression.SCOPE) {
+                            if(e.getParameterCount() > 1 && 
+                                    e.getParameter(e.getParameterCount() - 1).getExpID() == CsmCompletionExpression.METHOD_OPEN) {
+                                exp = e;
+                                break;
+                            }
                         }
                     }
                     exp = (exp != null) ? exp : tp.getResultExp();
