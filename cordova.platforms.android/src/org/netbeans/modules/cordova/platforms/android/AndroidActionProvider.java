@@ -42,7 +42,9 @@
 package org.netbeans.modules.cordova.platforms.android;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.PropertyProvider;
@@ -58,7 +60,10 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-@NbBundle.Messages("ERR_Title=Error")
+@NbBundle.Messages({
+    "ERR_Title=Error",
+    "LBL_CheckingDevice=Checking android device..."
+})
 public class AndroidActionProvider implements ActionProvider {
 
     private final Project p;
@@ -78,7 +83,7 @@ public class AndroidActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
+        final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
         String checkAndroid = checkAndroid();
         if (checkAndroid!=null) {
                 NotifyDescriptor not = new NotifyDescriptor(
@@ -100,24 +105,28 @@ public class AndroidActionProvider implements ActionProvider {
         } else if (COMMAND_CLEAN.equals(command)) {
             build.perform(build.CLEAN_ANDROID, p);
         } else if (COMMAND_RUN.equals(command)) {
-            String checkDevices = checkDevices(p);
-            while (checkDevices !=null) {
-                NotifyDescriptor not = new NotifyDescriptor(
-                        checkDevices, 
-                        Bundle.ERR_Title(), 
-                        NotifyDescriptor.DEFAULT_OPTION, 
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        null, 
-                        null);
-                Object value = DialogDisplayer.getDefault().notify(not);
-                if (NotifyDescriptor.CANCEL_OPTION == value) {
-                    return;
-                } else {
-                    checkDevices = checkDevices(p);
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                @Override
+                public void run() {
+                    String checkDevices = checkDevices(p);
+                    while (checkDevices != null) {
+                        NotifyDescriptor not = new NotifyDescriptor(
+                                checkDevices,
+                                Bundle.ERR_Title(),
+                                NotifyDescriptor.DEFAULT_OPTION,
+                                NotifyDescriptor.ERROR_MESSAGE,
+                                null,
+                                null);
+                        Object value = DialogDisplayer.getDefault().notify(not);
+                        if (NotifyDescriptor.CANCEL_OPTION == value) {
+                            return;
+                        } else {
+                            checkDevices = checkDevices(p);
+                        }
+                    }
+                    build.perform(build.RUN_ANDROID, p);
                 }
-            } 
-
-            build.perform(build.RUN_ANDROID,p);
+            }, Bundle.LBL_CheckingDevice(), new AtomicBoolean(), false);
         }
     }
 

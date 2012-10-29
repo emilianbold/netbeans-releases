@@ -772,7 +772,7 @@ public class WebKitPageModel extends PageModel {
         }
 
         private boolean shouldSynchronizeSelection() {
-            return true;
+            return isSelectionMode();
         }
 
         private boolean shouldSynchronizeHighlight() {
