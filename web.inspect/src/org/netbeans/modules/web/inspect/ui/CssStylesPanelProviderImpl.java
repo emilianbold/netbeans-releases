@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.inspect.ui;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -94,10 +95,15 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         noStylesLabel.setOpaque(true);
     }
 
-    protected void update() {
+    private void update() {
         PageModel pageModel = PageInspectorImpl.getDefault().getPage();
-        boolean noPage = (pageModel == null);
-        boolean noStylesLabelShown = noStylesLabel.getParent() != null;
+        update(pageModel);
+    }
+
+    private void update(final PageModel pageModel) {
+        if (EventQueue.isDispatchThread()) {
+            boolean noPage = (pageModel == null);
+            boolean noStylesLabelShown = noStylesLabel.getParent() != null;
             if (!noStylesLabelShown || !noPage) {
                 removeAll();
                 if (noPage) {
@@ -107,8 +113,16 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                     add(stylesView.getView(), BorderLayout.CENTER);
                 }
             }
-        revalidate();
-        repaint();
+            revalidate();
+            repaint();
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    update(pageModel);
+                }
+            });
+        }
     }
     
     /**
