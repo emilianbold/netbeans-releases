@@ -58,7 +58,7 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class NbStartUtility extends HelperUtility {
 
-    private static final boolean ENABLED = Boolean.getBoolean("enable.nbstart"); // NOI18N
+    private static final boolean ENABLED = Boolean.parseBoolean(System.getProperty("enable.nbstart", "true")); // NOI18N
     private final static NbStartUtility instance = new NbStartUtility();
 
     public NbStartUtility() {

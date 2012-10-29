@@ -95,6 +95,14 @@ public class JUnitMethodRunnerProvider extends TestMethodRunnerProvider {
             if (ec != null) {
                 JEditorPane pane = NbDocument.findRecentEditorPane(ec);
                 if (pane != null) {
+		    String text = pane.getText();
+                    if (text != null) {  //NOI18N
+                        text = text.replaceAll(" ", "");
+			if (text.contains("@RunWith(value=Parameterized.class)") ||   //NOI18N
+				text.contains("@RunWith(Parameterized.class)")) {  //NOI18N
+			    return false;
+			}
+                    }
                     SingleMethod sm = getTestMethod(pane.getDocument(), pane.getCaret().getDot());
                     if(sm != null) {
                         return true;

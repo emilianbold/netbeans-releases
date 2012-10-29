@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.javascript.jstestdriver.api.RunTests;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
@@ -96,7 +97,7 @@ public class BrowserActionProvider implements ActionProvider {
                     new DialogDescriptor.Message(
                         org.openide.util.NbBundle.getMessage(BrowserActionProvider.class, "MAIN_FILE", startFile)));
                 CustomizerProviderImpl cust = project.getLookup().lookup(CustomizerProviderImpl.class);
-                cust.showCustomizer("buildConfig"); //NOI18N
+                cust.showCustomizer(CompositePanelProviderImpl.RUN);
                 // try again:
                 splt = ClientSideProjectUtilities.splitPathAndFragment(project.getStartFile());
                 justStartFile = splt[0];

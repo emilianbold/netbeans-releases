@@ -117,8 +117,8 @@ public class ProgressObjectUtil {
                         if (timeout == 0) {
                             progressFinished.await();
                         } else {
-                            progressFinished.await(timeout, TimeUnit.MILLISECONDS);
-                            if (progressFinished.getCount() > 0) {
+                            boolean passed = progressFinished.await(timeout, TimeUnit.MILLISECONDS);
+                            if (!passed) {
                                 throw new TimeoutException();
                             }
                         }

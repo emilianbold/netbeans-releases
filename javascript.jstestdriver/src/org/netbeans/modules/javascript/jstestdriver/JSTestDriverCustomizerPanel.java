@@ -203,17 +203,21 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     }
     
     private static List<TableRow> createModel() {
+        boolean noSelectedBrowser = true;
         List<TableRow> model = new ArrayList<TableRow>();
         for (WebBrowser browser : WebBrowsers.getInstance().getAll(false)) {
             if (browser.isEmbedded()) {
                 continue;
             }
             if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM) {
-                model.add(new TableRow(browser, 
-                    NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, true), true), true));
+                boolean selected = NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, true), noSelectedBrowser ? true : false);
+                if (selected) {
+                    noSelectedBrowser = false;
+                }
+                model.add(new TableRow(browser, selected, true));
             }
             model.add(new TableRow(browser, 
-                NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, false), true), false));
+                NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, false), false), false));
         }
         return model;
     }

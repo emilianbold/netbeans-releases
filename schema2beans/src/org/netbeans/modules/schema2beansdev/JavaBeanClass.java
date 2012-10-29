@@ -128,7 +128,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
             genElementPositions();
         }
         if (beanElement.isRoot && config.isProcessDocType()) {
-            genProcessDocType();
+            genProcessDocType(config.isJava5());
         }
 
         if (!config.isMinFeatures()) {
@@ -1927,10 +1927,11 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         if (beanElement.isRoot) {
             ++attrCount;
             jw.writeEol("String xsiPrefix = \"xsi\"");
-            jw.beginFor("java.util.Iterator it = namespacePrefixes.keySet().iterator()",
+            jw.beginFor("java.util.Iterator it = namespacePrefixes.entrySet().iterator()",
                         "it.hasNext()", "");
-            jw.writeEol("String prefix = (String) it.next()");
-            jw.writeEol("String ns = (String) namespacePrefixes.get(prefix)");
+            jw.writeEol("java.util.Map.Entry entry = (java.util.Map.Entry) it.next()");
+            jw.writeEol("String prefix = (String) entry.getKey()");
+            jw.writeEol("String ns = (String) entry.getValue()");
             jw.beginIf("\"http://www.w3.org/2001/XMLSchema-instance\".equals(ns)");
             jw.writeEol("xsiPrefix = prefix");
             jw.writeEol("break");
@@ -3720,7 +3721,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         jw.endMethod();
     }
 
-    protected void genProcessDocType() throws IOException {
+    protected void genProcessDocType(boolean java5) throws IOException {
         String fullDocTypeName;
         fullDocTypeName = fullClassName+".DocType";
         select(DECL_SECTION);
@@ -3801,36 +3802,40 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         jw.endMethod();
         jw.write("public String toString() ");
         jw.begin();
-        jw.writeEol("String result = \"<!DOCTYPE \"");
-        jw.writeEol("result += name");
+        if (java5) {
+            jw.writeEol("java.lang.StringBuilder result = new java.lang.StringBuilder(\"<!DOCTYPE \")");
+        } else {
+            jw.writeEol("java.lang.StringBuffer result = new java.lang.StringBuffer(\"<!DOCTYPE \")");
+        }
+        jw.writeEol("result.append(name)");
         jw.beginIf("publicId != null");
-        jw.writeEol("result += \" PUBLIC \\\"\"");
-        jw.writeEol("result += publicId");  // should be printXML
-        jw.writeEol("result += \"\\\"\"");
+        jw.writeEol("result.append(\" PUBLIC \\\"\")");
+        jw.writeEol("result.append(publicId)");  // should be printXML
+        jw.writeEol("result.append(\"\\\"\")");
         jw.beginIf("systemId == null");
         jw.writeEol("systemId = \"SYSTEM\"");
         jw.end();
         jw.end();
         jw.beginIf("systemId != null");
-        jw.writeEol("result += \" \\\"\"");
-        jw.writeEol("result += systemId");
-        jw.writeEol("result += \"\\\"\"");
+        jw.writeEol("result.append(\" \\\"\")");
+        jw.writeEol("result.append(systemId)");
+        jw.writeEol("result.append(\"\\\"\")");
         jw.end();
         jw.beginIf("entities != null");
         jw.writeEol("int length = entities.getLength()");
         jw.beginIf("length > 0");
-        jw.writeEol("result += \" [\"");
+        jw.writeEol("result.append(\" [\")");
         jw.beginFor("int i = 0", "i < length", "++i");
         jw.writeEol("org.w3c.dom.Node node = entities.item(i)");
-        jw.writeEol("result += \"<\"+node.getNodeName()+\">\"");
-        jw.writeEol("result += node.getNodeValue()");
-        jw.writeEol("result += \"</\"+node.getNodeName()+\">\"");
+        jw.writeEol("result.append(\"<\"+node.getNodeName()+\">\")");
+        jw.writeEol("result.append(node.getNodeValue())");
+        jw.writeEol("result.append(\"</\"+node.getNodeName()+\">\")");
         jw.end();
-        jw.writeEol("result += \"]\"");
+        jw.writeEol("result.append(\"]\")");
         jw.end();
         jw.end();
-        jw.writeEol("result += \">\"");
-        jw.writeEol("return result");
+        jw.writeEol("result.append(\">\")");
+        jw.writeEol("return result.toString()");
         jw.end();
 
         jw.endMethod();

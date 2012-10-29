@@ -1351,6 +1351,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             switch(mode) {
                 case PROFILE: {
                     assert false; // should never come this far
+                    break;
                 }
                 case DEBUG: {
                     if (ss.isDebuggable(target)) { // already running in debug mode
@@ -1411,6 +1412,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 _start(ui);
             }
             switch (mode) {
+                case PROFILE: {
+                    assert false; // should never come this far
+                    break;
+                }
                 case DEBUG: {
                     if (ss.isDebuggable(target)) {
                         if ( ! needsRestart) {

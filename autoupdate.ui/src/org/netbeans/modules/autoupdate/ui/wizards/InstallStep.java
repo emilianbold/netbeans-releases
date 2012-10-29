@@ -271,6 +271,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             spareHandle.start();
             spareHandleStarted = true;
         }
+        
+        if (model.getPluginManager() != null) {
+            model.getPluginManager().willClose();
+        }
         if (w != null) {
             w.setVisible (false);
         }

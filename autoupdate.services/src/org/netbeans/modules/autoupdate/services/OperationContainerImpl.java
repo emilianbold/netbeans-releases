@@ -116,12 +116,12 @@ public final class OperationContainerImpl<Support> {
     public OperationInfo<Support> add (UpdateUnit updateUnit, UpdateElement updateElement) throws IllegalArgumentException {
         OperationInfo<Support> retval = null;
         boolean isValid = isValid (updateUnit, updateElement);
-        if (!isValid) {
-            throw new IllegalArgumentException ("Invalid " + updateElement.getCodeName () + " for operation " + type);
-        }
         if (UpdateUnitFactory.getDefault().isScheduledForRestart (updateElement)) {
             LOGGER.log (Level.INFO, updateElement + " is scheduled for restart IDE.");
             throw new IllegalArgumentException (updateElement + " is scheduled for restart IDE.");
+        }
+        if (!isValid) {
+            throw new IllegalArgumentException("Invalid " + updateElement.getCodeName() + " for operation " + type);
         }
         if (isValid) {
             switch (type) {
