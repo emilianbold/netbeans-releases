@@ -63,6 +63,7 @@ import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.LanguageDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.MapProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
+import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
 import org.netbeans.modules.javafx2.editor.completion.model.StaticProperty;
 
 /**
@@ -113,7 +114,6 @@ public abstract class ModelAccessor {
     public abstract FxNode createElement(String localName);
     public abstract FxNode createErrorElement(String localName);
     public abstract FxScriptFragment createScript(String sourceRef);
-    
     public abstract EventHandler asMethodRef(EventHandler h);
     
     public abstract void initModel(FxModel model, String controller, FxInstance rootInstance, LanguageDecl language);
@@ -149,4 +149,6 @@ public abstract class ModelAccessor {
     public abstract void resolveReference(FxObjectBase copyOrReference, FxInstance original);
     
     public abstract void attach(FxNode node, FxModel model);
+
+    public abstract void rename(FxInstance instance, PropertyValue pv, String newName);
 }
