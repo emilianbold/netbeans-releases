@@ -164,7 +164,7 @@ public class InitialServerFileDistributor extends ServerProgress {
     public void cleanup () {
         if (inPlace)
             return;
-        
+
         ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
         J2eeModule deployable = deployment.getJ2eeModule(null);
         File dir = incDeployment.getDirectoryForNewApplication (target, deployable, deployment.getModuleConfiguration());
@@ -172,7 +172,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             setStatusDistributeFailed ("Failed to cleanup the data after unsucesful distribution");
         }
     }
-    
+
     private boolean cleanup (File f) {
         String chNames[] = f.list ();
         boolean deleted = true;
