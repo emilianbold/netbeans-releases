@@ -39,62 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.j2ee.deployment.impl;
 
-import com.jcraft.jsch.JSchException;
-import java.util.List;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryImplementation;
 
 /**
  *
- * @author Andrew
+ * @author Petr Hejl
  */
-public final class NbRemoteNativeProcess extends NbNativeProcess {
+public abstract class ServerLibraryAccessor {
 
-    private JschSupport.ChannelStreams streams = null;
+    private static volatile ServerLibraryAccessor accessor;
 
-    public NbRemoteNativeProcess(NativeProcessInfo info) {
-        super(info);
+    public static void setDefault(ServerLibraryAccessor accessor) {
+        if (ServerLibraryAccessor.accessor != null) {
+            throw new IllegalStateException("Already initialized accessor"); // NOI18N
+        }
+        ServerLibraryAccessor.accessor = accessor;
     }
 
-    @Override
-    protected void createProcessImpl(List<String> command) throws Throwable {
-        JschSupport.ChannelParams params = new JschSupport.ChannelParams();
-        params.setX11Forwarding(info.getX11Forwarding());
-
-        StringBuilder sb = new StringBuilder();
-
-        for (String arg : command) {
-            sb.append('\'').append(arg).append('\'').append(' '); // NOI18N
+    public static ServerLibraryAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
         }
 
-        streams = JschSupport.startCommand(info.getExecutionEnvironment(), sb.toString(), params); // NOI18N
-        setErrorStream(streams.err);
-        setInputStream(streams.out);
-        setOutputStream(streams.in);
-        streams.in.flush();
-    }
-
-    @Override
-    protected int waitResultImpl() throws InterruptedException {
-        if (streams == null || streams.channel == null) {
-            return -1;
-        }
-
+        // invokes static initializer of ServerLibrary.class
+        // that will assign value to the DEFAULT field above
+        Class c = ServerLibrary.class;
         try {
-            while (streams.channel.isConnected()) {
-                Thread.sleep(200);
-            }
-
-            return streams.channel.getExitStatus();
-        } finally {
-            if (streams != null) {
-                try {
-                    ConnectionManagerAccessor.getDefault().closeAndReleaseChannel(getExecutionEnvironment(), streams.channel);
-                } catch (JSchException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            Class.forName(c.getName(), true, ServerLibraryAccessor.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
         }
+
+        return accessor;
     }
+
+    /**
+     * Creates the API instance.
+     *
+     * @param impl the SPI instance
+     * @return the API instance
+     */
+    public abstract ServerLibrary createServerLibrary(ServerLibraryImplementation impl);
+
 }

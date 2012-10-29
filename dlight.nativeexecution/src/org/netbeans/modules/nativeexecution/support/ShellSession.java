@@ -101,10 +101,12 @@ public final class ShellSession {
 
         synchronized (processes) {
             process = processes.get(env);
-            if (process != null) {
+            if (process != null && State.RUNNING.equals(process.process.getState())) {
                 return process;
+            } else {
+                process = null;
+                processes.put(env, null);
             }
-
             try {
                 String shell;
 
@@ -138,10 +140,8 @@ public final class ShellSession {
     }
 
     public static ExitStatus execute(final ExecutionEnvironment env, final String command) throws IOException, CancellationException {
-        ShellProcess process;
-
         while (true) {
-            process = startProcessIfNeeded(env);
+            final ShellProcess process = startProcessIfNeeded(env);
             synchronized (process) {
                 if (State.RUNNING.equals(process.process.getState())) {
                     return executeSync(process, env, command);
@@ -159,7 +159,6 @@ public final class ShellSession {
         final AtomicInteger rc = new AtomicInteger(-1);
 
         Future<String> out = RP.submit(new Callable<String>() {
-
             @Override
             public String call() throws Exception {
                 StringBuilder result = new StringBuilder();
@@ -177,7 +176,6 @@ public final class ShellSession {
         });
 
         Future<String> err = RP.submit(new Callable<String>() {
-
             @Override
             public String call() throws Exception {
                 StringBuilder result = new StringBuilder();

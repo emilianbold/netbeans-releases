@@ -73,7 +73,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider.class, position = 100)
 public class UnixHostInfoProvider implements HostInfoProvider {
-
+    private static final String TMPBASE = System.getProperty("cnd.tmpbase", null); // NOI18N
     private static final String PATH_VAR = "PATH"; // NOI18N
     private static final String PATH_TO_PREPEND = "/bin:/usr/bin"; // NOI18N
     private static final java.util.logging.Logger log = Logger.getInstance();
@@ -133,9 +133,13 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             ProcessBuilder pb = new ProcessBuilder("/bin/sh", // NOI18N
                     hostinfoScript.getAbsolutePath());
 
-            File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); // NOI18N
-            String tmpDirBase = tmpDirFile.getCanonicalPath();
-
+            String tmpDirBase;
+            if (TMPBASE != null) {
+                tmpDirBase = TMPBASE;
+            } else {
+                File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); // NOI18N
+                tmpDirBase = tmpDirFile.getCanonicalPath();
+            }
             pb.environment().put("TMPBASE", tmpDirBase); // NOI18N
             pb.environment().put("NB_KEY", HostInfoFactory.getNBKey()); // NOI18N
 
@@ -182,6 +186,9 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
             // echannel.setEnv() didn't work, so writing this directly
             out.write(("NB_KEY=" + HostInfoFactory.getNBKey() + '\n').getBytes()); // NOI18N
+            if (TMPBASE != null) {
+                out.write(("TMPBASE=" + TMPBASE + '\n').getBytes()); // NOI18N
+            }
             out.flush();
 
             BufferedReader scriptReader = new BufferedReader(new FileReader(hostinfoScript));

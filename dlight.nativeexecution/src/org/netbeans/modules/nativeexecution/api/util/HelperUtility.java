@@ -42,6 +42,7 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import java.io.File;
 import java.io.IOException;
@@ -128,13 +129,41 @@ public class HelperUtility {
                             return null;
                         }
                         Object activityID = RemoteStatistics.stratChannelActivity("UploadHelperUtility", channel, localFile); // NOI18N
+                        long remoteSize = -1;
                         try {
                             channel.connect();
-                            channel.put(localFile, remoteFile);
-                            channel.chmod(0700, remoteFile);
+                            // md5sum checking is not used for HelperUtilities
+                            // it is assumed that comparing sizes is enough in
+                            // this case
+                            long localSize = new File(localFile).length();
+                            try {
+                                SftpATTRS rstat = channel.stat(remoteFile);
+                                remoteSize = rstat.getSize();
+                            } catch (SftpException ex) {
+                                // No such file ...
+                            }
+
+                            if (remoteSize >= 0 && localSize != remoteSize) {
+                                // Remote file exists, but it has different size
+                                // Remove it first (otherwise channel.put() will
+                                // fail if this file is opened for reading.
+                                // (Any better idea?)
+                                channel.rm(remoteFile);
+                                remoteSize = -1;
+                            }
+                            if (remoteSize < 0) {
+                                channel.put(localFile, remoteFile);
+                                channel.chmod(0700, remoteFile);
+                            }
                             result = remoteFile;
                         } catch (SftpException ex) {
                             log.log(Level.WARNING, "Failed to upload {0}", fileName); // NOI18N
+                            if (remoteSize >= 0) {
+                                log.log(Level.WARNING, "File {0} exists, but cannot be updated. Used by other process?", remoteFile); // NOI18N
+                            } else {
+                                log.log(Level.WARNING, "File {0} doesn't exist, and cannot be uploaded. Do you have enough privileges?", remoteFile); // NOI18N
+                            }
+                            log.log(Level.WARNING, "You could try to use -J-Dcnd.tmpbase=<other base location> to re-define default one."); // NOI18N
                             Exceptions.printStackTrace(ex);
                         } finally {
                             RemoteStatistics.stopChannelActivity(activityID);

@@ -155,7 +155,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
             System.out.println("testDestroySignal: Round " + i + " @ " + getTestExecutionEnvironment().getDisplayName()); // NOI18N
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(getTestExecutionEnvironment());
             npb.getEnvironment().put("LC_ALL", "C"); // NOI18N
-            npb.setExecutable("/bin/sh").setArguments("-c", "trap \"echo OK && exit\" TERM \n echo ready; read X"); // NOI18N
+            npb.setExecutable("/bin/sh").setArguments("-c", "trap \"echo OK && exit\" TERM; echo ready; read X"); // NOI18N
             final NativeProcess process = npb.call();
             assertEquals(State.RUNNING, process.getState());
 
