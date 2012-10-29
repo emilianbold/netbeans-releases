@@ -49,8 +49,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
@@ -556,16 +554,17 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
             fixImportedAttributes(ip, instanceFO);
             instance = GlassfishInstance.create(ip,this,false);
-            // Display warning popup message for GlassFish 3.1.2 which is known
-            // to have bug in WS.
-            if (ServerUtils.getServerVersion(glassfishRoot)
-                    == GlassFishVersion.GF_3_1_2) {
-                String message = NbBundle.getMessage(
-                        CommonServerSupport.class, "MSG_GF312_BUG",
-                        instance.getName());
-                CommonServerSupport.displayPopUpMessage(
-                        instance.getCommonSupport(), message);
-            }
+// Unalbe to get all 4 version digits from com.sun.appserv.server.util.Version
+//            // Display warning popup message for GlassFish 3.1.2 which is known
+//            // to have bug in WS.
+//            if (ServerUtils.getServerVersion(glassfishRoot)
+//                    == GlassFishVersion.GF_3_1_2) {
+//                String message = NbBundle.getMessage(
+//                        CommonServerSupport.class, "MSG_GF312_BUG",
+//                        instance.getName());
+//                CommonServerSupport.displayPopUpMessage(
+//                        instance.getCommonSupport(), message);
+//            }
         } else {
             getLogger().log(Level.FINER,
                     "GlassFish folder {0} is not a valid install.",

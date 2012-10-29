@@ -1181,7 +1181,7 @@ public class CommonServerSupport
                     try {
                         // Can block for up to a few seconds...
                         boolean isRunning = GlassFishStatus.isReady(
-                            instance, false, false, true);
+                                instance, false, GlassFishStatus.Mode.REFRESH);
                         if (isRunning && !Util.isDefaultOrServerTarget(
                                 instance.getProperties())) {
                             isRunning = pingHttp(1);
