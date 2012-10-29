@@ -44,7 +44,9 @@ package org.netbeans.modules.web.clientproject;
 
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -69,8 +71,11 @@ public class ClassPathProviderImpl implements ClassPathProvider {
 
     @Override
     public ClassPath findClassPath(FileObject file, String type) {
-        if (SOURCE_CP.equals(type) && FileUtil.isParentOf(project.getProjectDirectory(), file)) {
-            return project.getSourceClassPath();
+        if (SOURCE_CP.equals(type)) {
+            if (FileUtil.isParentOf(project.getSiteRootFolder(), file) ||
+                    (project.getTestsFolder() != null && FileUtil.isParentOf(project.getTestsFolder(), file))) {
+                return project.getSourceClassPath();
+            }
         }
         return null;
     }
@@ -94,7 +99,12 @@ public class ClassPathProviderImpl implements ClassPathProvider {
 
         @Override
         public URL[] getRoots() {
-            return new URL[]{project.getProjectDirectory().toURL()};
+            List<URL> l = new ArrayList<URL>();
+            l.add(project.getSiteRootFolder().toURL());
+            if (project.getTestsFolder() != null) {
+                l.add(project.getTestsFolder().toURL());
+            }
+            return l.toArray(new URL[l.size()]);
         }
 
         @Override
