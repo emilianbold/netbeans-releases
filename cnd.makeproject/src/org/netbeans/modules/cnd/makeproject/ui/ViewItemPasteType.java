@@ -86,7 +86,9 @@ final class ViewItemPasteType extends PasteType {
             return;
         }
         for (int i = 0; i < newConfigurations.length; i++) {
-            newConfigurations[i].assignValues(oldConfigurations[i]);
+            if (oldConfigurations[i] != null && newConfigurations[i] != null) {
+                newConfigurations[i].assignValues(oldConfigurations[i]);
+            }
         }
     }
 
