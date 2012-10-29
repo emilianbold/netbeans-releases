@@ -124,6 +124,11 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
         }
         this.kind = kind;
+        if (this.kind != Kind.SOURCE_DISK_FOLDER) {
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "------------Non Physical Folder {0}", getPath()); // NOI18N
+            }
+        }
         this.items = new ArrayList<Object>();
     }
 
@@ -624,8 +629,8 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (myNativeFileItemSet != null) {
                 myNativeFileItemSet.add(item);
             } else {
-                if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "can not add folder''s {0} item {1} using {2}", new Object[]{this, item, dao}); // NOI18N
+                if (log.isLoggable(Level.FINEST)) {
+                    log.log(Level.FINEST, "can not add NativeFileItem for folder''s {0} item {1} using {2}", new Object[]{this, item, dao}); // NOI18N
                 }
             }
         }
