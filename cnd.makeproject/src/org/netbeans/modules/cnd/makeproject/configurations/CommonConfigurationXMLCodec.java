@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -1111,15 +1112,17 @@ public abstract class CommonConfigurationXMLCodec
         if (codeAssistanceConfiguration.getTools().getModified()) {
             xes.element(BUILD_ANALAZYER_TOOLS_ELEMENT, "" + codeAssistanceConfiguration.getTools().getValue()); // NOI18N
         }
-        if (codeAssistanceConfiguration.getEnvironmentVariables().getModified()) {
-            List<String> sortedList = new ArrayList<String>(codeAssistanceConfiguration.getEnvironmentVariables().getValue());
-            Collections.sort(sortedList);
-            writeList(xes, CODE_ASSISTANCE_ENVIRONMENT_ELEMENT, sortedList);
-        }
-        if (codeAssistanceConfiguration.getTransientMacros().getModified()) {
-            List<String> sortedList = new ArrayList<String>(codeAssistanceConfiguration.getTransientMacros().getValue());
-            Collections.sort(sortedList);
-            writeList(xes, CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT, sortedList);
+        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
+            if (codeAssistanceConfiguration.getEnvironmentVariables().getModified()) {
+                List<String> sortedList = new ArrayList<String>(codeAssistanceConfiguration.getEnvironmentVariables().getValue());
+                Collections.sort(sortedList);
+                writeList(xes, CODE_ASSISTANCE_ENVIRONMENT_ELEMENT, sortedList);
+            }
+            if (codeAssistanceConfiguration.getTransientMacros().getModified()) {
+                List<String> sortedList = new ArrayList<String>(codeAssistanceConfiguration.getTransientMacros().getValue());
+                Collections.sort(sortedList);
+                writeList(xes, CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT, sortedList);
+            }
         }
         xes.elementClose(CODE_ASSISTANCE_ELEMENT);
     }
@@ -1201,7 +1204,7 @@ public abstract class CommonConfigurationXMLCodec
         }
     };    
 
-    private static class IncludeConverterImpl implements StringConverter {
+    private static final class IncludeConverterImpl implements StringConverter {
 
         private final Map<String, String> replacements = new HashMap<String, String>();
 
@@ -1218,7 +1221,9 @@ public abstract class CommonConfigurationXMLCodec
             if (!environment.isEmpty()) {
                 for (String envVariableName : caConf.getEnvironmentVariables().getValue()) {
                     String toReplace = environment.get(envVariableName);
-                    if (toReplace != null && !toReplace.isEmpty() && (toReplace.startsWith("\\") || toReplace.startsWith("/"))) {
+                    // for now we support abs paths replacements
+                    if (toReplace != null && !toReplace.isEmpty() && 
+                        CndPathUtilitities.isPathAbsolute(toReplace)) { 
                         replacements.put(toReplace, "${" + envVariableName + "}"); // NOI18N
                         toReplace = toReplace.replace('\\', '/');
                         replacements.put(toReplace, "${" + envVariableName + "}"); // NOI18N
@@ -1246,7 +1251,7 @@ public abstract class CommonConfigurationXMLCodec
         }
     }
 
-    private static class MacroConverterImpl implements StringConverter {
+    private static final class MacroConverterImpl implements StringConverter {
 
         private final Map<String, String> replacements = new HashMap<String, String>();
 
