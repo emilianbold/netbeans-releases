@@ -94,7 +94,7 @@ final class MultiPassCompileWorker extends CompileWorker {
 
     private static final int MEMORY_LOW = 1;
     private static final int ERR = 2;
-    private final AtomicBoolean checkForMemLow = new AtomicBoolean(true);
+    private boolean checkForMemLow = true;
 
     @Override
     ParsingOutput compile(
@@ -171,7 +171,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     if (jt == null) {
                         jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), diagnosticListener, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
                             public @Override boolean isCanceled() {
-                                return context.isCancelled() || (checkForMemLow.get() && mem.isLowMemory());
+                                return context.isCancelled() || (checkForMemLow && mem.isLowMemory());
                             }
                         }, active.aptGenerated ? null : APTUtils.get(context.getRoot()));
                         Iterable<? extends Processor> processors = jt.getProcessors();
@@ -460,11 +460,11 @@ final class MultiPassCompileWorker extends CompileWorker {
         JavaFileObject file = jfm.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT,
                 cs.flatname.toString(), JavaFileObject.Kind.CLASS, cs.sourcefile);
         if (file instanceof FileObjects.FileBase && !alreadyCreated.contains(((FileObjects.FileBase)file).getFile())) {
-            checkForMemLow.set(false);
+            checkForMemLow = false;
             try {
                 TreeLoader.dumpSymFile(jfm, jti, cs);
             } finally {
-                checkForMemLow.set(true);
+                checkForMemLow = true;
             }
         }
     }
