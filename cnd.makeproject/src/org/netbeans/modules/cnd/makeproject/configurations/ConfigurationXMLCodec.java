@@ -328,6 +328,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentConf != null) {
                 currentCodeAssistanceConfiguration = ((MakeConfiguration) currentConf).getCodeAssistanceConfiguration();
             }
+        } else if (element.equals(CODE_ASSISTANCE_ENVIRONMENT_ELEMENT)) {
+            if (currentCodeAssistanceConfiguration != null) {
+                currentList = currentCodeAssistanceConfiguration.getEnvironmentVariables().getValue();
+            }
+        } else if (element.equals(CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT)) {
+            if (currentCodeAssistanceConfiguration != null) {
+                currentList = currentCodeAssistanceConfiguration.getTransientMacros().getValue();
+            }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) {
         } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
             if (currentItemConfiguration != null) {
@@ -656,6 +664,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentCodeAssistanceConfiguration != null) {
                 currentCodeAssistanceConfiguration.getTools().setValue(getString(currentText));
             }
+        } else if (element.equals(CODE_ASSISTANCE_ENVIRONMENT_ELEMENT)) {
+            currentList = null;
+        } else if (element.equals(CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT)) {
+            currentList = null;
         } else if (element.equals(COMPILERTOOL_ELEMENT)) { // FIXUP: < 10
         } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <=23
             currentCCompilerConfiguration = null;
