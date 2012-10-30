@@ -52,6 +52,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
 import org.netbeans.modules.web.clientproject.libraries.GoogleLibrariesProvider;
@@ -70,37 +72,37 @@ import org.openide.modules.SpecificationVersion;
 public final class WebClientLibraryManager {
 
     private static final Logger LOGGER = Logger.getLogger(WebClientLibraryManager.class.getName());
-    
+
     /**
      * Library TYPE.
      */
     public static String TYPE = "javascript"; // NOI18N
-    
+
     /**
      * Volume for regular JS files.
      */
     public static String VOL_REGULAR = "regular"; // NOI18N
-    
+
     /**
      * Volume for minified JS files.
      */
     public static String VOL_MINIFIED = "minified"; // NOI18N
-    
+
     /**
      * Volume for documented JS files.
      */
     public static String VOL_DOCUMENTED = "documented"; // NOI18N
-    
+
     /**
      * Real name of the library, that is without CND source prefix .
      */
     public static final String PROPERTY_REAL_NAME = "name"; // NOI18N
-    
+
     /**
      * Real display name of the library, that is without CND source prefix and without version in the name.
      */
     public static final String PROPERTY_REAL_DISPLAY_NAME = "displayname"; // NOI18N
-    
+
     /**
      * Name of CDN this library is comming from.
      */
@@ -115,18 +117,18 @@ public final class WebClientLibraryManager {
      * Default relative path for libraries folder
      */
     public static final String LIBS = "js/libs";       // NOI18N
-    
+
     /**
      * Library version.
      */
     public static final String PROPERTY_VERSION = "version"; // NOI18N
-    
+
     private static List<Library> libs;
 
     private WebClientLibraryManager() {
     }
-    
-    
+
+
     /**
      * Returns all JavaScript libraries. They are not registered in global libraries
      * repository for now.
@@ -146,14 +148,14 @@ public final class WebClientLibraryManager {
             libs.add(LibraryFactory.createLibrary(li));
         }
     }
-    
+
     /**
      * Finds library with the specified <code>name</code> and <code>version</code>.
      * <code>version</code> could be null. In the latter case most recent version
      * will be returned.
-     * @param name library name 
+     * @param name library name
      * @param version library version
-     * @return library 
+     * @return library
      */
     public static Library findLibrary( String name , String version ){
         SpecificationVersion lastVersion=null;
@@ -172,7 +174,7 @@ public final class WebClientLibraryManager {
                             libVersion = libVersion.substring( 0, index);
                         }
                         try {
-                            SpecificationVersion specVersion = 
+                            SpecificationVersion specVersion =
                                 new SpecificationVersion(libVersion);
                             if ( lastVersion == null || specVersion.compareTo(lastVersion)>0){
                                 lastVersion = specVersion;
@@ -188,7 +190,7 @@ public final class WebClientLibraryManager {
         }
         return lib;
     }
-    
+
     /**
      * Get all versions of library with name <code>libraryName</code>
      * @param libraryName library name
@@ -211,82 +213,107 @@ public final class WebClientLibraryManager {
         }
         return result.toArray( new String[ result.size()]);
     }
-    
+
+    /**
+     * Get relative file paths of the given library and the given volume.
+     * @param library library to get file paths for
+     * @param volume volume, can be {@code null}
+     * @return list of relative file paths of the given library and the given volume
+     * @since 1.9
+     */
+    public static List<String> getLibraryFilePaths(@NonNull Library library, @NullAllowed String volume) {
+        String libRootName = getLibraryRootName(library);
+        List<URL> urls = getLibraryUrls(library, volume);
+        List<String> filePaths = new ArrayList<String>(urls.size());
+        for (URL url : urls) {
+            StringBuilder sb = new StringBuilder(30);
+            sb.append(libRootName);
+            sb.append('/'); // NOI18N
+            sb.append(getLibraryFilePath(url));
+            filePaths.add(sb.toString());
+        }
+        return filePaths;
+    }
+
+    private static String getLibraryRootName(Library library) {
+        return library.getProperties()
+                .get(PROPERTY_REAL_NAME).replace(' ', '-') // NOI18N
+                + '-' // NOI18N
+                + library.getProperties().get(PROPERTY_VERSION);
+    }
+
+    private static List<URL> getLibraryUrls(Library library, String volume) {
+        List<URL> urls;
+        if (volume != null) {
+            urls = library.getContent(volume);
+        } else {
+            urls = library.getContent(VOL_MINIFIED);
+            if (urls.isEmpty()) {
+                urls = library.getContent(VOL_REGULAR);
+            }
+            if (urls.isEmpty()) {
+                urls = library.getContent(VOL_DOCUMENTED);
+            }
+        }
+        assert !urls.isEmpty() : "Library should not be empty: " + library + " " + volume;
+        return urls;
+    }
+
+    private static String getLibraryFilePath(URL url) {
+        String name = url.getPath();
+        return name.substring(name.lastIndexOf('/') + 1);
+    }
+
     /**
      * Adds libraries to the project into the <code>folder</code>.
-     * <code>volume</code> could be null. In the latter case some available 
+     * <code>volume</code> could be null. In the latter case some available
      * volume will be used.
      * @param libraries libraries to add
-     * @param folder directory in the project where libraries should be added 
+     * @param folder directory in the project where libraries should be added
      * @param volume library volume
      * @return true if all libraries are successfully  added
      */
-    public static List<FileObject> addLibraries(Library[] libraries, FileObject folder , 
+    public static List<FileObject> addLibraries(Library[] libraries, FileObject folder ,
             String volume ) throws IOException, MissingLibResourceException
     {
         boolean missingFiles = false;
         List<FileObject> result = new LinkedList<FileObject>();
         for (Library library : libraries) {
-            String libRootName = library.getProperties()
-                    .get(PROPERTY_REAL_NAME).replace(' ', '-') // NOI18N
-                    + "-" // NOI18N
-                    + library.getProperties().get(PROPERTY_VERSION);
+            String libRootName = getLibraryRootName(library);
             FileObject libRoot = folder.getFileObject(libRootName);
             if (libRoot == null) {
                 libRoot = folder.createFolder(libRootName);
             } else if (libRoot.isData()) {
                 throw new IOException("File '" + libRootName + "' already exists and is not a folder");
             }
-            List<URL> urls =null;
-            String vol = volume;
-            if ( volume != null ){
-                urls = library.getContent(volume);
-            }
-            else {
-                urls = library.getContent(VOL_MINIFIED);
-                if ( urls.isEmpty() ){
-                    urls = library.getContent(VOL_REGULAR);
-                }
-                if ( urls.isEmpty() ){
-                    urls = library.getContent(VOL_DOCUMENTED);
-                }
-            }
-            assert !urls.isEmpty() : library + " "+vol; // NOI18N
+            List<URL> urls = getLibraryUrls(library, volume);
             for (URL url : urls) {
-                String name = url.getPath();
-                name = name.substring(name.lastIndexOf("/")+1); // NOI18N
-                FileObject fileObject = copySingleFile(url, name, libRoot);
-                if ( fileObject == null ){
+                FileObject fileObject = copySingleFile(url, getLibraryFilePath(url), libRoot);
+                if (fileObject == null) {
                     missingFiles = true;
-                }
-                else {
+                } else {
                     result.add(fileObject);
                 }
             }
         }
-        if ( missingFiles ){
+        if (missingFiles) {
             throw new MissingLibResourceException(result);
         }
         return result;
     }
-    
-    private static FileObject copySingleFile(URL url, String name, FileObject 
-            libRoot) throws IOException 
+
+    private static FileObject copySingleFile(URL url, String name, FileObject
+            libRoot) throws IOException
     {
-        FileObject fo = libRoot.getFileObject(name);
-        if (fo == null) {
-            fo = libRoot.createData(name);
-        } else {
-            LOGGER.log(Level.INFO, "File {0} already exists, it will be overwritten.", FileUtil.getFileDisplayName(fo));
-        }
+        FileObject fo = libRoot.createData(name);
         InputStream is;
         try {
             is = url.openStream();
-        } 
+        }
         catch (FileNotFoundException ex) {
             LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
             return null;
-        } 
+        }
         catch (IOException ex) {
             LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
             return null;

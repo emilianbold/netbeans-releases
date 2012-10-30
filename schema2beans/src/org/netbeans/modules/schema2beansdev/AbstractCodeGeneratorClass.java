@@ -1028,8 +1028,11 @@ public abstract class AbstractCodeGeneratorClass {
 
         config.messageOut.println("Generating class " + filename);  // NOI18N
         OutputStream out = new FileOutputStream(filename);
-        generate(out, mdd);
-        out.close();
+        try {
+            generate(out, mdd);
+        } finally {
+            out.close();
+        }
     }
 
     public abstract void generate(OutputStream out, MetaDD mdd) throws IOException;
@@ -1085,21 +1088,25 @@ public abstract class AbstractCodeGeneratorClass {
      * Send the schema to the current output channel.
      */
     protected void printSchema() throws IOException {
-        if (config.getFilename() == null)
+        if (config.getFilename() == null) {
             return;
-	    File f = config.getFilename();
-	    if (f.length() < 16384L) {
+        }
+	File f = config.getFilename();
+        if (f.length() < 16384L) {
             FileInputStream fi = new FileInputStream(f);
-            byte[] r = new byte[(int)f.length()];
-            fi.read(r);
-            cr(); gencr("/*"); gentab(2);
-            gencr("The following schema file has been used for generation:");
-            cr();
-            gen(new String(r));
-            fi.close();
-            cr();
-            gencr("*/");
-	    }
+            try {
+                byte[] r = new byte[(int)f.length()];
+                fi.read(r);
+                cr(); gencr("/*"); gentab(2);
+                gencr("The following schema file has been used for generation:");
+                cr();
+                gen(new String(r));
+                cr();
+                gencr("*/");
+            } finally {
+                fi.close();
+            }
+        }
     }
 
     protected void printComment(String indent) throws IOException {

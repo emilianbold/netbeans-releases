@@ -146,6 +146,10 @@ public class JSTestDriverSupport {
         return testDriver != null && testDriver.isRunning();
     }
 
+    void forgetCurrentServer() {
+        testDriver = null;
+    }
+
     public boolean wasStartedExternally() {
         return testDriver != null && testDriver.wasStartedExternally();
     }

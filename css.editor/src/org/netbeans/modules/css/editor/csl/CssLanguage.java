@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.css.lib.api.CssParserFactory;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
@@ -127,7 +128,7 @@ public class CssLanguage extends DefaultLanguageConfig {
 
     @Override
     public Parser getParser() {
-        return new CssCslParser();
+        return CssParserFactory.getDefault().createParser(null);
     }
 
     @Override

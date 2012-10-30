@@ -167,7 +167,10 @@ public class SiteZip implements SiteTemplateImplementation {
     }
 
     @Override
-    public Collection<String> supportedLibraries() {
+    public Collection<String> supportedLibraries(boolean fullPaths) {
+        if (fullPaths) {
+            return FileUtilities.listJsFilesFromZipFile(getArchiveFile());
+        }
         return FileUtilities.listJsFilenamesFromZipFile(getArchiveFile());
     }
 

@@ -181,7 +181,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (folderFile == null || !folderFile.isValid()
                 || !folderFile.isFolder()
                 || !VisibilityQuery.getDefault().isVisible(folderFile)
-                || getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(folderFile)) {
+                || getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(folderFile)) {
             // Remove it plus all subfolders and items from project
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, "------------removing folder {0} in {1}", new Object[]{getPath(), getParent().getPath()}); // NOI18N
@@ -230,7 +230,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 continue;
             }
             if (files[i].isFolder()) {
-                if (getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(files[i])) {
+                if (getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(files[i])) {
                     continue;
                 }
             } else {

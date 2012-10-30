@@ -352,6 +352,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             if (evt != null && evt.getSource() instanceof Cancellable) {
                 putResult(null);
                 if (dialog != null) {
+                    setPanelEnabled(true);
                     dialog.setVisible(false);
                 }
             } else {
@@ -397,7 +398,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         }
 
         //next is Finish
-
         setPanelEnabled(false);
         cancel.setEnabled(true);
         openInNewTab.setVisible(false);
