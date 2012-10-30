@@ -127,6 +127,8 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 Thread.sleep(200);
             }
 
+            finishing();
+
             int exitValue = streams.channel.getExitStatus();
 
             if (exitValue == startupErrorExitValue) {

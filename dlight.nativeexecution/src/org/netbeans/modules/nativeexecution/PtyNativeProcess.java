@@ -194,6 +194,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         }
 
         int result = delegate.waitResult();
+        finishing();
 
         return result;
     }

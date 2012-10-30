@@ -133,12 +133,19 @@ final class CharContent implements CharSequence {
     }
     
     void removeText(int offset, int length) {
+        int endOffset = offset + length;
+        if (offset < 0) {
+            throw new IndexOutOfBoundsException("offset=" + offset + " < 0"); // NOI18N
+        }
+        if (endOffset > length()) {
+            throw new IndexOutOfBoundsException("(offset=" + offset + // NOI18N
+                    " + length=" + length + ")=" + endOffset + " > length()=" + length()); // NOI18N
+        }
         if (offset >= gapStart) { // completely over gap
             if (offset > gapStart) {
                 moveGap(offset);
             }
         } else { // completely below gap or spans the gap
-            int endOffset = offset + length;
             if (endOffset <= gapStart) {
                 if (endOffset < gapStart) {
                     moveGap(endOffset);

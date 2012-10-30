@@ -80,7 +80,7 @@ public class BookmarksTable extends ETable {
         col.setHeaderValue(NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkName"));
 
         col = colModel.getColumn(BookmarksTableModel.KEY_COLUMN);
-        col.setHeaderValue(NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkKeySingleLetter"));
+        col.setHeaderValue(NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkKey"));
 
         col = colModel.getColumn(BookmarksTableModel.LOCATION_COLUMN);
         col.setHeaderValue(NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkLocation"));
