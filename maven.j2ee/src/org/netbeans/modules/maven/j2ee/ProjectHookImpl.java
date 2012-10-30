@@ -58,6 +58,7 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 @ProjectServiceProvider(service = {ProjectOpenedHook.class}, projectType={
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
@@ -67,7 +68,8 @@ import org.openide.util.NbBundle;
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
 })
 public class ProjectHookImpl extends ProjectOpenedHook {
-    
+
+    private final static RequestProcessor RP = new RequestProcessor(ProjectHookImpl.class);
     private final Project project;
     private PropertyChangeListener refreshListener;
     private J2eeModuleProvider lastJ2eeProvider;
@@ -93,8 +95,13 @@ public class ProjectHookImpl extends ProjectOpenedHook {
             };
             watcher.addPropertyChangeListener(refreshListener);
         }
-        
-        LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_OPEN_MAVEN_EE", new Object[] { getServerName(), getEEversion() }, "maven"); //NOI18N
+
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_OPEN_MAVEN_EE", new Object[] { getServerName(), getEEversion() }, "maven"); //NOI18N
+            }
+        });
     }
     
     @Override
