@@ -76,6 +76,9 @@
     <!-- CSH for the Delete dialog, includes help for Usages window -->
     <mapID target="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" url="csh/safe-delete.html"/>
 
+    <!-- CSH for the Debugger window. This is same id used by Java debugger but this will be used when Java not installed -->
+    <mapID target="NetbeansDebuggerBreakpointNode" url="debug/windows/breakpoint_view.html"/>
+    
     <!--CSH for PHP source editor-->
     <mapID target="text.x-php5" url="csh/about_source_editor.html" />
     <!-- CSH for PHP Options -->
