@@ -235,6 +235,9 @@ public final class RemoteStatistics implements Runnable {
         private final AtomicLong down = new AtomicLong();
 
         public TrafficCounters() {
+            if (!COLLECT_STATISTICS) {
+                return;
+            }
             MeasurableSocketFactory.getInstance().addIOListener(new IOListener() {
 
                 @Override
