@@ -92,11 +92,9 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
     private final List<SyntaxError> syntaxErrors;
 
     private final Context context;
-    GSFPHPParser outer;
 
-    public PHP5ErrorHandler(Context context, GSFPHPParser outer) {
+    public PHP5ErrorHandler(Context context) {
         super();
-        this.outer = outer;
         this.context = context;
         syntaxErrors = new ArrayList<SyntaxError>();
     }

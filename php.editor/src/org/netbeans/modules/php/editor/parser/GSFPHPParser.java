@@ -135,7 +135,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         boolean sanitizedSource = false;
         String source = context.getSource();
         if (errorHandler == null) {
-            errorHandler = new PHP5ErrorHandler(context, this);
+            errorHandler = new PHP5ErrorHandler(context);
         }
         if (!((sanitizing == Sanitize.NONE) || (sanitizing == Sanitize.NEVER))) {
             boolean ok = sanitizeSource(context, sanitizing, errorHandler);
