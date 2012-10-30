@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.apt.impl.structure.APTPragmaNode;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTElif;
@@ -60,82 +60,95 @@ import org.netbeans.modules.cnd.apt.structure.APTIfndef;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
-import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 
 
 /**
- * Walker to find all Identifiers in the file
+ * Walker to find all Identifiers in the file using full APT
  *
  * @author Egor Ushakov
+ * @author Vladimir Voskresensky
  */
-public final class APTIndexingWalker extends APTSelfWalker {
+public final class APTIndexingWalker extends APTWalker {
     private final Set<String> ids = new HashSet<String>();
     
-    public APTIndexingWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
-        super(apt, preprocHandler, cacheEntry);
+    public APTIndexingWalker(APTFile apt) {
+        super(apt, null);
+        assert apt.isTokenized() : "only full APT have to be passed here " + apt.getPath();
     }
 
     @Override
     protected void onDefine(APT apt) {
         APTDefine defineNode = (APTDefine) apt;
         analyzeList(defineNode.getBody());
-        super.onDefine(apt);
     }
 
     @Override
     protected boolean onIf(APT apt) {
-        analyzeStream(((APTIf) apt).getCondition(), false);
-        return super.onIf(apt);
+        analyzeStream(((APTIf) apt).getCondition());
+        return true;
     }
 
     @Override
     protected boolean onElif(APT apt, boolean wasInPrevBranch) {
-        analyzeStream(((APTElif) apt).getCondition(), false);
-        return super.onElif(apt, wasInPrevBranch);
+        analyzeStream(((APTElif) apt).getCondition());
+        return true;
     }
 
     @Override
     protected boolean onIfndef(APT apt) {
-        analyzeToken(((APTIfndef) apt).getMacroName(), false);
-        return super.onIfndef(apt);
+        analyzeToken(((APTIfndef) apt).getMacroName());
+        return true;
     }
 
     @Override
     protected boolean onIfdef(APT apt) {
-        analyzeToken(((APTIfdef) apt).getMacroName(), false);
-        return super.onIfdef(apt);
+        analyzeToken(((APTIfdef) apt).getMacroName());
+        return true;
     }
 
     @Override
     protected void onUndef(APT apt) {
-        analyzeToken(((APTUndefine) apt).getName(), false);
-        super.onUndef(apt);
+        analyzeToken(((APTUndefine) apt).getName());
     }
 
     @Override
+    protected boolean onElse(APT apt, boolean wasInPrevBranch) {
+        return true;
+    }
+
+    @Override
+    protected void onEndif(APT apt, boolean wasInBranch) {
+    }
+
+    @Override
+    protected void onPragmaNode(APT apt) {
+        APTPragmaNode pragma = (APTPragmaNode) apt;
+        analyzeToken(pragma.getName());
+        analyzeStream(pragma.getTokenStream());
+    }
+    
+    @Override
     protected void onInclude(APT apt) {
-        analyzeStream(((APTInclude)apt).getInclude(), true);
-        super.onInclude(apt);
+        analyzeStream(((APTInclude)apt).getInclude());
     }
 
     @Override
     protected void onIncludeNext(APT apt) {
-        analyzeStream(((APTIncludeNext)apt).getInclude(), true);
-        super.onIncludeNext(apt);
+        analyzeStream(((APTIncludeNext)apt).getInclude());
     }
 
     public Set<String> collectIds() {
         TokenStream ts = super.getTokenStream();
-        analyzeStream(ts, true);
+        analyzeStream(ts);
         return ids;
     }
 
-    private boolean analyzeToken(APTToken token, boolean addOnlyIfNotFunLikeMacro) {
+    private boolean analyzeToken(APTToken token) {
         if (token != null && !APTUtils.isEOF(token)) {
             if (APTUtils.isID(token) || token.getType() == APTTokenTypes.ID_DEFINED) {
                 ids.add(token.getText());
@@ -148,16 +161,16 @@ public final class APTIndexingWalker extends APTSelfWalker {
     private void analyzeList(List<APTToken> tokens) {
         if (tokens != null) {
             for (APTToken token : tokens) {
-                analyzeToken(token, false);
+                analyzeToken(token);
             }
         }
     }
 
-    private void analyzeStream(TokenStream ts, boolean checkFunLikeMacro) {
+    private void analyzeStream(TokenStream ts) {
         if (ts != null) {
             try {
                 for (APTToken token = (APTToken) ts.nextToken(); !APTUtils.isEOF(token); ) {
-                    analyzeToken(token, checkFunLikeMacro);
+                    analyzeToken(token);
                 }
             } catch (TokenStreamException ex) {
 		DiagnosticExceptoins.register(ex);
