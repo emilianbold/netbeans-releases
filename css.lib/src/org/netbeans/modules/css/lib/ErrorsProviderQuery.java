@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.csl;
+package org.netbeans.modules.css.lib;
 
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.css.lib.api.CssParserFactory;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.css.lib.api.ErrorsProvider;
+import org.openide.util.Lookup;
 
 /**
- * Wraps the CssParserResult from css.lib as an instance of CSL's Parser
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class CssCslParser extends Parser {
+public class ErrorsProviderQuery {
 
-    private final Parser CSS3_PARSER = CssParserFactory.getDefault().createParser(null);
+    private static Collection<? extends ErrorsProvider> providers;
     
-    @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        CSS3_PARSER.parse(snapshot, task, event);
+    private static synchronized Collection<? extends ErrorsProvider> getProviders() {
+        if(providers == null) {
+            providers = Lookup.getDefault().lookupAll(ErrorsProvider.class);
+        }
+        return providers;
     }
-
-    @Override
-    public Result getResult(Task task) throws ParseException {
-        return new CssCslParserResult((CssParserResult)CSS3_PARSER.getResult(task));
+    
+    public static List<? extends Error> getExtendedDiagnostics(CssParserResult parserResult) {
+        List<Error> errors = new ArrayList<Error>();
+        for(ErrorsProvider provider : getProviders()) {
+            errors.addAll(provider.getExtendedDiagnostics(parserResult));
+        }
+        return errors;
     }
-
-    @Override
-    public void addChangeListener(ChangeListener changeListener) {
-        CSS3_PARSER.addChangeListener(changeListener);
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-        CSS3_PARSER.addChangeListener(changeListener);
-    }
- 
+    
 }

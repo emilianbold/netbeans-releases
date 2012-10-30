@@ -44,28 +44,20 @@ package org.netbeans.modules.css.visual;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.BadLocationException;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
-import org.netbeans.modules.css.live.LiveUpdater;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Body;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.ElementFactory;
@@ -88,12 +80,10 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -235,8 +225,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
             public void run(ResultIterator resultIterator) throws Exception {
                 resultIterator = WebUtils.getResultIterator(resultIterator, "text/css");
                 if (resultIterator != null) {
-                    CssCslParserResult result = (CssCslParserResult) resultIterator.getParserResult();
-                    final Model model = result.getModel();
+                    CssParserResult result = (CssParserResult) resultIterator.getParserResult();
+                    final Model model = Model.getModel(result);
                     model.runReadTask(new Model.ModelTask() {
                         @Override
                         public void run(StyleSheet styleSheet) {

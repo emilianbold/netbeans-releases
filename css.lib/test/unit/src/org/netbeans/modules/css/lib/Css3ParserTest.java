@@ -102,7 +102,7 @@ public class Css3ParserTest extends CssTestBase {
 
         CssParserResult res = TestUtil.parse(code);
 
-        assertResult(res, 1);
+        assertResult(res, 2);
 //        TestUtil.dumpResult(res);
 
         //the background: red; declaration is properly parsed even if the previous declaration is broken
@@ -385,7 +385,7 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(content);
 //        TestUtil.dumpResult(result);
         
-        assertResult(result, 1);
+        assertResult(result, 2);
     }
 
     public void testIdParsing() throws ParseException, BadLocationException {
@@ -613,7 +613,7 @@ public class Css3ParserTest extends CssTestBase {
                 + "rule/declarations/declaration/propertyValue/expression/term/function/expression/error");
         assertNotNull(error);
 
-        assertResult(result, 2);
+        assertResult(result, 3);
 
     }
 
@@ -945,9 +945,9 @@ public class Css3ParserTest extends CssTestBase {
                 + "    background-image: uri();"
                 + "}");
         
-//        TestUtil.dumpResult(result);
+        TestUtil.dumpResult(result);
         
-        assertResult(result, 1);
+        assertResult(result, 2);
         
     }
     

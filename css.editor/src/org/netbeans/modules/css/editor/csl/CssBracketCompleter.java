@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -61,11 +60,11 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -289,7 +288,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>(2);
 
-        Node root = ((CssCslParserResult) info).getParseTree();
+        Node root = ((CssParserResult) info).getParseTree();
         Snapshot snapshot = info.getSnapshot();
 
         if (root != null) {
