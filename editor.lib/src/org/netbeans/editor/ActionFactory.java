@@ -1750,7 +1750,7 @@ public class ActionFactory {
                                     } else {
                                         reformat.reformat(pos, stopPos);
                                     }
-                                    pos = pos + Math.max(stopPosition.getOffset() - pos, 1);
+                                    pos = stopPosition.getOffset() + 1;
 
                                     if (gdoc != null) { // adjust to end of current block
                                         pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
