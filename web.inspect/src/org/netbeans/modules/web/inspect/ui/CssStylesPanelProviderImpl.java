@@ -43,20 +43,32 @@ package org.netbeans.modules.web.inspect.ui;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -64,13 +76,17 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jan Stola
  */
-
 public abstract class CssStylesPanelProviderImpl extends JPanel implements CssStylesPanelProvider {
-
-    /**
-     * Label shown when no styles information is available.
-     */
+    /** Label shown when no styles information is available. */
     private JLabel noStylesLabel;
+    /** The latest "related" file, i.e. file provided through the context lookup. */
+    private FileObject lastRelatedFileObject;
+    /** Page model whose styles view we are showing currently. */
+    private PageModel currentPageModel;
+    /** Panel shown when no page model is available but when we have some "related" file. */
+    private JPanel runFilePanel;
+    /** Run button in {@code runFilePanel}. */
+    private JButton runButton;
     
     /**
      * Creates a new {@code MatchedRulesTC}.
@@ -78,6 +94,8 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     public CssStylesPanelProviderImpl() {
         setLayout(new BorderLayout());
         initNoStylesLabel();
+        initRunFilePanel();
+        add(noStylesLabel, BorderLayout.CENTER);
         PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
         update();
     }
@@ -87,7 +105,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
      */
     private void initNoStylesLabel() {
         noStylesLabel = new JLabel();
-        noStylesLabel.setText(NbBundle.getMessage(CssStylesPanelProviderImpl.class, "MatchedRulesTC.noStylesLabel.text")); // NOI18N
+        noStylesLabel.setText(NbBundle.getMessage(CssStylesPanelProviderImpl.class, "CssStylesPanelProviderImpl.noStylesLabel")); // NOI18N
         noStylesLabel.setHorizontalAlignment(SwingConstants.CENTER);
         noStylesLabel.setVerticalAlignment(SwingConstants.CENTER);
         noStylesLabel.setEnabled(false);
@@ -95,24 +113,82 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         noStylesLabel.setOpaque(true);
     }
 
+    /**
+     * Initializes the "Run File" panel.
+     */
+    private void initRunFilePanel() {
+        runFilePanel = new JPanel();
+        JLabel label = new JLabel(NbBundle.getMessage(CssStylesPanelProviderImpl.class, "CssStylesPanelProviderImpl.runFileLabel")); // NOI18N
+        runButton = new JButton();
+        runButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (lastRelatedFileObject != null) {
+                    Project project = FileOwnerQuery.getOwner(lastRelatedFileObject);
+                    if (project != null) {
+                        Lookup lookup = project.getLookup();
+                        ActionProvider provider = lookup.lookup(ActionProvider.class);
+                        Lookup context = Lookups.singleton(lastRelatedFileObject);
+                        provider.invokeAction(ActionProvider.COMMAND_RUN_SINGLE, context);
+                    }
+                }
+            }
+        });
+        GroupLayout layout = new GroupLayout(runFilePanel);
+        runFilePanel.setLayout(layout);
+        layout.setVerticalGroup(layout.createSequentialGroup()
+            .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(label)
+            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+            .addComponent(runButton)
+            .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
+        layout.setHorizontalGroup(layout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(layout.createParallelGroup()
+                .addComponent(label)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(0,0,Short.MAX_VALUE)
+                    .addComponent(runButton)
+                    .addGap(0,0,Short.MAX_VALUE)))
+            .addContainerGap());
+    }
+
     private void update() {
         PageModel pageModel = PageInspectorImpl.getDefault().getPage();
         update(pageModel);
     }
 
+    void update(FileObject fob) {
+        lastRelatedFileObject = fob;
+        update();
+    }
+
     private void update(final PageModel pageModel) {
         if (EventQueue.isDispatchThread()) {
-            boolean noPage = (pageModel == null);
-            boolean noStylesLabelShown = noStylesLabel.getParent() != null;
-            if (!noStylesLabelShown || !noPage) {
-                removeAll();
-                if (noPage) {
-                    add(noStylesLabel, BorderLayout.CENTER);
-                } else {
-                    PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
-                    add(stylesView.getView(), BorderLayout.CENTER);
+            if (pageModel == null) {
+                boolean noStylesLabelShown = noStylesLabel.getParent() != null;
+                boolean runFilePanelShown = runFilePanel.getParent() != null;
+                if ((lastRelatedFileObject == null) ? !noStylesLabelShown : !runFilePanelShown) {
+                    removeAll();
+                    if (lastRelatedFileObject == null) {
+                        add(noStylesLabel, BorderLayout.CENTER);
+                    } else {
+                        add(runFilePanel, BorderLayout.CENTER);
+                    }
                 }
+                if (lastRelatedFileObject != null) {
+                    String text = NbBundle.getMessage(
+                            CssStylesPanelProviderImpl.class,
+                            "CssStylesPanelProviderImpl.runFileButton", // NOI18N
+                            lastRelatedFileObject.getNameExt());
+                    runButton.setText(text);
+                }
+            } else if (pageModel != currentPageModel) {
+                removeAll();
+                PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
+                add(stylesView.getView(), BorderLayout.CENTER);
             }
+            currentPageModel = pageModel;
             revalidate();
             repaint();
         } else {
@@ -163,6 +239,18 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
 
         @Override
         public JComponent getContent(Lookup lookup) {
+            final Lookup.Result<FileObject> result = lookup.lookupResult(FileObject.class);
+            result.addLookupListener(new LookupListener() {
+                @Override
+                public void resultChanged(LookupEvent ev) {
+                    Collection<? extends FileObject> fobs = result.allInstances();
+                    FileObject fob = null;
+                    if (!fobs.isEmpty()) {
+                        fob = fobs.iterator().next();
+                    }
+                    update(fob);
+                }
+            });
             return this;
         }
 

@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.smarty.editor.TplSyntax;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTokenId;
@@ -88,7 +89,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
             if (sequence.token().id() == TplTokenId.WHITESPACE) {
                 continue;
             } else {
-                return sequence.token().toString();
+                return CharSequenceUtilities.toString(sequence.token().text());
             }
         }
         return "";
@@ -206,7 +207,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
         String lastTplCommand = "";
         // iterate over tokens on the line and push to stack any changes
         while (!context.isBlankLine() && ts.moveNext()
-                && ((ts.isCurrentTokenSequenceVirtual() && ts.offset() < context.getLineEndOffset())
+                 && ((ts.isCurrentTokenSequenceVirtual() && ts.offset() < context.getLineEndOffset())
                 || ts.offset() <= context.getLineEndOffset())) {
             Token<TplTopTokenId> token = ts.token();
             if (token == null) {

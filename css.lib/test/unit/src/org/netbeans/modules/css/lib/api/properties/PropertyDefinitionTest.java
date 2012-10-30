@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.csl;
+package org.netbeans.modules.css.lib.api.properties;
 
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.css.lib.api.CssParserFactory;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.junit.Test;
+import org.netbeans.modules.css.lib.CssTestBase;
 
 /**
- * Wraps the CssParserResult from css.lib as an instance of CSL's Parser
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class CssCslParser extends Parser {
+public class PropertyDefinitionTest extends CssTestBase {
 
-    private final Parser CSS3_PARSER = CssParserFactory.getDefault().createParser(null);
+    public PropertyDefinitionTest(String testName) {
+        super(testName);
+    }
     
-    @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        CSS3_PARSER.parse(snapshot, task, event);
+    public void testIsAggregatedProperty() {
+        assertAggregated(true, "font");
+        assertAggregated(true, "background");
+        
+        assertAggregated(false, "padding");
+        assertAggregated(false, "font-size");
+        assertAggregated(false, "padding-left");
+        assertAggregated(false, "background-size");
+        assertAggregated(false, "background-color");
+        assertAggregated(false, "azimuth");
     }
-
-    @Override
-    public Result getResult(Task task) throws ParseException {
-        return new CssCslParserResult((CssParserResult)CSS3_PARSER.getResult(task));
+    
+    private void assertAggregated(boolean expected, String propertyName) {
+        PropertyDefinition propertyDefinition = Properties.getPropertyDefinition(null, propertyName);
+        assertNotNull("Couldn't find property '" + propertyName + "'", propertyDefinition);
+        assertEquals("Unexpected result for property " + propertyName, expected, Properties.isAggregatedProperty(null, propertyDefinition));
     }
-
-    @Override
-    public void addChangeListener(ChangeListener changeListener) {
-        CSS3_PARSER.addChangeListener(changeListener);
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-        CSS3_PARSER.addChangeListener(changeListener);
-    }
- 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.api;
+package org.netbeans.modules.css.lib;
 
-import javax.swing.text.BadLocationException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
-import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.css.lib.api.ErrorsProvider;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author marekfukala
  */
-public class CssCslParserResultTest extends CssModuleTestBase {
+public class ErrorsProviderQuery {
 
-    public CssCslParserResultTest(String name) {
-        super(name);
-    }
-
-    public void testDuplicatedErrors() throws BadLocationException, ParseException {
-        CssParserResult result = TestUtil.parse(
-                "head{\n"
-                + "    background-image: uri();\n"
-                + "}");
-//        TestUtil.dumpResult(result);
-
-        assertNotNull(result);
-
-        CssCslParserResult cslresult = new CssCslParserResult(result);
-
-        for (Error e : cslresult.getDiagnostics()) {
-            System.out.println(e);
+    private static Collection<? extends ErrorsProvider> providers;
+    
+    private static synchronized Collection<? extends ErrorsProvider> getProviders() {
+        if(providers == null) {
+            providers = Lookup.getDefault().lookupAll(ErrorsProvider.class);
         }
-
+        return providers;
     }
-
-
+    
+    public static List<? extends Error> getExtendedDiagnostics(CssParserResult parserResult) {
+        List<Error> errors = new ArrayList<Error>();
+        for(ErrorsProvider provider : getProviders()) {
+            errors.addAll(provider.getExtendedDiagnostics(parserResult));
+        }
+        return errors;
+    }
+    
 }

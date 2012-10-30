@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.apt.impl.structure;
 
 import java.io.Serializable;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTPragma;
@@ -102,5 +103,10 @@ public class APTPragmaNode extends APTStreamBaseNode implements APTPragma, Seria
     @Override
     public APTToken getName() {
         return this.name;
+    }
+
+    @Override
+    public TokenStream getTokenStream() {
+        return super.getTokenStream();
     }
 }

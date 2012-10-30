@@ -94,6 +94,8 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 ###############  Commit validation tests  ##########################
+cp -r $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans-vanilla
+
 TESTS_STARTED=`date`
 # Different JDK for tests because JVM crashes often (see 6598709, 6607038)
 JDK_TESTS=$JDK_HOME
@@ -121,6 +123,9 @@ fi
 #Remove file created during commit validation
 rm -rf $NB_ALL/nbbuild/netbeans/nb/servicetag
 rm -rf $NB_ALL/nbbuild/netbeans/enterprise/config/GlassFishEE6
+
+mv $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans.after_tests
+mv $NB_ALL/nbbuild/netbeans-vanilla $NB_ALL/nbbuild/netbeans
 
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false
 ERROR_CODE=$?

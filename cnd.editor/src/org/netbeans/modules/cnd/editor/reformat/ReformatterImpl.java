@@ -453,6 +453,7 @@ public class ReformatterImpl {
                 }
                 case STAR: //("*", "operator"),
                 case AMP: //("&", "operator"),
+                case AMPAMP: //("&&", "operator"),
                 {
                     if (doFormat()) {
                         if (isOperator()) {
@@ -507,7 +508,6 @@ public class ReformatterImpl {
                 case LTEQ: //("<=", "operator"),
                 case GTEQ: //(">=", "operator"),
                 case NOTEQ: //("!=","operator"),
-                case AMPAMP: //("&&", "operator"),
                 case BARBAR: //("||", "operator"),
                 case SLASH: //("/", "operator"),
                 case BAR: //("|", "operator"),

@@ -47,7 +47,7 @@ import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.Rule;
@@ -98,8 +98,8 @@ public class AddPropertyAction extends AbstractAction {
                 public void run(ResultIterator resultIterator) throws Exception {
                     ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css");
                     if (ri != null) {
-                        CssCslParserResult result = (CssCslParserResult) ri.getParserResult();
-                        model_ref.set(Model.createModel(result.getWrappedCssParserResult()));
+                        CssParserResult result = (CssParserResult) ri.getParserResult();
+                        model_ref.set(Model.getModel(result));
                     }
                 }
             });

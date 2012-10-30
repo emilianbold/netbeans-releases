@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.lib.api;
 
-@Schema2Beans(
-    schema="../../resources/sun-application_5_0-0.dtd",
-    schemaType=SchemaType.DTD,
-    mddFile="../../resources/sun-application_5_0-0.mdd",
-    outputType=OutputType.TRADITIONAL_BASEBEAN,
-    docRoot="sun-application",
-    useInterfaces=true,
-    validate=false,
-    attrProp=true,
-    java5=true
-)
-@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"
-package org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0;
+import java.util.List;
+import org.netbeans.modules.csl.api.Error;
 
-import org.netbeans.modules.schema2beans.Schema2Beans;
-import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
-import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
+/**
+ * Provides some additional diagnostics to the default lexer/parser errors.
+ * 
+ * To be registered in global lookup.
+ *
+ * @author marekfukala
+ */
+public interface ErrorsProvider {
+    
+    /**
+     * Gets a list of extra diagnostics.
+     */
+    public List<? extends Error> getExtendedDiagnostics(CssParserResult parserResult);
+    
+}

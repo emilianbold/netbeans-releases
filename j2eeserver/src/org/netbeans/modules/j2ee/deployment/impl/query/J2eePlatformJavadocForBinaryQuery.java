@@ -75,16 +75,19 @@ import org.openide.util.WeakListeners;
  * Implementation of Javadoc query for the library.
  * @since 1.5
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("DMI_COLLECTION_OF_URLS") // justification="File URLs only"
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class)
 public class J2eePlatformJavadocForBinaryQuery implements JavadocForBinaryQueryImplementation {
     
     private static int MAX_DEPTH = 3;
+
     private final Map/*<URL,URL>*/ normalizedURLCache = new HashMap();
 
     /** Default constructor for lookup. */
     public J2eePlatformJavadocForBinaryQuery() {
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DMI_BLOCKING_METHODS_ON_URL") // justification="File URLs only"
     public JavadocForBinaryQuery.Result findJavadoc(final URL b) {
         class R implements JavadocForBinaryQuery.Result, PropertyChangeListener {
 

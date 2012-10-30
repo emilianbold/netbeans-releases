@@ -1051,7 +1051,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (folderVisibilityQuery == null) {
             folderVisibilityQuery = new CndVisibilityQuery(regex);
         } else {
-            folderVisibilityQuery.setPattern(regex);
+            folderVisibilityQuery.setIgnoredPattern(regex);
         }
     }
 
@@ -1837,10 +1837,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
             if (file.isData() && folder.isDiskFolder() && !CndFileVisibilityQuery.getDefault().isVisible(file)) {
                 // be consistent in checks to prevent adding item here followed
-                // by remove in Folder.refreshDiskFolder due to !CndFileVisibilityQuery.getDefault().isVisible(file)
+                // by remove in Folder.refreshDiskFolder due to !CndFileVisibilityQuery.getDefault().isIgnored(file)
                 continue;
             }
-            if (file.isFolder() && getFolderVisibilityQuery().isVisible(file)) {
+            if (file.isFolder() && getFolderVisibilityQuery().isIgnored(file)) {
                 continue;
             }
             if (file.isFolder()) {

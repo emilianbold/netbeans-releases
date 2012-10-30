@@ -173,14 +173,7 @@ public class AddToFavoritesAction extends SingleHostAction {
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            ConnectionManager.getInstance().connectTo(env);
-                        } catch (IOException ex) {
-                            DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                                    ex.getLocalizedMessage(), DialogDescriptor.ERROR_MESSAGE));
-                            return;
-                        } catch (CancellationException ex) {
-                            // don't report CancellationException
+                        if (!ConnectionManager.getInstance().connect(env)) {
                             return;
                         }
                         FileSystem fs = FileSystemProvider.getFileSystem(env);
@@ -329,14 +322,7 @@ public class AddToFavoritesAction extends SingleHostAction {
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            ConnectionManager.getInstance().connectTo(env);
-                        } catch (IOException ex) {
-                            DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                                    ex.getLocalizedMessage(), DialogDescriptor.ERROR_MESSAGE));
-                            return;
-                        } catch (CancellationException ex) {
-                            // don't report CancellationException
+                        if (!ConnectionManager.getInstance().connect(env)) {
                             return;
                         }
 //Non UI Thread:
