@@ -60,12 +60,15 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -372,15 +375,44 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
         String driverName = brokenDatasource.getDriverClassName();
         final JDBCDriver matchingDriver = findMatchingDriver(driverName);
         final Datasource edtDS = brokenDatasource;
-        
-        // if matchingDriver is null, user can add a driver in the Add Connection dialog
+        final JDBCDriver selectedDriver = matchingDriver == null
+                ? tryRegisterMissingDriver(driverName)
+                : matchingDriver;
+        if (selectedDriver == null) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                ConnectionManager.getDefault().showAddConnectionDialogFromEventThread(matchingDriver, edtDS.getUrl(), edtDS.getUsername(), edtDS.getPassword());
+                ConnectionManager.getDefault().showAddConnectionDialogFromEventThread(selectedDriver, edtDS.getUrl(), edtDS.getUsername(), edtDS.getPassword());
             }
         });
     }
     
+    /**
+     * Try to register a driver that is needed for the database resource.
+     *
+     * @return The driver, or null if it was not registered.
+     */
+    private static JDBCDriver tryRegisterMissingDriver(String driverName) {
+        DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(
+                NbBundle.getMessage(MissingDatabaseConnectionWarning.class,
+                "MSG_Broken_Datasources_Register_Driver", driverName),
+                NotifyDescriptor.Message.INFORMATION_MESSAGE));
+        JDBCDriverManager.getDefault().showAddDriverDialog();
+        JDBCDriver driver = findMatchingDriver(driverName);
+        if (driver == null) {
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                    NbBundle.getMessage(MissingDatabaseConnectionWarning.class,
+                    "MSG_Broken_Datasources_Missing_Driver", driverName),
+                    NotifyDescriptor.Message.ERROR_MESSAGE));
+            return null;
+        } else {
+            return driver;
+        }
+    }
+
     /*
      * Find a matching driver registered with the IDE
      * public: to-be-used outside this class
