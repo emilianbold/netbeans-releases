@@ -41,9 +41,13 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
+import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
 import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -154,6 +158,38 @@ public class CodeAssistanceConfiguration implements Cloneable {
         set.setShortDescription(getString("CodeAssistanceHint"));
         set.put(new BooleanNodeProp(getBuildAnalyzer(), true, "BuildAnalyzer", getString("BuildAnalyzerTxt"), getString("BuildAnalyzerHint"))); // NOI18N
         set.put(new StringNodeProp(getTools(), DEFAULT_TOOLS, "Tools", getString("ToolsTxt2"), getString("ToolsHint2"))); // NOI18N
+        set.put(new StringListNodeProp(getTransientMacros(), null,
+                new String[]{"transient-macros", // NOI18N
+                             getString("TransientMacrosTxt"), // NOI18N
+                             getString("TransientMacrosHint"), // NOI18N
+                             getString("TransientMacrosLbl"), // NOI18N
+                             null}, true, new HelpCtx("transient-macros")){ // NOI18N
+            @Override
+            protected List<String> convertToList(String text) {
+                return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
+            }
+
+            @Override
+            protected String convertToString(List<String> list) {
+                return TokenizerFactory.DEFAULT_CONVERTER.convertToString(list);
+            }
+        });
+        set.put(new StringListNodeProp(getEnvironmentVariables(), null,
+                new String[]{"environment-variables", // NOI18N
+                             getString("EnvironmentVariablesTxt"), // NOI18N
+                             getString("EnvironmentVariablesHint"), // NOI18N
+                             getString("EnvironmentVariablesLbl"), // NOI18N
+                             null}, true, new HelpCtx("environment-variables")){ // NOI18N
+            @Override
+            protected List<String> convertToList(String text) {
+                return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
+            }
+
+            @Override
+            protected String convertToString(List<String> list) {
+                return TokenizerFactory.DEFAULT_CONVERTER.convertToString(list);
+            }
+        });
         sheet.put(set);
         return sheet;
     }
