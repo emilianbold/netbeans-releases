@@ -249,7 +249,7 @@ public final class FindTypeUtils {
 
     private static boolean isOnPackageNode(AstPath path, BaseDocument doc, int caret) {
         ModuleNode moduleNode = getCurrentModuleNode(path);
-        if (moduleNode == null) {
+        if (moduleNode == null || moduleNode.getPackage() == null) {
             return false;
         }
 
