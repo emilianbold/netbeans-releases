@@ -18,12 +18,6 @@
     "_Remove": {
         "message": "Remove"
     },
-    "_Help": {
-        "message": "Help"
-    },
-    "_ShowHelp": {
-        "message": "Show Help"
-    },
 
     /* select mode */
     "_StartSelectMode": {

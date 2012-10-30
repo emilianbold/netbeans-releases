@@ -118,9 +118,6 @@ NetBeans_PresetCustomizer._registerEvents = function() {
     document.getElementById('presetCustomizerCancel').addEventListener('click', function() {
         that._cancel();
     }, false);
-    document.getElementById('presetCustomizerHelp').addEventListener('click', function() {
-        alert('[TODO: not implemented]');
-    }, false);
 };
 // put presets to the customizer?
 NetBeans_PresetCustomizer._putPresets = function(presets) {
