@@ -595,11 +595,8 @@ public class RuleEditorNode extends AbstractNode {
             }
         });
 
-        if (!fixedElements.isEmpty() && !Properties.isAggregatedProperty(context, pmodel)) {
-            return new PropertyValuesEditor(panel, pmodel, getModel(), fixedElements, unitElements, addNoneProperty);
-        }
+        return new PropertyValuesEditor(panel, pmodel, getModel(), fixedElements, unitElements, addNoneProperty);
 
-        return null;
     }
 
     private abstract class AbstractPDP<T> extends PropertySupport<T> {

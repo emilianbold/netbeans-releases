@@ -72,6 +72,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.CssColor;
 import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
@@ -100,13 +101,13 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     private Collection<UnitGrammarElement> unitElements;
     private Collection<FixedTextGrammarElement> fixedElements;
     private boolean addNoneProperty;
-    private String[] tags;
+    private List<String> tags;
     private Map<String, FixedTextGrammarElement> tags2fixedElement = new HashMap<String, FixedTextGrammarElement>();
     private boolean containsColor;
     private FileObject file;
     private PropertyDefinition pmodel;
     private RuleEditorPanel panel;
-    
+    private final boolean isAggregatedProperty;
     private static final String CHOOSE_COLOR_ITEM = new StringBuilder().append("<html><b>").append(Bundle.choose_color_item()).append("</b></html>").toString();  //NOI18N
     private static final JColorChooser COLOR_CHOOSER = new JColorChooser();
 
@@ -117,67 +118,77 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         this.addNoneProperty = addNoneProperty;
         this.pmodel = pmodel;
         this.file = model.getLookup().lookup(FileObject.class);
+
+        this.isAggregatedProperty = Properties.isAggregatedProperty(file, pmodel);
+    }
+
+    @Override
+    public Component getCustomEditor() {
+        return null;
     }
 
     @Override
     public synchronized String[] getTags() {
+        if (isAggregatedProperty) {
+            //no drop down for aggregated properties
+            return null;
+        }
         if (tags == null) {
-            List<String> tagsList = new ArrayList<String>();
-            
-            //sort the items alphabetically first
-            Collection<String> fixedElementNames = new TreeSet<String>();
-            for (FixedTextGrammarElement element : fixedElements) {
-                String value = element.getValue();
-                if (value.length() > 0 && Character.isLetter(value.charAt(0))) { //filter operators & similar
-                    fixedElementNames.add(value);
-                    tags2fixedElement.put(value, element);
+            tags = new ArrayList<String>();
 
-                    //TBD possibly refactor out so it is not so hardcoded
-                    if ("color".equals(element.getVisibleOrigin())) { //NOI18N
-                        containsColor = true;
-                    }
+                //sort the items alphabetically first
+                Collection<String> fixedElementNames = new TreeSet<String>();
+                for (FixedTextGrammarElement element : fixedElements) {
+                    String value = element.getValue();
+                    if (value.length() > 0 && Character.isLetter(value.charAt(0))) { //filter operators & similar
+                        fixedElementNames.add(value);
+                        tags2fixedElement.put(value, element);
 
-                }
-            }
-            
-            //the rest will handle the order by itself
-            tagsList.addAll(fixedElementNames);
-
-            if (containsColor) {
-                if (file != null) {
-                    Project project = FileOwnerQuery.getOwner(file);
-                    if (project != null) {
-                        try {
-                            Collection<String> hashColorCodes = new TreeSet<String>();
-                            CssIndex index = CssIndex.create(project);
-                            Map<FileObject, Collection<String>> result = index.findAll(RefactoringElementType.COLOR);
-                            for (FileObject f : result.keySet()) {
-                                Collection<String> colors = result.get(f);
-//                                boolean usedInCurrentFile = f.equals(file);
-                                for (String color : colors) {
-                                    hashColorCodes.add(color);
-                                }
-                            }
-                            tagsList.addAll(0, hashColorCodes);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
+                        //TBD possibly refactor out so it is not so hardcoded
+                        if ("color".equals(element.getVisibleOrigin())) { //NOI18N
+                            containsColor = true;
                         }
 
                     }
                 }
+
+                //the rest will handle the order by itself
+                tags.addAll(fixedElementNames);
+
+                if (containsColor) {
+                    if (file != null) {
+                        Project project = FileOwnerQuery.getOwner(file);
+                        if (project != null) {
+                            try {
+                                Collection<String> hashColorCodes = new TreeSet<String>();
+                                CssIndex index = CssIndex.create(project);
+                                Map<FileObject, Collection<String>> result = index.findAll(RefactoringElementType.COLOR);
+                                for (FileObject f : result.keySet()) {
+                                    Collection<String> colors = result.get(f);
+//                                boolean usedInCurrentFile = f.equals(file);
+                                    for (String color : colors) {
+                                        hashColorCodes.add(color);
+                                    }
+                                }
+                                tags.addAll(0, hashColorCodes);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+
+                        }
+                    }
+
+                    tags.add(0, CHOOSE_COLOR_ITEM);
+                }
+            
+//            if (addNoneProperty) {
+//                //put as first item
+//                tagsList.add(0, RuleEditorNode.NONE_PROPERTY_NAME);
+//            }
                 
-                tagsList.add(0, CHOOSE_COLOR_ITEM);
-            }
-            
-            if (addNoneProperty) {
-                //put as first item
-                tagsList.add(0, RuleEditorNode.NONE_PROPERTY_NAME);
-            }
-            
-            tags = tagsList.toArray(new String[0]);
         }
 
-        return tags;
+        return tags.isEmpty() ? null : tags.toArray(new String[]{});
     }
 
     @Override
@@ -194,8 +205,8 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         if (str.equals(getValue())) {
             return;
         }
-        
-        if(CHOOSE_COLOR_ITEM.equals(str)) {
+
+        if (CHOOSE_COLOR_ITEM.equals(str)) {
             //color chooser
             final AtomicReference<Color> color_ref = new AtomicReference<Color>();
             JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), Bundle.choose_color_item(), true, COLOR_CHOOSER,
@@ -215,15 +226,15 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
             dialog.dispose();
 
             Color color = color_ref.get();
-            if(color != null) {
+            if (color != null) {
                 str = WebUtils.toHexCode(color);
             } else {
                 //dialog cancelled, no value - do not allow the CHOOSE_COLOR_ITEM marker to be set the to property
-                return ;
+                return;
             }
 
         }
-        
+
         setValue(str);
 
     }
@@ -238,8 +249,6 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         return getClass().getSimpleName() + "; property: " + pmodel.getName();
     }
 
-    
-    
     @Override
     public void attachEnv(PropertyEnv env) {
         //if there's at least one unit element, then the text field needs to be editable
@@ -251,9 +260,9 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                 if (me.getID() == MouseEvent.MOUSE_PRESSED && SwingUtilities.isLeftMouseButton(me)) {
                     if (me.getClickCount() > 1) {
                         FeatureDescriptor selected = panel.getSelected();
-                        if(selected != null) {
-                            if(selected instanceof RuleEditorNode.DeclarationProperty) {
-                                RuleEditorNode.DeclarationProperty declarationProperty = (RuleEditorNode.DeclarationProperty)selected;
+                        if (selected != null) {
+                            if (selected instanceof RuleEditorNode.DeclarationProperty) {
+                                RuleEditorNode.DeclarationProperty declarationProperty = (RuleEditorNode.DeclarationProperty) selected;
                                 GoToSourceAction action = new GoToSourceAction(panel, declarationProperty);
                                 action.actionPerformed(null);
                             }
@@ -267,7 +276,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         if (containsColor) {
             env.getFeatureDescriptor().setValue("customListCellRendererSupport", new ColorListCellRendererSupport()); //NOI18N
         }
-        
+
         env.getFeatureDescriptor().setValue("valueIncrement", new SpinnerModel() { //NOI18N
             private String getNextValue(boolean forward) {
                 String value = getAsText();
@@ -281,7 +290,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
                             StringBuilder sb = new StringBuilder();
                             sb.append(i + (forward ? 1 : -1));
-                            if(postfix != null) {
+                            if (postfix != null) {
                                 sb.append(postfix);
                             }
 
@@ -300,7 +309,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                     }
 
                 }
-               
+
                 //not acceptable token
                 return null;
             }
@@ -343,10 +352,10 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             ListCellRenderer peer = get();
-            
+
             assert peer != null; //the ComboInplaceEditor must set the original renreder!
-            
-            if(peer instanceof ColorListCellRendererSupport) {
+
+            if (peer instanceof ColorListCellRendererSupport) {
                 System.out.println("warning: nesting of ColorListCellRendererSupport!");
             }
 
@@ -357,20 +366,20 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                 String strval = (String) value;
 
                 Icon icon = null;
-                
-                if( strval.startsWith("#") ) { //NOI18N
+
+                if (strval.startsWith("#")) { //NOI18N
                     String colorCode = strval.substring(1);
                     icon = WebUtils.createColorIcon(colorCode); //null CssColor will create default icon
                 }
 
-                if(strval.equals(CHOOSE_COLOR_ITEM)) {
+                if (strval.equals(CHOOSE_COLOR_ITEM)) {
                     Color chooserColor = COLOR_CHOOSER.getColor();
                     String hexCode = chooserColor != null ? WebUtils.toHexCode(chooserColor) : null;
                     icon = WebUtils.createColorIcon(hexCode);
                 }
-                
+
                 FixedTextGrammarElement element = tags2fixedElement.get(strval);
-                if(!"inherit".equals(strval)) { //filter out colors for inherit
+                if (!"inherit".equals(strval)) { //filter out colors for inherit
                     if (element != null) {
                         if ("color".equals(element.getVisibleOrigin())) { //NOI18N
                             //try to find color code
@@ -380,6 +389,8 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                     }
                 }
                 label.setIcon(icon);
+            } else {
+                System.out.println("res instance " + res);
             }
             return res;
 
