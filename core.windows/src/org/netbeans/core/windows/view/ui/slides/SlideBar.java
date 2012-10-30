@@ -484,6 +484,10 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
         BusyTabsSupport.getDefault().uninstall( getTabbed(), dataModel );
     }
 
+    boolean isHorizontal() {
+        return tabbed.isHorizontal();
+    }
+
     private class SlidedWinsysInfoForTabbedContainer extends WinsysInfoForTabbedContainer {
         @Override
         public Object getOrientation(Component comp) {
