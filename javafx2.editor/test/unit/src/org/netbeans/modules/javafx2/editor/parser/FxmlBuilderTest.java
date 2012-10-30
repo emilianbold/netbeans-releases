@@ -66,11 +66,25 @@ public class FxmlBuilderTest extends GoldenFileTestBase {
 //    }
     
     public void testBaseLoad() throws Exception {
-        XmlLexerParser parser = new XmlLexerParser(hierarchy);
+        final XmlLexerParser parser = new XmlLexerParser(hierarchy);
         builder = new FxModelBuilder();
         parser.setContentHandler(builder);
-        parser.parse();
         
+        
+        final Exception[] exc = new Exception[1];
+        document.render(new Runnable() {
+            public void run() {
+                try {
+                    parser.parse();
+                } catch (Exception ex) {
+                    exc[0] = ex;
+                }
+            }
+        });
+        if (exc[0] != null) {
+            throw exc[0];
+        }
+
         PrintVisitor v = new PrintVisitor(new FxTreeUtilities(ModelAccessor.INSTANCE, builder.getModel(), hierarchy));
         builder.getModel().accept(v);
         
@@ -102,10 +116,23 @@ public class FxmlBuilderTest extends GoldenFileTestBase {
     }
 
     private void defaultTestContents() throws Exception {
-        XmlLexerParser parser = new XmlLexerParser(hierarchy);
+        final XmlLexerParser parser = new XmlLexerParser(hierarchy);
         builder = new FxModelBuilder();
         parser.setContentHandler(builder);
-        parser.parse();
+        
+        final Exception[] exc = new Exception[1];
+        document.render(new Runnable() {
+            public void run() {
+                try {
+                    parser.parse();
+                } catch (Exception ex) {
+                    exc[0] = ex;
+                }
+            }
+        });
+        if (exc[0] != null) {
+            throw exc[0];
+        }
 
         PrintVisitor v = new PrintVisitor(
                 new FxTreeUtilities(ModelAccessor.INSTANCE, builder.getModel(), hierarchy));

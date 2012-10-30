@@ -252,8 +252,8 @@ public final class FxModel extends FxNode {
         }
 
         @Override
-        public FxInclude createInclude(String included) {
-            return new FxInclude(included);
+        public FxInclude createInclude(String included, String id) {
+            return (FxInclude)new FxInclude(included).withId(id);
         }
 
         @Override
