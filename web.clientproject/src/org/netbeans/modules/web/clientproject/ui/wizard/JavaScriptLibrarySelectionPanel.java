@@ -81,7 +81,7 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
     private volatile JavaScriptLibrarySelection javaScriptLibrarySelection;
     private volatile WizardDescriptor wizardDescriptor;
     // #202796
-    private volatile boolean asynchError = false;
+    volatile boolean asynchError = false;
 
 
     public JavaScriptLibrarySelectionPanel() {
@@ -117,6 +117,7 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
 
     @Override
     public void readSettings(WizardDescriptor settings) {
+        asynchError = false;
         wizardDescriptor = settings;
         SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE);
         getComponent().updateDefaultLibraries(siteTemplate.supportedLibraries(false));
