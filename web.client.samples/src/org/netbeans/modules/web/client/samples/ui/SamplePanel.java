@@ -127,8 +127,8 @@ class SamplePanel implements Panel<WizardDescriptor> {
      */
     @Override
     public void storeSettings( WizardDescriptor descriptor ) {
-        File projectDirectory = getComponent().getProjectDirectory();
-        FileObject directory = FileUtil.toFileObject( FileUtil.normalizeFile(projectDirectory));
+        File projectLocation = new File(getComponent().getProjectLocation());
+        FileObject directory = FileUtil.toFileObject( FileUtil.normalizeFile(projectLocation));
         Templates.setTargetFolder(myDescriptor, directory);
         Templates.setTargetName(myDescriptor, getComponent().getProjectName());
     }
