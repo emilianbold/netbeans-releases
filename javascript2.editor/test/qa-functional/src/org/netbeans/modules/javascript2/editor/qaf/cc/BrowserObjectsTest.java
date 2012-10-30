@@ -74,9 +74,9 @@ public class BrowserObjectsTest extends GeneralJavaScript {
 
     public void createApplication() {
         startTest();
-        this.name_iterator++;
-        createPhpApplication(TEST_BASE_NAME + "bo_" + name_iterator);
-        EditorOperator eo = createWebFile("bocc", TEST_BASE_NAME + "bo_" + name_iterator, "JavaScript File");
+        BrowserObjectsTest.NAME_ITERATOR++;
+        createPhpApplication(TEST_BASE_NAME + "bo_" + NAME_ITERATOR);
+        EditorOperator eo = createWebFile("bocc", TEST_BASE_NAME + "bo_" + NAME_ITERATOR, "JavaScript File");
         BrowserObjectsTest.currentFile = "bocc.js";
         try {
             waitScanFinished();

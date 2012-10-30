@@ -3603,8 +3603,8 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         end();
         cr();
         jw.beginMethod("_setVetoableChangeSupport",
-                       "java.beans.VetoableChangeSupport vs", "void", null,
-                       jw.PACKAGE_LEVEL);
+                       "java.beans.VetoableChangeSupport vs", null,
+                       "void", jw.PACKAGE_LEVEL);
         geneol("vetos = vs");
         end();
         cr();
@@ -4981,7 +4981,11 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
             jw.bigComment("@deprecated");
             jw.beginMethod("write", "java.io.OutputStream out",
                            "java.io.IOException", "void", jw.PUBLIC | jw.IO);
-            jw.writeEol("java.io.PrintWriter pw = new java.io.PrintWriter(out)");
+            if (config.isJava5()) {
+                jw.writeEol("java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.OutputStreamWriter(out, java.nio.charset.Charset.defaultCharset()))");
+            } else {
+                jw.writeEol("java.io.PrintWriter pw = new java.io.PrintWriter(out)");
+            }
             jw.writeEol("writeNode(pw)");
             jw.writeEol("pw.flush()");
             jw.endMethod();

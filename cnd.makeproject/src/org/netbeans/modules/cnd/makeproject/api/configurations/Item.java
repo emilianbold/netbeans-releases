@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,12 +77,19 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public final class Item implements NativeFileItem, PropertyChangeListener {
@@ -626,11 +634,20 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 vec2.addAll(list.get(i));
             }
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
+            ExecutionEnvironment env = compiler.getExecutionEnvironment();            
+            MacroConverter macroConverter = null;
             // Convert all paths to absolute paths
-            FileSystem compilerFS = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
+            FileSystem compilerFS = FileSystemProvider.getFileSystem(env);
             FileSystem projectFS = fileSystem;
             List<FSPath> result = new ArrayList<FSPath>();            
             for (String p : vec2) {
+                if (ConfigurationDescriptorProvider.VCS_WRITE && p.contains("$")) { // NOI18N
+                    // macro based path
+                    if (macroConverter == null) {
+                        macroConverter = new MacroConverter(env);
+                    }
+                    p = macroConverter.expand(p);
+                }
                 String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
                 result.add(new FSPath(projectFS, absPath));
             }
@@ -1023,6 +1040,32 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 includes = provider.expandIncludePaths(includes, compilerOptions, compiler, makeConfiguration);
             }
             return includes;
+        }
+    }
+    
+    private static final class MacroConverter {
+        private MacroExpander expander = null;
+        private Map<String, String> envVariables = Collections.emptyMap();
+
+        public MacroConverter(ExecutionEnvironment env) {
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                this.envVariables = hostInfo.getEnvironment();
+                this.expander = MacroExpanderFactory.getExpander(env);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex);
+            }            
+        }
+        
+        public String expand(String in) {
+            try {
+                return expander != null ? expander.expandMacros(in, envVariables) : in;
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return in;
         }
     }
 }

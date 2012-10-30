@@ -44,21 +44,28 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.GroupLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
+import javax.swing.LayoutStyle;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -66,6 +73,7 @@ import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.text.View;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
@@ -76,6 +84,7 @@ import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
+import org.netbeans.modules.web.webkit.debugging.api.css.Media;
 import org.netbeans.modules.web.webkit.debugging.api.css.Property;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.RuleId;
@@ -83,7 +92,9 @@ import org.openide.awt.HtmlRenderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.ListView;
 import org.openide.explorer.view.TreeTableView;
+import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -112,7 +123,7 @@ public class CSSStylesSelectionPanel extends JPanel {
     /** Explorer manager for Property Summary. */
     private ExplorerManager propertyPaneManager;
     /** Style Cascade view. */
-    private TreeTableView rulePane;
+    private ListView rulePane;
     /** Explorer manager for Style Cascade. */
     private ExplorerManager rulePaneManager;
     /** Label for messages. */
@@ -132,16 +143,9 @@ public class CSSStylesSelectionPanel extends JPanel {
         splitPane.setBottomComponent(initRulePane());
         splitPane.setDividerLocation(100);
         splitPane.setBorder(null);
-        selectionView = new JPanel();
-        selectionView.setLayout(new BorderLayout());
-        selectionView.add(splitPane, BorderLayout.CENTER);
+        selectionView = splitPane;
         initMessageLabel();
         initSelectionOfOwningRule();
-        propertySummaryLabel = new JLabel();
-        propertySummaryLabel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEtchedBorder(),
-                BorderFactory.createEmptyBorder(4, 16, 4, 0)));
-        selectionView.add(propertySummaryLabel, BorderLayout.PAGE_START);
         add(selectionView, BorderLayout.CENTER);
         updateContent(null, false);
     }
@@ -152,7 +156,7 @@ public class CSSStylesSelectionPanel extends JPanel {
      * @return Property Summary panel.
      */
     private JPanel initPropertyPane() {
-        propertyPane = new CustomTreeTableView(true);
+        propertyPane = new PropertyPaneView();
         String valueTitle =  NbBundle.getMessage(CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.value"); // NOI18N
         propertyPane.setProperties(new Node.Property[] {
             new PropertySupport.ReadOnly<String>(MatchedPropertyNode.PROPERTY_VALUE, String.class, valueTitle, null) {
@@ -165,7 +169,13 @@ public class CSSStylesSelectionPanel extends JPanel {
         ExplorerManagerProviderPanel propertyPanePanel = new ExplorerManagerProviderPanel();
         propertyPanePanel.setLayout(new BorderLayout());
         propertyPanePanel.add(propertyPane, BorderLayout.CENTER);
+        propertySummaryLabel = new JLabel();
+        propertySummaryLabel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEtchedBorder(),
+                BorderFactory.createEmptyBorder(4, 16, 4, 0)));
+        propertyPanePanel.add(propertySummaryLabel, BorderLayout.PAGE_START);
         propertyPaneManager = propertyPanePanel.getExplorerManager();
+        propertyPanePanel.setMinimumSize(new Dimension(0,0)); // allow shrinking in JSplitPane
         return propertyPanePanel;
     }
 
@@ -175,19 +185,23 @@ public class CSSStylesSelectionPanel extends JPanel {
      * @return Style Cascade section.
      */
     private JPanel initRulePane() {
-        rulePane = new CustomTreeTableView(false);
-        rulePane.setProperties(new Node.Property[] {
-            new PropertySupport.ReadOnly<String>(MatchedRuleNode.PROPERTY_NODE, String.class, "", null) { // NOI18N
-                @Override
-                public String getValue() throws IllegalAccessException, InvocationTargetException {
-                    return null;
-                }
+        rulePane = new ListView() {
+            {
+                list.setCellRenderer(new StylesRenderer());
             }
-        });
+        };
         rulePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         ExplorerManagerProviderPanel rulePanePanel = new ExplorerManagerProviderPanel();
         rulePanePanel.setLayout(new BorderLayout());
         rulePanePanel.add(rulePane, BorderLayout.CENTER);
+        JLabel rulePaneSummaryLabel = new JLabel();
+        rulePaneSummaryLabel.setText(NbBundle.getMessage(
+                CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.rulePaneHeader")); // NOI18N
+        rulePaneSummaryLabel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEtchedBorder(),
+                BorderFactory.createEmptyBorder(4, 16, 4, 0)));
+        rulePanePanel.add(rulePaneSummaryLabel, BorderLayout.PAGE_START);
+        rulePanePanel.setMinimumSize(new Dimension(0,0)); // allow shrinking in JSplitPane
         rulePaneManager = rulePanePanel.getExplorerManager();
         lookup = ExplorerUtils.createLookup(rulePaneManager, getActionMap());
         return rulePanePanel;
@@ -493,15 +507,12 @@ public class CSSStylesSelectionPanel extends JPanel {
      * Custom {@code TreeTableView} used to display style information
      * for the selected element.
      */
-    static class CustomTreeTableView extends TreeTableView {
+    static class PropertyPaneView extends TreeTableView {
 
         /**
-         * Creates a new {@code CustomTreeTableView}.
-         *
-         * @param propertyPane determines whether this view is used
-         * as a property pane or as a rule pane.
+         * Creates a new {@code PropertyPaneView}.
          */
-        CustomTreeTableView(final boolean propertyPane) {
+        PropertyPaneView() {
             setRootVisible(false);
             setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
             final TreeCellRenderer renderer = tree.getCellRenderer();
@@ -519,11 +530,9 @@ public class CSSStylesSelectionPanel extends JPanel {
                 }
             });
             hideTreeLines();
-            if (propertyPane) {
-                Color bgColor = UIManager.getColor("Label.background"); // NOI18N
-                treeTable.setBackground(bgColor);
-                treeTable.getParent().setBackground(bgColor);
-            }
+            Color bgColor = UIManager.getColor("Label.background"); // NOI18N
+            treeTable.setBackground(bgColor);
+            treeTable.getParent().setBackground(bgColor);
             final TableCellRenderer defaultRenderer = HtmlRenderer.createRenderer();
             treeTable.setDefaultRenderer(Node.Property.class, new TableCellRenderer() {
                 // Text rendered in the first column of tree-table (i.e. in the tree)
@@ -551,7 +560,6 @@ public class CSSStylesSelectionPanel extends JPanel {
                     return component;
                 }
             });
-            if (propertyPane) {
             treeTable.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
                 @Override
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -566,7 +574,6 @@ public class CSSStylesSelectionPanel extends JPanel {
                     return component;
                 }
             });
-            }
         }
 
         /**
@@ -587,6 +594,160 @@ public class CSSStylesSelectionPanel extends JPanel {
                 } catch (SecurityException ex) {
                 }
             }
+        }
+
+    }
+
+    /**
+     * Renderer for the Styles (i.e., the middle) section of CSS Styles view.
+     */
+    static class StylesRenderer extends DefaultListCellRenderer {
+        /** Component used for rendering. */
+        private JPanel renderer = new JPanel();
+        /** Label showing information about the matched node. */
+        private JLabel matchedNodeLabel = new JLabel();
+        /** Label showing the selector. */
+        private JLabel selectorLabel = new JLabel();
+        /** Label showing the media query. */
+        private JLabel mediaLabel = new JLabel();
+        /** HTML renderer used to obtain background color. */
+        private ListCellRenderer htmlRenderer = HtmlRenderer.createRenderer();
+
+        /**
+         * Creates a new {@code StylesRenderer}.
+         */
+        StylesRenderer() {
+            mediaLabel.setEnabled(false);
+        }
+
+        /**
+         * Builds the layout of the rendered component.
+         */
+        private void buildLayout() {
+            GroupLayout layout = new GroupLayout(renderer);
+            GroupLayout.Group hGroup = layout.createSequentialGroup()
+                    .addComponent(selectorLabel, 1, 1, Short.MAX_VALUE)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(matchedNodeLabel, 1, 1, Short.MAX_VALUE);
+            GroupLayout.Group vGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(selectorLabel)
+                    .addComponent(matchedNodeLabel);
+            hGroup = layout.createParallelGroup()
+                    .addComponent(mediaLabel, 1, 1, Short.MAX_VALUE)
+                    .addGroup(hGroup);
+            vGroup = layout.createSequentialGroup()
+                    .addComponent(mediaLabel)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(vGroup);
+            layout.setHorizontalGroup(hGroup);
+            layout.setVerticalGroup(vGroup);
+            renderer.setLayout(layout);
+            Color borderColor = UIManager.getColor("Label.background"); // NOI18N
+            renderer.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor),
+                BorderFactory.createEmptyBorder(2, 2, 2, 2)));
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JComponent component = (JComponent)super.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus); // NOI18N
+            JLabel htmlLabel = (JLabel)htmlRenderer.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus); // NOI18N
+            Color bgColor = backgroundColor(htmlLabel);
+            if (bgColor == null) {
+                bgColor = component.getBackground();
+            }
+            renderer.setBackground(bgColor);
+            renderer.setBorder(component.getBorder());
+            Color foreground = component.getForeground();
+            matchedNodeLabel.setForeground(foreground);
+            selectorLabel.setForeground(foreground);
+            mediaLabel.setForeground(foreground);
+            Node node = Visualizer.findNode(value);
+            Rule rule = node.getLookup().lookup(Rule.class);
+            if (rule != null) {
+                String matchedNode = node.getHtmlDisplayName();
+                matchedNodeLabel.setText(matchedNode);
+                String selector = rule.getSelector();
+                // Using HTML label to allow wrapping of its content
+                selectorLabel.setText("<html>"+selector); // NOI18N
+                String mediaQuery = null;
+                for (Media media : rule.getMedia()) {
+                    mediaQuery = media.getText();
+                }
+                mediaLabel.setText(mediaQuery);
+                mediaLabel.setVisible(mediaQuery != null);
+            }
+            String toolTip = node.getShortDescription();
+            renderer.setToolTipText(toolTip);
+
+            // This tricky section tries to avoid problems with HTML labels
+            // that don't have a reasonable preferred size.
+
+            // Lay out the renderer for its expected width => this sets
+            // the correct width to HTML labels.
+            int width = list.getWidth()-list.getInsets().left-list.getInsets().right;
+            renderer.setSize(width, 1);
+            buildLayout();
+            renderer.doLayout();
+
+            // The labels have the corrent width now but they have an incorrect
+            // height (they are laid out as if the whole content was on one line).
+            // We resize their view according to their current width. This results
+            // in relayout of HTML content. The labels should return their correct
+            // preferred size after this step.
+            resizeViewToMatchTheCurrentSize(matchedNodeLabel);
+            resizeViewToMatchTheCurrentSize(selectorLabel);
+
+            // Now (when the labels return their correct preferred size) we can
+            // re-layout the container to get the desired result.
+            // Unfortunately, GroupLayout is caching some values in a problematic
+            // way. Hence, it is not sufficient to call doLayout(). We have
+            // to rebuild the whole layout to get rid of the incorrect cached values.
+            buildLayout();
+            renderer.doLayout();
+
+            return renderer;
+        }
+
+        /**
+         * Resizes the {@code View} object used by this label to match
+         * the current size of the label. Resizing of the {@code View}
+         * causes relayout of HTML label (which affects its preferred size).
+         * 
+         * @param label label whose {@code View} should be resized.
+         */
+        private void resizeViewToMatchTheCurrentSize(JLabel label) {
+            Object view = label.getClientProperty("html"); // NOI18N
+            if (view instanceof View) {
+                ((View)view).setSize(label.getWidth(), label.getHeight());
+            }
+        }
+
+        /**
+         * Returns the background color of the given label. We cannot use
+         * {@code getBackground()} method because the given label is
+         * {@code HTMLRendererImpl} that handles its background
+         * in a non-standard way.
+         *
+         * @param label label whose background should be returned.
+         * @return background color of the given label.
+         */
+        private Color backgroundColor(JLabel label) {
+            Color color = null;
+            Object htmlUI = label.getUI();
+            try {
+                Method method = htmlUI.getClass().getDeclaredMethod("getBackgroundFor", htmlRenderer.getClass()); // NOI18N
+                method.setAccessible(true);
+                Object result = method.invoke(null, htmlRenderer);
+                if (result instanceof Color) {
+                    color = (Color)result;
+                }
+            } catch (IllegalAccessException ex) {
+            } catch (IllegalArgumentException ex) {
+            } catch (InvocationTargetException ex) {
+            } catch (NoSuchMethodException ex) {
+            }
+            return color;
         }
 
     }

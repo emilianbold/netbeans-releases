@@ -83,7 +83,7 @@ public class JavaUtil {
             if ("boolean".equals(classType))
                 return "new java.lang.Boolean("+expr+")";
         }
-        return toObject(expr, classType, !j2me && java5);
+        return toObject(expr, classType, java5);
     }
     
     static private Map toObjectType;

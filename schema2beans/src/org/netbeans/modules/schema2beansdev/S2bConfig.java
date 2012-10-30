@@ -2778,7 +2778,7 @@ public class S2bConfig {
 	public boolean parseArguments(String[] args) {
 		for (int argNum = 0, size = args.length; argNum < size; ++argNum) {
 			String arg = args[argNum].toLowerCase().intern();
-			if (arg == "-f") {
+			if ("-f".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -2786,7 +2786,7 @@ public class S2bConfig {
 				setFilename(new java.io.File(args[++argNum]));
 				continue;
 			}
-			if (arg == "-d") {
+			if ("-d".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -2794,7 +2794,7 @@ public class S2bConfig {
 				setDocRoot(args[++argNum]);
 				continue;
 			}
-			if (arg == "-r") {
+			if ("-r".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -2802,7 +2802,7 @@ public class S2bConfig {
 				setRootDir(new java.io.File(args[++argNum]));
 				continue;
 			}
-			if (arg == "-p") {
+			if ("-p".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -2810,7 +2810,7 @@ public class S2bConfig {
 				setPackagePath(args[++argNum]);
 				continue;
 			}
-			if (arg == "-sp") {
+			if ("-sp".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -2818,7 +2818,7 @@ public class S2bConfig {
 				setIndentAmount(Integer.parseInt(args[++argNum]));
 				continue;
 			}
-			if (arg == "-mdd") {
+			if ("-mdd".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -2826,95 +2826,95 @@ public class S2bConfig {
 				setMddFile(new java.io.File(args[++argNum]));
 				continue;
 			}
-			if (arg == "-noe") {
+			if ("-noe".equals(arg)) {
 				setScalarException(true);
 				continue;
 			}
-			if (arg == "-nonoe") {
+			if ("-nonoe".equals(arg)) {
 				setScalarException(false);
 				continue;
 			}
-			if (arg == "-ts") {
+			if ("-ts".equals(arg)) {
 				setDumpToString(true);
 				continue;
 			}
-			if (arg == "-nots") {
+			if ("-nots".equals(arg)) {
 				setDumpToString(false);
 				continue;
 			}
-			if (arg == "-veto") {
+			if ("-veto".equals(arg)) {
 				setVetoable(true);
 				continue;
 			}
-			if (arg == "-noveto") {
+			if ("-noveto".equals(arg)) {
 				setVetoable(false);
 				continue;
 			}
-			if (arg == "-st") {
+			if ("-st".equals(arg)) {
 				setStandalone(true);
 				continue;
 			}
-			if (arg == "-nost") {
+			if ("-nost".equals(arg)) {
 				setStandalone(false);
 				continue;
 			}
-			if (arg == "-auto") {
+			if ("-auto".equals(arg)) {
 				setAuto(true);
 				continue;
 			}
-			if (arg == "-noauto") {
+			if ("-noauto".equals(arg)) {
 				setAuto(false);
 				continue;
 			}
-			if (arg == "-throw") {
+			if ("-throw".equals(arg)) {
 				setThrowErrors(true);
 				continue;
 			}
-			if (arg == "-nothrow") {
+			if ("-nothrow".equals(arg)) {
 				setThrowErrors(false);
 				continue;
 			}
-			if (arg == "-validate") {
+			if ("-validate".equals(arg)) {
 				setGenerateValidate(true);
 				continue;
 			}
-			if (arg == "-novalidate") {
+			if ("-novalidate".equals(arg)) {
 				setGenerateValidate(false);
 				continue;
 			}
-			if (arg == "-propertyevents") {
+			if ("-propertyevents".equals(arg)) {
 				setGeneratePropertyEvents(true);
 				continue;
 			}
-			if (arg == "-nopropertyevents") {
+			if ("-nopropertyevents".equals(arg)) {
 				setGeneratePropertyEvents(false);
 				continue;
 			}
-			if (arg == "-transactions") {
+			if ("-transactions".equals(arg)) {
 				setGenerateTransactions(true);
 				continue;
 			}
-			if (arg == "-notransactions") {
+			if ("-notransactions".equals(arg)) {
 				setGenerateTransactions(false);
 				continue;
 			}
-			if (arg == "-attrprop") {
+			if ("-attrprop".equals(arg)) {
 				setAttributesAsProperties(true);
 				continue;
 			}
-			if (arg == "-noattrprop") {
+			if ("-noattrprop".equals(arg)) {
 				setAttributesAsProperties(false);
 				continue;
 			}
-			if (arg == "-delegator") {
+			if ("-delegator".equals(arg)) {
 				setGenerateDelegator(true);
 				continue;
 			}
-			if (arg == "-nodelegator") {
+			if ("-nodelegator".equals(arg)) {
 				setGenerateDelegator(false);
 				continue;
 			}
-			if (arg == "-delegatedir") {
+			if ("-delegatedir".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -2922,7 +2922,7 @@ public class S2bConfig {
 				setDelegateDir(new java.io.File(args[++argNum]));
 				continue;
 			}
-			if (arg == "-delegatepackage") {
+			if ("-delegatepackage".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -2930,7 +2930,7 @@ public class S2bConfig {
 				setDelegatePackage(args[++argNum]);
 				continue;
 			}
-			if (arg == "-commoninterfacename") {
+			if ("-commoninterfacename".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -2938,47 +2938,47 @@ public class S2bConfig {
 				setGenerateCommonInterface(args[++argNum]);
 				continue;
 			}
-			if (arg == "-defaultsaccessable") {
+			if ("-defaultsaccessable".equals(arg)) {
 				setDefaultsAccessable(true);
 				continue;
 			}
-			if (arg == "-nodefaultsaccessable") {
+			if ("-nodefaultsaccessable".equals(arg)) {
 				setDefaultsAccessable(false);
 				continue;
 			}
-			if (arg == "-useinterfaces") {
+			if ("-useinterfaces".equals(arg)) {
 				setUseInterfaces(true);
 				continue;
 			}
-			if (arg == "-nouseinterfaces") {
+			if ("-nouseinterfaces".equals(arg)) {
 				setUseInterfaces(false);
 				continue;
 			}
-			if (arg == "-geninterfaces") {
+			if ("-geninterfaces".equals(arg)) {
 				setGenerateInterfaces(true);
 				continue;
 			}
-			if (arg == "-nogeninterfaces") {
+			if ("-nogeninterfaces".equals(arg)) {
 				setGenerateInterfaces(false);
 				continue;
 			}
-			if (arg == "-keepelementpositions") {
+			if ("-keepelementpositions".equals(arg)) {
 				setKeepElementPositions(true);
 				continue;
 			}
-			if (arg == "-nokeepelementpositions") {
+			if ("-nokeepelementpositions".equals(arg)) {
 				setKeepElementPositions(false);
 				continue;
 			}
-			if (arg == "-removeunreferencednodes") {
+			if ("-removeunreferencednodes".equals(arg)) {
 				setRemoveUnreferencedNodes(true);
 				continue;
 			}
-			if (arg == "-noremoveunreferencednodes") {
+			if ("-noremoveunreferencednodes".equals(arg)) {
 				setRemoveUnreferencedNodes(false);
 				continue;
 			}
-			if (arg == "-indexedpropertytype") {
+			if ("-indexedpropertytype".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -2986,23 +2986,23 @@ public class S2bConfig {
 				setIndexedPropertyType(args[++argNum]);
 				continue;
 			}
-			if (arg == "-compile") {
+			if ("-compile".equals(arg)) {
 				setDoCompile(true);
 				continue;
 			}
-			if (arg == "-nocompile") {
+			if ("-nocompile".equals(arg)) {
 				setDoCompile(false);
 				continue;
 			}
-			if (arg == "-generateswitches") {
+			if ("-generateswitches".equals(arg)) {
 				setGenerateSwitches(true);
 				continue;
 			}
-			if (arg == "-nogenerateswitches") {
+			if ("-nogenerateswitches".equals(arg)) {
 				setGenerateSwitches(false);
 				continue;
 			}
-			if (arg == "-dumpbeantree") {
+			if ("-dumpbeantree".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -3010,7 +3010,7 @@ public class S2bConfig {
 				setDumpBeanTree(new java.io.File(args[++argNum]));
 				continue;
 			}
-			if (arg == "-gendotgraph") {
+			if ("-gendotgraph".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -3018,39 +3018,39 @@ public class S2bConfig {
 				setGenerateDotGraph(new java.io.File(args[++argNum]));
 				continue;
 			}
-			if (arg == "-comments") {
+			if ("-comments".equals(arg)) {
 				setProcessComments(true);
 				continue;
 			}
-			if (arg == "-nocomments") {
+			if ("-nocomments".equals(arg)) {
 				setProcessComments(false);
 				continue;
 			}
-			if (arg == "-doctype") {
+			if ("-doctype".equals(arg)) {
 				setProcessDocType(true);
 				continue;
 			}
-			if (arg == "-nodoctype") {
+			if ("-nodoctype".equals(arg)) {
 				setProcessDocType(false);
 				continue;
 			}
-			if (arg == "-checkuptodate") {
+			if ("-checkuptodate".equals(arg)) {
 				setCheckUpToDate(true);
 				continue;
 			}
-			if (arg == "-nocheckuptodate") {
+			if ("-nocheckuptodate".equals(arg)) {
 				setCheckUpToDate(false);
 				continue;
 			}
-			if (arg == "-haschanged") {
+			if ("-haschanged".equals(arg)) {
 				setGenerateHasChanged(true);
 				continue;
 			}
-			if (arg == "-nohaschanged") {
+			if ("-nohaschanged".equals(arg)) {
 				setGenerateHasChanged(false);
 				continue;
 			}
-			if (arg == "-writebeangraph") {
+			if ("-writebeangraph".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -3058,7 +3058,7 @@ public class S2bConfig {
 				setWriteBeanGraphFile(new java.io.File(args[++argNum]));
 				continue;
 			}
-			if (arg == "-readbeangraph") {
+			if ("-readbeangraph".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -3066,55 +3066,55 @@ public class S2bConfig {
 				addReadBeanGraphFiles(new java.io.File(args[++argNum]));
 				continue;
 			}
-			if (arg == "-min") {
+			if ("-min".equals(arg)) {
 				setMinFeatures(true);
 				continue;
 			}
-			if (arg == "-nomin") {
+			if ("-nomin".equals(arg)) {
 				setMinFeatures(false);
 				continue;
 			}
-			if (arg == "-forme") {
+			if ("-forme".equals(arg)) {
 				setForME(true);
 				continue;
 			}
-			if (arg == "-noforme") {
+			if ("-noforme".equals(arg)) {
 				setForME(false);
 				continue;
 			}
-			if (arg == "-java5") {
+			if ("-java5".equals(arg)) {
 				setJava5(true);
 				continue;
 			}
-			if (arg == "-nojava5") {
+			if ("-nojava5".equals(arg)) {
 				setJava5(false);
 				continue;
 			}
-			if (arg == "-tagsfile") {
+			if ("-tagsfile".equals(arg)) {
 				setGenerateTagsFile(true);
 				continue;
 			}
-			if (arg == "-notagsfile") {
+			if ("-notagsfile".equals(arg)) {
 				setGenerateTagsFile(false);
 				continue;
 			}
-			if (arg == "-generatetimestamp") {
+			if ("-generatetimestamp".equals(arg)) {
 				setGenerateTimeStamp(true);
 				continue;
 			}
-			if (arg == "-nogeneratetimestamp") {
+			if ("-nogeneratetimestamp".equals(arg)) {
 				setGenerateTimeStamp(false);
 				continue;
 			}
-			if (arg == "-quiet") {
+			if ("-quiet".equals(arg)) {
 				setQuiet(true);
 				continue;
 			}
-			if (arg == "-noquiet") {
+			if ("-noquiet".equals(arg)) {
 				setQuiet(false);
 				continue;
 			}
-			if (arg == "-writeconfig") {
+			if ("-writeconfig".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -3122,7 +3122,7 @@ public class S2bConfig {
 				setWriteConfig(new java.io.File(args[++argNum]));
 				continue;
 			}
-			if (arg == "-readconfig") {
+			if ("-readconfig".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -3130,47 +3130,47 @@ public class S2bConfig {
 				addReadConfig(new java.io.File(args[++argNum]));
 				continue;
 			}
-			if (arg == "-makedefaults") {
+			if ("-makedefaults".equals(arg)) {
 				setMakeDefaults(true);
 				continue;
 			}
-			if (arg == "-nomakedefaults") {
+			if ("-nomakedefaults".equals(arg)) {
 				setMakeDefaults(false);
 				continue;
 			}
-			if (arg == "-setdefaults") {
+			if ("-setdefaults".equals(arg)) {
 				setSetDefaults(true);
 				continue;
 			}
-			if (arg == "-nosetdefaults") {
+			if ("-nosetdefaults".equals(arg)) {
 				setSetDefaults(false);
 				continue;
 			}
-			if (arg == "-trimnonstrings") {
+			if ("-trimnonstrings".equals(arg)) {
 				setTrimNonStrings(true);
 				continue;
 			}
-			if (arg == "-notrimnonstrings") {
+			if ("-notrimnonstrings".equals(arg)) {
 				setTrimNonStrings(false);
 				continue;
 			}
-			if (arg == "-useruntime") {
+			if ("-useruntime".equals(arg)) {
 				setUseRuntime(true);
 				continue;
 			}
-			if (arg == "-nouseruntime") {
+			if ("-nouseruntime".equals(arg)) {
 				setUseRuntime(false);
 				continue;
 			}
-			if (arg == "-extendbasebean") {
+			if ("-extendbasebean".equals(arg)) {
 				setExtendBaseBean(true);
 				continue;
 			}
-			if (arg == "-noextendbasebean") {
+			if ("-noextendbasebean".equals(arg)) {
 				setExtendBaseBean(false);
 				continue;
 			}
-			if (arg == "-finder") {
+			if ("-finder".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -3178,7 +3178,7 @@ public class S2bConfig {
 				addFinder(args[++argNum]);
 				continue;
 			}
-			if (arg == "-target") {
+			if ("-target".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -3186,31 +3186,31 @@ public class S2bConfig {
 				setTarget(args[++argNum]);
 				continue;
 			}
-			if (arg == "-staxproducexmleventreader") {
+			if ("-staxproducexmleventreader".equals(arg)) {
 				setStaxProduceXMLEventReader(true);
 				continue;
 			}
-			if (arg == "-nostaxproducexmleventreader") {
+			if ("-nostaxproducexmleventreader".equals(arg)) {
 				setStaxProduceXMLEventReader(false);
 				continue;
 			}
-			if (arg == "-staxusexmleventreader") {
+			if ("-staxusexmleventreader".equals(arg)) {
 				setStaxUseXMLEventReader(true);
 				continue;
 			}
-			if (arg == "-nostaxusexmleventreader") {
+			if ("-nostaxusexmleventreader".equals(arg)) {
 				setStaxUseXMLEventReader(false);
 				continue;
 			}
-			if (arg == "-optionalscalars") {
+			if ("-optionalscalars".equals(arg)) {
 				setOptionalScalars(true);
 				continue;
 			}
-			if (arg == "-nooptionalscalars") {
+			if ("-nooptionalscalars".equals(arg)) {
 				setOptionalScalars(false);
 				continue;
 			}
-			if (arg == "-defaultelementtype") {
+			if ("-defaultelementtype".equals(arg)) {
 				if (argNum+1 >= size) {
 					missingArgument(args, arg);
 					continue;
@@ -3218,19 +3218,19 @@ public class S2bConfig {
 				setDefaultElementType(args[++argNum]);
 				continue;
 			}
-			if (arg == "-respectextension") {
+			if ("-respectextension".equals(arg)) {
 				setRespectExtension(true);
 				continue;
 			}
-			if (arg == "-norespectextension") {
+			if ("-norespectextension".equals(arg)) {
 				setRespectExtension(false);
 				continue;
 			}
-			if (arg == "-logsuspicious") {
+			if ("-logsuspicious".equals(arg)) {
 				setLogSuspicious(true);
 				continue;
 			}
-			if (arg == "-nologsuspicious") {
+			if ("-nologsuspicious".equals(arg)) {
 				setLogSuspicious(false);
 				continue;
 			}
