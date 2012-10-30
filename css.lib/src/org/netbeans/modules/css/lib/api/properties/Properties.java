@@ -43,35 +43,38 @@ package org.netbeans.modules.css.lib.api.properties;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.openide.filesystems.FileObject;
 
 /**
  * @author marekfukala
  */
 public class Properties {
-    
+
     private Properties() {
     }
-   
+
     /**
      * Gets all property names available for the given context.
+     *
      * @param context file context
-     * @return 
+     * @return
      */
     public static Collection<String> getPropertyNames(FileObject context) {
         return PropertyDefinitionProvider.Query.getPropertyNames(context);
     }
-    
+
     /**
-     * Get instance of {@link PropertyDefinition} for the given property name and given context.
-     * 
+     * Get instance of {@link PropertyDefinition} for the given property name
+     * and given context.
+     *
      * @param propertyName property name
      * @return instance of {@link PropertyDefinition} or null if not found.
      */
     public static PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
         return PropertyDefinitionProvider.Query.getPropertyDefinition(context, propertyName);
     }
-    
+
 //    /**
 //     * Get instance of {@link PropertyDefinition} for the given property name with no context.
 //     * 
@@ -81,18 +84,20 @@ public class Properties {
 //    public static PropertyDefinition getPropertyDefinition(String propertyName) {
 //        return PropertyDefinitionProvider.Query.getPropertyDefinition(null, propertyName);
 //    }
-    
     /**
-     * Get instance of {@link PropertyDefinition} for the given property name and given context
-     * 
-     * Basically does the same as {@link #getPropertyDefinition(java.lang.String) 
+     * Get instance of {@link PropertyDefinition} for the given property name
+     * and given context
+     *
+     * Basically does the same as {@link #getPropertyDefinition(java.lang.String)
      * but it tries to resolve the refered element name with the at-sign prefix first so
      * the property appearance may contain link to appearance, which in fact
-     * will be resolved as the @appearance property:
-     * 
+     * will be resolved as the
+     *
+     * @appearance property:
+     *
      * appearance=<appearance> |normal
      * @appearance=...
-     * 
+     *
      * @param context file context
      * @param propertyName property name
      * @return instance of {@link PropertyDefinition} or null if not found.
@@ -102,7 +107,7 @@ public class Properties {
         PropertyDefinition invisibleProperty = getPropertyDefinition(context, sb.toString());
         return preferInvisibleProperties && invisibleProperty != null ? invisibleProperty : getPropertyDefinition(context, propertyName);
     }
-    
+
 //    /**
 //     * Get instance of {@link PropertyDefinition} for the given property name with no context
 //     * 
@@ -115,9 +120,9 @@ public class Properties {
 //        PropertyDefinition invisibleProperty = getPropertyDefinition(null, sb.toString());
 //        return preferInvisibleProperties && invisibleProperty != null ? invisibleProperty : getPropertyDefinition(null, propertyName);
 //    }
-    
     /**
      * Gets all available {@link PropertyDefinition}s for the given context
+     *
      * @param context file context
      */
     public static Collection<PropertyDefinition> getPropertyDefinitions(FileObject context) {
@@ -126,30 +131,63 @@ public class Properties {
 
     public static Collection<PropertyDefinition> getPropertyDefinitions(FileObject context, boolean visibleOnly) {
         Collection<PropertyDefinition> all = new ArrayList<PropertyDefinition>();
-        for(String propName : getPropertyNames(context)) {
+        for (String propName : getPropertyNames(context)) {
             PropertyDefinition propertyDefinition = getPropertyDefinition(context, propName);
-            if(!visibleOnly || isVisibleProperty(propertyDefinition)) {
+            if (!visibleOnly || isVisibleProperty(propertyDefinition)) {
                 all.add(propertyDefinition);
             }
         }
         return all;
     }
-    
-    
- 
+
     public static boolean isVisibleProperty(PropertyDefinition propertyDefinition) {
         char c = propertyDefinition.getName().charAt(0);
         return c != '@';
     }
-    
+
     public static boolean isVendorSpecificProperty(PropertyDefinition propertyDefinition) {
         return isVendorSpecificPropertyName(propertyDefinition.getName());
     }
-    
+
     public static boolean isVendorSpecificPropertyName(String propertyName) {
         char c = propertyName.charAt(0);
         return c == '_' || c == '-';
     }
-    
+
+    /**
+     * Returns true if the given property have some visible sub-properties.
+     * 
+     * @since 1.19
+     * 
+     * @param context
+     * @param propertyDefinition
+     * @return 
+     */
+    public static boolean isAggregatedProperty(FileObject context, PropertyDefinition propertyDefinition) {
+        final GroupGrammarElement grammarElement = propertyDefinition.getGrammarElement(context);
+        final AtomicBoolean isAggregated = new AtomicBoolean(false);
+        grammarElement.accept(new GrammarElementVisitor() {
+            private boolean cancelled = false;
+            @Override
+            public void visit(GroupGrammarElement element) {
+                if(element == grammarElement) {
+                    //skip itself
+                    return ;
+                }
+                if(cancelled) {
+                    return ;
+                }
+                String elementName = element.getName();
+                if (elementName != null) {
+                    PropertyDefinition subDef = Properties.getPropertyDefinition(null, elementName);
+                    if (subDef != null && isVisibleProperty(subDef)) {
+                        isAggregated.set(true); //contains visible sub properties
+                        cancelled = true;
+                    }
+                }
+            }
+        });
+        return isAggregated.get();
+    }
     
 }

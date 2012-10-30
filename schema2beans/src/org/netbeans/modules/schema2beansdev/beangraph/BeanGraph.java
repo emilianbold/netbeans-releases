@@ -68,6 +68,7 @@ public class BeanGraph implements org.netbeans.modules.schema2beansdev.beangraph
 
 	private java.util.List _SchemaTypeMapping = new java.util.ArrayList();	// List<SchemaTypeMappingType>
 	private java.lang.String schemaLocation;
+	private static final java.util.logging.Logger _logger = java.util.logging.Logger.getLogger("org.netbeans.modules.schema2beansdev.beangraph.BeanGraph");
 
 	/**
 	 * Normal starting point constructor.
@@ -231,15 +232,9 @@ public class BeanGraph implements org.netbeans.modules.schema2beansdev.beangraph
 			out.write(schemaLocation);
 			out.write("'");	// NOI18N
 		}
+		writeNodeAttributes(out, nodeName, namespace, indent, namespaceMap);
 		out.write(">\n");
-		String nextIndent = indent + "	";
-		for (java.util.Iterator it = _SchemaTypeMapping.iterator(); 
-			it.hasNext(); ) {
-			org.netbeans.modules.schema2beansdev.beangraph.SchemaTypeMappingType element = (org.netbeans.modules.schema2beansdev.beangraph.SchemaTypeMappingType)it.next();
-			if (element != null) {
-				element.writeNode(out, "schema-type-mapping", null, nextIndent, namespaceMap);
-			}
-		}
+		writeNodeChildren(out, nodeName, namespace, indent, namespaceMap);
 		out.write(indent);
 		out.write("</");
 		if (namespace != null) {
@@ -248,6 +243,20 @@ public class BeanGraph implements org.netbeans.modules.schema2beansdev.beangraph
 		}
 		out.write(nodeName);
 		out.write(">\n");
+	}
+
+	protected void writeNodeAttributes(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
+	}
+
+	protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
+		String nextIndent = indent + "	";
+		for (java.util.Iterator it = _SchemaTypeMapping.iterator(); 
+			it.hasNext(); ) {
+			org.netbeans.modules.schema2beansdev.beangraph.SchemaTypeMappingType element = (org.netbeans.modules.schema2beansdev.beangraph.SchemaTypeMappingType)it.next();
+			if (element != null) {
+				element.writeNode(out, "schema-type-mapping", null, nextIndent, namespaceMap);
+			}
+		}
 	}
 
 	public static BeanGraph read(java.io.File f) throws javax.xml.parsers.ParserConfigurationException, org.xml.sax.SAXException, java.io.IOException {
@@ -301,6 +310,11 @@ public class BeanGraph implements org.netbeans.modules.schema2beansdev.beangraph
 		readNode(document.getDocumentElement());
 	}
 
+	protected static class ReadState {
+		int lastElementType;
+		int elementPosition;
+	}
+
 	public void readNode(org.w3c.dom.Node node) {
 		readNode(node, new java.util.HashMap());
 	}
@@ -325,10 +339,11 @@ public class BeanGraph implements org.netbeans.modules.schema2beansdev.beangraph
 				}
 			}
 			String xsiPrefix = "xsi";
-			for (java.util.Iterator it = namespacePrefixes.keySet().iterator(); 
+			for (java.util.Iterator it = namespacePrefixes.entrySet().iterator(); 
 				it.hasNext(); ) {
-				String prefix = (String) it.next();
-				String ns = (String) namespacePrefixes.get(prefix);
+				java.util.Map.Entry entry = (java.util.Map.Entry) it.next();
+				String prefix = (String) entry.getKey();
+				String ns = (String) entry.getValue();
 				if ("http://www.w3.org/2001/XMLSchema-instance".equals(ns)) {
 					xsiPrefix = prefix;
 					break;
@@ -339,24 +354,48 @@ public class BeanGraph implements org.netbeans.modules.schema2beansdev.beangraph
 				attrValue = attr.getValue();
 				schemaLocation = attrValue;
 			}
+			readNodeAttributes(node, namespacePrefixes, attrs);
 		}
+		readNodeChildren(node, namespacePrefixes);
+	}
+
+	protected void readNodeAttributes(org.w3c.dom.Node node, java.util.Map namespacePrefixes, org.w3c.dom.NamedNodeMap attrs) {
+		org.w3c.dom.Attr attr;
+		java.lang.String attrValue;
+	}
+
+	protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
 		org.w3c.dom.NodeList children = node.getChildNodes();
 		for (int i = 0, size = children.getLength(); i < size; ++i) {
 			org.w3c.dom.Node childNode = children.item(i);
+			if (!(childNode instanceof org.w3c.dom.Element)) {
+				continue;
+			}
 			String childNodeName = (childNode.getLocalName() == null ? childNode.getNodeName().intern() : childNode.getLocalName().intern());
 			String childNodeValue = "";
 			if (childNode.getFirstChild() != null) {
 				childNodeValue = childNode.getFirstChild().getNodeValue();
 			}
-			if (childNodeName == "schema-type-mapping") {
-				SchemaTypeMappingType aSchemaTypeMapping = newSchemaTypeMappingType();
-				aSchemaTypeMapping.readNode(childNode, namespacePrefixes);
-				_SchemaTypeMapping.add(aSchemaTypeMapping);
-			}
-			else {
-				// Found extra unrecognized childNode
+			boolean recognized = readNodeChild(childNode, childNodeName, childNodeValue, namespacePrefixes);
+			if (!recognized) {
+				if (childNode instanceof org.w3c.dom.Element) {
+					_logger.info("Found extra unrecognized childNode '"+childNodeName+"'");
+				}
 			}
 		}
+	}
+
+	protected boolean readNodeChild(org.w3c.dom.Node childNode, String childNodeName, String childNodeValue, java.util.Map namespacePrefixes) {
+		// assert childNodeName == childNodeName.intern()
+		if ("schema-type-mapping".equals(childNodeName)) {
+			SchemaTypeMappingType aSchemaTypeMapping = newSchemaTypeMappingType();
+			aSchemaTypeMapping.readNode(childNode, namespacePrefixes);
+			_SchemaTypeMapping.add(aSchemaTypeMapping);
+		}
+		else {
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -445,16 +484,16 @@ public class BeanGraph implements org.netbeans.modules.schema2beansdev.beangraph
 	public void changePropertyByName(String name, Object value) {
 		if (name == null) return;
 		name = name.intern();
-		if (name == "schemaTypeMapping")
+		if ("schemaTypeMapping".equals(name))
 			addSchemaTypeMapping((SchemaTypeMappingType)value);
-		else if (name == "schemaTypeMapping[]")
+		else if ("schemaTypeMapping[]".equals(name))
 			setSchemaTypeMapping((SchemaTypeMappingType[]) value);
 		else
 			throw new IllegalArgumentException(name+" is not a valid property name for BeanGraph");
 	}
 
 	public Object fetchPropertyByName(String name) {
-		if (name == "schemaTypeMapping[]")
+		if ("schemaTypeMapping[]".equals(name))
 			return getSchemaTypeMapping();
 		throw new IllegalArgumentException(name+" is not a valid property name for BeanGraph");
 	}

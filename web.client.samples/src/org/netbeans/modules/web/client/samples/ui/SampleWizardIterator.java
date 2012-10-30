@@ -43,17 +43,34 @@
 package org.netbeans.modules.web.client.samples.ui;
 
 import java.awt.Component;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardDescriptor.ProgressInstantiatingIterator;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -138,6 +155,7 @@ public class SampleWizardIterator implements ProgressInstantiatingIterator<Wizar
      */
     @Override
     public void initialize( WizardDescriptor descriptor ) {
+        myDescriptor = descriptor;
         myPanels = new Panel[1];
         myPanels[0]=new SamplePanel(descriptor);
         
@@ -169,8 +187,22 @@ public class SampleWizardIterator implements ProgressInstantiatingIterator<Wizar
      */
     @Override
     public Set<?> instantiate( ProgressHandle handle ) throws IOException {
-        // TODO Auto-generated method stub
-        return null;
+        FileObject targetFolder = Templates.getTargetFolder(myDescriptor);
+        
+        String targetName = Templates.getTargetName(myDescriptor);
+        FileUtil.toFile(targetFolder).mkdirs();
+        FileObject projectFolder = targetFolder.createFolder(targetName);
+        
+        FileObject template = Templates.getTemplate(myDescriptor);
+        unZipFile(template.getInputStream(), projectFolder);
+        ProjectManager.getDefault().clearNonProjectCache();
+        
+        Map<String,String> map = new HashMap<String, String>();
+        map.put("${project.name}", targetName);                             // NOI18N
+        replaceTokens(projectFolder, map , "nbproject/project.properties"); // NOI18N
+        
+        ProjectChooser.setProjectsFolder(FileUtil.toFile(targetFolder));
+        return Collections.singleton( projectFolder);
     }
     
     /* (non-Javadoc)
@@ -181,11 +213,79 @@ public class SampleWizardIterator implements ProgressInstantiatingIterator<Wizar
         myPanels = null;
     }
     
+    protected void replaceTokens(FileObject dir, Map<String,String> map,
+            String... files) throws IOException 
+    {
+        for(String file: files) {
+            replaceToken(dir.getFileObject(file), map); 
+        }     
+    }
+    
+    protected void replaceToken(FileObject fo, Map<String,String> map) 
+            throws IOException 
+    {
+        if(fo == null)
+            return;
+        FileLock lock = fo.lock();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
+            String line;
+            StringBuffer sb = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                for(Entry<String, String> entry : map.entrySet()){
+                    line = line.replace(entry.getKey(), entry.getValue());
+                }
+                sb.append(line);
+                sb.append("\n");
+            }
+            OutputStreamWriter writer = new OutputStreamWriter(
+                    fo.getOutputStream(lock), "UTF-8");         // NOI18N
+            try {
+                writer.write(sb.toString());
+            } 
+            finally {
+                writer.close();
+                reader.close();
+            }
+        } 
+        finally {
+            lock.releaseLock();
+        }        
+    }
+    
+    static void unZipFile(InputStream source, FileObject rootFolder) throws IOException {
+        try {
+            ZipInputStream str = new ZipInputStream(source);
+            ZipEntry entry;
+            while ((entry = str.getNextEntry()) != null) {
+                if (entry.isDirectory()) {
+                    FileUtil.createFolder(rootFolder, entry.getName());
+                    continue;
+                }
+                FileObject fo = FileUtil.createData(rootFolder, entry.getName());
+                FileLock lock = fo.lock();
+                try {
+                    OutputStream out = fo.getOutputStream(lock);
+                    try {
+                        FileUtil.copy(str, out);
+                    } finally {
+                        out.close();
+                    }
+                } finally {
+                    lock.releaseLock();
+                }
+            }
+        } finally {
+            source.close();
+        }
+    }
+    
     private String[] createSteps() {
         return new String[]{NbBundle.getMessage(SamplePanel.class, "LBL_NameNLocation")};// NOI18N
     }
 
     private transient WizardDescriptor.Panel[] myPanels;
     private transient int myIndex;
+    private transient WizardDescriptor myDescriptor;
 
 }

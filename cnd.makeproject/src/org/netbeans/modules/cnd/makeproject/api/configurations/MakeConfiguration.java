@@ -712,7 +712,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
         clone.setRequiredProjectsConfiguration(getRequiredProjectsConfiguration().clone());
         clone.setDebuggerChooserConfiguration(getDebuggerChooserConfiguration().clone());
         clone.setQmakeConfiguration(getQmakeConfiguration().clone());
-        clone.setCodeAssistanceConfiguration(getCodeAssistanceConfiguration());
+        clone.setCodeAssistanceConfiguration(getCodeAssistanceConfiguration().clone());
 
         dhconf.addPropertyChangeListener(csconf);
 

@@ -46,7 +46,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Element;
@@ -265,14 +265,14 @@ public class Utilities {
     }
 
     /**
-     * Returns {@code CssCslParserResult}s (including the embedded ones) that
+     * Returns {@code CssParserResult}s (including the embedded ones) that
      * correspond to the given {@code ResultIterator}.
      * 
      * @param resultIterator {@code ResultIterator} to process.
-     * @return {@code CssCslParserResult}s contained in the given {@code ResultIterator}.
+     * @return {@code CssParserResult}s contained in the given {@code ResultIterator}.
      * @throws ParseException when there is a parsing problem.
      */
-    public static List<CssCslParserResult> cssParserResults(ResultIterator resultIterator)
+    public static List<CssParserResult> cssParserResults(ResultIterator resultIterator)
             throws ParseException {
         List<ResultIterator> resultIterators = new ArrayList<ResultIterator>();
         resultIterators.add(resultIterator);
@@ -282,11 +282,11 @@ public class Utilities {
                 resultIterators.add(resultIterator.getResultIterator(embedding));
             }
         }
-        List<CssCslParserResult> parserResults = new ArrayList<CssCslParserResult>(resultIterators.size());
+        List<CssParserResult> parserResults = new ArrayList<CssParserResult>(resultIterators.size());
         for (ResultIterator iterator : resultIterators) {
             Parser.Result parserResult = iterator.getParserResult();
-            if (parserResult instanceof CssCslParserResult) {
-                parserResults.add((CssCslParserResult)parserResult);
+            if (parserResult instanceof CssParserResult) {
+                parserResults.add((CssParserResult)parserResult);
             }
         }
         return parserResults;

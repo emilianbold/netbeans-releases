@@ -78,7 +78,7 @@ public class Css3ParserTest2 extends CslTestBase {
     }
 
     private static List<ProblemDescription> getErrors(CssParserResult result) {
-        return result.getDiagnostics();
+        return result.getParserDiagnostics();
     }
 
     private void assertNoErrors(CssParserResult result) {

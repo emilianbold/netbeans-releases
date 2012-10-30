@@ -5577,4 +5577,43 @@ public class FormatterTestCase extends EditorBase {
               + "{\n"
               + "}\n");
     }
+    
+    public void test217975() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int v[] {1, 2, 3};\n"
+              + "\n");
+        reformat();
+        assertDocumentText("Incorrect uniform initialization",
+                "int v[]{1, 2, 3};\n"
+              + "\n");
+    }
+    
+    public void test217975_1() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeArrayInitLeftBrace, true);
+        setLoadDocumentText(
+                "int v[] {1, 2, 3};\n"
+              + "\n");
+        reformat();
+        assertDocumentText("Incorrect uniform initialization",
+                "int v[] {1, 2, 3};\n"
+              + "\n");
+    }
+    
+    public void test217975_2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int &&a;\n" 
+              + "int&& b;\n" 
+              + "int && c;\n"
+              + "\n");
+        reformat();
+        assertDocumentText("Incorrect rvalue reference",
+                "int &&a;\n" 
+              + "int&& b;\n" 
+              + "int && c;\n"
+              + "\n");
+    }
 }

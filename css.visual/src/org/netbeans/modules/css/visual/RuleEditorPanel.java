@@ -77,7 +77,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.model.api.Declaration;
@@ -213,8 +213,8 @@ public class RuleEditorPanel extends JPanel {
                                         public void run(ResultIterator resultIterator) throws Exception {
                                             resultIterator = WebUtils.getResultIterator(resultIterator, "text/css");
                                             if (resultIterator != null) {
-                                                CssCslParserResult result = (CssCslParserResult) resultIterator.getParserResult();
-                                                final Model model = result.getModel();
+                                                CssParserResult result = (CssParserResult) resultIterator.getParserResult();
+                                                final Model model = Model.getModel(result);
                                                 LOG.log(Level.INFO, "Model.CHANGES_APPLIED_TO_DOCUMENT event handler - setting new model {0}", model);
                                                 setModel(model);
                                             }

@@ -78,11 +78,10 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.BinaryElementOpen;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
+import org.netbeans.modules.java.source.usages.ClassIndexImplEvent;
+import org.netbeans.modules.java.source.usages.ClassIndexImplListener;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
-import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
-import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.java.source.usages.DocumentUtil;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -93,7 +92,7 @@ import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -108,11 +107,30 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.type.TypeProvider.class)
 public class JavaTypeProvider implements TypeProvider {
     private static final Logger LOGGER = Logger.getLogger(JavaTypeProvider.class.getName());
-    private Map<URI,CacheItem> rootCache;
-    private volatile boolean isCanceled = false;
-    private final TypeElementFinder.Customizer customizer;
-    private ClasspathInfo cpInfo;
     private static final Level LEVEL = Level.FINE;
+    private static final Collection<? extends JavaTypeDescription> ACTIVE = Collections.unmodifiableSet(new HashSet<JavaTypeDescription>());  //Don't replace with C.emptySet() has to be identity unique.
+
+    //@NotThreadSafe //Confinement within a thread
+    private Map<URI,CacheItem> rootCache;    
+    //@GuardedBy("dataCache")
+    private final Map<CacheItem,Collection<? extends JavaTypeDescription>> dataCache =
+            Collections.synchronizedMap(new HashMap<CacheItem, Collection<? extends JavaTypeDescription>>());
+    //@NotThreadSafe //Confinement within a thread
+    private String lastText;
+    //@NotThreadSafe //Confinement within a thread
+    private SearchType lastType;
+
+    private volatile boolean isCanceled = false;
+    private ClasspathInfo cpInfo;
+
+    private final TypeElementFinder.Customizer customizer;
+    private final CacheItem.DataCacheCallback callBack = new CacheItem.DataCacheCallback() {
+        @Override
+        public void handleDataCacheChange(CacheItem ci) {
+            assert ci != null;
+            dataCache.put(ci, null);
+        }
+    };
 
     @Override
     public String name() {
@@ -128,7 +146,9 @@ public class JavaTypeProvider implements TypeProvider {
     @Override
     public void cleanup() {
         isCanceled = false;
-//        cache = null;
+        lastText = null;
+        lastType = null;
+        dataCache.clear();
         setRootCache(null);
     }
 
@@ -151,6 +171,12 @@ public class JavaTypeProvider implements TypeProvider {
         isCanceled = false;
         String originalText = context.getText();
         SearchType searchType = context.getSearchType();
+
+        if (!originalText.equals(lastText) || !searchType.equals(lastType)) {
+            dataCache.clear();
+            lastText = originalText;
+            lastType = searchType;
+        }
 
         boolean hasBinaryOpen = Lookup.getDefault().lookup(BinaryElementOpen.class) != null;
         final ClassIndex.NameKind nameKind;
@@ -196,7 +222,7 @@ public class JavaTypeProvider implements TypeProvider {
                         return;
                     } else {
                         try {
-                            sources.put(rootUrl.toURI(), new CacheItem( rootUrl, ClassPath.SOURCE));
+                            sources.put(rootUrl.toURI(), new CacheItem( rootUrl, ClassPath.SOURCE, callBack));
                         } catch (URISyntaxException ex) {
                             LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", rootUrl);  //NOI18N
                         }
@@ -226,7 +252,10 @@ public class JavaTypeProvider implements TypeProvider {
                     }
                     else {
                         try {
-                            sources.put(rootUrl.toURI(), new CacheItem( rootUrl, ClassPath.BOOT));
+                            final URI rootURI = rootUrl.toURI();
+                            if (!sources.containsKey(rootURI)) {
+                                sources.put(rootURI, new CacheItem( rootUrl, ClassPath.BOOT, callBack));
+                            }
                         } catch (URISyntaxException ex) {
                             LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", rootUrl);  //NOI18N
                         }
@@ -246,7 +275,7 @@ public class JavaTypeProvider implements TypeProvider {
                     }
                     else {
                         try {
-                            sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.BOOT));
+                            sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.BOOT, callBack));
                         } catch (URISyntaxException ex) {
                             LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", entry.getURL());  //NOI18N
                         }
@@ -260,7 +289,7 @@ public class JavaTypeProvider implements TypeProvider {
                     }
                     else {
                         try {
-                            sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.COMPILE));
+                            sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.COMPILE, callBack));
                         } catch (URISyntaxException ex) {
                             LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", entry.getURL());  //NOI18N
                         }
@@ -274,7 +303,7 @@ public class JavaTypeProvider implements TypeProvider {
                     }
                     else {
                         try {
-                            sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.SOURCE));
+                            sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.SOURCE, callBack));
                         } catch (URISyntaxException ex) {
                             LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", entry.getURL());  //NOI18N
                         }
@@ -341,39 +370,71 @@ public class JavaTypeProvider implements TypeProvider {
                     }
                 }
             }
-        } else {            
-            try {
-                //Perform queries in single readAccess to suspend RU for all queries.
-                IndexManager.priorityAccess(new Action<Void>() {
-                    @Override
-                    public Void run() throws IOException, InterruptedException {
-                        for (final CacheItem ci : c.values()) {
-                            if (isCanceled) {
-                                return null;
-                            }
-                            try {
-                                final Set<JavaTypeDescription> ct = new HashSet<JavaTypeDescription>();
-                                ci.collectDeclaredTypes(packageName, textForQuery,nameKind, ct);
-                                if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
-                                    ci.collectDeclaredTypes(packageName, textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, ct);
+        } else {
+            final Collection<CacheItem> nonCached = new ArrayDeque<CacheItem>(c.size());
+            for (CacheItem ci : c.values()) {
+                Collection<? extends JavaTypeDescription> cacheLine = dataCache.get(ci);
+                if (cacheLine != null) {                    
+                    types.addAll(cacheLine);
+                } else {
+                    nonCached.add(ci);
+                }
+            }
+            if (!nonCached.isEmpty()) {
+                try {
+                    //Perform queries in single readAccess to suspend RU for all queries.
+                    IndexManager.priorityAccess(new Action<Void>() {
+                        @Override
+                        public Void run() throws IOException, InterruptedException {
+                            for (final CacheItem ci : nonCached) {
+                                if (isCanceled) {
+                                    return null;
                                 }
-                                types.addAll(ct);
-                            } catch (IOException ioe) {
-                                Exceptions.printStackTrace(ioe);
-                            } catch (InterruptedException ie) {
-                                //Never happens
-                                throw new AssertionError(ie);
+                                try {
+                                    final Set<JavaTypeDescription> ct = new HashSet<JavaTypeDescription>();
+                                    boolean exists = false;
+                                    //WB(dataCache[ci], ACTIVE)
+                                    dataCache.put(ci, ACTIVE);
+                                    try {
+                                        exists = ci.collectDeclaredTypes(packageName, textForQuery,nameKind, ct);
+                                        if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
+                                            exists &= ci.collectDeclaredTypes(packageName, textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, ct);
+                                        }
+                                        if (exists) {
+                                            types.addAll(ct);
+                                        }
+                                    } finally {
+                                        if (exists) {
+                                            //CAS(dataCache[ci], ACTIVE, ct)
+                                            synchronized (dataCache) {
+                                                if (dataCache.get(ci) == ACTIVE) {
+                                                    dataCache.put(
+                                                        ci,
+                                                        ct.isEmpty() ? Collections.<JavaTypeDescription>emptySet() : ct);
+                                                }
+                                            }
+                                        } else {
+                                            //WB(dataCache[ci], NULL)
+                                            dataCache.put(ci, null);
+                                        }
+                                    }
+                                } catch (IOException ioe) {
+                                    Exceptions.printStackTrace(ioe);
+                                } catch (InterruptedException ie) {
+                                    //Never happens
+                                    throw new AssertionError(ie);
+                                }
                             }
+                            return null;
                         }
-                        return null;
-                    }
-                });
-            } catch (IOException ex) {
-                //Never happens
-                throw new AssertionError(ex);
-            } catch (InterruptedException ex) {
-                //Never happens
-                throw new AssertionError(ex);
+                    });
+                } catch (IOException ex) {
+                    //Never happens
+                    throw new AssertionError(ex);
+                } catch (InterruptedException ex) {
+                    //Never happens
+                    throw new AssertionError(ex);
+                }
             }
             if ( isCanceled ) {
                 return;
@@ -406,12 +467,17 @@ public class JavaTypeProvider implements TypeProvider {
         if (LOGGER.isLoggable(LEVEL) && rootCache == null) {
             LOGGER.log(LEVEL, "Returning null cache entries.", new Exception());
         }
-        return rootCache;
+        return rootCache == null ? null : Collections.<URI, CacheItem>unmodifiableMap(rootCache);
     }
 
     private void setRootCache(@NullAllowed final Map<URI,CacheItem> cache) {
         if (LOGGER.isLoggable(LEVEL)) {
             LOGGER.log(LEVEL, "Setting cache entries from " + this.rootCache + " to " + cache + ".", new Exception());
+        }
+        if (this.rootCache != null) {
+            for (CacheItem ci : rootCache.values()) {
+                ci.dispose();
+            }
         }
         this.rootCache = cache;
     }
@@ -501,23 +567,29 @@ public class JavaTypeProvider implements TypeProvider {
     }
 
     //@NotTreadSafe
-    static final class CacheItem {
+    static final class CacheItem implements ClassIndexImplListener {
         
-        public final URL root;
-        public final URI rootURI;
-        public String projectName;
-        public Icon projectIcon;
+        private final URL root;
+        private final URI rootURI;
         private final boolean isBinary;
+        private final DataCacheCallback callBack;
+
+        private String projectName;
+        private Icon projectIcon;
         private ClasspathInfo cpInfo;
         private ClassIndexImpl index;
         private final String cpType;
         private FileObject cachedRoot;
 
-        public CacheItem (final URL root, final String cpType) throws URISyntaxException  {
+        public CacheItem (
+                @NullAllowed final URL root,
+                @NullAllowed final String cpType,
+                @NullAllowed final DataCacheCallback callBack) throws URISyntaxException  {
             this.cpType = cpType;
             this.isBinary = ClassPath.BOOT.equals(cpType) || ClassPath.COMPILE.equals(cpType);
             this.root = root;
             this.rootURI = root == null ? null : root.toURI();
+            this.callBack = callBack;
         }
 
         @Override
@@ -582,18 +654,18 @@ public class JavaTypeProvider implements TypeProvider {
             return cpInfo;
         }
 
-        @NonNull
-        public  void collectDeclaredTypes(
+        public  boolean collectDeclaredTypes(
             @NullAllowed final Pattern packageName,
             @NonNull final String typeName,
             @NonNull NameKind kind,
             @NonNull Collection<? super JavaTypeDescription> collector) throws IOException, InterruptedException {
             if (index == null) {                
                 index = ClassIndexManager.getDefault().getUsagesQuery(root, true);
-            }
-            if (index == null) {
-                return;
-            }
+                if (index == null) {
+                    return false;
+                }
+                index.addClassIndexImplListener(this);
+            }            
             final SearchScope baseSearchScope = isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE;
             SearchScopeType searchScope;
             if (packageName != null) {
@@ -613,6 +685,28 @@ public class JavaTypeProvider implements TypeProvider {
                 Collections.unmodifiableSet(Collections.<SearchScopeType>singleton(searchScope)),
                 new JavaTypeDescriptionConvertor(this),
                 collector);
+            return true;
+        }
+        
+        @Override
+        public void typesAdded(@NonNull final ClassIndexImplEvent event) {
+            if (callBack != null) {
+                callBack.handleDataCacheChange(this);
+            }
+        }
+
+        @Override
+        public void typesRemoved(@NonNull final ClassIndexImplEvent event) {
+            if (callBack != null) {
+                callBack.handleDataCacheChange(this);
+            }
+        }
+
+        @Override
+        public void typesChanged(@NonNull final ClassIndexImplEvent event) {
+            if (callBack != null) {
+                callBack.handleDataCacheChange(this);
+            }
         }
 
         private void initProjectInfo() {
@@ -635,6 +729,16 @@ public class JavaTypeProvider implements TypeProvider {
                 }
             }
             return result;
+        }
+
+        private void dispose() {
+            if (index != null) {
+                index.removeClassIndexImplListener(this);
+            }
+        }
+
+        static interface DataCacheCallback {
+            void handleDataCacheChange(@NonNull final CacheItem ci);
         }
 
         private static class JavaTypeDescriptionConvertor implements Convertor<Document, JavaTypeDescription> {

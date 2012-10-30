@@ -39,25 +39,23 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.search.actions;
+package org.netbeans.modules.css.lib.api;
 
-import java.util.Map;
-import javax.swing.Action;
-import org.netbeans.api.editor.EditorActionRegistration;
-import org.netbeans.modules.editor.search.SearchNbEditorKit;
+import java.util.List;
+import org.netbeans.modules.csl.api.Error;
 
-public class IncrementalSearchBackwardAction extends SearchAction {
-
-    static final long serialVersionUID = -1;
-
-    @EditorActionRegistration(name = SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD,
-    menuText = "#" + SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD + "_menu_text") // NOI18N
-    public static Action create(Map<String,?> attrs) {
-        return new IncrementalSearchBackwardAction(attrs);
-    }
-
-    public IncrementalSearchBackwardAction(Map<String, ?> attrs) {
-        super(attrs);
-    }
-
+/**
+ * Provides some additional diagnostics to the default lexer/parser errors.
+ * 
+ * To be registered in global lookup.
+ *
+ * @author marekfukala
+ */
+public interface ErrorsProvider {
+    
+    /**
+     * Gets a list of extra diagnostics.
+     */
+    public List<? extends Error> getExtendedDiagnostics(CssParserResult parserResult);
+    
 }

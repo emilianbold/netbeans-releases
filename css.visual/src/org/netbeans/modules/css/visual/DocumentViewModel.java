@@ -52,8 +52,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
@@ -160,8 +160,8 @@ public class DocumentViewModel implements ChangeListener {
                         public void run(ResultIterator resultIterator) throws Exception {
                             ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css"); //NOI18N
                             if (ri != null) {
-                                final CssCslParserResult result = (CssCslParserResult) ri.getParserResult();
-                                final Model model = result.getModel();
+                                final CssParserResult result = (CssParserResult) ri.getParserResult();
+                                final Model model = Model.getModel(result);
 
                                 final List<RuleHandle> rules = new ArrayList<RuleHandle>();
                                 final ModelVisitor visitor = new ModelVisitor.Adapter() {
