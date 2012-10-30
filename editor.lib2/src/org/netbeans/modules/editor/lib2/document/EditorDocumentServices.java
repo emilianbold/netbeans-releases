@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.lib2.document;
 
 import javax.swing.text.Document;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
@@ -67,4 +68,8 @@ public interface EditorDocumentServices {
      */
     void resetUndoMerge(@NonNull Document doc);
     
+    UndoableEdit startOnSaveTasks(@NonNull Document doc);
+    
+    void endOnSaveTasks(@NonNull Document doc, boolean success);
+
 }

@@ -137,7 +137,7 @@ public final class DiscoveryProjectGenerator {
                         if (logger != null) {
                             logger.log(Level.FINE, "#fix excluded->included header for file {0}", impl.getAbsolutePath()); // NOI18N
                         }
-                        if (!ConfigurationDescriptorProvider.VCS_WRITE) {
+                        if (true || !ConfigurationDescriptorProvider.VCS_WRITE) {
                             ProjectBridge.setExclude((Item) item, false);
                         }
                         ProjectBridge.setHeaderTool((Item) item);

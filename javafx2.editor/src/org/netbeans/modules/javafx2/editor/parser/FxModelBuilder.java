@@ -1024,7 +1024,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         // if the property has already received some bean instances, report 
         // invalid content
         PropertySetter ps = (PropertySetter)node;
-        if (ps.getValues() != null) {
+        if (!ps.getValues().isEmpty()) {
             addError(
                 "mixed-content-not-allowed", 
                 ERR_mixedContentNotAllowed()

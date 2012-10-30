@@ -83,16 +83,17 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
     private final boolean fromTestRoot;
     private final AtomicBoolean inImport;
     private Boolean usagesInComments;
+    private final AtomicBoolean isCancelled;
 
-    public FindUsagesVisitor(CompilationController workingCopy) {
-        this(workingCopy, false);
+    public FindUsagesVisitor(CompilationController workingCopy, AtomicBoolean isCancelled) {
+        this(workingCopy, isCancelled, false);
     }
     
-    public FindUsagesVisitor(CompilationController workingCopy, boolean findInComments) {
-        this(workingCopy, findInComments, RefactoringUtils.isFromTestRoot(workingCopy.getFileObject(), workingCopy.getClasspathInfo().getClassPath(PathKind.SOURCE)), new AtomicBoolean());
+    public FindUsagesVisitor(CompilationController workingCopy, AtomicBoolean isCancelled, boolean findInComments) {
+        this(workingCopy, isCancelled, findInComments, RefactoringUtils.isFromTestRoot(workingCopy.getFileObject(), workingCopy.getClasspathInfo().getClassPath(PathKind.SOURCE)), new AtomicBoolean());
     }
 
-    public FindUsagesVisitor(CompilationController workingCopy, boolean findInComments, boolean fromTestRoot, AtomicBoolean inImport) {
+    public FindUsagesVisitor(CompilationController workingCopy, AtomicBoolean isCancelled, boolean findInComments, boolean fromTestRoot, AtomicBoolean inImport) {
         try {
             setWorkingCopy(workingCopy);
         } catch (ToPhaseException ex) {
@@ -101,6 +102,7 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
         this.findInComments = findInComments;
         this.fromTestRoot = fromTestRoot;
         this.inImport = inImport;
+        this.isCancelled = isCancelled;
     }
 
     //<editor-fold defaultstate="collapsed" desc="Find in Comments">
@@ -111,6 +113,9 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
             TokenSequence<JavaTokenId> ts = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
 
             while (ts.moveNext()) {
+                if(isCancelled.get()) {
+                    return null;
+                }
                 Token t = ts.token();
 
                 if (t.id() == JavaTokenId.BLOCK_COMMENT || t.id() == JavaTokenId.LINE_COMMENT || t.id() == JavaTokenId.JAVADOC_COMMENT) {
@@ -134,6 +139,9 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
     //</editor-fold>
 
     private void addIfMatch(TreePath path, Tree tree, Element elementToFind) {
+        if(isCancelled.get()) {
+            return;
+        }
         if (workingCopy.getTreeUtilities().isSynthetic(path)) {
             if (ElementKind.CONSTRUCTOR != elementToFind.getKind()
                     || tree.getKind() != Tree.Kind.IDENTIFIER
@@ -291,18 +299,27 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
 
     @Override
     public Tree visitIdentifier(IdentifierTree node, Element p) {
+        if(isCancelled.get()) {
+            return null;
+        }
         addIfMatch(getCurrentPath(), node, p);
         return super.visitIdentifier(node, p);
     }
 
     @Override
     public Tree visitMemberSelect(MemberSelectTree node, Element p) {
+        if(isCancelled.get()) {
+            return null;
+        }
         addIfMatch(getCurrentPath(), node, p);
         return super.visitMemberSelect(node, p);
     }
 
     @Override
     public Tree visitNewClass(NewClassTree node, Element p) {
+        if(isCancelled.get()) {
+            return null;
+        }
         Trees trees = workingCopy.getTrees();
         ClassTree classTree = ((NewClassTree) node).getClassBody();
         if (classTree != null && p.getKind() == ElementKind.CONSTRUCTOR) {

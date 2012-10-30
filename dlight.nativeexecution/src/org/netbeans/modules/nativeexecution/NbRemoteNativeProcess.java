@@ -72,7 +72,14 @@ public final class NbRemoteNativeProcess extends NbNativeProcess {
         setErrorStream(streams.err);
         setInputStream(streams.out);
         setOutputStream(streams.in);
-        streams.in.flush();
+    }
+
+    public boolean isAlive() {
+        if (streams == null || streams.channel == null) {
+            return false;
+        }
+
+        return streams.channel.isConnected();
     }
 
     @Override
@@ -85,6 +92,8 @@ public final class NbRemoteNativeProcess extends NbNativeProcess {
             while (streams.channel.isConnected()) {
                 Thread.sleep(200);
             }
+            
+            finishing();
 
             return streams.channel.getExitStatus();
         } finally {

@@ -328,6 +328,13 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 219546 - using directive with leading :: not working
         performTest("bug219546.cpp", 19, 8, "bug219546.cpp", 8, 5);
     }
+
+    public void testBug220614() throws Exception {
+        // Bug 220614 - Wrong unable to resolve identifier indication - unnamed namespaces
+        performTest("bug220614.cpp", 15, 21, "bug220614.cpp", 9, 5);
+        performTest("bug220614.cpp", 16, 21, "bug220614.cpp", 3, 5);
+        performTest("bug220614.cpp", 22, 34, "bug220614.cpp", 13, 5);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

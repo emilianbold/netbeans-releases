@@ -89,9 +89,9 @@ public class JSObjectsTest extends GeneralJavaScript {
 
     public void createApplication() {
         startTest();
-        this.name_iterator++;
-        createPhpApplication(TEST_BASE_NAME +"jso_"+ name_iterator);
-        EditorOperator eo = createWebFile("jsocc", TEST_BASE_NAME +"jso_"+ name_iterator, "JavaScript File");
+        JSObjectsTest.NAME_ITERATOR++;
+        createPhpApplication(TEST_BASE_NAME +"jso_"+ NAME_ITERATOR);
+        EditorOperator eo = createWebFile("jsocc", TEST_BASE_NAME +"jso_"+ NAME_ITERATOR, "JavaScript File");
         JSObjectsTest.currentFile = "jsocc.js";
         try {
             waitScanFinished();

@@ -226,7 +226,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         try {
             int exitcode = process.waitFor();
-
+            finishing();
             /*
              * Bug 179555 - Qt application fails to run in case of default qt sdk installation
              */
