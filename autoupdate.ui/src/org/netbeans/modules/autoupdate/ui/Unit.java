@@ -48,12 +48,12 @@ import java.awt.Image;
 import java.text.Collator;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -424,27 +424,35 @@ public abstract class Unit {
         
     }
 
-    public static class InternalUpdate extends Unit.Update  {
+    public static class CompoundUpdate extends Unit.Update  {
         
-        private List <UpdateUnit> internalUpdates;        
+        private TreeSet<UpdateUnit> internalUpdates;
 
-        public InternalUpdate(UpdateUnit updateUnit, String categoryName, boolean isNbms) {
+        public CompoundUpdate(UpdateUnit updateUnit, String categoryName) {
             super(updateUnit, false, categoryName);
         }
 
-        public List <UpdateUnit> getUpdateUnits() {
-            if(internalUpdates == null) {
-                internalUpdates = new ArrayList <UpdateUnit>();
+        public TreeSet<UpdateUnit> getUpdateUnits() {
+            if (internalUpdates == null) {
+                internalUpdates = new TreeSet<UpdateUnit>(new Comparator<UpdateUnit>() {
+                    @Override
+                    public int compare(UpdateUnit uu1, UpdateUnit uu2) {
+                        UpdateElement ue1 = uu1.getInstalled() != null ? uu1.getInstalled() : uu1.getAvailableUpdates().get(0);
+                        UpdateElement ue2 = uu2.getInstalled() != null ? uu2.getInstalled() : uu2.getAvailableUpdates().get(0);
+                        return ue1.getDisplayName().compareTo(ue2.getDisplayName());
+                    }
+                });
             }
             return internalUpdates;
         }
+        
         public UpdateUnit getVisibleUnit() {
             return updateUnit;
         }
         
         @Override
         public UpdateElement getRelevantElement() {
-            return updateUnit.getInstalled();
+            return updateUnit.getAvailableUpdates().isEmpty() ? updateUnit.getInstalled() : updateUnit.getAvailableUpdates().get(0);
         }
 
         @Override
@@ -460,7 +468,11 @@ public abstract class Unit {
 
         @Override
         public String getAvailableVersion () {
-            return getInstalledVersion() + " " + getBundle("Unit_InternalUpdates_Version");
+            if (updateUnit.getAvailableUpdates().isEmpty()) {
+                return getInstalledVersion() + " " + getBundle("Unit_InternalUpdates_Version");
+            } else {
+                return super.getAvailableVersion();
+            }
         }
         @Override
         public void setMarked(boolean marked) {
@@ -507,7 +519,7 @@ public abstract class Unit {
         private boolean isNbms;
         protected int size = -1;
         
-        public Update (UpdateUnit unit, boolean isNbms,String categoryName) {
+        public Update (UpdateUnit unit, boolean isNbms, String categoryName) {
             super (categoryName);
             this.isNbms = isNbms;
             this.updateUnit = unit;
@@ -581,7 +593,7 @@ public abstract class Unit {
         }
         
         public String getAvailableVersion () {
-            return updateEl.getSpecificationVersion ();
+            return getRelevantElement().getSpecificationVersion ();
         }
         
         public String getSize () {

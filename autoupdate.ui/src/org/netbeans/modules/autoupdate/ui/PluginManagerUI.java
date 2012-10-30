@@ -241,8 +241,8 @@ public class PluginManagerUI extends javax.swing.JPanel  {
 
     private void initialize () {
         try {
-            final List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
-            //List<UnitCategory> precompute1 = Utilities.makeUpdateCategories (uu, false);
+            final List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes());
+//            List<UnitCategory> precompute1 = Utilities.makeUpdateCategories (uu, false);
             if (localTable != null) {
                 final List<UpdateUnit> nbms = new ArrayList<UpdateUnit>(((LocallyDownloadedTableModel) localTable.getModel()).getLocalDownloadSupport().getUpdateUnits());
                 List<UnitCategory> precompute2 = Utilities.makeUpdateCategories (nbms, true);
@@ -596,13 +596,15 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             UnitCategoryTableModel availableTableModel = ((UnitCategoryTableModel)availableTable.getModel());
             LocallyDownloadedTableModel localTableModel = ((LocallyDownloadedTableModel)localTable.getModel());
             
-            updateTableModel.setUnits(units);
+            updateTableModel.setUnits(UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE));
+            
             List<UpdateUnit> features = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE);
             if (isDetailView() && !features.isEmpty()) {
                 installTableModel.setUnits(units);
             } else {
                 installTableModel.setUnits(units, features);
             }
+            
             availableTableModel.setUnits(units);
             localTableModel.setUnits(units);
         }
@@ -673,7 +675,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     
     //TODO: all the request for refresh should be cancelled if there is already one such running refresh task
     public void updateUnitsChanged () {
-        refreshUnitsInBackground(UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE));
+        refreshUnitsInBackground(UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes()));
         if (! SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
 

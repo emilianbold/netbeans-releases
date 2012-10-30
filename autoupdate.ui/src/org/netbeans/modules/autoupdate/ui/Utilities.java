@@ -56,7 +56,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import org.netbeans.api.autoupdate.*;
-import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.ui.actions.Installer;
@@ -191,14 +190,14 @@ public class Utilities {
                 return new ArrayList <UnitCategory>();
             }
         }
-        List<UnitCategory> res = new ArrayList<UnitCategory> ();
-        if(units.isEmpty()) {
-            return res;
+        Map<String, UnitCategory> categories = new HashMap<String, UnitCategory>();
+        if (units.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        List<String> names = new ArrayList<String> ();
-
         Set<UpdateUnit> invisibleUnits = new HashSet <UpdateUnit> ();
+        
+        Map<UpdateUnit, Unit.CompoundUpdate> uu2compoundUnit = new HashMap<UpdateUnit, Unit.CompoundUpdate>();
 
         for (UpdateUnit u : units) {
             UpdateElement el = u.getInstalled ();
@@ -207,16 +206,19 @@ public class Utilities {
                 if (updates.isEmpty()) {
                     continue;
                 }
-                if (UpdateManager.TYPE.KIT_MODULE.equals(u.getType())) {
+                if (UpdateManager.TYPE.KIT_MODULE.equals(u.getType()) || isNbms) {
                     String catName = el.getCategory();
-                    if (names.contains (catName)) {
-                        UnitCategory cat = res.get (names.indexOf (catName));
-                        cat.addUnit (new Unit.Update (u, isNbms, catName));
+                    if (!categories.containsKey(catName)) {
+                        categories.put(catName, new UnitCategory(catName));
+                    }
+                    UnitCategory cat = categories.get(catName);
+                    if (isNbms) {
+                        cat.addUnit(new Unit.Update(u, isNbms, catName));
                     } else {
-                        UnitCategory cat = new UnitCategory (catName);
-                        cat.addUnit (new Unit.Update (u, isNbms, catName));
-                        res.add (cat);
-                        names.add (catName);
+                        Unit.CompoundUpdate compUnit = new Unit.CompoundUpdate(u, catName);
+                        cat.addUnit(compUnit);
+                        logger.finest("Kit " + u + " makes compound unit " + compUnit);
+                        uu2compoundUnit.put(u, compUnit);
                     }
                 } else {
                     invisibleUnits.add(u);
@@ -225,7 +227,6 @@ public class Utilities {
         }
 
         if (invisibleUnits.size() > 0 && !isNbms) {
-            Map<UpdateUnit, Unit.InternalUpdate> uu2internal = new HashMap<UpdateUnit, Unit.InternalUpdate>();
             for (UpdateUnit invisibleUnit : invisibleUnits) {
                 UpdateUnit visUnit = invisibleUnit.getVisibleAncestor();
                 assert visUnit != null : invisibleUnit + " has a visible ancestor";
@@ -236,39 +237,33 @@ public class Utilities {
                 }
                 UpdateElement visElement = visUnit.getInstalled();
                 logger.finer(invisibleUnit + " -> " + visUnit);
-
+                
                 // belongs to one of already visible unit
-                String catName = visElement.getCategory();
-                if (names.contains(catName)) {
-                    logger.finer(invisibleUnit + " belongs to " + catName);
-                    if (! uu2internal.containsKey(visUnit)) {
-                        Unit.InternalUpdate internalUnit = new Unit.InternalUpdate(visUnit, catName, false);
-                        uu2internal.put(visUnit, internalUnit);
-                    }
-                    uu2internal.get(visUnit).getUpdateUnits().add(invisibleUnit);
-                    
-                // belongs to category which is not listed yet
+                if (uu2compoundUnit.containsKey(visUnit)) {
+                    logger.finest(invisibleUnit + " belongs to " + visUnit);
+                // belongs to visible unit which is not listed yet
                 } else {
-                    logger.finer(invisibleUnit + " makes new unit " + catName);
-                    if (! uu2internal.containsKey(visUnit)) {
-                        Unit.InternalUpdate internalUnit = new Unit.InternalUpdate(visUnit, catName, false);
-                        uu2internal.put(visUnit, internalUnit);
-                        UnitCategory cat = new UnitCategory(catName);
-                        res.add(cat);
-                        names.add(catName);
-                        cat.addUnit(internalUnit);
+                    String catName = visElement.getCategory();
+                    if (!categories.containsKey(catName)) {
+                        categories.put(catName, new UnitCategory(catName));
                     }
-                    uu2internal.get(visUnit).getUpdateUnits().add(invisibleUnit);
+                    UnitCategory cat = categories.get(catName);
+                    Unit.CompoundUpdate compUnit = new Unit.CompoundUpdate(visUnit, catName);
+                    cat.addUnit(compUnit);
+                    logger.finest(visUnit + " makes new compound unit " + compUnit);
+                    uu2compoundUnit.put(visUnit, compUnit);
                 }
-                for (Unit.InternalUpdate iu : uu2internal.values()) {
-                    iu.initState();
+                uu2compoundUnit.get(visUnit).getUpdateUnits().add(invisibleUnit);
+                
+                for (Unit.CompoundUpdate compoundUnit : uu2compoundUnit.values()) {
+                    compoundUnit.initState();
                 }
             }
         }
 
-        logger.log(Level.FINE, "makeUpdateCategories (" + units.size () + ") returns " + res.size () + ", took " + (System.currentTimeMillis()-start) + " ms");
+        logger.log(Level.FINE, "makeUpdateCategories (" + units.size () + ") returns " + categories.size () + ", took " + (System.currentTimeMillis()-start) + " ms");
 
-        return res;
+        return new ArrayList<UnitCategory>(categories.values());
     };
 
     public static long getTimeOfInitialization () {
