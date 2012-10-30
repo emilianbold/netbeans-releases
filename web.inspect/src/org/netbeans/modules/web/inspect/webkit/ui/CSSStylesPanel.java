@@ -57,7 +57,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Expression;
 import org.netbeans.modules.css.model.api.Model;
@@ -405,8 +405,8 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
             final boolean[] found = new boolean[1];
-            for (final CssCslParserResult result : Utilities.cssParserResults(resultIterator)) {
-                final Model sourceModel = result.getModel();
+            for (final CssParserResult result : Utilities.cssParserResults(resultIterator)) {
+                final Model sourceModel = Model.getModel(result);
                 sourceModel.runReadTask(new Model.ModelTask() {
                     @Override
                     public void run(StyleSheet styleSheet) {

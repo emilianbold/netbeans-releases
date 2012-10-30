@@ -48,6 +48,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.css.visual.api.CssStylesTC;
 import org.openide.filesystems.FileObject;
@@ -65,6 +67,7 @@ import org.openide.windows.WindowManager;
 public class CssStylesTCController implements PropertyChangeListener {
 
     private static final RequestProcessor RP = new RequestProcessor(CssStylesTCController.class);
+    private static final Logger LOG = RuleEditorPanel.LOG;
     
     /**
      * Which mimetypes should cause the CssStyles window to be activated.
@@ -105,6 +108,8 @@ public class CssStylesTCController implements PropertyChangeListener {
 
             final TopComponent activated = (TopComponent) evt.getNewValue();
 
+            LOG.log(Level.FINE, "Component {0} activated", activated);
+            
             if (!WindowManager.getDefault().isOpenedEditorTopComponent(activated)) {
                 return; //not editor TC, ignore
             }
@@ -127,6 +132,7 @@ public class CssStylesTCController implements PropertyChangeListener {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
+                            
                             if (supported) {
                                 //editor with supported file has been opened
                                 openCssStyles(activated, file);

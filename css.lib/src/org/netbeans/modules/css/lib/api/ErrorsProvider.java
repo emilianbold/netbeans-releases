@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.api;
+package org.netbeans.modules.css.lib.api;
 
-import javax.swing.text.BadLocationException;
+import java.util.List;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
-import org.netbeans.modules.css.lib.TestUtil;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
+ * Provides some additional diagnostics to the default lexer/parser errors.
+ * 
+ * To be registered in global lookup.
  *
  * @author marekfukala
  */
-public class CssCslParserResultTest extends CssModuleTestBase {
-
-    public CssCslParserResultTest(String name) {
-        super(name);
-    }
-
-    public void testDuplicatedErrors() throws BadLocationException, ParseException {
-        CssParserResult result = TestUtil.parse(
-                "head{\n"
-                + "    background-image: uri();\n"
-                + "}");
-//        TestUtil.dumpResult(result);
-
-        assertNotNull(result);
-
-        CssCslParserResult cslresult = new CssCslParserResult(result);
-
-        for (Error e : cslresult.getDiagnostics()) {
-            System.out.println(e);
-        }
-
-    }
-
-
+public interface ErrorsProvider {
+    
+    /**
+     * Gets a list of extra diagnostics.
+     */
+    public List<? extends Error> getExtendedDiagnostics(CssParserResult parserResult);
+    
 }

@@ -63,6 +63,9 @@ import org.openide.util.actions.NodeAction;
  *
  * @author mfukala@netbeans.org.
  */
+@NbBundle.Messages({
+    "OpenLocationAction.displayName=Go to Source"
+})
 public class OpenLocationAction extends NodeAction {
 
     @Override
@@ -123,15 +126,15 @@ public class OpenLocationAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length == 0) {
-            return false;
-        }
-        for (int i = 0; i < activatedNodes.length; i++) {
-            Location resource = activatedNodes[i].getLookup().lookup(Location.class);
-            if ((resource != null) && (resource.getFile() == null)) {
-                return false;
-            }
-        }
+//        if (activatedNodes.length == 0) {
+//            return false;
+//        }
+//        for (int i = 0; i < activatedNodes.length; i++) {
+//            Location resource = activatedNodes[i].getLookup().lookup(Location.class);
+//            if ((resource != null) && (resource.getFile() == null)) {
+//                return false;
+//            }
+//        }
         return true;
     }
 
@@ -142,7 +145,7 @@ public class OpenLocationAction extends NodeAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(OpenLocationAction.class, "OpenResourceAction.displayName"); // NOI18N
+        return Bundle.OpenLocationAction_displayName();
     }
 
     @Override

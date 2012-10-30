@@ -1,11 +1,9 @@
 {
 
-    /* manifest */
     "_pluginName": {
         "message": "NetBeans IDE Support Plugin"
     },
 
-    /* general */
     "_OK": {
         "message": "OK"
     },
@@ -19,7 +17,6 @@
         "message": "Remove"
     },
 
-    /* select mode */
     "_StartSelectMode": {
         "message": "Start Inspect in NetBeans Mode (Ctrl+Shift+S)"
     },
@@ -27,7 +24,6 @@
         "message": "Stop Inspect in NetBeans Mode (Ctrl+Shift+S)"
     },
 
-    /* presets */
     "_Desktop": {
         "message": "Desktop"
     },
@@ -51,7 +47,6 @@
     },
 
 
-    /* options */
     "_CloseWithoutSaving": {
         "message": "Close without Saving"
     },
@@ -107,7 +102,7 @@
         "message": "New..."
     },
 
-    /* popup */
+
     "_ActualWindowSize": {
         "message": "Actual Window Size"
     },
@@ -152,7 +147,7 @@
         }
     },
 
-    /* warning: debugger detached */
+
     "_BrokenNetBeansIntegration": {
         "message": "Broken NetBeans Integration Detected"
     },

@@ -61,7 +61,6 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.editor.HtmlTags;
 import org.netbeans.modules.css.editor.URLRetriever;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.*;
 import org.netbeans.modules.css.indexing.api.CssIndex;
@@ -96,7 +95,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
         final List<CompletionProposal> completionProposals = new ArrayList<CompletionProposal>();
 
-        CssCslParserResult info = (CssCslParserResult) context.getParserResult();
+        CssParserResult info = (CssParserResult) context.getParserResult();
         Snapshot snapshot = info.getSnapshot();
         FileObject file = snapshot.getSource().getFileObject();
 

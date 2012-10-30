@@ -47,10 +47,10 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 
 /**
  *
@@ -60,13 +60,13 @@ public class CssStructureScanner implements StructureScanner {
 
     @Override
     public List<? extends StructureItem> scan(final ParserResult info) {
-        FeatureContext context = new FeatureContext((CssCslParserResult) info);
+        FeatureContext context = new FeatureContext((CssParserResult) info);
         return CssModuleSupport.getStructureItems(context, new FeatureCancel());
     }
 
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
-        FeatureContext context = new FeatureContext((CssCslParserResult)info);
+        FeatureContext context = new FeatureContext((CssParserResult)info);
         return CssModuleSupport.getFolds(context, new FeatureCancel());
     }
 
