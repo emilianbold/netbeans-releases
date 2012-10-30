@@ -1388,7 +1388,9 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
 
         @Override
         public void stop(final ProgressEvent event) {
-            handle.finish();
+            if (handle != null) {
+                handle.finish();
+            }
         }
 
         private String getMessage(ProgressEvent event) {

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<?xml version="1.0"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -21,7 +20,7 @@ License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
 nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -30,7 +29,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -44,23 +43,14 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<filesystem>
-	<folder name="Templates">
-        <folder name="Project">
-            <folder name="Samples">
-                <folder name="HTML5">
-                	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.samples.Bundle"/>
-                	<attr name="position" intvalue="210"/>
-                	 <file name="EaselDemo" url="Easel.zip">
-                        <attr name="position" intvalue="100"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/clientproject/ui/resources/projecticon.png"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.samples.ui.Bundle"/>
-                        <attr name="instantiatingIterator"  newvalue="org.netbeans.modules.web.client.samples.ui.SampleWizardIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/client/samples/Easel.html"/>
-                        <attr name="template" boolvalue="true"/>
-                    </file>
-                 </folder>
-			</folder>
-        </folder>
-    </folder>
-</filesystem>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+
+<!--
+    IMPORTANT:  To handle Apple-specific keybindings, some of the keybindings
+    added here are modified in NetBeans-keybindings-mac.xml.
+-->
+
+<bindings>
+    <bind actionName="shared-action1" key="CS-D"/>
+    <bind actionName="remove-surrounding-code" key="O-BACK_SPACE"/>
+</bindings>

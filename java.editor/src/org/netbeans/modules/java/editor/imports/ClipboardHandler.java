@@ -40,6 +40,7 @@ package org.netbeans.modules.java.editor.imports;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -393,8 +394,13 @@ public class ClipboardHandler {
                                     javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
 
                                     if (s >= start && e >= start && e <= end && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
-                                        simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
-                                        spans.add(new int[] {s - start, e - start});
+                                        TreePath parentPath = getCurrentPath().getParentPath();
+                                        if (parentPath == null || parentPath.getLeaf().getKind() != Tree.Kind.NEW_CLASS
+                                                || ((NewClassTree)parentPath.getLeaf()).getEnclosingExpression() == null
+                                                || ((NewClassTree)parentPath.getLeaf()).getIdentifier() != node) {
+                                            simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
+                                            spans.add(new int[] {s - start, e - start});
+                                        }
                                     }
                                     return super.visitIdentifier(node, p);
                                 }

@@ -49,11 +49,10 @@ import org.netbeans.modules.css.lib.ExtCss3Lexer;
 import org.netbeans.modules.css.lib.ExtCss3Parser;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import javax.swing.event.ChangeListener;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.lib.AbstractParseTreeNode;
 import org.netbeans.modules.css.lib.NbParseTreeBuilder;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
@@ -71,10 +70,12 @@ import org.openide.filesystems.FileObject;
 public class CssParser extends Parser {
     
     private static final Logger LOG = Logger.getLogger(CssParser.class.getSimpleName());
-
-    
     private CssParserResult result;
 
+    public CssParser() {
+        LOG.log(Level.INFO, "Created instance {0}", toString());
+    }
+    
     public static CssParserResult parse(Snapshot snapshot) throws ParseException {
         if(snapshot == null) {
             return null;
@@ -113,7 +114,7 @@ public class CssParser extends Parser {
     }
 
     @Override
-    public Result getResult(Task task) throws ParseException {
+    public ParserResult getResult(Task task) throws ParseException {
         return result;
     }
 

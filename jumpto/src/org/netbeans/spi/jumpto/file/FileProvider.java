@@ -267,10 +267,16 @@ public interface FileProvider {
         }
 
         //<editor-fold defaultstate="collapsed" desc="Private methods">
-        private Result(final List<? super FileDescriptor> result, final String[] message, final Context ctx) {
+        private Result(
+                @NonNull final List<? super FileDescriptor> result,
+                @NonNull final String[] message,
+                @NonNull final Context ctx) {
             Parameters.notNull("result", result);   //NOI18N
             Parameters.notNull("message", message); //NOI18N
             Parameters.notNull("ctx", ctx);
+            if (message.length != 1) {
+                throw new IllegalArgumentException("message.length != 1");  //NOI18N
+            }
             this.result = result;
             this.message = message;
             this.ctx = ctx;

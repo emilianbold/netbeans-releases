@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +53,7 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.test.TestBase;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -86,6 +86,7 @@ public class CssBracketCompleterTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         setupEditor();
+        CssParserResult.IN_UNIT_TESTS = true;
     }
 
     @Override
@@ -236,9 +237,9 @@ public class CssBracketCompleterTest extends TestBase {
 
         Result result = _result[0];
         assertNotNull(result);
-        assertTrue(result instanceof CssCslParserResult);
+        assertTrue(result instanceof CssParserResult);
 
-        CssCslParserResult cssResult = (CssCslParserResult)result;
+        CssParserResult cssResult = (CssParserResult)result;
         NodeUtil.dumpTree(cssResult.getParseTree());
         
         assertNotNull(cssResult.getParseTree());

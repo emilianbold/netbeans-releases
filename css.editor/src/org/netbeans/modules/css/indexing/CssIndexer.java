@@ -53,8 +53,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -109,8 +109,8 @@ public class CssIndexer extends EmbeddingIndexer {
                 LOGGER.log(Level.FINE, "indexing {0}", fo.getPath()); //NOI18N
             }
 
-            CssCslParserResult wrapper = (CssCslParserResult) parserResult;
-            CssFileModel model = CssFileModel.create(wrapper.getWrappedCssParserResult());
+            CssParserResult result = (CssParserResult) parserResult;
+            CssFileModel model = CssFileModel.create(result);
             IndexingSupport support = IndexingSupport.getInstance(context);
             IndexDocument document = support.createDocument(indexable);
 

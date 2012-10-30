@@ -51,13 +51,13 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
-import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.CssStylesTC;
+import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.*;
 import org.openide.cookies.EditorCookie;
@@ -70,7 +70,7 @@ import org.openide.windows.WindowManager;
  *
  * @author mfukala@netbeans.org
  */
-public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParserResult> {
+public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserResult> {
 
     private static final Logger LOG = RuleEditorPanel.LOG;
     private static final String CSS_MIMETYPE = "text/css"; //NOI18N
@@ -96,7 +96,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
     }
 
     @Override
-    public void run(final CssCslParserResult result, SchedulerEvent event) {
+    public void run(final CssParserResult result, SchedulerEvent event) {
         final FileObject file = result.getSnapshot().getSource().getFileObject();
         final String mimeType = file.getMIMEType();
 
@@ -117,7 +117,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
             }
         }
 
-        final Model model = result.getModel(); //do this outside EDT
+        final Model model = Model.getModel(result); //do this outside EDT
         
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -127,7 +127,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         });
     }
 
-    private void runInEDT(final CssCslParserResult result, Model model, final FileObject file, String mimeType, int caretOffset) {
+    private void runInEDT(final CssParserResult result, Model model, final FileObject file, String mimeType, int caretOffset) {
         LOG.log(Level.FINER, "runInEDT(), file: {0}, caret: {1}", new Object[]{file, caretOffset});
 
         if (cancelled) {
@@ -187,7 +187,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         //update the RuleEditor TC name
         RuleEditorController controller = cssStylesTC.getRuleEditorController();
         LOG.log(Level.FINER, "SourceTask: calling controller.setModel({0})", model);
-        controller.setModel(result.getModel());
+        controller.setModel(Model.getModel(result));
         
         if (rule == null) {
             controller.setNoRuleState();

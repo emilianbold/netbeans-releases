@@ -155,7 +155,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
 
         editorPane.setEditorKit(kit);
 
-        ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD, editorPane), editorPane);
+        ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.SEARCH_ACTION, editorPane), editorPane);
         ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.REPLACE_ACTION, editorPane), editorPane);
         ActionInvoker.putActionToComponent(new ActionInvoker(ExtKit.gotoAction, editorPane), editorPane);
 

@@ -162,7 +162,7 @@ public class ActionTest extends JellyTestCase {
         // "Open"
         String openItem = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");// NOI18N
         new Action(null, openItem).perform(nodes);
-        new EditorOperator("SampleClass");// NOI18N
+        EditorOperator eo = new EditorOperator("SampleClass");// NOI18N
     }
 
     /** simple test case
@@ -172,10 +172,8 @@ public class ActionTest extends JellyTestCase {
         EditorOperator op = new EditorOperator("SampleClass");// NOI18N
         // "Code Folds"
         String codeFoldsItem = Bundle.getStringTrimmed("org.netbeans.modules.editor.Bundle", "Menu/View/CodeFolds");
-        // "Expand Fold"
-        String expandFoldItem = Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "popup-expand-fold");
         // "Code Folds|Expand Folds"
-        new Action(null, codeFoldsItem + "|" + expandFoldItem).perform(op);
+        new Action(null, codeFoldsItem + "|Expand Fold").perform(op);
         EditorOperator.closeDiscardAll();
     }
 
