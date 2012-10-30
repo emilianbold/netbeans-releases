@@ -104,7 +104,10 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
     }
 
     @Override
-    public Collection<String> supportedLibraries() {
+    public Collection<String> supportedLibraries(boolean fullPaths) {
+        if (fullPaths) {
+            return FileUtilities.listJsFilesFromZipFile(LIB_FILE);
+        }
         return FileUtilities.listJsFilenamesFromZipFile(LIB_FILE);
     }
 
