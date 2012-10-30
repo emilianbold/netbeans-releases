@@ -86,7 +86,7 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     
     private static class PathImpl implements FilteringPathResourceImplementation {
 
-        private ClientSideProject project;
+        private final ClientSideProject project;
 
         public PathImpl(ClientSideProject project) {
             this.project = project;
@@ -99,10 +99,11 @@ public class ClassPathProviderImpl implements ClassPathProvider {
 
         @Override
         public URL[] getRoots() {
-            List<URL> l = new ArrayList<URL>();
+            List<URL> l = new ArrayList<URL>(2);
             l.add(project.getSiteRootFolder().toURL());
-            if (project.getTestsFolder() != null) {
-                l.add(project.getTestsFolder().toURL());
+            FileObject testsFolder = project.getTestsFolder();
+            if (testsFolder != null) {
+                l.add(testsFolder.toURL());
             }
             return l.toArray(new URL[l.size()]);
         }

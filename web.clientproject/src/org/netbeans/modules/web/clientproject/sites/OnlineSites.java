@@ -115,7 +115,10 @@ abstract class OnlineSites implements SiteTemplateImplementation {
     }
 
     @Override
-    public Collection<String> supportedLibraries() {
+    public Collection<String> supportedLibraries(boolean fullPaths) {
+        if (fullPaths) {
+            return FileUtilities.listJsFilesFromZipFile(libFile);
+        }
         return FileUtilities.listJsFilenamesFromZipFile(libFile);
     }
 

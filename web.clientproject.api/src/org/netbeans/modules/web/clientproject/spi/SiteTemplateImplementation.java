@@ -106,7 +106,12 @@ public interface SiteTemplateImplementation {
      */
     void apply(@NonNull FileObject projectDir, @NonNull ProjectProperties projectProperties, @NullAllowed ProgressHandle handle) throws IOException;
 
-    Collection<String> supportedLibraries();
+    /**
+     * Get list of supported JavaScript libraries - just file names or full relative paths.
+     * @param fullPaths {@code true} if full relative paths should be returned
+     * @return list of supported JavaScript libraries - just file names or full relative paths
+     */
+    Collection<String> supportedLibraries(boolean fullPaths);
 
     //~ Inner classes
 
