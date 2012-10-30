@@ -130,6 +130,7 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
         sampleAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_MEMORY_SAMPLING);
         profileAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_MEMORY_ALLOCATIONS ||
                                     profilingType == ProfilingSettings.PROFILE_MEMORY_LIVENESS);
+        fullDataCheckbox.setSelected(profilingType == ProfilingSettings.PROFILE_MEMORY_LIVENESS);
     }
 
     public int getProfilingType() {
