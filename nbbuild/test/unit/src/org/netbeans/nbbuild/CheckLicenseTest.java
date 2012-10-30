@@ -650,7 +650,7 @@ public class CheckLicenseTest extends TestBase {
                 if (lines[i].length() == 0) {
                     fail("There is an empty line: " + content);
                 }
-                if (lines[i].indexOf("All Rights") >= 0) {
+                if (lines[i].indexOf("Portions Copyrighted 2012 Sun Microsystems") >= 0) {
                     break;
                 }
             }
