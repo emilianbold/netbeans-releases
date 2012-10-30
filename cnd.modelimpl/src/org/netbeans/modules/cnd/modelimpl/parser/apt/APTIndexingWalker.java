@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.cnd.apt.impl.structure.APTPragmaNode;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTElif;
@@ -59,6 +58,7 @@ import org.netbeans.modules.cnd.apt.structure.APTIfdef;
 import org.netbeans.modules.cnd.apt.structure.APTIfndef;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
+import org.netbeans.modules.cnd.apt.structure.APTPragma;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
@@ -127,7 +127,7 @@ public final class APTIndexingWalker extends APTWalker {
 
     @Override
     protected void onPragmaNode(APT apt) {
-        APTPragmaNode pragma = (APTPragmaNode) apt;
+        APTPragma pragma = (APTPragma) apt;
         analyzeToken(pragma.getName());
         analyzeStream(pragma.getTokenStream());
     }
