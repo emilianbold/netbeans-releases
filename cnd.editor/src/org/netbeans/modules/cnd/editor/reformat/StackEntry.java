@@ -137,6 +137,10 @@ class StackEntry {
                         if (paren == 0 && triangle == 0 && bracket == 0) {
                             Token<CppTokenId> prev = ts.lookPreviousImportant();
                             if (prev != null) {
+                                if (prev.id() == IDENTIFIER) {
+                                    likeToArrayInitialization = true;
+                                    return;
+                                }
                                 if (prev.id() == IDENTIFIER || prev.id() == RBRACKET || prev.id() == LBRACKET) {
                                     break;
                                 }
