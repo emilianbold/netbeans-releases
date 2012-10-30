@@ -48,9 +48,11 @@ package org.netbeans.modules.git.options;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
 @OptionsPanelController.Keywords(keywords={"git", "#GitOptionsPanel.kw1", "#GitOptionsPanel.kw2", "#GitOptionsPanel.kw3", "#GitOptionsPanel.kw4"},
-        location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
+        location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_OptionsPanel.title")
+@NbBundle.Messages("CTL_OptionsPanel.title=Versioning")
 final class GitOptionsPanel extends javax.swing.JPanel {
     
     private final GitOptionsPanelController controller;
