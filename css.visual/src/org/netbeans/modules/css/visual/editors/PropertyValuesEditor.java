@@ -116,10 +116,10 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         this.fixedElements = fixedElements;
         this.unitElements = unitElements;
         this.addNoneProperty = addNoneProperty;
-        this.pmodel = pmodel;
         this.file = model.getLookup().lookup(FileObject.class);
 
-        this.isAggregatedProperty = Properties.isAggregatedProperty(file, pmodel);
+        this.pmodel = pmodel; //may be null
+        this.isAggregatedProperty = pmodel != null ? Properties.isAggregatedProperty(file, pmodel) : false;
     }
 
     @Override
@@ -246,7 +246,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "; property: " + pmodel.getName();
+        return getClass().getSimpleName() + "; property: " + pmodel != null ? pmodel.getName() : "?"; //NOI18N
     }
 
     @Override
