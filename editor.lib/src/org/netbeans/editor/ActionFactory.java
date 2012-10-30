@@ -1206,11 +1206,24 @@ public class ActionFactory {
                 if (eui.getComponent().getClientProperty("AsTextField") == null)  { //NOI18N
                     EditorFindSupport.getInstance().setFocusedTextComponent(eui.getComponent());
                 }
+                openFindIfNecessary(eui, evt);
                 EditorFindSupport.getInstance().find(null, false);
             }
         }
     }
+    
+    private static void openFindIfNecessary(EditorUI eui, ActionEvent evt) {
+        Object findWhat = EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_WHAT);
+        if (findWhat == null || !(findWhat instanceof String) || ((String) findWhat).isEmpty()) {
 
+            Action findAction = ((BaseKit) eui.getComponent().getUI().getEditorKit(
+                    eui.getComponent())).getActionByName("find");
+            if (findAction != null) {
+                findAction.actionPerformed(evt);
+            }
+        }
+    }
+    
     @EditorActionRegistration(name = BaseKit.findPreviousAction,
             iconResource = "org/netbeans/modules/editor/resources/find_previous.png") // NOI18N
     public static class FindPreviousAction extends LocalBaseAction {
@@ -1228,6 +1241,7 @@ public class ActionFactory {
                 if (eui.getComponent().getClientProperty("AsTextField") == null)  { //NOI18N
                     EditorFindSupport.getInstance().setFocusedTextComponent(eui.getComponent());
                 }
+                openFindIfNecessary(eui, evt);
                 EditorFindSupport.getInstance().find(null, true);
             }
         }

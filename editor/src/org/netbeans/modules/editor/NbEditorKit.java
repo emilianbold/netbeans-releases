@@ -746,7 +746,6 @@ public class NbEditorKit extends ExtKit implements Callable {
                         item.addActionListener(a);
                         Mnemonics.setLocalizedText(item, itemText);
                         addAcceleretors(a, item, target);
-                        item.setEnabled(a.isEnabled() && foldingEnabled);
                         Object helpID = a.getValue ("helpID"); // NOI18N
                         if (helpID != null && (helpID instanceof String))
                             item.putClientProperty ("HelpID", helpID); // NOI18N
@@ -754,6 +753,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                 }
 
                 if (item != null) {
+                    item.setEnabled(a.isEnabled() && foldingEnabled);
                     menu.add(item);
                 }
 
