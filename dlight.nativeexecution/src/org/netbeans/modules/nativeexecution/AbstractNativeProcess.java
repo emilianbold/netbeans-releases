@@ -443,6 +443,10 @@ public abstract class AbstractNativeProcess extends NativeProcess implements ExP
         exitValue();
         return null;
     }
+    
+    protected final void finishing() {
+        setState(State.FINISHING);
+    }
 
     private void setState(State state) {
         synchronized (stateLock) {
@@ -452,7 +456,7 @@ public abstract class AbstractNativeProcess extends NativeProcess implements ExP
 
             /*
              * Process has determinated order of states it can be set to:
-             * INITIAL ---> STARTING  ---> RUNNING  ---> FINISHED
+             * INITIAL ---> STARTING  ---> RUNNING  ---> FINISHING ---> FINISHED
              *          |-> CANCELLED  |-> CENCELLED |-> CANCELLED
              *          |-> ERROR      |-> ERROR     |-> ERROR
              *
@@ -474,8 +478,8 @@ public abstract class AbstractNativeProcess extends NativeProcess implements ExP
 
                 if (!isInterrupted()) {
                     if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest(String.format("%s: State changed: %s -> %s", // NOI18N
-                                this.toString(), this.state, state));
+                        LOG.finest(String.format("%s [%d]: State changed: %s -> %s", // NOI18N
+                                this.toString(), this.pid, this.state, state));
                     }
                 }
 

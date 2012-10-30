@@ -47,7 +47,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.TestCase;
+import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
@@ -61,10 +63,12 @@ import org.openide.nodes.Node;
  */
 public class RootNodeTest extends TestCase {
 
+    private static final AtomicBoolean CONNECTIONS_CHANGE_FIRED = new AtomicBoolean(false);
+
     public RootNodeTest(String testName) {
         super(testName);
     }
-
+    
     @Override
     public void setUp() throws Exception {
         Util.clearConnections();
@@ -78,17 +82,34 @@ public class RootNodeTest extends TestCase {
         // Initialize the tree with a driver and a connection
         JDBCDriver driver = Util.createDummyDriver();
         JDBCDriverManager.getDefault().addDriver(driver);
+        
+        ConnectionManager.getDefault().addConnectionListener(new ConnectionListener() {
+            @Override
+            public void connectionsChanged() {
+                synchronized (CONNECTIONS_CHANGE_FIRED) {
+                    CONNECTIONS_CHANGE_FIRED.notifyAll();
+                    CONNECTIONS_CHANGE_FIRED.set(true);
+                }
+            }
+        });
 
         DatabaseConnection conn = DatabaseConnection.create(
                 driver, "jdbc:mark//twain", "tomsawyer", null, "whitewash", true);
         ConnectionManager.getDefault().addConnection(conn);
+        // wait until lookup result is not refreshed and subsequently 
+        // ConnectionList.fireListeners is called
+        synchronized (CONNECTIONS_CHANGE_FIRED) {
+            if (!CONNECTIONS_CHANGE_FIRED.get()) {
+                CONNECTIONS_CHANGE_FIRED.wait(10000);
+            }
+        }
 
         RootNode rootNode = RootNode.instance();
 
         // Need to force a refresh because otherwise it happens asynchronously
         // and this test does not pass reliably
         RootNode.instance().getChildNodesSync();
-
+        
         checkConnection(rootNode, conn);
         checkNodeChildren(rootNode);
     }

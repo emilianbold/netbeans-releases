@@ -89,7 +89,12 @@ public final class SlideBarContainer extends AbstractModeContainer {
         
         panel = new VisualPanel(this);
         panel.setBorder(computeBorder(getSlidingView().getSide()));
-        panel.add(this.tabbedHandler.getComponent(), BorderLayout.CENTER);
+        Component slideBar = this.tabbedHandler.getComponent();
+        boolean horizontal = true;
+        if( slideBar instanceof SlideBar ) {
+            horizontal = ((SlideBar)slideBar).isHorizontal();
+        }
+        panel.add(slideBar, horizontal ? BorderLayout.WEST : BorderLayout.NORTH );
     }
     
     
