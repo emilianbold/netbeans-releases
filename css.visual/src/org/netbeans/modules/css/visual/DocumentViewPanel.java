@@ -69,10 +69,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
-import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
@@ -97,7 +96,6 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -180,8 +178,8 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                 public void run(ResultIterator resultIterator) throws Exception {
                     ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css"); //NOI18N
                     if (ri != null) {
-                        final CssCslParserResult result = (CssCslParserResult) ri.getParserResult();
-                        final Model model = result.getModel();
+                        final CssParserResult result = (CssParserResult) ri.getParserResult();
+                        final Model model = Model.getModel(result);
 
                         model.runReadTask(new Model.ModelTask() {
                             @Override

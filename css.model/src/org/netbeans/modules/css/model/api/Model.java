@@ -47,12 +47,11 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.WeakHashMap;   
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -114,7 +113,7 @@ public final class Model {
     private static final Logger LOGGER = Logger.getLogger(Model.class.getName());
     private final Mutex MODEL_MUTEX = new Mutex();
     private Lookup MODEL_LOOKUP;
-    private ElementFactory ELEMENT_FACTORY;
+    private ElementFactory ELEMENT_FACTORY; 
     private static final Map<CssParserResult, Reference<Model>> PR_MODEL_CACHE = new WeakHashMap<CssParserResult, Reference<Model>>();
 
     private boolean changesApplied;
@@ -123,11 +122,17 @@ public final class Model {
     private static int globalModelSerialNumber;
     
     /**
-     * @deprecated
+     * Gets cached instance of {@link Model}.
+     * 
      * @return an instance of the Css Source Model
      */
     public static synchronized Model getModel(CssParserResult parserResult) {
-        return createModel(parserResult);
+        Model model = parserResult.getProperty(Model.class);
+        if (model == null) {
+            model = Model.createModel(parserResult);
+            parserResult.setProperty(Model.class, model);
+        }
+        return model;
     }
     
     /**
