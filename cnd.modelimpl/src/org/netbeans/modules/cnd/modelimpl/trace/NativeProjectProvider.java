@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -481,7 +482,7 @@ public final class NativeProjectProvider {
 
         @Override
         public NativeFileItem.LanguageFlavor getLanguageFlavor() {
-            if(CndTraceFlags.LANGUAGE_FLAVOR_CPP11) {
+            if(DebugUtils.getBoolean("cnd.language.flavor.cpp11", false)) {
                 return NativeFileItem.LanguageFlavor.CPP11;
             } else {
                 return NativeFileItem.LanguageFlavor.UNKNOWN;
