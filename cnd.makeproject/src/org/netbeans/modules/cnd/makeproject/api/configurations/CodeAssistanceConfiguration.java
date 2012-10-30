@@ -53,6 +53,8 @@ import org.openide.util.NbBundle;
 public class CodeAssistanceConfiguration implements Cloneable {
     private MakeConfiguration makeConfiguration;
     private BooleanConfiguration buildAnalyzer;
+    private VectorConfiguration<String> transientMacros;
+    private VectorConfiguration<String> environmentVariables;
     private StringConfiguration tools;
     private static final String DEFAULT_TOOLS = "gcc:c++:g++:clang:clang++:icc:icpc:ifort:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95"; //NOI18N
     
@@ -61,6 +63,8 @@ public class CodeAssistanceConfiguration implements Cloneable {
         this.makeConfiguration = makeConfiguration;
         buildAnalyzer = new BooleanConfiguration(true);
         tools = new StringConfiguration(tools, DEFAULT_TOOLS);
+        transientMacros = new VectorConfiguration<String>(null);
+        environmentVariables = new VectorConfiguration<String>(null);
     }
 
     public boolean getModified() {
@@ -94,10 +98,41 @@ public class CodeAssistanceConfiguration implements Cloneable {
         return tools;
     }
 
+    /**
+     * @return the transientMacros
+     */
+    public VectorConfiguration<String> getTransientMacros() {
+        return transientMacros;
+    }
+
+    /**
+     * @param transientMacros the transientMacros to set
+     */
+    public void setTransientMacros(VectorConfiguration<String> transientMacros) {
+        this.transientMacros = transientMacros;
+    }
+
+    /**
+     * @return the environmentVariables
+     */
+    public VectorConfiguration<String> getEnvironmentVariables() {
+        return environmentVariables;
+    }
+
+    /**
+     * @param environmentVariables the environmentVariables to set
+     */
+    public void setEnvironmentVariables(VectorConfiguration<String> environmentVariables) {
+        this.environmentVariables = environmentVariables;
+    }
+
+
     // Clone and assign
     public void assign(CodeAssistanceConfiguration conf) {
         getBuildAnalyzer().assign(conf.getBuildAnalyzer());
         getTools().assign(conf.getTools());
+        getTransientMacros().assign(conf.getTransientMacros());
+        getEnvironmentVariables().assign(conf.getEnvironmentVariables());
     }
 
     @Override
@@ -105,6 +140,8 @@ public class CodeAssistanceConfiguration implements Cloneable {
         CodeAssistanceConfiguration clone = new CodeAssistanceConfiguration(getMakeConfiguration());
         clone.setBuildAnalyzer(getBuildAnalyzer().clone());
         clone.setTools(getTools().clone());
+        clone.setTransientMacros(getTransientMacros().clone());
+        clone.setEnvironmentVariables(getEnvironmentVariables().clone());
         return clone;
     }
 
@@ -130,5 +167,4 @@ public class CodeAssistanceConfiguration implements Cloneable {
     public String toString() {
         return "{buildAnalyzer=" + buildAnalyzer + " tools=" + tools + '}'; // NOI18N
     }
-
 }
