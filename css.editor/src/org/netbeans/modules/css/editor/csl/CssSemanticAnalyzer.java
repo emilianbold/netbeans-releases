@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.Set;
 import java.util.Map;
 import org.netbeans.modules.csl.api.ColoringAttributes;
@@ -50,6 +49,7 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -77,7 +77,7 @@ public class CssSemanticAnalyzer extends SemanticAnalyzer {
     public void run(Result result, SchedulerEvent event) {
         resume();
         
-        CssCslParserResult wrappedResult = (CssCslParserResult) result;
+        CssParserResult wrappedResult = (CssParserResult) result;
         FeatureContext featureContext = new FeatureContext(wrappedResult);
         semanticHighlights = CssModuleSupport.getSemanticHighlights(featureContext, featureCancel);
     }

@@ -241,7 +241,7 @@ public final class Symfony2Script {
     private ExecutionDescriptor getDescriptor(Runnable postExecution) {
         ExecutionDescriptor executionDescriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(Symfony2OptionsPanelController.getOptionsPath())
-                .inputVisible(false);
+                .inputVisible(true);
         if (postExecution != null) {
             executionDescriptor = executionDescriptor.postExecution(postExecution);
         }

@@ -92,7 +92,8 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         jBrowsersTable.setModel(new BrowsersTableModel());
         jBrowsersTable.setDefaultRenderer(TableRow.class, new TableRowCellRenderer());
         initTableVisualProperties(jBrowsersTable);
-        jRestartNeededLabel.setVisible(JSTestDriverSupport.getDefault().isRunning());
+        jRestartNeededLabel.setVisible(JSTestDriverSupport.getDefault().isRunning() && 
+                !JSTestDriverSupport.getDefault().wasStartedExternally());
     }
     
     private void initTableVisualProperties(JTable table) {
@@ -123,7 +124,8 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         boolean externalServer = (getPort(jServerURLTextField.getText()) == -1);
         jBrowsersTable.setEnabled(!externalServer);
         jStrictCheckBox.setEnabled(!externalServer);
-        jRestartNeededLabel.setVisible(JSTestDriverSupport.getDefault().isRunning() && !externalServer);
+        jRestartNeededLabel.setVisible(JSTestDriverSupport.getDefault().isRunning() && 
+                (!externalServer && !JSTestDriverSupport.getDefault().wasStartedExternally()));
         jRemoteServerLabel.setVisible(externalServer);
     }
 
@@ -150,6 +152,11 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         dialog.setVisible(true);
         dialog.dispose();
         if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            if (JSTestDriverSupport.getDefault().isRunning() && 
+                JSTestDriverSupport.getDefault().wasStartedExternally()) {
+                // forget current server:
+                JSTestDriverSupport.getDefault().forgetCurrentServer();
+            }
             Preferences prefs = NbPreferences.forModule(JSTestDriverCustomizerPanel.class);
             prefs.put(LOCATION, panel.jLocationTextField.getText());
             prefs.put(SERVER_URL, panel.jServerURLTextField.getText());

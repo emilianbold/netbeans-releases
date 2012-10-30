@@ -42,11 +42,10 @@
 
 package org.netbeans.modules.remote.ui;
 
-import java.awt.Frame;
-import java.io.File;
 import java.io.IOException;
-import javax.swing.*;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -54,21 +53,17 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -154,43 +149,39 @@ public class OpenTerminalAction extends SingleHostAction {
 
         @Override
         protected void performAction(final ExecutionEnvironment env, Node node) {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenTerminalAction.class, "OpenTerminalAction.opening"));
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(OpenTerminalAction.class,
+                    "OpenTerminalAction.opening")); // NOI18N
+
             Runnable runnable = new Runnable() {
 
                 @Override
                 public void run() {
-                    try {
-                        ConnectionManager.getInstance().connectTo(env);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (CancellationException ex) {
-                        Exceptions.printStackTrace(ex);
+                    if (!ConnectionManager.getInstance().connect(env)) {
+                        return;
                     }
-                    final String path = getPath(env);
-                    if (path != null && path.length() > 0) {
-                        Runnable openTask = new Runnable() {
 
-                            @Override
-                            public void run() {
-                                TerminalSupport.openTerminal(env.getDisplayName(), env, path);
-                            }
-                        };
-                        SwingUtilities.invokeLater(openTask);
-                    } else {
-                        if (path != null) {
-                            String msg;
-                            if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-                                msg = NbBundle.getMessage(OpenTerminalAction.class, "NotConnected", path, env.getDisplayName());
-                            } else {
-                                msg = NbBundle.getMessage(OpenTerminalAction.class, "NoRemotePath", path);
-                            }
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                        }
+                    final String path = getPath(env);
+
+                    if (path == null || path.isEmpty()) {
+                        String msg = NbBundle.getMessage(OpenTerminalAction.class, "NoRemotePath", path); // NOI18N
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+                        return;
                     }
+
+                    Runnable openTask = new Runnable() {
+
+                        @Override
+                        public void run() {
+                            TerminalSupport.openTerminal(env.getDisplayName(), env, path);
+                        }
+                    };
+
+                    SwingUtilities.invokeLater(openTask);
                 }
             };
+
             RequestProcessor.getDefault().post(runnable);
-            
         }
 
         @Override

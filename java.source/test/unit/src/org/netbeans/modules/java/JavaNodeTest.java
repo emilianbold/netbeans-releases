@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.api;
+package org.netbeans.modules.java;
 
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
-import org.netbeans.modules.css.lib.TestUtil;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.junit.NbTestCase;
+import org.openide.nodes.Node.PropertySet;
+import org.openide.nodes.Sheet;
 
 /**
  *
- * @author marekfukala
+ * @author lahvac
  */
-public class CssCslParserResultTest extends CssModuleTestBase {
-
-    public CssCslParserResultTest(String name) {
+public class JavaNodeTest extends NbTestCase {
+    
+    public JavaNodeTest(String name) {
         super(name);
     }
-
-    public void testDuplicatedErrors() throws BadLocationException, ParseException {
-        CssParserResult result = TestUtil.parse(
-                "head{\n"
-                + "    background-image: uri();\n"
-                + "}");
-//        TestUtil.dumpResult(result);
-
-        assertNotNull(result);
-
-        CssCslParserResult cslresult = new CssCslParserResult(result);
-
-        for (Error e : cslresult.getDiagnostics()) {
-            System.out.println(e);
-        }
-
+    
+    public void testSheetToArrayReturnsModifiableArray() {
+        Sheet s = new Sheet();
+        s.put(new Sheet.Set());
+        PropertySet[] properties = s.toArray();
+        properties[0] = null;
+        assertNull(s.toArray()[0]);
     }
-
-
+    
 }

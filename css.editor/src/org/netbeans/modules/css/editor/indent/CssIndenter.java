@@ -75,6 +75,8 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
      * comments should in addition get PRESERVE_INDENTATION command.
      */
     private boolean inComment = false;
+    // 218884:
+    private boolean previousCommentLineStartsWithAsterix = false;
 
     private boolean inMedia = false;
 
@@ -99,6 +101,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
     protected void reset() {
         stack = new Stack<CssStackItem>();
         inComment = false;
+        previousCommentLineStartsWithAsterix = false;
         inMedia = false;
     }
 
@@ -311,7 +314,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                         }
                     } else if (end == commentEndOffset) {
                         String text = getDocument().getText(start, end-start+1).trim();
-                        if (!text.startsWith("*/")) {
+                        if (!text.startsWith("*/") || previousCommentLineStartsWithAsterix) {
                             // if line does not start with '*/' then treat it as unformattable
                             IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
                             ic.setFixedIndentSize(preservedLineIndentation);
@@ -325,6 +328,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                         IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
                         ic.setFixedIndentSize(preservedLineIndentation);
                         iis.add(ic);
+                        previousCommentLineStartsWithAsterix = getDocument().getText(start, end-start+1).trim().startsWith("*");
                     }
             } else if (token.id() == CssTokenId.MEDIA_SYM) {
                 // #164493:

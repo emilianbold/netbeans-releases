@@ -579,27 +579,27 @@ public class RuleEditorNode extends AbstractNode {
     }
 
     private PropertyValuesEditor createPropertyValueEditor(FileObject context, PropertyDefinition pmodel, boolean addNoneProperty) {
-        GroupGrammarElement rootElement = pmodel.getGrammarElement(context);
         final Collection<UnitGrammarElement> unitElements = new ArrayList<UnitGrammarElement>();
         final Collection<FixedTextGrammarElement> fixedElements = new ArrayList<FixedTextGrammarElement>();
+        
+        if(pmodel != null) {
+            GroupGrammarElement rootElement = pmodel.getGrammarElement(context);
 
-        rootElement.accept(new GrammarElementVisitor() {
-            @Override
-            public void visit(UnitGrammarElement element) {
-                unitElements.add(element);
-            }
+            rootElement.accept(new GrammarElementVisitor() {
+                @Override
+                public void visit(UnitGrammarElement element) {
+                    unitElements.add(element);
+                }
 
-            @Override
-            public void visit(FixedTextGrammarElement element) {
-                fixedElements.add(element);
-            }
-        });
-
-        if (!fixedElements.isEmpty()) {
-            return new PropertyValuesEditor(panel, pmodel, getModel(), fixedElements, unitElements, addNoneProperty);
+                @Override
+                public void visit(FixedTextGrammarElement element) {
+                    fixedElements.add(element);
+                }
+            });
         }
 
-        return null;
+        return new PropertyValuesEditor(panel, pmodel, getModel(), fixedElements, unitElements, addNoneProperty);
+
     }
 
     private abstract class AbstractPDP<T> extends PropertySupport<T> {
@@ -703,12 +703,12 @@ public class RuleEditorNode extends AbstractNode {
 
     private DeclarationProperty createDeclarationProperty(Declaration declaration, boolean markAsModified) {
         ResolvedProperty resolvedProperty = declaration.getResolvedProperty();
+        PropertyDefinition propertyDefinition = resolvedProperty != null ? resolvedProperty.getPropertyDefinition() : null;
         return new DeclarationProperty(declaration,
                 getDeclarationId(getRule(), declaration),
                 getPropertyDisplayName(declaration),
                 markAsModified,
-                resolvedProperty == null ? null : createPropertyValueEditor(getFileObject(), resolvedProperty.getPropertyDefinition(),
-                true));
+                createPropertyValueEditor(getFileObject(), propertyDefinition, true));
     }
 
     @NbBundle.Messages({

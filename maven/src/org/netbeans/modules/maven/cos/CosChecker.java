@@ -59,6 +59,7 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.extexecution.startup.StartupExtender;
@@ -91,6 +92,8 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.execution.ExecutorTask;
@@ -233,8 +236,14 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     try {
                         //jvm args, add and for debugging, remove the debugging ones..
                         params.put(JavaRunner.PROP_RUN_JVMARGS, extractDebugJVMOptions(args[0]));
+                    } catch (CommandLineException cli) {
+                        LOG.log(Level.INFO, "error parsing exec.args property:" + args[0], cli);
+                        if (DEBUG_MAIN.equals(actionName) || ActionProvider.COMMAND_DEBUG.equals(actionName)) {
+                            NotifyDescriptor.Message msg = new NotifyDescriptor.Message("Error parsing exec.args property, arguments will not be passed to internal execution. Error: " + cli.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(msg);
+                        } 
                     } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
+                        LOG.log(Level.INFO, "error extracting debug params from exec.args property:" + args[0], ex);              
                     }
                 }
                 //make sure to run with the proper jdk
@@ -449,8 +458,14 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 if (argLine != null) {
                     try {
                         jvmProps.addAll(extractDebugJVMOptions(argLine));
+                    } catch (CommandLineException cli) {
+                        LOG.log(Level.INFO, "error parsing argLine property:" + argLine, cli);
+                        if (ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName)) {
+                            NotifyDescriptor.Message msg = new NotifyDescriptor.Message("Error parsing argLine property, arguments will not be passed to internal execution. Error: " + cli.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(msg);
+                        } 
                     } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
+                        LOG.log(Level.INFO, "error extracting debug params from argLine property:" + argLine, ex);              
                     }
                 }
             }

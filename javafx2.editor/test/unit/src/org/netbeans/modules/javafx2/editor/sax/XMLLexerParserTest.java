@@ -43,23 +43,9 @@ package org.netbeans.modules.javafx2.editor.sax;
 
 import org.netbeans.modules.javafx2.editor.sax.XmlLexerParser;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import javax.swing.text.Document;
-import junit.framework.TestSuite;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.javafx2.editor.FXMLCompletionTestBase;
 import org.netbeans.modules.javafx2.editor.GoldenFileTestBase;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
@@ -79,14 +65,25 @@ public class XMLLexerParserTest extends GoldenFileTestBase {
     private CH handler;
     
     private void defaultTestContents() throws Exception {
-        XmlLexerParser parser = new XmlLexerParser(hierarchy);
+        final XmlLexerParser parser = new XmlLexerParser(hierarchy);
         handler = new CH();
         
         parser.setContentHandler(handler);
         parser.setLexicalHandler(handler);
         
-        parser.parse();
-
+        final Exception[] exc = new Exception[1];
+        document.render(new Runnable() {
+            public void run() {
+                try {
+                    parser.parse();
+                } catch (Exception ex) {
+                    exc[0] = ex;
+                }
+            }
+        });
+        if (exc[0] != null) {
+            throw exc[0];
+        }
         assertContents(handler.out);
     }
     

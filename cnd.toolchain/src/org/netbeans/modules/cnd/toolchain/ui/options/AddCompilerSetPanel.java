@@ -61,12 +61,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
-import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -80,7 +80,6 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -285,19 +284,7 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
     }
 
     private boolean checkConnection() {
-        if (ConnectionManager.getInstance().isConnectedTo(csm.getExecutionEnvironment())) {
-            return true;
-        } else {
-            try {
-                ConnectionManager.getInstance().connectTo(csm.getExecutionEnvironment());
-                return true;
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                return false;
-            } catch (CancellationException ex) {
-                return false;
-            }
-        }
+        return ConnectionManager.getInstance().connect(csm.getExecutionEnvironment());
     }
 
     private void updateBaseDirectory() {

@@ -50,7 +50,7 @@ import java.net.URL;
  *
  * @author sdedic
  */
-public class FxInclude extends FxObjectBase implements HasResource {
+public class FxInclude extends FxInstance implements HasResource {
     private String  sourcePath;
     private URL  resolvedURL;
     private FxNewInstance target;

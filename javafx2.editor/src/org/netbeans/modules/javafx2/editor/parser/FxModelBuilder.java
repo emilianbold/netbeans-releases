@@ -349,7 +349,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
                 continue;
             }
             
-            if (current instanceof FxInstanceCopy) {
+            if (current instanceof FxInstanceCopy || current instanceof FxInclude) {
                 if (FxXmlSymbols.FX_ATTR_REFERENCE_SOURCE.equals(name) && uri == null) {
                     // ignore source in fx:copy
                     continue;
@@ -581,7 +581,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
     
     private void pushInstance(FxNode instance) {
         nodeStack.push(instance);
-        if (instance.getKind() == Kind.Instance) {
+        if (instance.getKind() == Kind.Instance || instance.getKind() == Kind.Include) {
             current = (FxInstance)instance;
         } else {
             current = null;
@@ -724,7 +724,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         
         // process attributes, iff it is an instance. Attribute processing needs the node pushed
         // on the stack, so it is delayed after attachChildNode
-        if (newNode.getKind() == Kind.Instance) {
+        if (newNode.getKind() == Kind.Instance || newNode.getKind() == Kind.Include) {
             processInstanceAttributes(atts);
         }
     }
@@ -1135,19 +1135,27 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
     })
     private FxNode handleFxInclude(Attributes atts, String localName) {
         String include = null;
+        String id = null;
         
         for (int i = 0; i < atts.getLength(); i++) {
+            String uri = atts.getURI(i);
             String attName = atts.getLocalName(i);
             if (FX_ATTR_REFERENCE_SOURCE.equals(attName)) {
                 include = atts.getValue(i);
-            } else {
-                String qName = atts.getQName(i);
-                addAttributeError(
-                    qName,
-                    "unexpected-include-attribute",
-                    ERR_unexpectedIncludeAttribute(qName),
-                    qName
-                );
+                continue;
+            }
+            if (FXML_FX_NAMESPACE.equals(uri)) {
+                if (FX_ID.equals(attName)) {
+                    id = atts.getValue(i);
+                } else {
+                    String qName = atts.getQName(i);
+                    addAttributeError(
+                        qName,
+                        "unexpected-include-attribute",
+                        ERR_unexpectedIncludeAttribute(qName),
+                        qName
+                    );
+                }
             }
         }
         if (include == null) {
@@ -1164,7 +1172,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             return n;
         }
         // guide: fnames starting with slash are treated relative to the classpath
-        FxInclude fxInclude = accessor.createInclude(include);
+        FxInclude fxInclude = accessor.createInclude(include, id);
         return fxInclude;
     }
     

@@ -39,28 +39,37 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.search.actions;
+package org.netbeans.modules.css.lib;
 
-import java.util.Map;
-import javax.swing.Action;
-import org.netbeans.api.editor.EditorActionRegistration;
-import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.search.SearchNbEditorKit;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.ErrorsProvider;
+import org.openide.util.Lookup;
 
-public class IncrementalSearchForwardAction extends SearchAction {
+/**
+ *
+ * @author marekfukala
+ */
+public class ErrorsProviderQuery {
 
-    static final long serialVersionUID = -1;
-
-    @EditorActionRegistration(name = SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD,
-            menuText="#" + SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD + "_menu_text") // NOI18N
-
-    public static Action create(Map<String, ?> attrs) {
-        return new IncrementalSearchForwardAction(attrs);
+    private static Collection<? extends ErrorsProvider> providers;
+    
+    private static synchronized Collection<? extends ErrorsProvider> getProviders() {
+        if(providers == null) {
+            providers = Lookup.getDefault().lookupAll(ErrorsProvider.class);
+        }
+        return providers;
     }
-
-    public IncrementalSearchForwardAction(Map<String, ?> attrs) {
-        super(attrs);
-        putValue(NbEditorKit.SYSTEM_ACTION_CLASS_NAME_PROPERTY, org.openide.actions.FindAction.class.getName());
+    
+    public static List<? extends Error> getExtendedDiagnostics(CssParserResult parserResult) {
+        List<Error> errors = new ArrayList<Error>();
+        for(ErrorsProvider provider : getProviders()) {
+            errors.addAll(provider.getExtendedDiagnostics(parserResult));
+        }
+        return errors;
     }
-
+    
 }

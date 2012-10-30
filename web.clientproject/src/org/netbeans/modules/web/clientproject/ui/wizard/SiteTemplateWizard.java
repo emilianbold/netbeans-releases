@@ -452,7 +452,7 @@ public class SiteTemplateWizard extends JPanel {
         }
 
         @Override
-        public Collection<String> supportedLibraries() {
+        public Collection<String> supportedLibraries(boolean fullPaths) {
             return Collections.emptyList();
         }
 
