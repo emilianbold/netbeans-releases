@@ -65,6 +65,7 @@ public class MetaProperty implements org.netbeans.modules.schema2beansdev.metadd
 	private boolean _isSet_Key = false;
 	private boolean _Vetoable;
 	private boolean _isSet_Vetoable = false;
+	private static final java.util.logging.Logger _logger = java.util.logging.Logger.getLogger("org.netbeans.modules.schema2beansdev.metadd.MetaProperty");
 
 	/**
 	 * Normal starting point constructor.
@@ -259,7 +260,23 @@ public class MetaProperty implements org.netbeans.modules.schema2beansdev.metadd
 			out.write(":");
 		}
 		out.write(nodeName);
+		writeNodeAttributes(out, nodeName, namespace, indent, namespaceMap);
 		out.write(">\n");
+		writeNodeChildren(out, nodeName, namespace, indent, namespaceMap);
+		out.write(indent);
+		out.write("</");
+		if (namespace != null) {
+			out.write((String)namespaceMap.get(namespace));
+			out.write(":");
+		}
+		out.write(nodeName);
+		out.write(">\n");
+	}
+
+	protected void writeNodeAttributes(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
+	}
+
+	protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
 		String nextIndent = indent + "	";
 		if (_BeanName != null) {
 			out.write(nextIndent);
@@ -304,14 +321,6 @@ public class MetaProperty implements org.netbeans.modules.schema2beansdev.metadd
 				out.write("/>\n");	// NOI18N
 			}
 		}
-		out.write(indent);
-		out.write("</");
-		if (namespace != null) {
-			out.write((String)namespaceMap.get(namespace));
-			out.write(":");
-		}
-		out.write(nodeName);
-		out.write(">\n");
 	}
 
 	public void readNode(org.w3c.dom.Node node) {
@@ -337,46 +346,70 @@ public class MetaProperty implements org.netbeans.modules.schema2beansdev.metadd
 					namespacePrefixes.put(attrNSPrefix, attr.getValue());
 				}
 			}
+			readNodeAttributes(node, namespacePrefixes, attrs);
 		}
+		readNodeChildren(node, namespacePrefixes);
+	}
+
+	protected void readNodeAttributes(org.w3c.dom.Node node, java.util.Map namespacePrefixes, org.w3c.dom.NamedNodeMap attrs) {
+		org.w3c.dom.Attr attr;
+		java.lang.String attrValue;
+	}
+
+	protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
 		org.w3c.dom.NodeList children = node.getChildNodes();
 		for (int i = 0, size = children.getLength(); i < size; ++i) {
 			org.w3c.dom.Node childNode = children.item(i);
+			if (!(childNode instanceof org.w3c.dom.Element)) {
+				continue;
+			}
 			String childNodeName = (childNode.getLocalName() == null ? childNode.getNodeName().intern() : childNode.getLocalName().intern());
 			String childNodeValue = "";
 			if (childNode.getFirstChild() != null) {
 				childNodeValue = childNode.getFirstChild().getNodeValue();
 			}
-			if (childNodeName == "bean-name") {
-				_BeanName = childNodeValue;
-			}
-			else if (childNodeName == "default-value") {
-				String aDefaultValue;
-				aDefaultValue = childNodeValue;
-				_DefaultValue.add(aDefaultValue);
-			}
-			else if (childNodeName == "known-value") {
-				String aKnownValue;
-				aKnownValue = childNodeValue;
-				_KnownValue.add(aKnownValue);
-			}
-			else if (childNodeName == "key") {
-				if (childNode.getFirstChild() == null)
-					_Key = true;
-				else
-					_Key = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_Key = true;
-			}
-			else if (childNodeName == "vetoable") {
-				if (childNode.getFirstChild() == null)
-					_Vetoable = true;
-				else
-					_Vetoable = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_Vetoable = true;
-			}
-			else {
-				// Found extra unrecognized childNode
+			boolean recognized = readNodeChild(childNode, childNodeName, childNodeValue, namespacePrefixes);
+			if (!recognized) {
+				if (childNode instanceof org.w3c.dom.Element) {
+					_logger.info("Found extra unrecognized childNode '"+childNodeName+"'");
+				}
 			}
 		}
+	}
+
+	protected boolean readNodeChild(org.w3c.dom.Node childNode, String childNodeName, String childNodeValue, java.util.Map namespacePrefixes) {
+		// assert childNodeName == childNodeName.intern()
+		if ("bean-name".equals(childNodeName)) {
+			_BeanName = childNodeValue;
+		}
+		else if ("default-value".equals(childNodeName)) {
+			String aDefaultValue;
+			aDefaultValue = childNodeValue;
+			_DefaultValue.add(aDefaultValue);
+		}
+		else if ("known-value".equals(childNodeName)) {
+			String aKnownValue;
+			aKnownValue = childNodeValue;
+			_KnownValue.add(aKnownValue);
+		}
+		else if ("key".equals(childNodeName)) {
+			if (childNode.getFirstChild() == null)
+				_Key = true;
+			else
+				_Key = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_Key = true;
+		}
+		else if ("vetoable".equals(childNodeName)) {
+			if (childNode.getFirstChild() == null)
+				_Vetoable = true;
+			else
+				_Vetoable = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_Vetoable = true;
+		}
+		else {
+			return false;
+		}
+		return true;
 	}
 
 	public void validate() throws org.netbeans.modules.schema2beansdev.metadd.MetaDD.ValidateException {
@@ -395,34 +428,34 @@ public class MetaProperty implements org.netbeans.modules.schema2beansdev.metadd
 	public void changePropertyByName(String name, Object value) {
 		if (name == null) return;
 		name = name.intern();
-		if (name == "beanName")
+		if ("beanName".equals(name))
 			setBeanName((String)value);
-		else if (name == "defaultValue")
+		else if ("defaultValue".equals(name))
 			addDefaultValue((String)value);
-		else if (name == "defaultValue[]")
+		else if ("defaultValue[]".equals(name))
 			setDefaultValue((String[]) value);
-		else if (name == "knownValue")
+		else if ("knownValue".equals(name))
 			addKnownValue((String)value);
-		else if (name == "knownValue[]")
+		else if ("knownValue[]".equals(name))
 			setKnownValue((String[]) value);
-		else if (name == "key")
+		else if ("key".equals(name))
 			setKey(((java.lang.Boolean)value).booleanValue());
-		else if (name == "vetoable")
+		else if ("vetoable".equals(name))
 			setVetoable(((java.lang.Boolean)value).booleanValue());
 		else
 			throw new IllegalArgumentException(name+" is not a valid property name for MetaProperty");
 	}
 
 	public Object fetchPropertyByName(String name) {
-		if (name == "beanName")
+		if ("beanName".equals(name))
 			return getBeanName();
-		if (name == "defaultValue[]")
+		if ("defaultValue[]".equals(name))
 			return getDefaultValue();
-		if (name == "knownValue[]")
+		if ("knownValue[]".equals(name))
 			return getKnownValue();
-		if (name == "key")
+		if ("key".equals(name))
 			return (isKey() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "vetoable")
+		if ("vetoable".equals(name))
 			return (isVetoable() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
 		throw new IllegalArgumentException(name+" is not a valid property name for MetaProperty");
 	}
@@ -450,54 +483,6 @@ public class MetaProperty implements org.netbeans.modules.schema2beansdev.metadd
 	 * @return null if not found
 	 */
 	public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName) {
-		if (childObj instanceof java.lang.String) {
-			java.lang.String child = (java.lang.String) childObj;
-			if (child == _BeanName) {
-				if (returnConstName) {
-					return BEAN_NAME;
-				} else if (returnSchemaName) {
-					return "bean-name";
-				} else if (returnXPathName) {
-					return "bean-name";
-				} else {
-					return "BeanName";
-				}
-			}
-			int index = 0;
-			for (java.util.Iterator it = _DefaultValue.iterator(); 
-				it.hasNext(); ) {
-				String element = (String)it.next();
-				if (child == element) {
-					if (returnConstName) {
-						return DEFAULT_VALUE;
-					} else if (returnSchemaName) {
-						return "default-value";
-					} else if (returnXPathName) {
-						return "default-value[position()="+index+"]";
-					} else {
-						return "DefaultValue."+Integer.toHexString(index);
-					}
-				}
-				++index;
-			}
-			index = 0;
-			for (java.util.Iterator it = _KnownValue.iterator(); 
-				it.hasNext(); ) {
-				String element = (String)it.next();
-				if (child == element) {
-					if (returnConstName) {
-						return KNOWN_VALUE;
-					} else if (returnSchemaName) {
-						return "known-value";
-					} else if (returnXPathName) {
-						return "known-value[position()="+index+"]";
-					} else {
-						return "KnownValue."+Integer.toHexString(index);
-					}
-				}
-				++index;
-			}
-		}
 		if (childObj instanceof java.lang.Boolean) {
 			java.lang.Boolean child = (java.lang.Boolean) childObj;
 			if (((java.lang.Boolean)child).booleanValue() == _Key) {
@@ -521,6 +506,54 @@ public class MetaProperty implements org.netbeans.modules.schema2beansdev.metadd
 				} else {
 					return "Vetoable";
 				}
+			}
+		}
+		if (childObj instanceof java.lang.String) {
+			java.lang.String child = (java.lang.String) childObj;
+			if (child.equals(_BeanName)) {
+				if (returnConstName) {
+					return BEAN_NAME;
+				} else if (returnSchemaName) {
+					return "bean-name";
+				} else if (returnXPathName) {
+					return "bean-name";
+				} else {
+					return "BeanName";
+				}
+			}
+			int index = 0;
+			for (java.util.Iterator it = _DefaultValue.iterator(); 
+				it.hasNext(); ) {
+				String element = (String)it.next();
+				if (child.equals(element)) {
+					if (returnConstName) {
+						return DEFAULT_VALUE;
+					} else if (returnSchemaName) {
+						return "default-value";
+					} else if (returnXPathName) {
+						return "default-value[position()="+index+"]";
+					} else {
+						return "DefaultValue."+Integer.toHexString(index);
+					}
+				}
+				++index;
+			}
+			index = 0;
+			for (java.util.Iterator it = _KnownValue.iterator(); 
+				it.hasNext(); ) {
+				String element = (String)it.next();
+				if (child.equals(element)) {
+					if (returnConstName) {
+						return KNOWN_VALUE;
+					} else if (returnSchemaName) {
+						return "known-value";
+					} else if (returnXPathName) {
+						return "known-value[position()="+index+"]";
+					} else {
+						return "KnownValue."+Integer.toHexString(index);
+					}
+				}
+				++index;
 			}
 		}
 		return null;
