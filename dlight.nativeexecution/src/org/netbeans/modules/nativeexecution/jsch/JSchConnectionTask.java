@@ -111,7 +111,11 @@ public final class JSchConnectionTask implements Cancellable {
             }
 
             if (!isReachable()) {
-                return new Result(null, new Problem(ProblemType.HOST_UNREACHABLE));
+                if (cancelled) {
+                    return new Result(null, new Problem(ProblemType.CONNECTION_CANCELLED));
+                } else {
+                    return new Result(null, new Problem(ProblemType.HOST_UNREACHABLE));
+                }
             }
 
             if (cancelled) {

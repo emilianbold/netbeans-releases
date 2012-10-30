@@ -181,18 +181,9 @@ public class RemoteServerListUI extends ServerListUIEx {
                     record.getDisplayName());
             boolean res = showConfirmDialog(message, NbBundle.getMessage(getClass(), "DLG_TITLE_Connect"));
             if (res) {
-                try {
-                    if (ConnectionManager.getInstance().isConnectedTo(record.getExecutionEnvironment())) {
-                        ConnectionManager.getInstance().connectTo(record.getExecutionEnvironment());
-                    }
+                if (ConnectionManager.getInstance().connect(record.getExecutionEnvironment())) {
                     record.validate(true);
                     result = true;
-                } catch (CancellationException ex) {
-                    // don't log
-                } catch (InterruptedIOException ex) {
-                    // don't log
-                } catch (IOException ex) {
-                    ex.printStackTrace();
                 }
             }
         }
