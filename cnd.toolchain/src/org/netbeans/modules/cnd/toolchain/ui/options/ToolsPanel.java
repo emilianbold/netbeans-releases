@@ -990,23 +990,16 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     RP.post(new Runnable() {
 
-            @Override
+        @Override
         public void run() {
-            if (!ConnectionManager.getInstance().isConnectedTo(getSelectedRecord().getExecutionEnvironment())) {
-                try {
-                    ConnectionManager.getInstance().connectTo(getSelectedRecord().getExecutionEnvironment());
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (CancellationException ex) {
-                    // don't report CancellationException
-                }
+            final ExecutionEnvironment env = getSelectedRecord().getExecutionEnvironment();
+            if (!ConnectionManager.getInstance().connect(env)) {
+                return;
             }
-            String versions = null;
-            if (ConnectionManager.getInstance().isConnectedTo(getSelectedRecord().getExecutionEnvironment())) {
-                versions = getToolCollectionPanel().getVersion(set);
-            }
+            String versions = getToolCollectionPanel().getVersion(set);
             SwingUtilities.invokeLater(new Runnable() {
-                    @Override
+
+                @Override
                 public void run() {
                     btVersions.setEnabled(true);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
