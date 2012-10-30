@@ -869,8 +869,11 @@ public class GenBeans {
             try {
                 config.messageOut.println("Writing metaDD XML file");	// NOI18N
                 FileOutputStream mddOut = new FileOutputStream(config.getMddFile());
-                config.getMetaDD().write(mddOut);
-                mddOut.close();
+                try {
+                    config.getMetaDD().write(mddOut);
+                } finally {
+                    mddOut.close();
+                }
             } catch (IOException e) {
                 config.messageOut.println("Failed to write the mdd file: " +
                                           e.getMessage()); // NOI18N

@@ -1059,8 +1059,11 @@ public class BeanBuilder {
         }
         if (config.getGenerateDotGraph() != null) {
             Writer out = new FileWriter(config.getGenerateDotGraph());
-            generateDotGraph(out, rootElement.getGraphNode());
-            close(out);
+            try {
+                generateDotGraph(out, rootElement.getGraphNode());
+            } finally {
+                close(out);
+            }
         }
 
         if (!config.isQuiet())

@@ -1557,8 +1557,6 @@ public class BeanClass extends AbstractCodeGeneratorClass implements CodeGenerat
         // Most of these are taken from the public methods of BaseBean
         jw.addToMethodStore("addComparator", "org.netbeans.modules.schema2beans.BeanComparator c", null, "void", jw.PUBLIC | jw.STATIC);
         jw.addToMethodStore("removeComparator", "org.netbeans.modules.schema2beans.BeanComparator c", null, "void", jw.PUBLIC | jw.STATIC);
-        if (beanElement.isRoot) {
-        }
         jw.addToMethodStore("getValue", "String name", null, "Object");
         jw.addToMethodStore("getValue", "String name, int index", null, "Object");
         jw.addToMethodStore("isNull", "String name", null, "boolean");
