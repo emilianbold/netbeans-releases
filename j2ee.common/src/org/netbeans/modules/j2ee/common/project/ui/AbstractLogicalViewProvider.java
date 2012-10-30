@@ -586,7 +586,8 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         @SuppressWarnings("LeakingThisInConstructor")
         public LogicalViewRootNode(String childrenFolderLayer, String actionsFolderLayer,
                 String iconBase, String shortDesc, Class helpContext) {
-            super(NodeFactorySupport.createCompositeChildren(project, childrenFolderLayer), Lookups.singleton(project));
+            super(NodeFactorySupport.createCompositeChildren(project, childrenFolderLayer), 
+                    Lookups.fixed(project, project.getProjectDirectory()));
             this.shortDesc = shortDesc;
             this.actionsFolderLayer = actionsFolderLayer;
             this.helpContext = helpContext;
