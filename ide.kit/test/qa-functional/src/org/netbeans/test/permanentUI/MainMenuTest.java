@@ -89,6 +89,8 @@ public class MainMenuTest extends JellyTestCase {
                   "testWindowMenu",
 
                   "testFile_ProjectGroupSubMenu",
+                  "testFile_ImportProjectSubMenu",
+                  "testFile_ExportProjectSubMenu",
                   "testMnemonicsCollision",
                   "testNavigate_InspectSubMenu",
                   "testView_CodeFoldsSubMenu",
@@ -245,6 +247,22 @@ public class MainMenuTest extends JellyTestCase {
     public void testFile_ProjectGroupSubMenu() {
         String goldenFile = getMainMenuGoldenFile("File-Project_Group");
         oneSubMenuTest("File|Project Group", goldenFile, true);
+    }
+
+    /**
+     * Tests if *File>Import Project* submenu in main menu is same as permanent UI spec
+     */
+    public void testFile_ImportProjectSubMenu() {
+        String goldenFile = getMainMenuGoldenFile("File-Import_Project");
+        oneSubMenuTest("File|Import Project", goldenFile, true);
+    }
+
+   /**
+     * Tests if *File>Export Project* submenu in main menu is same as permanent UI spec
+     */
+    public void testFile_ExportProjectSubMenu() {
+        String goldenFile = getMainMenuGoldenFile("File-Export_Project");
+        oneSubMenuTest("File|Export Project", goldenFile, true);
     }
 
     /**

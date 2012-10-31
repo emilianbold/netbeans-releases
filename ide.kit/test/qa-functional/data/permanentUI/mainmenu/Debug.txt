@@ -17,6 +17,7 @@ Step Out                    O
 Run to Cursor               u
 =========================
 Apply Code Changes          y
+Take GUI Snapshot
 =========================
 Set Current Thread...       h
 Stack                   >   S
