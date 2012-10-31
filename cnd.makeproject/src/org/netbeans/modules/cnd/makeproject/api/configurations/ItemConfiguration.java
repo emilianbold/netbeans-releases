@@ -90,7 +90,8 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         // General
         this.configuration = configuration;
         setItem(item);
-        this.excluded = new BooleanConfiguration(org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE);
+        // we want non-default (bold) title to be only for excluded items => use false
+        this.excluded = new BooleanConfiguration(false);
 
         // This is side effect of lazy configuration. We should init folder configuration
         // TODO: remove folder initialization. Folder should be responsible for it

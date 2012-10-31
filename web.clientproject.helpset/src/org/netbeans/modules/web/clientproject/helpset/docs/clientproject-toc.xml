@@ -3,14 +3,21 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
+    <tocitem text="IDE Basics" expand="false">
+        <tocitem text="JavaScript Files">
+            <tocitem text="About Debugging JavaScript Files" target="js-debug" />
+            <tocitem text="Setting JavaScript Breakpoints" target="js-breakpoints" />
+            <!-- <tocitem text="Evaluating JavaScript Variables" target="js-variables" /> -->
+            <tocitem text="Unit Testing JavaScript Files" target="js-testdriver" />
+        </tocitem>
+    </tocitem>
     <tocitem text="HTML5 Applications" expand="false">
         <tocitem text="About HTML5 Applications" target="html5-about"/>
         <tocitem text="Working with HTML5 Applications" target="html5-process" />
         <tocitem text="HTML5 Application Tasks: Quick Reference" target="html5-quickref" />
         <tocitem text="Creating an HTML5 Application" target="html5-create" />
         <tocitem text="Running an HTML5 Application" target="html5-run" />
-        <tocitem text="Debugging an HTML5 Application" target="html5-debug" />
-        <tocitem text="Integrating an HTML5 Project with the Browser" target="html5-chrome" />
+        <tocitem text="Integrating an HTML5 Project with a Browser" target="html5-chrome" />
         <tocitem text="Inspecting HTML5 Code with the Browser" target="html5-inspect" />
         <tocitem text="About HTML5 Site Templates" target="html5-templates" />
     </tocitem>

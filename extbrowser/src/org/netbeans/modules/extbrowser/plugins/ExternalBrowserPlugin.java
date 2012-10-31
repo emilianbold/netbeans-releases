@@ -322,6 +322,10 @@ public final class ExternalBrowserPlugin {
         }
         
         private Pair getAwaitingPair(String url) {
+            if (url.startsWith("chrome")) {
+                // ignore internal chrome URLs:
+                return null;
+            }
             URL u = null;
             try {
                 u = new URL(url);

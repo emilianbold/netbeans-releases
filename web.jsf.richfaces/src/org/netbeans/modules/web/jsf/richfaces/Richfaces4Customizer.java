@@ -46,10 +46,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
@@ -58,7 +62,11 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.jsf.richfaces.ui.Richfaces4CustomizerPanelVisual;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -66,9 +74,9 @@ import org.openide.util.HelpCtx;
  */
 public class Richfaces4Customizer implements JsfComponentCustomizer {
 
-    Richfaces4CustomizerPanelVisual panel;
+    private Richfaces4CustomizerPanelVisual panel;
     private ChangeSupport changeSupport = new ChangeSupport(this);
-    boolean initialize = true;
+    private Future<Boolean> result = null;
 
     public static final Logger LOGGER = Logger.getLogger(Richfaces4Customizer.class.getName());
 
@@ -102,17 +110,49 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
             return true;
         }
 
-        for (Library library : LibraryManager.getDefault().getLibraries()) {
-            if (!"j2se".equals(library.getType())) { // NOI18N
-                continue;
-            }
+        synchronized (this) {
+            if (result == null) {
+                result = RequestProcessor.getDefault().submit(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        Thread.sleep(4000);
+                        for (Library library : LibraryManager.getDefault().getLibraries()) {
+                            if (!"j2se".equals(library.getType())) { //NOI18N
+                                continue;
+                            }
 
-            List<URL> content = library.getContent("classpath"); //NOI18N
-            if (isValidRichfacesLibrary(content)) {
-                return true;
+                            List<URL> content = library.getContent("classpath"); //NOI18N
+                            if (isValidRichfacesLibrary(content)) {
+                                refreshParentValidation();
+                                return true;
+                            }
+                        }
+                        refreshParentValidation();
+                        return false;
+                    }
+
+                    private void refreshParentValidation() {
+                        // refresh validation of the parent panel
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                changeSupport.fireChange();
+                            }
+                        });
+                    }
+                });
+            } else if (!result.isDone()) {
+                return false;
+            } else {
+                try {
+                    return result.get();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
-
         return false;
     }
 
@@ -121,8 +161,14 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
         return panel.getWarningMessage();
     }
 
+    @NbBundle.Messages({
+        "Richfaces4Customizer.err.searching.richfaces.library=Searching valid RichFaces library. Please wait..."
+    })
     @Override
     public String getErrorMessage() {
+        if (result == null || !result.isDone()) {
+            return Bundle.Richfaces4Customizer_err_searching_richfaces_library();
+        }
         return panel.getErrorMessage();
     }
 
