@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.modelimpl.util.IllegalRepositoryStateException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -327,7 +328,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
         }
         result = UIDCsmConverter.UIDtoDeclaration(uid);
         if (uid != null && result == null) {
-            DiagnosticExceptoins.register(new IllegalStateException("no declaration for UID " + uid)); // NOI18N
+            DiagnosticExceptoins.register(new IllegalRepositoryStateException("no declaration for UID " + uid)); // NOI18N
         }
         return result;
     }
