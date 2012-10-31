@@ -56,7 +56,8 @@ import org.netbeans.spi.options.OptionsPanelController;
  * 
  * @author Maros Sandor
  */
-@OptionsPanelController.Keywords(keywords={"cvs"}, location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
+@OptionsPanelController.Keywords(keywords={"cvs"}, location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_OptionsPanel.title")
+@NbBundle.Messages("CTL_OptionsPanel.title=Versioning")
 class CvsOptionsPanel extends javax.swing.JPanel {
     
     /** Creates new form CvsOptionsPanel */

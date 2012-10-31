@@ -57,7 +57,8 @@ import static org.netbeans.modules.mercurial.options.Bundle.*;
 import org.netbeans.spi.options.OptionsPanelController;
 
 @OptionsPanelController.Keywords(keywords={"hg", "mercurial", "#MercurialPanel.kw1", "#MercurialPanel.kw2", "#MercurialPanel.kw3"},
-        location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
+        location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_OptionsPanel.title")
+@NbBundle.Messages("CTL_OptionsPanel.title=Versioning")
 final class MercurialPanel extends javax.swing.JPanel {
     
     private final MercurialOptionsPanelController controller;

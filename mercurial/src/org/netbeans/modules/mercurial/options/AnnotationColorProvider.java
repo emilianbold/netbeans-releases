@@ -45,11 +45,13 @@ package org.netbeans.modules.mercurial.options;
 import java.awt.Color;
 import java.text.MessageFormat;
 import java.util.Collection;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.MercurialVCS;
 import org.netbeans.modules.versioning.util.OptionsPanelColorProvider;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -60,6 +62,8 @@ import org.openide.util.lookup.ServiceProviders;
  * @author ondra
  */
 @ServiceProviders({@ServiceProvider(service=OptionsPanelColorProvider.class), @ServiceProvider(service=AnnotationColorProvider.class)})
+@OptionsPanelController.Keywords(keywords={"mercurial", "#KW_Colors"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle="#CTL_AnnotationColorsPanel.title")
+@NbBundle.Messages("CTL_AnnotationColorsPanel.title=Versioning")
 public class AnnotationColorProvider extends OptionsPanelColorProvider {
 
     private static String name;
