@@ -31,7 +31,7 @@ function drawResolvedFixedChart(object) {
         'dat': {
             'foo': {
                 'dummy': {
-                    'really':true,
+                    'really': true,
                     value: superGlobal
                 }
             }
@@ -41,3 +41,24 @@ function drawResolvedFixedChart(object) {
 }
 
 drawResolvedFixedChart({});
+
+window.test = {
+    name: {
+        firstname: "John",
+        lastName: "Smith"
+    }
+};
+
+function Synergy() {
+    //var synergy = this; 
+
+    this.defaultCookiesExpiration = 7;
+
+    this.modal = {
+        modalBody: "#modal-body",
+        show: function() {
+            $(this.modal).modal('toggle');
+        }
+    };
+
+}
