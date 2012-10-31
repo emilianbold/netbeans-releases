@@ -46,6 +46,9 @@ package org.netbeans.modules.mercurial.options;
 
 import java.awt.EventQueue;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 
 import javax.swing.event.DocumentListener;
@@ -58,12 +61,18 @@ import org.netbeans.spi.options.OptionsPanelController;
 
 @OptionsPanelController.Keywords(keywords={"hg", "mercurial", "#MercurialPanel.kw1", "#MercurialPanel.kw2", "#MercurialPanel.kw3"},
         location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_OptionsPanel.title")
-@NbBundle.Messages("CTL_OptionsPanel.title=Versioning")
+@NbBundle.Messages({
+    "CTL_OptionsPanel.title=Versioning",
+    "MercurialPanel.kw1=status labels",
+    "MercurialPanel.kw2=extensions",
+    "MercurialPanel.kw3=exclude from commit"
+})
 final class MercurialPanel extends javax.swing.JPanel {
     
     private final MercurialOptionsPanelController controller;
     private final DocumentListener listener;
     private String initialUserName;
+    private String[] keywords;
     
     MercurialPanel(MercurialOptionsPanelController controller) {
         this.controller = controller;
@@ -87,6 +96,18 @@ final class MercurialPanel extends javax.swing.JPanel {
         super.removeNotify();
     }
 
+    Collection<String> getKeywords () {
+        if (keywords == null) {
+            keywords = new String[] {
+                "HG",
+                "MERCURIAL",
+                Bundle.MercurialPanel_kw1().toUpperCase(),
+                Bundle.MercurialPanel_kw2().toUpperCase(),
+                Bundle.MercurialPanel_kw3().toUpperCase()
+            };
+        }
+        return Collections.unmodifiableList(Arrays.asList(keywords));
+    }
 
         
     /** This method is called from within the constructor to

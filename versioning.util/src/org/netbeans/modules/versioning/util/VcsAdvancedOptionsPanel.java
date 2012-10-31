@@ -65,11 +65,15 @@ public class VcsAdvancedOptionsPanel extends javax.swing.JPanel {
     
     public void addPanel(String name, JComponent component) {
         if (versioningPanels.containsKey(name)) {
-            versioningSystemsList.setSelectedValue(name, true);
+            selectCategory(name);
         } else {
             ((DefaultListModel) versioningSystemsList.getModel()).addElement(name);
             versioningPanels.put(name, component);
         }
+    }
+
+    void selectCategory (String name) {
+        versioningSystemsList.setSelectedValue(name, true);
     }
     
     /** This method is called from within the constructor to
