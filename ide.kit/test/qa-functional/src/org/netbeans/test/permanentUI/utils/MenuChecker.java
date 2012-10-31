@@ -177,6 +177,9 @@ public class MenuChecker {
                     list.add(mitem);
                 } else if (menuElement instanceof JMenuItem) //if()
                 {
+                    if (!((JMenuItem) menuElement).isVisible()) {
+                        continue;
+                    }
                     NbMenuItem item = new NbMenuItem((JMenuItem) menuElement);
                     item.setName(item.getName());
                     list.add(item);
