@@ -159,23 +159,24 @@ public class Folder implements FileChangeListener, ChangeListener {
         return root;
     }
 
-    public void refreshDiskFolder(boolean setModified) {
+    public void refreshDiskFolderAfterRestoringOldScheme() {
         if (!UNCHANGED_PROJECT_MODE) {
-            refreshDiskFolder(new HashSet<String>(), setModified);
+            refreshDiskFolder(new HashSet<String>(), true);
         }
     }
     
-    private void refreshDiskFolder(Set<String> antiLoop, boolean setModified) {
+    public void refreshDiskFolder() {
+        if (!UNCHANGED_PROJECT_MODE) {
+            refreshDiskFolder(new HashSet<String>(), false);
+        }
+    }
+    
+    private void refreshDiskFolder(Set<String> antiLoop, boolean useOldSchemeBehavior) {
         if (log.isLoggable(Level.FINER)) {
             log.log(Level.FINER, "----------refreshDiskFolder {0}", getPath()); // NOI18N
         }
         String rootPath = getRootPath();
         FileObject folderFile = getThisFolder();
-//        if (folderFile == null) { // see IZ 194221
-//            // that's a normal situation when moving or deleting items and folders
-//            log.log(Level.FINEST, "Null file object; folder kind: {0}, path: {1}", new Object[] { kind, AbsRootPath }); //NOI18N
-//            return;
-//        }
 
         // Folders to be removed
         if (folderFile == null || !folderFile.isValid()
@@ -186,7 +187,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, "------------removing folder {0} in {1}", new Object[]{getPath(), getParent().getPath()}); // NOI18N
             }
-            getParent().removeFolder(this, setModified);
+            getParent().removeFolder(this, true);
             return;
         }
         // Items to be removed
@@ -197,13 +198,13 @@ public class Folder implements FileChangeListener, ChangeListener {
                 continue;
             }
             if (!fo.isValid()
-                    || !fo.isData()
-                    || !VisibilityQuery.getDefault().isVisible(fo)
-                    || !CndFileVisibilityQuery.getDefault().isVisible(fo)) {
+                || !fo.isData()
+                || !VisibilityQuery.getDefault().isVisible(fo)
+                || !CndFileVisibilityQuery.getDefault().isVisible(fo)) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "------------removing item {0} in {1}", new Object[]{item.getPath(), getPath()}); // NOI18N
+                    log.log(Level.FINE, "------------removing item {0} in {1} [{2}]", new Object[]{item.getPath(), getPath(), fo}); // NOI18N
                 }
-                removeItem(item, setModified);
+                removeItem(item, true);
             }
         }
         try {
@@ -262,7 +263,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    getConfigurationDescriptor().addFilesFromDir(this, file, true, setModified, null);
+                    getConfigurationDescriptor().addFilesFromRefreshedDir(this, file, true, true, null, useOldSchemeBehavior);
 
                 }
             } else {
@@ -274,7 +275,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding {2} item {0} in {1}", new Object[]{file.getPath(), getPath(), ConfigurationDescriptorProvider.VCS_WRITE ? "excluded" : "included"}); // NOI18N
                     }
-                    addExcludedItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, setModified);
+                    addItemFromRefreshDir(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, true, useOldSchemeBehavior);
                 }
             }
         }
@@ -282,7 +283,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Repeast for all sub folders
         List<Folder> subFolders = getFolders();
         for (Folder f : subFolders) {
-            f.refreshDiskFolder(antiLoop, setModified);
+            f.refreshDiskFolder(antiLoop, useOldSchemeBehavior);
         }
     }
 
@@ -602,11 +603,11 @@ public class Folder implements FileChangeListener, ChangeListener {
         return addItemImpl(item, true, true, false);
     }
 
-    public Item addExcludedItem(Item item, boolean notify, boolean setModified) {
-        // TODO: fixing #215568 - Cannot put unmanaged project in VCS
-        // we want item to be excluded, but when old version of xml was read
-        // included items were missed there => can not drop them yet
-        return addItemImpl(item, notify, setModified, ConfigurationDescriptorProvider.VCS_WRITE);
+    public Item addItemFromRefreshDir(Item item, boolean notify, boolean setModified, boolean useOldSchemeBehavior) {
+        // in new scheme we restored "non-excluded" items => all new are treated as excluded by default
+        // in old scheme we didn't store "non-excluded" items, we stored "excluded" instead
+        // so to support projects with old scheme we need to consider all new files as "non-excluded"
+        return addItemImpl(item, notify, setModified, !useOldSchemeBehavior);
     }
 
     private synchronized Item addItemImpl(Item item, boolean notify, boolean setModified, boolean excludedByDefault) {
@@ -1274,7 +1275,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         // Happens when filter has changed
         if (isDiskFolder()) {
-            refreshDiskFolder(true);
+            refreshDiskFolder();
         }
     }
 
