@@ -577,6 +577,30 @@ public class OptionsPanel extends JPanel {
             }
             return false;
         }
+
+	private ArrayList<String> getAllMatchedKeywords(ArrayList<String> keywords, Collection<String> stWords) {
+	    ArrayList<String> allMatched = new ArrayList<String>();
+	    Iterator<String> e = stWords.iterator();
+            while (e.hasNext()) {
+		allMatched.addAll(getMatchedKeywords(keywords, e.next(), allMatched));
+            }
+	    return allMatched;
+	}
+
+	private ArrayList<String> getMatchedKeywords(ArrayList<String> keywords, String stWord, ArrayList<String> allMatched) {
+	    ArrayList<String> matched = new ArrayList<String>();
+	    Iterator<String> e = keywords.iterator();
+            while (e.hasNext()) {
+		String next = e.next();
+		for (String s : next.split(",")) {
+		    s = s.trim();
+		    if (s.contains(stWord) && !allMatched.contains(s) && !matched.contains(s)) {
+			matched.add(s);
+		    }
+		}
+            }
+	    return matched;
+	}
         
         private void handleSearch(String searchText) {
             List<String> stWords = Arrays.asList(searchText.toUpperCase().split(" "));
@@ -615,7 +639,7 @@ public class OptionsPanel extends JPanel {
                                         if (exactTabIndex == tabIndex) {
                                             pane.setSelectedIndex(tabIndex);
                                         }
-					matchedKeywords = tabWords;
+					matchedKeywords = getAllMatchedKeywords(tabWords, stWords);
 					CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
                                     } else {
                                         pane.setEnabledAt(tabIndex, false);
@@ -627,6 +651,8 @@ public class OptionsPanel extends JPanel {
                                     setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
                                     if(tabsInfo.size() == 1) {
                                         foundInNoTab = false;
+					matchedKeywords = getAllMatchedKeywords(entry, stWords);
+					CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
                                     }
                                 }
                             }
@@ -635,7 +661,7 @@ public class OptionsPanel extends JPanel {
                             }
                         } else {
                             setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
-			    matchedKeywords = entry;
+			    matchedKeywords = getAllMatchedKeywords(entry, stWords);
 			    CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
                         }
                     } else {
