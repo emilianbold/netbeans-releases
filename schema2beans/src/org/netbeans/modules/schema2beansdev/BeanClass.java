@@ -479,7 +479,9 @@ public class BeanClass extends AbstractCodeGeneratorClass implements CodeGenerat
         gen(", " + Version.MINVER);
         gen(", " + Version.PTCVER, ")");
         eol();
-        gen("private static final String SERIALIZATION_HELPER_CHARSET = \"UTF-8\"");
+        if (this.beanElement.isRoot) {
+            gen("private static final String SERIALIZATION_HELPER_CHARSET = \"UTF-8\"");
+        }
         eolNoI18N();
     }
     
