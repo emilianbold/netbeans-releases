@@ -280,7 +280,9 @@ public class FormatVisitor extends NodeVisitor {
 
             if (body.getStart() == body.getFinish()) {
                 // do the standard block related things
-                if (body.getStatements().get(0) instanceof IfNode) {
+                List<Node> statements = body.getStatements();
+                // there might be no statements when code is broken
+                if (!statements.isEmpty() && (statements.get(0) instanceof IfNode)) {
                     // we mark else if statement here
                     handleVirtualBlock(body, FormatToken.Kind.ELSE_IF_INDENTATION_INC,
                             FormatToken.Kind.ELSE_IF_INDENTATION_DEC, FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START);

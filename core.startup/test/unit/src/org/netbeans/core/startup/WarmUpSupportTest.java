@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.core.startup;
 
-package org.netbeans.modules.cnd.debug;
+import java.awt.EventQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public interface CndTraceFlags {
-    public static final boolean TRACE_SLICE_DISTIBUTIONS = DebugUtils.getBoolean("cnd.slice.trace", false); // NOI18N
-
-    public static final boolean LANGUAGE_FLAVOR_CPP11 = DebugUtils.getBoolean("cnd.language.flavor.cpp11", false); // NOI18N
-
-    // use of weak refs instead of soft to allow quicker GC
-    public static final boolean WEAK_REFS_HOLDERS = DebugUtils.getBoolean("cnd.weak.refs", false); // NOI18N
+public class WarmUpSupportTest extends NbTestCase {
+    private static final Logger LOG = Logger.getLogger(WarmUpSupportTest.class.getName());
+    public static final CountDownLatch in = new CountDownLatch(1);
     
-    public static final boolean TEXT_INDEX = DebugUtils.getBoolean("cnd.model.text.index", true); // NOI18N
+    public WarmUpSupportTest(String s) {
+        super(s);
+    }
+
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
+    
+    public static Test suite() {
+        System.setProperty("warmup.delay", "6000");
+        System.setProperty("warmup.success", "not yet");
+        NbTestSuite s = new NbTestSuite();
+        s.addTest(NbModuleSuite.emptyConfiguration().addTest(WarmUpSupportTest.class, "testEmpty").
+            gui(true).suite()
+        );
+        s.addTest(new WarmUpSupportTest("testVerifyProperty"));
+        return s;
+    }
+
+    public void testEmpty() throws Exception {
+        in.await();
+    }
+    
+    public void testVerifyProperty() throws Exception {
+        LOG.info("testVerifyProperty");
+        for (int i = 0; i < 10 && !"in edt".equals(System.getProperty("warmup.success")); i++) {
+            LOG.log(Level.INFO, "Jump to EDT, round {0}", i);
+            EventQueue.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                }
+            });
+            LOG.info("Wait a second");
+            Thread.sleep(1000);
+            LOG.info("Wait is over");
+        }
+        assertEquals("The WarmUpSupportTask was executed", "in edt", System.getProperty("warmup.success"));
+    }
 }

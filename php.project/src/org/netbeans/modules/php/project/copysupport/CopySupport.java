@@ -206,7 +206,10 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         LOGGER.log(Level.INFO, "Number of ProjectOpenedHook classes in project lookup: {0}", hooks);
 
         LOGGER.log(Level.INFO, "Copy Support incorrectly opened/closed (opened: {0}, closed: {1})", new Object[] {opened.get(), closed.get()});
-        throw new IllegalStateException(callStack.peek());
+        Exception previous = callStack.peek();
+        // #220893 - log the exception itself because the stacktrace is not in the log file (?!)
+        LOGGER.log(Level.WARNING, "Stack trace of the previous call", previous);
+        throw new IllegalStateException(previous);
     }
 
     private void prepareOperation(Callable<Boolean> callable) {
@@ -273,22 +276,41 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 LOGGER.log(Level.FINE, "\t-> NON-RECURSIVE listener unregistered for project {0}", project.getName());
             } else {
                 assert fileChangeListener instanceof SourcesFileChangeListener : "FS listener of incorrect type: " + fileChangeListener.getClass().getName();
+                FileObject sources = getSources();
+                if (sources == null) {
+                    // broken project
+                    unregisterFileChangeListenerFromOriginalSources();
+                    return;
+                }
                 // #172777
                 try {
-                    FileUtil.removeRecursiveListener(fileChangeListener, FileUtil.toFile(getSources()));
+                    FileUtil.removeRecursiveListener(fileChangeListener, FileUtil.toFile(sources));
                     LOGGER.log(Level.FINE, "\t-> RECURSIVE listener unregistered for project {0}", project.getName());
                 } catch (IllegalArgumentException ex) {
                     LOGGER.log(Level.WARNING,
-                            "If this happens to you reliably, report issue with steps to reproduce and attach IDE log (http://www.netbeans.org/community/issues).", ex);
+                            "If this happens to you reliably, report issue with steps to reproduce and attach IDE log (http://netbeans.org/community/issues.html).", ex);
                     FileObject originalSources = ((SourcesFileChangeListener) fileChangeListener).getSources();
-                    FileObject currentSources = getSources();
                     LOGGER.log(Level.INFO,
                             "registered sources (valid): {0} ({1}), current sources (valid): {2} ({3}), equals: {4}",
-                            new Object[] {originalSources, originalSources.isValid(), currentSources, currentSources.isValid(), originalSources.equals(currentSources)});
+                            new Object[] {originalSources, originalSources.isValid(), sources, sources != null && sources.isValid(), originalSources.equals(sources)});
+                    unregisterFileChangeListenerFromOriginalSources();
                 }
             }
             fileSystem = null;
             fileChangeListener = null;
+        }
+    }
+
+    private void unregisterFileChangeListenerFromOriginalSources() {
+        assert Thread.holdsLock(this);
+        assert fileChangeListener instanceof SourcesFileChangeListener : "FS listener of incorrect type: " + fileChangeListener.getClass().getName();
+        FileObject originalSources = ((SourcesFileChangeListener) fileChangeListener).getSources();
+        assert originalSources != null : "Original sources should be found";
+        File origSources = FileUtil.toFile(originalSources);
+        try {
+            FileUtil.removeRecursiveListener(fileChangeListener, origSources);
+        } catch (IllegalArgumentException ex) {
+            LOGGER.log(Level.FINE, null, ex);
         }
     }
 
@@ -429,8 +451,13 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
     // #212495 - project files deleted on server when network drive is unmapped
     private boolean isSourceRootValid() {
-        File sources = FileUtil.toFile(getSources());
-        return sources != null && sources.isDirectory();
+        FileObject sources = getSources();
+        if (sources == null) {
+            // #220803
+            return false;
+        }
+        File sourceFiles = FileUtil.toFile(sources);
+        return sourceFiles != null && sourceFiles.isDirectory();
     }
 
     FileObject getSources() {
@@ -439,13 +466,12 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "# {1} - source directory",
         "CopySupport.warn.invalidSources=<html>Source Files of project \"{0}\" do not exist, file changes are not propagated to the server.<br><br>"
-            + "Restore directory \"{1}\" (and possibly reopen the project)."
+            + "Use \"Resolve Project Problems...\" action to repair the project."
     })
     private void warnInvalidSourceRoot() {
         NotifyDescriptor descriptor = new NotifyDescriptor.Message(
-                Bundle.CopySupport_warn_invalidSources(project.getName(), FileUtil.toFile(getSources()).getAbsolutePath()),
+                Bundle.CopySupport_warn_invalidSources(project.getName()),
                 NotifyDescriptor.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notifyLater(descriptor);
     }

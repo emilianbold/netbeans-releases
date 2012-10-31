@@ -709,7 +709,11 @@ public class ConfigurationMakefileWriter {
         }
         command += "${OBJECTFILES}" + " "; // NOI18N
         command += "${LDLIBSOPTIONS}"; // NOI18N
-        final String options = linkerConfiguration.getOptions();
+        String options = linkerConfiguration.getCommandLineConfiguration().getValue();
+        if (options.length() > 0) {
+            command += " " + options; // NOI18N
+        }
+        options = linkerConfiguration.getBasicOptions();
         if (options.length() > 0) {
             command += " " + options; // NOI18N
         }

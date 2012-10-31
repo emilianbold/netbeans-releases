@@ -280,6 +280,7 @@ public final class FileUtil extends Object {
      */
     public static void addFileChangeListener(FileChangeListener listener, File path) {
         assert assertNormalized(path);
+        LOG.log(Level.FINE, "addFileChangeListener {0} @ {1}", new Object[]{listener, path});
         synchronized (holders) {
             Map<File, Holder> f2H = holders.get(listener);
             if (f2H == null) {
@@ -308,6 +309,7 @@ public final class FileUtil extends Object {
 
     private static FileChangeListener removeFileChangeListenerImpl(FileChangeListener listener, File path) {
         assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + "!";  //NOI18N
+        LOG.log(Level.FINE, "removeFileChangeListener {0} @ {1}", new Object[]{listener, path});
         synchronized (holders) {
             Map<File, Holder> f2H = holders.get(listener);
             if (f2H == null) {
