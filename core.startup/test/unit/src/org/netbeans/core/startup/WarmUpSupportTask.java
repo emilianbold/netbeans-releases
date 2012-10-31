@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.core.startup;
 
-package org.netbeans.modules.cnd.debug;
+import java.awt.EventQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public interface CndTraceFlags {
-    public static final boolean TRACE_SLICE_DISTIBUTIONS = DebugUtils.getBoolean("cnd.slice.trace", false); // NOI18N
-
-    public static final boolean LANGUAGE_FLAVOR_CPP11 = DebugUtils.getBoolean("cnd.language.flavor.cpp11", false); // NOI18N
-
-    // use of weak refs instead of soft to allow quicker GC
-    public static final boolean WEAK_REFS_HOLDERS = DebugUtils.getBoolean("cnd.weak.refs", false); // NOI18N
-    
-    public static final boolean TEXT_INDEX = DebugUtils.getBoolean("cnd.model.text.index", true); // NOI18N
+@ServiceProvider(service=Runnable.class, path="WarmUp")
+public class WarmUpSupportTask implements Runnable {
+    private static final Logger LOG = Logger.getLogger(WarmUpSupportTask.class.getName());
+    @Override
+    public void run() {
+        if (EventQueue.isDispatchThread()) {
+            System.setProperty("warmup.success", "in edt");
+            System.err.println("setting the property");
+            return;
+        }
+        
+        int timeOut = Integer.getInteger("warmup.delay", -1);
+        if (timeOut > 0) {
+            LOG.log(Level.INFO, "Will timeout for {0} ms", timeOut);
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            try {
+                Class<?> c = l.loadClass(WarmUpSupportTest.class.getName());
+                CountDownLatch in = (CountDownLatch) c.getDeclaredField("in").get(null);
+                System.setProperty("warmup.success", "notify count down");
+                in.countDown();
+                
+                Thread.sleep(timeOut);
+                
+                System.setProperty("warmup.success", "before invokeAndWait");
+                LOG.info("before invokeAndWait");
+                EventQueue.invokeAndWait(this);
+                LOG.info("after invokeAndWait");
+            } catch (Exception ex) {
+                System.setProperty("warmup.success", "exception " + ex.getMessage());
+                throw new IllegalStateException(ex);
+            }
+        }
+    }
 }

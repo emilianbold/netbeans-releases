@@ -262,12 +262,6 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         return clone;
     }
 
-    public String getOptions() {
-        String options = getCommandLineConfiguration().getValue() + " "; // NOI18N
-        options += getBasicOptions() + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
-    }
-
     public String getOutputOptions(){
         String options = ""; // NOI18N
         CompilerSet cs = getMakeConfiguration().getCompilerSet().getCompilerSet();
@@ -343,8 +337,10 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
     // Interface OptionsProvider
     @Override
     public String getAllOptions(Tool tool) {
-        String options = getBasicOptions() + " "; // NOI18N
+        String options = getOutputOptions() + " "; // NOI18N
         options += getLibraryItems() + " "; // NOI18N
+        options += getCommandLineConfiguration().getValue() + " "; // NOI18N
+        options += getBasicOptions() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
 
