@@ -187,7 +187,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, "------------removing folder {0} in {1}", new Object[]{getPath(), getParent().getPath()}); // NOI18N
             }
-            getParent().removeFolder(this, true);
+            getParent().removeFolderImpl(this, true, false);
             return;
         }
         // Items to be removed
@@ -204,7 +204,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "------------removing item {0} in {1} [{2}]", new Object[]{item.getPath(), getPath(), fo}); // NOI18N
                 }
-                removeItem(item, true);
+                removeItemImpl(item, true, false);
             }
         }
         try {
@@ -273,7 +273,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 }
                 if (findItemByPath(path) == null) {
                     if (log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, "------------adding {2} item {0} in {1}", new Object[]{file.getPath(), getPath(), ConfigurationDescriptorProvider.VCS_WRITE ? "excluded" : "included"}); // NOI18N
+                        log.log(Level.FINE, "------------adding {2} item {0} in {1}", new Object[]{file.getPath(), getPath(), useOldSchemeBehavior ? "excluded" : "included"}); // NOI18N
                     }
                     addItemFromRefreshDir(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, true, useOldSchemeBehavior);
                 }
@@ -804,28 +804,35 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public boolean removeItemAction(Item item) {
-        return removeItemAction(item, true);
-    }
-
-    public boolean removeItemAction(Item item, boolean setModified) {
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
         list.add(item);
-        boolean ret = removeItem(item, setModified);
+        boolean ret = removeItemImpl(item, true, true);
         if (isProjectFiles()) {
             configurationDescriptor.fireFilesRemoved(list);
         }
         return ret;
     }
 
+    private boolean removePhysicalItem(Item item, boolean setModified) {
+        ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
+        list.add(item);
+        boolean ret = removeItemImpl(item, setModified, false);
+        if (isProjectFiles()) {
+            configurationDescriptor.fireFilesRemoved(list);
+        }
+        return ret;
+    }
+    
     public void renameItemAction(String oldPath, Item newItem) {
         configurationDescriptor.fireFileRenamed(oldPath, newItem);
     }
 
     public boolean removeItem(Item item) {
-        return removeItem(item, true);
+        // shouldn't it be the same as removeItemAction?
+        return removeItemImpl(item, true, true);
     }
 
-    private boolean removeItem(Item item, boolean setModified) {
+    private boolean removeItemImpl(Item item, boolean setModified, boolean requestForCompleteRemove) {
         boolean ret = false;
         if (item == null) {
             return false;
@@ -886,16 +893,13 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public boolean removeFolderAction(Folder folder) {
-        return removeFolderAction(folder, true);
-    }
-
-    public boolean removeFolderAction(Folder folder, boolean setModified) {
-        boolean ret = removeFolder(folder, setModified);
+        // this is request from user to remove folder completely
+        boolean ret = removeFolderImpl(folder, true, true);
         configurationDescriptor.fireFilesRemoved(folder.getAllItemsAsList());
         return ret;
     }
-
-    private boolean removeFolder(Folder folder, boolean setModified) {
+    
+    private boolean removeFolderImpl(Folder folder, boolean setModified, boolean requestForCompleteRemove) {
         boolean ret = false;
         if (folder != null) {
             for (Folder f : folder.getAllFolders(false)) {
@@ -905,7 +909,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (folder.isDiskFolder()) {
                 folder.detachListener();
             }
-            folder.removeAll();
+            folder.removeAll(requestForCompleteRemove);
             itemsLock.writeLock().lock();
             try {
                 ret = items.remove(folder);
@@ -929,14 +933,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     /**
      * Remove all items and folders recursively
      */
-    private void removeAll() {
+    private void removeAll(boolean requestForCompleteRemove) {
         Item[] itemsToRemove = getItemsAsArray();
         Folder[] foldersToRemove = getFoldersAsArray();
         for (int i = 0; i < itemsToRemove.length; i++) {
-            removeItem(itemsToRemove[i]);
+            removeItemImpl(itemsToRemove[i], true, requestForCompleteRemove);
         }
         for (int i = 0; i < foldersToRemove.length; i++) {
-            removeFolder(foldersToRemove[i], true);
+            removeFolderImpl(foldersToRemove[i], true, requestForCompleteRemove);
         }
     }
 
@@ -1380,13 +1384,13 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
             
             if (item != null) {
-                removeItemAction(item, true);
+                removePhysicalItem(item, true);
                 return;
             }
             // then folder
             Folder folder = findFolderByName(fileObject.getNameExt());
             if (folder != null) {
-                removeFolderAction(folder, true);
+                removeFolderImpl(folder, true, false);
                 return;
             }
             fireChangeEvent(this, false);
@@ -1420,7 +1424,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 // Copy all configurations
                 copyConfigurations(folder, top);
                 // Remove old folder
-                removeFolderAction(folder, false);
+                removeFolderAction(folder);
             }
         } else {
             while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
