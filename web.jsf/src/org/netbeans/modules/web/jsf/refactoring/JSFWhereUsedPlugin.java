@@ -112,15 +112,12 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
                 if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())){
                     Project project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
                     if (project != null){
-                        CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());
-                        if (info != null) {
-                            Element resElement = treePathHandle.resolveElement(info);
-                            TypeElement type = (TypeElement) resElement;
-                            String fqnc = type.getQualifiedName().toString();
-                            List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, fqnc,"");
-                            for (Occurrences.OccurrenceItem item : items) {
-                                refactoringElements.add(refactoring, new JSFWhereUsedElement(item));
-                            }
+                        Element resElement = JSFRefactoringUtils.resolveElement(refactoring, treePathHandle);
+                        TypeElement type = (TypeElement) resElement;
+                        String fqnc = type.getQualifiedName().toString();
+                        List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, fqnc,"");
+                        for (Occurrences.OccurrenceItem item : items) {
+                            refactoringElements.add(refactoring, new JSFWhereUsedElement(item));
                         }
                     }
                 }
