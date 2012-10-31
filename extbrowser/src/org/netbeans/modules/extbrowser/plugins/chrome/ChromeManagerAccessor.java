@@ -106,7 +106,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         
         private static final String STATE = "\"state\":";                       // NOI18N
         
-        private static final String PLUGIN_NAME = "NetBeans IDE Support Plugin";// NOI18N
+        private static final String PLUGIN_NAME = "NetBeans Connector";// NOI18N
         
         private static final String EXTENSION_PATH = "modules/lib/netbeans-ros-chrome-plugin.crx"; // NOI18N
 

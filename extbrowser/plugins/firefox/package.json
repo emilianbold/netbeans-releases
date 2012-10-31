@@ -3,8 +3,8 @@
     "license": "CDDL/GPL 2", 
     "author": "Oracle", 
     "version": "0.3", 
-    "fullName": "NetBeans IDE Support Plugin", 
+    "fullName": "NetBeans Connector", 
     "id": "ros-firefox-plugin@netbeans.org", 
-    "description": "Support plugin for NetBeans IDE",
+    "description": "Connector plugin for NetBeans IDE",
     "icon": "data/netbeans48.png"
 }
