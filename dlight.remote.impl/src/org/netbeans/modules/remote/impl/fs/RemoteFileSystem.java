@@ -93,6 +93,7 @@ import org.openide.windows.WindowManager;
 public final class RemoteFileSystem extends FileSystem implements ConnectionListener {
 
     private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[]{};
+    private static final boolean ATTR_STATS = Boolean.getBoolean("remote.attr.stats");
     
     public static final String ATTRIBUTES_FILE_NAME = ".rfs_attr"; // NOI18N
     public static final String CACHE_FILE_NAME = ".rfs_cache"; // NOI18N
@@ -188,6 +189,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 fo.connectionChanged();
             }
         }
+        if (ATTR_STATS) { dumpAttrStat(); }
     }
     
     /*package*/ ExecutionEnvironment getExecutionEnvironment() {
@@ -378,6 +380,65 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         } else {
             file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), attrName, oldValue, value));
         }
+        logAttrName(attrName, true);
+    }
+
+    private static class AttrStat {
+        public final String name;
+        public int readCount = 0;
+        public int writeCount = 0;
+        public StackTraceElement[] firstReadStack;
+        public StackTraceElement[] firstWriteStack;
+        public AttrStat(String name) {
+            this.name = name;
+        }
+    }
+
+    private static final Map<String, AttrStat> attrStats = new TreeMap<String, AttrStat> ();
+
+    private static void logAttrName(String name, boolean write) {
+        synchronized(attrStats) {
+            AttrStat stat  = attrStats.get(name);
+            if (stat == null) {
+                stat = new AttrStat(name);
+                attrStats.put(name, stat);
+            }
+            if (write) {
+                if (stat.writeCount++ == 0) {
+                    stat.firstWriteStack = Thread.currentThread().getStackTrace();
+                }
+            } else {
+                if (stat.readCount++ == 0) {
+                    stat.firstReadStack = Thread.currentThread().getStackTrace();
+                }
+            }
+        }
+        System.out.printf("%sAttribute %s\n", write ? "set" : "get", name);
+    }
+
+    /*package*/ void dumpAttrStat() {
+        Map<String, AttrStat> toDump = null;
+        synchronized(attrStats) {
+            toDump= new TreeMap<String, AttrStat>(attrStats);
+        }
+        System.out.printf("\n\nDumping attributes statistics (%d elements)\n\n", toDump.size());
+        for (Map.Entry<String, AttrStat> entry : toDump.entrySet()) {
+            //String name = entry.getKey();
+            AttrStat stat = entry.getValue();
+            System.out.printf("%s %d %d\n", stat.name, stat.readCount, stat.writeCount);
+            if (stat.firstReadStack != null) {
+                System.out.printf("\t%s first read stack:\n", stat.name);
+                for (StackTraceElement e : stat.firstReadStack) {
+                    System.out.printf("\t\t%s\n", e);
+                }
+            }
+            if (stat.firstWriteStack != null) {
+                System.out.printf("\t%s first write stack:\n", stat.name);
+                for (StackTraceElement e : stat.firstWriteStack) {
+                    System.out.printf("\t\t%s\n", e);
+                }
+            }
+        }
     }
 
     private File getAttrFile(RemoteFileObjectBase parent) {
@@ -404,6 +465,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         } else if (attrName.startsWith("ProvidedExtensions")) { //NOI18N
             return null;
         }
+        if (ATTR_STATS) { logAttrName(attrName, false); }
         File attr = getAttrFile(parent);
         Properties table = readProperties(attr);
         return decodeValue(table.getProperty(translateAttributeName(file, attrName)));
