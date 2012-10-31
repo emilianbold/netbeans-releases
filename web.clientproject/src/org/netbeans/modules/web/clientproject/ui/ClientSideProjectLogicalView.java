@@ -52,6 +52,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -90,8 +92,8 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 @ActionReferences({
     @ActionReference(
@@ -101,7 +103,9 @@ import org.openide.util.lookup.ProxyLookup;
 })
 public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
-    private ClientSideProject project;
+    static final Logger LOGGER = Logger.getLogger(ClientSideProjectLogicalView.class.getName());
+
+    private final ClientSideProject project;
 
     public ClientSideProjectLogicalView(ClientSideProject project) {
         this.project = project;
@@ -109,20 +113,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     @Override
     public Node createLogicalView() {
-        try {
-            FileObject root = project.getProjectDirectory();
-
-            DataFolder df =
-                    DataFolder.findFolder(root);
-
-            Node node = df.getNodeDelegate();
-
-            return new ClientSideProjectNode(node, project);
-
-        } catch (DataObjectNotFoundException e) {
-            Exceptions.printStackTrace(e);
-            return new AbstractNode(Children.LEAF);
-        }
+        return new ClientSideProjectNode(project);
     }
 
     @Override
@@ -216,19 +207,71 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
 
 /** This is the node you actually see in the project tab for the project */
-    private static final class ClientSideProjectNode extends FilterNode {
+    private static final class ClientSideProjectNode extends AbstractNode {
 
         final ClientSideProject project;
 
-        public ClientSideProjectNode(Node node, ClientSideProject project) throws DataObjectNotFoundException {
-            super(node, new ClientSideProjectChildren(project),
-                    //The projects system wants the project in the Node's lookup.
-                    //NewAction and friends want the original Node's lookup.
-                    //Make a merge of both
-                    new ProxyLookup(new Lookup[]{Lookups.singleton(project),
-                        node.getLookup()
-                    }));
+        public ClientSideProjectNode(ClientSideProject project) {
+            super(new ClientSideProjectChildren(project), createLookup(project));
             this.project = project;
+        }
+
+        private static Lookup createLookup(ClientSideProject project) {
+            final InstanceContent instanceContent = new InstanceContent();
+            instanceContent.add(project);
+            instanceContent.add(project, new InstanceContent.Convertor<ClientSideProject, FileObject>() {
+                @Override
+                public FileObject convert(ClientSideProject obj) {
+                    return obj.getProjectDirectory();
+                }
+
+                @Override
+                public Class<? extends FileObject> type(ClientSideProject obj) {
+                    return FileObject.class;
+                }
+
+                @Override
+                public String id(ClientSideProject obj) {
+                    final FileObject fo = obj.getProjectDirectory();
+                    return fo == null ? "" : fo.getPath();  // NOI18N
+                }
+
+                @Override
+                public String displayName(ClientSideProject obj) {
+                    return obj.toString();
+                }
+
+            });
+            instanceContent.add(project, new InstanceContent.Convertor<ClientSideProject, DataObject>() {
+                @Override
+                public DataObject convert(ClientSideProject obj) {
+                    try {
+                        final FileObject fo = obj.getProjectDirectory();
+                        return fo == null ? null : DataObject.find(fo);
+                    } catch (DataObjectNotFoundException ex) {
+                        LOGGER.log(Level.WARNING, null, ex);
+                        return null;
+                    }
+                }
+
+                @Override
+                public Class<? extends DataObject> type(ClientSideProject obj) {
+                    return DataObject.class;
+                }
+
+                @Override
+                public String id(ClientSideProject obj) {
+                    final FileObject fo = obj.getProjectDirectory();
+                    return fo == null ? "" : fo.getPath();  // NOI18N
+                }
+
+                @Override
+                public String displayName(ClientSideProject obj) {
+                    return obj.toString();
+                }
+
+            });
+            return new AbstractLookup(instanceContent);
         }
 
         @Override
@@ -309,24 +352,24 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             project.getEvaluator().addPropertyChangeListener(listener);
             project.getProjectDirectory().addRecursiveListener(listener);
         }
-        
+
         private class Listener extends FileChangeAdapter implements PropertyChangeListener {
 
             private boolean sourcesNodeHidden;
             private boolean testsNodeHidden;
             private boolean configNodeHidden;
-            
+
             public Listener() {
                 sourcesNodeHidden = isNodeHidden(BasicNodes.Sources);
                 testsNodeHidden = isNodeHidden(BasicNodes.Tests);
                 configNodeHidden = isNodeHidden(BasicNodes.Configuration);
             }
-            
+
             @Override
             public void fileFolderCreated(FileEvent fe) {
                 updateNodes();
             }
-            
+
             @Override
             public void fileDataCreated(FileEvent fe) {
                 updateNodes();
@@ -337,7 +380,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             public void fileDeleted(FileEvent fe) {
                 updateNodes();
             }
-            
+
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName()) ||
@@ -346,7 +389,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     updateNodes();
                 }
             }
-            
+
             private void updateNodes() {
                 boolean nodeHidden = isNodeHidden(BasicNodes.Sources);
                 if (nodeHidden != sourcesNodeHidden) {
@@ -366,7 +409,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
 
         }
-        
+
         private void refreshKeyInAWT(final BasicNodes type) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -432,7 +475,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
             return true;
         }
-        
+
         private FileObject getRootForNode(BasicNodes node) {
             switch (node) {
                 case Configuration: return project.getConfigFolder();
@@ -441,7 +484,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 default: assert false; return null;
             }
         }
-        
+
         private Node[] createNodeForFolder(BasicNodes type) {
             FileObject root = getRootForNode(type);
             if (root != null && root.isValid()) {
