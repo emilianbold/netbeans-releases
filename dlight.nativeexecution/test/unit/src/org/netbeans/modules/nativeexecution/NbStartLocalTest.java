@@ -116,22 +116,19 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
         Properties properties = System.getProperties();
         String user = properties.getProperty("user.name");
 
-        File whoami = new File("/usr/bin/whoami");
-        if (!whoami.exists()) {
-            whoami = new File("/bin/whoami");
-            if (!whoami.exists()) {
-                whoami = new File("/usr/local/bin/whoami");
-                if (!whoami.exists()) {
-                    System.out.println("Unable to find local whoami program");
+        File echo = new File("/bin/echo");
+        if (!echo.exists()) {
+            echo = new File("/usr/bin/echo");
+            if (!echo.exists()) {
+                    System.out.println("Unable to find local echo executable");
                     return;
-                }
             }
         }
 
-        npb.setExecutable(whoami.getAbsolutePath()).setStatusEx(true);
+        npb.setExecutable(echo.getAbsolutePath()).setArguments(user).setStatusEx(true);
         NativeProcess process = npb.call();
         int rc = process.waitFor();
-        assertEquals(whoami + " exit status", 0, rc);
+        assertEquals(echo + " exit status", 0, rc);
         String userName = ProcessUtils.readProcessOutputLine(process);
         assertEquals(user, userName);
     }

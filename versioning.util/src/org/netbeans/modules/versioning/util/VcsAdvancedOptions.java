@@ -49,6 +49,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -169,4 +171,33 @@ public class VcsAdvancedOptions extends OptionsPanelController {
         public HelpCtx getHelpCtx() {
             return new HelpCtx(VcsAdvancedOptions.class);
         }
+
+    @Override
+    public void handleSuccessfulSearch (String searchText, List<String> matchedKeywords) {
+        List<String> hitKeywords = search(searchText.toUpperCase(), matchedKeywords);
+        if (hitKeywords.isEmpty()) {
+            Logger.getLogger(VcsAdvancedOptions.class.getName()).log(Level.WARNING, "No keyword hit for {0}, {1}",
+                    new Object[] { searchText, matchedKeywords });
+            return;
+        }
+        for (Map.Entry<String, OptionsPanelController> e : categoryToController.entrySet()) {
+            OptionsPanelController c = e.getValue();
+            if (c instanceof VCSOptionsKeywordsProvider) {
+                if (((VCSOptionsKeywordsProvider) c).acceptKeywords(hitKeywords)) {
+                    panel.selectCategory(e.getKey());
+                    break;
+                }
+            }
+        }
+    }
+
+    private List<String> search (String searchText, List<String> matchedKeywords) {
+        List<String> hitKeywords = new ArrayList<String>(matchedKeywords.size());
+        for (String kw : matchedKeywords) {
+            if (kw.contains(searchText)) {
+                hitKeywords.add(kw);
+            }
+        }
+        return hitKeywords;
+    }
 }

@@ -130,8 +130,7 @@ public class NewCNDProjectNameLocationStepOperatorTest extends JellyTestCase {
         //Select Project Location
         String selectProjectLocation = Bundle.getString("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle",
                 "LBL_NWP1_SelectProjectLocation");
-        new NbDialogOperator(selectProjectLocation).cancel(); //I18N
-        stpop.cbSetAsMainProject().setSelected(false);
+        new NbDialogOperator(selectProjectLocation).cancel(); //I18N        
         stpop.cancel();
     }
 
@@ -152,7 +151,6 @@ public class NewCNDProjectNameLocationStepOperatorTest extends JellyTestCase {
         String selectProjectLocation = Bundle.getString("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle",
                 "LBL_NWP1_SelectProjectLocation");
         new NbDialogOperator(selectProjectLocation).cancel(); //I18N
-        stpop.cbSetAsMainProject().setSelected(false);
         stpop.cancel();
     }
 

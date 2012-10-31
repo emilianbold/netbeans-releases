@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.openide.filesystems;
 
-package org.netbeans.modules.cnd.debug;
+import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public interface CndTraceFlags {
-    public static final boolean TRACE_SLICE_DISTIBUTIONS = DebugUtils.getBoolean("cnd.slice.trace", false); // NOI18N
-
-    public static final boolean LANGUAGE_FLAVOR_CPP11 = DebugUtils.getBoolean("cnd.language.flavor.cpp11", false); // NOI18N
-
-    // use of weak refs instead of soft to allow quicker GC
-    public static final boolean WEAK_REFS_HOLDERS = DebugUtils.getBoolean("cnd.weak.refs", false); // NOI18N
+public class DeepListenerTest extends NbTestCase {
     
-    public static final boolean TEXT_INDEX = DebugUtils.getBoolean("cnd.model.text.index", true); // NOI18N
+    public DeepListenerTest(String n) {
+        super(n);
+    }
+
+    public void testHashCode() throws IOException {
+        FileChangeAdapter l = new FileChangeAdapter();
+        DeepListener dl = new DeepListener(l, getWorkDir(), null, null);
+        int hashCode = dl.hashCode();
+        Reference<FileChangeAdapter> ref = new WeakReference<FileChangeAdapter>(l);
+        l = null;
+        assertGC("Listener can be GCed", ref);
+        assertEquals("Hashcode remains the same", hashCode, dl.hashCode());
+    }
 }
