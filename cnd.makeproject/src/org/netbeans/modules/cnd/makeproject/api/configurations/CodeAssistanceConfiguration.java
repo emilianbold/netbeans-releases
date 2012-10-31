@@ -72,7 +72,8 @@ public class CodeAssistanceConfiguration implements Cloneable {
     }
 
     public boolean getModified() {
-        return getBuildAnalyzer().getModified() || getTools().getModified();
+        return getBuildAnalyzer().getModified() || getTools().getModified() || 
+                getEnvironmentVariables().getModified() || getTransientMacros().getModified();
     }
 
     // MakeConfiguration

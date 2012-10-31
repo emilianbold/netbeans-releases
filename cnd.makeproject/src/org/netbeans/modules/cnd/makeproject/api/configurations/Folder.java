@@ -272,7 +272,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 }
                 if (findItemByPath(path) == null) {
                     if (log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, "------------adding item {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+                        log.log(Level.FINE, "------------adding {2} item {0} in {1}", new Object[]{file.getPath(), getPath(), ConfigurationDescriptorProvider.VCS_WRITE ? "excluded" : "included"}); // NOI18N
                     }
                     addExcludedItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path), true, setModified);
                 }
