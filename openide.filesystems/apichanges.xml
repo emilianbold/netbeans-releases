@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes" deprecation="no"/>
             <description>
                 <p>
-                    Added <a href="@TOP@org/openide/filesystems/FileChooserBuilder.html#setAcceptAllFileFilterUsed()">
+                    Added <a href="@TOP@org/openide/filesystems/FileChooserBuilder.html#setAcceptAllFileFilterUsed(boolean)">
                     new method</a> to <code>FileChooserBuilder</code> that determines whether the <code>AcceptAll FileFilter</code>
                     should be used in the created file chooser.
                 </p>
