@@ -44,8 +44,10 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateManager;
@@ -75,7 +77,13 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
         if (visibleAncestor == null) {
             assert getInstalled() != null : this + " is installed";
             UpdateElementImpl installedImpl = Trampoline.API.impl(getInstalled());
-            Set<Module> visible = new HashSet<Module> ();
+            TreeSet<Module> visible = new TreeSet<Module> (new Comparator<Module> () {
+
+                @Override
+                public int compare(Module o1, Module o2) {
+                    return o1.getCodeNameBase().compareTo(o2.getCodeNameBase());
+                }
+            });
             for (ModuleInfo mi : installedImpl.getModuleInfos()) {
                 visible.addAll(findVisibleAncestor(Utilities.toModule(mi)));
             }
@@ -95,16 +103,29 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
         ModuleManager manager = module.getManager();
         Set<Module> moduleInterdependencies = manager.getModuleInterdependencies(module, true, false, true);
         for (Module m : moduleInterdependencies) {
-            if (Utilities.isKitModule(m)) {
+            if (m.isEnabled() && Utilities.isKitModule(m)) {
                 visible.add(m);
             }
         }
         if (visible.isEmpty()) {
             for (Module m : moduleInterdependencies) {
+                if (! m.isEnabled()) {
+                    continue;
+                }
                 visible.addAll(findVisibleAncestor(m));
+                if (! visible.isEmpty()) {
+                    break;
+                }
             }
         }
-        return visible;
+        TreeSet<Module> res = new TreeSet<Module>(new Comparator<Module>() {
+            @Override
+            public int compare(Module o1, Module o2) {
+                return o1.getCodeNameBase().compareTo(o2.getCodeNameBase());
+            }
+        });
+        res.addAll(visible);
+        return res;
     }
     
 }

@@ -446,13 +446,9 @@ public abstract class Unit {
             return internalUpdates;
         }
         
-        public UpdateUnit getVisibleUnit() {
-            return updateUnit;
-        }
-        
         @Override
         public UpdateElement getRelevantElement() {
-            return updateUnit.getAvailableUpdates().isEmpty() ? updateUnit.getInstalled() : updateUnit.getAvailableUpdates().get(0);
+            return hasInternalsOnly() ? updateUnit.getInstalled() : updateUnit.getAvailableUpdates().get(0);
         }
 
         @Override
@@ -460,6 +456,11 @@ public abstract class Unit {
             OperationContainer container = Containers.forUpdate ();
             for(UpdateUnit invisible : getUpdateUnits()) {
                 if(!container.contains(invisible.getAvailableUpdates().get(0))) {
+                    return false;
+                }
+            }
+            if (! hasInternalsOnly()) {
+                if (! container.contains(getRelevantElement())) {
                     return false;
                 }
             }
@@ -487,6 +488,15 @@ public abstract class Unit {
                     container.remove(invisible.getAvailableUpdates().get(0));
                 }
             }
+            if (! hasInternalsOnly()) {
+                if (marked) {
+                    if (container.canBeAdded(updateUnit, getRelevantElement())) {
+                        container.add(updateUnit, getRelevantElement());
+                    }
+                } else {
+                    container.remove(getRelevantElement());
+                }
+            }
         }
 
         @Override
@@ -509,6 +519,10 @@ public abstract class Unit {
         @Override
         public Type getModelType() {
             return Type.UPDATE;
+        }
+        
+        private boolean hasInternalsOnly() {
+            return updateUnit.getAvailableUpdates().isEmpty();
         }
         
     }

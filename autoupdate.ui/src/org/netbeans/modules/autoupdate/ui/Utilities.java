@@ -253,11 +253,12 @@ public class Utilities {
                     logger.finest(visUnit + " makes new compound unit " + compUnit);
                     uu2compoundUnit.put(visUnit, compUnit);
                 }
-                uu2compoundUnit.get(visUnit).getUpdateUnits().add(invisibleUnit);
-                
-                for (Unit.CompoundUpdate compoundUnit : uu2compoundUnit.values()) {
-                    compoundUnit.initState();
-                }
+                uu2compoundUnit.get(visUnit).getUpdateUnits().add(invisibleUnit);                
+            }
+            
+            // mark all updates as marked
+            for (Unit.CompoundUpdate compoundUnit : new HashSet<Unit.CompoundUpdate>(uu2compoundUnit.values())) {
+                compoundUnit.initState();
             }
         }
 
