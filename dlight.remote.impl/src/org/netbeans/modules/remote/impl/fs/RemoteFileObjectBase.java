@@ -64,7 +64,6 @@ import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
-import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FileProxyI;
@@ -104,8 +103,6 @@ public abstract class RemoteFileObjectBase {
     private static final byte BEING_UPLOADED = 4;
     protected static final byte CONNECTION_ISSUES = 8;
     
-    /*package*/ static final boolean RETURN_JAVA_IO_FILE = Boolean.getBoolean("remote.java.io.file");
-
     protected RemoteFileObjectBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
         RemoteLogger.assertTrue(execEnv.isRemote());        
@@ -769,9 +766,6 @@ public abstract class RemoteFileObjectBase {
         }
         if (attrName.equals("isRemoteAndSlow")) { // NOI18N
             return Boolean.TRUE;
-        }
-        if (RETURN_JAVA_IO_FILE && attrName.equals("java.io.File")) { // NOI18N
-            return new FileObjectBasedFile(getExecutionEnvironment(), this.getOwnerFileObject());
         }
         if (attrName.startsWith("ProvidedExtensions")) {  //NOI18N
             // #158600 - delegate to ProvidedExtensions if attrName starts with ProvidedExtensions prefix
