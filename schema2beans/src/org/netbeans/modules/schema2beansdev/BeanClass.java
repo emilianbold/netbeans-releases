@@ -550,7 +550,7 @@ public class BeanClass extends AbstractCodeGeneratorClass implements CodeGenerat
             gen("for (int i = 0; i < numStrings; i++)"); begin();
             gen("sb.append(in.readUTF())"); eol();
             end();
-            gen("ByteArrayInputStream bais = new ByteArrayInputStream(sb.toString().getBytes())"); eol();
+            gen("ByteArrayInputStream bais = new ByteArrayInputStream(sb.toString().getBytes(SERIALIZATION_HELPER_CHARSET))"); eol();
             gen("Document doc = GraphManager.createXmlDocument(bais, false)"); eol();
             if (config.isSetDefaults()){
                 gen("initOptions(Common.USE_DEFAULT_VALUES)"); eol();
