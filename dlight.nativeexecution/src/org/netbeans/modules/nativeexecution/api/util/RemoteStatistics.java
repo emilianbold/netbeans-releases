@@ -47,6 +47,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,7 +59,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
 @OnStop
-public final class RemoteStatistics implements Runnable {
+public final class RemoteStatistics implements Callable<Boolean> {
 
     public static final boolean COLLECT_STATISTICS = Boolean.parseBoolean(System.getProperty("jsch.statistics", "false")); // NOI18N
     public static final boolean COLLECT_STACKS = COLLECT_STATISTICS & Boolean.parseBoolean(System.getProperty("jsch.statistics.stacks", "false")); // NOI18N
@@ -70,7 +71,7 @@ public final class RemoteStatistics implements Runnable {
     private static final AtomicBoolean trafficDetected = new AtomicBoolean();
 
     static {
-        if (COLLECT_STATISTICS){
+        if (COLLECT_STATISTICS) {
             MeasurableSocketFactory.getInstance().addIOListener(listener);
         }
     }
@@ -191,25 +192,6 @@ public final class RemoteStatistics implements Runnable {
         return ref;
     }
 
-    @Override
-    public void run() {
-        if (!COLLECT_STATISTICS) {
-            return;
-        }
-
-        while (!stopAction()) {
-        }
-
-        PrintStream output = getOutput("totalTraffic"); // NOI18N
-        try {
-            trafficCounters.dump(output); // NOI18N
-        } finally {
-            if (!output.equals(System.out)) {
-                output.close();
-            }
-        }
-    }
-
     private static PrintStream getOutput(String name) {
         String OUTPUT = COLLECT_STATISTICS ? System.getProperty("jsch.statistics.output", null) : null; // NOI18N
         if (OUTPUT == null) {
@@ -227,6 +209,25 @@ public final class RemoteStatistics implements Runnable {
         } catch (FileNotFoundException ex) {
             throw new IllegalArgumentException();
         }
+    }
+
+    @Override
+    public Boolean call() throws Exception {
+        if (COLLECT_STATISTICS) {
+            while (!stopAction()) {
+            }
+
+            PrintStream output = getOutput("totalTraffic"); // NOI18N
+            try {
+                trafficCounters.dump(output); // NOI18N
+            } finally {
+                if (!output.equals(System.out)) {
+                    output.close();
+                }
+            }
+        }
+
+        return true;
     }
 
     private static class TrafficCounters {
