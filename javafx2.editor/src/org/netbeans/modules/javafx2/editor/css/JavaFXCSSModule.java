@@ -63,6 +63,9 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Anton Chechel, Marek Fukala, Petr Somol
  * @version 2.0
  */
+@NbBundle.Messages({
+    "JavaFXCSSModule.displayName=JavaFX"
+})
 @ServiceProvider(service = CssEditorModule.class)
 public class JavaFXCSSModule extends CssEditorModule implements CssModule {
 
@@ -131,7 +134,8 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(this.getClass(), "css-module-displayname-" + getName()); // NOI18N
+        return Bundle.JavaFXCSSModule_displayName();
+        
     }
 
     @Override

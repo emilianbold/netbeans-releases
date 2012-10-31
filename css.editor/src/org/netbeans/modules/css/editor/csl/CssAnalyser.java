@@ -138,7 +138,7 @@ public class CssAnalyser implements ErrorsProvider {
                             if (!Css3Utils.containsGeneratedCode(valueImage) 
                                     //TODO add support for checking value of vendor specific properties, not it is disabled.
                                     && !Css3Utils.isVendorSpecificPropertyValue(file, valueImage)) {
-                                ResolvedProperty pv = new ResolvedProperty(property, valueImage);
+                                ResolvedProperty pv = new ResolvedProperty(file, property, valueImage);
                                 if (!pv.isResolved()) {
                                     String errorMsg = null;
 

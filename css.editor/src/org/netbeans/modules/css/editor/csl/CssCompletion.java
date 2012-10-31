@@ -1006,7 +1006,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 PropertyDefinition prop = Properties.getPropertyDefinition(context.getFileObject(), property.image().toString().trim());
                 if (prop != null) {
 
-                    ResolvedProperty propVal = new ResolvedProperty(prop, expressionText);
+                    ResolvedProperty propVal = new ResolvedProperty(context.getFileObject(), prop, expressionText);
 
                     Collection<ValueGrammarElement> alts = propVal.getAlternatives();
 
@@ -1126,7 +1126,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     expressionText = expressionText.substring(0, eolIndex);
                 }
 
-                ResolvedProperty propVal = new ResolvedProperty(propertyDefinition, expressionText);
+                ResolvedProperty propVal = new ResolvedProperty(context.getFileObject(), propertyDefinition, expressionText);
                 Collection<ValueGrammarElement> alts = propVal.getAlternatives();
                 Collection<ValueGrammarElement> filteredByPrefix = filterElements(alts, prefix);
 
@@ -1191,7 +1191,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         expressionText = expressionText.substring(0, eolIndex);
                     }
 
-                    propVal = new ResolvedProperty(propertyDefinition, expressionText);
+                    propVal = new ResolvedProperty(context.getFileObject(), propertyDefinition, expressionText);
                     alts = propVal.getAlternatives();
                     filteredByPrefix = alts; //no prefix
                     completionItemInsertPosition = context.getCaretOffset(); //no prefix
