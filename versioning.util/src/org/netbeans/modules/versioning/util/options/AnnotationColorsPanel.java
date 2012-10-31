@@ -48,7 +48,6 @@ import java.awt.Component;
 import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import org.netbeans.modules.options.colors.ColorModel;
 import org.openide.util.LookupEvent;
-import org.openide.util.NbBundle;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
@@ -67,13 +66,15 @@ import org.netbeans.modules.versioning.util.OptionsPanelColorProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
 
 /**
  * 
  * @author Maros Sandor, Ondra Vrabec
  */
-@OptionsPanelController.Keywords(keywords={"versioning", "colors", "#KW_AnnotationColorsPanel"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "Versioning")
+@OptionsPanelController.Keywords(keywords={"versioning", "#KW_AnnotationColorsPanel"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle="#CTL_AnnotationColorsPanel.tabName")
+@Messages({ "CTL_AnnotationColorsPanel.title=&Versioning", "CTL_AnnotationColorsPanel.tabName=Versioning" })
 public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionListener, FontsColorsController {
 
     private boolean listen;
@@ -85,7 +86,7 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
     public AnnotationColorsPanel() {
         initComponents ();
 
-        setName(NbBundle.getMessage(this.getClass(), "CTL_AnnotationColorsPanel.title")); //NOI18N
+        setName(Bundle.CTL_AnnotationColorsPanel_title());
 
         result = Lookup.getDefault().lookupResult(OptionsPanelColorProvider.class);
         vcsColors = new HashMap<OptionsPanelColorProvider, VersioningSystemColors> ();

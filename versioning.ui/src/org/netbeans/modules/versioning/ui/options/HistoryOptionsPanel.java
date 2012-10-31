@@ -45,12 +45,14 @@ package org.netbeans.modules.versioning.ui.options;
 
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-@OptionsPanelController.Keywords(keywords={"#HistoryOptionsPanel.kw1", "#HistoryOptionsPanel.kw2", "#HistoryOptionsPanel.kw2"}, location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
+@OptionsPanelController.Keywords(keywords={"#HistoryOptionsPanel.kw1", "#HistoryOptionsPanel.kw2", "#HistoryOptionsPanel.kw2"}, location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_HistoryOptionsPanel.tabName")
+@NbBundle.Messages("CTL_HistoryOptionsPanel.tabName=Versioning")
 public class HistoryOptionsPanel extends javax.swing.JPanel {
     
     /** Creates new form SvnOptionsPanel */
