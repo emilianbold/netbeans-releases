@@ -322,8 +322,16 @@ public class MakeJNLP extends Task {
             
             {
                 String osMan = theJar.getManifest().getMainAttributes().getValue("OpenIDE-Module-Requires");
-                if (osMan != null && osMan.indexOf("org.openide.modules.os.MacOSX") >= 0) { // NOI18N
-                    osDep = "Mac OS X"; // NOI18N
+                if (osMan != null) {
+                    if (osMan.indexOf("org.openide.modules.os.MacOSX") >= 0) { // NOI18N
+                        osDep = "Mac OS X"; // NOI18N
+                    } else if (osMan.indexOf("org.openide.modules.os.Linux") >= 0) { // NOI18N
+                        osDep = "Linux"; // NOI18N
+                    } else if (osMan.indexOf("org.openide.modules.os.Solaris") >= 0) { // NOI18N
+                        osDep = "Solaris"; // NOI18N
+                    } else if (osMan.indexOf("org.openide.modules.os.Windows") >= 0) { // NOI18N
+                        osDep = "Windows"; // NOI18N
+                    }
                 }
             }
             

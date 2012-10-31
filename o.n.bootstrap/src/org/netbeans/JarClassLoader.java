@@ -412,7 +412,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 if (f.isDirectory()) {
                     LOGGER.log(Level.INFO, "{0} is directory and contains: {1}", new Object[]{f, Arrays.toString(f.list())}); // NOI18N
                 } else {
-                    LOGGER.log(Level.INFO, "{0} isDirectory: {1}, isFile: {2}", new Object[]{f, f.isDirectory(), f.isFile()}); // NOI18N
+                    LOGGER.log(Level.INFO, "{0} isDirectory: {1}, isFile: {2} size: {3}", new Object[]{f, f.isDirectory(), f.isFile(), f.length()}); // NOI18N
                 }
                 break;
             }
@@ -553,7 +553,12 @@ public class JarClassLoader extends ProxyClassLoader {
         
         @Override
         protected byte[] readClass(String path) throws IOException {
-            return archive.getData(this, path);
+            try {
+                return archive.getData(this, path);
+            } catch (ZipException ex) {
+                dumpFiles(file, -1);
+                throw ex;
+            }
         }
         
         @Override

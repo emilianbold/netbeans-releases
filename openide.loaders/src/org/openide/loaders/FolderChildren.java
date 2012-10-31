@@ -257,7 +257,10 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @Override
     public Node[] getNodes(boolean optimalResult) {
         Node[] arr;
-        for (;;) {
+        Level previous = null;
+        int limit = -1;
+        assert (limit = 1000) > 0; 
+        for (int round = 0; ; round++) {
             if (optimalResult) {
                 waitOptimalResult();
             }
@@ -267,6 +270,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 if (n instanceof DelayedNode) {
                     DelayedNode dn = (DelayedNode)n;
                     if (checkChildrenMutex() && dn.waitFinished()) {
+                        err.fine("Waiting for delayed node " + dn);
                         stop = false;
                     }
                 }
@@ -274,6 +278,18 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             if (stop) {
                 break;
             }
+            if (round == 500) {
+                err.warning("getNodes takes ages, turning on logging");
+                previous = err.getLevel();
+                err.setLevel(Level.FINE);
+            }
+            if (round == limit) {
+                err.setLevel(previous);
+                throw new IllegalStateException("Too many repetitions in getNodes(true). Giving up.");
+            }
+        }
+        if (previous != null) {
+            err.setLevel(previous);
         }
         return arr;
     }
@@ -428,6 +444,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 refreshKey(pair);
             }
             task = null;
+            err.fine("delayed node refreshed " + this + " original: " + n);
         }
         
         /* @return true if there was some change in the node while waiting */
@@ -436,7 +453,9 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             if (t == null) {
                 return false;
             }
+            err.fine("original before wait: " + getOriginal());
             t.waitFinished();
+            err.fine("original after wait: " + getOriginal());
             return true;
         }
     }
