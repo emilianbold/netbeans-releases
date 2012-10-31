@@ -3252,7 +3252,7 @@ lazy_template_argument_list
 
 lazy_template_argument
     :
-        {(isTemplateTooDeep(1, 20))}? 
+        {(isTemplateTooDeep(1, 10))}? 
         (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY))* 
         (
             lazy_template 
@@ -3269,7 +3269,7 @@ lazy_template_argument
  */
 template_argument
     :
-        {(isTemplateTooDeep(1, 20))}? 
+        {(isTemplateTooDeep(1, 10))}? 
         (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY))* 
         (
             lazy_template 
@@ -4084,7 +4084,7 @@ balanceSquaresInExpression
 protected    
 balanceLessthanGreaterthanInExpression[int templateLevel]
     :
-        {(isTemplateTooDeep(templateLevel, 20))}? lazy_template
+        {(isTemplateTooDeep(templateLevel, 10))}? lazy_template
     |
         // IZ 167547 : 100% CPU core usage with C++ project.
         // This is check for too complicated tecmplates.
