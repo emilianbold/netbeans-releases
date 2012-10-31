@@ -820,7 +820,8 @@ public class EarImpl implements EarImplementation, EarImplementation2,
                 return dashedGroupId + "-" + artifact.getFile().getName(); //NOI18N
             }
             if ("no-version".equals(fileNameMapping)) {
-                return artifact.getArtifactId();
+                final String version = "-" + artifact.getBaseVersion();      //NOI18N
+                return artifact.getFile().getName().replaceAll(version, ""); //NOI18N
             }
             //TODO it seems the fileNameMapping can also be a class (from ear-maven-plugin's classpath
             // of type FileNameMapping that resolves the name.. we ignore it for now.. not common usecase anyway..

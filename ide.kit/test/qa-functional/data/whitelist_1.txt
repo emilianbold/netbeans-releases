@@ -1,4 +1,4 @@
-#220904
+#OK on Oct 29, 2012, was #220904
 org.netbeans.modules.openide.nodes.PERegistrationSupport
 org.netbeans.modules.openide.nodes.PERegistrationSupport$ClassReg
 org.netbeans.modules.openide.nodes.PERegistrationSupport$PEClassRegistration
