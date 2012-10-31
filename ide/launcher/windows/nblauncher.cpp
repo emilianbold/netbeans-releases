@@ -386,13 +386,6 @@ bool NbLauncher::findUserDir(const char *str) {
         logMsg("Default Userdir Root: %s", defUserDirRoot.c_str());
         userDir = defUserDirRoot + (str + strlen(DEFAULT_USERDIR_ROOT_TOKEN));
     } else {
-        TCHAR defUserDirRootChar[MAX_PATH];
-        if (FAILED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, defUserDirRootChar))) {
-            return false;
-        }
-        defUserDirRoot = ((string) defUserDirRootChar) + NETBEANS_DIRECTORY;
-        defUserDirRoot.erase(defUserDirRoot.rfind('\\'));
-        logMsg("Default Userdir Root: %s", defUserDirRoot.c_str());
         userDir = str;
     }
     return true;
@@ -425,14 +418,7 @@ bool NbLauncher::findCacheDir(const char *str) {
         defCacheDirRoot.erase(defCacheDirRoot.rfind('\\'));
         logMsg("Default Cachedir Root: %s", defCacheDirRoot.c_str());
         cacheDir = defCacheDirRoot + (str + strlen(DEFAULT_CACHEDIR_ROOT_TOKEN));
-    } else {
-        TCHAR defCacheDirRootChar[MAX_PATH];
-        if (FAILED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, defCacheDirRootChar))) {
-            return false;
-        }
-        defCacheDirRoot = ((string) defCacheDirRootChar) + NETBEANS_CACHES_DIRECTORY;
-        defCacheDirRoot.erase(defCacheDirRoot.rfind('\\'));
-        logMsg("Default Cachedir Root: %s", defCacheDirRoot.c_str());
+    } else {               
         cacheDir = str;
     }
     return true;

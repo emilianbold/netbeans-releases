@@ -42,6 +42,7 @@
 package org.netbeans.modules.search.ui;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -415,7 +416,12 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (evt.getPropertyName().equals(
                                 "selectedNodes")) {                     //NOI18N
-                            updateShiftButtons();
+                            EventQueue.invokeLater(new Runnable() {    //#218680
+                                @Override
+                                public void run() {
+                                    updateShiftButtons();
+                                }
+                            });
                         }
                     }
                 });
