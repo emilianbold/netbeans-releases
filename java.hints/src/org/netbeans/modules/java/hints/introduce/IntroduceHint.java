@@ -54,6 +54,7 @@ import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
@@ -1445,7 +1446,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return targetClassWithDuplicates;
     }
     
-    private static ClassTree insertField(WorkingCopy parameter, ClassTree clazz, VariableTree fieldToAdd, Set<Tree> allNewUses) {
+    private static ClassTree insertField(final WorkingCopy parameter, ClassTree clazz, VariableTree fieldToAdd, Set<Tree> allNewUses) {
         ClassTree nueClass = GeneratorUtilities.get(parameter).insertClassMember(clazz, fieldToAdd);
 
         class Contains extends TreeScanner<Boolean, Set<Tree>> {
@@ -1459,6 +1460,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         int i = 0;
+        int insertLocation = -1;
 
         for (Tree member : nueClass.getMembers()) {
             i++;
@@ -1482,9 +1484,53 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 continue;
             }
 
-            nueClass = parameter.getTreeMaker().insertClassMember(clazz, i - 1, fieldToAdd);
+            insertLocation = i - 1;
             break;
         }
+        
+        TreePath clazzPath = TreePath.getPath(parameter.getCompilationUnit(), clazz); //TODO: efficiency
+        final Set<Element> used = Collections.newSetFromMap(new IdentityHashMap<Element, Boolean>());
+        final boolean statik = fieldToAdd.getModifiers().getFlags().contains(Modifier.STATIC);
+        
+        new TreePathScanner<Void, Void>() {
+            @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                handleCurrentPath();
+                return super.visitIdentifier(node, p); //To change body of generated methods, choose Tools | Templates.
+            }
+            @Override public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                handleCurrentPath();
+                return super.visitMemberSelect(node, p); //To change body of generated methods, choose Tools | Templates.
+            }
+            private void handleCurrentPath() {
+                Element el = parameter.getTrees().getElement(getCurrentPath());
+                
+                if (el != null && el.getKind().isField() && el.getModifiers().contains(Modifier.STATIC) == statik) {
+                    used.add(el);
+                }
+            }
+        }.scan(new TreePath(clazzPath, fieldToAdd), null);
+        
+        List<? extends Tree> nueMembers = new ArrayList<Tree>(nueClass.getMembers());
+        
+        Collections.reverse(nueMembers);
+        
+        i = nueMembers.size() - 1;
+        for (Tree member : nueMembers) {
+            Element el = parameter.getTrees().getElement(new TreePath(clazzPath, member));
+            
+            if (el != null && used.contains(el)) {
+                insertLocation = i;
+                break;
+            }
+            
+            i--;
+            
+            if (member == fieldToAdd || i < insertLocation)
+                break;
+        }
+
+        if (insertLocation != (-1))
+            nueClass = parameter.getTreeMaker().insertClassMember(clazz, insertLocation, fieldToAdd);
 
         return nueClass;
     }

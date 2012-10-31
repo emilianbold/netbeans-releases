@@ -2037,6 +2037,69 @@ public class IntroduceHintTest extends NbTestCase {
                        5, 1);
     }
     
+    public void testConstantFix219771a() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method() {\n" +
+                       "        System.out.println(\"C0 = \" + |C1 * 5|);\n" +
+                       "    }\n" +
+                       "    public static final int C1 = 100;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void method() {\n" +
+                        "        System.out.println(\"C0 = \" + C0);\n" +
+                        "    }\n" +
+                        "    public static final int C1 = 100;\n" +
+                        "    public static final int C0 = C1 * 5;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl("C0", true, true, true, EnumSet.of(Modifier.PUBLIC)),
+                       5, 1);
+    }
+    
+    public void testConstantFix219771b() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method() {\n" +
+                       "        System.out.println(\"C0 = \" + |C1 * 5|);\n" +
+                       "    }\n" +
+                       "    public final int C1 = 100;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void method() {\n" +
+                        "        System.out.println(\"C0 = \" + C0);\n" +
+                        "    }\n" +
+                        "    public final int C1 = 100;\n" +
+                        "    public final int C0 = C1 * 5;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("C0", IntroduceFieldPanel.INIT_FIELD, true, EnumSet.of(Modifier.PUBLIC), true, true),
+                       4, 1);
+    }
+    
+    public void testConstantFix219771c() throws Exception {
+        Preferences prefs = CodeStylePreferences.get((FileObject) null, JavacParser.MIME_TYPE).getPreferences();
+        prefs.put("classMembersOrder", "STATIC_INIT;FIELD;STATIC METHOD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS;STATIC FIELD");
+        prefs.put("classMemberInsertionPoint", "LAST_IN_CATEGORY");
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method() {\n" +
+                       "        System.out.println(\"C0 = \" + |C1 * 5|);\n" +
+                       "    }\n" +
+                       "    public static final int C1 = 100;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public final int C0 = C1 * 5;\n" +
+                        "    public void method() {\n" +
+                        "        System.out.println(\"C0 = \" + C0);\n" +
+                        "    }\n" +
+                        "    public static final int C1 = 100;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("C0", IntroduceFieldPanel.INIT_FIELD, true, EnumSet.of(Modifier.PUBLIC), true, true),
+                       5, 2);
+    }
+    
     public void testFieldFix208072d() throws Exception {
         Preferences prefs = CodeStylePreferences.get((FileObject) null, JavacParser.MIME_TYPE).getPreferences();
         prefs.put("classMembersOrder", "STATIC_INIT;STATIC METHOD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS;STATIC FIELD;FIELD");
