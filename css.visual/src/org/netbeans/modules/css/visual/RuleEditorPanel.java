@@ -852,7 +852,7 @@ public class RuleEditorPanel extends JPanel {
 
         private Collection<PropertyDefinition> getProperties() {
             Collection<PropertyDefinition> properties = new TreeSet<PropertyDefinition>(PropertyUtils.PROPERTY_DEFINITIONS_COMPARATOR);
-            properties.addAll(Properties.getPropertyDefinitions(getModel().getLookup().lookup(FileObject.class)));
+            properties.addAll(Properties.getPropertyDefinitions(getModel().getLookup().lookup(FileObject.class), true));
             return properties;
         }
 
