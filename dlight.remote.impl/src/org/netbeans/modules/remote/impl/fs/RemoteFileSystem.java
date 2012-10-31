@@ -415,7 +415,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 }
             }
         }
-        System.out.printf("%sAttribute %s\n", write ? "set" : "get", name);
+        System.out.printf("%sAttribute %s\n", write ? "set" : "get", name); // NOI18N
     }
 
     /*package*/ void dumpAttrStat() {
@@ -423,21 +423,21 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         synchronized(attrStats) {
             toDump= new TreeMap<String, AttrStat>(attrStats);
         }
-        System.out.printf("\n\nDumping attributes statistics (%d elements)\n\n", toDump.size());
+        System.out.printf("\n\nDumping attributes statistics (%d elements)\n\n", toDump.size()); // NOI18N
         for (Map.Entry<String, AttrStat> entry : toDump.entrySet()) {
             //String name = entry.getKey();
             AttrStat stat = entry.getValue();
-            System.out.printf("%s %d %d\n", stat.name, stat.readCount, stat.writeCount);
+            System.out.printf("%s %d %d\n", stat.name, stat.readCount, stat.writeCount); // NOI18N
             if (stat.firstReadStack != null) {
-                System.out.printf("\t%s first read stack:\n", stat.name);
+                System.out.printf("\t%s first read stack:\n", stat.name); // NOI18N
                 for (StackTraceElement e : stat.firstReadStack) {
-                    System.out.printf("\t\t%s\n", e);
+                    System.out.printf("\t\t%s\n", e); // NOI18N
                 }
             }
             if (stat.firstWriteStack != null) {
-                System.out.printf("\t%s first write stack:\n", stat.name);
+                System.out.printf("\t%s first write stack:\n", stat.name); // NOI18N
                 for (StackTraceElement e : stat.firstWriteStack) {
-                    System.out.printf("\t\t%s\n", e);
+                    System.out.printf("\t\t%s\n", e); // NOI18N
                 }
             }
         }
