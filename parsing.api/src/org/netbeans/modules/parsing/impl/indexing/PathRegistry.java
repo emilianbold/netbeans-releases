@@ -815,22 +815,28 @@ public final class PathRegistry implements Runnable {
     }
 
     private void scheduleFirer(Collection<? extends ClassPath> paths) {
+        final LogContext _logCtx;
         synchronized (this) {
             if (logCtx == null) {
                 logCtx = LogContext.create(LogContext.EventType.PATH, null);
             }
-            logCtx.addPaths(paths);
+            _logCtx = logCtx;
         }
+        assert _logCtx != null;
+        _logCtx.addPaths(paths);
         firerTask.schedule(0);
     }
 
     private void scheduleFirer(Iterable<? extends URL> roots) {
+        final LogContext _logCtx;
         synchronized (this) {
             if (logCtx == null) {
                 logCtx = LogContext.create(LogContext.EventType.PATH, null);
             }
-            logCtx.addRoots(roots);
+            _logCtx = logCtx;
         }
+        assert _logCtx != null;
+        _logCtx.addRoots(roots);
         firerTask.schedule(0);
     }
 
