@@ -761,21 +761,6 @@ public abstract class RemoteFileObjectBase {
     }
     
     public Object getAttribute(String attrName) {
-        if (attrName.equals(FileObject.DEFAULT_LINE_SEPARATOR_ATTR)) {
-            return "\n"; // NOI18N
-        }
-        if (attrName.equals("isRemoteAndSlow")) { // NOI18N
-            return Boolean.TRUE;
-        }
-        if (attrName.startsWith("ProvidedExtensions")) {  //NOI18N
-            // #158600 - delegate to ProvidedExtensions if attrName starts with ProvidedExtensions prefix
-            if (USE_VCS) {
-                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
-                if (interceptor != null) {
-                    return interceptor.getAttribute(FilesystemInterceptorProvider.toFileProxy(this.getOwnerFileObject()), attrName);
-                }
-            }
-        }
         return getFileSystem().getAttribute(this, attrName);
     }
 

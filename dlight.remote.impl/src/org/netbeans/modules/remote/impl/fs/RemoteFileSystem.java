@@ -74,6 +74,8 @@ import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.AnnotationProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.openide.filesystems.*;
@@ -452,7 +454,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             // root
             parent = file;
         }
-        if (attrName.equals(READONLY_ATTRIBUTES)) {
+        if (attrName.equals(FileObject.DEFAULT_LINE_SEPARATOR_ATTR)) {
+            return "\n"; // NOI18N
+        } else if (attrName.equals(READONLY_ATTRIBUTES)) {
             return Boolean.FALSE;
         } else if (attrName.equals("isRemoteAndSlow")) { // NOI18N
             return Boolean.TRUE;
@@ -463,7 +467,13 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         } else if (attrName.equals("ExistsParentNoPublicAPI")) { //NOI18N
             return true;
         } else if (attrName.startsWith("ProvidedExtensions")) { //NOI18N
-            return null;
+            // #158600 - delegate to ProvidedExtensions if attrName starts with ProvidedExtensions prefix
+            if (RemoteFileObjectBase.USE_VCS) {
+                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(this);
+                if (interceptor != null) {
+                    return interceptor.getAttribute(FilesystemInterceptorProvider.toFileProxy(file.getOwnerFileObject()), attrName);
+                }
+            }
         }
         if (ATTR_STATS) { logAttrName(attrName, false); }
         File attr = getAttrFile(parent);
