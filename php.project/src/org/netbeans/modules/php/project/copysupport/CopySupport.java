@@ -206,7 +206,10 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         LOGGER.log(Level.INFO, "Number of ProjectOpenedHook classes in project lookup: {0}", hooks);
 
         LOGGER.log(Level.INFO, "Copy Support incorrectly opened/closed (opened: {0}, closed: {1})", new Object[] {opened.get(), closed.get()});
-        throw new IllegalStateException(callStack.peek());
+        Exception previous = callStack.peek();
+        // #220893 - log the exception itself because the stacktrace is not in the log file (?!)
+        LOGGER.log(Level.WARNING, "Stack trace of the previous call", previous);
+        throw new IllegalStateException(previous);
     }
 
     private void prepareOperation(Callable<Boolean> callable) {
