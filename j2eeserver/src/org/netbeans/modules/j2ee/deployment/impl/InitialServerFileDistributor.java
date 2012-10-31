@@ -124,18 +124,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             setStatusDistributeRunning(NbBundle.getMessage(
                 InitialServerFileDistributor.class, "MSG_RunningInitialDeploy", dtarget.getDeploymentName(), dir));
 
-            Set<String> childModuleNames = null;
-            if (source instanceof J2eeApplication) {
-                J2eeModule[] childModules = ((J2eeApplication)source).getModules();
-                childModuleNames = new HashSet<String>(childModules.length);
-                for (J2eeModule module : childModules) {
-                    if (module.getArchive() != null) {
-                       childModuleNames.add(module.getArchive().getNameExt()); 
-                    }
-                }
-            }
-
-            _distribute(source.getArchiveContents(), dir, null, childModuleNames);
+            _distribute(source.getArchiveContents(), dir);
 
             if (source instanceof J2eeApplication) {
                 J2eeModule[] childModules = ((J2eeApplication)source).getModules();
@@ -143,7 +132,7 @@ public class InitialServerFileDistributor extends ServerProgress {
                     String uri = childModules[i].getUrl();
                     J2eeModule childModule = deployment.getJ2eeModule(uri);
                     File subdir = incDeployment.getDirectoryForNewModule(dir, uri, childModule, deployment.getModuleConfiguration());
-                    _distribute(childModules[i].getArchiveContents(), subdir, uri, null);
+                    _distribute(childModules[i].getArchiveContents(), subdir);
                 }
             }
 
@@ -177,8 +166,7 @@ public class InitialServerFileDistributor extends ServerProgress {
         return deleted;
     }
     
-    private void _distribute(Iterator<J2eeModule.RootedEntry> rootedEntries,
-            File dir, String childModuleUri, Set<String> childArchives) {
+    private void _distribute(Iterator<J2eeModule.RootedEntry> rootedEntries, File dir) {
         FileLock lock = null;
 
         try {
@@ -212,14 +200,13 @@ public class InitialServerFileDistributor extends ServerProgress {
             }
 
             if (rootedEntries.hasNext()) {
-                final RootedEntry root = rootedEntries.next();
-                final FileObject[] rootChildren = root.getFileObject().getChildren();
+                final FileObject root = rootedEntries.next().getFileObject();
                 
                 while (rootedEntries.hasNext()) {
                     J2eeModule.RootedEntry entry = rootedEntries.next();
                     String relativePath = entry.getRelativePath();
                     FileObject sourceFO = entry.getFileObject();
-                    if (childArchives != null && sourceFO.isData() && isArchiveInRootDir(rootChildren, sourceFO)) {
+                    if (sourceFO.isData() && isArchiveInRootDir(root, sourceFO)) {
                         continue;
                     }
                     FileObject destFolder = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
@@ -241,11 +228,9 @@ public class InitialServerFileDistributor extends ServerProgress {
         }
     }
 
-    private boolean isArchiveInRootDir(FileObject[] rootChildren, FileObject sourceFO) {
-        for (FileObject rootChild : rootChildren) {
-            if (rootChild.equals(sourceFO) && ("jar".equals(sourceFO.getExt()) || "war".equals(sourceFO.getExt()))) {
-                return true;
-            }
+    private boolean isArchiveInRootDir(FileObject root, FileObject sourceFO) {
+        if (sourceFO.getParent().equals(root) && ("jar".equals(sourceFO.getExt()) || "war".equals(sourceFO.getExt()))) {
+            return true;
         }
         return false;
     }
