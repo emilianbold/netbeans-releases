@@ -63,12 +63,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -86,12 +86,15 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
+import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -301,7 +304,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
     }
     
-    private HashMap<org.openide.nodes.Node, org.openide.nodes.Node> domToNb = new HashMap<Node, Node>();
+    private HashMap<Node, HtmlElementNode> domToNb = new HashMap<Node, HtmlElementNode>();
     
     private RequestProcessor.Task task;
     synchronized void refreshDOM() {
@@ -347,9 +350,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         if (root==null)
             return;
         if (root instanceof HtmlElementNode) {
-            Node res = ((HtmlElementNode) root).getDOMNode();
+            HtmlElementNode htmlElementNode = (HtmlElementNode)root;
+            Node res = htmlElementNode.getDOMNode();
             if (res!=null) {
-                domToNb.put(res, root);
+                domToNb.put(res, htmlElementNode);
             }
         }
         for (Node n:root.getChildren().getNodes()) {
@@ -818,7 +822,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         view.repaint();
     }
     
-    private Node getHtmlNode(Node node) {
+    private HtmlElementNode getHtmlNode(Node node) {
         return domToNb.get(node);
     }
     
@@ -895,18 +899,23 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private void updateSelection() {
         if (EventQueue.isDispatchThread()) {
             List<? extends Node> nodes = pageModel==null?Collections.EMPTY_LIST:pageModel.getSelectedNodes();
-            ArrayList<Node> selection = new ArrayList<Node>();
+            ArrayList<HtmlElementNode> selection = new ArrayList<HtmlElementNode>();
             
             int i = 0;
             for (Node n:nodes) {
-                Node htmlNode = getHtmlNode(n);
+                HtmlElementNode htmlNode = getHtmlNode(n);
                 if (htmlNode!=null) {
                     selection.add(htmlNode);
                 }
             }
             updatingView = true;
             try {
-                manager.setSelectedNodes(selection.toArray(new Node[selection.size()]));
+                manager.setSelectedNodes(selection.toArray(new Node[0]));
+
+                if(!selection.isEmpty()) {
+                    updateCaretInEditor(selection.get(0));
+                }
+                
             } catch (PropertyVetoException pvex) {
                 Logger.getLogger(HtmlNavigatorPanelUI.class.getName()).log(Level.FINE, null, pvex);
             } finally {
@@ -920,6 +929,39 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 }
             });
         }
+    }
+    
+    /**
+     * Editor caret update for the first selected node - won't open editor, or make it focused.
+     */ 
+    private void updateCaretInEditor(HtmlElementNode node) {
+        FileObject fileObject = node.getFileObject();
+        if (fileObject != null) {
+            try {
+                DataObject d = DataObject.find(fileObject);
+                EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
+                if (ec != null) {
+                    JEditorPane[] openedPanes = ec.getOpenedPanes();
+                    if(openedPanes != null && openedPanes.length > 0) {
+                        JEditorPane pane = openedPanes[0];
+                        SourceDescription description = node.getSourceDescription();
+                        if(description != null) {
+                            int offset = description.getFrom();
+                            if(offset != -1) {
+                                pane.setCaretPosition(offset);
+                            }
+                        }
+                    }
+                }
+            }
+            //<<< caret update
+            catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+
+        //<<< caret update
     }
     
     /**
