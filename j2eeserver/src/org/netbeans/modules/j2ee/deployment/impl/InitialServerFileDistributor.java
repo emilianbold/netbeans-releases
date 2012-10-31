@@ -68,6 +68,7 @@ import org.openide.util.NbBundle;
 import javax.enterprise.deploy.shared.CommandType;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.RootedEntry;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerProgress;
 import org.openide.filesystems.FileObject;
@@ -209,18 +210,22 @@ public class InitialServerFileDistributor extends ServerProgress {
                     }
                 }
             }
-            
-            while (rootedEntries.hasNext()) {
-                J2eeModule.RootedEntry entry = rootedEntries.next();
-                String relativePath = entry.getRelativePath();
-                FileObject sourceFO = entry.getFileObject();
-                if (childArchives != null && childArchives.contains(relativePath)
-                        && sourceFO.isData()) {
-                    continue;
-                }
-                FileObject destFolder = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
-                if (sourceFO.isData ()) {
-                    copyFile(sourceFO, dir, relativePath);
+
+            if (rootedEntries.hasNext()) {
+                final RootedEntry root = rootedEntries.next();
+                final FileObject[] rootChildren = root.getFileObject().getChildren();
+                
+                while (rootedEntries.hasNext()) {
+                    J2eeModule.RootedEntry entry = rootedEntries.next();
+                    String relativePath = entry.getRelativePath();
+                    FileObject sourceFO = entry.getFileObject();
+                    if (childArchives != null && sourceFO.isData() && isArchiveInRootDir(rootChildren, sourceFO)) {
+                        continue;
+                    }
+                    FileObject destFolder = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
+                    if (sourceFO.isData ()) {
+                        copyFile(sourceFO, dir, relativePath);
+                    }
                 }
             }
             
@@ -234,8 +239,17 @@ public class InitialServerFileDistributor extends ServerProgress {
                 try { lock.releaseLock(); } catch(Exception ex) {}
             }
         }
-    }    
-    
+    }
+
+    private boolean isArchiveInRootDir(FileObject[] rootChildren, FileObject sourceFO) {
+        for (FileObject rootChild : rootChildren) {
+            if (rootChild.equals(sourceFO) && ("jar".equals(sourceFO.getExt()) || "war".equals(sourceFO.getExt()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     //ServerProgress methods
     private void setStatusDistributeRunning(String message) {
         notify(createRunningProgressEvent(CommandType.DISTRIBUTE, message));
