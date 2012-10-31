@@ -106,6 +106,11 @@ import java.io.File;
  * <p>
  * by linking to the column number indicated by the caret (<samp>^</samp>).
  * </p>
+ * <p>
+ * Please Note: Using <code>System.out</code> or <code>System.err</code> in your subclass 
+ * will add the messages to the build's output, not IDE log file. The behaviour is not part of the
+ * API contract though and can be changed in the future.
+ * </p>
  * </div>
  * @author Jesse Glick
  * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=42525">Issue #42525</a>
