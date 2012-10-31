@@ -212,7 +212,11 @@ public class ConfigurationXMLReader extends XMLDocReader {
             }
         }
 
-        attachListeners(configurationDescriptor);
+        boolean schemeWithExcludedItems = false;
+        if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() < CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
+            schemeWithExcludedItems = true;
+        }
+        attachListeners(configurationDescriptor, schemeWithExcludedItems);
         configurationDescriptor.setState(State.READY);
 
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
@@ -269,7 +273,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
     }
 
     // Attach listeners to all disk folders
-    private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor) {
+    private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor, final boolean oldSchemeWasRestored) {
         Task task = REQUEST_PROCESSOR.post(new Runnable() {
 
             @Override
@@ -283,8 +287,11 @@ public class ConfigurationXMLReader extends XMLDocReader {
                     List<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
                     for (Folder f : firstLevelFolders) {
                         if (f.isDiskFolder()) {
-                            // need to set modified descriptor for store new/deleted items in the folder
-                            f.refreshDiskFolder(true);
+                            if (oldSchemeWasRestored) {
+                                f.refreshDiskFolderAfterRestoringOldScheme();
+                            } else {
+                                f.refreshDiskFolder();
+                            }
                             f.attachListeners();
                         }
                     }
