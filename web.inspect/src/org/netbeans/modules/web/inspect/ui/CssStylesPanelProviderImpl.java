@@ -69,6 +69,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -87,17 +88,24 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     private JPanel runFilePanel;
     /** Run button in {@code runFilePanel}. */
     private JButton runButton;
+    /** Wrapper for the lookup of the current view. */
+    private MatchedRulesLookup lookup;
     
     /**
      * Creates a new {@code MatchedRulesTC}.
      */
     public CssStylesPanelProviderImpl() {
+        lookup = new MatchedRulesLookup();
         setLayout(new BorderLayout());
         initNoStylesLabel();
         initRunFilePanel();
         add(noStylesLabel, BorderLayout.CENTER);
         PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
         update();
+    }
+    
+    Lookup getMatchedRulesLookup() {
+        return lookup;
     }
 
     /**
@@ -189,6 +197,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                 add(stylesView.getView(), BorderLayout.CENTER);
             }
             currentPageModel = pageModel;
+            lookup.setView(currentPageModel != null ? currentPageModel.getCSSStylesView() : null);
             revalidate();
             repaint();
         } else {
@@ -198,6 +207,18 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                     update(pageModel);
                 }
             });
+        }
+    }
+    
+    void activateView() {
+        if(currentPageModel != null) {
+            currentPageModel.getCSSStylesView().activated();
+        }
+    }
+    
+    void deactivateView() {
+        if(currentPageModel != null) {
+            currentPageModel.getCSSStylesView().deactivated();
         }
     }
     
@@ -259,8 +280,41 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             return MIME_TYPES;
         }
 
+        @Override
+        public Lookup getLookup() {
+            return getMatchedRulesLookup();
+        }
+
+        @Override
+        public void activated() {
+            activateView();
+        }
+
+        @Override
+        public void deactivated() {
+            deactivateView();
+        }
+
     }
     
-    
+    /**
+     * Wrapper for the lookup of the current view.
+     */
+    static class MatchedRulesLookup extends ProxyLookup {
+
+        /**
+         * Sets the current view.
+         *
+         * @param view current view.
+         */
+        void setView(PageModel.CSSStylesView view) {
+            if (view == null) {
+                setLookups();
+            } else {
+                setLookups(view.getLookup());
+            }
+        }
+    }
+
     
 }

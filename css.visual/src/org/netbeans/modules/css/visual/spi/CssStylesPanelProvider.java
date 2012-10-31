@@ -85,4 +85,19 @@ public interface CssStylesPanelProvider {
      */
     public JComponent getContent(Lookup lookup);
     
+    /**
+     * Content of the obtained lookup will be added to the Css Styles window TC's lookup.
+     */
+    public Lookup getLookup();
+    
+    /**
+     * Called after the component is made active (visible).
+     */
+    public void activated();
+    
+    /**
+     * Called after the component is made inactive (invisible).
+     */
+    public void deactivated();
+    
 }
