@@ -48,6 +48,9 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
@@ -65,10 +68,16 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 @OptionsPanelController.Keywords(keywords={"#GeneralOptionsPanel.kw1", "#GeneralOptionsPanel.kw3", "#GeneralOptionsPanel.kw3"}, location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_OptionsPanel.tabName")
-@NbBundle.Messages("CTL_OptionsPanel.tabName=Versioning")
+@NbBundle.Messages({
+    "CTL_OptionsPanel.tabName=Versioning",
+    "GeneralOptionsPanel.kw1=general",
+    "GeneralOptionsPanel.kw2=versioning",
+    "GeneralOptionsPanel.kw3=disconnected repositories"
+})
 final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionListener {
     
     private final GeneralOptionsPanelController controller;
+    private String[] keywords;
     
     GeneralOptionsPanel (GeneralOptionsPanelController controller) {
         this.controller = controller;        
@@ -87,6 +96,17 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
     @Override
     public void removeNotify() {        
         super.removeNotify();
+    }
+
+    Collection<String> getKeywords () {
+        if (keywords == null) {
+            keywords = new String[] {
+                Bundle.GeneralOptionsPanel_kw1().toUpperCase(),
+                Bundle.GeneralOptionsPanel_kw2().toUpperCase(),
+                Bundle.GeneralOptionsPanel_kw3().toUpperCase()
+            };
+        }
+        return Collections.unmodifiableList(Arrays.asList(keywords));
     }
 
     private void fillDisconnectedFolders () {
