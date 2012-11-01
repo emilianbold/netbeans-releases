@@ -70,6 +70,6 @@ public interface FileRWAccess {
     
     public long size() throws IOException;
     
-    public FileDescriptor getFD() throws IOException;
+    public boolean isValid() throws IOException;
     
 }
