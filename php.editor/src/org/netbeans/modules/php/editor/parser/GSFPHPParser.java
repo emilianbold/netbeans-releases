@@ -135,11 +135,12 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         boolean sanitizedSource = false;
         String source = context.getSource();
         if (errorHandler == null) {
-            errorHandler = new PHP5ErrorHandler(context);
+            errorHandler = new PHP5ErrorHandlerImpl(context);
         }
-        if (!((sanitizing == Sanitize.NONE) || (sanitizing == Sanitize.NEVER))) {
+        if (!isParsingWithoutSanitization(sanitizing)) {
+            // don't add syntax errors catched by sanitizers to the error handler...that errors are not relevant for the user
+            errorHandler.disableHandling();
             boolean ok = sanitizeSource(context, sanitizing, errorHandler);
-
             if (ok) {
                 assert context.getSanitizedPart() != null;
                 sanitizedSource = true;
@@ -203,13 +204,19 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 LOGGER.log(Level.FINE, "The parser value is not a Program: {0}", rootSymbol.value);
                 phpParserResult = sanitize(context, sanitizing, errorHandler);
             }
-            phpParserResult.setErrors(errorHandler.displaySyntaxErrors(program));
+            if (isParsingWithoutSanitization(sanitizing)) {
+                phpParserResult.setErrors(errorHandler.displaySyntaxErrors(program));
+            }
         } else { // there was no rootElement
             phpParserResult = sanitize(context, sanitizing, errorHandler);
             phpParserResult.setErrors(errorHandler.displayFatalError());
         }
 
         return phpParserResult;
+    }
+
+    private static boolean isParsingWithoutSanitization(Sanitize sanitizing) {
+        return (sanitizing == Sanitize.NONE) || (sanitizing == Sanitize.NEVER);
     }
 
     private boolean isStatementOk(final Statement statement, final String source) throws IOException {

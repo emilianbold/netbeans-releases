@@ -636,11 +636,6 @@ statement:statement
 {:
 	RESULT = statement;
 :}
-
-| T_HALT_COMPILER:halt
-{:
-    RESULT = new HaltCompiler(haltleft, haltright);
-:}
 ;
 
 statement ::=
