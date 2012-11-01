@@ -195,7 +195,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         if (vmTimeRemaining != null && !debugMode) {
             vmDeadline = System.currentTimeMillis() + vmTimeRemaining;
         } else {
-            vmDeadline = 0L;
+            vmDeadline = -1L;
         }
     }
     /** Provides support for tests that can have problems with terminating.
@@ -214,13 +214,16 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @since 1.20
      */
     protected int timeOut() {
-        if (vmDeadline != 0L) {
+        return 0;
+    }
+    private int computeTimeOut() {
+        if (vmDeadline != -1L) {
             int remaining = (int) (vmDeadline - System.currentTimeMillis());
             if (remaining > 1500) {
                 return (remaining - 1000) / 2;
             }
         }
-        return 0;
+        return timeOut();
     }
 
     /**
@@ -400,7 +403,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             };
             EventQueue.invokeLater(setUp);
             // need to have timeout because previous test case can block AWT thread
-            setUp.waitFinished(timeOut());
+            setUp.waitFinished(computeTimeOut());
         } else {
             setUp();
         }
@@ -425,9 +428,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             };
             if (runInEQ()) {
                 EventQueue.invokeLater(runTest);
-                runTest.waitFinished(timeOut());
+                runTest.waitFinished(computeTimeOut());
             } else {
-                if (timeOut() == 0) {
+                if (computeTimeOut() == 0) {
                     // Regular test.
                     runTest.run();
                     runTest.waitFinished();
@@ -435,7 +438,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                     // Regular test with time out
                     Thread watchDog = new Thread(runTest, "Test Watch Dog: " + getName());
                     watchDog.start();
-                    runTest.waitFinished(timeOut());
+                    runTest.waitFinished(computeTimeOut());
                 }
             }
         } finally {
@@ -448,7 +451,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 };
                 EventQueue.invokeLater(tearDown);
                 // need to have timeout because test can block AWT thread
-                tearDown.waitFinished(timeOut());
+                tearDown.waitFinished(computeTimeOut());
             } else {
                 tearDown();
             }
@@ -993,7 +996,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         }
         logStreamTable.clear();
     }
-    
+
     private static class WFOS extends FilterOutputStream {
         private File f;
         private int bytes;
