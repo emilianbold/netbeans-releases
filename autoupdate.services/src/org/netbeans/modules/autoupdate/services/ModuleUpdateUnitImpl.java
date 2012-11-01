@@ -44,15 +44,31 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.io.File;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
+import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
+import org.netbeans.api.autoupdate.UpdateUnit;
+import org.openide.modules.ModuleInfo;
+import static org.netbeans.modules.autoupdate.services.Bundle.*;
+import org.netbeans.updater.UpdateTracking;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle.Messages;
 
 public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
+    private UpdateUnit visibleAncestor;
 
     public ModuleUpdateUnitImpl (String codename) {
         super (codename);
     }
 
+    @Override
     public TYPE getType () {
         return UpdateManager.TYPE.MODULE;
     }
@@ -60,6 +76,112 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
     @Override
     public boolean isPending () {
         return UpdateUnitFactory.getDefault().isScheduledForRestart (getUpdateUnit ());
+    }
+    
+    @Messages("broad_category=Libraries, Bridges, Uncategorized")
+    private static String BROAD_CATEGORY = broad_category();
+
+    @Override
+    public UpdateUnit getVisibleAncestor() {
+        if (visibleAncestor == null) {
+            assert getInstalled() != null : this + " is installed";
+            UpdateElementImpl installedImpl = Trampoline.API.impl(getInstalled());
+            String targetCluster = getTargetCluster(getInstalled());
+            TreeSet<Module> visible = new TreeSet<Module> (new Comparator<Module> () {
+
+                @Override
+                public int compare(Module o1, Module o2) {
+                    return o1.getCodeNameBase().compareTo(o2.getCodeNameBase());
+                }
+            });
+            for (ModuleInfo mi : installedImpl.getModuleInfos()) {
+                visible.addAll(findVisibleAncestor(Utilities.toModule(mi)));
+            }
+            String cat = installedImpl.getCategory();
+            if (BROAD_CATEGORY.contains(cat)) {
+                cat = null;
+            }
+            UpdateUnit shot = null;
+            UpdateUnit spare = null;
+            UpdateUnit strike = null;
+            for (Module visMod : visible) {
+                visibleAncestor = Utilities.toUpdateUnit(visMod);
+                String visTargetCluster = getTargetCluster(visibleAncestor.getInstalled());
+                boolean scored1 = targetCluster != null && targetCluster.equals(visTargetCluster);
+                boolean scored2 = cat != null && cat.equals(visibleAncestor.getInstalled().getCategory());
+                if (scored1) {
+                    spare = visibleAncestor;
+                } else if (scored2) {
+                    strike = visibleAncestor;
+                    break;
+                } else if (shot == null) {
+                    shot = visibleAncestor;
+                }
+            }
+            visibleAncestor = strike != null ? strike : spare != null ? spare : shot;
+        }
+        return visibleAncestor;
+    }
+    
+    private static Set<Module> findVisibleAncestor(Module module) {
+        Set<Module> visible = new HashSet<Module> ();
+        ModuleManager manager = module.getManager();
+        Set<Module> moduleInterdependencies = manager.getModuleInterdependencies(module, true, false, true);
+        for (Module m : moduleInterdependencies) {
+            if (m.isEnabled() && Utilities.isKitModule(m)) {
+                visible.add(m);
+            }
+        }
+        if (visible.isEmpty()) {
+            for (Module m : moduleInterdependencies) {
+                if (! m.isEnabled()) {
+                    continue;
+                }
+                visible.addAll(findVisibleAncestor(m));
+                if (! visible.isEmpty()) {
+                    break;
+                }
+            }
+        }
+        TreeSet<Module> res = new TreeSet<Module>(new Comparator<Module>() {
+            @Override
+            public int compare(Module o1, Module o2) {
+                return o1.getCodeNameBase().compareTo(o2.getCodeNameBase());
+            }
+        });
+        res.addAll(visible);
+        return res;
+    }
+
+    private static String getTargetCluster(UpdateElement installed) {
+        ModuleUpdateElementImpl i = (ModuleUpdateElementImpl) Trampoline.API.impl(installed);
+        Module m = Utilities.toModule (i.getModuleInfo ());
+        if (m == null) {
+            return null;
+        }
+        File jarFile = m.getJarFile ();
+        String res = null;
+        
+        if (jarFile != null) {
+            for (File cluster : UpdateTracking.clusters (true)) {       
+                cluster = FileUtil.normalizeFile (cluster);
+                if (isParentOf (cluster, jarFile)) {
+                    res = cluster.getName();
+                    break;
+                }
+            }
+        } else {
+            return UpdateTracking.getPlatformDir().getName();
+        }
+        return res;
+    }
+    
+    private static boolean isParentOf (File parent, File child) {
+        File tmp = child.getParentFile ();
+        while (tmp != null && ! parent.equals (tmp)) {
+            tmp = tmp.getParentFile ();
+        }
+        return tmp != null;
     }
     
 }
