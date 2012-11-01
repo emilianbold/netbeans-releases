@@ -198,6 +198,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             vmDeadline = -1L;
         }
     }
+    
+    private static ThreadLocal<Boolean> DEFAULT_TIME_OUT_CALLED = new ThreadLocal<Boolean>();
     /** Provides support for tests that can have problems with terminating.
      * Runs the test in a "watchdog" that measures the time the test shall
      * take and if it does not terminate it reports a failure including a thread dump.
@@ -214,16 +216,29 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @since 1.20
      */
     protected int timeOut() {
+        DEFAULT_TIME_OUT_CALLED.set(true);
         return 0;
     }
     private int computeTimeOut() {
-        if (vmDeadline != -1L) {
-            int remaining = (int) (vmDeadline - System.currentTimeMillis());
-            if (remaining > 1500) {
-                return (remaining - 1000) / 2;
-            }
+        if (vmDeadline == -1L) {
+            return 0;
         }
-        return timeOut();
+        Boolean prev = DEFAULT_TIME_OUT_CALLED.get();
+        try {
+            DEFAULT_TIME_OUT_CALLED.set(null);
+            int tm = timeOut();
+            if (!Boolean.TRUE.equals(DEFAULT_TIME_OUT_CALLED.get())) {
+                return tm;
+            }
+        } finally {
+            DEFAULT_TIME_OUT_CALLED.set(prev);
+        }
+        
+        int remaining = (int) (vmDeadline - System.currentTimeMillis());
+        if (remaining > 1500) {
+            return (remaining - 1000) / 2;
+        }
+        return 1500;
     }
 
     /**
