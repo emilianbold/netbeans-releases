@@ -464,10 +464,14 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
          * @return {@code true} when the property uses star or underscore hack.
          */
         private boolean isIEHackIgnoredByWebKit(Property property, Snapshot snapshot) {
+            boolean isHack = false;
             String styleSheetText = snapshot.getText().toString();
             int startOffset = property.getStartOffset();
-            char c = styleSheetText.charAt(startOffset-1);
-            return (c == '_' || c == '*');
+            if (startOffset != -1) {
+                char c = styleSheetText.charAt(startOffset-1);
+                isHack = (c == '_' || c == '*');
+            }
+            return isHack;
         }
 
     }
