@@ -315,7 +315,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         public void resultChanged(LookupEvent ev) {
             Collection<? extends Rule> rules = ruleLookupResult.allInstances();
             // Trying to avoid unwanted flashing of Rule Editor
-            if (!contentUpdateInProgress || !rules.isEmpty()) {
+            if (!contentUpdateInProgress) {
                 updateRulesEditor(rules);
             }
         }
