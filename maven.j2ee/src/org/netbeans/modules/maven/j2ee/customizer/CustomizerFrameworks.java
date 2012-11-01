@@ -82,23 +82,27 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
+import org.openide.util.TaskListener;
 
 /**
  * 
  * @author mkleint
  */
 public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomizer, ListSelectionListener {
-    
-    private final ProjectCustomizer.Category category;
-    private Project project;
-    
-    private List<WebModuleExtender> newExtenders = new LinkedList<WebModuleExtender>();
-    private List<WebModuleExtender> existingExtenders = new LinkedList<WebModuleExtender>();
-    private List<WebFrameworkProvider> usedFrameworks = new LinkedList<WebFrameworkProvider>();
-    private Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
-    private List<WebFrameworkProvider> addedFrameworks = new LinkedList<WebFrameworkProvider>();
 
-    private ExtenderController controller = ExtenderController.create();
+    private static final RequestProcessor RP = new RequestProcessor(CustomizerFrameworks.class.getName());
+
+    private final ProjectCustomizer.Category category;
+    private final Project project;
+    
+    private final List<WebModuleExtender> newExtenders = new LinkedList<WebModuleExtender>();
+    private final List<WebModuleExtender> existingExtenders = new LinkedList<WebModuleExtender>();
+    private final List<WebFrameworkProvider> usedFrameworks = new LinkedList<WebFrameworkProvider>();
+    private final Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
+    private final List<WebFrameworkProvider> addedFrameworks = new LinkedList<WebFrameworkProvider>();
+
+    private final ExtenderController controller = ExtenderController.create();
     
     
     public CustomizerFrameworks(ProjectCustomizer.Category category, Project project) {
@@ -163,7 +167,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
     }
     
     private void initFrameworksList() {
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        final WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         existingExtenders.clear();
         
         ExtenderController.Properties properties = controller.getProperties();
@@ -179,25 +183,64 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
         }
 
         jListFrameworks.setModel(new DefaultListModel());
-        List frameworks = WebFrameworks.getFrameworks();
-        for (int i = 0; i < frameworks.size(); i++) {
-            WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
-            if (framework.isInWebModule(webModule)) {
-                usedFrameworks.add(framework);
-                ((DefaultListModel) jListFrameworks.getModel()).addElement(framework);
-                WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
-                extenders.put(framework, extender);
-                existingExtenders.add(extender);
-                extender.addChangeListener(new ExtenderListener(extender));
-            }                
-        }
         jListFrameworks.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jListFrameworks.addListSelectionListener(this);
-        if (usedFrameworks.size() > 0)
-            jListFrameworks.setSelectedIndex(0);
-        
-        if (frameworks.size() == jListFrameworks.getModel().getSize())
-            jButtonAdd.setEnabled(false);
+
+        loadFrameworks();
+    }
+    
+    private void loadFrameworks() {
+        final WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        final Task task = createLoadFrameworksTask(webModule);
+
+        task.addTaskListener(new TaskListener() {
+
+            @Override
+            public void taskFinished(org.openide.util.Task task) {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        final DefaultListModel model = (DefaultListModel) jListFrameworks.getModel();
+                        for (WebFrameworkProvider framework : usedFrameworks) {
+                            model.addElement(framework);
+                        }
+
+                        if (usedFrameworks.size() > 0) {
+                            jListFrameworks.setSelectedIndex(0);
+                        }
+                        if (WebFrameworks.getFrameworks().size() == jListFrameworks.getModel().getSize()) {
+                            jButtonAdd.setEnabled(false);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    @NbBundle.Messages({"CustomizerFrameworks.label.loading.frameworks=Loading framework list..."})
+    private Task createLoadFrameworksTask(final WebModule webModule) {
+        return RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                ProgressUtils.showProgressDialogAndRun(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        for (WebFrameworkProvider framework : WebFrameworks.getFrameworks()) {
+                            if (framework.isInWebModule(webModule)) {
+                                usedFrameworks.add(framework);
+                                WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
+                                extenders.put(framework, extender);
+                                existingExtenders.add(extender);
+                                extender.addChangeListener(new ExtenderListener(extender));
+                            }
+                        }
+                    }
+                }, Bundle.CustomizerFrameworks_label_loading_frameworks());
+            }
+        });
     }
     
     /** This method is called from within the constructor to
@@ -431,7 +474,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
         final WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if (newExtenders != null && !newExtenders.isEmpty()) {
             // in case that new extenders should be included
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     // it mostly results into lenghty opperation, show progress dialog
@@ -452,7 +495,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
             });
         } else if (includedExtenders != null && !includedExtenders.isEmpty()) {
             // in case that webModule contains some extenders which should be saved
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
