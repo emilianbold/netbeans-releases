@@ -145,11 +145,19 @@ public class ModelUtils {
     
     public static JsObject findJsObjectByName(JsObject global, String fqName) {
         JsObject result = global;
+        JsObject property = result;
         for (StringTokenizer stringTokenizer = new StringTokenizer(fqName, "."); stringTokenizer.hasMoreTokens() && result != null;) {
             String token = stringTokenizer.nextToken();
-            result = result.getProperty(token);
-            if (result == null) {
-                break;
+            property = result.getProperty(token);
+            if (property == null) {
+                result = (result instanceof JsFunction)
+                        ? ((JsFunction)result).getParameter(token)
+                        : null;
+                if (result == null) {
+                    break;
+                }
+            } else {
+                result = property;
             }
         }
         return result;
