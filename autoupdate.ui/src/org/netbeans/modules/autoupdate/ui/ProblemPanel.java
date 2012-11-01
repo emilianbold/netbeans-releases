@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.options.OptionsDisplayer;
 import static org.netbeans.modules.autoupdate.ui.Bundle.*;
 import org.openide.DialogDescriptor;
@@ -70,14 +71,18 @@ public class ProblemPanel extends javax.swing.JPanel {
     private OperationException ex;
 
     public ProblemPanel(OperationException ex, boolean warning, JButton... buttons) {
-        this (ex, null, warning, buttons);
+        this (ex, null, null, warning, buttons);
+    }
+    
+    public ProblemPanel(OperationException ex, UpdateElement culprit, boolean warning, JButton... buttons) {
+        this (ex, culprit, null, warning, buttons);
     }
     
     public ProblemPanel (String problemDescription, JButton... buttons) {
-        this (null, problemDescription, true, buttons);
+        this (null, null, problemDescription, true, buttons);
     }
     
-    private ProblemPanel (OperationException ex, String problemDescription, boolean warning, JButton... buttons) {
+    private ProblemPanel (OperationException ex, UpdateElement culprit, String problemDescription, boolean warning, JButton... buttons) {
         this.ex = ex;
         this.buttons = buttons;
         this.isWarning = warning;
@@ -89,7 +94,7 @@ public class ProblemPanel extends javax.swing.JPanel {
                     initProxyProblem(problemDescription);
                     break;
                 case WRITE_PERMISSION:
-                    initWriteProblem(problemDescription);
+                    initWriteProblem(culprit, problemDescription);
                     break;
                 default:
                     assert false : "Unknown type " + ex;
@@ -113,6 +118,7 @@ public class ProblemPanel extends javax.swing.JPanel {
             problemDescription;
         initComponents ();
         cbShowAgain.setVisible(false);
+        taTitle.setText(problem);
         taTitle.setToolTipText (problem);
         if (isWarning) {
             if (buttons.length == 2) { // XXX: called from InstallStep
@@ -125,18 +131,20 @@ public class ProblemPanel extends javax.swing.JPanel {
         }
     }
     
-    @Messages({"write_taTitle_Text=You don't have permission to install plugin(s) into the installation directory.",
-        "write_taMessage_WarningText=To perform installation into the shared directory, you should run the application "
-            + "as a user with administrative privilege or install the plugin(s) into your user directory.<br>"
-            + "You can also change <i>Plugin Install Location</i> in Settings tab of <i>Tools|Plugins</i> dialog."})
-    private void initWriteProblem(String problemDescription) {
+    @Messages({
+        "# {0} - plugin_name",
+        "write_taTitle_Text=You don''t have permission to install plugin <b>{0}</b> into the installation directory.",
+        "write_taMessage_WarningText=To perform installation into the installation directory, you should run the application "
+            + "as a user with administrative privilege, i.e. <i>Run as administrator</i> on Windows platform or "
+            + "run as <i>sudo</i> command on Unix-like systems."})
+    private void initWriteProblem(UpdateElement culprit, String problemDescription) {
         problem = problemDescription == null ?
-            write_taTitle_Text() : // NOI18N
+            write_taTitle_Text(culprit.getDisplayName()) : // NOI18N
             problemDescription;
         initComponents ();
-        cbShowAgain.setVisible(true);
+        cbShowAgain.setVisible(false);
+        taTitle.setText(problem);
         taTitle.setToolTipText (problem);
-        assert isWarning : problem + " is just a warning";
         tpMessage.setText(write_taMessage_WarningText()); // NOI18N
     }
     
@@ -148,23 +156,11 @@ public class ProblemPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        spTitle = new javax.swing.JScrollPane();
-        taTitle = new javax.swing.JTextArea (problem);
         cbShowAgain = new javax.swing.JCheckBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         tpMessage = new javax.swing.JTextPane();
-
-        spTitle.setBorder(null);
-
-        taTitle.setEditable(false);
-        taTitle.setLineWrap(true);
-        taTitle.setWrapStyleWord(true);
-        taTitle.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        taTitle.setOpaque(false);
-        taTitle.setPreferredSize(new java.awt.Dimension(400, 60));
-        spTitle.setViewportView(taTitle);
-        taTitle.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taTitle_ACN")); // NOI18N
-        taTitle.getAccessibleContext().setAccessibleDescription(problem);
+        jScrollPane2 = new javax.swing.JScrollPane();
+        taTitle = new javax.swing.JTextPane();
 
         org.openide.awt.Mnemonics.setLocalizedText(cbShowAgain, org.openide.util.NbBundle.getMessage(ProblemPanel.class, "ProblemPanel.cbShowAgain.text")); // NOI18N
         cbShowAgain.addActionListener(new java.awt.event.ActionListener() {
@@ -179,20 +175,26 @@ public class ProblemPanel extends javax.swing.JPanel {
         tpMessage.setPreferredSize(new java.awt.Dimension(400, 100));
         jScrollPane1.setViewportView(tpMessage);
 
+        taTitle.setEditable(false);
+        taTitle.setContentType("text/html"); // NOI18N
+        taTitle.setOpaque(false);
+        taTitle.setPreferredSize(new java.awt.Dimension(200, 100));
+        jScrollPane2.setViewportView(taTitle);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(spTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
             .addComponent(cbShowAgain, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jScrollPane1)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
+            .addComponent(jScrollPane2)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(spTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbShowAgain))
         );
@@ -209,8 +211,8 @@ public class ProblemPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JCheckBox cbShowAgain;
     javax.swing.JScrollPane jScrollPane1;
-    javax.swing.JScrollPane spTitle;
-    javax.swing.JTextArea taTitle;
+    javax.swing.JScrollPane jScrollPane2;
+    javax.swing.JTextPane taTitle;
     javax.swing.JTextPane tpMessage;
     // End of variables declaration//GEN-END:variables
     
@@ -263,6 +265,7 @@ public class ProblemPanel extends javax.swing.JPanel {
         return descriptor;
     }
     
+    @Messages("CTL_WriteError=Write Permissions Problem")
     private DialogDescriptor getWriteProblemDescriptor () {
         Object [] options;
         if (buttons == null || buttons.length == 0) {
@@ -272,7 +275,7 @@ public class ProblemPanel extends javax.swing.JPanel {
         }
         DialogDescriptor descriptor = new DialogDescriptor(
              this,
-             NbBundle.getMessage(ProblemPanel.class, "CTL_Warning"),
+             isWarning ? NbBundle.getMessage(ProblemPanel.class, "CTL_Warning") : CTL_WriteError(),
              true,                                  // Modal
              options, // Option list
              null,                         // Default
@@ -281,7 +284,7 @@ public class ProblemPanel extends javax.swing.JPanel {
              null
         );
 
-        descriptor.setMessageType (NotifyDescriptor.WARNING_MESSAGE);
+        descriptor.setMessageType (isWarning ? NotifyDescriptor.WARNING_MESSAGE : NotifyDescriptor.ERROR_MESSAGE);
         descriptor.setClosingOptions(null);
         return descriptor;
     }

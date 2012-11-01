@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.indexing.impl.CndTextIndexManager;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.indexing.impl.CndTextIndexImpl;
@@ -57,6 +58,11 @@ import org.openide.filesystems.FileSystem;
  */
 public final class CndTextIndex {
     private CndTextIndex() {
+    }
+    
+    public static void put(final FileSystem fs, final CharSequence key, final Set<String> ids) {
+        CndTextIndexImpl index = CndTextIndexManager.get(fs);
+        index.put(key.toString(), ids);
     }
     
     public static Collection<FSPath> query(FileSystem fs, CharSequence text) {

@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -132,12 +133,12 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (lastRelatedFileObject != null) {
-                    Project project = FileOwnerQuery.getOwner(lastRelatedFileObject);
-                    if (project != null) {
-                        Lookup lookup = project.getLookup();
-                        ActionProvider provider = lookup.lookup(ActionProvider.class);
+                    ActionProvider provider = actionProviderForFileObject(lastRelatedFileObject);
+                    if (provider != null) {
                         Lookup context = Lookups.singleton(lastRelatedFileObject);
-                        provider.invokeAction(ActionProvider.COMMAND_RUN_SINGLE, context);
+                        if (provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context)) {
+                            provider.invokeAction(ActionProvider.COMMAND_RUN_SINGLE, context);
+                        }
                     }
                 }
             }
@@ -190,6 +191,9 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                             "CssStylesPanelProviderImpl.runFileButton", // NOI18N
                             lastRelatedFileObject.getNameExt());
                     runButton.setText(text);
+                    ActionProvider provider = actionProviderForFileObject(lastRelatedFileObject);
+                    Lookup context = Lookups.singleton(lastRelatedFileObject);
+                    runButton.setEnabled(provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context));
                 }
             } else if (pageModel != currentPageModel) {
                 removeAll();
@@ -239,6 +243,21 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         };
     }
 
+    /**
+     * Returns an action provider for the specified {@code FileObject}.
+     * 
+     * @return {@code ActionProvider} for the specified {@code FileObject}.
+     */
+    private ActionProvider actionProviderForFileObject(FileObject fileObject) {
+        ActionProvider provider = null;
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        if (project != null) {
+            Lookup lkp = project.getLookup();
+            provider = lkp.lookup(ActionProvider.class);
+        }
+        return provider;
+    }
+
     @NbBundle.Messages({
         "CTL_CssStylesProviderImpl.selection.view.title=Selection"
     })
@@ -246,7 +265,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     public static class SelectionView extends CssStylesPanelProviderImpl {
 
         private static String SELECTION_PANEL_ID = "selection"; //NOI18N
-        private static Collection<String> MIME_TYPES = Arrays.asList(new String[]{"text/html", "text/xhtml"});
+        private static Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/html", "text/xhtml"}));
 
         @Override
         public String getPanelID() {
@@ -276,11 +295,6 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         }
 
         @Override
-        public Collection<String> getMimeTypes() {
-            return MIME_TYPES;
-        }
-
-        @Override
         public Lookup getLookup() {
             return getMatchedRulesLookup();
         }
@@ -293,6 +307,19 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         @Override
         public void deactivated() {
             deactivateView();
+        }
+
+        @Override
+        public boolean providesContentFor(FileObject file) {
+            if(!MIME_TYPES.contains(file.getMIMEType())) {
+                return false;
+            }
+            
+            //if(the file can't be run as there's either no project or a bad one) {
+            //   return false;
+            //}
+            
+            return true;
         }
 
     }

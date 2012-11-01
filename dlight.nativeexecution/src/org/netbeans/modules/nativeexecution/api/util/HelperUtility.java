@@ -45,7 +45,10 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.MissingResourceException;
@@ -108,18 +111,21 @@ public class HelperUtility {
 
             if (result == null) {
                 try {
-                    String localFile = getLocalFileLocationFor(hinfo);
+                    File localFile = getLocalFile(hinfo);
 
                     if (localFile == null) {
-                        localFile = getLocalFileLocationFor(env);
+                        localFile = getLocalFile(env);
                     }
 
+                    final String fileName = localFile.getName();
+                    File safeLocalFile = new File(hinfo.getTempDirFile(), fileName);
+                    copyFile(localFile, safeLocalFile);
+
                     if (env.isLocal()) {
-                        result = localFile;
+                        result = safeLocalFile.getAbsolutePath();
                     } else {
                         Logger.assertNonUiThread("Potentially long method " + getClass().getName() + ".getPath() is invoked in AWT thread"); // NOI18N
 
-                        final String fileName = new File(localFile).getName();
                         final String remoteFile = hinfo.getTempDir() + '/' + fileName;
                         // Helper utility could be needed at the early stages
                         // Should not use NPB here
@@ -128,14 +134,14 @@ public class HelperUtility {
                         if (channel == null) {
                             return null;
                         }
-                        Object activityID = RemoteStatistics.stratChannelActivity("UploadHelperUtility", channel, localFile); // NOI18N
+                        Object activityID = RemoteStatistics.stratChannelActivity("UploadHelperUtility", channel, localFile.getAbsolutePath()); // NOI18N
                         long remoteSize = -1;
                         try {
                             channel.connect();
                             // md5sum checking is not used for HelperUtilities
                             // it is assumed that comparing sizes is enough in
                             // this case
-                            long localSize = new File(localFile).length();
+                            long localSize = safeLocalFile.length();
                             try {
                                 SftpATTRS rstat = channel.stat(remoteFile);
                                 remoteSize = rstat.getSize();
@@ -152,7 +158,7 @@ public class HelperUtility {
                                 remoteSize = -1;
                             }
                             if (remoteSize < 0) {
-                                channel.put(localFile, remoteFile);
+                                channel.put(safeLocalFile.getAbsolutePath(), remoteFile);
                                 channel.chmod(0700, remoteFile);
                             }
                             result = remoteFile;
@@ -187,11 +193,11 @@ public class HelperUtility {
         return result;
     }
 
-    protected String getLocalFileLocationFor(final HostInfo hinfo) throws MissingResourceException {
+    protected File getLocalFile(final HostInfo hinfo) throws MissingResourceException {
         return null;
     }
 
-    protected String getLocalFileLocationFor(final ExecutionEnvironment env)
+    protected File getLocalFile(final ExecutionEnvironment env)
             throws ParseException, MissingResourceException {
 
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
@@ -204,6 +210,32 @@ public class HelperUtility {
             throw new MissingResourceException(path, null, null); //NOI18N
         }
 
-        return file.getAbsolutePath();
+        return file;
+    }
+
+    private static void copyFile(final File srcFile, final File dstFile) throws IOException {
+        if (dstFile.exists()) {
+            dstFile.delete();
+        }
+
+        dstFile.getParentFile().mkdirs();
+        dstFile.createNewFile();
+
+        FileChannel source = null;
+        FileChannel destination = null;
+
+        try {
+            source = new FileInputStream(srcFile).getChannel();
+            destination = new FileOutputStream(dstFile).getChannel();
+            destination.transferFrom(source, 0, source.size());
+            dstFile.setExecutable(true);
+        } finally {
+            if (source != null) {
+                source.close();
+            }
+            if (destination != null) {
+                destination.close();
+            }
+        }
     }
 }

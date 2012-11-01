@@ -69,6 +69,7 @@ import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -384,14 +385,16 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 }
             } else if (OperationException.ERROR_TYPE.WRITE_PERMISSION == ex.getErrorType()) {
                 if (runInBackground()) {
+                    UpdateElement culprit = findCulprit(ex.getMessage());
                     handleCancel();
-                    notifyWritePermissionProblem(ex);
+                    notifyWritePermissionProblem(ex, culprit);
                 } else {
                     JButton cancel = new JButton();
                     Mnemonics.setLocalizedText(cancel, cancel());
                     JButton install = new JButton();
                     Mnemonics.setLocalizedText(install, install());
-                    ProblemPanel problem = new ProblemPanel(ex, true, new JButton[] {install, cancel});
+                    UpdateElement culprit = findCulprit(ex.getMessage());
+                    ProblemPanel problem = new ProblemPanel(ex, culprit, false);
                     Object ret = problem.showWriteProblemDialog();
                     if (install.equals(ret)) {
                         // install anyway
@@ -732,18 +735,20 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
     }
 
-    @Messages({"inBackground_WritePermission=You don't have permission to install plugin(s) into the installation directory.",
+    @Messages({
+        "# {0} - plugin_name",
+        "inBackground_WritePermission=You don''t have permission to install plugin {0} into the installation directory.",
         "inBackground_WritePermission_Details=details", "cancel=Cancel", "install=Install anyway"})
-    private void notifyWritePermissionProblem(final OperationException ex) {
+    private void notifyWritePermissionProblem(final OperationException ex, final UpdateElement culprit) {
         // lack of privileges for writing
         ActionListener onMouseClickAction = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ProblemPanel problem = new ProblemPanel(ex, true);
+                ProblemPanel problem = new ProblemPanel(ex, culprit, false);
                 problem.showWriteProblemDialog();
             }
         };
-        String title = inBackground_WritePermission();
+        String title = inBackground_WritePermission(culprit.getDisplayName());
         String description = inBackground_WritePermission_Details();
         NotificationDisplayer.getDefault().notify(title,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/error.png", false), // NOI18N
@@ -881,6 +886,18 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     
     private static Preferences getPreferences() {
         return NbPreferences.forModule(Utilities.class);
+    }
+
+    private UpdateElement findCulprit(String codeName) {
+        if (codeName == null || codeName.isEmpty()) {
+            return null;
+        }
+        for (OperationInfo<InstallSupport> info : model.getBaseContainer().listAll()) {
+            if (codeName.equals(info.getUpdateElement().getCodeName())) {
+                return info.getUpdateElement();
+            }
+        }
+        return null;
     }
     
 }

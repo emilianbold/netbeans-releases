@@ -157,9 +157,16 @@ public class HtmlElementNode extends AbstractNode {
                         lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
         }
         if (domNode != null) {
-            lookupProvider.setLookup(Lookups.fixed(this, fileObject, domNode));
+            if (fileObject==null) {
+                lookupProvider.setLookup(Lookups.fixed(this, domNode));
+            } else {
+                lookupProvider.setLookup(Lookups.fixed(this, fileObject, domNode));
+            }
         } else {
-            lookupProvider.setLookup(Lookups.fixed(this, fileObject));
+            if (fileObject!=null)
+                lookupProvider.setLookup(Lookups.fixed(this, fileObject));
+            else 
+                lookupProvider.setLookup(Lookups.singleton(this));
         }
     }
     

@@ -178,9 +178,11 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         JLabel title;
         if (bodyPanel instanceof LicenseApprovalPanel) {
             title = new JLabel (NbBundle.getMessage (PanelBodyContainer.class, "PanelBodyContainer_PleaseWaitForLicense")); // NOI18N
+        } else if (estimatedTime > 0) {
+            title = new JLabel(NbBundle.getMessage(PanelBodyContainer.class, "PanelBodyContainer_ProgressLine")); // NOI18N
         } else {
             title = new JLabel (NbBundle.getMessage (PanelBodyContainer.class, "PanelBodyContainer_PleaseWait")); // NOI18N
-        } 
+        }
         progress = ProgressHandleFactory.createProgressComponent (handle);        
         progressPanel = new JPanel (new GridBagLayout ());
         
@@ -329,25 +331,23 @@ public class PanelBodyContainer extends javax.swing.JPanel {
 
     private final class UpdateProgress implements Runnable {
         private final long friendlyEstimatedTime;
-        private final String progressDisplayName;
         private final Task task;
+        private int i;
 
         @SuppressWarnings("LeakingThisInConstructor")
         public UpdateProgress(long friendlyEstimatedTime, String progressDisplayName) {
             this.friendlyEstimatedTime = friendlyEstimatedTime;
-            this.progressDisplayName = progressDisplayName;
             this.task = Installer.RP.create(this);
+            this.i = 0;
         }
 
         @Override
         public void run () {
-            int i = 0;
             if (isWaiting && isShowing()) {
                 if (friendlyEstimatedTime * 10 > i++) {
-                    handle.progress (progressDisplayName, i);
+                    handle.progress (i);
                 } else {
                     handle.switchToIndeterminate ();
-                    handle.progress (progressDisplayName);
                     return ;
                 }
                 task.schedule(100);

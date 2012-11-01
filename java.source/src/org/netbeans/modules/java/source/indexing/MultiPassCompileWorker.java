@@ -63,13 +63,14 @@ import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -456,7 +457,16 @@ final class MultiPassCompileWorker extends CompileWorker {
         }
     }
     
-    private void dumpSymFile(JavaFileManager jfm, JavacTaskImpl jti, ClassSymbol cs, Set<File> alreadyCreated) throws IOException {
+    private void dumpSymFile(
+            @NonNull final JavaFileManager jfm,
+            @NonNull final JavacTaskImpl jti,
+            @NullAllowed final ClassSymbol cs,
+            @NonNull final Set<File> alreadyCreated) throws IOException {
+        if (cs == null) {
+            //ClassDecl has no symbol because compilation was cancelled
+            //by low memory before ENTER done.
+            return;
+        }        
         JavaFileObject file = jfm.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT,
                 cs.flatname.toString(), JavaFileObject.Kind.CLASS, cs.sourcefile);
         if (file instanceof FileObjects.FileBase && !alreadyCreated.contains(((FileObjects.FileBase)file).getFile())) {
