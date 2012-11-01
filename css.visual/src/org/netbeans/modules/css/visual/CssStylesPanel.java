@@ -134,14 +134,12 @@ public class CssStylesPanel extends javax.swing.JPanel {
     private void updateToolbar(FileObject file) {
         toolBar.removeAll();
         
-        String mimeType = file.getMIMEType();
-        
         // Button group for document and source buttons
         ButtonGroup buttonGroup = new ButtonGroup();
         
         boolean first = true;
         for(CssStylesPanelProvider provider : providers) {
-            if(provider.getMimeTypes().contains(mimeType)) {
+            if(provider.providesContentFor(file)) {
                 JToggleButton button = new JToggleButton();
                 button.setText(provider.getPanelDisplayName());
                 button.setActionCommand(provider.getPanelID());
@@ -270,11 +268,6 @@ public class CssStylesPanel extends javax.swing.JPanel {
         }
 
         @Override
-        public Collection<String> getMimeTypes() {
-            return delegate.getMimeTypes();
-        }
-
-        @Override
         public Lookup getLookup() {
             return delegate.getLookup();
         }
@@ -287,6 +280,11 @@ public class CssStylesPanel extends javax.swing.JPanel {
         @Override
         public void deactivated() {
             delegate.deactivated();
+        }
+
+        @Override
+        public boolean providesContentFor(FileObject file) {
+            return delegate.providesContentFor(file);
         }
         
     }

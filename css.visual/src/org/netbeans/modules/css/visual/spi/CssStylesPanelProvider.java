@@ -56,9 +56,13 @@ import org.openide.util.Lookup;
 public interface CssStylesPanelProvider {
     
     /**
-     * Gets a collection of mimetypes to which this panel provider should be bound.
+     * The implementation decides whether it wants to include its UI for the given file.
+     * 
+     * @param file context file
+     * @return true if the panel should be included in the CSS Styles window UI,
+     * false otherwise.
      */
-    public Collection<String> getMimeTypes();
+    public boolean providesContentFor(FileObject file);
     
     /**
      * Gets an unique system id for the panel. 
