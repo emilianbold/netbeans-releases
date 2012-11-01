@@ -1,0 +1,14 @@
+[[71,80]-Syntax error
+ unexpected:	identifier 'xmlParser'
+ after:	{
+ expected:	function, const, use, var, }, VAR_COMMENT, static, abstract, final, private, protected, public] 71-80:Syntax error
+ unexpected:	identifier 'xmlParser'
+ after:	{
+ expected:	function, const, use, var, }, VAR_COMMENT, static, abstract, final, private, protected, public
+[[83,84]-Syntax error
+ unexpected:	{
+ after:	)
+ expected:	instanceof, as, ->, =>, }, ',', OR, XOR, &&, =, +=, -=, *=, /=, .=, %=, &=, |=, ^=, <<=, >>=, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', ++, --, [, ], ), :] 83-84:Syntax error
+ unexpected:	{
+ after:	)
+ expected:	instanceof, as, ->, =>, }, ',', OR, XOR, &&, =, +=, -=, *=, /=, .=, %=, &=, |=, ^=, <<=, >>=, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', ++, --, [, ], ), :

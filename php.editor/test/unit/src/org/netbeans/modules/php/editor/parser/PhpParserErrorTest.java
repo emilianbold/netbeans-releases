@@ -263,4 +263,40 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testIssue190105_03() throws Exception {
         checkErrors("testfiles/parser/issue190105_03.php");
     }
+
+    public void testIssue211165_01() throws Exception {
+        checkErrors("testfiles/parser/issue211165_01.php");
+    }
+
+    public void testIssue211165_02() throws Exception {
+        checkErrors("testfiles/parser/issue211165_02.php");
+    }
+
+    public void testIssue211165_03() throws Exception {
+        checkErrors("testfiles/parser/issue211165_03.php");
+    }
+
+    public void testIssue211165_04() throws Exception {
+        checkErrors("testfiles/parser/issue211165_04.php");
+    }
+
+    public void testIssue211165_05() throws Exception {
+        checkErrors("testfiles/parser/issue211165_05.php");
+    }
+
+    public void testIssue211165_06() throws Exception {
+        checkErrors("testfiles/parser/issue211165_06.php");
+    }
+
+    public void testIssue211165_07() throws Exception {
+        checkErrors("testfiles/parser/issue211165_07.php");
+    }
+
+    public void testIssue211165_08() throws Exception {
+        checkErrors("testfiles/parser/issue211165_08.php");
+    }
+
+    public void testIssue211165_09() throws Exception {
+        checkErrors("testfiles/parser/issue211165_09.php");
+    }
 }
