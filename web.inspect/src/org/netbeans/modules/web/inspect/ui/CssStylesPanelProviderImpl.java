@@ -132,12 +132,12 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (lastRelatedFileObject != null) {
-                    Project project = FileOwnerQuery.getOwner(lastRelatedFileObject);
-                    if (project != null) {
-                        Lookup lookup = project.getLookup();
-                        ActionProvider provider = lookup.lookup(ActionProvider.class);
+                    ActionProvider provider = actionProviderForFileObject(lastRelatedFileObject);
+                    if (provider != null) {
                         Lookup context = Lookups.singleton(lastRelatedFileObject);
-                        provider.invokeAction(ActionProvider.COMMAND_RUN_SINGLE, context);
+                        if (provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context)) {
+                            provider.invokeAction(ActionProvider.COMMAND_RUN_SINGLE, context);
+                        }
                     }
                 }
             }
@@ -190,6 +190,9 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                             "CssStylesPanelProviderImpl.runFileButton", // NOI18N
                             lastRelatedFileObject.getNameExt());
                     runButton.setText(text);
+                    ActionProvider provider = actionProviderForFileObject(lastRelatedFileObject);
+                    Lookup context = Lookups.singleton(lastRelatedFileObject);
+                    runButton.setEnabled(provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context));
                 }
             } else if (pageModel != currentPageModel) {
                 removeAll();
@@ -237,6 +240,21 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                 }
             }
         };
+    }
+
+    /**
+     * Returns an action provider for the specified {@code FileObject}.
+     * 
+     * @return {@code ActionProvider} for the specified {@code FileObject}.
+     */
+    private ActionProvider actionProviderForFileObject(FileObject fileObject) {
+        ActionProvider provider = null;
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        if (project != null) {
+            Lookup lkp = project.getLookup();
+            provider = lkp.lookup(ActionProvider.class);
+        }
+        return provider;
     }
 
     @NbBundle.Messages({
