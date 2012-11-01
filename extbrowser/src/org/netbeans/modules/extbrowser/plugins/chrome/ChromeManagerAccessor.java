@@ -106,6 +106,9 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         
         private static final String STATE = "\"state\":";                       // NOI18N
         
+        // keeping old name for a while; after most of users upgraded to new plugin we can remove this:
+        private static final String PLUGIN_OLD_NAME = "NetBeans IDE Support Plugin";// NOI18N
+        
         private static final String PLUGIN_NAME = "NetBeans Connector";// NOI18N
         
         private static final String EXTENSION_PATH = "modules/lib/netbeans-ros-chrome-plugin.crx"; // NOI18N
@@ -165,7 +168,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                         return ExtensionManager.ExtensitionStatus.INSTALLED;
                     }
                     JSONObject manifest = (JSONObject)extension.get("manifest");
-                    if (manifest != null && PLUGIN_NAME.equals((String)manifest.get("name"))) {
+                    if (manifest != null && (PLUGIN_NAME.equals((String)manifest.get("name")) || PLUGIN_OLD_NAME.equals((String)manifest.get("name"))) ) {
                         String version = (String)manifest.get("version");
                         if (isUpdateRequired( version )){
                             return ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE;

@@ -2,7 +2,7 @@
   "name": "__MSG__pluginName__",
   "manifest_version": 2,
 
-  "version": "0.5.4",
+  "version": "0.6.0",
 
   "background": {
     "page": "html/main.html"
