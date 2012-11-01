@@ -638,7 +638,16 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         projectsChooserLabel.setOpaque(false);
 
         // projectsChoserCombo
-        projectsChooserCombo = new JComboBox();
+        projectsChooserCombo = new JComboBox() {
+            public Dimension getPreferredSize() {
+                Dimension dim = super.getPreferredSize();
+                dim.width = 1;
+                return dim;
+            }
+            public Dimension getMinimumSize() {
+                return getPreferredSize();
+            }
+        };
         projectsChooserCombo.setRenderer(org.netbeans.modules.profiler.ppoints.Utils.getProjectListRenderer());
         projectsChooserLabel.setLabelFor(projectsChooserCombo);
         projectsChooserCombo.getAccessibleContext().setAccessibleDescription(Bundle.SelectProfilingTask_ChooserComboAccessDescr());

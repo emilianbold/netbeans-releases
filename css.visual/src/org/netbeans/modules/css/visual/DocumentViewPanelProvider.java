@@ -82,6 +82,19 @@ public class DocumentViewPanelProvider implements CssStylesPanelProvider {
     public Collection<String> getMimeTypes() {
         return MIME_TYPES;
     }
+
+    @Override
+    public Lookup getLookup() {
+        return null;
+    }
+
+    @Override
+    public void activated() {
+    }
+
+    @Override
+    public void deactivated() {
+    }
     
     
 }

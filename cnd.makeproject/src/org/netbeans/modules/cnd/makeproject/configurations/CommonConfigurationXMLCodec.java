@@ -90,6 +90,12 @@ import org.openide.util.Exceptions;
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
+ * V88 - NB 7.3 (!!!!!!!!!!INVERTED SERIALIZATION!!!!!!!!!!!!)
+ *    1) This is the version where serialization of unmanaged projects were inverted
+ *    instead of excluded items and personally attributed items we store all 
+ *    non-excluded or non-default attributed items. 
+ *    2) To support include paths and macro values we keep user specified 
+ *       CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT and CODE_ASSISTANCE_ENVIRONMENT_ELEMENT
  * V87 - NB 7.3 
  *    roll back default value in BooleanConfiguration for ItemConfiguration (69fa2dbc8b7c)
  * V86 - NB 7.3
@@ -259,7 +265,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 87;
+    public final static int CURRENT_VERSION = 88;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -655,7 +661,7 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private void writeDiskFolder(XMLEncoderStream xes, Folder folder) {
-        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE && !folder.hasIncludedItems()) {
+        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE && !folder.hasAttributedItems()) {
             return;
         }
         List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
@@ -673,7 +679,7 @@ public abstract class CommonConfigurationXMLCodec
         Item[] items = folder.getItemsAsArray();
         for (int i = 0; i < items.length; i++) {
             Item item = items[i];
-            if (!org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE || item.isIncludedInAnyConfiguration()) {
+            if (!org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE || item.hasImportantAttributes()) {
                 xes.element(ITEM_NAME_ELEMENT, item.getName());
             }
         }

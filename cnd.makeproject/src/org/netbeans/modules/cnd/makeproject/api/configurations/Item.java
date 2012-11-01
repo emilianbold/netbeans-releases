@@ -948,16 +948,11 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
     private static final SpiAccessor SPI_ACCESSOR = new SpiAccessor();
 
-    public boolean isIncludedInAnyConfiguration() {
+    public boolean hasImportantAttributes() {
         assert org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE;
         for (ItemConfiguration conf : getItemConfigurations()) {
-            if (conf == null) {
-                conf = null;
-            } else {
-                // if special item or not excluded => included in this configuration
-                if (conf.getExcluded() == null || !conf.getExcluded().getValue()) {
-                    return true;
-                }
+            if (conf != null && !conf.isDefaultConfiguration() ) {
+                return true;
             }
         }
         return false;

@@ -93,7 +93,12 @@ public final class CssStylesTC extends TopComponent {
     private CssStylesPanel cssStylesPanel;
 
     public CssStylesTC() {
-        initComponents();
+        setLayout(new BorderLayout());
+        cssStylesPanel = new CssStylesPanel();
+        add(cssStylesPanel, BorderLayout.CENTER);
+        
+        associateLookup(cssStylesPanel.getLookup());
+        
         setFileNameInTitle(null);
         setToolTipText(Bundle.HINT_CssStylesTC());
     }
@@ -116,26 +121,4 @@ public final class CssStylesTC extends TopComponent {
         setName(Bundle.CTL_CssStylesTC_title(fileName));
     }
     
-    /**
-     * Initializes the components in this {@link TopComponent}.
-     */
-    private void initComponents() {
-        setLayout(new BorderLayout());
-        cssStylesPanel = new CssStylesPanel();
-        
-//        //listen on the controller and modify the TopComponent title if necessary
-//        cssStylesPanel.getRuleEditorController().addRuleEditorListener(new PropertyChangeListener() {
-//            @Override
-//            public void propertyChange(PropertyChangeEvent evt) {
-//                if(evt.getPropertyName().equals(RuleEditorController.PropertyNames.MODEL_SET.name())) {
-//                    Model model = (Model)evt.getNewValue();
-//                    FileObject file = model == null ? null : model.getLookup().lookup(FileObject.class);
-//                    setFileNameInTitle(file);
-//                }
-//            }
-//        });
-//        
-        add(cssStylesPanel, BorderLayout.CENTER);
-    }
-
 }

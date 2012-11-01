@@ -210,14 +210,14 @@ public class HtmlElementNode extends AbstractNode {
     /**
      * Returns source element description for this node.
      */
-    private SourceDescription getSourceDescription() {
+    public  SourceDescription getSourceDescription() {
         return source;
     }
     
     /**
      * Returns DOM element description for this node.
      */
-    private Description getDOMDescription() {
+    public  Description getDOMDescription() {
         return dom;
     }
     

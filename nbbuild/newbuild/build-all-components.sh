@@ -124,9 +124,6 @@ fi
 rm -rf $NB_ALL/nbbuild/netbeans/nb/servicetag
 rm -rf $NB_ALL/nbbuild/netbeans/enterprise/config/GlassFishEE6
 
-mv $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans.after_tests
-mv $NB_ALL/nbbuild/netbeans-vanilla $NB_ALL/nbbuild/netbeans
-
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false
 ERROR_CODE=$?
 
@@ -137,6 +134,9 @@ if [ $ERROR_CODE != 0 ]; then
 else
     mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
 fi
+
+mv $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans.after_commit-validation_and_test-dist
+mv $NB_ALL/nbbuild/netbeans-vanilla $NB_ALL/nbbuild/netbeans
 
 cd $NB_ALL
 

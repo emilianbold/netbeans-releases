@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.ProjectSettingsValidatorKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.util.IllegalRepositoryStateException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -161,7 +162,7 @@ public class ProjectSettingsValidator {
 	data = (Data) RepositoryUtils.get(key);
         if( data == null ) {
             data = new Data();
-            DiagnosticExceptoins.register(new IllegalStateException("Can not get project settings validator data by the key " + key)); //NOI18N
+            DiagnosticExceptoins.register(new IllegalRepositoryStateException("Can not get project settings validator data by the key " + key)); //NOI18N
         }
     }
     

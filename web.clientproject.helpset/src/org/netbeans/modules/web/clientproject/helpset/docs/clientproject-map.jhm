@@ -32,6 +32,9 @@
     <mapID target="org.netbeans.modules.web.clientproject.ui.customizer.JavaScriptFilesPanel" url="csh/csh-html5-prop-js.html"/>
     <mapID target="org.netbeans.modules.web.clientproject.ui.customizer.RunPanel" url="csh/csh-html5-prop-run.html"/>
     
+    <!-- CSH for Test Results window -->
+    <mapID target="org.netbeans.modules.gsf.testrunner.api.ResultWindow" url="csh/csh-html5-prop-run.html"/>
+    
     
 </map>
 

@@ -77,9 +77,13 @@ public class CssSemanticAnalyzer extends SemanticAnalyzer {
     public void run(Result result, SchedulerEvent event) {
         resume();
         
-        CssParserResult wrappedResult = (CssParserResult) result;
-        FeatureContext featureContext = new FeatureContext(wrappedResult);
-        semanticHighlights = CssModuleSupport.getSemanticHighlights(featureContext, featureCancel);
+        try {
+            CssParserResult wrappedResult = (CssParserResult) result;
+            FeatureContext featureContext = new FeatureContext(wrappedResult);
+            semanticHighlights = CssModuleSupport.getSemanticHighlights(featureContext, featureCancel);
+        } finally {
+            featureCancel = null;
+        }
     }
 
     @Override
