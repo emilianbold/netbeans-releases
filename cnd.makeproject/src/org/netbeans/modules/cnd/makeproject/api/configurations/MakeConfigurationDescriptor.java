@@ -1778,8 +1778,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             String rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
             rootPath = CndPathUtilitities.normalizeSlashes(rootPath);
             top.setRoot(rootPath);
-        }
-        addFilesImpl(new HashSet<String>(), top, dir, null, filesAdded, true, true, fileFilter, false);
+        }        
+        addFilesImpl(new HashSet<String>(), top, dir, null, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }

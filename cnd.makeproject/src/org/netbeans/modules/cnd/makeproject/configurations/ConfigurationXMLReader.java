@@ -288,8 +288,10 @@ public class ConfigurationXMLReader extends XMLDocReader {
                     for (Folder f : firstLevelFolders) {
                         if (f.isDiskFolder()) {
                             if (oldSchemeWasRestored) {
+                                LOGGER.log(Level.FINE, "Restore based on old scheme");
                                 f.refreshDiskFolderAfterRestoringOldScheme();
                             } else {
+                                LOGGER.log(Level.FINE, "Restore based on new scheme");
                                 f.refreshDiskFolder();
                             }
                             f.attachListeners();
