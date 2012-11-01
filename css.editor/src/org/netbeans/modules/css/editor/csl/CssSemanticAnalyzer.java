@@ -70,7 +70,9 @@ public class CssSemanticAnalyzer extends SemanticAnalyzer {
 
     @Override
     public void cancel() {
-        featureCancel.cancel();
+        if(featureCancel != null) {
+            featureCancel.cancel();
+        }
     }
 
     @Override
