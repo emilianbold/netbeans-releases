@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.web.clientproject;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,6 +57,7 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -87,9 +90,20 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     private static class PathImpl implements FilteringPathResourceImplementation {
 
         private final ClientSideProject project;
+        private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
         public PathImpl(ClientSideProject project) {
             this.project = project;
+            this.project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName()) ||
+                        ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName()) ||
+                        evt.getPropertyName().startsWith("file.reference.")) {
+                        support.firePropertyChange(PathResourceImplementation.PROP_ROOTS, null, null);
+                    }
+                }
+            });
         }
         
         @Override
@@ -100,7 +114,10 @@ public class ClassPathProviderImpl implements ClassPathProvider {
         @Override
         public URL[] getRoots() {
             List<URL> l = new ArrayList<URL>(2);
-            l.add(project.getSiteRootFolder().toURL());
+            FileObject sourcesFolder = project.getSiteRootFolder();
+            if (sourcesFolder != null) {
+                l.add(sourcesFolder.toURL());
+            }
             FileObject testsFolder = project.getTestsFolder();
             if (testsFolder != null) {
                 l.add(testsFolder.toURL());
@@ -115,10 +132,12 @@ public class ClassPathProviderImpl implements ClassPathProvider {
 
         @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
+            support.addPropertyChangeListener(listener);
         }
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
+            support.removePropertyChangeListener(listener);
         }
         
     }

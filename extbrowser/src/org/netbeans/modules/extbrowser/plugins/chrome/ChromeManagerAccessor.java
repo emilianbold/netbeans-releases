@@ -313,6 +313,11 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 String localAppData = System.getenv("LOCALAPPDATA");                // NOI18N
                 if (localAppData != null) {
                     result.add(localAppData+"\\Google\\Chrome\\User Data");
+                } else {
+                    localAppData = Utils.getLOCALAPPDATAonWinXP();
+                    if (localAppData != null) {
+                        result.add(localAppData+"\\Google\\Chrome\\User Data");
+                    }
                 }
                 String appData = System.getenv("APPDATA");                // NOI18N
                 if (appData != null) {
@@ -320,10 +325,14 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                     File f = new File(appData);
                     if (f.exists()) {
                         String fName = f.getName();
+                        // #219824 - below code will not work on some localized WinXP where
+                        //    "Local Settings" name might be "Lokale Einstellungen";
+                        //     no harm if we try though:
                         f = new File(f.getParentFile(),"Local Settings");
                         f = new File(f, fName);
-                        if (f.exists())
+                        if (f.exists()) {
                             result.add(f.getPath()+"\\Google\\Chrome\\User Data");
+                        }
                     }
                 }
                 return result.toArray(new String[result.size()]);
@@ -335,7 +344,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 return Utils.getUserPaths("/.config/google-chrome", "/.config/chrome");// NOI18N
             }
         }
-        
+
         private boolean manualInstallPluginDialog( PluginLoader loader,
                 ExtensionManager.ExtensitionStatus currentStatus,
                 File extensionFile ) throws IOException
