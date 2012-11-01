@@ -1011,9 +1011,9 @@ public final class FileUtil extends Object {
             if ((fileURL != null) && "file".equals(fileURL.getProtocol())) {
                 retVal = Utilities.toFile(URI.create(fileURL.toExternalForm()));
             }
-            if (retVal != null) {
-                retVal = normalizeFile(retVal);
-            }
+        }
+        if (retVal != null) {
+            retVal = normalizeFile(retVal);
         }
         assert assertNormalized(retVal);
         return retVal;
