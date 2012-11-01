@@ -5,7 +5,7 @@ org.netbeans.modules.openide.nodes.PERegistrationSupport$PEClassRegistration
 org.netbeans.modules.openide.nodes.PERegistrationSupport$PEPackageRegistration
 org.netbeans.modules.openide.nodes.PERegistrationSupport$PkgReg
 
-#220899
+#OK on Oct 31, 2012, needed because of enabled logging due to #220899
 org.eclipse.core.runtime.internal.adaptor.EclipseLogFactory
 org.eclipse.core.runtime.internal.adaptor.EclipseLogHook
 org.eclipse.core.runtime.internal.adaptor.EclipseLogWriter
@@ -37,8 +37,6 @@ org.osgi.resource.Requirement
 org.osgi.resource.Resource
 org.osgi.service.log.LogEntry
 org.osgi.service.log.LogListener
-
-#218912
 org.eclipse.equinox.log.ExtendedLogReaderService
 org.eclipse.equinox.log.ExtendedLogService
 org.eclipse.equinox.log.Logger

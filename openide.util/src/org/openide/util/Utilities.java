@@ -92,11 +92,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
@@ -232,6 +234,19 @@ public final class Utilities {
 
     /** regular expression to with all changes */
     private static RE transExp;
+    
+    private static final Map<GraphicsConfiguration, Map<Rectangle, Long>> screenBoundsCache;
+
+    static {
+        final boolean cacheEnabled = !GraphicsEnvironment.isHeadless() && isUnix()
+                && !isMac() && (System.getProperty( "netbeans.screen.insetsCache", "true" ).equalsIgnoreCase( "true" )); //NOI18N
+
+        if( cacheEnabled ) {
+            screenBoundsCache = new WeakHashMap<GraphicsConfiguration, Map<Rectangle, Long>>();
+        } else {
+            screenBoundsCache = null;
+        }
+    }
 
     //
     // Support for work with actions
@@ -2030,6 +2045,48 @@ widthcheck:  {
 
     /**
      * Returns the usable area of the screen where applications can place its
+     * windows. The method subtracts from the screen the area of taskbars,
+     * system menus and the like.
+     * On certain platforms this methods uses a cache to avoid performance degradation due to repeated calls.
+     * This can be disabled by setting the property "-Dnetbeans.screen.insetsCache=false"
+     * See issue http://netbeans.org/bugzilla/show_bug.cgi?id=219507
+     *
+     * @param gconf the GraphicsConfiguration of the monitor
+     * @return the rectangle of the screen where one can place windows
+     *
+     * @since 2.5
+     */
+    public static Rectangle getUsableScreenBounds(GraphicsConfiguration gconf) {
+        if( gconf == null ) {
+            gconf = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        }
+        if( screenBoundsCache == null ) {
+            return calculateUsableScreenBounds( gconf );
+        }
+
+        synchronized( screenBoundsCache ) {
+            Map<Rectangle, Long> cacheEntry = screenBoundsCache.get( gconf );
+            if( cacheEntry != null ) {
+                final long now = System.currentTimeMillis();
+                Entry<Rectangle, Long> entry = cacheEntry.entrySet().iterator().next();
+                if( entry.getValue() < now + 10000 ) { // cache hit, 10 seconds lifetime
+                    return new Rectangle( entry.getKey() ); // return copy
+                }
+            }
+
+            final Rectangle screenBounds = calculateUsableScreenBounds( gconf );
+            cacheEntry = new HashMap<Rectangle, Long>( 1 );
+            cacheEntry.put( screenBounds, System.currentTimeMillis() );
+            if( screenBoundsCache.size() > 20 ) { //maximum entries
+                screenBoundsCache.clear();
+            }
+            screenBoundsCache.put( gconf, cacheEntry );
+            return new Rectangle( screenBounds );
+        }
+    }
+    
+    /**
+     * Returns the usable area of the screen where applications can place its
      * windows.  The method subtracts from the screen the area of taskbars,
      * system menus and the like.
      *
@@ -2038,10 +2095,7 @@ widthcheck:  {
      *
      * @since 2.5
      */
-    public static Rectangle getUsableScreenBounds(GraphicsConfiguration gconf) {
-        if (gconf == null) {
-            gconf = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-        }
+    private static Rectangle calculateUsableScreenBounds(GraphicsConfiguration gconf) {
 
         Rectangle bounds = new Rectangle(gconf.getBounds());
 

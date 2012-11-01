@@ -207,11 +207,15 @@ public final class ExplorerActionsImpl {
      */
     final void updateActions(boolean updatePasteAction) {
         assert !EventQueue.isDispatchThread();
-        if (manager == null) {
+        ExplorerManager m;
+        synchronized (this) {
+            m = manager;
+        }
+        if (m == null) {
             return;
         }
 
-        Node[] path = manager.getSelectedNodes();
+        Node[] path = m.getSelectedNodes();
 
         int i;
         int k = (path != null) ? path.length : 0;
