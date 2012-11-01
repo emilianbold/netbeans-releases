@@ -366,7 +366,7 @@ implements ChangeListener {
     public DataObject find (FileObject fo) {
         synchronized (this) {
             Item doh = map.get(fo);
-            if (doh == null) {
+            if (doh == null || !fo.isValid()) {
                 return null;
             }
             
