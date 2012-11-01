@@ -80,6 +80,27 @@ public class GlassFishStatus {
         /** Refresh mode. Displays enable-secure-admin warning
          *  for remote servers. */
         REFRESH;
+
+        ////////////////////////////////////////////////////////////////////////
+        // Methods                                                            //
+        ////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Convert <code>Mode</code> value to <code>String</code>.
+         * <p/>
+         * @return A <code>String</code> representation of the value
+         *         of this object.
+         */
+        @Override
+        public String toString() {
+            switch(this) {
+                case DEFAULT: return "DEFAULT";
+                case STARTUP: return "STARTUP";
+                case REFRESH: return "REFRESH";
+                default: throw new IllegalStateException("Unknown Mode value");
+            }
+        }
+
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -112,6 +133,10 @@ public class GlassFishStatus {
     /** Log message: Locations response item. */
     private static final String LOG_LOCATIONS_RESPONSE_ITEM
             = "Server {0} locations response {1} = {2}";
+
+    /** Log message: Version task failed. */
+    private static final String LOG_VERSION_TASK_FAIL
+            = "Version task failed: {0}";
 
     /** Log message: Version response. */
     private static final String LOG_VERSION_RESPONSE
@@ -237,6 +262,8 @@ public class GlassFishStatus {
                             instance.getCommonSupport(), message);
                 }
             default:
+                 Logger.getLogger("glassfish").log(Level.INFO,
+                         LOG_VERSION_TASK_FAIL, versionTaskResult.getStatus());
                 versionCommandResult = null;
         }
         return versionCommandResult;
@@ -342,7 +369,7 @@ public class GlassFishStatus {
                     = status.getAdminPortResult();
             // GlassFish server administration port is not listening.
             if (adminPortResult.getStatus() != ServerStatus.Status.SUCCESS) {
-                return false;
+                continue;
             }
             ResultString versionCommandResult = processVersionTaskResult(
                     instance, status.getVersionResult(), mode);
@@ -379,6 +406,7 @@ public class GlassFishStatus {
                 }
             }
         }
+        status.close();
         return isReady;
     }
 

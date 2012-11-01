@@ -63,8 +63,6 @@ class SampleVisualPanel extends JPanel {
 
     private static final long serialVersionUID = 6783546871135477L;
 
-    private static final String PROJECT_NAME = "HTML5Application"; // NOI18N
-
     public SampleVisualPanel(WizardDescriptor descriptor) {
         initComponents();
         initProjectNameAndLocation(descriptor);
@@ -78,10 +76,11 @@ class SampleVisualPanel extends JPanel {
 
         FileObject template = Templates.getTemplate(descriptor);
         String projectName = template.getName();
+        String templateName = projectName;
         int index = 0;
         while ((new File(projectLocation, projectName)).exists()) {
             index++;
-            projectName = PROJECT_NAME + index;
+            projectName = templateName + index;
         }
         projectNameTextField.setText(projectName);
         projectNameTextField.selectAll();

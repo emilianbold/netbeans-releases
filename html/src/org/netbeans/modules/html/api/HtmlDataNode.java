@@ -44,6 +44,12 @@
 
 package org.netbeans.modules.html.api;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.api.actions.Viewable;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.html.HtmlDataObject;
 import org.openide.loaders.DataObject;
@@ -67,10 +73,45 @@ public final class HtmlDataNode extends org.openide.loaders.DataNode {
     
     private Node.PropertySet[] customPropertySet;
     
+    private static final String VIEWABLE_CLASS_NAME = Viewable.class.getName();
+    
     /** Creates new HtmlDataNode */
     public HtmlDataNode(DataObject dobj, Children ch) {
         super(dobj, ch);
         setShortDescription(NbBundle.getMessage(HtmlDataObject.class, "LBL_htmlNodeShortDesc"));
+    }
+    
+    private boolean isHtmlProject() {
+        Project current = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile());
+        return current != null && current.getClass().getName().equals("org.netbeans.modules.web.clientproject.ClientSideProject"); //NOI18N
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        Action[] actions = super.getActions(context);
+        if (isHtmlProject()) {
+
+            //filter out view action in html project
+            List<Action> filtered = new ArrayList<Action>();
+            for (int i = 0; i < actions.length; i++) {
+                Action a = actions[i];
+                if (a != null) {
+                    Object value = a.getValue("type"); //NOI18N
+                    if (value != null && (value instanceof String)) {
+                        String type = (String) value;
+                        if (VIEWABLE_CLASS_NAME.equals(type)) {
+                            continue;
+                        }
+                    }
+                }
+                filtered.add(a);
+            }
+            return filtered.toArray(new Action[0]);
+        }
+
+
+        return actions;
+
     }
     
     @Override

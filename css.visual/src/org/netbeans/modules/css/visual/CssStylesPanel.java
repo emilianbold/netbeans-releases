@@ -67,9 +67,16 @@ public class CssStylesPanel extends javax.swing.JPanel {
      private final RuleEditorController controller;
      private final Collection<CssStylesPanelProvider> providers;
      private final ActionListener toolbarListener;
-     private final ModifiableLookup lookup;
+     
+     /* Lookup for CssStylesPanelProviders. The content mutates based on changed file context.*/
+     private final ModifiableLookup providersLookup;
+     
+     /* Lookup for the CssStylesTC. Content got from the CssStylesPanelProvider's lookup */
+     private final ModifiableLookup tcLookup;
+     
      private final JToolBar toolBar;
      
+     private CssStylesPanelProvider active;
      private JComponent activePanel;
      private FileObject context;
      
@@ -79,7 +86,8 @@ public class CssStylesPanel extends javax.swing.JPanel {
     public CssStylesPanel() {
         initComponents();
 
-        lookup = new ModifiableLookup();
+        tcLookup = new ModifiableLookup();
+        providersLookup = new ModifiableLookup();
         //assumption: should not change in time, otherwise we need to listen
         providers = new ArrayList<CssStylesPanelProvider>();
         for(CssStylesPanelProvider provider : Lookup.getDefault().lookupAll(CssStylesPanelProvider.class)) {
@@ -99,7 +107,7 @@ public class CssStylesPanel extends javax.swing.JPanel {
                 //linear search, but should be at most 2 or 3 items
                 for(CssStylesPanelProvider provider : providers) {
                     if(provider.getPanelID().equals(command)) {
-                        setActivePanel(provider.getContent(lookup));
+                        setActiveProvider(provider);
                     }
                 }
             }
@@ -115,17 +123,23 @@ public class CssStylesPanel extends javax.swing.JPanel {
         splitPane.setResizeWeight(0.5);
     }
     
+    /**
+     * Returns lookup which content changes based on the lookups of the active
+     * CssStylesPanelProvider.
+     */
+    public Lookup getLookup() {
+        return tcLookup;
+    }
+    
     private void updateToolbar(FileObject file) {
         toolBar.removeAll();
-        
-        String mimeType = file.getMIMEType();
         
         // Button group for document and source buttons
         ButtonGroup buttonGroup = new ButtonGroup();
         
         boolean first = true;
         for(CssStylesPanelProvider provider : providers) {
-            if(provider.getMimeTypes().contains(mimeType)) {
+            if(provider.providesContentFor(file)) {
                 JToggleButton button = new JToggleButton();
                 button.setText(provider.getPanelDisplayName());
                 button.setActionCommand(provider.getPanelID());
@@ -137,7 +151,7 @@ public class CssStylesPanel extends javax.swing.JPanel {
 
                 button.setSelected(first);
                 if(first) {
-                    setActivePanel(provider.getContent(lookup));
+                    setActiveProvider(provider);
                     first = false;
                 }
             }
@@ -152,21 +166,28 @@ public class CssStylesPanel extends javax.swing.JPanel {
         InstanceContent ic = new InstanceContent();
         ic.add(context);
         ic.add(getRuleEditorController());
-        lookup.updateLookup(new AbstractLookup(ic));
+        providersLookup.updateLookup(new AbstractLookup(ic));
     }
     
-    private void setActivePanel(JComponent panel) {
-        if(panel == activePanel) {
-            //no change
+    private void setActiveProvider(CssStylesPanelProvider provider) {
+        if(active == provider) {
+            return; //no change
         }
         
-        if(activePanel != null) {
+        if(active != null) {
             topPanel.remove(activePanel);
+            active.deactivated();
         }
         
-        topPanel.add(panel, BorderLayout.CENTER);
-        activePanel = panel;
+        active = provider;
+        activePanel = provider.getContent(providersLookup);
+        
+        topPanel.add(activePanel, BorderLayout.CENTER);        
+        active.activated();
 
+        //propagate the provider's lookup to the lookup of the CssStylesTC.
+        tcLookup.updateLookup(active.getLookup());
+        
         revalidate();
         repaint();
     }
@@ -247,8 +268,23 @@ public class CssStylesPanel extends javax.swing.JPanel {
         }
 
         @Override
-        public Collection<String> getMimeTypes() {
-            return delegate.getMimeTypes();
+        public Lookup getLookup() {
+            return delegate.getLookup();
+        }
+
+        @Override
+        public void activated() {
+            delegate.activated();
+        }
+
+        @Override
+        public void deactivated() {
+            delegate.deactivated();
+        }
+
+        @Override
+        public boolean providesContentFor(FileObject file) {
+            return delegate.providesContentFor(file);
         }
         
     }

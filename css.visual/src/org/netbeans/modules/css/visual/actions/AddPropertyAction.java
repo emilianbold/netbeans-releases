@@ -62,6 +62,7 @@ import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,6 +74,8 @@ import org.openide.util.NbBundle;
 })
 public class AddPropertyAction extends AbstractAction {
 
+    private static final String HELP_ID = "css_visual_AddPropertyPanel"; //NOI18N
+    
     private RuleEditorPanel panel;
 
     public AddPropertyAction(RuleEditorPanel panel) {
@@ -126,16 +129,16 @@ public class AddPropertyAction extends AbstractAction {
 
             addPropertyPanel.updateFiltersPresenters();
 
-            Dialog dialog = DialogDisplayer.getDefault().createDialog(
-                    new DialogDescriptor(addPropertyPanel, Bundle.label_add_property(), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, new ActionListener() {
+            DialogDescriptor descriptor = new DialogDescriptor(addPropertyPanel, Bundle.label_add_property(), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if ("OK".equals(e.getActionCommand())) {
                         addPropertyPanel.node.applyModelChanges();
                     }
                 }
-            }));
-
+            });
+            descriptor.setHelpCtx(new HelpCtx(HELP_ID));
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setVisible(true);
             
             //clear out the panel's model reference so it can be GCed

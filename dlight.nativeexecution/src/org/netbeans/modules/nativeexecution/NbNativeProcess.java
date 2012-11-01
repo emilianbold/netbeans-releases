@@ -112,7 +112,7 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
             }
         }
 
-        if (info.isUnbuffer()) {
+        if (!info.isPtyMode() && info.isUnbuffer()) {
             try {
                 UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), info.getEnvironment());
             } catch (IOException ex) {

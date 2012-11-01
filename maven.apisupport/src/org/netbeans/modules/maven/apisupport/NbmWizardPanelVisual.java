@@ -78,7 +78,6 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     private final NbmWizardPanel panel;
     private ValidationGroup vg = ValidationGroup.create();
     boolean isApp = false;
-    boolean isSuite = false;
 
     @SuppressWarnings("unchecked") // SIMPLEVALIDATION-48
     @Messages("ADD_Module_Name=NetBeans Module ArtifactId")
@@ -86,8 +85,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         this.panel = panel;
         initComponents();
         isApp = NbmWizardIterator.NB_APP_ARCH.equals(panel.getArchetype());
-        isSuite = NbmWizardIterator.NB_SUITE_ARCH.equals(panel.getArchetype());
-        if (isApp || isSuite) {
+        if (isApp) {
             vg.add(txtAddModule, ValidatorUtils.merge(
                     MavenValidators.createArtifactIdValidators(),
                     StringValidators.REQUIRE_VALID_FILENAME
@@ -273,7 +271,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
 
      void store(WizardDescriptor d) {
         d.putProperty(NbmWizardIterator.OSGIDEPENDENCIES, Boolean.valueOf(cbOsgiDeps.isSelected()));
-         if (isApp || isSuite) {
+         if (isApp) {
              if (cbAddModule.isSelected()) {
                  d.putProperty(NbmWizardIterator.NBM_ARTIFACTID, txtAddModule.getText().trim());
              } else {
@@ -284,7 +282,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
          if (version != null && !version.equals(SEARCHING)) {
              d.putProperty(NbmWizardIterator.NB_VERSION, version);
          }
-         if (isApp || isSuite) {
+         if (isApp) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -299,7 +297,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         if (b != null) {
             cbOsgiDeps.setSelected(b.booleanValue());
         }
-        if (isApp || isSuite) {
+        if (isApp) {
             String artifId = (String) d.getProperty("artifactId");
             String val = (String) d.getProperty(NbmWizardIterator.NBM_ARTIFACTID);
             cbAddModule.setSelected(val != null);

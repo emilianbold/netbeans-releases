@@ -152,7 +152,7 @@
         "message": "Broken NetBeans Integration Detected"
     },
     "_BrokenNetBeansIntegrationInfo": {
-        "message": "NetBeans integration is broken because the debugger has been detached. Avoid closing or cancelling the <i>\"NetBeans IDE Support Plugin is debugging this tab.\"</i> infobar or opening <i>\"Chrome Developer Tools\"</i>."
+        "message": "NetBeans integration is broken because the debugger has been detached. Avoid closing or cancelling the <i>\"NetBeans Connector is debugging this tab.\"</i> infobar or opening <i>\"Chrome Developer Tools\"</i>."
     },
     "_BrokenNetBeansIntegrationRerun": {
         "message": "To restore the NetBeans integration, <b>close the tab with your application and rerun it from the NetBeans IDE</b>."

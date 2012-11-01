@@ -70,16 +70,22 @@ public class CssSemanticAnalyzer extends SemanticAnalyzer {
 
     @Override
     public void cancel() {
-        featureCancel.cancel();
+        if(featureCancel != null) {
+            featureCancel.cancel();
+        }
     }
 
     @Override
     public void run(Result result, SchedulerEvent event) {
         resume();
         
-        CssParserResult wrappedResult = (CssParserResult) result;
-        FeatureContext featureContext = new FeatureContext(wrappedResult);
-        semanticHighlights = CssModuleSupport.getSemanticHighlights(featureContext, featureCancel);
+        try {
+            CssParserResult wrappedResult = (CssParserResult) result;
+            FeatureContext featureContext = new FeatureContext(wrappedResult);
+            semanticHighlights = CssModuleSupport.getSemanticHighlights(featureContext, featureCancel);
+        } finally {
+            featureCancel = null;
+        }
     }
 
     @Override

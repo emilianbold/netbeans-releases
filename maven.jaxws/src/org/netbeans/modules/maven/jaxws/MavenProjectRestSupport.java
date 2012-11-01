@@ -91,7 +91,8 @@ import org.openide.util.NbBundle;
  *
  * @author Nam Nguyen
  */
-@ProjectServiceProvider(service=RestSupport.class, projectType="org-netbeans-modules-maven/war")
+@ProjectServiceProvider(service={RestSupport.class, WebRestSupport.class}, 
+    projectType="org-netbeans-modules-maven/war")
 public class MavenProjectRestSupport extends WebRestSupport {
 
     private static final String DEPLOYMENT_GOAL = "package";             //NOI18N   

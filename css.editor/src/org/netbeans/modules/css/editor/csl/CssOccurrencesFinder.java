@@ -78,7 +78,9 @@ public class CssOccurrencesFinder extends OccurrencesFinder {
 
     @Override
     public void cancel() {
-        featureCancel.cancel();
+        if(featureCancel != null) {
+            featureCancel.cancel();
+        }
     }
 
     private void resume() {
@@ -89,20 +91,24 @@ public class CssOccurrencesFinder extends OccurrencesFinder {
     public void run(Result result, SchedulerEvent event) {
         resume();
         
-        CssParserResult parserResultWrapper = (CssParserResult)result;
-        EditorFeatureContext context = new EditorFeatureContext(parserResultWrapper, caretDocumentPosition);
-        Set<OffsetRange> occurrences = CssModuleSupport.getMarkOccurrences(context, featureCancel);
-        
-        if(featureCancel.isCancelled()) {
-            return ;
+        try {
+            CssParserResult parserResultWrapper = (CssParserResult)result;
+            EditorFeatureContext context = new EditorFeatureContext(parserResultWrapper, caretDocumentPosition);
+            Set<OffsetRange> occurrences = CssModuleSupport.getMarkOccurrences(context, featureCancel);
+
+            if(featureCancel.isCancelled()) {
+                return ;
+            }
+
+            Map<OffsetRange, ColoringAttributes> occurrencesMapLocal = new HashMap<OffsetRange, ColoringAttributes>();
+            for(OffsetRange range : occurrences) {
+                occurrencesMapLocal.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            }
+
+            occurrencesMap = occurrencesMapLocal;
+        } finally {
+            featureCancel = null;
         }
-        
-        Map<OffsetRange, ColoringAttributes> occurrencesMapLocal = new HashMap<OffsetRange, ColoringAttributes>();
-        for(OffsetRange range : occurrences) {
-            occurrencesMapLocal.put(range, ColoringAttributes.MARK_OCCURRENCES);
-        }
-        
-        occurrencesMap = occurrencesMapLocal;
     }
 
     @Override

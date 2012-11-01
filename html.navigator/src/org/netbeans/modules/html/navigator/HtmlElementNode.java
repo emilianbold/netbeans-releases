@@ -157,9 +157,16 @@ public class HtmlElementNode extends AbstractNode {
                         lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
         }
         if (domNode != null) {
-            lookupProvider.setLookup(Lookups.fixed(this, fileObject, domNode));
+            if (fileObject==null) {
+                lookupProvider.setLookup(Lookups.fixed(this, domNode));
+            } else {
+                lookupProvider.setLookup(Lookups.fixed(this, fileObject, domNode));
+            }
         } else {
-            lookupProvider.setLookup(Lookups.fixed(this, fileObject));
+            if (fileObject!=null)
+                lookupProvider.setLookup(Lookups.fixed(this, fileObject));
+            else 
+                lookupProvider.setLookup(Lookups.singleton(this));
         }
     }
     
@@ -210,14 +217,14 @@ public class HtmlElementNode extends AbstractNode {
     /**
      * Returns source element description for this node.
      */
-    private SourceDescription getSourceDescription() {
+    public  SourceDescription getSourceDescription() {
         return source;
     }
     
     /**
      * Returns DOM element description for this node.
      */
-    private Description getDOMDescription() {
+    public  Description getDOMDescription() {
         return dom;
     }
     

@@ -56,9 +56,13 @@ import org.openide.util.Lookup;
 public interface CssStylesPanelProvider {
     
     /**
-     * Gets a collection of mimetypes to which this panel provider should be bound.
+     * The implementation decides whether it wants to include its UI for the given file.
+     * 
+     * @param file context file
+     * @return true if the panel should be included in the CSS Styles window UI,
+     * false otherwise.
      */
-    public Collection<String> getMimeTypes();
+    public boolean providesContentFor(FileObject file);
     
     /**
      * Gets an unique system id for the panel. 
@@ -84,5 +88,20 @@ public interface CssStylesPanelProvider {
      * @param lookup instance of {@link Lookup} with some context object. 
      */
     public JComponent getContent(Lookup lookup);
+    
+    /**
+     * Content of the obtained lookup will be added to the Css Styles window TC's lookup.
+     */
+    public Lookup getLookup();
+    
+    /**
+     * Called after the component is made active (visible).
+     */
+    public void activated();
+    
+    /**
+     * Called after the component is made inactive (invisible).
+     */
+    public void deactivated();
     
 }
