@@ -90,8 +90,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
 
     @Override
     public List<Error> displayFatalError(){
-        Error error = new FatalError(context);
-        return Arrays.asList(error);
+        return Arrays.asList((Error) new FatalError(context));
     }
 
     @Override
@@ -156,22 +155,6 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
     @Override
     public List<SyntaxError> getSyntaxErrors() {
         return syntaxErrors;
-    }
-
-    private static class FatalError extends GSFPHPError {
-
-        @NbBundle.Messages("MSG_FatalError=Unable to parse the file")
-        FatalError(Context context){
-            super(Bundle.MSG_FatalError(),
-                context.getSnapshot().getSource().getFileObject(),
-                0, context.getSource().length(),
-                Severity.ERROR, null);
-        }
-
-        @Override
-        public boolean isLineError() {
-            return false;
-        }
     }
 
     private static class SyntaxErrorLogger {

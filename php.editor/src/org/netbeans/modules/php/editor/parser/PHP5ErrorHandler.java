@@ -44,7 +44,9 @@ package org.netbeans.modules.php.editor.parser;
 import java.util.List;
 import java_cup.runtime.Symbol;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -82,6 +84,22 @@ public interface PHP5ErrorHandler extends ParserErrorHandler {
 
         public short[] getExpectedTokens() {
             return expectedTokens;
+        }
+    }
+
+    public static class FatalError extends GSFPHPError {
+
+        @NbBundle.Messages("MSG_FatalError=Unable to parse the file")
+        FatalError(GSFPHPParser.Context context){
+            super(Bundle.MSG_FatalError(),
+                context.getSnapshot().getSource().getFileObject(),
+                0, context.getSource().length(),
+                Severity.ERROR, null);
+        }
+
+        @Override
+        public boolean isLineError() {
+            return false;
         }
     }
 
