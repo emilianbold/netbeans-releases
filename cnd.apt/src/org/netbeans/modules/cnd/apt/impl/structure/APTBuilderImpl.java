@@ -130,8 +130,8 @@ public final class APTBuilderImpl {
 
     private void buildFileAPT(APTFileNode aptFile, TokenStream ts) throws TokenStreamException {
         GuardDetector guardDetector = new GuardDetector(aptFile, ts);
-        // apply text indexing
-        if (CndTraceFlags.TEXT_INDEX) {
+        // apply text indexing - not any more, see APTIndexingWalker
+        if (false && CndTraceFlags.TEXT_INDEX) {
             ts = APTIndexingSupport.index(aptFile.getFileSystem(), aptFile.getPath().toString(), ts);
         }
         APTToken lastToken = nonRecursiveBuild(aptFile, ts, guardDetector);

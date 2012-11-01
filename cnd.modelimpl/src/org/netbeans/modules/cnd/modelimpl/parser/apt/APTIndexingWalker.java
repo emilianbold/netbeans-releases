@@ -59,11 +59,13 @@ import org.netbeans.modules.cnd.apt.structure.APTIfndef;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.structure.APTPragma;
+import org.netbeans.modules.cnd.apt.structure.APTStream;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 
 
@@ -142,10 +144,19 @@ public final class APTIndexingWalker extends APTWalker {
         analyzeStream(((APTIncludeNext)apt).getInclude());
     }
 
-    public Set<String> collectIds() {
-        TokenStream ts = super.getTokenStream();
-        analyzeStream(ts);
-        return ids;
+    @Override
+    protected void onStreamNode(APT apt) {
+        analyzeStream(((APTStream)apt).getTokenStream());
+    }
+
+    @Override
+    protected boolean stopOnErrorDirective() {
+        return false;
+    }
+    
+    public void index() {
+        super.visit();
+        CndTextIndex.put(getRootFile().getFileSystem(), getRootFile().getPath(), ids);
     }
 
     private boolean analyzeToken(APTToken token) {
@@ -169,7 +180,7 @@ public final class APTIndexingWalker extends APTWalker {
     private void analyzeStream(TokenStream ts) {
         if (ts != null) {
             try {
-                for (APTToken token = (APTToken) ts.nextToken(); !APTUtils.isEOF(token); ) {
+                for (APTToken token = (APTToken) ts.nextToken(); !APTUtils.isEOF(token); token = (APTToken)ts.nextToken()) {
                     analyzeToken(token);
                 }
             } catch (TokenStreamException ex) {
