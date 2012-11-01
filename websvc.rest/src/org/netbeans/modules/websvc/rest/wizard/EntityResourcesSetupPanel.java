@@ -175,8 +175,8 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
             Project project = Templates.getProject(wizard);
             WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
             Profile profile = webModule.getJ2eeProfile();
-            final WebRestSupport restSupport = (WebRestSupport)project.getLookup().
-                    lookup(RestSupport.class);
+            final WebRestSupport restSupport = project.getLookup().
+                    lookup(WebRestSupport.class);
             boolean hasSpringSupport = restSupport.hasSpringSupport();
             boolean hasJaxRs = restSupport.hasJaxRsApi(); 
             if ( hasSpringSupport ){
