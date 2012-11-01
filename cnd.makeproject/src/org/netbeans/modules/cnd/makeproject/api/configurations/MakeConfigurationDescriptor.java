@@ -1800,16 +1800,19 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     
     private Folder addFilesFromDirImpl(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
-        folder.addFolder(top, setModified);
-        addFilesImpl(new HashSet<String>(), top, dir, null, filesAdded, true, setModified, fileFilter, useOldSchemeBehavior);
+        Folder subFolder = folder.findFolderByName(dir.getNameExt());
+        if (subFolder == null) {
+            subFolder = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
+        }
+        subFolder = folder.addFolder(subFolder, setModified);
+        addFilesImpl(new HashSet<String>(), subFolder, dir, null, filesAdded, true, setModified, fileFilter, useOldSchemeBehavior);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
-            top.attachListeners();
+            subFolder.attachListeners();
         }
-        return top;
+        return subFolder;
     }
 
     private void addFilesImpl(Set<String> antiLoop, Folder folder, FileObject dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify, boolean setModified, @NullAllowed
@@ -1872,6 +1875,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                         dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, (Folder.Kind)null);
                     }
                 }
+                dirfolder.markRemoved(false);
                 addFilesImpl(antiLoop, dirfolder, file, handle, filesAdded, notify, setModified, fileFilter, useOldSchemeBehavior);
             } else {
                 String path = ProjectSupport.toProperPath(baseDirFO, file, project);
