@@ -49,7 +49,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
-
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -61,26 +60,24 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
-
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
-
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.api.webmodule.WebFrameworks;
-import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.TaskListener;
@@ -351,21 +348,23 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
             List<WebFrameworkProvider> newFrameworks = panel.getSelectedFrameworks();
             WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
             for (WebFrameworkProvider framework : newFrameworks) {
-                if (!((DefaultListModel) jListFrameworks.getModel()).contains(framework))
+                if (!((DefaultListModel) jListFrameworks.getModel()).contains(framework)) {
                     ((DefaultListModel) jListFrameworks.getModel()).addElement(framework);
+                }
 
                 boolean added = false;
-                if (usedFrameworks.size() == 0) {
+                if (usedFrameworks.isEmpty()) {
                     usedFrameworks.add(framework);
                     added = true;
-                }
-                else
-                    for (int j = 0; j < usedFrameworks.size(); j++)
+                } else {
+                    for (int j = 0; j < usedFrameworks.size(); j++) {
                         if (! usedFrameworks.get(j).getName().equals(framework.getName())) {
                             usedFrameworks.add(framework);
                             added = true;
                             break;
                         }
+                    }
+                }
                 
                 if (added) {
                     WebModuleExtender extender = framework.createWebModuleExtender(wm, controller);
@@ -380,8 +379,9 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
             }
         }
         
-        if (WebFrameworks.getFrameworks().size() == jListFrameworks.getModel().getSize())
+        if (WebFrameworks.getFrameworks().size() == jListFrameworks.getModel().getSize()) {
             jButtonAdd.setEnabled(false);
+        }
     }//GEN-LAST:event_jButtonAddActionPerformed
 
     private void btnRemoveAddedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveAddedActionPerformed
