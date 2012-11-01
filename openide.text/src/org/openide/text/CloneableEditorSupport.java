@@ -1024,16 +1024,29 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     */
     public void saveDocument() throws IOException {
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        final boolean log = ERR.isLoggable(Level.FINE);
+        if (log) {
+            ERR.fine(documentID() + ": saveDocument() started."); // NOI18N
+        }
         if (redirect != null) {
+            if (log) {
+                ERR.fine("  redirect to " + redirect.documentID()); // NOI18N
+            }
             redirect.saveDocument();
             return;
         }
         // #17714: Don't try to save unmodified doc.
         if (!cesEnv().isModified()) {
+            if (log) {
+                ERR.fine(documentID() + "  No save performed because cesEnv().isModified() == false"); // NOI18N
+            }
             return;
         }
         final StyledDocument myDoc = getDocument();
         if (myDoc == null) {
+            if (log) {
+                ERR.fine(documentID() + "  No save performed because getDocument() == null"); // NOI18N
+            }
             return;
         }
 
@@ -1041,6 +1054,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         if (prevLST != -1) {
             final long externalMod = cesEnv().getTime().getTime();
             if (externalMod > prevLST) {
+                if (log) {
+                    ERR.fine(documentID() + ":  externalMod=" + externalMod + // NOI18N
+                            " > prevLST=" + prevLST + " => throw new UserQuestionException()"); // NOI18N
+                }
                 throw new UserQuestionException(mimeType) {
                     @Override
                     public String getLocalizedMessage() {
@@ -1098,6 +1115,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                     // update cached info about lines
                     updateLineSet(true);
+
+                    if (log) {
+                        ERR.fine(documentID() + ": Saved " + memoryOutputStream[0].size() + // NOI18N
+                                " bytes to memory output stream."); // NOI18N
+                    }
                 } catch (BadLocationException blex) {
                     Exceptions.printStackTrace(blex);
                 } catch (IOException ex) {
@@ -1106,6 +1128,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         };
         if (ioException[0] != null) {
+            if (log) {
+                ERR.log(Level.FINE, documentID() + ": Save broken due to IOException", ioException[0]); // NOI18N
+            }
             throw ioException[0];
         }
 
@@ -1148,27 +1173,35 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 public void run() {
                     UndoRedo.Manager urm = getUndoRedo();
                     // Compare whether the savepoint edit is still the edit-to-be-undone
+                    boolean unmodify = false;
                     if (urm instanceof UndoRedoManager) {
                         // If not on savepoint then do not mark as unmodified
                         if (((UndoRedoManager)urm).isAtSavepoint()) {
-                            callNotifyUnmodified();
+                            unmodify = true;
                         }
                     } else {
+                        unmodify = true;
+                    }
+                    if (unmodify) {
                         callNotifyUnmodified();
                     }
                 }
             });
 
             // remember time of last save
-            ERR.fine("Save ok, assign new time, while old was: " + oldSaveTime); // NOI18N
+            if (log) {
+                ERR.fine(documentID() + ": Save to file OK, oldSaveTime: " + oldSaveTime + // NOI18N
+                        ", " + new Date(oldSaveTime)); // NOI18N
+            }
             // #149069 - Cannot use System.currentTimeMillis()
             // because there can be a delay between closing stream
             // and setting file modification time by OS.
             setLastSaveTime(cesEnv().getTime().getTime());
-            ERR.fine("doMarkAsUnmodified"); // NOI18N
         } finally {
             if (lastSaveTime == -1) { // restore for unsuccessful save
-                ERR.fine("restoring old save time"); // NOI18N
+                if (log) {
+                    ERR.fine(documentID() + ": Save failed (lastSaveTime == -1) restoring old save time."); // NOI18N
+                }
                 setLastSaveTime(oldSaveTime);
                 callNotifyModified(); // Another save attempt needed
             }
@@ -2679,7 +2712,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @param lst the time in millis of last save
      */
     final void setLastSaveTime(long lst) {
-        ERR.fine("Setting new lastSaveTime to " + lst);
+        if (ERR.isLoggable(Level.FINE)) {
+            ERR.fine(documentID() + ": Setting new lastSaveTime to " + lst + ", " + new Date(lst));
+        }
         this.lastSaveTime = lst;
     }
 
@@ -2688,7 +2723,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     }
 
     final void setAlreadyModified(boolean alreadyModified) {
-        ERR.log(Level.FINE, null, new Exception("Setting to modified: " + alreadyModified));
+        if (ERR.isLoggable(Level.FINE)) {
+            ERR.fine(documentID() + ": setAlreadyModified from " + isAlreadyModified() + " to " + alreadyModified); // NOI18N
+            ERR.log(Level.FINEST, null, new Exception("Setting to modified: " + alreadyModified));
+        }
 
         this.alreadyModified = alreadyModified;
         setStrong(alreadyModified, false);
@@ -2924,12 +2962,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 // empty new value means to force reload all the time
                 final Date time = (Date) ev.getNewValue();
                 
-                ERR.fine("PROP_TIME new value: " + time + ", " + (time != null ? time.getTime() : -1));
-                ERR.fine("       lastSaveTime: " + new Date(lastSaveTime) + ", " + lastSaveTime);
+                ERR.fine(documentID() + ": PROP_TIME new value: " + time + ", " + (time != null ? time.getTime() : -1)); // NOI18N
+                ERR.fine("       lastSaveTime: " + new Date(lastSaveTime) + ", " + lastSaveTime); // NOI18N
                 
                 boolean reload = (lastSaveTime != -1) && ((time == null) || (time.getTime() > lastSaveTime) ||
                         time.getTime() + 10000 < lastSaveTime); // Threshold 10secs to be further discussed
-                ERR.fine("             reload: " + reload);
+                ERR.fine("             reload: " + reload); // NOI18N
 
                 if (reload) {
                     // - post in AWT event thread because of possible dialog popup
@@ -2959,15 +2997,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                     return;
                                 }
 
-                                ERR.fine("checkReload starting"); // NOI18N
                                 boolean noAsk = time == null || !isModified();
-                                ERR.fine("checkReload noAsk: " + noAsk);
+                                ERR.fine(documentID() + ": checkReload noAsk: " + noAsk);
                                 checkReload(noAsk);
                             }
                         }
                     );
 
-                    ERR.fine("reload task posted"); // NOI18N
+                    ERR.fine(documentID() + ": reload task posted"); // NOI18N
                 }
             }
 
