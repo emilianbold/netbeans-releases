@@ -2744,7 +2744,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             for(BinaryIndexerFactory f : indexers.bifs) {
                 parkWhileSuspended();
                 if (getCancelRequest().isRaised()) {
-                    return false;
+                    break;
                 }
                 final Context ctx = contexts.get(f);
                 assert ctx != null;
@@ -2764,7 +2764,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     LOGGER.log(Level.WARNING, null, t);
                 }
             }
-            return true;
+            return getCancelRequest().isRaised();
         }
 
         protected final boolean indexEmbedding(
