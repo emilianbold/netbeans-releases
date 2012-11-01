@@ -42,6 +42,14 @@
  */
 package org.netbeans.modules.extbrowser.plugins;
 
+import com.sun.jna.Library;
+import com.sun.jna.Native;
+import com.sun.jna.NativeMapped;
+import com.sun.jna.Platform;
+import com.sun.jna.PointerType;
+import com.sun.jna.TypeMapper;
+import com.sun.jna.win32.W32APIFunctionMapper;
+import com.sun.jna.win32.W32APITypeMapper;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -54,7 +62,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,7 +75,6 @@ import javax.xml.parsers.DocumentBuilder;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
-import org.openide.util.Exceptions;
 
 import org.openide.util.Utilities;
 import org.w3c.dom.Document;
@@ -427,4 +436,66 @@ public final class Utils {
             return System.getenv("AppData");                          // NOI18N
         }
     }
+
+    // inspired by: http://stackoverflow.com/a/586917/1381125
+    public static synchronized String getLOCALAPPDATAonWinXP() {
+        assert Platform.isWindows() : "cannot call getLOCALAPPDATAonWinXP on non-Windows OS"; // NOI18N
+        if (Platform.isWindows()) {
+            char[] pszPath = new char[Shell32.MAX_PATH];
+            try {
+                if (Shell32_INSTANCE == null) {
+                    Shell32_INSTANCE = (Shell32) Native.loadLibrary("shell32",
+                            Shell32.class, OPTIONS);
+                }
+                int hResult = Shell32_INSTANCE.SHGetFolderPath(null, Shell32.CSIDL_LOCAL_APPDATA,
+                        null, Shell32.SHGFP_TYPE_CURRENT, pszPath);
+                if (Shell32.S_OK == hResult) {
+                    String path = new String(pszPath);
+                    int len = path.indexOf('\0');
+                    path = path.substring(0, len);
+                    return path;
+                }
+            } catch (Throwable t){
+                // ignore
+            }
+        }
+        return null;
+    }
+
+    private static Shell32 Shell32_INSTANCE;
+    
+    private static Map<String, Object> OPTIONS = new HashMap<String, Object>();
+    static {
+        OPTIONS.put(Library.OPTION_TYPE_MAPPER, W32APITypeMapper.UNICODE);
+        OPTIONS.put(Library.OPTION_FUNCTION_MAPPER,
+                W32APIFunctionMapper.UNICODE);
+    }
+
+    static class HANDLE extends PointerType implements NativeMapped {
+    }
+
+    static class HWND extends HANDLE {
+    }
+
+    static interface Shell32 extends Library {
+
+        public static final int MAX_PATH = 260;
+        public static final int CSIDL_LOCAL_APPDATA = 0x001c;
+        public static final int SHGFP_TYPE_CURRENT = 0;
+        public static final int SHGFP_TYPE_DEFAULT = 1;
+        public static final int S_OK = 0;
+
+        /**
+         * see http://msdn.microsoft.com/en-us/library/bb762181(VS.85).aspx
+         * 
+         * HRESULT SHGetFolderPath( HWND hwndOwner, int nFolder, HANDLE hToken,
+         * DWORD dwFlags, LPTSTR pszPath);
+         */
+        public int SHGetFolderPath(HWND hwndOwner, int nFolder, HANDLE hToken,
+                int dwFlags, char[] pszPath);
+
+    }
+
+    
+    
 }
