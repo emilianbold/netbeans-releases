@@ -87,8 +87,10 @@ public class BufferedRWAccess implements FileRWAccess {
     private final FileChannel channel;
     private final ByteBuffer writeBuffer;
     private final UnitCodec unitCodec;
+    private final String path;
     
     public BufferedRWAccess(File file, UnitCodec unitCodec) throws IOException {
+        this.path = file.getAbsolutePath();
         this.unitCodec = unitCodec;
 	int bufSize = Stats.bufSize > 0 ? Stats.bufSize : 32*1024;
         File parent = new File(file.getParent());
@@ -186,4 +188,8 @@ public class BufferedRWAccess implements FileRWAccess {
 	return randomAccessFile.getFD().valid();
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " [" + path + ']';
+    }
 }
