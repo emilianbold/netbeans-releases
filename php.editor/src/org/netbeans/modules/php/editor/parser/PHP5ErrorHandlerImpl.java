@@ -63,8 +63,6 @@ import org.openide.util.NbBundle;
  */
 public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(PHP5ErrorHandler.class.getName());
-
     private final List<SyntaxError> syntaxErrors;
 
     private final Context context;
@@ -81,18 +79,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
     public void handleError(Type type, short[] expectedtokens, Symbol current, Symbol previous) {
         if (handleErrors) {
             if (type == ParserErrorHandler.Type.SYNTAX_ERROR) {
-                // logging syntax error
-                if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.finest("Syntax error:"); //NOI18N
-                    LOGGER.log(Level.FINEST, "Current [{0}, {1}]({2}): {3}", new Object[]{current.left, current.right, Utils.getASTScannerTokenName(current.sym), current.value}); //NOI18N
-                    LOGGER.log(Level.FINEST, "Previous [{0}, {1}] ({2}):{3}", new Object[]{previous.left, previous.right, Utils.getASTScannerTokenName(previous.sym), previous.value}); //NOI18N
-                    StringBuilder message = new StringBuilder();
-                    message.append("Expected tokens:"); //NOI18N
-                    for (int i = 0; i < expectedtokens.length; i += 2) {
-                        message.append(" ").append( Utils.getASTScannerTokenName(expectedtokens[i])); //NOI18N
-                    }
-                    LOGGER.finest(message.toString());
-                }
+                SyntaxErrorLogger.log(expectedtokens, current, previous);
                 syntaxErrors.add(new SyntaxError(expectedtokens, current, previous));
             }
         }
@@ -386,5 +373,25 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
         public boolean isLineError() {
             return false;
         }
+    }
+
+    private static class SyntaxErrorLogger {
+
+        private static final Logger LOGGER = Logger.getLogger(SyntaxErrorLogger.class.getName());
+
+        public static void log(short[] expectedtokens, Symbol current, Symbol previous) {
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Syntax error:"); //NOI18N
+                LOGGER.log(Level.FINEST, "Current [{0}, {1}]({2}): {3}", new Object[]{current.left, current.right, Utils.getASTScannerTokenName(current.sym), current.value}); //NOI18N
+                LOGGER.log(Level.FINEST, "Previous [{0}, {1}] ({2}):{3}", new Object[]{previous.left, previous.right, Utils.getASTScannerTokenName(previous.sym), previous.value}); //NOI18N
+                StringBuilder message = new StringBuilder();
+                message.append("Expected tokens:"); //NOI18N
+                for (int i = 0; i < expectedtokens.length; i += 2) {
+                    message.append(" ").append( Utils.getASTScannerTokenName(expectedtokens[i])); //NOI18N
+                }
+                LOGGER.finest(message.toString());
+            }
+        }
+
     }
 }
