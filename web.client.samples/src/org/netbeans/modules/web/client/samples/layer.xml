@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
         <folder name="Project">
             <folder name="Samples">
                 <folder name="HTML5">
-                	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.samples.Bundle"/>
+                	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.samples.ui.Bundle"/>
                 	<attr name="position" intvalue="210"/>
                 	 <file name="EaselDemo" url="Easel.zip">
                         <attr name="position" intvalue="100"/>
