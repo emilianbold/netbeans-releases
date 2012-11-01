@@ -73,7 +73,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.clientproject</friend>
+                <package>org.netbeans.modules.web.client.samples.ui</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
