@@ -99,11 +99,14 @@ public class DocumentViewModel implements ChangeListener {
                 this.index = CssIndex.get(project);
                 this.changeSupport = new ChangeSupport(this);
                 index.addChangeListener(this);
+                update();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        } else {
+            //no project, no related stylesheets
+            relatedStylesheets = Collections.emptyMap();
         }
-        update();
     }
     
     public void addChangeListener(ChangeListener l) {
