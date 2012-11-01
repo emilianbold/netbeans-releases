@@ -1011,13 +1011,14 @@ public class ModelVisitor extends PathNodeVisitor {
             // it's a new global variable?
             IdentifierImpl name = ModelElementFactory.create(parserResult, iNode);
             if (name != null) {
-                JsObject newObject;
+                JsObjectImpl newObject;
                 if (!isFunction) {
                     newObject = new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange(), leftSite);
                 } else {
                     FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
                     newObject = new JsFunctionImpl(fo, modelBuilder.getGlobal(), name, Collections.EMPTY_LIST);
                 }
+                newObject.addOccurrence(name.getOffsetRange());
                 modelBuilder.getGlobal().addProperty(name.getName(), newObject);
             }
         }
