@@ -194,8 +194,8 @@ public class BufferedRWAccess implements FileRWAccess {
     }
 
     @Override
-    public FileDescriptor getFD() throws IOException {
-	return randomAccessFile.getFD();
+    public boolean isValid() throws IOException {
+	return randomAccessFile.getFD().valid();
     }
 
 }

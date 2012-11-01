@@ -97,7 +97,9 @@ public class InstallManager extends InstalledFileLocator{
         // if an update, overwrite the existing location, wherever that is.
         if (installed != null) {
             
-                res = getInstallDir (installed, update);
+                // adjust isGlobal to forced global if present
+                isGlobal |= update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ().booleanValue ();
+                res = getInstallDir (installed, update, isGlobal, useUserdirAsFallback);
             
         } else {
 
@@ -169,7 +171,7 @@ public class InstallManager extends InstalledFileLocator{
                 } else {
                     ERR.log (Level.WARNING, "There is no write permission to write in target cluster " + targetCluster + " for " + update.getUpdateElement ());
                     if (! useUserdirAsFallback && isGlobal) {
-                        throw new OperationException(OperationException.ERROR_TYPE.WRITE_PERMISSION);
+                        throw new OperationException(OperationException.ERROR_TYPE.WRITE_PERMISSION, update.getCodeName());
                     }
                 }
                 break;
@@ -241,7 +243,7 @@ public class InstallManager extends InstalledFileLocator{
     }
     
     // can be null for fixed modules
-    private static File getInstallDir (UpdateElement installed, UpdateElementImpl update) {
+    private static File getInstallDir (UpdateElement installed, UpdateElementImpl update, boolean isGlobal, boolean useUserdirAsFallback) throws OperationException {
         File res = null;
         UpdateElementImpl i = Trampoline.API.impl (installed);
         assert i instanceof ModuleUpdateElementImpl : "Impl of " + installed + " instanceof ModuleUpdateElementImpl";
@@ -289,6 +291,9 @@ public class InstallManager extends InstalledFileLocator{
             // go to userdir if no writable cluster is known
             ERR.log (Level.WARNING, "There is no write permission to write in target cluster " + res + 
                     " for " + update.getUpdateElement ());
+            if (! useUserdirAsFallback && isGlobal) {
+                throw new OperationException(OperationException.ERROR_TYPE.WRITE_PERMISSION, update.getCodeName());
+            }
             res = UpdateTracking.getUserDir ();
         }
         ERR.log (Level.FINEST, "Install dir of " + installed + " is " + res);
