@@ -235,32 +235,44 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public Image getIcon(int type) {
+        Image image;
         if (folder.isTest()) {
-            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testContainer.gif"), type); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testContainer.gif"); // NOI18N
         } else if (folder.isTestRootFolder()) {
-            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testFolder.gif"), type); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testFolder.gif"); // NOI18N
         } else if (folder.isDiskFolder() && folder.isTestLogicalFolder()) {
-            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testFolder.gif"), type); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testFolder.gif"); // NOI18N
         } else if (folder.isDiskFolder()) {
-            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/tree_folder.gif"), type); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/tree_folder.gif"); // NOI18N
         } else {
-            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolder.gif"), type); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolder.gif"); // NOI18N
         }
+        if (folder.isProjectFiles() && folder.isRemoved()) {
+            image = ImageUtilities.mergeImages(image, MakeLogicalViewProvider.brokenProjectBadge, 11, 0);
+        }
+        image = annotateIcon(image, type);
+        return image;
     }
 
     @Override
     public Image getOpenedIcon(int type) {
+        Image image;
         if (folder.isTest()) {
-            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testContainer.gif"), type); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testContainer.gif"); // NOI18N
         } else if (folder.isTestRootFolder()) {
-            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testFolderOpened.gif"), type); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testFolderOpened.gif"); // NOI18N
         } else if (folder.isDiskFolder() && folder.isTestLogicalFolder()) {
-            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testFolder.gif"), type); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testFolder.gif"); // NOI18N
         } else if (folder.isDiskFolder()) {
-            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/tree_folder.gif"), type); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/tree_folder.gif"); // NOI18N
         } else {
-            return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolderOpened.gif"), type); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolderOpened.gif"); // NOI18N
         }
+        if (folder.isProjectFiles() && folder.isRemoved()) {
+            image = ImageUtilities.mergeImages(image, MakeLogicalViewProvider.brokenProjectBadge, 11, 0);
+        }        
+        image = annotateIcon(image, type);
+        return image;
     }
 
     @Override
