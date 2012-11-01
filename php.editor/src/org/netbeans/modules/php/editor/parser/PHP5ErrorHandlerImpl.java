@@ -126,25 +126,20 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
         boolean isAfter;
         String afterText = ""; //NOI18N
         Symbol currentToken = syntaxError.getCurrentToken();
-        int start  = currentToken.left;
-        int end = currentToken.right;
 
         if (currentToken.sym == ASTPHP5Symbols.EOF) {
             isUnexpected = true;
             unexpectedText = Bundle.SE_EOF();
-            start = end - 1;
         } else if (currentToken.sym == ASTPHP5Symbols.T_STRING || currentToken.sym == ASTPHP5Symbols.T_CONSTANT_ENCAPSED_STRING ||
                 currentToken.sym == ASTPHP5Symbols.T_DNUMBER || currentToken.sym == ASTPHP5Symbols.T_LNUMBER ||
                 currentToken.sym == ASTPHP5Symbols.T_VARIABLE) {
             isUnexpected = true;
             unexpectedText = getTokenTextForm(currentToken.sym) + " '" + String.valueOf(currentToken.value) + "'";
-            end = start + ((String) currentToken.value).trim().length();
         } else {
             String currentText = getTokenTextForm(currentToken.sym);
             isUnexpected = StringUtils.hasText(currentText);
             if (isUnexpected) {
                 unexpectedText = currentText.trim();
-                end = start + unexpectedText.length();
             }
         }
         Symbol previousToken = syntaxError.getPreviousToken();
@@ -193,7 +188,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
                 message.append(tag);
             }
         }
-        return new GSFPHPError(message.toString(), context.getSnapshot().getSource().getFileObject(), start, end, Severity.ERROR, new Object[]{syntaxError});
+        return new GSFPHPError(message.toString(), context.getSnapshot().getSource().getFileObject(), currentToken.left, currentToken.right, Severity.ERROR, new Object[]{syntaxError});
     }
 
     @Override
