@@ -75,6 +75,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -112,19 +113,37 @@ import org.openide.util.WeakListeners;
 public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Provider {
 
     private static final Logger LOGGER = Logger.getLogger(HtmlNavigatorPanelUI.class.getSimpleName());
-    private static final String NOT_CONNECTED = "no connection";
-    private static final String CONNECTED = "connected";
+    
+    //Refresh queue
     public static RequestProcessor RP = new RequestProcessor(HtmlNavigatorPanelUI.class);
-    private static int MESSAGE_SHOW_TIME = 5000; //5 seconds
+
     private ExplorerManager manager;
+    
     private BeanTreeView view;
+    
     private Lookup lookup;
+    
     private PageModel pageModel;
+    
+    /**
+     * FileObject inspected by pageInspector
+     * can be null.
+     */
     private FileObject inspectedFileObject;
     //the UI actions
     private Action[] panelActions;
     //UI stuff
     private WaitNode waitNode = new WaitNode();
+    
+    //private HtmlElementDescription sourceDescription;
+    private ChangeListener changeListener;
+    
+    private HashMap<org.openide.nodes.Node, org.openide.nodes.Node> domToNb = new HashMap<Node, Node>();
+    
+    private RequestProcessor.Task task;
+    private FileObject lastInspectedFileObject;
+    
+    
     private final PropertyChangeListener pageInspectorListener = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
@@ -132,48 +151,32 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             if (PageInspectorImpl.PROP_MODEL.equals(propName)) {
                 final PageModel page = PageInspectorImpl.getDefault().getPage();
                 setPageModel(page);
-                if (page!=null)
-                    refreshDOM();
+                refreshDOM();
             }
         }
     };
+
     private final PropertyChangeListener pageModelListener = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             if (PageModel.PROP_DOCUMENT.equals(propName)) {
                 pageModelDocumentChanged();
-                if (pageModel !=null) {
-                    List nodes = translate(manager.getSelectedNodes());
-                    pageModel.setSelectedNodes(nodes);
-                }
             } else if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
                 updateSelection();
             } else if (PageModel.PROP_HIGHLIGHTED_NODES.equals(propName)) {
-                    updateHighlight();
+                updateHighlight();
             }
         }
     };
 
-    private final LookupListener ll = new LookupListener() {
-
+    private final LookupListener lookupListener = new LookupListener() {
         @Override
         public void resultChanged(final LookupEvent ev) {
-            RP.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    refresh((Lookup.Result<Object>) ev.getSource());
-                }
-                
-            });
-                    
+            refresh((Lookup.Result<Object>) ev.getSource());
         }
     };
     
-    private HtmlElementDescription sourceDescription;
-    private ChangeListener changeListener;
-
     public HtmlNavigatorPanelUI() {
         manager = new ExplorerManager();
         initTreeView();
@@ -192,94 +195,67 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         manager.addPropertyChangeListener(createSelectedNodesListener());
     }
 
-    //Set a new PageModel. It will install a new PropertyChangeListener for the PageModel changes
-    private void setPageModel(PageModel model) {
+    /** 
+     * Set a new PageModel.
+     * It will install a new PropertyChangeListener for 
+     * the PageModel changes
+     */ 
+    private synchronized void setPageModel(PageModel model) {
         if (this.pageModel == model) {
             return;
         }
-        PageModel old = this.pageModel;
-        this.pageModel = model;
         
-        if (model == null) {
-            //the new model is null model, disable
-            if(old != null) {
-                old.removePropertyChangeListener(pageModelListener);
-            }
-
-            //setStatusText("Disconnected");
-
-            //we need to explicitly call pageModelDocumentChanged() since
-            //no change event from PageModel will come and we need to refresh
-            //the nodes dom status
-            pageModelRemoved();
-
-        } else {
-            //new model
-
-            //possibly remove the old listener
-            if (old != null) {
-                old.removePropertyChangeListener(pageModelListener);
-            }
-            //add new listener to the pagemodel
-            model.addPropertyChangeListener(pageModelListener);
-
-            //setStatusText("Connected");
-
-            //no need to explicitly call pageModelDocumentChanged() as the
-            //PageModel fill fire change event
+        if (this.pageModel != null) {
+            this.pageModel.removePropertyChangeListener(pageModelListener);
         }
-        inspectedFileObject = getInspectedFileFromPageModel();
-
+        this.pageModel = model;
+        if (this.pageModel !=null) {
+            this.pageModel.addPropertyChangeListener(pageModelListener);
+        } else {
+            pageModelRemoved();
+        }
+        inspectedFileObject = getInspectedFile(this.pageModel);
     }
     
+    /**
+     * Refresh DOM tree to empty
+     */
     private void pageModelRemoved() {
-        //refresh DOM status to empty
         HtmlElementNode root = getRootNode();
         if (root != null) {
             root.setDescription(Description.empty(Description.DOM));
         }
-        //inspectedFileObject = null;
     }
 
-    private void pageModelDocumentChanged() {
+    private synchronized void pageModelDocumentChanged() {
         //try to find corresponding FileObject for the inspected document
-        FileObject current = getInspectedFileFromPageModel();
-        if (inspectedFileObject == null) {
-            if (current != null) {
-                //starting the inspection 
-                inspectedFileObject = current;
-                inspectedFileChanged(null, current);
-            }
-        } else {
-            if (!inspectedFileObject.equals(current)) {
-                //inspected file changed
-                FileObject old = inspectedFileObject;
-                inspectedFileObject = current;
-                inspectedFileChanged(old, current);
-            } else {
-                //still same inspected file, just refresh the dom
-                refreshNodeDOMStatus();
-            }
-        }
+        inspectedFileObject = getInspectedFile(this.pageModel);
+        inspectedFileChanged();
         
+        //refresh selection
+        if (pageModel != null) {
+            List nodes = translate(manager.getSelectedNodes());
+            pageModel.setSelectedNodes(nodes);
+        }
     }
     
-    private void inspectedFileChanged(FileObject old, FileObject neww) {
+    private void inspectedFileChanged() {
         HtmlElementNode root = getRootNode();
         if(root != null) {
-            if(!root.getFileObject().equals(neww)) {
+            if(root.getFileObject() == null || root.getFileObject().equals(inspectedFileObject)) {
                 //the inspected file no more corresponds to the navigator's active file
-                root.setDescription(Description.empty(Description.DOM));
+                refreshDOM();
             } else {
-                //same file as in the root node
-                //=> reset the dom 
-                refreshNodeDOMStatus();
+                root.setDescription(Description.empty(Description.DOM));
             }
         }
     }
 
-    private FileObject getInspectedFileFromPageModel() {
-        //try to find corresponding FileObject for the inspected document
+    /**
+     * Find corresponding FileObject for given pageModel.
+     */
+    @CheckForNull
+    private FileObject getInspectedFile(PageModel pageModel) {
         if (pageModel == null) {
             return null;
         }
@@ -288,7 +264,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             return null;
         }
         try {
-            
             URL url = new URL(inspectedURL);
             Project owner = getCurrentProject();
             if (owner == null) {
@@ -301,10 +276,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
     }
     
-    private HashMap<org.openide.nodes.Node, org.openide.nodes.Node> domToNb = new HashMap<Node, Node>();
-    
-    private RequestProcessor.Task task;
-    synchronized void refreshDOM() {
+    private synchronized void refreshDOM() {
         if (task != null) {
             task.cancel();
         }
@@ -312,33 +284,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         task = RP.post(new Runnable() {
             @Override
             public void run() {
-                try {
-                    final PageModel page = PageInspectorImpl.getDefault().getPage();
-                    if (page == null) {
-                        return;
-                    }
-                    String inspectedURL = page.getDocumentURL();
-
-                    URL url = new URL(inspectedURL);
-                    final Project currentProject = getCurrentProject();
-                    
-                    if (currentProject == null) {
-                        return;
-                    }
-                    
-                    FileObject fromServer = ServerURLMapping.fromServer(currentProject, url);
-
-                    if (fromServer == null || !fromServer.equals(inspectedFileObject)) {
-                        return;
-
-                    }
-
-                    refreshNodeDOMStatus();
-                    domToNb.clear();
-                    cacheDomToNb(getRootNode());
-                } catch (MalformedURLException ex) {
-                    //ignore unknown urls
-                }
+                refreshNodeDOMStatus();
             }
         });
     }
@@ -360,44 +306,33 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private void refreshNodeDOMStatus() {
         LOGGER.fine("refreshNodeDOMStatus()");
         HtmlElementNode root = getRootNode();
-        boolean refresh = true;
-        if (root != null) {
-            //if we are inspecting the current file, the source changes propagates just after the fresh DOM is received
-            if(sourceDescription != null) {
-                refresh = sourceDescription.getFileObject().equals(inspectedFileObject);
-                root.setDescription(sourceDescription);
-                sourceDescription = null;
-            }
-            setPageModel(PageInspectorImpl.getDefault().getPage());
-            //now apply to dom descriptions
-            WebKitNodeDescription domDescription = WebKitNodeDescription.forNode(null, pageModel.getDocumentNode());
-            changeListener = new ChangeListener() {
-
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    refreshDOM();
-                }
-            };
-            domDescription.addChangeListener(WeakListeners.change(changeListener, domDescription));
-            if (refresh) {
-                root.setDescription(domDescription);
-            } else {
-                root.setDescription(WebKitNodeDescription.empty(WebKitNodeDescription.DOM));
-            }
-            
-            domToNb.clear();
-            cacheDomToNb(root);
-            
-            LOGGER.fine("root.refreshDOMStatus() called");
+        //now apply to dom descriptions
+        if (pageModel == null) {
+            return;
         }
+        WebKitNodeDescription domDescription = WebKitNodeDescription.forNode(null, pageModel.getDocumentNode());
+        changeListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                refreshDOM();
+            }
+        };
+        domDescription.addChangeListener(WeakListeners.change(changeListener, domDescription));
+        if (((root.getFileObject() == null && inspectedFileObject == null)) || 
+                (inspectedFileObject!=null && inspectedFileObject.equals(root.getFileObject()))) {
+            root.setDescription(domDescription);
+        } else {
+            root.setDescription(WebKitNodeDescription.empty(WebKitNodeDescription.DOM));
+        }
+
+        domToNb.clear();
+        cacheDomToNb(root);
+
+        LOGGER.fine("root.refreshDOMStatus() called");
     }
 
     public PageModel getPageModel() {
         return pageModel;
-    }
-
-    public FileObject getInspectedFileObject() {
-        return inspectedFileObject;
     }
 
     public Action[] getActions() {
@@ -407,7 +342,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private Result<Object> contextResult;
     void activate(Lookup context) {
         contextResult = context.lookupResult(Object.class);
-        contextResult.addLookupListener(ll);
+        contextResult.addLookupListener(lookupListener);
         refresh(contextResult);
     }
     
@@ -436,34 +371,38 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         
         final FileObject fo = (p==null || url ==null)?f:ServerURLMapping.fromServer(p, url);
         
-        if (fo==null)
-            return;
-        
-        if (!"text/html".equals(FileUtil.getMIMEType(fo))) {
-            return;
-        }
+        if (fo != null) {
+            if (!"text/html".equals(FileUtil.getMIMEType(fo))) {
+                return;
+            }
 
-        setPageModel(PageInspectorImpl.getDefault().getPage());
+            setPageModel(PageInspectorImpl.getDefault().getPage());
 
-        Source source = Source.create(fo);
-        if (source == null || !"text/html".equals(source.getMimeType())) {
-            return;
-        }
+            Source source = Source.create(fo);
+            if (source == null || !"text/html".equals(source.getMimeType())) {
+                return;
+            }
 
-        //TODO: uncomment when working again
-        //showWaitNode();
-        
-        try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    setParserResult((HtmlParserResult)resultIterator.getParserResult());
-                    //inspectedFileObject = getInspectedFileFromPageModel();
-                    refreshDOM();
-                }
-            });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+            //TODO: uncomment when working again
+            //showWaitNode();
+
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        setParserResult((HtmlParserResult) resultIterator.getParserResult());
+                        //inspectedFileObject = getInspectedFileFromPageModel();
+                        refreshDOM();
+                    }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            showWaitNode();
+            setPageModel(PageInspectorImpl.getDefault().getPage());
+            setSourceDescription((SourceDescription)SourceDescription.empty(SourceDescription.SOURCE));
+            refreshDOM();
         }
     }
     
@@ -471,7 +410,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     void deactivate() {
         setPageModel(null);
         if (contextResult !=null) {
-            contextResult.removeLookupListener(ll);
+            contextResult.removeLookupListener(lookupListener);
         }
         domToNb.clear();
     }
@@ -532,15 +471,22 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      */
     public void setParserResult(HtmlParserResult result) {
         FileObject file = result.getSnapshot().getSource().getFileObject();
-        sourceDescription = new HtmlElementDescription(null, result.root(), file);
-        refresh(sourceDescription);
+        setSourceDescription(new HtmlElementDescription(null, result.root(), file));
     }
     
-    private void refresh(final HtmlElementDescription description) {
-        final FileObject fileObject = description.getFileObject();
+    private void setSourceDescription(final SourceDescription description) {
+        FileObject f;
+        if (description instanceof HtmlElementDescription) {
+            f = ((HtmlElementDescription) description).getFileObject();
+        } else {       
+            f = null;
+        }
+        
+        final FileObject fileObject = f;
+        
         final HtmlElementNode rootNode = getRootNode();
 
-        if (rootNode != null && rootNode.getFileObject().equals(fileObject)) {
+        if (rootNode != null && fileObject!=null && fileObject.equals(rootNode.getFileObject())) {
             //same file, just update the content
             final Runnable r = new Runnable() {
                 @Override
@@ -644,12 +590,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
 
     private Project getCurrentProject() {
-        if (inspectedFileObject!=null) {
-            return FileOwnerQuery.getOwner(inspectedFileObject);
+        if (inspectedFileObject != null) {
+            return FileOwnerQuery.getOwner(lastInspectedFileObject=inspectedFileObject);
         }
-        if (sourceDescription!=null) {
-            return FileOwnerQuery.getOwner(sourceDescription.getFileObject());
-        }
+        if (getRootNode()!=null && getRootNode().getFileObject()!=null) {
+                return FileOwnerQuery.getOwner(lastInspectedFileObject=getRootNode().getFileObject());
+            }
         Node rootContext = manager.getRootContext();
         FileObject fo = null;
         if (rootContext instanceof HtmlElementNode) {
@@ -658,8 +604,11 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             LOGGER.log(Level.WARNING, "Root context is not HtmlElementNode");
         }
         if (fo == null) {
-            LOGGER.log(Level.WARNING, "Cannot find current project");
-            return null;
+            fo = lastInspectedFileObject;
+            if (fo == null) {
+                LOGGER.log(Level.WARNING, "Cannot find current project");
+                return null;
+            }
         }
         Project owner = FileOwnerQuery.getOwner(fo);
         return owner;
