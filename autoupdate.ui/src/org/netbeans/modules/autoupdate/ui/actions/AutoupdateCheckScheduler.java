@@ -217,7 +217,7 @@ public class AutoupdateCheckScheduler {
                 problems.addAll(updateProblems);
             }
         }
-        List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
+        List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
         boolean handleUpdates = OperationType.UPDATE == type;
         Collection<UnitCategory> cats =  handleUpdates ?
             Utilities.makeUpdateCategories (units, false) :
@@ -241,8 +241,8 @@ public class AutoupdateCheckScheduler {
             for (Unit u : cat.getUnits ()) {        
                 if(u instanceof Unit.Available) {
                     elements.add(((Unit.Available) u).getRelevantElement ());
-                } else if (u instanceof Unit.InternalUpdate) {
-                    for(UpdateUnit uu :((Unit.InternalUpdate) u).getUpdateUnits()) {
+                } else if (u instanceof Unit.CompoundUpdate) {
+                    for(UpdateUnit uu :((Unit.CompoundUpdate) u).getUpdateUnits()) {
                         elements.add(uu.getAvailableUpdates().get(0));
                     }
                 } else if (u instanceof Unit.Update) {
