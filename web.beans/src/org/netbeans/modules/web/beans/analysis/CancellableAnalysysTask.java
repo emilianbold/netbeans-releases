@@ -76,6 +76,7 @@ abstract class CancellableAnalysysTask implements CancellableTask<CompilationInf
         AbstractAnalysisTask task = createTask();
         myTask.set( task );
         task.run( compInfo );
+        myTask.compareAndSet( task, null);
         HintsController.setErrors(myFileObject, getLayerName(), task.getProblems()); 
     }
     
@@ -84,7 +85,7 @@ abstract class CancellableAnalysysTask implements CancellableTask<CompilationInf
      */
     @Override
     public void cancel() {
-        AbstractAnalysisTask task = myTask.get();
+        AbstractAnalysisTask task = myTask.getAndSet(null);
         if ( task != null ){
             task.stop();
         }
