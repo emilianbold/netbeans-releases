@@ -46,6 +46,7 @@ import org.netbeans.modules.css.visual.CssStylesPanel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -76,17 +77,23 @@ position = 180)
         displayName = "#CTL_CssStylesAction", // NOI18N
 preferredID = CssStylesTC.ID)
 @NbBundle.Messages({
-    "CTL_CssStylesAction=Css Styles", // NOI18N
-    "CTL_CssStylesTC.title={0}Css Styles", // NOI18N
+    "CTL_CssStylesAction=CSS Styles", // NOI18N
+    "CTL_CssStylesTC.title={0}CSS Styles", // NOI18N
     "HINT_CssStylesTC=This window shows matched style rules of an element and allows to edit them." // NOI18N
 })
 public final class CssStylesTC extends TopComponent {
 
     /**
+     * Help ID of this TopComponent.
+     */
+    private static final String HELP_ID = "css_visual_CssStylesTC"; //NOI18N
+    
+    /**
      * TopComponent ID.
      */
     public static final String ID = "CssStylesTC"; // NOI18N
 
+    
     /**
      * Panel shown in this {@code TopComponent}.
      */
@@ -119,6 +126,11 @@ public final class CssStylesTC extends TopComponent {
     private void setFileNameInTitle(FileObject file) {
         String fileName = file == null ? "" : file.getNameExt() + " - ";
         setName(Bundle.CTL_CssStylesTC_title(fileName));
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(HELP_ID);
     }
     
 }
