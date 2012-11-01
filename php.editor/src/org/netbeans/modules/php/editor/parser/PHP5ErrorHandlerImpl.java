@@ -202,9 +202,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
             String unexpectedText = null;
             if (token.sym == ASTPHP5Symbols.EOF) {
                 unexpectedText = Bundle.SE_EOF();
-            } else if (token.sym == ASTPHP5Symbols.T_STRING || token.sym == ASTPHP5Symbols.T_CONSTANT_ENCAPSED_STRING ||
-                    token.sym == ASTPHP5Symbols.T_DNUMBER || token.sym == ASTPHP5Symbols.T_LNUMBER ||
-                    token.sym == ASTPHP5Symbols.T_VARIABLE) {
+            } else if (isValuableToken(token)) {
                 unexpectedText = getTokenTextForm(token.sym) + " '" + String.valueOf(token.value) + "'";
             } else {
                 String currentText = getTokenTextForm(token.sym);
@@ -224,9 +222,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
         public String createAfterText() {
             String result;
             String afterText = null;
-            if (token.sym == ASTPHP5Symbols.T_STRING || token.sym == ASTPHP5Symbols.T_CONSTANT_ENCAPSED_STRING ||
-                token.sym == ASTPHP5Symbols.T_DNUMBER || token.sym == ASTPHP5Symbols.T_LNUMBER ||
-                token.sym == ASTPHP5Symbols.T_VARIABLE) {
+            if (isValuableToken(token)) {
                 afterText = getTokenTextForm(token.sym) + " '" + String.valueOf(token.value) + "'";
             } else {
                 String previousText = getTokenTextForm(token.sym);
@@ -240,6 +236,12 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
                 result = "\n " + Bundle.SE_After() + ":\t" + afterText; //NOI18N
             }
             return result;
+        }
+
+        private static boolean isValuableToken(Symbol token) {
+            return token.sym == ASTPHP5Symbols.T_STRING || token.sym == ASTPHP5Symbols.T_CONSTANT_ENCAPSED_STRING ||
+                token.sym == ASTPHP5Symbols.T_DNUMBER || token.sym == ASTPHP5Symbols.T_LNUMBER ||
+                token.sym == ASTPHP5Symbols.T_VARIABLE;
         }
 
         public static String getTokenTextForm(int token) {
