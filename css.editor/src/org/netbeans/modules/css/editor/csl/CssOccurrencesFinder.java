@@ -78,7 +78,9 @@ public class CssOccurrencesFinder extends OccurrencesFinder {
 
     @Override
     public void cancel() {
-        featureCancel.cancel();
+        if(featureCancel != null) {
+            featureCancel.cancel();
+        }
     }
 
     private void resume() {
