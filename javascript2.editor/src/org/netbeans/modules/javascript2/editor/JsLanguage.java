@@ -158,10 +158,10 @@ public class JsLanguage extends DefaultLanguageConfig {
         return new JsCodeCompletion();
     }
 
-    @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        return new JsIndexer.Factory();
-    }
+//    @Override
+//    public EmbeddingIndexerFactory getIndexerFactory() {
+//        return new JsIndexer.Factory();
+//    }
 
     @Override
     public String getLineCommentPrefix() {
