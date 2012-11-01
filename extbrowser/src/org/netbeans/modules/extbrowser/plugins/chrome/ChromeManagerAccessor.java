@@ -85,9 +85,8 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
     private static final String NO_WEB_STORE_SWITCH=
             "netbeans.extbrowser.manual_chrome_plugin_install"; // NOI18N
     
-    // XXX: change it to the real plugin url for FCS
     private static final String PLUGIN_PAGE= 
-            "https://chrome.google.com/webstore/detail/icpgjfneehieebagbmdbhnlpiopdcmna?utm_campaign=en&utm_source=en-et-na-us-oc-webstrhm";// NOI18N
+            "https://chrome.google.com/webstore/detail/netbeans-connector/ehdgmbjjaocpjdnapfadcldificeaaki"; //NOI18N
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor#getManager()
