@@ -43,8 +43,10 @@ package org.netbeans.modules.css.visual;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import javax.swing.JComponent;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -61,7 +63,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class DocumentViewPanelProvider implements CssStylesPanelProvider {
 
     private static String DOCUMENT_PANEL_ID = "static_document";
-    private static Collection<String> MIME_TYPES = Arrays.asList(new String[]{"text/css", "text/html", "text/xhtml"});
+    private static Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/css", "text/html", "text/xhtml"}));
     
     @Override
     public String getPanelDisplayName() {
@@ -79,11 +81,6 @@ public class DocumentViewPanelProvider implements CssStylesPanelProvider {
     }
 
     @Override
-    public Collection<String> getMimeTypes() {
-        return MIME_TYPES;
-    }
-
-    @Override
     public Lookup getLookup() {
         return null;
     }
@@ -95,6 +92,10 @@ public class DocumentViewPanelProvider implements CssStylesPanelProvider {
     @Override
     public void deactivated() {
     }
-    
+
+    @Override
+    public boolean providesContentFor(FileObject file) {
+        return MIME_TYPES.contains(file.getMIMEType());
+    }
     
 }

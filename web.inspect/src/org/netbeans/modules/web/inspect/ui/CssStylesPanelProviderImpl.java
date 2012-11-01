@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -264,7 +265,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     public static class SelectionView extends CssStylesPanelProviderImpl {
 
         private static String SELECTION_PANEL_ID = "selection"; //NOI18N
-        private static Collection<String> MIME_TYPES = Arrays.asList(new String[]{"text/html", "text/xhtml"});
+        private static Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/html", "text/xhtml"}));
 
         @Override
         public String getPanelID() {
@@ -294,11 +295,6 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         }
 
         @Override
-        public Collection<String> getMimeTypes() {
-            return MIME_TYPES;
-        }
-
-        @Override
         public Lookup getLookup() {
             return getMatchedRulesLookup();
         }
@@ -311,6 +307,19 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         @Override
         public void deactivated() {
             deactivateView();
+        }
+
+        @Override
+        public boolean providesContentFor(FileObject file) {
+            if(!MIME_TYPES.contains(file.getMIMEType())) {
+                return false;
+            }
+            
+            //if(the file can't be run as there's either no project or a bad one) {
+            //   return false;
+            //}
+            
+            return true;
         }
 
     }
