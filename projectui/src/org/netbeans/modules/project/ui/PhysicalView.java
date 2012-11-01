@@ -397,9 +397,9 @@ public class PhysicalView {
         }
         private Image swap(Image base, int type) {
             if (!root) { // do not use icon on root node in Files tab
-                DataFolder folder = getOriginal().getLookup().lookup(DataFolder.class);
-                if (folder != null) {
-                    ProjectManager.Result r = ProjectManager.getDefault().isProject2(folder.getPrimaryFile());
+                FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
+                if (folder != null && folder.isFolder()) {
+                    ProjectManager.Result r = ProjectManager.getDefault().isProject2(folder);
                     if (r != null) {
                         Icon icon = r.getIcon();
                         
@@ -407,7 +407,8 @@ public class PhysicalView {
                             Image img = ImageUtilities.icon2Image(icon);
                             try {
                                 //#217008
-                                img = folder.getPrimaryFile().getFileSystem().getStatus().annotateIcon(img, type, folder.files());
+                                DataFolder df = getOriginal().getLookup().lookup(DataFolder.class);
+                                img = folder.getFileSystem().getStatus().annotateIcon(img, type, df.files());
                             } catch (FileStateInvalidException e) {
                                 // no fs, do nothing
                             }
@@ -419,10 +420,10 @@ public class PhysicalView {
             return base;
         }
         public @Override String getShortDescription() {
-            DataFolder folder = getOriginal().getLookup().lookup(DataFolder.class);
-            if (folder != null) {
+            FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
+            if (folder != null && folder.isFolder()) {
                 try {
-                    Project p = ProjectManager.getDefault().findProject(folder.getPrimaryFile());
+                    Project p = ProjectManager.getDefault().findProject(folder);
                     if (p != null) {
                         return ProjectUtils.getInformation(p).getDisplayName();
                     }
@@ -501,8 +502,8 @@ public class PhysicalView {
                         //not nice but there isn't a findNodes(name) method.
                         Node[] nds = parent.getChildren().getNodes(true);
                         for (int i = 0; i < nds.length; i++) {
-                            DataObject dobj = nds[i].getLookup().lookup(DataObject.class);
-                            if (dobj != null && fo.equals(dobj.getPrimaryFile())) {
+                            FileObject dobj = nds[i].getLookup().lookup(FileObject.class);
+                            if (dobj != null && fo.equals(dobj)) {
                                 return nds[i];
                             }
                         }
