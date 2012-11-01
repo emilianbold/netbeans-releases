@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,20 +62,21 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.HudsonVersion;
-import org.netbeans.modules.hudson.api.HudsonView;
-import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
-import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
-import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.netbeans.modules.hudson.api.Utilities;
-import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
+import org.netbeans.modules.hudson.spi.BuilderConnector;
+import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
+import org.netbeans.modules.hudson.spi.HudsonSCM;
+import org.netbeans.modules.hudson.spi.RemoteFileSystem;
+import org.openide.util.Lookup;
+import org.openide.windows.OutputListener;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -88,25 +90,23 @@ import org.xml.sax.SAXParseException;
  *
  * @author Michal Mocnak
  */
-public class HudsonConnector {
+public class HudsonConnector extends BuilderConnector {
     private static final Logger LOG = Logger.getLogger(HudsonConnector.class.getName());
-    
-    private HudsonInstanceImpl instance;
+    public static final HudsonFailureDisplayer HUDSON_FAILURE_DISPLAYER =
+            new HudsonFailureDisplayer();
+    public static final HudsonConsoleDisplayer HUDSON_CONSOLE_DISPLAYER =
+            new HudsonConsoleDisplayer();
     
     private HudsonVersion version;
     private boolean connected = false;
     /** #182689: true if have no anon access and need to log in just to see job list */
     boolean forbidden;
     
-    private Map<String, HudsonView> cache = new HashMap<String, HudsonView>();
-    
-    /**
-     * Creates a new instance of HudsonConnector
-     *
-     * @param HudsonInstance
-     */
-    public HudsonConnector(HudsonInstanceImpl instance) {
-        this.instance = instance;
+    private Map<String, ViewData> cache = new HashMap<String, ViewData>();
+    private String instanceUrl;
+
+    public HudsonConnector(String instanceUrl) {
+        this.instanceUrl = instanceUrl;
     }
     
     private boolean canUseTree(boolean authentication) {
@@ -114,8 +114,9 @@ public class HudsonConnector {
         return v != null && v.compareTo(new HudsonVersion("1.367")) >= 0; // NOI18N
     }
     
-    public synchronized Collection<HudsonJob> getAllJobs(boolean authentication) {
-        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + (canUseTree(authentication) ?
+    @Override
+    public synchronized InstanceData getInstanceData(boolean authentication) {
+        Document docInstance = getDocument(instanceUrl + XML_API_URL + (canUseTree(authentication) ?
                 "?tree=primaryView[name],views[name,url,jobs[name]]," +
                 "jobs[name,url,color,displayName,buildable,inQueue," +
                 "lastBuild[number],lastFailedBuild[number],lastStableBuild[number],lastSuccessfulBuild[number],lastCompletedBuild[number]," +
@@ -128,45 +129,45 @@ public class HudsonConnector {
                 "&exclude=//job/lastUnstableBuild&exclude=//job/lastUnsuccessfulBuild"), authentication); // NOI18N
         
         if (null == docInstance) {
-            return new ArrayList<HudsonJob>();
+            return new InstanceData(
+                    Collections.<JobData>emptyList(),
+                    Collections.<ViewData>emptyList());
         }
-        
         // Clear cache
         cache.clear();
-        
-        configureViews(instance, docInstance);
-        
         // Parse jobs and return them
-        return getJobs(docInstance);
+        Collection<ViewData> viewsData = getViewData(docInstance);
+        Collection<JobData> jobsData = getJobsData(docInstance, viewsData);
+        return new InstanceData(jobsData, viewsData);
     }
 
-    @Messages({"# {0} - job name", "MSG_Starting=Starting {0}"})
+    @Override
     public synchronized void startJob(final HudsonJob job) {
-        ProgressHandle handle = ProgressHandleFactory.createHandle(
-                MSG_Starting(job.getName()));
-        handle.start();
         try {
-            new ConnectionBuilder().instance(instance).url(job.getUrl() + "build").postData("delay=0sec".getBytes("UTF-8")).followRedirects(false).connection(); // NOI18N
+            new ConnectionBuilder().homeURL(instanceUrl).
+                    url(job.getUrl() + "build"). //NOI18N
+                    postData("delay=0sec".getBytes("UTF-8")). //NOI18N
+                    followRedirects(false).connection(); // NOI18N
+        } catch (MalformedURLException mue) {
+            LOG.log(Level.INFO, "Malformed URL " + instanceUrl, mue);
         } catch (IOException e) {
             LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
-        } finally {
-            handle.finish();
         }
-        instance.synchronize(false);
     }
 
     /**
      * Gets general information about a build.
      * The changelog ({@code <changeSet>}) can be interpreted separately by {@link HudsonJobBuild#getChanges}.
      */
-    Collection<? extends HudsonJobBuild> getBuilds(HudsonJobImpl job) {
+    @Override
+    public Collection<BuildData> getJobBuildsData(HudsonJob job) {
         Document docBuild = getDocument(job.getUrl() + XML_API_URL + (canUseTree(true) ?
             "?tree=builds[number,result,building]" :
             "?xpath=/*/build&wrapper=root&exclude=//url"), true);
         if (docBuild == null) {
             return Collections.emptySet();
         }
-        List<HudsonJobBuildImpl> builds = new ArrayList<HudsonJobBuildImpl>();
+        List<BuildData> builds = new ArrayList<BuildData>();
         NodeList buildNodes = docBuild.getElementsByTagName("build"); // NOI18N // HUDSON-3267: might be root elt
         for (int i = 0; i < buildNodes.getLength(); i++) {
             Node build = buildNodes.item(i);
@@ -196,12 +197,13 @@ public class HudsonConnector {
                     LOG.log(Level.WARNING, "unexpected <build> child: {0}", nodeName);
                 }
             }
-            builds.add(new HudsonJobBuildImpl(this, job, number, building, result));
+            builds.add(new BuildData(number, result, building));
         }
         return builds;
     }
 
-    void loadResult(HudsonJobBuildImpl build, AtomicBoolean building, AtomicReference<Result> result) {
+    @Override
+    public void getJobBuildResult(HudsonJobBuild build, AtomicBoolean building, AtomicReference<Result> result) {
         Document doc = getDocument(build.getUrl() + XML_API_URL +
                 "?xpath=/*/*[name()='result'%20or%20name()='building']&wrapper=root", true);
         if (doc == null) {
@@ -218,19 +220,22 @@ public class HudsonConnector {
         }
     }
     
-    protected synchronized @CheckForNull HudsonVersion getHudsonVersion(boolean authentication) {
+    public synchronized @CheckForNull
+    @Override
+    HudsonVersion getHudsonVersion(boolean authentication) {
         if (version == null) {
             version = retrieveHudsonVersion(authentication);
         }
         return version;
     }
     
-    protected boolean isConnected() {
+    @Override
+    public boolean isConnected() {
         return connected;
         
     }
     
-    private void configureViews(HudsonInstanceImpl instance, Document doc) {
+    private Collection<ViewData> getViewData(Document doc) {
         String primaryViewName = null;
         Element primaryViewEl = XMLUtil.findElement(doc.getDocumentElement(), "primaryView", null); // NOI18N
         if (primaryViewEl != null) {
@@ -240,8 +245,7 @@ public class HudsonConnector {
             }
         }
         
-        Collection<HudsonView> views = new ArrayList<HudsonView>();
-        HudsonView primaryView = null;
+        ArrayList<ViewData> views = new ArrayList<ViewData>();
 
         NodeList nodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -270,7 +274,7 @@ public class HudsonConnector {
             if (null != name && null != url) {
                 Element docView = (Element) n;
                 
-                HudsonViewImpl view = new HudsonViewImpl(instance, name, url);
+                ViewData viewData = new ViewData(name, url, isPrimary);
                 
                 NodeList jobsList = docView.getElementsByTagName(XML_API_JOB_ELEMENT);
                 for (int k = 0; k < jobsList.getLength(); k++) {
@@ -282,26 +286,23 @@ public class HudsonConnector {
                         }
                         String nodeName = e.getNodeName();
                         if (nodeName.equals(XML_API_NAME_ELEMENT)) {
-                            cache.put(view.getName() + "/" + e.getFirstChild().getTextContent(), view); // NOI18N
+                            cache.put(viewData.getName() + "/" + e.getFirstChild().getTextContent(), viewData); // NOI18N
                         } else {
                             LOG.log(Level.FINE, "unexpected view <job> child: {0}", nodeName);
                         }
                     }
                 }
-                
-                views.add(view);
-                if (isPrimary) {
-                    primaryView = view;
-                }
+                views.add(viewData);
             }
             
         }
         
-        instance.setViews(views, primaryView);
+        return views;
     }
     
-    private Collection<HudsonJob> getJobs(Document doc) {
-        Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
+    private Collection<JobData> getJobsData(Document doc,
+            Collection<ViewData> viewsData) {
+        Collection<JobData> jobs = new ArrayList<JobData>();
         
         NodeList nodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -311,10 +312,8 @@ public class HudsonConnector {
                 continue;
             }
             
-            HudsonJobImpl job = new HudsonJobImpl(instance);
-            if (secured) {
-                job.putProperty(JOB_COLOR, Color.secured);
-            }
+            JobData jd = new JobData();
+            jd.setSecured(secured);
             
             NodeList jobDetails = n.getChildNodes();
             for (int k = 0; k < jobDetails.getLength(); k++) {
@@ -324,27 +323,27 @@ public class HudsonConnector {
                 }
                 String nodeName = d.getNodeName();
                 if (nodeName.equals(XML_API_NAME_ELEMENT)) {
-                    job.putProperty(JOB_NAME, d.getFirstChild().getTextContent());
+                    jd.setJobName(d.getFirstChild().getTextContent());
                 } else if (nodeName.equals(XML_API_URL_ELEMENT)) {
-                    job.putProperty(JOB_URL, normalizeUrl(d.getFirstChild().getTextContent(), "job/[^/]+/")); // NOI18N
+                    jd.setJobUrl(normalizeUrl(d.getFirstChild().getTextContent(), "job/[^/]+/")); // NOI18N
                 } else if (nodeName.equals(XML_API_COLOR_ELEMENT)) {
-                    job.putProperty(JOB_COLOR, Color.find(d.getFirstChild().getTextContent().trim()));
+                    jd.setColor(Color.find(d.getFirstChild().getTextContent().trim()));
                 } else if (nodeName.equals(XML_API_DISPLAY_NAME_ELEMENT)) {
-                    job.putProperty(JOB_DISPLAY_NAME, d.getFirstChild().getTextContent());
+                    jd.setDisplayName(d.getFirstChild().getTextContent());
                 } else if (nodeName.equals(XML_API_BUILDABLE_ELEMENT)) {
-                    job.putProperty(JOB_BUILDABLE, Boolean.valueOf(d.getFirstChild().getTextContent()));
+                    jd.setBuildable(Boolean.valueOf(d.getFirstChild().getTextContent()));
                 } else if (nodeName.equals(XML_API_INQUEUE_ELEMENT)) {
-                    job.putProperty(JOB_IN_QUEUE, Boolean.valueOf(d.getFirstChild().getTextContent()));
+                    jd.setInQueue(Boolean.valueOf(d.getFirstChild().getTextContent()));
                 } else if (nodeName.equals(XML_API_LAST_BUILD_ELEMENT)) {
-                    job.putProperty(JOB_LAST_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                    jd.setLastBuild(Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                 } else if (nodeName.equals(XML_API_LAST_FAILED_BUILD_ELEMENT)) {
-                    job.putProperty(JOB_LAST_FAILED_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                    jd.setLastFailedBuild(Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                 } else if (nodeName.equals(XML_API_LAST_STABLE_BUILD_ELEMENT)) {
-                    job.putProperty(JOB_LAST_STABLE_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                    jd.setLastStableBuild(Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                 } else if (nodeName.equals(XML_API_LAST_SUCCESSFUL_BUILD_ELEMENT)) {
-                    job.putProperty(JOB_LAST_SUCCESSFUL_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                    jd.setLastSuccessfulBuild(Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                 } else if (nodeName.equals(XML_API_LAST_COMPLETED_BUILD_ELEMENT)) {
-                    job.putProperty(JOB_LAST_COMPLETED_BUILD, Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
+                    jd.setLastCompletedBuild(Integer.valueOf(d.getFirstChild().getFirstChild().getTextContent()));
                 } else if (nodeName.equals("module")) { // NOI18N
                     String name = null, displayName = null, url = null;
                     Color color = null;
@@ -375,28 +374,25 @@ public class HudsonConnector {
                     }
                     if (name != null && url != null && color != null) {
                         if (displayName == null) {
-                            LOG.log(Level.FINE, "#202671: missing displayName in {0}", job);
+                            LOG.log(Level.FINE, "#202671: missing displayName in {0}", jd.getJobUrl());
                             displayName = name;
                         }
-                        job.addModule(name, displayName, color, url);
+                        jd.addModule(name, displayName, color, url);
                     } else {
-                        LOG.log(Level.FINE, "#202671: missing name/url/color in {0}", job);
+                        LOG.log(Level.FINE, "#202671: missing name/url/color in {0}", jd.getJobUrl());
                     }
                 } else {
                     LOG.log(Level.FINE, "unexpected global <job> child: {0}", nodeName);
                 }
             }
-
-            for (HudsonView v : instance.getViews()) {
+            for (ViewData v : viewsData) {
                 if (/* https://github.com/hudson/hudson/commit/105f2b09cf1376f9fe4dbf80c5bdb7a0d30ba1c1#commitcomment-447142 */secured ||
-                        null != cache.get(v.getName() + "/" + job.getName())) {
-                    job.addView(v);
+                        null != cache.get(v.getName() + "/" + jd.getJobName())) {
+                    jd.addView(v.getName());
                 }
             }
-
-            jobs.add(job);
+            jobs.add(jd);
         }
-        
         return jobs;
     }
 
@@ -417,13 +413,13 @@ public class HudsonConnector {
         }
         Matcher m = tailPattern.matcher(suggested);
         if (m.matches()) {
-            String result = instance.getUrl() + m.group(1);
+            String result = instanceUrl + m.group(1);
             if (!result.equals(suggested)) {
                 LOG.log(Level.FINER, "Normalizing {0} -> {1}", new Object[] {suggested, result});
             }
             return result;
         } else {
-            LOG.log(Level.WARNING, "Anomalous URL {0} not ending with {1} from {2}", new Object[] {suggested, relativePattern, instance});
+            LOG.log(Level.WARNING, "Anomalous URL {0} not ending with {1} from {2}", new Object[] {suggested, relativePattern, instanceUrl});
             return suggested;
         }
     }
@@ -433,11 +429,14 @@ public class HudsonConnector {
         HudsonVersion v = null;
         
         try {
-
-            String sVersion = new ConnectionBuilder().instance(instance).url(instance.getUrl()).authentication(authentication).httpConnection().getHeaderField("X-Hudson"); // NOI18N
+            String sVersion = new ConnectionBuilder().homeURL(instanceUrl).
+                    url(instanceUrl).authentication(authentication).
+                    httpConnection().getHeaderField("X-Hudson"); // NOI18N
             if (sVersion != null) {
                 v = new HudsonVersion(sVersion);
             }
+        } catch (MalformedURLException mue) {
+            LOG.log(Level.INFO, "Malformed URL " + instanceUrl, mue);   //NOI18N
         } catch (IOException e) {
             // Nothing
         }
@@ -450,8 +449,9 @@ public class HudsonConnector {
         Document doc = null;
         
         try {
-            HttpURLConnection conn = new ConnectionBuilder().instance(instance).url(url).authentication(authentication).httpConnection();
-            
+            HttpURLConnection conn = new ConnectionBuilder().
+                    homeURL(instanceUrl).url(url).
+                    authentication(authentication).httpConnection();
             // Connected successfully
             if (!isConnected()) {
                 connected = true;
@@ -480,6 +480,9 @@ public class HudsonConnector {
             conn.disconnect();
         } catch (SAXParseException x) {
             // already reported
+            LOG.log(Level.INFO, null, x);
+        } catch (MalformedURLException mue) {
+            LOG.log(Level.INFO, "Invalid URL " + instanceUrl, mue);     //NOI18N
         } catch (Exception x) {
             LOG.log(Level.FINE, url, x);
             if (!authentication && x instanceof HttpRetryException && ((HttpRetryException) x).responseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
@@ -490,4 +493,131 @@ public class HudsonConnector {
         return doc;
     }
 
+    @Override
+    public RemoteFileSystem getArtifacts(HudsonJobBuild build) {
+        try {
+            return new HudsonRemoteFileSystem(build);
+        } catch (MalformedURLException ex) {
+            LOG.log(Level.INFO, null, ex);
+            return null;
+        }
+    }
+
+    @Override
+    public RemoteFileSystem getArtifacts(HudsonMavenModuleBuild build) {
+        try {
+            return new HudsonRemoteFileSystem(build);
+        } catch (MalformedURLException ex) {
+            LOG.log(Level.INFO, null, ex);
+            return null;
+        }
+    }
+
+    @Override
+    public RemoteFileSystem getWorkspace(HudsonJob job) {
+        try {
+            return new HudsonRemoteFileSystem(job);
+        } catch (MalformedURLException ex) {
+           LOG.log(Level.INFO, null, ex);
+            return null;
+        }
+    }
+
+    @Override
+    public boolean isForbidden() {
+        return forbidden;
+    }
+
+    @Override
+    public ConsoleDisplayer getConsoleDisplayer() {
+        return HUDSON_CONSOLE_DISPLAYER;
+    }
+
+    @Override
+    public FailureDisplayer getFailureDisplayer() {
+        return HUDSON_FAILURE_DISPLAYER;
+    }
+
+    @Override
+    public Collection<? extends HudsonJobChangeItem> getJobBuildChanges(HudsonJobBuild build) {
+        Collection<? extends HudsonJobChangeItem> changes = null;
+        for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
+            changes = scm.parseChangeSet(build);
+            if (changes != null) {
+                break;
+            }
+        }
+        if (changes == null) {
+            changes = parseChangeSetGeneric(build);
+        }
+        return changes;
+    }
+
+    private Collection<? extends HudsonJobChangeItem> parseChangeSetGeneric(HudsonJobBuild build) {
+        final Element changeSet;
+        try {
+            changeSet = XMLUtil.findElement(new ConnectionBuilder().job(build.getJob()).url(build.getUrl() + "api/xml?tree=changeSet[items[author[fullName],msg,affectedFile[path,editType]]]").parseXML().getDocumentElement(), "changeSet", null);
+        } catch (IOException x) {
+            LOG.log(Level.WARNING, "could not parse changelog for {0}: {1}", new Object[]{this, x});
+            return Collections.emptyList();
+        }
+        class Item implements HudsonJobChangeItem {
+
+            final Element itemXML;
+
+            Item(Element itemXML) {
+                this.itemXML = itemXML;
+            }
+
+            @Override
+            public String getUser() {
+                return Utilities.xpath("author/fullName", itemXML);
+            }
+
+            @Override
+            public String getMessage() {
+                return Utilities.xpath("msg", itemXML);
+            }
+
+            @Override
+            public Collection<? extends HudsonJobChangeItem.HudsonJobChangeFile> getFiles() {
+                class AffectedFile implements HudsonJobChangeItem.HudsonJobChangeFile {
+
+                    final Element fileXML;
+
+                    AffectedFile(Element fileXML) {
+                        this.fileXML = fileXML;
+                    }
+
+                    @Override
+                    public String getName() {
+                        return Utilities.xpath("path", fileXML);
+                    }
+
+                    @Override
+                    public HudsonJobChangeItem.HudsonJobChangeFile.EditType getEditType() {
+                        return HudsonJobChangeItem.HudsonJobChangeFile.EditType.valueOf(Utilities.xpath("editType", fileXML));
+                    }
+
+                    @Override
+                    public OutputListener hyperlink() {
+                        return null;
+                    }
+                }
+                List<AffectedFile> files = new ArrayList<AffectedFile>();
+                // XXX this is not typically @Exported, in which case no file changes will be shown
+                NodeList nl = itemXML.getElementsByTagName("affectedFile");
+                for (int i = 0; i < nl.getLength(); i++) {
+                    files.add(new AffectedFile((Element) nl.item(i)));
+                }
+                return files;
+            }
+        }
+        List<Item> items = new ArrayList<Item>();
+        NodeList nl = changeSet.getElementsByTagName("item");
+        for (int i = 0; i < nl.getLength(); i++) {
+            items.add(new Item(((Element) nl.item(i))));
+        }
+        return items;
+    }
 }
