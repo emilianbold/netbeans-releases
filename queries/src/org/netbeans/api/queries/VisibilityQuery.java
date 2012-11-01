@@ -182,6 +182,7 @@ public final class VisibilityQuery {
     }
 
     private class ResultListener implements LookupListener {
+        @Override
         public void resultChanged(LookupEvent ev) {
             setupChangeListeners(cachedVqiInstances, new ArrayList<VisibilityQueryImplementation>(vqiResult.allInstances()));
             changeSupport.fireChange();
@@ -189,6 +190,7 @@ public final class VisibilityQuery {
     }
 
     private class VqiChangedListener implements ChangeListener {
+        @Override
         public void stateChanged(ChangeEvent e) {
             changeSupport.fireChange();
         }
