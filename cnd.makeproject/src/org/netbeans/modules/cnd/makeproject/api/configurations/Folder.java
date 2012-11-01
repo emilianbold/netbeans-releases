@@ -106,6 +106,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     private final boolean projectFiles;
     private String id = null;
     private String root;
+    private volatile boolean removed;
     private final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
     private static boolean checkedLogging = checkLogging();
     private final Kind kind;
@@ -435,6 +436,14 @@ public class Folder implements FileChangeListener, ChangeListener {
         return displayName;
     }
 
+    public final boolean isRemoved() {
+        return removed;
+    }
+    
+    public final void markRemoved(boolean broken) {
+        this.removed = broken;
+    }
+    
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
         configurationDescriptor.setModified();
@@ -486,7 +495,8 @@ public class Folder implements FileChangeListener, ChangeListener {
             itemsLock.writeLock().unlock();
         }
         if (element instanceof Folder) {
-            insertFolderElement((Folder) element);
+            Folder inserted = insertFolderElement((Folder) element);
+            inserted.markRemoved(false);
         } else if (element instanceof Item) {
             insertItemElement((Item) element);
         } else {
@@ -495,13 +505,14 @@ public class Folder implements FileChangeListener, ChangeListener {
         fireChangeEvent();
     }
 
-    private void insertFolderElement(Folder element) {
+    private Folder insertFolderElement(Folder element) {
         itemsLock.writeLock().lock();
         try {
+            element.markRemoved(false);
             if (!element.isProjectFiles()) {
                 // Insert last
                 items.add(element);
-                return;
+                return element;
             }
             String name1 = element.getSortName();
             int indexAt = items.size() - 1;
@@ -511,12 +522,18 @@ public class Folder implements FileChangeListener, ChangeListener {
                     indexAt--;
                     continue;
                 }
-                if (!((Folder) o).isProjectFiles()) {
+                Folder f = (Folder) o;
+                if (!f.isProjectFiles()) {
                     indexAt--;
                     continue;
                 }
-                String name2 = ((Folder) o).getSortName();
+                String name2 = f.getSortName();
                 int compareRes = name1.compareToIgnoreCase(name2);
+                if (compareRes == 0) {
+                    // already in list
+                    f.markRemoved(false);
+                    return f;
+                }
                 if (compareRes < 0) {
                     indexAt--;
                     continue;
@@ -524,12 +541,13 @@ public class Folder implements FileChangeListener, ChangeListener {
                 break;
             }
             items.add(indexAt + 1, element);
+            return element;
         } finally {
             itemsLock.writeLock().unlock();
         }
     }
 
-    public static void insertItemElementInList(ArrayList<Object> list, Item element) {
+    public static Item insertItemElementInList(ArrayList<Object> list, Item element) {
         String name1 = (element).getSortName();
         int indexAt = list.size() - 1;
         while (indexAt >= 0) {
@@ -547,27 +565,30 @@ public class Folder implements FileChangeListener, ChangeListener {
             break;
         }
         list.add(indexAt + 1, element);
+        return element;
     }
 
-    private void insertItemElement(Item element) {
+    private Item insertItemElement(Item element) {
         itemsLock.writeLock().lock();
         try {
-            insertItemElementInList(items, element);
+            return insertItemElementInList(items, element);
         } finally {
             itemsLock.writeLock().unlock();
         }
     }
 
-    private void addElement(Object element, boolean setModified) { // FIXUP: shopuld be private
+    private Object addElement(Object element, boolean setModified) { // FIXUP: shopuld be private
         // Always keep the vector sorted
         if (element instanceof Item) {
-            insertItemElement((Item) element);
+            return insertItemElement((Item) element);
         } else if (element instanceof Folder) {
-            insertFolderElement((Folder) element);
+            return insertFolderElement((Folder) element);
         } else {
             assert false;
         }
+        // FIX: what is the meaning of this non reacheable line?
         fireChangeEvent(this, setModified);
+        return element;
     }
 
     /**
@@ -623,7 +644,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         // Add it to the folder
         item.setFolder(this);
-        addElement(item, setModified);
+        item = (Item)addElement(item, setModified);
 
         // Add item to the dataObject's lookup
         if (isProjectFiles() && notify) {
@@ -683,26 +704,27 @@ public class Folder implements FileChangeListener, ChangeListener {
         return item;
     }
 
-    public void addFolder(Folder folder, boolean setModified) {
+    public Folder addFolder(Folder folder, boolean setModified) {
         Folder aFolder = this;
         while(aFolder != null) {
             if (aFolder.equals(folder)) {
                 log.log(Level.INFO, "Folder {0} already was added.", folder.getDisplayName()); // NOI18N
-                return;
+                return folder;
             }
             aFolder = aFolder.getParent();
         }
-        addElement(folder, setModified);
+        folder = (Folder)addElement(folder, setModified);
         if (isProjectFiles()) {
             // Add configuration to all configurations
             if (configurationDescriptor.getConfs() == null) {
-                return;
+                return folder;
             }
             Configuration[] configurations = configurationDescriptor.getConfs().toArray();
             for (int i = 0; i < configurations.length; i++) {
                 folder.getFolderConfiguration(configurations[i]);
             }
         }
+        return folder;
     }
 
     /**
@@ -817,7 +839,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
         list.add(item);
         boolean ret = removeItemImpl(item, setModified, false);
-        if (ret && isProjectFiles()) {
+        if (isProjectFiles()) {
             configurationDescriptor.fireFilesRemoved(list);
         }
         return ret;
@@ -918,11 +940,13 @@ public class Folder implements FileChangeListener, ChangeListener {
                 folder.detachListener();
             }
             folder.removeAll(requestForCompleteRemove);
+            folder.markRemoved(true);
             if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
                 if (!requestForCompleteRemove && folder.hasAttributedItems()) {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------removeFolderImpl does NOT REMOVED attributed {0} in {1}", new Object[]{folder, getPath()}); // NOI18N
                     }
+                    fireChangeEvent(this, false);
                     return false;
                 }
             }
@@ -952,11 +976,12 @@ public class Folder implements FileChangeListener, ChangeListener {
     private void removeAll(boolean requestForCompleteRemove) {
         Item[] itemsToRemove = getItemsAsArray();
         Folder[] foldersToRemove = getFoldersAsArray();
+        boolean setModified = requestForCompleteRemove;
         for (int i = 0; i < itemsToRemove.length; i++) {
-            removeItemImpl(itemsToRemove[i], true, requestForCompleteRemove);
+            removeItemImpl(itemsToRemove[i], setModified, requestForCompleteRemove);
         }
         for (int i = 0; i < foldersToRemove.length; i++) {
-            removeFolderImpl(foldersToRemove[i], true, requestForCompleteRemove);
+            removeFolderImpl(foldersToRemove[i], setModified, requestForCompleteRemove);
         }
     }
 
@@ -1513,7 +1538,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     @Override
     public String toString() {
-        return name;
+        return (removed ? "[removed]" : "") + name + "{[" + getPath() + "][" + getRootPath() + "]}"; // NOI18N
     }
 
     private static final class DeletedConfiguration {
