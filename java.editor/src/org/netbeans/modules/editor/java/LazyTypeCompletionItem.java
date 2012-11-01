@@ -112,6 +112,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem.WhiteListJavaComp
     public boolean accept() {
         if (getElementHandle() != null) {
             try {
+                JavaCompletionProvider.JavaCompletionQuery.javadocBreak.set(true);
                 ParserManager.parse(Collections.singletonList(source), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
