@@ -427,6 +427,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue220891.js", "        hiddenCom^ponents = false;", true);
     }
 
+    public void testIssue221228_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "    var ms^g = \"\"; // rename here", true);
+    }
+
+//    public void testIssue221228_02() throws Exception {
+//        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);
+//    }
+
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
