@@ -358,55 +358,63 @@ public class GlassFishStatus {
         boolean notYetReady = false;
         long begTm = System.currentTimeMillis(), actTm = begTm;
         ServerStatus status = new ServerStatus(instance, mode == Mode.STARTUP);
-        while (!isReady && (
-                tries++ < maxTries || (notYetReady
-                && (actTm = System.currentTimeMillis()) - begTm
-                < STARTUP_TIMEOUT))) {
-            if (tries > 1)
-                retrySleep(instance, begTm, actTm, tries);
-            status.check();
-            ServerStatus.Result adminPortResult
-                    = status.getAdminPortResult();
-            // GlassFish server administration port is not listening.
-            if (adminPortResult.getStatus() != ServerStatus.Status.SUCCESS) {
-                continue;
-            }
-            ResultString versionCommandResult = processVersionTaskResult(
-                    instance, status.getVersionResult(), mode);
-            // Version command result.
-            if (versionCommandResult != null) {
-                String value = versionCommandResult.getValue();
-                Logger.getLogger("glassfish").log(Level.FINEST,
-                        LOG_VERSION_RESPONSE, new Object[] {
-                        instance.getName(), value});
-                switch(versionCommandResult.getState()) {
-                    case FAILED:
-                        if (notYetReady = ServerUtils.notYetReadyMsg(value)) {
-                            Logger.getLogger("glassfish").log(Level.FINEST,
-                                   LOG_SERVER_STARTUP, instance.getName());
-                            continue;
-                        } else
+        try {
+            while (!isReady && (tries++ < maxTries || (notYetReady
+                    && (actTm = System.currentTimeMillis()) - begTm
+                    < STARTUP_TIMEOUT))) {
+                if (tries > 1) {
+                    retrySleep(instance, begTm, actTm, tries);
+                }
+                status.check();
+                ServerStatus.Result adminPortResult
+                        = status.getAdminPortResult();
+                // GlassFish server administration port is not listening.
+                if (adminPortResult.getStatus()
+                        != ServerStatus.Status.SUCCESS) {
+                    continue;
+                }
+                ResultString versionCommandResult = processVersionTaskResult(
+                        instance, status.getVersionResult(), mode);
+                // Version command result.
+                if (versionCommandResult != null) {
+                    String value = versionCommandResult.getValue();
+                    Logger.getLogger("glassfish").log(Level.FINEST,
+                            LOG_VERSION_RESPONSE, new Object[]{
+                                instance.getName(), value});
+                    switch (versionCommandResult.getState()) {
+                        case FAILED:
+                            if (notYetReady
+                                    = ServerUtils.notYetReadyMsg(value)) {
+                                Logger.getLogger("glassfish").log(Level.FINEST,
+                                        LOG_SERVER_STARTUP, instance.getName());
+                                continue;
+                            } else {
+                                break;
+                            }
+                        case COMPLETED:
+                            isReady = true;
+                            handleGlassFishWarnings(instance, status, mode);
                             break;
-                    case COMPLETED:
-                        isReady = true;
-                        handleGlassFishWarnings(instance, status, mode);
-                        break;
+                    }
+                }
+                // Locations task execution result.
+                ServerStatus.ResultLocations locationsTaskResult
+                        = status.getLocationsResult();
+                if (locationsTaskResult.getStatus()
+                        == ServerStatus.Status.SUCCESS) {
+                    ResultMap<String, String> locationsCommandResult
+                            = locationsTaskResult.getResult();
+                    logLocationsResponse(instance, locationsCommandResult);
+                    if (locationsCommandResult.getState()
+                            == TaskState.COMPLETED) {
+                        isReady = processReadyLocationsResult(
+                                instance, locationsCommandResult);
+                    }
                 }
             }
-            // Locations task execution result.
-            ServerStatus.ResultLocations locationsTaskResult
-                    = status.getLocationsResult();
-            if (locationsTaskResult.getStatus() == ServerStatus.Status.SUCCESS) {
-                ResultMap<String, String> locationsCommandResult
-                        = locationsTaskResult.getResult();
-                logLocationsResponse(instance, locationsCommandResult);
-                if (locationsCommandResult.getState() == TaskState.COMPLETED) {
-                    isReady = processReadyLocationsResult(
-                            instance, locationsCommandResult);
-                }
-            }
+        } finally {
+            status.close();
         }
-        status.close();
         return isReady;
     }
 
