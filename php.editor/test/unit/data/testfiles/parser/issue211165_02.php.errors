@@ -5,24 +5,12 @@
  unexpected:	identifier 'file'
  after:	String '"<form action="'
  expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', ], ), :
-[[35,43]-Syntax error
+[[35,43]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	String '" name="'] 35-43:POSSIBLE Syntax Error (check preceding valid syntax error)
  unexpected:	String '" name="'
- after:	identifier 'php'
- expected:	variable, instanceof, as, implements, =>, {, }, ::, \, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', ], (, ), :] 35-43:Syntax error
- unexpected:	String '" name="'
- after:	identifier 'php'
- expected:	variable, instanceof, as, implements, =>, {, }, ::, \, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', ], (, ), :
-[[43,51]-Syntax error
+[[43,51]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'testform'] 43-51:POSSIBLE Syntax Error (check preceding valid syntax error)
  unexpected:	identifier 'testform'
- after:	String '" name="'
- expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', ], ), :] 43-51:Syntax error
- unexpected:	identifier 'testform'
- after:	String '" name="'
- expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', ], ), :
-[[51,54]-Syntax error
+[[51,54]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	String '">"'] 51-54:POSSIBLE Syntax Error (check preceding valid syntax error)
  unexpected:	String '">"'
- after:	identifier 'testform'
- expected:	instanceof, ::, \, OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', (, :] 51-54:Syntax error
- unexpected:	String '">"'
- after:	identifier 'testform'
- expected:	instanceof, ::, \, OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', (, :

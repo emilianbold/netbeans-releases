@@ -299,4 +299,8 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testIssue211165_09() throws Exception {
         checkErrors("testfiles/parser/issue211165_09.php");
     }
+
+    public void testFunctionCallParam() throws Exception {
+        checkErrors("testfiles/parser/functionCallParam.php");
+    }
 }

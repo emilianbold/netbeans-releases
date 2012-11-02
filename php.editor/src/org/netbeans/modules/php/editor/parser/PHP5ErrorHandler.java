@@ -64,14 +64,54 @@ public interface PHP5ErrorHandler extends ParserErrorHandler {
 
     @org.netbeans.api.annotations.common.SuppressWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
     public static class SyntaxError {
+
+        @NbBundle.Messages({
+            "SE_ValidMessage=Syntax error",
+            "SE_PossibleMessage=POSSIBLE Syntax Error (check preceding valid syntax error)"
+        })
+        public static enum Type {
+            FIRST_VALID_ERROR() {
+
+                @Override
+                public String getMessageHeader() {
+                    return Bundle.SE_ValidMessage();
+                }
+
+                @Override
+                public Severity getSeverity() {
+                    return Severity.ERROR;
+                }
+
+            },
+            POSSIBLE_ERROR() {
+
+                @Override
+                public String getMessageHeader() {
+                    return Bundle.SE_PossibleMessage();
+                }
+
+                @Override
+                public Severity getSeverity() {
+                    return Severity.WARNING;
+                }
+
+            };
+
+            public abstract String getMessageHeader();
+
+            public abstract Severity getSeverity();
+        }
+
         private final short[] expectedTokens;
         private final Symbol currentToken;
         private final Symbol previousToken;
+        private final Type type;
 
-        public SyntaxError(short[] expectedTokens, Symbol currentToken, Symbol previousToken) {
+        public SyntaxError(short[] expectedTokens, Symbol currentToken, Symbol previousToken, Type type) {
             this.expectedTokens = expectedTokens;
             this.currentToken = currentToken;
             this.previousToken = previousToken;
+            this.type = type;
         }
 
         public Symbol getCurrentToken() {
@@ -84,6 +124,18 @@ public interface PHP5ErrorHandler extends ParserErrorHandler {
 
         public short[] getExpectedTokens() {
             return expectedTokens;
+        }
+
+        public String getMessageHeader() {
+            return type.getMessageHeader();
+        }
+
+        public Severity getSeverity() {
+            return type.getSeverity();
+        }
+
+        public boolean generateExtraInfo() {
+            return getSeverity().equals(Severity.ERROR);
         }
     }
 

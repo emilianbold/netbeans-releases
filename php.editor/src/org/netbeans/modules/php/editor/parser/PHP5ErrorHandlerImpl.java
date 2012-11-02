@@ -49,11 +49,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java_cup.runtime.Symbol;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.parser.GSFPHPParser.Context;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.InLineHtml;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.openide.util.NbBundle;
 
@@ -78,7 +76,11 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
         if (handleErrors) {
             if (type == ParserErrorHandler.Type.SYNTAX_ERROR) {
                 SyntaxErrorLogger.log(expectedtokens, current, previous);
-                syntaxErrors.add(new SyntaxError(expectedtokens, current, previous));
+                SyntaxError.Type syntaxErrorType = SyntaxError.Type.POSSIBLE_ERROR;
+                if (syntaxErrors.isEmpty()) {
+                    syntaxErrorType = SyntaxError.Type.FIRST_VALID_ERROR;
+                }
+                syntaxErrors.add(new SyntaxError(expectedtokens, current, previous, syntaxErrorType));
             }
         }
     }
@@ -97,32 +99,25 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
     public List<Error> displaySyntaxErrors(Program program) {
         List<Error> errors = new ArrayList<Error>();
         for (SyntaxError syntaxError : syntaxErrors) {
-            if (isErrorAfterCommonToken(syntaxError)) {
-                errors.add(defaultSyntaxErrorHandling(syntaxError));
-            }
+            errors.add(defaultSyntaxErrorHandling(syntaxError));
         }
         return errors;
     }
 
-    private boolean isErrorAfterCommonToken(SyntaxError syntaxError) {
-        return TokenWrapper.create(syntaxError.getPreviousToken()).isCommonToken();
-    }
-
-    @NbBundle.Messages({
-        "SE_Message=Syntax error",
-        "SE_Expected=expected"
-    })
+    @NbBundle.Messages("SE_Expected=expected")
     private Error defaultSyntaxErrorHandling(SyntaxError syntaxError) {
         StringBuilder message = new StringBuilder();
         Symbol currentToken = syntaxError.getCurrentToken();
-        message.append(Bundle.SE_Message());
+        message.append(syntaxError.getMessageHeader());
         message.append(TokenWrapper.create(currentToken).createUnexpectedMessage());
-        message.append(TokenWrapper.create(syntaxError.getPreviousToken()).createAfterText());
-        List<String> possibleTags = getExpectedTokenNames(syntaxError);
-        if (possibleTags.size() > 0) {
-            message.append(createExpectedTokensText(possibleTags));
+        if (syntaxError.generateExtraInfo()) {
+            message.append(TokenWrapper.create(syntaxError.getPreviousToken()).createAfterText());
+            List<String> possibleTags = getExpectedTokenNames(syntaxError);
+            if (possibleTags.size() > 0) {
+                message.append(createExpectedTokensText(possibleTags));
+            }
         }
-        return new GSFPHPError(message.toString(), context.getSnapshot().getSource().getFileObject(), currentToken.left, currentToken.right, Severity.ERROR, new Object[]{syntaxError});
+        return new GSFPHPError(message.toString(), context.getSnapshot().getSource().getFileObject(), currentToken.left, currentToken.right, syntaxError.getSeverity(), new Object[]{syntaxError});
     }
 
     private static List<String> getExpectedTokenNames(SyntaxError syntaxError) {
@@ -190,7 +185,11 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
         }
 
         public boolean isCommonToken() {
-            return (!(token.value instanceof List) && !(token.value instanceof ASTNode)) || (token.value instanceof InLineHtml);
+            return (!(token.value instanceof List) && !(token.value instanceof ASTNode));
+        }
+
+        public boolean isNodeToken() {
+            return (token.value instanceof ASTNode);
         }
 
         @NbBundle.Messages({
@@ -225,9 +224,11 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
             if (isValuableToken(token)) {
                 afterText = getTokenTextForm(token.sym) + " '" + String.valueOf(token.value) + "'";
             } else {
-                String previousText = getTokenTextForm(token.sym);
-                if (StringUtils.hasText(previousText)) {
-                    afterText = previousText.trim();
+                if (!isNodeToken()) {
+                    String previousText = getTokenTextForm(token.sym);
+                    if (StringUtils.hasText(previousText)) {
+                        afterText = previousText.trim();
+                    }
                 }
             }
             if (afterText == null) {
@@ -239,9 +240,9 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
         }
 
         private static boolean isValuableToken(Symbol token) {
-            return token.sym == ASTPHP5Symbols.T_STRING || token.sym == ASTPHP5Symbols.T_CONSTANT_ENCAPSED_STRING ||
+            return (token.sym == ASTPHP5Symbols.T_STRING || token.sym == ASTPHP5Symbols.T_CONSTANT_ENCAPSED_STRING ||
                 token.sym == ASTPHP5Symbols.T_DNUMBER || token.sym == ASTPHP5Symbols.T_LNUMBER ||
-                token.sym == ASTPHP5Symbols.T_VARIABLE;
+                token.sym == ASTPHP5Symbols.T_VARIABLE) && !(token.value instanceof ASTNode) && !(token.value instanceof List);
         }
 
         public static String getTokenTextForm(int token) {

@@ -5,10 +5,9 @@
  unexpected:	protected
  after:	public
  expected:	variable, function, static, abstract, final
-[[65,73]-Syntax error
+[[65,73]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	function] 65-73:POSSIBLE Syntax Error (check preceding valid syntax error)
  unexpected:	function
- after:	static
- expected:	variable, ::] 65-73:Syntax error
- unexpected:	function
- after:	static
- expected:	variable, ::
+[[90,91]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}] 90-91:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}
