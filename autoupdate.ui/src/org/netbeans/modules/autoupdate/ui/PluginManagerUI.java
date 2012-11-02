@@ -684,6 +684,8 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
                     refreshUnitsInAWT();
                 }
             });
+        } else {
+            refreshUnitsInAWT();
         }
     }
     
