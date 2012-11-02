@@ -366,6 +366,13 @@ public class TreeFactory {
         return make.at(NOPOS).TypeTest((JCExpression)expression, (JCTree)type);
     }
     
+    public IntersectionTypeTree IntersectionType(List<? extends Tree> bounds) {
+        ListBuffer<JCExpression> jcbounds = new ListBuffer<JCExpression>();
+        for (Tree t : bounds)
+            jcbounds.append((JCExpression)t);
+        return make.at(NOPOS).TypeIntersection(jcbounds.toList());
+    }
+    
     public LabeledStatementTree LabeledStatement(CharSequence label, StatementTree statement) {
         return make.at(NOPOS).Labelled(names.fromString(label.toString()), (JCStatement)statement);
     }

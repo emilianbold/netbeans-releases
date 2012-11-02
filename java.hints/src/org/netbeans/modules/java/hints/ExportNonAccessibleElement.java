@@ -59,6 +59,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.NoType;
 import javax.lang.model.type.NullType;
 import javax.lang.model.type.PrimitiveType;
@@ -324,6 +325,11 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
     }
 
     public Boolean visitUnknown(TypeMirror arg0, Void arg1) {
+        return false;
+    }
+
+    @Override
+    public Boolean visitIntersection(IntersectionType t, Void p) {
         return false;
     }
     

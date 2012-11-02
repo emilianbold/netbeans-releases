@@ -46,7 +46,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreeScanner;
-import com.sun.tools.javac.parser.EndPosTable;
+import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
 import org.netbeans.lib.nbjavac.services.NBParserFactory.NBJavacParser.EndPosTableImpl;
 

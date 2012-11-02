@@ -53,7 +53,9 @@ import com.sun.tools.javac.api.DuplicateClassChecker;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTool;
 import com.sun.tools.javac.api.JavacTrees;
-import com.sun.tools.javac.parser.EndPosTable;
+import com.sun.tools.javac.parser.SimpleDocCommentTable;
+import com.sun.tools.javac.parser.Tokens.Comment;
+import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -97,7 +99,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
-import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -981,7 +982,7 @@ public class JavacParser extends Parser {
                     assert dl instanceof CompilationInfoImpl.DiagnosticListenerImpl;
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
                     long start = System.currentTimeMillis();
-                    Map<JCTree,String> docComments = new HashMap<JCTree, String>();
+                    Map<JCTree,Comment> docComments = new HashMap<JCTree, Comment>();
                     block = pr.reparseMethodBody(cu, orig, newBody, firstInner, docComments);
                     if (LOGGER.isLoggable(Level.FINER)) {
                         LOGGER.log(Level.FINER, "Reparsed method in: {0}", fo);     //NOI18N
@@ -996,8 +997,8 @@ public class JavacParser extends Parser {
                         }
                         return false;
                     }
-                    ((JCTree.JCCompilationUnit)cu).docComments.keySet().removeAll(fav.docOwners);
-                    ((JCTree.JCCompilationUnit)cu).docComments.putAll(docComments);
+                    ((SimpleDocCommentTable) ((JCTree.JCCompilationUnit)cu).docComments).table.keySet().removeAll(fav.docOwners);
+                    ((SimpleDocCommentTable) ((JCTree.JCCompilationUnit)cu).docComments).table.putAll(docComments);
                     long end = System.currentTimeMillis();
                     if (fo != null) {
                         logTime (fo,Phase.PARSED,(end-start));

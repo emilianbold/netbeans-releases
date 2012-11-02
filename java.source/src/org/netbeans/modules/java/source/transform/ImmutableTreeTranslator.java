@@ -458,6 +458,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Tree visitInstanceOf(InstanceOfTree tree, Object p) {
 	return rewriteChildren(tree);
     }
+    public Tree visitIntersectionType(IntersectionTypeTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
     public Tree visitArrayAccess(ArrayAccessTree tree, Object p) {
 	return rewriteChildren(tree);
     }
@@ -1074,6 +1077,18 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	Tree clazz = translateClassRef(tree.getType());
 	if (expr!=tree.getExpression() || clazz!=tree.getType()) {
 	    InstanceOfTree n = make.InstanceOf(expr, clazz);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
+	    tree = n;
+	}
+	return tree;
+    }
+    
+    protected final IntersectionTypeTree rewriteChildren(IntersectionTypeTree tree) {
+	List<? extends Tree> bounds = translate(tree.getBounds());
+	if (!safeEquals(bounds, tree.getBounds())) {
+	    IntersectionTypeTree n = make.IntersectionType(bounds);
             model.setType(n, model.getType(tree));
 	    copyCommentTo(tree,n);
             copyPosTo(tree,n);

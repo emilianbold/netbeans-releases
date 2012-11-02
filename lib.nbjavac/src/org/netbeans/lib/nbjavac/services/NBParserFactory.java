@@ -37,13 +37,14 @@
  */
 package org.netbeans.lib.nbjavac.services;
 
-import com.sun.tools.javac.parser.EndPosTable;
 import com.sun.tools.javac.parser.JavacParser;
 import com.sun.tools.javac.parser.Lexer;
 import com.sun.tools.javac.parser.Parser;
 import com.sun.tools.javac.parser.ParserFactory;
 import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.parser.ScannerFactory;
+import com.sun.tools.javac.parser.Tokens.Comment;
+import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -127,7 +128,7 @@ public class NBParserFactory extends ParserFactory {
         }
 
         @Override
-        protected JCClassDecl classDeclaration(JCModifiers mods, String dc) {
+        protected JCClassDecl classDeclaration(JCModifiers mods, Comment dc) {
             if (cancelService != null) {
                 cancelService.abortIfCanceled();
             }
@@ -135,7 +136,7 @@ public class NBParserFactory extends ParserFactory {
         }
 
         @Override
-        protected JCClassDecl interfaceDeclaration(JCModifiers mods, String dc) {
+        protected JCClassDecl interfaceDeclaration(JCModifiers mods, Comment dc) {
             if (cancelService != null) {
                 cancelService.abortIfCanceled();
             }
@@ -143,7 +144,7 @@ public class NBParserFactory extends ParserFactory {
         }
 
         @Override
-        protected JCClassDecl enumDeclaration(JCModifiers mods, String dc) {
+        protected JCClassDecl enumDeclaration(JCModifiers mods, Comment dc) {
             if (cancelService != null) {
                 cancelService.abortIfCanceled();
             }
@@ -151,7 +152,7 @@ public class NBParserFactory extends ParserFactory {
         }
 
         @Override
-        protected JCTree methodDeclaratorRest(int pos, JCModifiers mods, JCExpression type, Name name, List<JCTypeParameter> typarams, boolean isInterface, boolean isAnno, boolean isVoid, String dc) {
+        protected JCTree methodDeclaratorRest(int pos, JCModifiers mods, JCExpression type, Name name, List<JCTypeParameter> typarams, boolean isInterface, boolean isAnno, boolean isVoid, Comment dc) {
             if (cancelService != null) {
                 cancelService.abortIfCanceled();
             }
