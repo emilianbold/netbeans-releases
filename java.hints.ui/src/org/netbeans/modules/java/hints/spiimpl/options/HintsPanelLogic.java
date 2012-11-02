@@ -576,7 +576,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         private Map<String,Object> map = new HashMap<String, Object>();
 
         public ModifiedPreferences( Preferences node ) {
-            super(null, ""); // NOI18N
+            super(FAKE_ROOT, ""); // NOI18N
             try {                
                 for (java.lang.String key : node.keys()) {
                     put(key, node.get(key, null));
@@ -651,5 +651,35 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 	    return map.isEmpty();
 	}
     }
+    
+    private static final AbstractPreferences FAKE_ROOT = new AbstractPreferences(null, "") {
+        @Override protected void putSpi(String key, String value) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected String getSpi(String key) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected void removeSpi(String key) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected void removeNodeSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected String[] keysSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected String[] childrenNamesSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected AbstractPreferences childSpi(String name) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected void syncSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected void flushSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    };
 
 }
