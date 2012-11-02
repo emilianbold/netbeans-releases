@@ -174,9 +174,10 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             "LBL_AndroidDevice=Android Device"
         })
         public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {
+            if (!isEnabled()) {
+                return;
+            }
             try {
-                File examplesFolder = new File(CordovaPlatform.getDefault().getSdkLocation() + "/lib/android/example/assets/www");//NOI18N
-                FileObject examples = FileUtil.toFileObject(examplesFolder);
                 String version = CordovaPlatform.getDefault().getVersion();
 
                 final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
