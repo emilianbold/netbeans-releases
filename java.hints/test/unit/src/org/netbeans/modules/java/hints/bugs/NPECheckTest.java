@@ -555,6 +555,18 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings("4:15-4:18:verifier:ERR_ReturningPossibleNullFromNonNull");
     }
     
+    public void testTernaryWithMultipartCondition() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public String t(Object obj) {\n" +
+                       "        return (obj == null || obj.hashCode() == 0) ? null : obj.toString();\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
