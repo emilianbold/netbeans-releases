@@ -229,8 +229,6 @@ public class Utilities {
         if (invisibleUnits.size() > 0 && !isNbms) {
             for (UpdateUnit invisibleUnit : invisibleUnits) {
                 UpdateUnit visUnit = invisibleUnit.getVisibleAncestor();
-                assert visUnit != null : invisibleUnit + " has a visible ancestor";
-                assert visUnit.getInstalled() != null : "Visible ancestor is installed";
                 if (visUnit == null || visUnit.getInstalled() == null) {
                     // fallback for unit w/o visible ancestor
                     visUnit = invisibleUnit;
