@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
@@ -162,7 +163,8 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                     offsets.add(oc.getOffsetRange());
                 }
                 JsObject parent = object.getParent();
-                if (parent != null && parent.getJSKind() != Kind.FILE && object.getJSKind() != Kind.PARAMETER) {
+                if (parent != null && parent.getJSKind() != Kind.FILE && object.getJSKind() != Kind.PARAMETER
+                        && !object.getModifiers().contains(Modifier.PRIVATE)) {
                     Collection<? extends Type> types = parent.getAssignmentForOffset(caretPosition);
                     if (types.isEmpty()) {
                         types = parent.getAssignments();

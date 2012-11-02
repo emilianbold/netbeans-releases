@@ -5,3 +5,6 @@
  unexpected:	variable '$canNotBe2'
  after:	abstract
  expected:	function, static, private, protected, public
+[[62,63]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}] 62-63:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}

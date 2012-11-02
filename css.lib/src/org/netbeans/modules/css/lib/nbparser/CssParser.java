@@ -72,10 +72,6 @@ public class CssParser extends Parser {
     private static final Logger LOG = Logger.getLogger(CssParser.class.getSimpleName());
     private CssParserResult result;
 
-    public CssParser() {
-        LOG.log(Level.INFO, "Created instance {0}", toString());
-    }
-    
     public static CssParserResult parse(Snapshot snapshot) throws ParseException {
         if(snapshot == null) {
             return null;
