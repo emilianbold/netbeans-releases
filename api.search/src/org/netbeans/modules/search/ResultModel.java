@@ -70,9 +70,6 @@ public final class ResultModel {
     public static final String PROP_MATCHING_OBJECTS =
             "matchingObjects";                                          //NOI18N
 
-    /** Common search root */
-    private FileObject commonSearchRoot;
-
     /** */
     private long startTime;
     /** */
@@ -381,20 +378,6 @@ public final class ResultModel {
      */
     public synchronized String getExceptionMsg() {
         return finishMessage;
-    }
-
-    /**
-     * Get common search folder. Can be null.
-     */
-    synchronized FileObject getCommonSearchFolder() {
-        return commonSearchRoot;
-    }
-
-    /**
-     * Set common search null. Can be null.
-     */
-    synchronized void setCommonSearchFolder(FileObject fo) {
-        this.commonSearchRoot = fo;
     }
 
     public boolean isSearchAndReplace() {

@@ -292,7 +292,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                     FileObject originalSources = ((SourcesFileChangeListener) fileChangeListener).getSources();
                     LOGGER.log(Level.INFO,
                             "registered sources (valid): {0} ({1}), current sources (valid): {2} ({3}), equals: {4}",
-                            new Object[] {originalSources, originalSources.isValid(), sources, sources != null && sources.isValid(), originalSources.equals(sources)});
+                            new Object[] {originalSources, originalSources.isValid(), sources, sources.isValid(), originalSources.equals(sources)});
                     unregisterFileChangeListenerFromOriginalSources();
                 }
             }

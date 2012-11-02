@@ -49,9 +49,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -59,6 +61,7 @@ import java.util.zip.ZipInputStream;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.web.clientproject.util.StringUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -131,6 +134,38 @@ public final class SiteHelper {
         }
         String rootFolder = getZipRootFolder(new FileInputStream(zipFile));
         unzipProjectTemplateFile(targetDir, new FileInputStream(zipFile), rootFolder, ignoredFiles);
+    }
+
+    /**
+     * Strip possible root folder of the given path.
+     * <p>
+     * The typical usage is for file paths from a ZIP file.
+     * @param paths relative paths to be processed, never empty paths or {@code null}
+     * @return list of paths without possible root folder
+     */
+    public static List<String> stripRootFolder(List<String> paths) {
+        List<String> stripped = new ArrayList<String>(paths.size());
+        String rootFolder = null;
+        for (String path : paths) {
+            assert StringUtilities.hasText(path) : "Empty path not allowed";
+            String top;
+            int slashIndex = path.indexOf('/'); // NOI18N
+            if (slashIndex == -1) {
+                top = path;
+            } else {
+                top = path.substring(0, slashIndex);
+            }
+            if (rootFolder == null) {
+                rootFolder = top;
+            }
+            if (!rootFolder.equals(top)) {
+                return paths;
+            }
+            if (slashIndex != -1 && path.length() > slashIndex) {
+                stripped.add(path.substring(slashIndex + 1));
+            }
+        }
+        return stripped;
     }
 
     @NbBundle.Messages("SiteHelper.error.emptyZip=ZIP file with site template is either empty or its download failed.")

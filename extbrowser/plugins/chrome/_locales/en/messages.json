@@ -3,6 +3,9 @@
     "_pluginName": {
         "message": "NetBeans Connector"
     },
+    "_pluginDescription": {
+        "message": "The NetBeans Connector provides deep integration between the award winning NetBeans IDE and the Google Chrome browser."
+    },
 
     "_OK": {
         "message": "OK"

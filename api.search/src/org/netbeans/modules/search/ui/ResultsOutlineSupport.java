@@ -68,6 +68,7 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.TableColumn;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.ResultModel;
@@ -107,7 +108,8 @@ public class ResultsOutlineSupport {
     private ResultsNode resultsNode;
     private ResultModel resultModel;
     private FolderTreeItem rootPathItem = new FolderTreeItem();
-    private List<FileObject> rootFiles;
+    private BasicComposition basicComposition;
+    private List<FileObject> rootFiles = null;
     private Node infoNode;
     private Node invisibleRoot;
     private List<TableColumn> allColumns = new ArrayList<TableColumn>(5);
@@ -116,13 +118,13 @@ public class ResultsOutlineSupport {
     private boolean closed = false;
 
     public ResultsOutlineSupport(boolean replacing, boolean details,
-            ResultModel resultModel, List<FileObject> rootFiles,
+            ResultModel resultModel, BasicComposition basicComposition,
             Node infoNode) {
 
         this.replacing = replacing;
         this.details = details;
         this.resultModel = resultModel;
-        this.rootFiles = rootFiles;
+        this.basicComposition = basicComposition;
         this.resultsNode = new ResultsNode();
         this.infoNode = infoNode;
         this.invisibleRoot = new RootNode(resultsNode, infoNode);
@@ -411,7 +413,7 @@ public class ResultsOutlineSupport {
         if (closed) {
             return;
         }
-        for (FileObject fo : rootFiles) {
+        for (FileObject fo : getRootFiles()) {
             if (fo == mo.getFileObject()
                     || FileUtil.isParentOf(fo, mo.getFileObject())) {
                 addToTreeView(rootPathItem,
@@ -421,6 +423,13 @@ public class ResultsOutlineSupport {
         }
         addToTreeView(rootPathItem,
                 Collections.singletonList(mo.getFileObject()), mo);
+    }
+
+    private synchronized List<FileObject> getRootFiles() {
+        if (rootFiles == null) {
+            rootFiles = basicComposition.getRootFiles();
+        }
+        return rootFiles;
     }
 
     private List<FileObject> getRelativePath(FileObject parent, FileObject fo) {
