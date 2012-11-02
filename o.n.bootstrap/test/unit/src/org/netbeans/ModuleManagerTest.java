@@ -2293,6 +2293,98 @@ public class ModuleManagerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
+    public void testModuleInterdependenciesOSGi() throws Exception {
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            final File f1 = changeManifest(new File(jars, "simple-module.jar"), 
+                "Bundle-SymbolicName: org.simple\n"
+                + "\n"
+                + "\n"
+                + "\n"
+            );
+            final File f2 = changeManifest(new File(jars, "depends-on-simple-module.jar"),
+                "Bundle-SymbolicName: org.depsonsimple\n"
+                + "Require-Bundle: org.simple\n"
+                + "\n"
+                + "\n"
+            );
+            final File f3 = changeManifest(new File(jars, "dep-on-dep-on-simple.jar"),
+                "Bundle-SymbolicName: org.deps.depsonsimple\n"
+                + "Require-Bundle: org.depsonsimple\n"
+                + "\n"
+                + "\n"
+            );
+            Module m1 = mgr.create(f1, null, false, false, false);
+            Module m2 = mgr.create(f2, null, false, false, false);
+            Module m3 = mgr.create(f3, null, false, false, false);
+            Set<Module> m1m2 = new HashSet<Module>(Arrays.asList(m1, m2));
+            Set<Module> m2m3 = new HashSet<Module>(Arrays.asList(m2, m3));
+            assertEquals(Collections.EMPTY_SET, mgr.getModuleInterdependencies(m1, false, false));
+            assertEquals(Collections.EMPTY_SET, mgr.getModuleInterdependencies(m1, false, true));
+            assertEquals(Collections.singleton(m2), mgr.getModuleInterdependencies(m1, true, false));
+            assertEquals(m2m3, mgr.getModuleInterdependencies(m1, true, true));
+            assertEquals(Collections.singleton(m1), mgr.getModuleInterdependencies(m2, false, false));
+            assertEquals(Collections.singleton(m1), mgr.getModuleInterdependencies(m2, false, true));
+            assertEquals(Collections.singleton(m3), mgr.getModuleInterdependencies(m2, true, false));
+            assertEquals(Collections.singleton(m3), mgr.getModuleInterdependencies(m2, true, true));
+            assertEquals(Collections.singleton(m2), mgr.getModuleInterdependencies(m3, false, false));
+            assertEquals(m1m2, mgr.getModuleInterdependencies(m3, false, true));
+            assertEquals(Collections.EMPTY_SET, mgr.getModuleInterdependencies(m3, true, false));
+            assertEquals(Collections.EMPTY_SET, mgr.getModuleInterdependencies(m3, true, true));
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+    
+    public void testModuleImportOSGi() throws Exception {
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            final File f1 = changeManifest(new File(jars, "simple-module.jar"), 
+                "Bundle-SymbolicName: org.simple\n"
+                + "Export-Package: org.simple.util\n"
+                + "\n"
+                + "\n"
+            );
+            final File f2 = changeManifest(new File(jars, "depends-on-simple-module.jar"),
+                "Bundle-SymbolicName: org.depsonsimple\n"
+                + "Export-Package: org.depsonsimple.test\n"
+                + "Import-Package: org.simple.util\n"
+                + "\n"
+                + "\n"
+            );
+            final File f3 = changeManifest(new File(jars, "dep-on-dep-on-simple.jar"),
+                "Bundle-SymbolicName: org.deps.depsonsimple\n"
+                + "Import-Package: org.depsonsimple.test\n"
+                + "\n"
+                + "\n"
+            );
+            Module m1 = mgr.create(f1, null, false, false, false);
+            Module m2 = mgr.create(f2, null, false, false, false);
+            Module m3 = mgr.create(f3, null, false, false, false);
+            Set<Module> m1m2 = new HashSet<Module>(Arrays.asList(m1, m2));
+            Set<Module> m2m3 = new HashSet<Module>(Arrays.asList(m2, m3));
+            assertEquals(Collections.EMPTY_SET, mgr.getModuleInterdependencies(m1, false, false));
+            assertEquals(Collections.EMPTY_SET, mgr.getModuleInterdependencies(m1, false, true));
+            assertEquals(Collections.singleton(m2), mgr.getModuleInterdependencies(m1, true, false));
+            assertEquals(m2m3, mgr.getModuleInterdependencies(m1, true, true));
+            assertEquals(Collections.singleton(m1), mgr.getModuleInterdependencies(m2, false, false));
+            assertEquals(Collections.singleton(m1), mgr.getModuleInterdependencies(m2, false, true));
+            assertEquals(Collections.singleton(m3), mgr.getModuleInterdependencies(m2, true, false));
+            assertEquals(Collections.singleton(m3), mgr.getModuleInterdependencies(m2, true, true));
+            assertEquals(Collections.singleton(m2), mgr.getModuleInterdependencies(m3, false, false));
+            assertEquals(m1m2, mgr.getModuleInterdependencies(m3, false, true));
+            assertEquals(Collections.EMPTY_SET, mgr.getModuleInterdependencies(m3, true, false));
+            assertEquals(Collections.EMPTY_SET, mgr.getModuleInterdependencies(m3, true, true));
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
 
     public void testModuleInterdependenciesNeeds() throws Exception { // #114896
         File dir = getWorkDir();
