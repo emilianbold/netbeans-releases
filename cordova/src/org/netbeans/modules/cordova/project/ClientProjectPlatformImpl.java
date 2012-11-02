@@ -99,8 +99,10 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
             Set<String> oldConfigs = configs != null ? configs.keySet() : Collections.<String>emptySet();
             configDir = p.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
             if (configDir != null) {
-                configDir.removeFileChangeListener(fclWeak);
-                configDir.addFileChangeListener(fclWeak);
+                if (fclWeakConfig!=null)
+                    configDir.removeFileChangeListener(fclWeakConfig);
+                fclWeakConfig = FileUtil.weakFileChangeListener(fcl, configDir);
+                configDir.addFileChangeListener(fclWeakConfig);
                 LOGGER.log(Level.FINEST, "(Re-)added listener to {0}", configDir);
             } else {
                 LOGGER.log(Level.FINEST, "No nbproject/configs exists");
@@ -113,18 +115,21 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
             }
         }
     };
-    private final FileChangeListener fclWeak;
+    
+    private FileChangeListener fclWeakNB;
+    private FileChangeListener fclWeakConfig;
 
     public ClientProjectPlatformImpl(Project p) {
         this.p = p;
-        fclWeak = FileUtil.weakFileChangeListener(fcl, null);
         FileObject nbp = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
         if (nbp != null) {
-            nbp.addFileChangeListener(fclWeak);
+            fclWeakNB = FileUtil.weakFileChangeListener(fcl, nbp);
+            nbp.addFileChangeListener(fcl);
             LOGGER.log(Level.FINEST, "Added listener to {0}", nbp);
             configDir = nbp.getFileObject("configs"); // NOI18N
             if (configDir != null) {
-                configDir.addFileChangeListener(fclWeak);
+                fclWeakConfig = FileUtil.weakFileChangeListener(fcl, configDir);
+                configDir.addFileChangeListener(fcl);
                 LOGGER.log(Level.FINEST, "Added listener to {0}", configDir);
             }
         }

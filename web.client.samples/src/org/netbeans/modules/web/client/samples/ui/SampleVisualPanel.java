@@ -199,10 +199,10 @@ class SampleVisualPanel extends JPanel {
         createdFolderTextField = new javax.swing.JTextField();
 
         projectNameLabel.setLabelFor(projectNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(SampleVisualPanel.class, "LBL_ProjectLocation")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(SampleVisualPanel.class, "LBL_ProjectName")); // NOI18N
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(SampleVisualPanel.class, "LBL_ProjectName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(SampleVisualPanel.class, "LBL_ProjectLocation")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SampleVisualPanel.class, "LBL_Browse")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -250,8 +250,8 @@ class SampleVisualPanel extends JPanel {
                     .addComponent(createdFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
-        projectNameLabel.getAccessibleContext().setAccessibleName("Project location");
-        projectLocationLabel.getAccessibleContext().setAccessibleName("Project name");
+        projectNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SampleVisualPanel.class, "SampleVisualPanel.projectNameLabel.AccessibleContext.accessibleName")); // NOI18N
+        projectLocationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SampleVisualPanel.class, "SampleVisualPanel.projectLocationLabel.AccessibleContext.accessibleName")); // NOI18N
         browseButton.getAccessibleContext().setAccessibleName("Browse button");
         createdFolderLabel.getAccessibleContext().setAccessibleName("Project folder");
 

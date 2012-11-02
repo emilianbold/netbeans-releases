@@ -110,7 +110,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         
         private static final String PLUGIN_NAME = "NetBeans Connector";// NOI18N
         
-        private static final String EXTENSION_PATH = "modules/lib/netbeans-ros-chrome-plugin.crx"; // NOI18N
+        private static final String EXTENSION_PATH = "modules/lib/netbeans-chrome-connector.crx"; // NOI18N
 
         /* (non-Javadoc)
          * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#isInstalled()

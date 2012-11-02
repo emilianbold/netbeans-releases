@@ -5,3 +5,6 @@
  unexpected:	private
  after:	public
  expected:	variable, function, static, abstract, final
+[[64,65]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}] 64-65:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}
