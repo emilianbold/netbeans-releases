@@ -256,7 +256,16 @@ public final class Context {
     }
 
     /**
-     * @return
+     * Returns true if the indexing job is canceled either by external event like
+     * IDE exit or by a new indexing job which obscures the current one.
+     * The indexer should check the {@link Context#isCancelled()} in its index method
+     * and return as soon as possible if it returns true. The indexer factory should
+     * also check the {@link Context#isCancelled()} if it overrides the
+     * {@link SourceIndexerFactory#scanFinished(org.netbeans.modules.parsing.spi.indexing.Context)}
+     * method, when it's true the scanFinished should roll back all changes. The changes done into
+     * {@link IndexingSupport} are rolled back automatically.
+     * 
+     * @return true if indexing job is canceled.
      * @since 1.13
      */
     public boolean isCancelled() {
