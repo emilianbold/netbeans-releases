@@ -5,17 +5,24 @@
  unexpected:	String '"Ivory"'
  after:	String '"FFFFE0"'
  expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', ], ), :
-[[299,307]-Syntax error
+[[235,237]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	=>] 235-237:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	=>
+[[246,247]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	','] 246-247:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	','
+[[267,269]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	=>] 267-269:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	=>
+[[283,284]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	)] 283-284:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	)
+[[299,307]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	function] 299-307:POSSIBLE Syntax Error (check preceding valid syntax error)
  unexpected:	function
- after:	abstract
- expected:	class] 299-307:Syntax error
- unexpected:	function
- after:	abstract
- expected:	class
-[[321,322]-Syntax error
+[[321,322]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	;] 321-322:POSSIBLE Syntax Error (check preceding valid syntax error)
  unexpected:	;
- after:	)
- expected:	{] 321-322:Syntax error
- unexpected:	;
- after:	)
- expected:	{
+[[355,356]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}] 355-356:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}

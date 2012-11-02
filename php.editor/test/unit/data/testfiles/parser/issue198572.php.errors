@@ -1,0 +1,124 @@
+[[118,121]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 118-121:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[122,123]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 122-123:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[160,163]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 160-163:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[164,165]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 164-165:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[19,22]-Syntax error
+ unexpected:	identifier 'Bug'
+ after:	identifier 'Label'
+ expected:	extends, implements, {] 19-22:Syntax error
+ unexpected:	identifier 'Bug'
+ after:	identifier 'Label'
+ expected:	extends, implements, {
+[[202,205]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 202-205:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[206,207]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 206-207:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[23,24]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 23-24:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[244,247]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 244-247:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[248,249]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 248-249:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[272,275]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 272-275:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[276,277]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 276-277:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[314,317]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 314-317:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[318,319]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 318-319:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[356,359]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 356-359:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[360,361]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 360-361:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[398,401]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 398-401:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[402,403]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 402-403:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[440,443]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 440-443:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[444,445]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 444-445:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[48,51]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 48-51:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[482,485]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 482-485:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[486,487]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 486-487:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[510,513]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 510-513:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[514,515]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 514-515:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[52,53]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 52-53:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[539,542]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 539-542:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[543,544]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 543-544:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[567,570]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 567-570:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[571,572]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 571-572:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[609,612]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 609-612:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[613,614]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 613-614:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[638,641]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 638-641:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[642,643]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 642-643:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[666,669]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 666-669:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[670,671]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 670-671:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[694,697]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 694-697:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[698,699]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 698-699:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[76,79]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'] 76-79:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'Bug'
+[[80,81]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 80-81:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
