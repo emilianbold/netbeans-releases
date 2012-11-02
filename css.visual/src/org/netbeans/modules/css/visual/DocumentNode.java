@@ -41,12 +41,19 @@
  */
 package org.netbeans.modules.css.visual;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -77,9 +84,12 @@ public class DocumentNode extends AbstractNode {
     /**
      * Factory for children of {@code DocumentNode}.
      */
-    static class DocumentChildFactory extends ChildFactory<FileObject> {
+    static class DocumentChildFactory extends ChildFactory<WeirdKey> {
+        
         private Filter filter;
         private DocumentViewModel model;
+        
+        private Collection<WeirdKey> keys;
         
         private DocumentChildFactory(DocumentViewModel model, Filter filter) {
             this.model = model;
@@ -87,16 +97,61 @@ public class DocumentNode extends AbstractNode {
         }
 
         @Override
-        protected boolean createKeys(List<FileObject> toPopulate) {
-            toPopulate.addAll(model.getFileToRulesMap().keySet());
+        protected boolean createKeys(final List<WeirdKey> toPopulate) {
+            if(keys == null) {
+                //need to initialize the model load
+                scheduleKeysUpdate();
+                toPopulate.add(new WeirdKey(null)); //this will cause the hour glass icon to be displayed
+                return true; 
+            } else {
+                //already loaded
+                toPopulate.addAll(keys);
+            }
             return true;
+        }
+        
+        
+        private void scheduleKeysUpdate() {
+            //postpone the initialization until scanning finishes as we need to wait for some data
+            //to be properly initialized. If CssIndex.create() is called to soon during
+            //the startup then it won't obtain proper source roots
+            try {
+              ParserManager.parseWhenScanFinished("text/css", new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        keys = new ArrayList<WeirdKey>();
+                        for(FileObject file : model.getFilesToRulesMap().keySet()) {
+                            keys.add(new WeirdKey(file));
+                        }
+                        //require children keys update
+                        refresh(false);
+                    }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         @Override
-        protected Node createNodeForKey(FileObject key) {
-            return new StyleSheetNode(model, key, filter);
+        protected Node createNodeForKey(WeirdKey key) {
+            if(key.file == null) {
+                return createWaitNode();
+            } else {
+                //model is now properly initialized
+                return new StyleSheetNode(model, key.file, filter);
+            }
+        }
+        
+        
+    }
+
+    private static class WeirdKey {
+        private FileObject file;
+
+        public WeirdKey(FileObject file) {
+            this.file = file;
         }
 
     }
-
+    
 }

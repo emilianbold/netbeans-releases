@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.visual;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +49,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -62,6 +64,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.WebUtils;
@@ -79,33 +82,42 @@ import org.openide.util.Exceptions;
  */
 public class DocumentViewModel implements ChangeListener {
 
-    private FileObject file;
+    private final FileObject file;
+    
     private Project project;
     private CssIndex index;
-    private boolean indexModified;
-    
+    private boolean needsRefresh;
     private ChangeSupport changeSupport;
-    
+
+    private boolean initialized;
     /**
      * Map of stylesheet -> list of rules
      */
     private Map<FileObject, List<RuleHandle>> relatedStylesheets;
 
+    //created in EDT, no IO here
     public DocumentViewModel(FileObject file) {
         this.file = file;
-        this.project = FileOwnerQuery.getOwner(file);
-        if (project != null) {
+        changeSupport = new ChangeSupport(this);
+        needsRefresh = true;
+    }
+    
+    private synchronized void initialize() {
+        if (!initialized) {
+            project = FileOwnerQuery.getOwner(file);
+            if (project == null) {
+                //no project, no related stylesheets
+                relatedStylesheets = Collections.emptyMap();
+                needsRefresh = false;
+                return;
+            }
             try {
-                this.index = CssIndex.get(project);
-                this.changeSupport = new ChangeSupport(this);
-                index.addChangeListener(this);
-                update();
+                index = CssIndex.get(project);
+                index.addChangeListener(DocumentViewModel.this);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-        } else {
-            //no project, no related stylesheets
-            relatedStylesheets = Collections.emptyMap();
+            initialized = true;
         }
     }
     
@@ -117,15 +129,10 @@ public class DocumentViewModel implements ChangeListener {
         changeSupport.removeChangeListener(l);
     }
     
-    //TODO call from a reasonable place so the instance of the model
-    //can be reasonable freed.
     void dispose() {
         if (index != null) {
             index.removeChangeListener(this);
         }
-        file = null;
-        project = null;
-        index = null;
     }
 
     /*
@@ -134,17 +141,25 @@ public class DocumentViewModel implements ChangeListener {
     @Override
     public void stateChanged(ChangeEvent ce) {
         //the project has been reindexed, update the map.
-        indexModified = true;
+        needsRefresh = true;
         changeSupport.fireChange();
     }
 
     /**
-     * Gets a map of stylesheet -> list of rules
+     * Gets a map of stylesheets -> list of rules
+     * 
+     * Do not call in EDT as is involves slow I/O operations!
      */
-    public synchronized Map<FileObject, List<RuleHandle>> getFileToRulesMap() {
-        if (indexModified) {
+    public synchronized Map<FileObject, List<RuleHandle>> getFilesToRulesMap() {
+        assert !EventQueue.isDispatchThread();
+
+        initialize();
+
+        if (needsRefresh) {
             update();
+            needsRefresh = false;
         }
+        
         return relatedStylesheets;
     }
 
@@ -152,7 +167,7 @@ public class DocumentViewModel implements ChangeListener {
         relatedStylesheets = new HashMap<FileObject, List<RuleHandle>>();
 
         DependenciesGraph dependencies = index.getDependencies(file);
-        Collection<FileObject> allRelatedFiles = dependencies.getAllRelatedFiles();
+        Collection<FileObject> allRelatedFiles = dependencies.getAllReferedFiles();
 
         for (final FileObject related : allRelatedFiles) {
             if (isStyleSheet(related)) {

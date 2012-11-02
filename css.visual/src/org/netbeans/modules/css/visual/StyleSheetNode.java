@@ -145,7 +145,7 @@ public class StyleSheetNode extends AbstractNode {
 
         @Override
         protected boolean createKeys(List<RuleHandle> toPopulate) {
-            for(RuleHandle handle : model.getFileToRulesMap().get(stylesheet)) {
+            for(RuleHandle handle : model.getFilesToRulesMap().get(stylesheet)) {
                 if(includeKey(handle)) {
                     toPopulate.add(handle);
                 }

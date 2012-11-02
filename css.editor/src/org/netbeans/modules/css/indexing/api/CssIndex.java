@@ -109,7 +109,7 @@ public class CssIndex {
             if(index == null) {
                 index = create(project);
                 INDEXES.put(project, index);
-            }
+            } 
             return index;
         }
     }

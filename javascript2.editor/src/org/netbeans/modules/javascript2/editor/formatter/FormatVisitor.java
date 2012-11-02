@@ -914,7 +914,7 @@ public class FormatVisitor extends NodeVisitor {
                     lastVarNode = next;
                 }
 
-                for (int j = index; j < i; j++) {
+                for (int j = index; j < i + 1; j++) {
                     Node skipped = statements.get(j);
                     skipped.accept(this);
                 }
