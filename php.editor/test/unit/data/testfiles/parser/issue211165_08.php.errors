@@ -1,0 +1,14 @@
+[[35,40]-Syntax error
+ unexpected:	variable '$this'
+ after:	{
+ expected:	function, const, use, var, }, VAR_COMMENT, static, abstract, final, private, protected, public] 35-40:Syntax error
+ unexpected:	variable '$this'
+ after:	{
+ expected:	function, const, use, var, }, VAR_COMMENT, static, abstract, final, private, protected, public
+[[72,80]-Syntax error
+ unexpected:	function
+ after:	abstract
+ expected:	class] 72-80:Syntax error
+ unexpected:	function
+ after:	abstract
+ expected:	class

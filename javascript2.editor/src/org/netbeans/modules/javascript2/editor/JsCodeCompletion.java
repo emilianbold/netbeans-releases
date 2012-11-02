@@ -747,7 +747,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             if (!isObject) {
                 addObjectPropertiesFromIndex(type.getType(), index, request, addedProperties);
             }
-        } else if (jsObject != null && jsObject.getDeclarationName() != null) {
+        } else if (jsObject.getDeclarationName() != null) {
             Collection<? extends TypeUsage> assignments = jsObject.getAssignmentForOffset(jsObject.getDeclarationName().getOffsetRange().getEnd());
             for (TypeUsage assignment : assignments) {
                 boolean isFun = processTypeInModel(request, model, assignment, lastResolvedObjects, prop, index, addedProperties);

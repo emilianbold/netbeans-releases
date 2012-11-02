@@ -1,0 +1,21 @@
+[[224,231]-Syntax error
+ unexpected:	String '"Ivory"'
+ after:	String '"FFFFE0"'
+ expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', ], ), :] 224-231:Syntax error
+ unexpected:	String '"Ivory"'
+ after:	String '"FFFFE0"'
+ expected:	instanceof, as, =>, }, ',', OR, XOR, &&, ?, ;, ||, &&, |, ^, &, ==, !=, ===, !==, <=, >=, <, >, <<, >>, +, -, *, /, %, '.', ], ), :
+[[299,307]-Syntax error
+ unexpected:	function
+ after:	abstract
+ expected:	class] 299-307:Syntax error
+ unexpected:	function
+ after:	abstract
+ expected:	class
+[[321,322]-Syntax error
+ unexpected:	;
+ after:	)
+ expected:	{] 321-322:Syntax error
+ unexpected:	;
+ after:	)
+ expected:	{

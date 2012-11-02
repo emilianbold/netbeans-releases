@@ -103,7 +103,7 @@ public class CndTextIndexImpl {
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-            Logger.getLogger(CndTextIndexImpl.class.getName()).log(Level.INFO, 
+            Logger.getLogger(CndTextIndexImpl.class.getName()).log(Level.FINE, 
                     "Cnd Text Index store took {0}ms", System.currentTimeMillis() - start); //NOI18N
         }
     }
