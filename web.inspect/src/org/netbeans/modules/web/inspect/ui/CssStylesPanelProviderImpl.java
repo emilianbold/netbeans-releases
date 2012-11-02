@@ -191,9 +191,13 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                             "CssStylesPanelProviderImpl.runFileButton", // NOI18N
                             lastRelatedFileObject.getNameExt());
                     runButton.setText(text);
+                    boolean enabled = false;
                     ActionProvider provider = actionProviderForFileObject(lastRelatedFileObject);
-                    Lookup context = Lookups.singleton(lastRelatedFileObject);
-                    runButton.setEnabled(provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context));
+                    if (provider != null) {
+                        Lookup context = Lookups.singleton(lastRelatedFileObject);
+                        enabled = provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context);
+                    }
+                    runButton.setEnabled(enabled);
                 }
             } else if (pageModel != currentPageModel) {
                 removeAll();
