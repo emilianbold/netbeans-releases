@@ -157,7 +157,6 @@ public final class SiteHelper {
             }
             if (rootFolder == null) {
                 rootFolder = top;
-                continue;
             }
             if (!rootFolder.equals(top)) {
                 return paths;
