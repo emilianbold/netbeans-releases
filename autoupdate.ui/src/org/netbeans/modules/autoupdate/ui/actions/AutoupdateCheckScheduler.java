@@ -245,6 +245,9 @@ public class AutoupdateCheckScheduler {
                     for(UpdateUnit uu :((Unit.CompoundUpdate) u).getUpdateUnits()) {
                         elements.add(uu.getAvailableUpdates().get(0));
                     }
+                    if (((Unit.CompoundUpdate) u).getRealUpdate() != null) {
+                        elements.add(((Unit.CompoundUpdate) u).getRealUpdate());
+                    }
                 } else if (u instanceof Unit.Update) {
                     elements.add(((Unit.Update) u).getRelevantElement ());
                 }
