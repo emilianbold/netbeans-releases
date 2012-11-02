@@ -167,7 +167,7 @@ public class DocumentViewModel implements ChangeListener {
         relatedStylesheets = new HashMap<FileObject, List<RuleHandle>>();
 
         DependenciesGraph dependencies = index.getDependencies(file);
-        Collection<FileObject> allRelatedFiles = dependencies.getAllRelatedFiles();
+        Collection<FileObject> allRelatedFiles = dependencies.getAllReferedFiles();
 
         for (final FileObject related : allRelatedFiles) {
             if (isStyleSheet(related)) {
