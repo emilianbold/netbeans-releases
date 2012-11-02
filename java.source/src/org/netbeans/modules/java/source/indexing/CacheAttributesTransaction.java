@@ -57,6 +57,7 @@ class CacheAttributesTransaction extends TransactionContext.Service {
     private final URL root;
     private final boolean srcRoot;
     private final boolean allFiles;
+    private boolean closed;
 
     private CacheAttributesTransaction(
         @NonNull final URL root,
@@ -77,6 +78,7 @@ class CacheAttributesTransaction extends TransactionContext.Service {
 
     @Override
     protected void commit() throws IOException {
+        closeTx();
         final ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(root, false);
         if (uq == null) {
             //Closing
@@ -96,5 +98,14 @@ class CacheAttributesTransaction extends TransactionContext.Service {
 
     @Override
     protected void rollBack() throws IOException {
+        closeTx();
+        //NOP - keep index state as NEW
+    }
+
+    private void closeTx() {
+        if (closed) {
+            throw new IllegalStateException("Already commited or rolled back transaction.");    //NOI18N
+        }
+        closed = true;
     }
 }

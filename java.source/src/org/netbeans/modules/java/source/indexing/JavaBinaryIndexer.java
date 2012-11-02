@@ -63,7 +63,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
-import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -286,7 +285,11 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             final TransactionContext txCtx = TransactionContext.get();
             assert txCtx != null;
             try {
-                txCtx.commit();
+                if (context.isCancelled()) {
+                    txCtx.rollBack();
+                } else {
+                    txCtx.commit();
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
