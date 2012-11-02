@@ -120,8 +120,10 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
         asynchError = false;
         wizardDescriptor = settings;
         SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE);
-        getComponent().updateDefaultLibraries(siteTemplate.supportedLibraries(false));
-        librariesValidator.updateJsFilesFromTemplate(siteTemplate.supportedLibraries(true));
+        // default libraries
+        Collection<String> supportedLibraries = siteTemplate.supportedLibraries();
+        getComponent().updateDefaultLibraries(supportedLibraries);
+        librariesValidator.updateJsFilesFromTemplate(supportedLibraries);
         // cleanup failed libraries
         getComponent().updateFailedLibraries(Collections.<SelectedLibrary>emptyList());
     }

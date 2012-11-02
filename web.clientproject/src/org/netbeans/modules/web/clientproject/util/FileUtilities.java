@@ -213,24 +213,6 @@ public final class FileUtilities {
         return Collections.emptyList();
     }
 
-    /**
-     * Get list of JS file names (just filenames, without any relative path) from the given ZIP file.
-     * <p>
-     * If any error occurs, this error is logged with INFO level and an empty list is returned.
-     * @param zipFile ZIP file to be listed
-     * @return list of JS file names (just filenames, without any relative path) from the given ZIP file
-     * @see #listZipFiles(File, ZipEntryFilter)
-     * @see #listJsFilesFromZipFile(File)
-     */
-    public static List<String> listJsFilenamesFromZipFile(File zipFile) {
-        List<String> files = new ArrayList<String>();
-        for (String entry : listJsFilesFromZipFile(zipFile)) {
-            String[] segments = entry.split("/"); // NOI18N
-            files.add(segments[segments.length - 1]);
-        }
-        return files;
-    }
-
     //~ Inner classes
 
     /**
