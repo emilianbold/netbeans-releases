@@ -129,8 +129,10 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     /** the node delegate for this data object */
     private transient Node nodeDelegate;
 
-    /** item with info about this data object */
-    DataObjectPool.Item item;
+    /** item with info about this data object 
+     * @GuardedBy(DataObjectPool.getPOOL())
+     */
+    private transient DataObjectPool.Item item;
 
     /** the loader for this data object */
     private DataLoader loader;
@@ -197,7 +199,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * the original data object, it is protected.
     */
     protected void dispose () {
-        DataObjectPool.Item i = item;
+        DataObjectPool.Item i = item();
         
         if (i != null) {
             DataObjectPool.getPOOL().countRegistration(i.primaryFile);
@@ -205,6 +207,20 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
             i.setDataObject(null);
             firePropertyChange (PROP_VALID, Boolean.TRUE, Boolean.FALSE);
         }
+    }
+
+    //
+    // Item accessors
+    //
+    final DataObjectPool.Item item() {
+        return item;
+    }
+    private void changeItem(DataObjectPool.Item item) {
+        this.item = item;
+    }
+    final void changeItemByFolder(DataObjectPool.Item item) {
+        assert this instanceof DataFolder;
+        this.changeItem(item);
     }
 
     /** Setter that allows to destroy this data object. Because such
@@ -239,7 +255,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * anyone can listen and be notified when the object is deleted/disposed.
     */
     public final boolean isValid () {
-        return item.isValid ();
+        return item().isValid ();
     }
 
 
@@ -502,7 +518,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @return the primary file
     */
     public final FileObject getPrimaryFile () {
-        return item.primaryFile;
+        return item().primaryFile;
     }
 
     /** Finds the data object for a specified file object.
@@ -646,9 +662,9 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         invokeAtomicAction (getPrimaryFile (), new FileSystem.AtomicAction () {
                 public void run () throws IOException {
                     handleDelete ();
-                    DataObjectPool.getPOOL().countRegistration(item.primaryFile);
-                    item.deregister(false);
-                    item.setDataObject(null);
+                    DataObjectPool.getPOOL().countRegistration(item().primaryFile);
+                    item().deregister(false);
+                    item().setDataObject(null);
                 }
             }, synchObject());
         firePropertyChange (PROP_VALID, Boolean.TRUE, Boolean.FALSE);
@@ -691,9 +707,10 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
 
                 oldPf = getPrimaryFile ();
                 newPf = handleRename (newName);
-                if (oldPf != newPf)
-                    item.changePrimaryFile (newPf);
-                 newName = getName ();
+                if (oldPf != newPf) {
+                    changeItem(item().changePrimaryFile(newPf));
+                }
+                newName = getName ();
             }
         }
         
@@ -742,7 +759,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
                 // executes atomic action for moving
                 old = getPrimaryFile ();
                 FileObject mf = handleMove (df);
-                item.changePrimaryFile (mf);
+                changeItem(item().changePrimaryFile (mf));
             }
         }
         Op op = new Op();
@@ -1079,7 +1096,6 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     public Object writeReplace () {
         return new Replace (this);
     }
-
 
     /** The default replace for the data object
     */
