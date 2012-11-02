@@ -712,10 +712,14 @@ public class RuleEditorNode extends AbstractNode {
     }
 
     @NbBundle.Messages({
-        "property.value.unexpected.token={0} - unexpected character(s) \"{1}\" found",
-        "property.value.not.resolved={0} - error in property value",
-        "property.unknown={0} - unknown property",
-        "property.description=Set in {0}",
+        "property.set.at.prefix=Set at ",
+        "property.value.unexpected.token={0}, unexpected character(s) \"{1}\" found",
+        "property.value.not.resolved={0}, error in property value",
+        "property.erroneous={0}, erroneous property",
+        "property.unknown={0}, unknown property",
+        "property.inactive={0}, not affecting the selected element",
+        "property.overridden={0}, overridden by another property",
+        "property.description={0}",
         "property.no.file=No File"
     })
     public class DeclarationProperty extends PropertySupport {
@@ -797,6 +801,7 @@ public class RuleEditorNode extends AbstractNode {
         private CharSequence getLocationPrefix() {
             if (locationPrefix == null) {
                 final StringBuilder sb = new StringBuilder();
+                sb.append(Bundle.property_set_at_prefix());
                 Model model = getModel();
                 Lookup lookup = model.getLookup();
                 FileObject file = lookup.lookup(FileObject.class);
@@ -829,7 +834,6 @@ public class RuleEditorNode extends AbstractNode {
                         }
                     }
                 }
-                sb.append(' ');
                 locationPrefix = sb.toString();
             }
 
@@ -890,8 +894,28 @@ public class RuleEditorNode extends AbstractNode {
         }
 
         public void setDeclarationInfo(DeclarationInfo info) {
+            if(this.info == info) {
+                return ; //no change
+            }
+            
             this.info = info;
             setDisplayName(getHtmlDisplayName());
+            
+            //tooltip update
+            String oldShortDescription = shortDescription;
+            switch(info) {
+                case ERRONEOUS:
+                    shortDescription = Bundle.property_erroneous(getLocationPrefix());
+                    break;
+                case INACTIVE:
+                    shortDescription = Bundle.property_inactive(getLocationPrefix());
+                    break;
+                case  OVERRIDDEN:
+                    shortDescription = Bundle.property_overridden(getLocationPrefix());
+                    break;
+            }
+            fireShortDescriptionChange(oldShortDescription, shortDescription);
+            
             //force the property repaint - stupid way but there's
             //doesn't seem to be any better way
             firePropertyChange(propertyName, null, getValue());
