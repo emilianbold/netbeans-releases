@@ -1006,6 +1006,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 StringBuilder sb = new StringBuilder();
                                 if (addSimpleName || enclName == null) {
                                     sb.append(elem.getSimpleName());
+                                } else if (!"text/x-java".equals(controller.getSnapshot().getMimePath())) { //NOI18N
+                                    TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
+                                    sb.append(AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
                                 } else {
                                     sb.append("${PAR#0"); //NOI18N
                                     if ((type == null || type.getKind() != TypeKind.ERROR) &&

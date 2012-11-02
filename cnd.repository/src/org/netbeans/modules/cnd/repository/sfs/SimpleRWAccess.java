@@ -65,12 +65,16 @@ public class SimpleRWAccess implements FileRWAccess {
 
     @Override
     public long size() throws IOException {
-	return randomAccessFile.length();
+        synchronized( lock ) {
+            return randomAccessFile.length();
+        }
     }
 
     @Override
     public void truncate(long size) throws IOException {
-	randomAccessFile.setLength(size);
+        synchronized( lock ) {
+            randomAccessFile.setLength(size);
+        }
     }
     
     @Override
@@ -86,21 +90,25 @@ public class SimpleRWAccess implements FileRWAccess {
     
     @Override
     public void move(FileRWAccess from, long offset, int size, long newOffset) throws IOException {
-	if( ! (from instanceof  SimpleRWAccess) ) {
-	    throw new IllegalArgumentException("Illegal class to move from: " + from.getClass().getName()); // NOI18N
-	}
-	SimpleRWAccess from2 = (SimpleRWAccess) from;
-	byte[] buffer = new byte[size];
-	from2.randomAccessFile.seek(offset);
-	from2.randomAccessFile.read(buffer);
-	randomAccessFile.seek(newOffset);
-	randomAccessFile.write(buffer);
+        synchronized( lock ) {
+            if( ! (from instanceof  SimpleRWAccess) ) {
+                throw new IllegalArgumentException("Illegal class to move from: " + from.getClass().getName()); // NOI18N
+            }
+            SimpleRWAccess from2 = (SimpleRWAccess) from;
+            byte[] buffer = new byte[size];
+            from2.randomAccessFile.seek(offset);
+            from2.randomAccessFile.read(buffer);
+            randomAccessFile.seek(newOffset);
+            randomAccessFile.write(buffer);
+        }
     }
     
     
     @Override
     public void close() throws IOException {
-	randomAccessFile.close();
+        synchronized( lock ) {
+            randomAccessFile.close();
+        }
     }
     
     @Override

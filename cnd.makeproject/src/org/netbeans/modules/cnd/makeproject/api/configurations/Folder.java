@@ -580,13 +580,12 @@ public class Folder implements FileChangeListener, ChangeListener {
     private Object addElement(Object element, boolean setModified) { // FIXUP: shopuld be private
         // Always keep the vector sorted
         if (element instanceof Item) {
-            return insertItemElement((Item) element);
+            element = insertItemElement((Item) element);
         } else if (element instanceof Folder) {
-            return insertFolderElement((Folder) element);
+            element = insertFolderElement((Folder) element);
         } else {
             assert false;
         }
-        // FIX: what is the meaning of this non reacheable line?
         fireChangeEvent(this, setModified);
         return element;
     }
