@@ -154,7 +154,7 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
                 while (children.hasMoreElements()) {
                     FileObject child = children.nextElement();
                     if (JS_MIME_TYPE.equals(FileUtil.getMIMEType(child, JS_MIME_TYPE))) {
-                        jsFiles.add(child.getNameExt());
+                        jsFiles.add(FileUtil.getRelativePath(siteRoot, child));
                     }
                 }
             }

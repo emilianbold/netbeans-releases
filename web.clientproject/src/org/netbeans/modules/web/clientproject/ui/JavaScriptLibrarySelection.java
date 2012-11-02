@@ -841,12 +841,31 @@ public class JavaScriptLibrarySelection extends JPanel {
             this.defaultRenderer = defaultRenderer;
         }
 
+        @NbBundle.Messages({
+            "# {0} - library filename",
+            "# {1} - library file path",
+            "JavaScriptLibrarySelection.SelectedLibraryRenderer.label.defaultLibrary={0} ({1})"
+        })
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             assert EventQueue.isDispatchThread();
             SelectedLibrary selectedLibrary = (SelectedLibrary) value;
-            String paths = StringUtilities.implode(selectedLibrary.getFilePaths(), ", "); // NOI18N
-            Component component = defaultRenderer.getListCellRendererComponent(list, paths, index, isSelected, cellHasFocus);
+            List<String> filePaths = selectedLibrary.getFilePaths();
+            assert !filePaths.isEmpty() : "No files for library: " + selectedLibrary;
+            String label;
+            if (selectedLibrary.isDefault()) {
+                assert filePaths.size() == 1 : "Exactly one file expected but found " + filePaths.size() + " for default library " + selectedLibrary;
+                String path = filePaths.get(0);
+                int slashIndex = path.lastIndexOf('/'); // NOI18N
+                if (slashIndex == -1) {
+                    label = path;
+                } else {
+                    label = Bundle.JavaScriptLibrarySelection_SelectedLibraryRenderer_label_defaultLibrary(path.substring(slashIndex + 1), path.substring(0, slashIndex));
+                }
+            } else {
+                label = StringUtilities.implode(filePaths, ", "); // NOI18N
+            }
+            Component component = defaultRenderer.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
             if (selectedLibrary.isDefault()) {
                 component.setEnabled(false);
             }
