@@ -137,10 +137,12 @@ public final class SiteHelper {
     }
 
     /**
-     * Strip possible root folder of the given path.
+     * Strip possible root folder of the given paths.
+     * <p>
+     * <b>Warning:</b> only "/" as path separator expected.
      * <p>
      * The typical usage is for file paths from a ZIP file.
-     * @param paths relative paths to be processed, never empty paths or {@code null}
+     * @param paths relative paths (with "/" as path separator) to be processed, never empty paths or {@code null}
      * @return list of paths without possible root folder
      */
     public static List<String> stripRootFolder(List<String> paths) {
