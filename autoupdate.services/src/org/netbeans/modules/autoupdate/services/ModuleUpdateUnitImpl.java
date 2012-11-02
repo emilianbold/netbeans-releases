@@ -45,6 +45,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
@@ -94,8 +95,9 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
                     return o1.getCodeNameBase().compareTo(o2.getCodeNameBase());
                 }
             });
+            Set<Module> seen = new HashSet<Module> ();
             for (ModuleInfo mi : installedImpl.getModuleInfos()) {
-                visible.addAll(findVisibleAncestor(Utilities.toModule(mi)));
+                visible.addAll(findVisibleAncestor(Utilities.toModule(mi), seen));
             }
             String cat = installedImpl.getCategory();
             if (BROAD_CATEGORY.contains(cat)) {
@@ -123,7 +125,10 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
         return visibleAncestor;
     }
     
-    private static Set<Module> findVisibleAncestor(Module module) {
+    private static Set<Module> findVisibleAncestor(Module module, Set<Module> seen) {
+        if (! seen.add(module)) {
+            return Collections.EMPTY_SET;
+        }
         Set<Module> visible = new HashSet<Module> ();
         ModuleManager manager = module.getManager();
         Set<Module> moduleInterdependencies = manager.getModuleInterdependencies(module, true, false, true);
@@ -137,7 +142,11 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
                 if (! m.isEnabled()) {
                     continue;
                 }
-                visible.addAll(findVisibleAncestor(m));
+                assert ! module.equals(m) : m + " cannot depend on itself.";
+                if (module.equals(m)) {
+                    continue;
+                }
+                visible.addAll(findVisibleAncestor(m, seen));
                 if (! visible.isEmpty()) {
                     break;
                 }
