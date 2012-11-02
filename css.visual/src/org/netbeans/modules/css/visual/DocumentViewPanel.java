@@ -64,7 +64,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -124,6 +127,13 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     private Filter filter = new Filter();
     private DocumentViewModel documentModel;
 
+    private final ChangeListener DOCUMENT_VIEW_MODEL_LISTENER = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent ce) {
+            updateContent();
+        }
+    };
+    
     /**
      * Creates new form DocumentViewPanel
      */
@@ -159,7 +169,6 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         initFilter();
 
         contextChanged();
-
     }
 
     private void selectRuleInRuleEditor(RuleHandle handle) {
@@ -216,25 +225,22 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      * Called when the CssStylesPanel is activated for different file.
      */
     private void contextChanged() {
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                final FileObject context = getContext();
+        final FileObject context = getContext();
 
-                //dispose old model
-                if (documentModel != null) {
-                    documentModel.dispose();
-                }
+        //dispose old model
+        if (documentModel != null) {
+            documentModel.removeChangeListener(DOCUMENT_VIEW_MODEL_LISTENER);
+            documentModel.dispose();
+        }
 
-                if (context == null) {
-                    documentModel = null;
-                } else {
-                    documentModel = new DocumentViewModel(context);
-                }
+        if (context == null) {
+            documentModel = null;
+        } else {
+            documentModel = new DocumentViewModel(context);
+            documentModel.addChangeListener(DOCUMENT_VIEW_MODEL_LISTENER);
+        }
 
-                updateContent();
-            }
-        });
+        updateContent();
 
     }
 
