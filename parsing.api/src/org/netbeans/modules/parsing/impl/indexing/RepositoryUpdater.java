@@ -2764,7 +2764,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     LOGGER.log(Level.WARNING, null, t);
                 }
             }
-            return getCancelRequest().isRaised();
+            return !getCancelRequest().isRaised();
         }
 
         protected final boolean indexEmbedding(
