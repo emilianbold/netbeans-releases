@@ -1,3 +1,9 @@
+[[113,114]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}] 113-114:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}
+[[180,181]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}] 180-181:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}
 [[64,71]-Syntax error
  unexpected:	private
  after:	{
