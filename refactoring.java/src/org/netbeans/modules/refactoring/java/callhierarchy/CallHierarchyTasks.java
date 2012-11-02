@@ -112,7 +112,7 @@ final class CallHierarchyTasks {
         }
     }
     
-    public static void resolveRoot(Lookup lookup, boolean isCallerGraph, Task<Call> rootCallback) {
+    public static void resolveRoot(final Lookup lookup, final boolean isCallerGraph, final Task<Call> rootCallback) {
         JavaSource js = null;
         RootResolver resolver = null;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -137,62 +137,40 @@ final class CallHierarchyTasks {
         postResolveRoot(js, new RootResolver(selection, isCallerGraph), rootCallback);
     }
     
-    static void  resolveRoot(JavaSource src, int position, boolean isCallerGraph, Task<Call> rootCallback) {
-        RootResolver rr = new RootResolver(position, isCallerGraph);
-        postResolveRoot(src, rr, rootCallback);
-    }
+//    static void  resolveRoot(JavaSource src, int position, boolean isCallerGraph, Task<Call> rootCallback) {
+//        RootResolver rr = new RootResolver(position, isCallerGraph);
+//        postResolveRoot(src, rr, rootCallback);
+//    }
     
-    private static void  postResolveRoot(JavaSource src, final RootResolver rr, final Task<Call> callback) {
+    private static void  postResolveRoot(final JavaSource src, final RootResolver rr, final Task<Call> callback) {
         stop();
-        synchronized (callback) {
-            Task<CompilationController> ct = new Task<CompilationController>() {
-
-                @Override
-                public void run(CompilationController parameter) throws Exception {
-                    synchronized (callback) {
-                        rr.run(parameter);
-                        callback.run(rr.getRoot());
-                    }
-                }
-                
-            };
-            final Future<Void> rootResolve = ScanUtils.postUserActionTask(src, ct);
-            // still synchronized
-            if (!rootResolve.isDone()) {
-                CancellableTask t = new CancellableTask() {
-                    @Override
-                    public void cancel() {
-                        rootResolve.cancel(true);
-                        
-                        Call c = Call.createEmpty();
-                        c.setCanceled(true);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (callback) {
+                    Task<CompilationController> ct = new Task<CompilationController>() {
+                        @Override
+                        public void run(CompilationController parameter) throws Exception {
+                            synchronized (callback) {
+                                rr.run(parameter);
+                                callback.run(rr.getRoot());
+                            }
+                        }
+                    };
+                    final Future<Void> rootResolve = ScanUtils.postUserActionTask(src, ct);
+                    // still synchronized
+                    if (!rootResolve.isDone()) {
                         try {
-                            callback.run(c);
-                            EventQueue.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    CallHierarchyTopComponent.findInstance().setRunningState(false);
-                                }
-                            });
+                            Call tempNode = Call.createEmpty();
+                            callback.run(tempNode);
+                            CallHierarchyTopComponent.findInstance().setRunningState(true);
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);
                         }
                     }
-
-                    @Override
-                    public void run(Object parameter) throws Exception {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                };
-                try {
-                    Call tempNode = Call.createEmpty();
-                    callback.run(tempNode);
-                    CallHierarchyTopComponent.findInstance().setRunningState(true);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
-        } 
+        });
     }
 
     private static void updateCleaner(final RequestProcessor.Task task) {
