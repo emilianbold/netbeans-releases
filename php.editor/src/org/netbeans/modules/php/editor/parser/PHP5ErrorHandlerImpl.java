@@ -53,7 +53,6 @@ import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.parser.GSFPHPParser.Context;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.InLineHtml;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.openide.util.NbBundle;
 
@@ -66,6 +65,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
     private final List<SyntaxError> syntaxErrors;
     private final Context context;
     private volatile boolean handleErrors = true;
+    private SyntaxError possibleNodeError;
 
     public PHP5ErrorHandlerImpl(Context context) {
         super();
@@ -99,13 +99,22 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
         for (SyntaxError syntaxError : syntaxErrors) {
             if (isErrorAfterCommonToken(syntaxError)) {
                 errors.add(defaultSyntaxErrorHandling(syntaxError));
+            } else if (possibleNodeError == null && isErrorAfterNodeToken(syntaxError)) {
+                possibleNodeError = syntaxError;
             }
+        }
+        if (errors.isEmpty()) {
+            errors.add(defaultSyntaxErrorHandling(possibleNodeError));
         }
         return errors;
     }
 
     private boolean isErrorAfterCommonToken(SyntaxError syntaxError) {
         return TokenWrapper.create(syntaxError.getPreviousToken()).isCommonToken();
+    }
+
+    private boolean isErrorAfterNodeToken(SyntaxError syntaxError) {
+        return TokenWrapper.create(syntaxError.getPreviousToken()).isNodeToken();
     }
 
     @NbBundle.Messages({
@@ -190,7 +199,11 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
         }
 
         public boolean isCommonToken() {
-            return (!(token.value instanceof List) && !(token.value instanceof ASTNode)) || (token.value instanceof InLineHtml);
+            return (!(token.value instanceof List) && !(token.value instanceof ASTNode));
+        }
+
+        public boolean isNodeToken() {
+            return (token.value instanceof ASTNode);
         }
 
         @NbBundle.Messages({
@@ -225,9 +238,11 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
             if (isValuableToken(token)) {
                 afterText = getTokenTextForm(token.sym) + " '" + String.valueOf(token.value) + "'";
             } else {
-                String previousText = getTokenTextForm(token.sym);
-                if (StringUtils.hasText(previousText)) {
-                    afterText = previousText.trim();
+                if (!isNodeToken()) {
+                    String previousText = getTokenTextForm(token.sym);
+                    if (StringUtils.hasText(previousText)) {
+                        afterText = previousText.trim();
+                    }
                 }
             }
             if (afterText == null) {
