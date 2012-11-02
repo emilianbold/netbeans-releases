@@ -217,7 +217,7 @@ public class C2CRepository implements PropertyChangeListener {
         }
         MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
         if (!oldUser.equals(user)) {
-            resetRepository();
+            resetRepository(user.isEmpty());
         }
     }
 
@@ -229,12 +229,16 @@ public class C2CRepository implements PropertyChangeListener {
     
     private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        resetRepository(); 
+        resetRepository(false); 
     }    
     
-    synchronized void resetRepository() {
+    synchronized void resetRepository (boolean logout) {
         synchronized (QUERIES_LOCK) {
-            remoteSavedQueries = null;
+            if (logout) {
+                remoteSavedQueries.clear();
+            } else {
+                remoteSavedQueries = null;
+            }
         }
         if(getTaskRepository() != null) {
             C2CExtender.repositoryRemoved(
@@ -267,7 +271,7 @@ public class C2CRepository implements PropertyChangeListener {
     }
 
     public void remove() {
-        resetRepository();
+        resetRepository(true);
     }
 
     public C2CIssue getIssue(final String id) {
