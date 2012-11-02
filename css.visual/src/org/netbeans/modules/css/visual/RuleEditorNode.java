@@ -715,7 +715,7 @@ public class RuleEditorNode extends AbstractNode {
         "property.value.unexpected.token={0} - unexpected character(s) \"{1}\" found",
         "property.value.not.resolved={0} - error in property value",
         "property.unknown={0} - unknown property",
-        "property.description={0} ({1} Module)",
+        "property.description=Set in {0}",
         "property.no.file=No File"
     })
     public class DeclarationProperty extends PropertySupport {
@@ -783,7 +783,7 @@ public class RuleEditorNode extends AbstractNode {
                     }
                 }
 
-                shortDescription = Bundle.property_description(getLocationPrefix(), model.getCssModule().getDisplayName());
+                shortDescription = Bundle.property_description(getLocationPrefix());
             } else {
                 //flag as unknown
                 info = DeclarationInfo.ERRONEOUS;
