@@ -116,9 +116,6 @@ public class CssStylesPanel extends javax.swing.JPanel {
         toolBar = new JToolBar();
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
-
-        //the top component
-        topPanel.add(toolBar, BorderLayout.PAGE_START);
         
         splitPane.setResizeWeight(0.5);
     }
@@ -131,29 +128,58 @@ public class CssStylesPanel extends javax.swing.JPanel {
         return tcLookup;
     }
     
+    private Collection<CssStylesPanelProvider> getActiveProviders(FileObject file) {
+        Collection<CssStylesPanelProvider> active = new ArrayList<CssStylesPanelProvider>();
+         for(CssStylesPanelProvider provider : providers) {
+            if(provider.providesContentFor(file)) {
+                active.add(provider);
+            }
+         }
+         return active;
+    }
+    
+    private void addToolbar() {
+        if (toolBar.getParent() == null) { 
+            //not added in the hierarchy, add it
+            topPanel.add(toolBar, BorderLayout.PAGE_START);
+        }
+    }
+    
+    private void removeToolbar() {
+        if(toolBar.getParent() != null) {
+            //preset in the hierarchy, remove it
+            topPanel.remove(toolBar);
+        }
+    }
+    
     private void updateToolbar(FileObject file) {
         toolBar.removeAll();
+        Collection<CssStylesPanelProvider> activeProviders = getActiveProviders(file);
+        if(activeProviders.size() <= 1) {
+            //remove the whole toolbar, if there's one or zero providers
+            removeToolbar();
+        } else {
+            addToolbar();
+        }
         
         // Button group for document and source buttons
         ButtonGroup buttonGroup = new ButtonGroup();
         
         boolean first = true;
-        for(CssStylesPanelProvider provider : providers) {
-            if(provider.providesContentFor(file)) {
-                JToggleButton button = new JToggleButton();
-                button.setText(provider.getPanelDisplayName());
-                button.setActionCommand(provider.getPanelID());
+        for (CssStylesPanelProvider provider : activeProviders) {
+            JToggleButton button = new JToggleButton();
+            button.setText(provider.getPanelDisplayName());
+            button.setActionCommand(provider.getPanelID());
 
-                button.setFocusPainted(false);
-                button.addActionListener(toolbarListener);
-                buttonGroup.add(button);
-                toolBar.add(button);
+            button.setFocusPainted(false);
+            button.addActionListener(toolbarListener);
+            buttonGroup.add(button);
+            toolBar.add(button);
 
-                button.setSelected(first);
-                if(first) {
-                    setActiveProvider(provider);
-                    first = false;
-                }
+            button.setSelected(first);
+            if (first) {
+                setActiveProvider(provider);
+                first = false;
             }
         }
     }
