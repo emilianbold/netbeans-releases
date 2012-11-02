@@ -65,6 +65,8 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -124,6 +126,13 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     private Filter filter = new Filter();
     private DocumentViewModel documentModel;
 
+    private final ChangeListener DOCUMENT_VIEW_MODEL_LISTENER = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent ce) {
+            updateContent();
+        }
+    };
+    
     /**
      * Creates new form DocumentViewPanel
      */
@@ -223,6 +232,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
 
                 //dispose old model
                 if (documentModel != null) {
+                    documentModel.removeChangeListener(DOCUMENT_VIEW_MODEL_LISTENER);
                     documentModel.dispose();
                 }
 
@@ -230,6 +240,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                     documentModel = null;
                 } else {
                     documentModel = new DocumentViewModel(context);
+                    documentModel.addChangeListener(DOCUMENT_VIEW_MODEL_LISTENER);
                 }
 
                 updateContent();
