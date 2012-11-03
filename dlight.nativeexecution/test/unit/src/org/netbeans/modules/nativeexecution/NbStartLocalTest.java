@@ -151,7 +151,7 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
         out.mkdirs();
         out.delete();
         try {
-            npb.setCommandLine("echo TEST > " + out.getAbsolutePath());
+            npb.setCommandLine("echo TEST > \"" + out.getAbsolutePath() + "\"");
             NativeProcess process = npb.call();
             int rc = process.waitFor();
 
@@ -231,7 +231,7 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
         CommonTasksSupport.sendSignal(env, process.getPID(), Signal.SIGCONT, null);
 
         try {
-            int threshold = process instanceof NbNativeProcess ? 100 : 1500;
+            int threshold = process instanceof NbNativeProcess ? 500 : 1500;
             waitTask.waitFinished(threshold);
         } catch (InterruptedException ex) {
             fail("Process must continue after senging the SIGCONT");

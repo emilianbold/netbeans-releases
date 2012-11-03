@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,49 +34,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.sendopts;
+
+
+package org.netbeans.modules.maven.cos;
 
 import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import org.netbeans.api.sendopts.CommandException;
-import org.netbeans.api.sendopts.CommandLine;
-import org.openide.util.NbBundle;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.spi.cos.CompileOnSaveSkipper;
 
 /**
- * Bridge between the CLIHandler that can be unit tested
- * @author Jaroslav Tulach
+ *
+ * @author mkleint
  */
-final class HandlerImpl extends Object {
-    static int execute(String[] arr, InputStream is, OutputStream os, OutputStream err, File pwd) {
-        try {
-            CommandLine.getDefault().process(
-                arr, is, os, err, pwd
-                );
-            for (int i = 0; i < arr.length; i++) {
-                arr[i] = null;
+@org.openide.util.lookup.ServiceProvider(service=CompileOnSaveSkipper.class)
+public class MainClassesCoSSkipper implements CompileOnSaveSkipper {
+
+    @Override
+    public boolean skip(RunConfig config, boolean includingTests, long timeStamp) {
+        if (includingTests) {
+            if (!RunUtils.hasApplicationCompileOnSaveEnabled(config) && RunUtils.hasTestCompileOnSaveEnabled(config)) {
+                //in case when only tests are enabled for CoS, the main source root is not compiled on the fly.
+                // we need to checkif something was changed there and if so, recompile manually.
+                
+                //TODO is there a way to figure if there is a modified java file in a simpler way?
+                File dirFile = FileUtilities.convertStringToFile(config.getMavenProject().getBuild().getSourceDirectory());
+                DirectoryScanner ds = new DirectoryScanner();
+                ds.setBasedir(dirFile);
+                //includes/excludes
+                ds.setIncludes(new String[]{"**/*.java"});
+                ds.addDefaultExcludes();
+                ds.scan();
+                String[] inclds = ds.getIncludedFiles();
+                for (String inc : inclds) {
+                    File f = new File(dirFile, inc);
+                    if (f.lastModified() >= timeStamp) {
+                        return true;
+                    }
+                }
             }
-            return 0;
-        } catch (CommandException ex) {
-            PrintStream ps = new PrintStream(err);
-            ps.println(ex.getLocalizedMessage());
-            // XXX pst is not useful, only in verbose mode
-            // the question is how to turn that mode on
-            // ex.printStackTrace(ps);
-            int ret = ex.getExitCode();
-            if (ret == 0) {
-                ret = Integer.MIN_VALUE;
-            }
-            return ret;
         }
+        return false;
     }
-    
-    static void usage(PrintWriter w) {
-        w.print(NbBundle.getMessage(HandlerImpl.class, "MSG_OptionsHeader")); // NOI18N
-        CommandLine.getDefault().usage(w);
-        w.println();
-    }
+
 }

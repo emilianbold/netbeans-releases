@@ -1455,8 +1455,10 @@ public class WizardDescriptor extends DialogDescriptor {
                         SwingUtilities.invokeLater (new Runnable () {
                             @Override
                             public void run () {
-                                err.log (Level.FINE, "Runs onValidPerformer from invokeLater."); // NOI18N
-                                onValidPerformer.run();
+                                if( initialized.get() ) {  //#220286
+                                    err.log (Level.FINE, "Runs onValidPerformer from invokeLater."); // NOI18N
+                                    onValidPerformer.run();
+                                }
                             }
                         });
                     }

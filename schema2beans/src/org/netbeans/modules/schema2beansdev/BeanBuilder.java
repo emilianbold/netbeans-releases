@@ -1042,9 +1042,12 @@ public class BeanBuilder {
             }
             if (config.getDumpBeanTree() != null) {
                 Writer out = new FileWriter(config.getDumpBeanTree());
-                CodeGeneratorClass bc = (CodeGeneratorClass) generators.get(rootElement);
-                bc.dumpBeanTree(out, "", config.getIndent());
-                close(out);
+                try {
+                    CodeGeneratorClass bc = (CodeGeneratorClass) generators.get(rootElement);
+                    bc.dumpBeanTree(out, "", config.getIndent());
+                } finally {
+                    close(out);
+                }
             }
             if (config.isGenerateTagsFile()) {
                 String tagsClassName = "Tags";

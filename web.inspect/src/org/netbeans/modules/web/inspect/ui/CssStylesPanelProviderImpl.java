@@ -252,7 +252,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
      * 
      * @return {@code ActionProvider} for the specified {@code FileObject}.
      */
-    private ActionProvider actionProviderForFileObject(FileObject fileObject) {
+    private static ActionProvider actionProviderForFileObject(FileObject fileObject) {
         ActionProvider provider = null;
         Project project = FileOwnerQuery.getOwner(fileObject);
         if (project != null) {
@@ -318,12 +318,13 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             if(!MIME_TYPES.contains(file.getMIMEType())) {
                 return false;
             }
-            
-            //if(the file can't be run as there's either no project or a bad one) {
-            //   return false;
-            //}
-            
-            return true;
+
+            ActionProvider provider = actionProviderForFileObject(file);
+            if (provider == null) {
+                return false;
+            }
+            Lookup context = Lookups.singleton(file);
+            return provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context);
         }
 
     }
