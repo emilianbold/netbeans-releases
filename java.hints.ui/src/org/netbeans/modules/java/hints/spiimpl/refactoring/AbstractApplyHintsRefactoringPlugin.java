@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ModificationResult;
@@ -95,6 +96,11 @@ import org.openide.util.Lookup;
 public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin, ProgressHandleAbstraction {
 
     private final AbstractRefactoring refactoring;
+    private Comparator<FileObject> FILE_COMPARATOR = new Comparator<FileObject>() {
+        @Override public int compare(FileObject o1, FileObject o2) {
+            return o1.getPath().compareTo(o2.getPath());
+        }
+    };
     protected final AtomicBoolean cancel = new AtomicBoolean();
 
     protected AbstractApplyHintsRefactoringPlugin(AbstractRefactoring refactoring) {
@@ -129,7 +135,7 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
         Set<ModificationResult> enabled = Collections.newSetFromMap(new IdentityHashMap<ModificationResult, Boolean>());
         Map<FileObject, Map<JavaFix, ModificationResult>> file2Fixes2Changes = new HashMap<FileObject, Map<JavaFix, ModificationResult>>();
         Map<FileObject, Set<FileObject>> affectedFiles = new HashMap<FileObject, Set<FileObject>>();
-        Map<FileObject, List<RefactoringElementImplementation>> file2Changes = new HashMap<FileObject, List<RefactoringElementImplementation>>();
+        Map<FileObject, List<RefactoringElementImplementation>> file2Changes = new TreeMap<FileObject, List<RefactoringElementImplementation>>(FILE_COMPARATOR);
         
         for (Entry<JavaFix, ModificationResult> changesPerFixEntry : changesPerFix.entrySet()) {
             enabled.add(changesPerFixEntry.getValue());
@@ -183,6 +189,7 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
     }
 
     protected final void prepareElements(BatchResult candidates, ProgressHandleWrapper w, final RefactoringElementsBag refactoringElements, final boolean verify, List<MessageImpl> problems) {
+        final Map<FileObject, Collection<RefactoringElementImplementation>> file2Changes = new TreeMap<FileObject, Collection<RefactoringElementImplementation>>(FILE_COMPARATOR);
         if (verify) {
             BatchSearch.getVerifiedSpans(candidates, w, new BatchSearch.VerifiedSpansCallBack() {
                 public void groupStarted() {}
@@ -192,13 +199,13 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
                     for (ErrorDescription ed : hints) {
                         spans.add(ed.getRange());
                     }
-
-                    refactoringElements.addAll(refactoring, Utilities.createRefactoringElementImplementation(r.getResolvedFile(), spans, verify));
+                    
+                    file2Changes.put(r.getResolvedFile(), Utilities.createRefactoringElementImplementation(r.getResolvedFile(), spans, verify));
                     return true;
                 }
                 public void groupFinished() {}
                 public void cannotVerifySpan(Resource r) {
-                    refactoringElements.addAll(refactoring, Utilities.createRefactoringElementImplementation(r.getResolvedFile(), prepareSpansFor(r), verify));
+                    file2Changes.put(r.getResolvedFile(), Utilities.createRefactoringElementImplementation(r.getResolvedFile(), prepareSpansFor(r), verify));
                 }
             }, problems, cancel);
         } else {
@@ -215,10 +222,14 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
                 inner.startNextPart(it.size());
 
                 for (Resource r : it) {
-                    refactoringElements.addAll(refactoring, Utilities.createRefactoringElementImplementation(r.getResolvedFile(), prepareSpansFor(r), verify));
+                    file2Changes.put(r.getResolvedFile(), Utilities.createRefactoringElementImplementation(r.getResolvedFile(), prepareSpansFor(r), verify));
                     inner.tick();
                 }
             }
+        }
+        
+        for (Collection<RefactoringElementImplementation> res : file2Changes.values()) {
+            refactoringElements.addAll(refactoring, res);
         }
     }
 
