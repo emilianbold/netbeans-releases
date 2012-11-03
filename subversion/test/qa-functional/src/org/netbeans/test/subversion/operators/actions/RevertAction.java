@@ -39,29 +39,23 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.test.subversion.operators.actions;
-
-import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
  * @author peter
  */
-public class RevertAction extends ActionNoBlock {
-    
-    /** "Team" menu item. */
-    public static final String TEAM_ITEM = "Team";
+public class RevertAction extends SvnAction {
 
-    /** "Subversion" menu item. */
-    public static final String SVN_ITEM = "Subversion";
-
-    /** "Revert" menu item. */
+    /**
+     * "Revert" menu item.
+     */
     public static final String REVERT_ITEM = "Revert Modifications...";
-    
-    /** Creates a new instance of RevertAction */
+
+    /**
+     * Creates a new instance of RevertAction
+     */
     public RevertAction() {
         super(TEAM_ITEM + "|" + REVERT_ITEM, SVN_ITEM + "|" + REVERT_ITEM);
     }
-    
 }

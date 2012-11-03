@@ -43,21 +43,45 @@
  */
 package org.netbeans.test.subversion.operators.actions;
 
+import java.awt.event.KeyEvent;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
+
 /**
+ * Common ancestor for subversion actions.
  *
- * @author peter
+ * @author Jiri Skrivanek
  */
-public class CheckoutAction extends SvnAction {
+public class SvnAction extends ActionNoBlock {
 
     /**
-     * "Checkout..." menu item.
+     * "Team" menu item.
      */
-    public static final String CHECKOUT_ITEM = "Checkout...";
+    public static final String TEAM_ITEM = "Team";
+    /**
+     * "Subversion" menu item.
+     */
+    public static final String SVN_ITEM = "Subversion";
 
     /**
-     * Creates a new instance of CheckoutAction
+     *
      */
-    public CheckoutAction() {
-        super(TEAM_ITEM + "|" + SVN_ITEM + "|" + CHECKOUT_ITEM, null);
+    protected SvnAction(String menuPath, String popupPath) {
+        super(menuPath, popupPath);
+    }
+
+    @Override
+    public void performMenu() {
+        // #221165 - prevent Initializing... menu item shown forever
+        JMenuItemOperator[] items;
+        do {
+            items = MainWindowOperator.getDefault().menuBar().showMenuItems(TEAM_ITEM + "|" + SVN_ITEM);
+            // push Escape key to ensure there is no open menu
+            MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
+            new EventTool().waitNoEvent(100);
+        } while (items != null && items.length > 0 && items[0].getText().equals("Initializing..."));
+        super.performMenu();
     }
 }
