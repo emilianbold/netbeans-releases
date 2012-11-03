@@ -446,6 +446,10 @@ public abstract class Unit {
             return internalUpdates;
         }
         
+        public UpdateElement getRealUpdate() {
+            return hasInternalsOnly() ? null : updateUnit.getAvailableUpdates().get(0);
+        }
+        
         @Override
         public UpdateElement getRelevantElement() {
             return hasInternalsOnly() ? updateUnit.getInstalled() : updateUnit.getAvailableUpdates().get(0);
