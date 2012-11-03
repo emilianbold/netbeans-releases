@@ -47,6 +47,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -59,16 +61,25 @@ import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.spi.CssStylesListener;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
+import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -79,19 +90,35 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Stola
  */
 public abstract class CssStylesPanelProviderImpl extends JPanel implements CssStylesPanelProvider {
-    /** Label shown when no styles information is available. */
+
+    /**
+     * Label shown when no styles information is available.
+     */
     private JLabel noStylesLabel;
-    /** The latest "related" file, i.e. file provided through the context lookup. */
+    /**
+     * The latest "related" file, i.e. file provided through the context lookup.
+     */
     private FileObject lastRelatedFileObject;
-    /** Page model whose styles view we are showing currently. */
+    /**
+     * Page model whose styles view we are showing currently.
+     */
     private PageModel currentPageModel;
-    /** Panel shown when no page model is available but when we have some "related" file. */
+    /**
+     * Panel shown when no page model is available but when we have some
+     * "related" file.
+     */
     private JPanel runFilePanel;
-    /** Run button in {@code runFilePanel}. */
+    /**
+     * Run button in {@code runFilePanel}.
+     */
     private JButton runButton;
-    /** Wrapper for the lookup of the current view. */
+    /**
+     * Wrapper for the lookup of the current view.
+     */
     private MatchedRulesLookup lookup;
     
+    private static final RequestProcessor RP = new RequestProcessor(CssStylesPanelProviderImpl.class);
+
     /**
      * Creates a new {@code MatchedRulesTC}.
      */
@@ -104,7 +131,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
         update();
     }
-    
+
     Lookup getMatchedRulesLookup() {
         return lookup;
     }
@@ -146,20 +173,20 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         GroupLayout layout = new GroupLayout(runFilePanel);
         runFilePanel.setLayout(layout);
         layout.setVerticalGroup(layout.createSequentialGroup()
-            .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(label)
-            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-            .addComponent(runButton)
-            .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(label)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(runButton)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
         layout.setHorizontalGroup(layout.createSequentialGroup()
-            .addContainerGap()
-            .addGroup(layout.createParallelGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup()
                 .addComponent(label)
                 .addGroup(layout.createSequentialGroup()
-                    .addGap(0,0,Short.MAX_VALUE)
-                    .addComponent(runButton)
-                    .addGap(0,0,Short.MAX_VALUE)))
-            .addContainerGap());
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(runButton)
+                .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap());
     }
 
     private void update() {
@@ -217,19 +244,19 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             });
         }
     }
-    
+
     void activateView() {
-        if(currentPageModel != null) {
+        if (currentPageModel != null) {
             currentPageModel.getCSSStylesView().activated();
         }
     }
-    
+
     void deactivateView() {
-        if(currentPageModel != null) {
+        if (currentPageModel != null) {
             currentPageModel.getCSSStylesView().deactivated();
         }
     }
-    
+
     /**
      * Creates a page inspector listener.
      *
@@ -249,7 +276,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
 
     /**
      * Returns an action provider for the specified {@code FileObject}.
-     * 
+     *
      * @return {@code ActionProvider} for the specified {@code FileObject}.
      */
     private static ActionProvider actionProviderForFileObject(FileObject fileObject) {
@@ -265,7 +292,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     @NbBundle.Messages({
         "CTL_CssStylesProviderImpl.selection.view.title=Selection"
     })
-    @ServiceProvider(service = CssStylesPanelProvider.class, position=1000)
+    @ServiceProvider(service = CssStylesPanelProvider.class, position = 1000)
     public static class SelectionView extends CssStylesPanelProviderImpl {
 
         private static String SELECTION_PANEL_ID = "selection"; //NOI18N
@@ -315,7 +342,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
 
         @Override
         public boolean providesContentFor(FileObject file) {
-            if(!MIME_TYPES.contains(file.getMIMEType())) {
+            if (!MIME_TYPES.contains(file.getMIMEType())) {
                 return false;
             }
 
@@ -326,9 +353,51 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             Lookup context = Lookups.singleton(file);
             return provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context);
         }
-
     }
-    
+
+    @ServiceProvider(service = CssStylesListener.class)
+    public static class WebCssStylesPanelListener implements CssStylesListener {
+
+        @Override
+        public void ruleSelected(final Rule rule) {
+            //rule selected in document view...
+            final PageModel pageModel = PageInspectorImpl.getDefault().getPage();
+            if (pageModel != null && (pageModel instanceof WebKitPageModel)) {
+                WebKitPageModel wkPageModel = (WebKitPageModel) pageModel;
+                FileObject file = findFileObject(wkPageModel);
+                if (file != null) {
+                    final Model model = rule.getModel();
+                    model.runReadTask(new Model.ModelTask() {
+                        @Override
+                        public void run(StyleSheet styleSheet) {
+                            final String elementSource = model.getElementSource(rule.getSelectorsGroup()).toString();
+                            RP.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    pageModel.setSelectedSelector(elementSource);
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        }
+
+        private FileObject findFileObject(WebKitPageModel pageModel) {
+            try {
+                Project project = pageModel.getProject();
+                if (project != null) {
+                    String documentURL = pageModel.getDocumentURL();
+                    URL url = new URL(documentURL);
+                    return ServerURLMapping.fromServer(project, url);
+                }
+            } catch (MalformedURLException ex) {
+                //no-op
+            }
+            return null;
+        }
+    }
+
     /**
      * Wrapper for the lookup of the current view.
      */
@@ -347,6 +416,4 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             }
         }
     }
-
-    
 }

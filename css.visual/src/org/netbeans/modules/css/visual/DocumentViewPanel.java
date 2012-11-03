@@ -158,6 +158,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                     RuleHandle ruleHandle = selected.getLookup().lookup(RuleHandle.class);
                     if (ruleHandle != null) {
                         selectRuleInRuleEditor(ruleHandle);
+                        CssStylesListenerSupport.fireRuleSelected(ruleHandle.getRule());
                     }
                 }
             }
