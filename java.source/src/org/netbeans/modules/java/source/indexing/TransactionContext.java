@@ -53,7 +53,6 @@ import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
 import org.netbeans.modules.java.source.usages.PersistentIndexTransaction;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.SourceIndexerFactory;
 

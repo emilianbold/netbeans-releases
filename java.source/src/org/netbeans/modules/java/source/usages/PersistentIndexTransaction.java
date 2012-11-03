@@ -54,7 +54,7 @@ import org.netbeans.modules.java.source.indexing.TransactionContext;
 //@NotThreadSafe
 public final class PersistentIndexTransaction extends TransactionContext.Service {
     private ClassIndexImpl.Writer indexWriter;
-    
+    private boolean closedTx;
     
     public static PersistentIndexTransaction create() {
         return new PersistentIndexTransaction();
@@ -62,6 +62,7 @@ public final class PersistentIndexTransaction extends TransactionContext.Service
 
     @Override
     protected void commit() throws IOException {
+        closeTx();
         if (indexWriter != null) {
             try {
                 indexWriter.commit();
@@ -77,6 +78,7 @@ public final class PersistentIndexTransaction extends TransactionContext.Service
 
     @Override
     protected void rollBack() throws IOException {
+        closeTx();
         if (indexWriter != null) {
             try {
                 indexWriter.rollback();
@@ -99,5 +101,12 @@ public final class PersistentIndexTransaction extends TransactionContext.Service
     @CheckForNull
     public ClassIndexImpl.Writer getIndexWriter() {
         return this.indexWriter;
+    }
+
+    private void closeTx() {
+        if (closedTx) {
+            throw new IllegalStateException("Already commited or rolled back transaction.");    //NOI18N
+        }
+        closedTx = true;
     }
 }

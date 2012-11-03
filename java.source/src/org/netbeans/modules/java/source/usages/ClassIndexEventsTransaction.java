@@ -71,7 +71,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     private final Collection<File> removedFiles;
     private URL addedRoot;
     private URL changesInRoot;
-    private boolean commited;
+    private boolean closed;
 
     private ClassIndexEventsTransaction(final boolean src) {
         source = src;
@@ -203,36 +203,57 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
 
     @Override
     protected void commit() throws IOException {
-        if (commited) {
-            throw new IllegalStateException("Already commited transaction");    //NOI18N
-        }
-        commited = true;
+        closeTx();
         try {
-            if (!addedFiles.isEmpty() || !removedFiles.isEmpty()) {
-                assert changesInRoot != null;
-                BuildArtifactMapperImpl.classCacheUpdated(
-                    changesInRoot,
-                    JavaIndex.getClassFolder(changesInRoot),
-                    removedFiles,
-                    addedFiles,
-                    false);
+            try {
+                if (!addedFiles.isEmpty() || !removedFiles.isEmpty()) {
+                    assert changesInRoot != null;
+                    BuildArtifactMapperImpl.classCacheUpdated(
+                        changesInRoot,
+                        JavaIndex.getClassFolder(changesInRoot),
+                        removedFiles,
+                        addedFiles,
+                        false);
+                }
+            } finally {
+                final ClassIndexManager ciManager = ClassIndexManager.getDefault();
+                ciManager.fire(
+                    addedRoot == null ? Collections.<URL>emptySet() : Collections.<URL>singleton(addedRoot),
+                    removedRoots);
+                final ClassIndexImpl ci = changesInRoot == null ?
+                    null:
+                    ciManager.getUsagesQuery(changesInRoot, false);
+                if (ci != null) {
+                    ci.typesEvent(addedTypes, removedTypes, changedTypes);
+                }
             }
         } finally {
-            final ClassIndexManager ciManager = ClassIndexManager.getDefault();
-            ciManager.fire(
-                addedRoot == null ? Collections.<URL>emptySet() : Collections.<URL>singleton(addedRoot),
-                removedRoots);
-            final ClassIndexImpl ci = changesInRoot == null ?
-                null:
-                ciManager.getUsagesQuery(changesInRoot, false);
-            if (ci != null) {
-                ci.typesEvent(addedTypes, removedTypes, changedTypes);
-            }
+            clear();
         }
     }
 
     @Override
     protected void rollBack() throws IOException {
+        closeTx();
+        clear();
+    }
+
+    private void clear() {
+        addedRoot = null;
+        changesInRoot = null;
+        removedRoots.clear();
+        addedTypes .clear();
+        removedTypes.clear();
+        changedTypes.clear();
+        addedFiles.clear();
+        removedFiles.clear();
+    }
+
+    private void closeTx() {
+        if (closed) {
+            throw new IllegalStateException("Already commited or rolled back transaction.");    //NOI18N
+        }
+        closed = true;
     }
 
     /**

@@ -155,15 +155,11 @@ class IndexBinaryWorkPool {
                 submitted++;
             }
             final Collection<URL> result = new ArrayDeque<URL>();
-            boolean success = true;
             //Don't break the cycle when is canceled,
             //rather wait for all submitted task, they should die fast.
             //The break will cause logging of wrong number of scanned roots.
             for (int i=0; i< submitted; i++) {
-                try {
-                    if (cancel.call()) {
-                        success = false;
-                    }
+                try {                    
                     final Future<URL> becomeURL = cs.take();
                     final URL url = becomeURL.get();
                     if (url != null) {
@@ -172,6 +168,13 @@ class IndexBinaryWorkPool {
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
+            }
+            boolean success;
+            try {
+                success = !cancel.call();
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+                success = false;
             }
             LOG.log(Level.FINER, "Canceled: {0}", !success);  //NOI18N
             return Pair.<Boolean,Collection<? extends URL>>of(success,result);

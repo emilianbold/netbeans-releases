@@ -302,6 +302,13 @@ public final class Indexable {
                 @NonNull final String propName) {
             return context.getProperty(propName);
         }
+
+        @Override
+        public void setFinished(
+                @NonNull final Context context,
+                @NullAllowed final Boolean success) {
+            context.setFinished(success);
+        }
     }
 
 }

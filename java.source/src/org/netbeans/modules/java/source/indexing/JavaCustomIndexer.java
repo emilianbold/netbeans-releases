@@ -956,7 +956,11 @@ public class JavaCustomIndexer extends CustomIndexer {
             final TransactionContext txCtx = TransactionContext.get();
             assert txCtx != null;
             try {
-                txCtx.commit();
+                if (context.isCancelled()) {
+                    txCtx.rollBack();
+                } else {
+                    txCtx.commit();
+                }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
