@@ -39,12 +39,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.test.subversion;
 
-
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.test.subversion.main.archeology.AnnotationsTest;
 import org.netbeans.test.subversion.main.archeology.SearchHistoryUITest;
@@ -63,11 +60,8 @@ import org.netbeans.test.subversion.main.diff.ExportDiffPatchTest;
 import org.netbeans.test.subversion.main.properties.SvnPropertiesTest;
 import org.netbeans.test.subversion.main.relocate.RelocateTest;
 
-import org.netbeans.test.subversion.utils.svnExistsChecker;
-
 /**
  *
- * @author uadmin
  */
 public class SubversionStableTest extends JellyTestCase {
 
@@ -76,53 +70,31 @@ public class SubversionStableTest extends JellyTestCase {
     }
 
     public static Test suite() {
-        if (svnExistsChecker.check(false)) {
-            
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                    .addTest(CheckoutContentTest.class,"testCheckoutProject", "testCheckoutContent")
-                    .addTest(CheckoutUITest.class,"testChangeAccessTypes")
-                    .addTest(CreateProjectVersionedDirTest.class,"testCreateNewProject")
-                    .addTest(ImportUITest.class, "testCommitStep")
-                    .addTest(ProxySettingsUITest.class,"testProxySettings","testProxyBeforeUrl")
-                    
-                    
-                   
-                    
-                    .addTest(CommitDataTest.class, "testCommitFile","testCommitPackage","testRecognizeMimeType")
-                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")
-                    .addTest(IgnoreTest.class, "testIgnoreUnignoreFile","testIgnoreUnignorePackage","testIgnoreUnignoreFilePackage","testFinalRemove")    
-                    
-
-                    .addTest(DeleteTest.class, "testDeleteRevert", "testDeleteCommit")
-                    .addTest(FilesViewDoubleRefTest.class, "testFilesViewDoubleRefactoring")
-                    .addTest(FilesViewRefTest.class, "testFilesViewRefactoring")
-                    .addTest(RefactoringTest.class, "testRefactoring")
-                    
-                    .addTest(DiffTest.class, "testDiffFile")
-                    .addTest(ExportDiffPatchTest.class, "invokeExportDiffPatch")
-
-                    
-                    .addTest(AnnotationsTest.class, "testShowAnnotations")
-                    .addTest(SearchRevisionsTest.class, "testSearchRevisionsTest")
-                    .addTest(SearchHistoryUITest.class, "testInvokeSearch")
-
-                    .addTest(CopyTest.class, "testCreateNewCopySwitch")
-                    .addTest(CopyUiTest.class, "testInvokeCloseCopy")
-                    .addTest(MergeUiTest.class, "testInvokeCloseMerge")
-                    .addTest(RevertUiTest.class, "testInvokeCloseRevert")
-                    .addTest(SwitchUiTest.class, "testInvokeCloseSwitch")
-
-                    .addTest(SvnPropertiesTest.class, "propTest")
-                    .addTest(RelocateTest.class, "relocate")
-
-                    .enableModules(".*")
-                    .clusters(".*"));
-
-            
-                    
-        } else {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
-        }
+        return emptyConfiguration()
+                .addTest(CheckoutContentTest.class, "testCheckoutProject", "testCheckoutContent")
+                .addTest(CheckoutUITest.class, "testInvokeClose", "testChangeAccessTypes", "testIncorrentUrl", "testAvailableFields", "testRepositoryFolder")
+                .addTest(CreateProjectVersionedDirTest.class, "testCreateNewProject")
+                .addTest(ImportUITest.class, "testInvoke", "testWarningMessage", "testCommitStep")
+                .addTest(ProxySettingsUITest.class, "testProxySettings", "testProxyBeforeUrl")
+                .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
+                .addTest(CommitUiTest.class, "testInvokeCloseCommit")
+                .addTest(IgnoreTest.class, "testIgnoreUnignoreFile", "testIgnoreUnignorePackage", "testIgnoreUnignoreFilePackage", "testFinalRemove")
+                //.addTest(DeleteTest.class, "testDeleteRevert", "testDeleteCommit")
+                //.addTest(FilesViewDoubleRefTest.class, "testFilesViewDoubleRefactoring")
+                //.addTest(FilesViewRefTest.class, "testFilesViewRefactoring")
+                //.addTest(RefactoringTest.class, "testRefactoring")
+                .addTest(DiffTest.class, "testDiffFile")
+                .addTest(ExportDiffPatchTest.class, "invokeExportDiffPatch")
+                .addTest(AnnotationsTest.class, "testShowAnnotations")
+                .addTest(SearchRevisionsTest.class, "testSearchRevisionsTest")
+                .addTest(SearchHistoryUITest.class, "testInvokeSearch")
+                .addTest(CopyTest.class, "testCreateNewCopySwitch", "testCreateNewCopy")
+                .addTest(CopyUiTest.class, "testInvokeCloseCopy")
+                .addTest(MergeUiTest.class, "testInvokeCloseMerge")
+                .addTest(RevertUiTest.class, "testInvokeCloseRevert")
+                .addTest(SwitchUiTest.class, "testInvokeCloseSwitch")
+                .addTest(SvnPropertiesTest.class, "propTest")
+                .addTest(RelocateTest.class, "relocate")
+                .suite();
     }
-
 }
