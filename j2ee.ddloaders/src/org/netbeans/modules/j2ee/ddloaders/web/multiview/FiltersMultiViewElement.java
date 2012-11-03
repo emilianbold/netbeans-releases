@@ -232,7 +232,7 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
         }
     }
     
-    private class FilterMappingsNode extends org.openide.nodes.AbstractNode {
+    private static class FilterMappingsNode extends org.openide.nodes.AbstractNode {
         FilterMappingsNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_FilterMappings"));
@@ -244,7 +244,7 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
         }
     }
     
-    private class FilterNode extends org.openide.nodes.AbstractNode {
+    private static class FilterNode extends org.openide.nodes.AbstractNode {
         FilterNode(SectionView view, WebApp webApp, Filter filter) {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(filter.getFilterName());
