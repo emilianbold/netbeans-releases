@@ -74,7 +74,7 @@ import org.openide.util.Utilities;
  *
  * @author Jan Becicka
  */
-public class ClientSideConfigurationProvider implements ProjectConfigurationProvider<ClientProjectConfigurationImplementation>, PropertyChangeListener {
+public final class ClientSideConfigurationProvider implements ProjectConfigurationProvider<ClientProjectConfigurationImplementation>, PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideConfigurationProvider.class.getName());
 
@@ -89,6 +89,8 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
     private Map<String,ClientProjectConfigurationImplementation> configs;
     private List<ClientProjectConfigurationImplementation> orderedConfigurations;
     
+    private ClientProjectConfigurationImplementation lastConfig;
+    
     public ClientSideConfigurationProvider(ClientSideProject p) {
         this.p = p;
         res.addLookupListener(new LookupListener() {
@@ -97,9 +99,17 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
                 refreshConfigurations();
             }
         });
+        lastConfig = getActiveConfiguration();
         p.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PROP_CONFIG.equals(evt.getPropertyName())) {
+                    ClientProjectConfigurationImplementation cfg = getActiveConfiguration();
+                    if (lastConfig != null && cfg != null && lastConfig.getId().equals(cfg.getId())) {
+                        // #220990 - configurations are the same - do not fire event
+                        return;
+                    }
+                    lastConfig = cfg;
                     LOGGER.log(Level.FINER, "Refiring " + PROP_CONFIG + " -> " + ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE); //NOI18N
                     pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, null);
                 }
@@ -158,7 +168,6 @@ public class ClientSideConfigurationProvider implements ProjectConfigurationProv
             ep.remove(PROP_CONFIG);
         }
         p.getProjectHelper().putProperties(CONFIG_PROPS_PATH, ep);
-        pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, null);
         ProjectManager.getDefault().saveProject(p);
         assert p.getProjectDirectory().getFileObject(CONFIG_PROPS_PATH) != null;
     }
