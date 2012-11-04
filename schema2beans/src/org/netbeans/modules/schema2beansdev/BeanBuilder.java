@@ -265,7 +265,7 @@ public class BeanBuilder {
         }
     }
 
-    class Finder {
+    static class Finder {
         private String findExpr, byExpr;
         private boolean listFindExpr;
         
