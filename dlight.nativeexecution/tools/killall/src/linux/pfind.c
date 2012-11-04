@@ -45,7 +45,7 @@ pid_t* pfind(const char* magicenv) {
 
         char* p = buffer;
 
-        while (p <= buffer + size) {
+        while (p < buffer + size) {
             if (strcmp(magicenv, p) == 0) {
                 if (res >= ressize) {
                     ressize += 10;
@@ -73,3 +73,4 @@ next:
     return result;
 
 }
+
