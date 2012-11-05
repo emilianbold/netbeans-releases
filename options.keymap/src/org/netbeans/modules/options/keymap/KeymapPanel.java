@@ -313,15 +313,13 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
                     getModel().getDataVector().removeAllElements();
                     for (String categorySet : getModel().getCategories().keySet()) {
                         for (String category : getModel().getCategories().get(categorySet)) {
-                            for (Object o : getModel().getItems(category)) {
-                                if (o instanceof ShortcutAction) {
-                                    ShortcutAction sca = (ShortcutAction) o;
-                                    String[] shortcuts = getModel().getShortcuts(sca);
-                                    for (int i = 0; i < shortcuts.length; i++) {
-                                        String shortcut = shortcuts[i];
-                                        if (searched(shortcut, searchText))
-                                            getModel().addRow(new Object[]{new ActionHolder(sca, false), shortcut, category, ""});
-                                    }
+                            for (Object o : getMutableModel().getItems(category, false)) {
+                                ShortcutAction sca = (ShortcutAction) o;
+                                String[] shortcuts = getMutableModel().getShortcuts(sca);
+                                for (int i = 0; i < shortcuts.length; i++) {
+                                    String shortcut = shortcuts[i];
+                                    if (searched(shortcut, searchText))
+                                        getModel().addRow(new Object[]{new ActionHolder(sca, false), shortcut, category, ""});
                                 }
                             }
                         }
@@ -344,18 +342,22 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         }
         return keymapModel;
     }
+    
+    MutableShortcutsModel getMutableModel() {
+        return getModel().getMutableModel();
+    }
 
     //controller methods
     void applyChanges() {
         stopCurrentCellEditing();
-        getModel().apply();
+        getMutableModel().apply();
     }
 
     void cancel() {
         stopCurrentCellEditing();
         if (keymapModel == null)
             return;
-        keymapModel.cancel();
+        getMutableModel().cancel();
     }
 
     boolean dataValid() {
@@ -363,11 +365,11 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
     }
 
     boolean isChanged() {
-        return getModel().isChanged();
+        return getMutableModel().isChanged();
     }
 
     void update() {
-        getModel().refreshActions();
+        getMutableModel().refreshActions();
 
         //do not remember search state
         getModel().setSearchText(""); //NOI18N
@@ -386,8 +388,8 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
 
 
     private void refreshProfileCombo() {
-        String currentProfile = getModel().getCurrentProfile();
-        List keymaps = getModel().getProfiles();
+        String currentProfile = getMutableModel().getCurrentProfile();
+        List keymaps = getMutableModel().getProfiles();
         ComboBoxModel model = new DefaultComboBoxModel(keymaps.toArray());
         cbProfile.setModel(model);
         cbProfile.setSelectedItem(currentProfile);
@@ -674,12 +676,12 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         if (source == cbProfile) {
             String profile = (String) cbProfile.getSelectedItem();
             if (profile != null)
-                getModel().setCurrentProfile(profile);
+                getMutableModel().setCurrentProfile(profile);
             getModel().update();
         } else if (source == manageButton) {
             //remember previous profile state, in case user will cancel dialog
-            Map<String, Map<ShortcutAction, Set<String>>> modifiedProfiles = getModel().getModifiedProfiles();
-            Set<String> deletedProfiles = getModel().getDeletedProfiles();
+            Map<String, Map<ShortcutAction, Set<String>>> modifiedProfiles = getMutableModel().getModifiedProfiles();
+            Set<String> deletedProfiles = getMutableModel().getDeletedProfiles();
 
             //show manage profiles dialog
             final ProfilesPanel profilesPanel = new ProfilesPanel(this);
@@ -688,13 +690,13 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
 
             if (dd.getValue().equals(DialogDescriptor.OK_OPTION)) {
                 final String selectedProfile = profilesPanel.getSelectedProfile();
-                getModel().setCurrentProfile(selectedProfile);
+                getMutableModel().setCurrentProfile(selectedProfile);
                 refreshProfileCombo();
 
             } else {
                 //revert changes
-                getModel().setModifiedProfiles(modifiedProfiles);
-                getModel().setDeletedProfiles(deletedProfiles);
+                getMutableModel().setModifiedProfiles(modifiedProfiles);
+                getMutableModel().setDeletedProfiles(deletedProfiles);
             }
         }
         return;
