@@ -1795,6 +1795,7 @@ public class CasualDiff {
         }
         JCTree oldBound = oldT.kind.kind != BoundKind.UNBOUND ? oldT.inner : null;
         JCTree newBound = newT.kind.kind != BoundKind.UNBOUND ? newT.inner : null;
+        if (oldBound == newBound && oldBound == null) return localPointer;
         int[] innerBounds = getBounds(oldBound);
         copyTo(localPointer, innerBounds[0]);
         localPointer = diffTree(oldBound, newBound, innerBounds);
@@ -3702,6 +3703,8 @@ public class CasualDiff {
         copyTo(from, to, printer);
     }
 
+    public static boolean noInvalidCopyTos = false;
+    
     public void copyTo(int from, int to, VeryPretty loc) {
         if (from == to) {
             return;
@@ -3710,6 +3713,8 @@ public class CasualDiff {
             LOG.log(INFO, "-----\n" + origText + "-----\n");
             LOG.log(INFO, "Illegal values: from = " + from + "; to = " + to + "." +
                 "Please, attach your messages.log to new issue!");
+            if (noInvalidCopyTos)
+                throw new IllegalStateException("Illegal values: from = " + from + "; to = " + to + ".");
             if (to >= 0)
                 printer.eatChars(from-to);
             return;
