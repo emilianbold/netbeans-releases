@@ -40,11 +40,32 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-chrome.extension.sendMessage({
-    type: 'VIEWPORT',
-    width: window.innerWidth,
-    height: window.innerHeight,
-    marginWidth: window.outerWidth - window.innerWidth,
-    marginHeight: window.outerHeight - window.innerHeight,
-    isMac: navigator.platform.toUpperCase().indexOf('MAC') !== -1
-});
+/**
+ * Window too small warning.
+ */
+var NetBeans_WindowTooSmallWarning = {};
+
+NetBeans_WindowTooSmallWarning._okButton = null;
+
+NetBeans_WindowTooSmallWarning.init = function() {
+    if (NetBeans_WindowTooSmallWarning._okButton != null) {
+        return;
+    }
+    NetBeans_WindowTooSmallWarning._okButton = document.getElementById('okButton');
+    this._registerEvents();
+}
+// register events
+NetBeans_WindowTooSmallWarning._registerEvents = function() {
+    var that = this;
+    this._okButton.addEventListener('click', function() {
+        that._close();
+    }, false);
+}
+NetBeans_WindowTooSmallWarning._close = function() {
+    window.close();
+}
+
+// run!
+window.addEventListener('load', function() {
+    NetBeans_WindowTooSmallWarning.init();
+}, false);

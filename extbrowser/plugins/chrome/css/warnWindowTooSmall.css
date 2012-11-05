@@ -40,11 +40,17 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-chrome.extension.sendMessage({
-    type: 'VIEWPORT',
-    width: window.innerWidth,
-    height: window.innerHeight,
-    marginWidth: window.outerWidth - window.innerWidth,
-    marginHeight: window.outerHeight - window.innerHeight,
-    isMac: navigator.platform.toUpperCase().indexOf('MAC') !== -1
-});
+body {
+    font-family: Arial, Tahoma, Helvetica;
+    font-size: 10pt;
+    font-weight: normal;
+    color: #303942;
+    background-color: #fff;
+}
+h1 {
+    color: darkred;
+}
+
+#okButton {
+    float: right;
+}

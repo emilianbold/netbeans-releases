@@ -40,11 +40,11 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-chrome.extension.sendMessage({
-    type: 'VIEWPORT',
-    width: window.innerWidth,
-    height: window.innerHeight,
-    marginWidth: window.outerWidth - window.innerWidth,
-    marginHeight: window.outerHeight - window.innerHeight,
-    isMac: navigator.platform.toUpperCase().indexOf('MAC') !== -1
-});
+window.addEventListener('load', function() {
+    I18n.pageTitle();
+    // texts
+    I18n.element('title');
+    I18n.element('info');
+    I18n.element('okButton');
+}, false);
+

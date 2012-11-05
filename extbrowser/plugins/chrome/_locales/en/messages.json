@@ -162,6 +162,13 @@
     },
     "_BrokenNetBeansIntegrationChromeIssue": {
         "message": "For more information please see this <a href=\"#\" id=\"chromeIssueLink\">Chrome issue</a>."
+    },
+
+    "_WindowTooSmall": {
+        "message": "Window cannot be resized properly"
+    },
+    "_WindowTooSmallInfo": {
+        "message": "Unfortunately, on Mac OS, the minimal width of the Chrome window is 400 pixels."
     }
 
 }
