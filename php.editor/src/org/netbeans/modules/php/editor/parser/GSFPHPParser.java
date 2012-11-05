@@ -292,7 +292,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             }
         }
         if (sanitizing == Sanitize.EDITED_LINE) {
-            if (context.getCaretOffset() > -1) {
+            if (context.getCaretOffset() > 0) {
                 String source = context.getSource();
                 int start = context.getCaretOffset() - 1;
                 int end = context.getCaretOffset();
