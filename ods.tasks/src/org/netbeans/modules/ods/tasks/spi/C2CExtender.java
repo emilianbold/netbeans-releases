@@ -70,7 +70,10 @@ import org.openide.util.Lookup;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public abstract class C2CExtender<Data> {
-
+    
+    public static final String TASKTOP_EXTENDER = "org.netbeans.modules.ods.tasks.tasktop.TaskTopExtender"; // NOI18N
+    public static final String NETBEANS_EXTENDER = "org.netbeans.modules.ods.tasks.nb.NbExtender"; // NOI18N
+    
     protected C2CExtender() {
     }
 
@@ -108,9 +111,17 @@ public abstract class C2CExtender<Data> {
         return getDefault().spiProductKey(component, product);
     }
 
-
     private static C2CExtender getDefault() {
-        return Lookup.getDefault().lookup(C2CExtender.class);
+        Collection<? extends C2CExtender> extenders = Lookup.getDefault().lookupAll(C2CExtender.class);
+        String preferedExtenderName = System.getProperty("ods.tasks.prefereredExtender", ""); // NOI18N
+        if(!preferedExtenderName.isEmpty()) {
+            for (C2CExtender extender : extenders) {
+                if(extender.getClass().getName().equals(preferedExtenderName)) {
+                    return extender;
+                }
+            }
+        }
+        return extenders.iterator().next();
     }
 
     /** For subclasses to create instance of C2CData data.

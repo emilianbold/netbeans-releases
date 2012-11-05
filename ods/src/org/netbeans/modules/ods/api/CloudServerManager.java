@@ -155,15 +155,7 @@ public final class CloudServerManager {
                     }
                 }
             }
-        } else {
-            try {
-                if (instances.isEmpty()) {                    
-                    instances.put("https://q.tasktop.com/alm", CloudServer.createInstance("tasktop.dev", "https://q.tasktop.com/alm")); //NOI18N
-                }
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+        } 
         instancesInited=true;
     }
 
