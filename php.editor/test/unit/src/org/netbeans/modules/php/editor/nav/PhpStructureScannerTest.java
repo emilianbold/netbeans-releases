@@ -166,6 +166,10 @@ public class PhpStructureScannerTest extends ParserTestBase{
         checkFolds("testfiles/parser/issue213616.php");
     }
 
+    public void testIssue216088() throws Exception {
+        checkFolds("testfiles/parser/issue216088.php");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         StringBuffer sb = new StringBuffer();
