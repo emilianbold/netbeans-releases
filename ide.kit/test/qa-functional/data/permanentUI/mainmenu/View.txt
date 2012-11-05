@@ -3,7 +3,6 @@
     Editors                >   E
     Code Folds             >   C
 ============================
-    Web Browser                W
     IDE Log                    L
 ============================
     Toolbars               >   T
