@@ -4444,6 +4444,19 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (text.trim().endsWith("[")) //NOI18N
                             return Collections.singleton(controller.getTypes().getPrimitiveType(TypeKind.INT));
                         return null;
+                    case LAMBDA_EXPRESSION:
+                        LambdaExpressionTree let = (LambdaExpressionTree)tree;
+                        int pos = (int)env.getSourcePositions().getStartPosition(env.getRoot(), let.getBody());
+                        if (offset < pos)
+                            break;
+                        type = controller.getTrees().getTypeMirror(path);
+                        if (type != null && type.getKind() == TypeKind.DECLARED) {
+                            ExecutableType descType = controller.getTypeUtilities().getDescriptorType((DeclaredType)type);
+                            if (descType != null) {
+                                return Collections.singleton(descType.getReturnType());
+                            }
+                        }
+                        break;
                     case CASE:
                         CaseTree ct = (CaseTree)tree;
                         ExpressionTree exp = ct.getExpression();
@@ -4458,7 +4471,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return null;
                     case ANNOTATION:
                         AnnotationTree ann = (AnnotationTree)tree;
-                        int pos = (int)env.getSourcePositions().getStartPosition(env.getRoot(), ann.getAnnotationType());
+                        pos = (int)env.getSourcePositions().getStartPosition(env.getRoot(), ann.getAnnotationType());
                         if (offset <= pos)
                             break;
                         pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), ann.getAnnotationType());
