@@ -807,10 +807,6 @@ public class Flow {
                     resumePoint = ((EnhancedForLoopTree) loop).getStatement();
                     break;
                 default:
-                    boolean ae = false;
-                    assert ae = true;
-                    if (ae)
-                        throw new IllegalStateException(loop.getKind().name());
                     resumePoint = null;
                     break;
             }

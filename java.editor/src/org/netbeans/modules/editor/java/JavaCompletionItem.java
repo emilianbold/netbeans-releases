@@ -2170,14 +2170,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Position startPos;
             Position endPos;
             try {
-                startPos = doc.createPosition(offset + (insertName ? 0 : length), Bias.Backward);
+                startPos = doc.createPosition(offset + (insertName ? 0 : Math.min(text.length(), length)), Bias.Backward);
                 endPos = doc.createPosition(offset + length);
             } catch (BadLocationException ex) {
                 return null; // Invalid offset -> do nothing
             }
             CharSequence cs = insertName
                     ? super.substituteText(c, startPos.getOffset(), length, text, toAdd)
-                    : super.substituteText(c, startPos.getOffset(), 0, null, toAdd);
+                    : super.substituteText(c, startPos.getOffset(), Math.max(length - text.length(), 0), null, toAdd);
             StringBuilder sb = new StringBuilder();
             if (toAdd != null) {
                 CharSequence postfix = getInsertPostfix(c);
