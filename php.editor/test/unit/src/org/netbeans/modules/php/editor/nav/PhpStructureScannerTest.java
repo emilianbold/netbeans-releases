@@ -172,7 +172,7 @@ public class PhpStructureScannerTest extends ParserTestBase{
 
     @Override
     protected String getTestResult(String filename) throws Exception {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         FileObject testFile = getTestFile("testfiles/" + filename + ".php");
 
         Source testSource = getTestSource(testFile);
@@ -190,6 +190,7 @@ public class PhpStructureScannerTest extends ParserTestBase{
             }
         });
         Comparator<StructureItem> comparator = new Comparator<StructureItem>() {
+            @Override
             public int compare(StructureItem o1, StructureItem o2) {
                 long position1 = o1.getPosition();
                 long position2 = o2.getPosition();
@@ -207,7 +208,7 @@ public class PhpStructureScannerTest extends ParserTestBase{
     }
 
     private String printStructureItem(StructureItem structureItem, int indent) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(indent(indent));
         sb.append(structureItem.getName());
         sb.append(" [");
