@@ -234,7 +234,7 @@ public class FSCompletion implements CompletionProvider {
                 FileObject current = children[cntr];
 
                 if (VisibilityQuery.getDefault().isVisible(current) && current.getNameExt().toLowerCase().startsWith(filePrefix.toLowerCase()) && filter.accept(current)) {
-                    result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + "/" : "", anchor));
+                    result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + "/" : "./", anchor)); //NOI18N
                 }
             }
         }
