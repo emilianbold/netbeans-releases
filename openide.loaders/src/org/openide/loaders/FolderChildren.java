@@ -47,6 +47,7 @@ package org.openide.loaders;
 
 import java.awt.EventQueue;
 import java.beans.*;
+import java.io.ByteArrayOutputStream;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -284,6 +285,9 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 err.setLevel(Level.FINE);
             }
             if (round == limit) {
+                Thread.dumpStack();
+                System.err.flush();
+                System.out.flush();
                 err.setLevel(previous);
                 throw new IllegalStateException("Too many repetitions in getNodes(true). Giving up.");
             }
