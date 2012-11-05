@@ -40,17 +40,30 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-body {
-    font-family: Arial, Tahoma, Helvetica;
-    font-size: 10pt;
-    font-weight: normal;
-    color: #303942;
-    background-color: #fff;
+/**
+ * Debugger detached warning.
+ */
+var NetBeans_DebuggerDetachedWarning = {};
+NetBeans_DebuggerDetachedWarning._okButton = null;
+NetBeans_DebuggerDetachedWarning.init = function() {
+    if (NetBeans_DebuggerDetachedWarning._okButton != null) {
+        return;
+    }
+    NetBeans_DebuggerDetachedWarning._okButton = document.getElementById('okButton');
+    this._registerEvents();
 }
-h1 {
-    color: darkred;
+// register events
+NetBeans_DebuggerDetachedWarning._registerEvents = function() {
+    var that = this;
+    this._okButton.addEventListener('click', function() {
+        that._close();
+    }, false);
+}
+NetBeans_DebuggerDetachedWarning._close = function() {
+    window.close();
 }
 
-#okButton {
-    float: right;
-}
+// run!
+window.addEventListener('load', function() {
+    NetBeans_DebuggerDetachedWarning.init();
+}, false);
