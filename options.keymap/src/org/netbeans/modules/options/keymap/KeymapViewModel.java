@@ -55,12 +55,14 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
 
 /**
  *
@@ -88,14 +90,45 @@ class KeymapViewModel extends DefaultTableModel {
 //                    NbBundle.getMessage(KeymapViewModel.class, "ScopeColumnName") //NOI18N
                 }, 0);
         mutableModel = new MutableShortcutsModel(model, null);
-        currentProfile = model.getCurrentProfile ();
+        //currentProfile = model.getCurrentProfile ();
     }
     
     MutableShortcutsModel getMutableModel() {
         return mutableModel;
     }
+    
+    private volatile Task   initTask;
+    
+    void update() {
+        postUpdate();
+    }
+    
+    public Task postUpdate() {
+        Task t = initTask;
+        if (t != null && t.isFinished()) {
+            update0();
+            return t;
+        }
+        if (t == null) {
+            return initTask = KeymapModel.RP.post(new Runnable() {
+                public void run() {
+                    // just initialize
+                    mutableModel.getCategories();
+                    mutableModel.getItems("");
 
-
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            update0();
+                        }
+                    });
+                }
+            });
+        } else if (t.isFinished()) {
+            update0();
+        }
+        return t;
+    }
+    
     // DefaultTableModel
     @Override
     public Class getColumnClass(int columnIndex) {
@@ -195,7 +228,7 @@ class KeymapViewModel extends DefaultTableModel {
     
     // other methods ...........................................................
 
-    void update() {
+    private void update0() {
         boolean caseSensitiveSearch = false;
         String searchTxt;
 
