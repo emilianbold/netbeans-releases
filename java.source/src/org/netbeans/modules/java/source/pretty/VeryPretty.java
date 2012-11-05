@@ -45,6 +45,7 @@ package org.netbeans.modules.java.source.pretty;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import static com.sun.source.tree.Tree.*;
@@ -88,7 +89,6 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.DiffContext;
-import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -1676,6 +1676,19 @@ public final class VeryPretty extends JCTree.Visitor {
         printExpr(tree.getExpression());
         print(cs.spaceWithinForParens() ? " )" : ")");
 	printIndentedStat(tree.getStatement(), cs.redundantForBraces(), cs.spaceBeforeForLeftBrace(), cs.wrapForStatement());
+    }
+
+    @Override
+    public void visitReference(JCMemberReference tree) {
+        printExpr(tree.expr);
+        print("::");
+        if (tree.typeargs != null && !tree.typeargs.isEmpty()) {
+            print("<");
+            printExprs(tree.typeargs);
+            print(">");
+        }
+        if (tree.getMode() == ReferenceMode.INVOKE) print(tree.name);
+        else print("new");
     }
 
     @Override
