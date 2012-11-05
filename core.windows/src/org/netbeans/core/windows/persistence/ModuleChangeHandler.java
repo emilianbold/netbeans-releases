@@ -46,14 +46,13 @@ package org.netbeans.core.windows.persistence;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.cookies.InstanceCookie;
@@ -240,12 +239,15 @@ class ModuleChangeHandler implements FileChangeListener {
         return false;
     }
     
+    @Override
     public void fileAttributeChanged (FileAttributeEvent fe) {
     }
     
+    @Override
     public void fileChanged (FileEvent fe) {
     }
     
+    @Override
     public void fileDataCreated (FileEvent fe) {
         FileObject fo = fe.getFile();
         boolean accepted = acceptEvent(fo);
@@ -267,6 +269,7 @@ class ModuleChangeHandler implements FileChangeListener {
         processDataOrFolderCreated(fo);
     }
     
+    @Override
     public void fileFolderCreated (FileEvent fe) {
         FileObject fo = fe.getFile();
         boolean accepted = acceptEvent(fo);
@@ -328,6 +331,7 @@ class ModuleChangeHandler implements FileChangeListener {
         }
     }
     
+    @Override
     public void fileDeleted (FileEvent fe) {
         FileObject fo = fe.getFile();
         boolean accepted = acceptEvent(fo);
@@ -373,6 +377,7 @@ class ModuleChangeHandler implements FileChangeListener {
         }
     }
     
+    @Override
     public void fileRenamed (FileRenameEvent fe) {
     }
     
@@ -383,6 +388,7 @@ class ModuleChangeHandler implements FileChangeListener {
         if (modeConfig != null) {
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WindowManagerImpl.getInstance().getPersistenceObserver().modeConfigAdded(modeConfig);
                 }
@@ -397,6 +403,7 @@ class ModuleChangeHandler implements FileChangeListener {
         if (groupConfig != null) {
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WindowManagerImpl.getInstance().getPersistenceObserver().groupConfigAdded(groupConfig);
                 }
@@ -453,6 +460,7 @@ class ModuleChangeHandler implements FileChangeListener {
             final String [] tcRefNameArray = tcRefNameList.toArray(new String[tcRefNameList.size()]);
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WindowManagerImpl.getInstance().getPersistenceObserver().topComponentRefConfigAdded(modeName, tcRefConfig, tcRefNameArray);
                 }
@@ -467,6 +475,7 @@ class ModuleChangeHandler implements FileChangeListener {
         if (tcGroupConfig != null) {
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WindowManagerImpl.getInstance().getPersistenceObserver().topComponentGroupConfigAdded(groupName, tcGroupConfig);
                 }
@@ -533,6 +542,7 @@ class ModuleChangeHandler implements FileChangeListener {
         wmParser.removeGroup(groupName);
         // #37529 WindowsAPI to be called from AWT thread only.
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 WindowManagerImpl.getInstance().getPersistenceObserver().groupConfigRemoved(groupName);
             }
@@ -545,6 +555,7 @@ class ModuleChangeHandler implements FileChangeListener {
         if (wmParser.removeTCRef(tcRefName)) {
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WindowManagerImpl.getInstance().getPersistenceObserver().topComponentRefConfigRemoved(tcRefName);
                 }
@@ -558,6 +569,7 @@ class ModuleChangeHandler implements FileChangeListener {
         if (wmParser.removeTCGroup(groupName, tcGroupName)) {
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WindowManagerImpl.getInstance().getPersistenceObserver().topComponentGroupConfigRemoved(groupName, tcGroupName);
                 }
