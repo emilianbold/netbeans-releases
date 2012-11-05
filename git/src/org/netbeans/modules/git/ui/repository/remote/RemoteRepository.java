@@ -141,6 +141,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     }
     
     private RemoteRepository(PasswordAuthentication pa, String forPath, boolean fixedUrl) {
+        assert EventQueue.isDispatchThread(); // see issue #221362
         assert !fixedUrl || forPath != null && !forPath.trim().isEmpty();
         this.panel = new RemoteRepositoryPanel();
         
