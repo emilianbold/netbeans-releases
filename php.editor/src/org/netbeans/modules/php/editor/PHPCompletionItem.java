@@ -570,57 +570,23 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
-            String superTemplate = super.getInsertPrefix();
-            template.append(superTemplate);
+            template.append(super.getInsertPrefix());
+            if (!insertOnlyMethodsName(request)) {
+                template.append("("); //NOI18N
+                List<String> params = getInsertParams();
+                for (int i = 0; i < params.size(); i++) {
+                    String param = params.get(i);
+                    if (param.startsWith("&")) {//NOI18N
+                        param = param.substring(1);
+                    }
+                    template.append(String.format("${php-cc-%d  default=\"%s\"}", i, param));
 
-            TokenHierarchy<?> tokenHierarchy = request.result.getSnapshot().getTokenHierarchy();
-            TokenSequence<PHPTokenId> tokenSequence = (TokenSequence<PHPTokenId>) tokenHierarchy.tokenSequence();
-            if (tokenSequence != null) {
-                VariableScope variableScope = request.result.getModel().getVariableScope(request.anchor);
-                if (variableScope != null) {
-                    tokenSequence = tokenSequence.subSequence(request.anchor, variableScope.getBlockRange().getEnd());
-                }
-                boolean wasWhitespace = false;
-                while (tokenSequence.moveNext()) {
-                    Token<PHPTokenId> token = tokenSequence.token();
-                    PHPTokenId id = token.id();
-                    if (PHPTokenId.PHP_STRING.equals(id)) {
-                        if (wasWhitespace) {
-                            // this needs brackets: curl_set^ curl_setopt($ch, $option, $ch);
-                            break;
-                        } else {
-                            // this doesn't need brackets: curl_setopt^  ($ch, $option, $ch);
-                            continue;
-                        }
-                    } else if (PHPTokenId.WHITESPACE.equals(id)) {
-                        wasWhitespace = true;
-                        continue;
-                    } else if (PHPTokenId.PHP_TOKEN.equals(id) && token.text().toString().equals("(")) { //NOI18N
-                        return template.toString();
-                    } else {
-                        break;
+                    if (i < params.size() - 1) {
+                        template.append(", "); //NOI18N
                     }
                 }
+                template.append(')');
             }
-
-            template.append("("); //NOI18N
-
-            List<String> params = getInsertParams();
-
-            for (int i = 0; i < params.size(); i++) {
-                String param = params.get(i);
-                if (param.startsWith("&")) {//NOI18N
-                    param = param.substring(1);
-                }
-                template.append(String.format("${php-cc-%d  default=\"%s\"}", i, param));
-
-                if (i < params.size() - 1) {
-                    template.append(", "); //NOI18N
-                }
-            }
-
-            template.append(')');
-
             return template.toString();
         }
 
