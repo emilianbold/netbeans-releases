@@ -541,7 +541,7 @@ public class DOM {
             if (parent == null) {
                 // 221449 - prevent NullPointerException
                 // Martin, please review - this is just an hotfix
-                //return;
+                return;
             }
             JSONArray children = (JSONArray)params.get("nodes"); // NOI18N
             parent.initChildren();
